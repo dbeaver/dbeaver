@@ -405,7 +405,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             public void done(IJobChangeEvent event) {
                 try {
                     if (afterRefresh != null) {
-                        afterRefresh.run();
+                        UIUtils.asyncExec(afterRefresh);
                     }
                 } catch (Exception e) {
                     log.warn("Exception after refreshing in TabbedFolderPageForm", e);

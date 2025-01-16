@@ -531,6 +531,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             if (propertiesPanel.refreshPart(force, afterRefresh) == RefreshResult.CANCELED) {
                 return RefreshResult.CANCELED;
             }
+        } else {
+            // we still have to refresh folders in that way
+            UIUtils.asyncExec(afterRefresh);
         }
 
         return RefreshResult.REFRESHED;
