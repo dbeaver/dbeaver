@@ -209,7 +209,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     @Override
     public boolean supportsRename() {
-        return false;
+        return true;
     }
 
     @Override
@@ -220,6 +220,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         } catch (IOException e) {
             throw new DBException("Can't rename resource", e);
         }
+        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
     }
 
     @Override
