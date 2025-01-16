@@ -443,8 +443,8 @@ public class Spreadsheet extends LightGrid implements Listener {
             } else {
                 presentation.fillContextMenu(
                     manager,
-                    isHoveringOnRowHeader() ? getFocusColumn() : getColumnByPosition(focusPos),
-                    isHoveringOnHeader() ? getFocusRow() : getRowByPosition(focusPos)
+                    isHoveringOnRowHeader() ? null : getColumnByPosition(focusPos),
+                    isHoveringOnHeader() ? null : getRowByPosition(focusPos)
                 );
             }
         });
