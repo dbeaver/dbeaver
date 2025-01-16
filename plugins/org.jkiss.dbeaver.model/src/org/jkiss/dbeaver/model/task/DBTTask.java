@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -63,6 +64,8 @@ public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
 
     @NotNull
     DBTTaskRun[] getAllRuns();
+
+    void addRuns(@NotNull List<DBTTaskRun> runs);
 
     @Nullable
     Path getRunLog(@NotNull DBTTaskRun run);

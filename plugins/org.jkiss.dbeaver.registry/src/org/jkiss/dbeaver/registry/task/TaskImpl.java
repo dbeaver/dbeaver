@@ -170,6 +170,14 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         return runs.toArray(DBTTaskRun[]::new);
     }
 
+    @Override
+    public void addRuns(@NotNull List<DBTTaskRun> runs) {
+        if (this.runs == null) {
+            this.runs = new ArrayList<>();
+        }
+        this.runs.addAll(runs);
+    }
+
     @Nullable
     @Override
     public Path getRunLog(@NotNull DBTTaskRun run) {
