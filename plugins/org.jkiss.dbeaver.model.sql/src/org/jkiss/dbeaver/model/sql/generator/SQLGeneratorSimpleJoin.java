@@ -26,7 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
+public class SQLGeneratorSimpleJoin extends SQLGenerator<DBSEntity> {
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
         StringBuilder sql = new StringBuilder(100);
@@ -36,16 +36,15 @@ public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
             sql.append("SELECT ");
             for (int i = 0; i < objects.size(); i++) {
                 if (i > 0) sql.append(", ");
-                sql.append(SQLUtils.getTableAlias(objects.get(i))).append(".*");
+                String alias = SQLUtils.generateEntityAlias(objects.get(i), s -> sqlDialect.getKeywordType(s) != null
+                    || aliases.contains(s));
+                sql.append(sql).append(".*");
+                aliases.add(alias);
             }
             sql.append(getLineSeparator()).append("FROM ");
             for (int i = 0; i < objects.size(); i++) {
-                DBSEntity entity = objects.get(i);
-
                 if (i > 0) sql.append(", ");
-                String alias = SQLUtils.generateEntityAlias(entity, s -> sqlDialect.getKeywordType(s) != null || aliases.contains(s));
-                aliases.add(alias);
-                sql.append(getEntityName(entity)).append(" ").append(alias);
+                sql.append(getEntityName(objects.get(i))).append(" ").append(aliases.get(i));
             }
             sql.append(getLineSeparator()).append("WHERE ");
             boolean hasCond = false;
