@@ -862,17 +862,17 @@ public class SQLQueryJob extends DataSourceJob
         } else {
             // Single statement
             long updateCount = statistics.getRowsUpdated();
-            fakeResultSet.addColumn("Query", DBPDataKind.STRING);
             fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
+            fakeResultSet.addColumn("Query", DBPDataKind.STRING);
             fakeResultSet.addRow(
-                query.getText(),
-                updateCount,
-                RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
-                new Date(statistics.getStartTime()),
-                new Date());
+                    updateCount,
+                    RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
+                    new Date(statistics.getStartTime()),
+                    new Date(),
+                    query.getText());
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_data_grid);
         }
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
