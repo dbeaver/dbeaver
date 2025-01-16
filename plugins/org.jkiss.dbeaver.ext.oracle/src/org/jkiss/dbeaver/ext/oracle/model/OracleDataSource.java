@@ -1145,4 +1145,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return KNOWN_GLOBAL_PSEUDO_ATTRS;
     }
+
+    public boolean needShowPasswords() {
+        return false;
+    }
 }

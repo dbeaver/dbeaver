@@ -20,20 +20,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Association;
-import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
-import org.jkiss.dbeaver.model.meta.LazyProperty;
-import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -42,12 +37,12 @@ import java.util.Collection;
 /**
  * OracleUser
  */
-public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<OracleDataSource>, DBPSaveableObject
+public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<OracleDataSource>, DBPSaveableObject, DBPRefreshableObject
 {
     private static final Log log = Log.getLog(OracleUser.class);
 
     private long id;
-    private String userName;
+    private String name;
     private String externalName;
     private String status;
     private Timestamp createDate;
@@ -57,7 +52,8 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     private Object tempTablespace;
     private Object profile;
     private String consumerGroup;
-    private transient String password;
+    protected transient String password;
+    protected transient String confirmPassword;
     private boolean persisted;
     private OracleDataSource dataSource;
 
@@ -71,7 +67,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         this.dataSource = dataSource;
         if (resultSet != null) {
             this.id = JDBCUtils.safeGetLong(resultSet, "USER_ID");
-            this.userName = JDBCUtils.safeGetString(resultSet, "USERNAME");
+            this.name = JDBCUtils.safeGetString(resultSet, "USERNAME");
             this.externalName = JDBCUtils.safeGetString(resultSet, "EXTERNAL_NAME");
             this.status = JDBCUtils.safeGetString(resultSet, "ACCOUNT_STATUS");
 
@@ -95,13 +91,14 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     }
 
     @NotNull
+    @Override
     @Property(viewable = true, order = 2)
-    public String getUserName() {
-        return userName;
+    public String getName() {
+        return name;
     }
 
-    public void setUserName(String name) {
-        this.userName = name;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Property(order = 3)
@@ -180,14 +177,22 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
      * Passwords are never read from database. It is used to create/alter schema/user
      * @return password or null
      */
-    public String getPassword()
-    {
+    @Property(visibleIf = OracleUserPasswordValueValidator.class, editable = true, updatable = true, order = 12, password = true)
+    public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password)
-    {
+    public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Property(visibleIf = OracleUserPasswordValueValidator.class, editable = true, updatable = true, order = 13, password = true)
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
     }
 
     @Override
@@ -203,14 +208,6 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         return super.refreshObject(monitor);
     }
 
-    @NotNull
-    @Override
-    public String getName() {
-        if (CommonUtils.isEmpty(userName)) {
-            return "new_user";
-        }
-        return userName;
-    }
 
     public static class ProfileReferenceValidator implements IPropertyCacheValidator<OracleUser> {
         @Override
@@ -236,5 +233,11 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         DBUtils.fireObjectUpdate(this);
     }
 
+    public static class OracleUserPasswordValueValidator implements IPropertyValueValidator<OracleUser, Object> {
+        @Override
+        public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().needShowPasswords();
+        }
+    }
 
 }
