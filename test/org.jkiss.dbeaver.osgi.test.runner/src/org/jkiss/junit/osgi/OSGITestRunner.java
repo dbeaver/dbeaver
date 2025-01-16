@@ -71,7 +71,6 @@ import java.util.stream.Collectors;
 public class OSGITestRunner extends Runner {
     public static final Pattern startLevel = Pattern.compile("@(\\d+):start");
     private static final Log log = Log.getLog(OSGITestRunner.class);
-    private static final String WORKSPACE_DIR = findWorkspaceDir().toString();
     private static final boolean DEBUG_BUNDLE_LAUNCH = false;
     private final Class<? extends IApplicationTest> testClass;
     private Framework framework;
@@ -103,9 +102,9 @@ public class OSGITestRunner extends Runner {
                 }
             } catch (Exception e) {
                 log.error(e);
+                this.productPath = findProduct();
             }
 
-            this.productPath = findProduct();
             getAppBundleFromAnnotation();
             this.framework = initializeFramework();
         }
@@ -144,7 +143,7 @@ public class OSGITestRunner extends Runner {
         if (testClass.getAnnotation(RunWithProduct.class) != null) {
             RunWithProduct annotation = testClass.getAnnotation(RunWithProduct.class);
             String product = annotation.value();
-            Path workspace = Path.of(WORKSPACE_DIR);
+            Path workspace = Path.of(findWorkspaceDir().toString());
             return workspace.resolve(product);
         } else {
             throw new IllegalArgumentException("Product not found");
