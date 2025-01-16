@@ -233,7 +233,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     public static class OracleUserPasswordValueValidator implements IPropertyValueValidator<OracleUser, Object> {
         @Override
         public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
-            return object.getDataSource().needShowPasswords();
+            return object.getDataSource().supportsUserPasswordEdit();
         }
     }
 

@@ -1146,7 +1146,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return KNOWN_GLOBAL_PSEUDO_ATTRS;
     }
 
-    public boolean needShowPasswords() {
+    public boolean supportsUserPasswordEdit() {
         return false;
     }
 }
