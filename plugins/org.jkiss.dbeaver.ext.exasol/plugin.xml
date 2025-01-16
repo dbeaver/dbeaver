@@ -529,7 +529,7 @@
        <provider
              class="org.jkiss.dbeaver.ext.exasol.ExasolValueHandlerProvider"
              description="Exasol data types provider"
-             id="org.jkiss.dbeaver.ext.exasol.ExasolValueHandlerProvider"
+             id="ExasolValueHandlerProvider"
              label="Exasol data types provider">
 
             <datasource id="exasol"/>

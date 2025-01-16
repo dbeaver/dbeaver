@@ -130,7 +130,7 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
 
     public static SQLQueryColumnSpec recognize(SQLQueryModelRecognizer recognizer, STMTreeNode node) {
         SQLQuerySymbolEntry columnName = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.columnName))
-            .map(recognizer::collectIdentifier)
+            .map(n -> recognizer.collectIdentifier(n, null))
             .orElse(null);
         String typeName = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.dataType))
             .map(STMTreeNode::getTextContent).orElse(null);

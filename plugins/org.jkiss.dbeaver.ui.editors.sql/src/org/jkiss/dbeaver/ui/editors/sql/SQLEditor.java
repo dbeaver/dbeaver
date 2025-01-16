@@ -2257,7 +2257,12 @@ public class SQLEditor extends SQLEditorBase implements
             StringWriter out = new StringWriter();
             e.printStackTrace(new PrintWriter(out, true));
             editorInput = new StringEditorInput("Error", CommonUtils.truncateString(out.toString(), 10000), true, GeneralUtils.UTF8_ENCODING);
-            doSetInput(editorInput);
+            try {
+                super.doSetInput(editorInput);
+            } catch (Throwable ex) {
+                // Throw original error
+                throw e;
+            }
             log.error("Error loading input SQL file", e);
         }
         syntaxLoaded = false;
@@ -2959,7 +2964,8 @@ public class SQLEditor extends SQLEditorBase implements
             if (tabsToClose.get(0).getData() instanceof SingleTabQueryProcessor sqp) {
                 // to avoid concurrent modification exception
                 List<QueryResultsContainer> results = new ArrayList<>(sqp.getResultContainers());
-                results.stream().skip(1).forEach(QueryResultsContainer::dispose);
+                results.forEach(QueryResultsContainer::dispose);
+                tabsToClose.get(0).dispose();
             }
         }
         // No need to close anything
@@ -3132,7 +3138,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void dispose() {
-        extraPresentationManager.dispose();
+        if (extraPresentationManager != null) {
+            extraPresentationManager.dispose();
+        }
 
         // Release ds container
         releaseContainer();
