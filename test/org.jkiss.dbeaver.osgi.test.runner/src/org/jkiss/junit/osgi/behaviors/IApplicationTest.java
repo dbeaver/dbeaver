@@ -16,6 +16,12 @@
  */
 package org.jkiss.junit.osgi.behaviors;
 
+/**
+ * Interface for application test
+ */
 public interface IApplicationTest {
+    /**
+     * Verify that application was launched successfully
+     */
     boolean verifyLaunched();
 }

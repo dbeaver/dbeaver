@@ -23,9 +23,9 @@ import java.lang.annotation.*;
 import java.util.concurrent.Callable;
 
 /**
- *  Run with product used for @{@link OSGITestRunner}
+ * Run with product used for @{@link OSGITestRunner}
  * Annotation to provide an application parameters for OSGI tests
- * @lbundleName
+ * See {@link org.jkiss.junit.osgi.OSGITestRunner}
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -41,6 +41,9 @@ public @interface RunWithApplication {
      */
     String registryName();
 
+    /**
+     * Application parameters
+     */
     String[] args() default {};
 
 }

@@ -24,11 +24,8 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 
 public class TestLauncher implements ApplicationLauncher {
-
-    volatile private ParameterizedRunnable runnable = null;
-    private Object appContext = null;
-
-    private BundleContext context;
+    private volatile ParameterizedRunnable runnable = null;
+    private final BundleContext context;
 
     public TestLauncher(BundleContext context) {
         this.context = context;
@@ -38,7 +35,6 @@ public class TestLauncher implements ApplicationLauncher {
     @Override
     public void launch(ParameterizedRunnable runnable, Object context) {
         this.runnable = runnable;
-        this.appContext = context;
     }
 
     @Override
@@ -46,6 +42,13 @@ public class TestLauncher implements ApplicationLauncher {
 
     }
 
+    /**
+     * Start the application with the given appID and args.
+     *
+     * @param appID the application ID
+     * @param args the arguments
+     * @return the result of evaluating the application in the given context
+     */
     public Object start(String appID, String[] args) {
         try {
             ((BundleContextImpl) context).getContainer().getConfiguration().setConfiguration("eclipse.application", appID);

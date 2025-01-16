@@ -20,9 +20,15 @@ import org.junit.runner.Runner;
 
 import java.lang.annotation.*;
 
+/**
+ * See {@link org.jkiss.junit.osgi.OSGITestRunner}
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
 public @interface RunnerProxy {
+    /**
+     * Proxy runner class
+     */
     Class<? extends Runner> value();
 }

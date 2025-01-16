@@ -59,21 +59,20 @@ import java.util.stream.Collectors;
  * <h2>OSGITestRunner</h2>
  * <p>
  *     The class is responsible for running the OSGi tests inside IDEA.
- *     Does it by bundles and starting the OSGi framework.
+ *     It does by starting the OSGi framework and loading all the required bundles.
  *     If OSGI environment is already running, it will not start a new one.
- *     Uses {@link RunWithProduct} annotation to specify the product to run the test in.
- *     and {@link RunnerProxy} to specify the runner which should be execute in OSGI environment
+ *     <li>{@link RunWithProduct} annotation to specify the product to run the test in.</li>
+ *     <li>{@link RunnerProxy} to specify the runner which should be executed in OSGI environment.</li>
+ *     <li>{@link RunWithApplication} to specify the application to run the test in.</li>
+ *     <br>
  *     Should allow debugging of the tests in the IDEA.
- * </p>
- * <h3>Temporary Limitations</h3>
- * <p>
- *     No UI results are shown in the IDE for the tests if OSGI environment was created.
  * </p>
  */
 public class OSGITestRunner extends Runner {
     public static final Pattern startLevel = Pattern.compile("@(\\d+):start");
     private static final Log log = Log.getLog(OSGITestRunner.class);
     private static final String WORKSPACE_DIR = findWorkspaceDir().toString();
+    private static final boolean DEBUG_BUNDLE_LAUNCH = false;
     private final Class<? extends IApplicationTest> testClass;
     private Framework framework;
     private Path productPath;
@@ -87,6 +86,7 @@ public class OSGITestRunner extends Runner {
     public OSGITestRunner(Class<? extends IApplicationTest> testClass) {
         this.testClass = testClass;
         if (isRunFromIDEA()) {
+            System.out.println("RUN FROM IDEA");
             //use UTF-8 for run
             try {
                 // Determine name of test bundle
@@ -163,6 +163,7 @@ public class OSGITestRunner extends Runner {
         }
         throw new IllegalStateException("dbeaver-workspace/products directory not found");
     }
+
     private void launchInExistingOSGI(RunNotifier notifier) {
         try {
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
@@ -187,7 +188,7 @@ public class OSGITestRunner extends Runner {
             // Start the OSGi framework
             BundleContext context = framework.getBundleContext();
             // Load and start all bundles
-            Bundle bundle = loadAndStartBundles(context);
+            loadAndStartBundles(context);
             ServiceReference<EnvironmentInfo> configRef = context.getServiceReference(EnvironmentInfo.class);
             EquinoxConfiguration equinoxConfig = (EquinoxConfiguration) context.getService(configRef);
             equinoxConfig.setAllArgs(args);
@@ -207,13 +208,16 @@ public class OSGITestRunner extends Runner {
             thread.start();
 
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
-                Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class).value().getName()).getConstructor(Class.class);
+                Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class)
+                    .value()
+                    .getName()).getConstructor(Class.class);
                 Class<?> runningClass = testBundle.loadClass(testClass.getName());
                 long startTime = System.currentTimeMillis();
                 long endTime = 0;
                 boolean setUpIsDone = false;
                 while (!setUpIsDone && endTime < 300000) {
-                    setUpIsDone = (boolean) runningClass.getMethod("verifyLaunched").invoke(runningClass.getConstructor().newInstance());
+                    setUpIsDone = (boolean) runningClass.getMethod("verifyLaunched")
+                        .invoke(runningClass.getConstructor().newInstance());
                     endTime = System.currentTimeMillis() - startTime;
                 }
                 Object o = proxy.newInstance(runningClass);
@@ -235,7 +239,9 @@ public class OSGITestRunner extends Runner {
     }
 
     @NotNull
-    private Object createProxyNotifier(RunNotifier notifier) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
+    private Object createProxyNotifier(
+        RunNotifier notifier
+    ) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
         Object newOsgiNotifier = testBundle.loadClass(RunNotifier.class.getName()).getConstructor().newInstance();
 
         try {
@@ -255,11 +261,15 @@ public class OSGITestRunner extends Runner {
         Map<String, String> config = new HashMap<>();
         config.put("org.osgi.framework.storage", "osgi-cache");
         config.put("org.osgi.framework.storage.clean", "onFirstInit");
+        // Specify the directory where the dev.properties file is located
         config.put("osgi.dev", "file:" + productPath.toAbsolutePath().resolve("dev.properties").normalize());
-        config.put("osgi.debug", "file:" + productPath.toAbsolutePath().resolve("debug_config").normalize());
-        config.put("org.osgi.framework.debug", "true");
-        config.put("org.osgi.framework.debug.loader", "true");
-        config.put("org.osgi.framework.debug.resolver", "true");
+        if (DEBUG_BUNDLE_LAUNCH) {
+            config.put("osgi.debug", "file:" + productPath.toAbsolutePath().resolve("debug_config").normalize());
+            config.put("org.osgi.framework.debug", "true");
+            config.put("org.osgi.framework.debug.loader", "true");
+            config.put("org.osgi.framework.debug.resolver", "true");
+        }
+        // Enable boot delegation, to avoid class loading issues for some classes
         config.put("osgi.compatibility.bootdelegation", "true");
         FrameworkFactory frameworkFactory = ServiceLoader.load(FrameworkFactory.class).iterator().next();
         return frameworkFactory.newFramework(config);
@@ -280,9 +290,6 @@ public class OSGITestRunner extends Runner {
         });
         // Install all bundles from the directory
         for (String bundleFile : ManifestElement.getArrayFromList(props.getProperty("osgi.bundles"))) {
-//            if (bundleFile.contains("junit")) {
-//                continue;
-//            }
             if (bundleFile.contains(".app") && !bundleFile.contains(appBundleName) && !bundleFile.contains("org.eclipse")) {
                 continue;
             }
