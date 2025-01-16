@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -78,8 +79,7 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
         if (index.isPersisted()) {
             try {
 
-                options.put("isUnique", command.getObject().isUnique());
-                String indexDDL = index.getObjectDefinitionText(monitor, options);
+                String indexDDL = index.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS);
                 if (!CommonUtils.isEmpty(indexDDL)) {
                     actions.add(
                         new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_index, indexDDL)

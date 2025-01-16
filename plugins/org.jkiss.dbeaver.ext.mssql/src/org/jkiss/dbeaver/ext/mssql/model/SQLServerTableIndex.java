@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -132,6 +131,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
 
     public void setUnique(boolean unique) {
         this.unique = unique;
+        ddl = null;
     }
 
     @Override
@@ -196,18 +196,19 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
             return null;
         }
         if (ddl == null) {
-            ddl = readIndexDefinition(monitor, options);
+            ddl = readIndexDefinition(monitor);
         }
         return ddl;
     }
 
     // Index DDL gen script taken from MS technet
     // https://gallery.technet.microsoft.com/scriptcenter/SQL-Server-Generate-Index-fa790441
-    private String readIndexDefinition(DBRProgressMonitor monitor, Map<String, Object> options) throws DBCException {
-        String needToInsertUnique = "    CASE WHEN I.is_unique = 1 THEN ' UNIQUE ' ELSE '' END  +  \n";
-        Object isUnique = options.get("isUnique");
-        if (isUnique != null) {
-            needToInsertUnique = CommonUtils.getBoolean(isUnique, false) ? "    'UNIQUE ' +\n" : "";
+    private String readIndexDefinition(DBRProgressMonitor monitor) throws DBCException {
+        String needToInsertUnique = unique ? "    'UNIQUE ' +\n" : "";
+        SQLServerDatabase database = this.getContainer().getDatabase();
+        String databaseNamePrefix = "";
+        if (database != null) {
+            databaseNamePrefix = "'" + database.getName() + ".' +";
         }
 
         String sql =
@@ -215,7 +216,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
                 needToInsertUnique +
                 "    I.type_desc COLLATE DATABASE_DEFAULT +' INDEX ' +   \n" +
                 "    I.name  + ' ON '  +  \n" +
-                "    Schema_name(T.Schema_id)+'.'+T.name + ' ( ' + \n" +
+                "   " + databaseNamePrefix + "Schema_name(T.Schema_id)+'.'+T.name + ' ( ' + \n" +
                 "    KeyColumns + ' )  ' + \n" +
                 "    ISNULL('\n\t INCLUDE ('+IncludedColumns+' ) ','') + \n" +
                 "    ISNULL('\n\t WHERE  '+I.Filter_definition,'') + '\n\t WITH ( ' + \n" +
