@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ import java.util.List;
 /**
  * Object type
  */
-public enum SQLServerObjectType implements ISQLServerObjectType {
+public enum SQLServerObjectType implements DBSObjectType {
 
 	AF ("AF", null, DBIcon.TREE_FUNCTION, "Aggregate function (CLR)"),
 	C ("C", SQLServerTableCheckConstraint.class, DBIcon.TREE_CONSTRAINT, "CHECK constraint"),
@@ -56,21 +57,28 @@ public enum SQLServerObjectType implements ISQLServerObjectType {
 	U ("U", SQLServerTable.class, DBIcon.TREE_TABLE, "Table"),
 	UQ ("UQ", SQLServerTableUniqueKey.class, DBIcon.TREE_CONSTRAINT, "UNIQUE constraint"),
 	V ("V", SQLServerView.class, DBIcon.TREE_VIEW, "View"),
-	X ("X", SQLServerProcedure.class, DBIcon.TREE_PROCEDURE, "Extended stored procedure");
+	X ("X", SQLServerProcedure.class, DBIcon.TREE_PROCEDURE, "Extended stored procedure"),
+    SCHEMA("SCHEMA", SQLServerSchema.class, DBIcon.TREE_SCHEMA, "Schema", false);
 
 
     private final String type;
     private final String description;
     private final Class<? extends DBSObject> theClass;
     private final DBPImage icon;
+    private final boolean isRealType;
 
     private static final Log log = Log.getLog(SQLServerObjectType.class);
 
     SQLServerObjectType(String type, Class<? extends DBSObject> theClass, DBPImage icon, String description) {
+        this(type, theClass, icon, description, true);
+    }
+
+    SQLServerObjectType(String type, Class<? extends DBSObject> theClass, DBPImage icon, String description, boolean isRealType) {
         this.type = type;
         this.theClass = theClass;
         this.icon = icon;
         this.description = description;
+        this.isRealType = isRealType;
     }
 
     @Override
@@ -93,9 +101,12 @@ public enum SQLServerObjectType implements ISQLServerObjectType {
         return theClass;
     }
 
-    @Override
     public String getTypeID() {
         return type;
+    }
+
+    public boolean isRealType() {
+        return isRealType;
     }
 
     @Override
@@ -103,14 +114,15 @@ public enum SQLServerObjectType implements ISQLServerObjectType {
         return type;
     }
 
-    @Override
     public DBSObject findObject(DBRProgressMonitor monitor, SQLServerSchema schema, String objectName) throws DBException {
         if (schema == null) {
             log.debug("Null schema in table " + objectName + " search (" + name() + ")");
             return null;
         }
 
-        if (SQLServerTableBase.class.isAssignableFrom(theClass)) {
+        if (SQLServerSchema.class.isAssignableFrom(theClass)) {
+            return schema;
+        } else if (SQLServerTableBase.class.isAssignableFrom(theClass)) {
             return schema.getChild(monitor, objectName);
         } else if (SQLServerProcedure.class.isAssignableFrom(theClass)) {
             return schema.getProcedure(monitor, objectName);

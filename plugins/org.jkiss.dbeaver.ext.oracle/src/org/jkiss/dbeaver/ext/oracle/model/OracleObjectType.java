@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +30,7 @@ import java.util.Map;
 /**
  * Object type
  */
-public enum OracleObjectType implements IOracleObjectType, OracleObjectFinder {
+public enum OracleObjectType implements DBSObjectType {
 
 	CLUSTER("CLUSTER", null, DBSObject.class, null),
     CONSTRAINT ("CONSTRAINT", DBIcon.TREE_CONSTRAINT, OracleTableConstraint.class, null), // fake object
@@ -38,14 +39,14 @@ public enum OracleObjectType implements IOracleObjectType, OracleObjectFinder {
 	DIRECTORY("DIRECTORY", null, DBSObject.class, null),
 	EVALUATION_CONTEXT("EVALUATION CONTEXT", null, DBSObject.class, null),
     FOREIGN_KEY ("FOREIGN KEY", DBIcon.TREE_FOREIGN_KEY, OracleTableForeignKey.class, null), // fake object
-	FUNCTION("FUNCTION", DBIcon.TREE_PROCEDURE, OracleProcedureStandalone.class, new OracleObjectFinder() {
+	FUNCTION("FUNCTION", DBIcon.TREE_PROCEDURE, OracleProcedureStandalone.class, new ObjectFinder() {
         @Override
         public OracleProcedureStandalone findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
             return schema.proceduresCache.getObject(monitor, schema, objectName);
         }
     }),
-	INDEX("INDEX", DBIcon.TREE_INDEX, OracleTableIndex.class, new OracleObjectFinder() {
+	INDEX("INDEX", DBIcon.TREE_INDEX, OracleTableIndex.class, new ObjectFinder() {
         @Override
         public OracleTableIndex findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
@@ -54,7 +55,7 @@ public enum OracleObjectType implements IOracleObjectType, OracleObjectFinder {
     }),
 	INDEX_PARTITION("INDEX PARTITION", null, DBSObject.class, null),
 	INDEXTYPE("INDEXTYPE", null, DBSObject.class, null),
-	JAVA_CLASS("JAVA CLASS", DBIcon.TREE_JAVA_CLASS, OracleJavaClass.class, new OracleObjectFinder() {
+	JAVA_CLASS("JAVA CLASS", DBIcon.TREE_JAVA_CLASS, OracleJavaClass.class, new ObjectFinder() {
         @Override
         public OracleJavaClass findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
@@ -69,21 +70,21 @@ public enum OracleObjectType implements IOracleObjectType, OracleObjectFinder {
 	LOB("CONTENT", null, DBSObject.class, null),
 	MATERIALIZED_VIEW("MATERIALIZED VIEW", DBIcon.TREE_VIEW, DBSObject.class, null),
 	OPERATOR("OPERATOR", null, DBSObject.class, null),
-	PACKAGE("PACKAGE", DBIcon.TREE_PACKAGE, OraclePackage.class, new OracleObjectFinder() {
+	PACKAGE("PACKAGE", DBIcon.TREE_PACKAGE, OraclePackage.class, new ObjectFinder() {
         @Override
         public OraclePackage findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
             return schema.packageCache.getObject(monitor, schema, objectName);
         }
     }),
-	PACKAGE_BODY("PACKAGE BODY", DBIcon.TREE_PACKAGE, OraclePackage.class, new OracleObjectFinder() {
+	PACKAGE_BODY("PACKAGE BODY", DBIcon.TREE_PACKAGE, OraclePackage.class, new ObjectFinder() {
         @Override
         public OraclePackage findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
             return schema.packageCache.getObject(monitor, schema, objectName);
         }
     }),
-	PROCEDURE("PROCEDURE", DBIcon.TREE_PROCEDURE, OracleProcedureStandalone.class, new OracleObjectFinder() {
+	PROCEDURE("PROCEDURE", DBIcon.TREE_PROCEDURE, OracleProcedureStandalone.class, new ObjectFinder() {
         @Override
         public OracleProcedureStandalone findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
@@ -91,7 +92,7 @@ public enum OracleObjectType implements IOracleObjectType, OracleObjectFinder {
         }
     }),
 	PROGRAM("PROGRAM", null, DBSObject.class, null),
-    QUEUE("QUEUE", null, OracleQueue.class, new OracleObjectFinder() {
+    QUEUE("QUEUE", null, OracleQueue.class, new ObjectFinder() {
         @Override
         public OracleQueue findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
@@ -101,21 +102,21 @@ public enum OracleObjectType implements IOracleObjectType, OracleObjectFinder {
 	RULE("RULE", null, DBSObject.class, null),
 	RULE_SET("RULE SET", null, DBSObject.class, null),
 	SCHEDULE("SCHEDULE", null, DBSObject.class, null),
-	SEQUENCE("SEQUENCE", DBIcon.TREE_SEQUENCE, OracleSequence.class, new OracleObjectFinder() {
+	SEQUENCE("SEQUENCE", DBIcon.TREE_SEQUENCE, OracleSequence.class, new ObjectFinder() {
         @Override
         public OracleSequence findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
             return schema.sequenceCache.getObject(monitor, schema, objectName);
         }
     }),
-	SYNONYM("SYNONYM", DBIcon.TREE_SYNONYM, OracleSynonym.class, new OracleObjectFinder() {
+	SYNONYM("SYNONYM", DBIcon.TREE_SYNONYM, OracleSynonym.class, new ObjectFinder() {
         @Override
         public OracleSynonym findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
             return schema.synonymCache.getObject(monitor, schema, objectName);
         }
     }),
-	TABLE("TABLE", DBIcon.TREE_TABLE, OracleTable.class, new OracleObjectFinder() {
+	TABLE("TABLE", DBIcon.TREE_TABLE, OracleTable.class, new ObjectFinder() {
         @Override
         public OracleTableBase findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
@@ -123,7 +124,7 @@ public enum OracleObjectType implements IOracleObjectType, OracleObjectFinder {
         }
     }),
 	TABLE_PARTITION("TABLE PARTITION", null, DBSObject.class, null),
-	TRIGGER("TRIGGER", DBIcon.TREE_TRIGGER, OracleTrigger.class, new OracleObjectFinder() {
+	TRIGGER("TRIGGER", DBIcon.TREE_TRIGGER, OracleTrigger.class, new ObjectFinder() {
         @Override
         public OracleTrigger findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
@@ -136,21 +137,21 @@ public enum OracleObjectType implements IOracleObjectType, OracleObjectFinder {
             return schema.triggerCache.getObject(monitor, schema, objectName);
         }
     }),
-	TYPE("TYPE", DBIcon.TREE_DATA_TYPE, OracleDataType.class, new OracleObjectFinder() {
+	TYPE("TYPE", DBIcon.TREE_DATA_TYPE, OracleDataType.class, new ObjectFinder() {
         @Override
         public OracleDataType findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
             return schema.dataTypeCache.getObject(monitor, schema, objectName);
         }
     }),
-	TYPE_BODY("TYPE BODY", DBIcon.TREE_DATA_TYPE, OracleDataType.class, new OracleObjectFinder() {
+	TYPE_BODY("TYPE BODY", DBIcon.TREE_DATA_TYPE, OracleDataType.class, new ObjectFinder() {
         @Override
         public OracleDataType findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
             return schema.dataTypeCache.getObject(monitor, schema, objectName);
         }
     }),
-	VIEW("VIEW", DBIcon.TREE_VIEW, OracleView.class, new OracleObjectFinder() {
+	VIEW("VIEW", DBIcon.TREE_VIEW, OracleView.class, new ObjectFinder() {
         @Override
         public OracleView findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
         {
@@ -159,7 +160,8 @@ public enum OracleObjectType implements IOracleObjectType, OracleObjectFinder {
     }),
 	WINDOW("WINDOW", null, DBSObject.class, null),
 	WINDOW_GROUP("WINDOW GROUP", null, DBSObject.class, null),
-	XML_SCHEMA("XML SCHEMA", null, DBSObject.class, null);
+	XML_SCHEMA("XML SCHEMA", null, DBSObject.class, null),
+    SCHEMA("SCHEMA", DBIcon.TREE_SCHEMA, OracleSchema.class, (monitor, schema, objectName) -> schema, false);
     
     private static final Log log = Log.getLog(OracleObjectType.class);
 
@@ -176,20 +178,30 @@ public enum OracleObjectType implements IOracleObjectType, OracleObjectFinder {
         return typeMap.get(typeName);
     }
 
+    private static interface ObjectFinder {
+        DBSObject findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException;
+    }
+    
     private final String objectType;
     private final DBPImage image;
     private final Class<? extends DBSObject> typeClass;
-    private final OracleObjectFinder finder;
+    private final ObjectFinder finder;
+    private final boolean isRealType;
 
-    <OBJECT_TYPE extends DBSObject> OracleObjectType(String objectType, DBPImage image, Class<OBJECT_TYPE> typeClass, OracleObjectFinder finder)
+    <OBJECT_TYPE extends DBSObject> OracleObjectType(String objectType, DBPImage image, Class<OBJECT_TYPE> typeClass, ObjectFinder finder)
+    {
+       this(objectType, image, typeClass, finder, true);
+    }
+
+    <OBJECT_TYPE extends DBSObject> OracleObjectType(String objectType, DBPImage image, Class<OBJECT_TYPE> typeClass, ObjectFinder finder, boolean isRealType)
     {
         this.objectType = objectType;
         this.image = image;
         this.typeClass = typeClass;
         this.finder = finder;
+        this.isRealType = isRealType;
     }
 
-    @Override
     public boolean isBrowsable()
     {
         return finder != null;
@@ -217,6 +229,10 @@ public enum OracleObjectType implements IOracleObjectType, OracleObjectFinder {
     public Class<? extends DBSObject> getTypeClass()
     {
         return typeClass;
+    }
+
+    public boolean isRealType() {
+        return isRealType;
     }
 
     public DBSObject findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException

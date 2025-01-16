@@ -79,7 +79,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             RelationalObjectType.TYPE_VIEW,
             SQLServerObjectType.SN,
             RelationalObjectType.TYPE_PROCEDURE,
-            RelationalObjectType.TYPE_SCHEMA
+            SQLServerObjectType.SCHEMA
         };
     }
 
@@ -182,7 +182,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             return Collections.emptyList();
         }
 
-        Collection<ISQLServerObjectType> supObjectTypes = new ArrayList<>(params.getObjectTypes().length + 2);
+        Collection<SQLServerObjectType> supObjectTypes = new ArrayList<>(params.getObjectTypes().length + 2);
         for (DBSObjectType objectType : params.getObjectTypes()) {
             if (objectType instanceof SQLServerObjectType) {
                 supObjectTypes.add((SQLServerObjectType) objectType);
@@ -195,15 +195,13 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 supObjectTypes.addAll(SQLServerObjectType.getTypesForClass(SQLServerTableForeignKey.class));
             } else if (objectType == RelationalObjectType.TYPE_VIEW) {
                 supObjectTypes.addAll(SQLServerObjectType.getTypesForClass(SQLServerView.class));
-            } else if (objectType == RelationalObjectType.TYPE_SCHEMA) {
-                supObjectTypes.add(SQLServerSchemaType.INSTANCE);
             }
         }
         if (supObjectTypes.isEmpty()) {
             return Collections.emptyList();
         }
         StringBuilder objectTypeClause = new StringBuilder(100);
-        for (ISQLServerObjectType objectType : supObjectTypes) {
+        for (SQLServerObjectType objectType : supObjectTypes) {
             if (objectTypeClause.length() > 0) objectTypeClause.append(",");
             objectTypeClause.append("'").append(objectType.getTypeID()).append("'");
         }
@@ -237,7 +235,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 sqlBuilder.append(") ");
             }
         }
-        boolean isNeedSchemaSearch = supObjectTypes.contains(SQLServerSchemaType.INSTANCE);
+        boolean isNeedSchemaSearch = supObjectTypes.contains(SQLServerObjectType.SCHEMA);
         if (schema != null) {
             sqlBuilder.append("AND o.schema_id = ? ");
         } else if (isNeedSchemaSearch) {
@@ -286,12 +284,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                             final long schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
                             final String objectName = JDBCUtils.safeGetString(dbResult, "name");
                             final String objectTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, "type");
-                            final ISQLServerObjectType objectType;
-                            if(SQLServerSchemaType.INSTANCE.getTypeName().equals(objectTypeName)){
-                                objectType = SQLServerSchemaType.INSTANCE;
-                            } else {
-                                objectType = SQLServerObjectType.valueOf(objectTypeName);
-                            }
+                            final SQLServerObjectType objectType = SQLServerObjectType.valueOf(objectTypeName);
                             SQLServerSchema objectSchema = schemaId == 0 ? null : database.getSchema(session.getProgressMonitor(), schemaId);
                             objects.add(new AbstractObjectReference<DBSObject>(
                                 objectName,
@@ -398,39 +391,5 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             }
         }
         return name;
-    }
-
-    public static class SQLServerSchemaType implements ISQLServerObjectType {
-        public static final ISQLServerObjectType INSTANCE = new SQLServerSchemaType();
-
-        @Override
-        public String getTypeID() {
-            return "";
-        }
-
-        @Override
-        public DBSObject findObject(DBRProgressMonitor monitor, SQLServerSchema schema, String objectName) throws DBException {
-            return schema;
-        }
-
-        @Override
-        public String getTypeName() {
-            return "SCHEMA";
-        }
-
-        @Override
-        public String getDescription() {
-            return "";
-        }
-
-        @Override
-        public DBPImage getImage() {
-            return DBIcon.TREE_SCHEMA;
-        }
-
-        @Override
-        public Class<? extends DBSObject> getTypeClass() {
-            return SQLServerSchema.class;
-        }
     }
 }

@@ -221,9 +221,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
             "",
             "n.nspname"
         );
-        queryParams.setWhereClause("has_schema_privilege(n.nspname, 'USAGE')"); // r = ordinary table, v = view, m = materialized view, f = foreign table, p = partitioned table
-        queryParams.setWhereClause("n.nspname NOT IN ('pg_catalog', 'information_schema')"); // r = ordinary table, v = view, m = materialized view, f = foreign table, p = partitioned table
-        queryParams.setWhereClause("n.nspname !~ '^pg_toast'"); // r = ordinary table, v = view, m = materialized view, f = foreign table, p = partitioned table
+        queryParams.setWhereClause("has_schema_privilege(n.nspname, 'USAGE')");
         queryParams.setCaseSensitive(params.isCaseSensitive());
         queryParams.setMaxResults(params.getMaxResults() - references.size());
         return queryParams;
