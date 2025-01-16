@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -123,7 +124,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     }
 
     @Override
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, editable = true, updatable = true, order = 5)
     public boolean isUnique()
     {
         return unique;
@@ -195,17 +196,23 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
             return null;
         }
         if (ddl == null) {
-            ddl = readIndexDefinition(monitor);
+            ddl = readIndexDefinition(monitor, options);
         }
         return ddl;
     }
 
     // Index DDL gen script taken from MS technet
     // https://gallery.technet.microsoft.com/scriptcenter/SQL-Server-Generate-Index-fa790441
-    private String readIndexDefinition(DBRProgressMonitor monitor) throws DBCException {
+    private String readIndexDefinition(DBRProgressMonitor monitor, Map<String, Object> options) throws DBCException {
+        String needToInsertUnique = "    CASE WHEN I.is_unique = 1 THEN ' UNIQUE ' ELSE '' END  +  \n";
+        Object isUnique = options.get("isUnique");
+        if (isUnique != null) {
+            needToInsertUnique = CommonUtils.getBoolean(isUnique, false) ? "    'UNIQUE ' +\n" : "";
+        }
+
         String sql =
             "SELECT ' CREATE ' + \n" +
-                "    CASE WHEN I.is_unique = 1 THEN ' UNIQUE ' ELSE '' END  +  \n" +
+                needToInsertUnique +
                 "    I.type_desc COLLATE DATABASE_DEFAULT +' INDEX ' +   \n" +
                 "    I.name  + ' ON '  +  \n" +
                 "    Schema_name(T.Schema_id)+'.'+T.name + ' ( ' + \n" +
