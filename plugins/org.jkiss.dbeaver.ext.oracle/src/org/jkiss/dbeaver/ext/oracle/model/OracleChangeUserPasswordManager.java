@@ -41,8 +41,14 @@ public class OracleChangeUserPasswordManager implements DBAUserPasswordManager {
         // Do not use numbers in the password beginning
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
             session.enableLogging(false);
-            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userName) + " IDENTIFIED BY " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(newPassword)) +
-                    " REPLACE " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(oldPassword)));
+            // need to check username in database,
+            // otherwise lowercase username will be considered as login that should be quoted
+            String userNameInDatabase = null;
+            if (!DBUtils.isQuotedIdentifier(dataSource, userName)) {
+                userNameInDatabase = JDBCUtils.queryString(session, "SELECT SYS_CONTEXT('USERENV', 'SESSION_USER') FROM DUAL");
+            }
+            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userNameInDatabase == null ? userName : userNameInDatabase) + " IDENTIFIED BY " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(newPassword)) +
+                " REPLACE " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(oldPassword)));
         } catch (SQLException e) {
             throw new DBCException("Error changing user password", e);
         }
