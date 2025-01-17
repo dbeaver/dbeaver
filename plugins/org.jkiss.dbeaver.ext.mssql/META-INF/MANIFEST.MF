@@ -11,6 +11,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.model.lsm,
+ org.jkiss.dbeaver.registry,
  org.jkiss.bundle.antlr4,
  com.github.jsqlparser,
  slf4j.api

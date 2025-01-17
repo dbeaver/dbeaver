@@ -35,10 +35,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.utils.ArrayUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -111,18 +111,20 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
     public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext executionContext,
                                                       @NotNull ObjectsSearchParams params) throws DBException {
         List<DBSObjectReference> result = new ArrayList<>();
-        List<DBSObjectType> objectTypesList = Arrays.asList(params.getObjectTypes());
+        DBSObjectType[] objectTypes = params.getObjectTypes();
         StringBuilder objectTypeClause = new StringBuilder(100);
         GenericSchema parentSchema = params.getParentObject() instanceof GenericSchema ?
                 (GenericSchema) params.getParentObject() : (params.isGlobalSearch() || !(executionContext instanceof GenericExecutionContext) ? null : ((GenericExecutionContext) executionContext).getDefaultSchema());
 
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by mask")) {
-            if (objectTypesList.contains(HANAObjectType.TABLE)
-                || objectTypesList.contains(HANAObjectType.VIEW)
-                || objectTypesList.contains(HANAObjectType.PROCEDURE)
-                || objectTypesList.contains(HANAObjectType.SYNONYM)
-                || objectTypesList.contains(HANAObjectType.SCHEMA)) {
-                for (DBSObjectType objectType : params.getObjectTypes()) {
+            if (ArrayUtils.containsAny(objectTypes,
+                HANAObjectType.TABLE,
+                HANAObjectType.VIEW,
+                HANAObjectType.PROCEDURE,
+                HANAObjectType.SYNONYM,
+                HANAObjectType.SCHEMA
+            )) {
+                for (DBSObjectType objectType : objectTypes) {
                     if (objectTypeClause.length() > 0) objectTypeClause.append(",");
                     objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
                 }
@@ -131,10 +133,10 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                 }
                 searchNotColumnObjects(session, parentSchema, params, result, objectTypeClause.toString());
             }
-            if (objectTypesList.contains(RelationalObjectType.TYPE_TABLE_COLUMN)) {
+            if (ArrayUtils.contains(objectTypes, RelationalObjectType.TYPE_TABLE_COLUMN)) {
                 findTableColumnsByMask(session, parentSchema, params, result);
             }
-            if (objectTypesList.contains(RelationalObjectType.TYPE_VIEW_COLUMN)) {
+            if (ArrayUtils.contains(objectTypes,RelationalObjectType.TYPE_VIEW_COLUMN)) {
                 findViewColumnsByMask(session, parentSchema, params, result);
             }
         } catch (SQLException ex) {
