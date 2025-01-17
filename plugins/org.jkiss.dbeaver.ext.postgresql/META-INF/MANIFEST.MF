@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver PostgreSQL Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql;singleton:=true
-Bundle-Version: 2.1.220.qualifier
-Bundle-Release-Date: 20250120
+Bundle-Version: 2.1.221.qualifier
+Bundle-Release-Date: 20250203
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc;visibility:=reexport,
  org.jkiss.dbeaver.model.sql,

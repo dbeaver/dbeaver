@@ -21,12 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
-import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -46,8 +44,8 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     }
 
     @Override
-    public boolean hasUndresolvedSource() {
-        return this.parent.hasUndresolvedSource();
+    public boolean hasUnresolvedSource() {
+        return this.parent.hasUnresolvedSource();
     }
 
 

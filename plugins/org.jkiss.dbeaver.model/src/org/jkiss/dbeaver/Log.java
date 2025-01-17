@@ -67,6 +67,7 @@ public class Log {
     }
 
     private static final boolean TRACE_LOG_ENABLED = CommonUtils.getBoolean(System.getProperty("dbeaver.trace.enabled"));
+    public static final boolean DEV_DEBUG_ENABLED = CommonUtils.getBoolean(System.getProperty("dbeaver.debug.enabled"));
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
 

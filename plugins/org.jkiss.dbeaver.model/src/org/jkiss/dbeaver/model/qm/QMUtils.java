@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.auth.SMSessionContext;
 import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
 import org.jkiss.dbeaver.model.qm.meta.*;
@@ -39,6 +41,9 @@ import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,6 +57,7 @@ public class QMUtils {
 
     private static DBPPlatform application;
     private static QMExecutionHandler defaultHandler;
+
 
     public static void initApplication(DBPPlatform application) {
         QMUtils.application = application;
@@ -159,7 +165,11 @@ public class QMUtils {
                     for (QMMStatementExecuteInfo exec = execInfo; exec != null && exec.getSavepoint() == sp; exec = exec.getPrevious()) {
                         execCount++;
                         DBCExecutionPurpose purpose = exec.getStatement().getPurpose();
-                        if (!exec.hasError() && purpose != DBCExecutionPurpose.META && purpose != DBCExecutionPurpose.UTIL) {
+                        if (!exec.hasError()
+                            && purpose != DBCExecutionPurpose.META
+                            && purpose != DBCExecutionPurpose.UTIL
+                            && exec.getUpdateRowCount() > 0
+                        ) {
                             txnStartTime = exec.getOpenTime();
                             updateCount++;
                         }

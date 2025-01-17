@@ -1413,18 +1413,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         validateFilesPresence(new LoggingProgressMonitor(log), true);
     }
 
-    public void downloadRequiredDependencies(@NotNull DBRProgressMonitor monitor) {
+    @Override
+    public void validateFilesPresence(@NotNull DBRProgressMonitor monitor) {
         validateFilesPresence(monitor, false);
     }
 
     @Override
-    public boolean needsExternalDependencies(@NotNull DBRProgressMonitor monitor) {
+    public boolean needsExternalDependencies() {
         for (DBPDriverLibrary library : libraries) {
             if (library.isDisabled() || library.isOptional() || !library.matchesCurrentPlatform()) {
                 continue;
             }
-            Path localFile = library.getLocalFile(monitor);
-            if (localFile == null || !Files.exists(localFile)) {
+            if (library.getType() == DBPDriverLibrary.FileType.license) {
+                continue;
+            }
+            if (!isResolvedLibraryPresent(library)) {
                 return true;
             }
         }
@@ -1442,70 +1445,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             return syncDpiDependencies(application);
         }
 
-        if (application.isDetachedProcess()) {
-            log.error("Detached process has no ability to find/download driver libraries, " +
-                "it must be specified directly"
-            );
-        }
-        boolean localLibsExists = false;
-        final List<DBPDriverLibrary> downloadCandidates = new ArrayList<>();
-        for (DBPDriverLibrary library : libraries) {
-            if (library.isDisabled()) {
-                // Nothing we can do about it
-                continue;
-            }
-            if (!library.matchesCurrentPlatform()) {
-                // Wrong OS or architecture
-                continue;
-            }
-            if (library.isDownloadable()) {
-                boolean allExists = true;
-                if (resetVersions) {
-                    allExists = false;
-                } else {
-                    List<DriverFileInfo> files = resolvedFiles.get(library);
-                    if (files == null) {
-                        allExists = false;
-                    } else {
-                        for (DriverFileInfo file : files) {
-                            if (file.file == null || !Files.exists(file.file)) {
-                                allExists = false;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (!allExists) {
-                    downloadCandidates.add(library);
-                }
-            } else {
-                localLibsExists = true;
-            }
-        }
-
-        boolean downloaded = false;
-        if (!downloadCandidates.isEmpty() || (!localLibsExists && !fileSources.isEmpty())) {
-            final DriverDependencies dependencies = new DriverDependencies(downloadCandidates);
-            UIServiceDrivers serviceDrivers = DBWorkbench.getService(UIServiceDrivers.class);
-            boolean downloadOk;
-            if (serviceDrivers != null) {
-                downloadOk = serviceDrivers.downloadDriverFiles(monitor, this, dependencies);
-            } else {
-                downloadOk = DriverUtils.downloadDriverFiles(monitor, this, dependencies);
-            }
-            if (!downloadOk) {
-                return Collections.emptyList();
-            }
-            if (resetVersions) {
-                resetDriverInstance();
-            }
-            downloaded = true;
-            for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
-                List<DriverFileInfo> info = new ArrayList<>();
-                resolvedFiles.put(node.library, info);
-                collectLibraryFiles(node, info);
-            }
-            providerDescriptor.getRegistry().saveDrivers();
+        boolean downloadOk = downloadDriverLibraries(monitor, resetVersions);
+        if (!downloadOk) {
+            return Collections.emptyList();
         }
 
         List<Path> result = new ArrayList<>();
@@ -1542,6 +1484,112 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
         // Check if local files are zip archives with jars inside
         return DriverUtils.extractZipArchives(result);
+    }
+
+    @Override
+    public boolean downloadDriverLibraries(@NotNull DBRProgressMonitor monitor, boolean resetVersions) {
+        final DriverDependencies dependencies = getDriverDependencies(resetVersions);
+        if (dependencies == null) {
+            return true;
+        }
+        UIServiceDrivers serviceDrivers = DBWorkbench.getService(UIServiceDrivers.class);
+        boolean downloadOk = serviceDrivers != null ?
+            serviceDrivers.downloadDriverFiles(monitor, this, dependencies) :
+            DriverUtils.downloadDriverFiles(monitor, this, dependencies);
+        if (!downloadOk) {
+            return false;
+        }
+        if (resetVersions) {
+            resetDriverInstance();
+        }
+        for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
+            List<DriverFileInfo> info = new ArrayList<>();
+            resolvedFiles.put(node.library, info);
+            collectLibraryFiles(node, info);
+        }
+        providerDescriptor.getRegistry().saveDrivers();
+        return true;
+    }
+
+    @Override
+    public boolean isDriverInstalled() {
+        return getDriverDependencies(false) == null;
+    }
+
+    /**
+     * Returns driver dependencies if some driver files are not found and can be downloaded.
+     */
+    @Nullable
+    public DriverDependencies getDriverDependencies(boolean resetVersions) {
+        boolean localLibsExists = false;
+        final List<DBPDriverLibrary> downloadCandidates = new ArrayList<>();
+        for (DBPDriverLibrary library : libraries) {
+            if (library.isDisabled()) {
+                // Nothing we can do about it
+                continue;
+            }
+            if (!library.matchesCurrentPlatform()) {
+                // Wrong OS or architecture
+                continue;
+            }
+            if (library.isDownloadable()) {
+                boolean allExists = true;
+                if (resetVersions) {
+                    allExists = false;
+                } else {
+                    List<DriverFileInfo> files = resolvedFiles.get(library);
+                    if (files == null) {
+                        allExists = false;
+                    } else {
+                        if (DBWorkbench.isDistributed()) {
+                            break;
+                        }
+                        for (DriverFileInfo file : files) {
+                            if (file.file == null || !Files.exists(getDriverFilePath(file))) {
+                                allExists = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!allExists) {
+                    downloadCandidates.add(library);
+                }
+            } else {
+                localLibsExists = true;
+            }
+        }
+
+        if (downloadCandidates.isEmpty() && (localLibsExists || fileSources.isEmpty())) {
+            return null;
+        }
+        return new DriverDependencies(downloadCandidates);
+    }
+
+    private boolean isResolvedLibraryPresent(@NotNull DBPDriverLibrary library) {
+        if (library.isDownloadable()) {
+            List<DriverFileInfo> files = resolvedFiles.get(library);
+            if (files == null) {
+                return false;
+            } else {
+                for (DriverFileInfo file : files) {
+                    if (file.file == null || !Files.exists(getDriverFilePath(file))) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } else {
+            Path localFile = library.getLocalFile();
+            return localFile != null && Files.exists(localFile);
+        }
+    }
+
+    private Path getDriverFilePath(DriverFileInfo file) {
+        if (DBWorkbench.isDistributed()) {
+            return getWorkspaceDriversStorageFolder().resolve(file.file);
+        }
+        return file.file;
     }
 
     private List<Path> syncDpiDependencies(DBPApplication application) {
@@ -1594,8 +1642,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             if (library.isDisabled() || !library.matchesCurrentPlatform()) {
                 continue;
             }
-            if (library instanceof DriverLibraryLocal) {
-                var localLib = (DriverLibraryLocal) library;
+            if (library instanceof DriverLibraryLocal localLib) {
                 if (localLib.isUseOriginalJar()) {
                     var localFile = localLib.getLocalFile();
                     if (localFile == null) {
@@ -1649,7 +1696,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         }
 
                         monitor.subTask("Load driver file '" + fileInfo.id + "'");
-                        byte[] fileData = fileController.loadFileData(DBFileController.TYPE_DATABASE_DRIVER, fileInfo.getFile().toString());
+                        byte[] fileData = fileController.loadFileData(
+                            DBFileController.TYPE_DATABASE_DRIVER,
+                            DriverUtils.getDistributedLibraryPath(fileInfo.getFile())
+                        );
                         Files.write(localDriverFile, fileData, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
                         fileInfo.setFileCRC(DriverDescriptor.calculateFileCRC(localDriverFile));
                         localFilePaths.add(localDriverFile);
@@ -1693,10 +1743,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             crc.update(buffer, 0, bytesRead);
         }
         return crc.getValue();
-    }
-
-    Path getWorkspaceStorageFolder() {
-        return getWorkspaceDriversStorageFolder().resolve(getProviderId()).resolve(getId());
     }
 
     List<DriverFileInfo> getCachedFiles(DBPDriverLibrary library) {
@@ -1843,6 +1889,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (libraries.isEmpty()) {
             return false;
         }
+        // we need to check resolved files from config for remove or maven libraries
+        Map<DBPDriverLibrary, List<DriverFileInfo>> tempResolvedFiles = new HashMap<>(resolvedFiles);
         resolvedFiles.clear();
         for (DBPDriverLibrary library : libraries) {
             // We need to sync resolved files with real files of library
@@ -1911,7 +1959,22 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 }
 
             } else {
-                // Ignore all non-local libraries for now
+                // we need to check that resolved files from drivers.xml are exist
+                // we don't want to resolve maven artifact from maven registry (it takes a long time)
+                List<DriverFileInfo> libraryResolvedFiles = tempResolvedFiles.get(library);
+                if (libraryResolvedFiles == null || libraryResolvedFiles.isEmpty()) {
+                    continue;
+                }
+                List<DriverFileInfo> libraryFiles = new ArrayList<>();
+                for (DriverFileInfo fileInfo : libraryResolvedFiles) {
+                    Path targetFile = targetFileLocation.resolve(fileInfo.getFile());
+                    if (Files.exists(targetFile)) {
+                        libraryFiles.add(fileInfo);
+                    }
+                }
+                if (!libraryFiles.isEmpty()) {
+                    resolvedFiles.put(library, libraryFiles);
+                }
             }
         }
         if (resolvedFiles.isEmpty()) {

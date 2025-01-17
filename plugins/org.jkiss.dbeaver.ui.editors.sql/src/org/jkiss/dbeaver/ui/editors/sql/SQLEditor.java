@@ -226,7 +226,7 @@ public class SQLEditor extends SQLEditorBase implements
     private SQLVariablesPanel variablesViewer;
 
     @Nullable
-    private volatile QueryProcessor curQueryProcessor;
+    private QueryProcessor curQueryProcessor;
     private final List<QueryProcessor> queryProcessors = new ArrayList<>();
 
     private DBPDataSourceContainer dataSourceContainer;
@@ -679,12 +679,10 @@ public class SQLEditor extends SQLEditorBase implements
             return BasicSQLDialect.INSTANCE;
         }
         SQLDialectMetadata scriptDialect = dataSourceContainer.getScriptDialect();
-        if (scriptDialect != null) {
-            try {
-                return scriptDialect.createInstance();
-            } catch (DBException e) {
-                log.warn(String.format("Can't create sql dialect for %s:%s", scriptDialect.getId(), scriptDialect.getLabel()));
-            }
+        try {
+            return scriptDialect.createInstance();
+        } catch (DBException e) {
+            log.warn(String.format("Can't create sql dialect for %s:%s", scriptDialect.getId(), scriptDialect.getLabel()));
         }
         return BasicSQLDialect.INSTANCE;
     }
@@ -958,7 +956,7 @@ public class SQLEditor extends SQLEditorBase implements
                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
                 if (serviceConnections != null) {
                     // Start connect visualizer
-                    ConnectVisualizer connectVisualizer = new ConnectVisualizer(dataSourceContainer);
+                    ConnectVisualizer connectVisualizer = new ConnectVisualizer();
                     serviceConnections.connectDataSource(dataSourceContainer, status -> {
                         if (onFinish != null) onFinish.onTaskFinished(status);
                         connectVisualizer.stop();
@@ -2259,7 +2257,12 @@ public class SQLEditor extends SQLEditorBase implements
             StringWriter out = new StringWriter();
             e.printStackTrace(new PrintWriter(out, true));
             editorInput = new StringEditorInput("Error", CommonUtils.truncateString(out.toString(), 10000), true, GeneralUtils.UTF8_ENCODING);
-            doSetInput(editorInput);
+            try {
+                super.doSetInput(editorInput);
+            } catch (Throwable ex) {
+                // Throw original error
+                throw e;
+            }
             log.error("Error loading input SQL file", e);
         }
         syntaxLoaded = false;
@@ -2961,7 +2964,8 @@ public class SQLEditor extends SQLEditorBase implements
             if (tabsToClose.get(0).getData() instanceof SingleTabQueryProcessor sqp) {
                 // to avoid concurrent modification exception
                 List<QueryResultsContainer> results = new ArrayList<>(sqp.getResultContainers());
-                results.stream().skip(1).forEach(QueryResultsContainer::dispose);
+                results.forEach(QueryResultsContainer::dispose);
+                tabsToClose.get(0).dispose();
             }
         }
         // No need to close anything
@@ -3134,7 +3138,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public void dispose() {
-        extraPresentationManager.dispose();
+        if (extraPresentationManager != null) {
+            extraPresentationManager.dispose();
+        }
 
         // Release ds container
         releaseContainer();
@@ -3747,9 +3753,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 curJob = null;
                 if (job.isJobOpen()) {
-                    RuntimeUtils.runTask(monitor -> {
-                        job.closeJob();
-                    }, "Close SQL job", 2000, true);
+                    RuntimeUtils.runTask(monitor -> job.closeJob(), "Close SQL job", 2000, true);
                 }
             }
         }
@@ -4176,14 +4180,7 @@ public class SQLEditor extends SQLEditorBase implements
             return queryProcessors.indexOf(queryProcessor);
         }
 
-        void updateResultsName(String resultSetName, String toolTip) {
-            if (resultTabs == null || resultTabs.isDisposed()) {
-                return;
-            }
-            if (CommonUtils.isEmpty(resultSetName)) {
-                resultSetName = tabName;
-            }
-        }
+        abstract void updateResultsName(String resultSetName, String toolTip);
 
         @Nullable
         @Override
@@ -4571,7 +4568,6 @@ public class SQLEditor extends SQLEditorBase implements
         
         @Override
         public void updateResultsName(@NotNull String resultSetName, @Nullable String toolTip) {
-            super.updateResultsName(resultSetName, toolTip);
             CTabItem tabItem = resultsTab;
             if (tabItem != null && !tabItem.isDisposed()) {
                 if (!CommonUtils.isEmpty(resultSetName)) {
@@ -4732,7 +4728,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void updateResultsName(@NotNull String resultSetName, @Nullable String toolTip) {
-            super.updateResultsName(resultSetName, toolTip);
             if (!section.isDisposed()) {
                 if (!CommonUtils.isEmpty(resultSetName)) {
                     section.setText(resultSetName);
@@ -4843,7 +4838,7 @@ public class SQLEditor extends SQLEditorBase implements
         private long lastUIUpdateTime;
         private final ITextSelection originalSelection = (ITextSelection) getSelectionProvider().getSelection();
         private int topOffset, visibleLength;
-        private boolean closeTabOnError;
+        private final boolean closeTabOnError;
         private SQLQueryListener extListener;
 
         private SQLEditorQueryListener(QueryProcessor queryProcessor, boolean closeTabOnError) {
@@ -5730,7 +5725,7 @@ public class SQLEditor extends SQLEditorBase implements
         private boolean stopped = false;
         private int tickCount;
         private Cursor oldCursor;
-        protected ConnectVisualizer(DBPDataSourceContainer dataSourceContainer) {
+        protected ConnectVisualizer() {
             super("Connect visualizer");
             setSystem(true);
             setUser(false);

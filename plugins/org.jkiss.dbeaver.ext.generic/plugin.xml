@@ -1484,7 +1484,7 @@
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
                 class="org.jkiss.dbeaver.ext.generic.data.GenericValueHandlerProvider"
-                id="org.jkiss.dbeaver.ext.generic.data.GenericValueHandlerProvider"
+                id="GenericValueHandlerProvider"
                 label="Generic data types provider">
             <datasource id="generic"/>
             <!-- Date/time value handler - needed to provide native datetime value formatting. Formatting itself provided in drivers configuration. -->

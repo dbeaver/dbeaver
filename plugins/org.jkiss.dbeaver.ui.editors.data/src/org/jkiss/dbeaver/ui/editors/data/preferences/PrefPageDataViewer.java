@@ -65,7 +65,6 @@ public class PrefPageDataViewer extends TargetPrefPage {
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         final Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
-
         {
             final Group group = UIUtils.createControlGroup(composite, ResultSetMessages.pref_page_data_viewer_reference_panel_group, 2, GridData.FILL_HORIZONTAL, 0);
 
@@ -121,13 +120,17 @@ public class PrefPageDataViewer extends TargetPrefPage {
         {
             final Group group = UIUtils.createControlGroup(composite,
                 ResultSetMessages.pref_page_data_viewer_dictionary_panel_group, 1, GridData.FILL_HORIZONTAL, 0);
-            maxAmountText = UIUtils.createLabelText(group,
-                ResultSetMessages.getPref_page_data_viewer_dictionary_panel_results_max_size, "200");
+            maxAmountText = UIUtils.createLabelText(
+                group,
+                ResultSetMessages.getPref_page_data_viewer_dictionary_panel_results_max_size,
+                "200"
+            );
             maxAmountText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
             maxAmountText.addModifyListener((event) -> {
                 updateApplyButton();
                 getContainer().updateButtons();
             });
+            UIUtils.createInfoLabel(group, ResultSetMessages.getPref_page_data_viewer_dictionary_panel_results_max_size_tip);
         }
         return composite;
     }

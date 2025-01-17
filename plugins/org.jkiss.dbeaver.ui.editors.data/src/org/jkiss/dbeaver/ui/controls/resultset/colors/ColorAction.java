@@ -46,7 +46,7 @@ abstract class ColorAction extends Action {
     }
 
     void updateColors(DBVEntity entity, boolean refresh) {
-        resultSetViewer.getModel().updateColorMapping(true);
+        resultSetViewer.getModel().updateColorMapping(entity, true);
         entity.persistConfiguration();
         if (refresh) {
             resultSetViewer.redrawData(false, false);

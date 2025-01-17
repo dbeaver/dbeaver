@@ -151,6 +151,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         if (this.name != null) {
+            SQLQuerySymbolOrigin rowsetRefOrigin = new SQLQuerySymbolOrigin.RowsetRefFromContext(context);
             if (this.name.invalidPartsCount == 0) {
                 if (this.name.isNotClassified()) {
                     List<String> nameStrings = this.name.toListOfStrings();
@@ -168,7 +169,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                     this.table = obj instanceof DBSEntity e && (obj instanceof DBSTable || obj instanceof DBSView) ? e : null;
 
                     if (this.table != null) {
-                        this.name.setDefinition(refTarget);
+                        this.name.setDefinition(refTarget, rowsetRefOrigin);
                         context = context.extendWithRealTable(this.table, this);
 
                         try {
@@ -201,11 +202,11 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                             );
                         }
                     } else {
+                        // TODO consider this.name's origin for error cases
                         if (refTarget != null) {
                             String typeName = obj instanceof DBSObjectWithType to
                                 ? to.getObjectType().getTypeName()
                                 : obj.getClass().getSimpleName();
-                            this.name.setDefinition(refTarget);
                             statistics.appendError(this.name.entityName, "Expected table name while given " + typeName);
                         } else {
                             context = context.markHasUnresolvedSource();
@@ -226,7 +227,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                 }
             } else {
                 context = context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList()).markHasUnresolvedSource();
-                SQLQueryQualifiedName.performPartialResolution(context, statistics, this.name);
+                SQLQueryQualifiedName.performPartialResolution(context, statistics, this.name, rowsetRefOrigin);
                 statistics.appendError(this.getSyntaxNode(), "Invalid table reference");
             }
         } else {

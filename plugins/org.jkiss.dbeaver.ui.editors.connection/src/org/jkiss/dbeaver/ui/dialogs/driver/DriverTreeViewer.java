@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -51,7 +50,6 @@ import java.util.*;
 public class DriverTreeViewer extends TreeViewer {
 
     private List<DBPDataSourceProviderDescriptor> providers;
-    private Font boldFont;
     private final Map<String,DriverCategory> categories = new HashMap<>();
     private final List<Object> driverList = new ArrayList<>();
     private boolean sortByName = false;
@@ -113,8 +111,6 @@ public class DriverTreeViewer extends TreeViewer {
 
     public DriverTreeViewer(Composite parent, int style) {
         super(parent, style);
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
-        parent.addDisposeListener(e -> UIUtils.dispose(boldFont));
     }
 
     public void initDrivers(List<DBPDataSourceProviderDescriptor> providers, boolean expandRecent)

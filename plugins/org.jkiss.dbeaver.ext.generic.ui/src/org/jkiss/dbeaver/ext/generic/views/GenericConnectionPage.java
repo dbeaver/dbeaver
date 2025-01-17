@@ -52,8 +52,10 @@ import org.jkiss.utils.IOUtils;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.InvalidPathException;
-import java.util.List;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -620,7 +622,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     }
 
     private void showControlGroup(String group, boolean show) {
-        List<Control> controlList = propGroupMap.get(group);
+        Set<Control> controlList = propGroupMap.get(group);
         if (controlList != null) {
             for (Control control : controlList) {
                 Object gd = control.getLayoutData();
