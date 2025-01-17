@@ -41,9 +41,9 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
 
     private final Class<DESCRIPTOR> instanceType;
     private final String id;
-    private ObjectType implType;
-    private Set<Object> supportedTypes = new HashSet<>();
-    private List<String> supportedDataSources = new ArrayList<>();
+    private final ObjectType implType;
+    private final Set<Object> supportedTypes = new HashSet<>();
+    private final List<String> supportedDataSources = new ArrayList<>();
 
     private boolean hasAll, hasTypeIds, hasDataKinds, hasTypeNames;
 
@@ -131,6 +131,10 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
             this.instance = createInstance();
         }
         return instance;
+    }
+
+    List<String> getSupportedDataSources() {
+        return supportedDataSources;
     }
 
     protected DESCRIPTOR createInstance() {

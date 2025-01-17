@@ -552,7 +552,7 @@ class ResultSetPersister {
 
         try {
             UIUtils.runInProgressService(monitor -> {
-                model.refreshHintsInfo(monitor, model.getAllRows());
+                model.refreshHintsInfo(monitor, model.getAllRows(), true);
             });
         } catch (Exception e) {
             log.debug("Error refreshing hints", e);

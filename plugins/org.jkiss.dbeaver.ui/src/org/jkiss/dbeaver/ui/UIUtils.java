@@ -1227,14 +1227,37 @@ public class UIUtils {
     }
 
     @NotNull
-    public static Button createPushButton(@NotNull Composite parent, @Nullable String label, @Nullable Image image, @Nullable SelectionListener selectionListener)
-    {
+    public static Button createPushButton(@NotNull Composite parent, @Nullable String label, @Nullable Image image, @Nullable SelectionListener selectionListener) {
         Button button = new Button(parent, SWT.PUSH);
         if (label != null) {
             button.setText(label);
         }
         if (image != null) {
             button.setImage(image);
+        }
+        if (selectionListener != null) {
+            button.addSelectionListener(selectionListener);
+        }
+        return button;
+    }
+
+    @NotNull
+    public static Button createPushButton(
+        @NotNull Composite parent,
+        @Nullable String label,
+        @Nullable String toolTip,
+        @Nullable DBPImage image,
+        @Nullable SelectionListener selectionListener
+    ) {
+        Button button = new Button(parent, SWT.PUSH);
+        if (label != null) {
+            button.setText(label);
+        }
+        if (toolTip != null) {
+            button.setToolTipText(toolTip);
+        }
+        if (image != null) {
+            button.setImage(DBeaverIcons.getImage(image));
         }
         if (selectionListener != null) {
             button.addSelectionListener(selectionListener);
