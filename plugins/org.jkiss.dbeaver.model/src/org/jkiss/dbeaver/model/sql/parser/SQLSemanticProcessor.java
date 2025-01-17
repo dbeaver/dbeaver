@@ -163,7 +163,7 @@ public class SQLSemanticProcessor {
             if (statement instanceof Select select && select.getSelectBody() instanceof PlainSelect plainSelect) {
                 if (patchSelectQuery(monitor, dataSource, plainSelect, dataFilter)) {
                     return statement.toString();
-                } else if (!select.getWithItemsList().isEmpty()) {
+                } else if (select.getWithItemsList() != null && !select.getWithItemsList().isEmpty()) {
                     addWhereCondition(dataSource, plainSelect, dataFilter);
                     if (dataFilter.hasOrdering()) {
                         addOrderByClause(monitor, dataSource, plainSelect, dataFilter);

@@ -4,7 +4,7 @@ Bundle-Name: DBeaver Desktop Launcher
 Bundle-SymbolicName: org.jkiss.dbeaver.launcher;singleton:=true
 Bundle-Vendor: DBeaver Corp
 Main-Class: org.jkiss.dbeaver.launcher.DBeaverLauncher
-Bundle-Version: 1.0.21.qualifier
-Bundle-Release-Date: 20250120
+Bundle-Version: 1.0.22.qualifier
+Bundle-Release-Date: 20250203
 Automatic-Module-Name: org.jkiss.dbeaver.launcher
 Bundle-RequiredExecutionEnvironment: JavaSE-17

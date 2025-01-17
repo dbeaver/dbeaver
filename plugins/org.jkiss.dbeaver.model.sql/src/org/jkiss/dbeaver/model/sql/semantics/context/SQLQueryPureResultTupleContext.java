@@ -34,7 +34,7 @@ public class SQLQueryPureResultTupleContext extends SQLQuerySyntaxContext {
     }
 
     @Override
-    public boolean hasUndresolvedSource() {
+    public boolean hasUnresolvedSource() {
         return false;
     }
 
@@ -56,8 +56,8 @@ public class SQLQueryPureResultTupleContext extends SQLQuerySyntaxContext {
     }
     
     @Override
-    public KnownSourcesInfo collectKnownSources() {
-        return this.parent.collectKnownSources();
+    public KnownSourcesInfo getKnownSources() {
+        return this.parent.getKnownSources();
     }
 }
 

@@ -26,6 +26,9 @@ public interface SQLQueryCompletionItemVisitor<R> {
     R visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem rowsSourceAlias);
 
     @Nullable
+    R visitCompositeField(@NotNull SQLCompositeFieldCompletionItem compositeField);
+
+    @Nullable
     R visitColumnName(@NotNull SQLColumnNameCompletionItem columnName);
 
     @Nullable

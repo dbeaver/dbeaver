@@ -1258,4 +1258,9 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             ProjectionAliasVisibilityScope.ORDER_BY
         );
     }
+
+    @Override
+    public boolean isEscapeBackslash() {
+        return true;
+    }
 }
