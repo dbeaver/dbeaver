@@ -22,7 +22,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
@@ -60,7 +59,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
     private static final Log log = Log.getLog(ConnectionPageInitialization.class);
 
-    private static final String PAGE_DOCS_LINK = "https://dbeaver.com/docs/dbeaver/Configure-Connection-Initialization-Settings/";
+    private static final String PAGE_DOCS_LINK = "Configure-Connection-Initialization-Settings";
 
     private DataSourceDescriptor dataSourceDescriptor;
 
@@ -71,8 +70,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
     private Spinner keepAliveInterval;
     private Button closeIdleConnectionsCheck;
     private Spinner closeIdleConnectionsPeriod;
-
-    private Font boldFont;
 
     private boolean activated = false;
     private final List<DBPTransactionIsolation> supportedLevels = new ArrayList<>();
@@ -244,9 +241,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
 
     @Override
     public void createControl(Composite parent) {
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
-        getShell().addDisposeListener(e -> UIUtils.dispose(boldFont));
-
         Composite group = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
@@ -299,7 +293,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage implements IData
                 final Button queriesConfigButton = UIUtils.createPushButton(txnGroup, CoreMessages.dialog_connection_wizard_configure, DBeaverIcons.getImage(DBIcon.TREE_SCRIPT));
                 queriesConfigButton.setToolTipText(bootstrapTooltip);
                 if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
-                    queriesConfigButton.setFont(boldFont);
+                    queriesConfigButton.setFont(BaseThemeSettings.instance.baseFontBold);
                 }
                 queriesConfigButton.addSelectionListener(new SelectionAdapter() {
                     @Override

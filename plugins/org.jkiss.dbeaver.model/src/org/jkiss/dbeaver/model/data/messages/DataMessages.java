@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.syntax;
+package org.jkiss.dbeaver.model.data.messages;
 
-import org.eclipse.jface.text.rules.IWordDetector;
+import org.jkiss.dbeaver.utils.NLS;
 
-/**
- * Determines whether a given character is valid as part of an SQL keyword in
- * the current context.
- */
-public class SQLKeywordDetector implements IWordDetector
-{
+public class DataMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.data.messages.DataMessages"; //$NON-NLS-1$
 
-    @Override
-    public boolean isWordStart(char c) {
-        return Character.isLetter(c) || c == '_';
+    public static String hint_attr_keys_unique_key;
+    public static String hint_attr_keys_part_of;
+    public static String hint_attr_keys_refers_to;
+
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, DataMessages.class);
     }
 
-    @Override
-    public boolean isWordPart(char c) {
-        return Character.isLetterOrDigit(c) || c == '_';
+    private DataMessages() {
     }
-
 }

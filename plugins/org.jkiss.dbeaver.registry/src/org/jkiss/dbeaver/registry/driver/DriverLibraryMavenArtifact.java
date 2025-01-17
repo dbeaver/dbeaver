@@ -234,20 +234,6 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         return null;
     }
 
-    @Nullable
-    @Override
-    public Path getLocalFile(@NotNull DBRProgressMonitor monitor) {
-        try {
-            MavenArtifactVersion localVersion = resolveLocalVersion(monitor, false);
-            if (localVersion != null) {
-                return getLocalFile();
-            }
-        } catch (IOException e) {
-            log.warn("Error resolving artifact version", e);
-        }
-        return null;
-    }
-
     private File detectLocalFile()
     {
         if (localVersion != null) {

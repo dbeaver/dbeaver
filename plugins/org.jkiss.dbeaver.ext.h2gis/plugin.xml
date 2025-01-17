@@ -69,7 +69,8 @@
         <provider
                 class="org.jkiss.dbeaver.ext.h2gis.data.H2GISValueHandlerProvider"
                 description="H2GIS data types provider"
-                id="org.jkiss.dbeaver.ext.h2gis.data.H2GISValueHandlerProvider"
+                id="H2GISValueHandlerProvider"
+                parent="GenericValueHandlerProvider"
                 label="H2GIS data types provider">
 
             <datasource id="h2gis"/>

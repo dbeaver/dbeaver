@@ -128,6 +128,7 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
         DBSEntity realTable = referencedTable.getTable();
         SQLQueryDataContext resultContext;
 
+        SQLQuerySymbolOrigin referencedColumnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(referencedContext);
         if (referencedColumns != null && !referencedColumns.isEmpty()) {
             List<SQLQueryResultColumn> resultColumns = new ArrayList<>(referencedColumns.size());
             if (realTable != null) {
@@ -135,12 +136,13 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
                     SQLQueryResultColumn rc = referencedContext.resolveColumn(statistics.getMonitor(), columnRef.getName());
                     if (rc != null) {
                         if (columnRef.isNotClassified()) {
-                            SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics);
+                            SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics, referencedColumnNameOrigin);
                         }
                         resultColumns.add(rc.withNewIndex(resultColumns.size()));
                     } else {
                         statistics.appendWarning(columnRef, "Failed to resolve column " + columnRef.getName());
                         columnRef.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
+                        columnRef.setOrigin(referencedColumnNameOrigin);
 
                         resultColumns.add(new SQLQueryResultColumn(
                             resultColumns.size(), columnRef.getSymbol(),

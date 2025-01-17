@@ -94,7 +94,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private SettingCache settingCache;
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
-    private String serverVersion;
+    protected String serverVersion;
     private volatile boolean hasStatistics;
     private boolean supportsEnumTable;
     private boolean supportsReltypeColumn = true;

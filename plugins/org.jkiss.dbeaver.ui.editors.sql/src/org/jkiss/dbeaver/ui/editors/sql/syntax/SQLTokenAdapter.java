@@ -51,8 +51,8 @@ public class SQLTokenAdapter extends Token {
     private static TextAttribute makeTextAttribute(TPToken token, SQLRuleScanner scanner) {
         String colorKey;
         int style;
-        if (token instanceof TPTokenDefault && token.getData() instanceof SQLTokenType) {
-            switch ((SQLTokenType) token.getData()) {
+        if (token instanceof TPTokenDefault && token.getData() instanceof SQLTokenType tokenType) {
+            switch (tokenType) {
                 case T_KEYWORD:
                 case T_BLOCK_BEGIN:
                 case T_BLOCK_END:

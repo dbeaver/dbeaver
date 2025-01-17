@@ -198,7 +198,7 @@ public class DialogUtils {
                 if (remoteFS && project != null) {
                     DBNPathBase pathNode = DBWorkbench.getPlatformUI().openFileSystemSelector(
                         CommonUtils.toString(label, "Output folder"),
-                        true, SWT.SAVE, false, null, value);
+                        true, SWT.SAVE, false, null, getText());
                     fileName = pathNode == null ? null :
                         DBFUtils.getUriFromPath(pathNode.getPath()).toString();
                     if (fileName != null) {

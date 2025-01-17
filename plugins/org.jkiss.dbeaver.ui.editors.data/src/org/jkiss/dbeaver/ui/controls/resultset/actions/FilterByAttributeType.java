@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.actions;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -26,15 +26,18 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog;
 
 import java.util.Collection;
 
-enum FilterByAttributeType {
+public enum FilterByAttributeType {
     VALUE(ResultSetMessages.controls_resultset_viewer_action_filter_value, UIIcon.FILTER_VALUE) {
         @Override
-        Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
+        public Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
         {
             final ResultSetRow row = viewer.getCurrentRow();
             if (attribute == null || row == null) {
@@ -49,7 +52,7 @@ enum FilterByAttributeType {
     },
     INPUT(ResultSetMessages.controls_resultset_viewer_action_filter_input, UIIcon.FILTER_INPUT) {
         @Override
-        Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
+        public Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
         {
             if (useDefault) {
                 return ResultSetViewer.CUSTOM_FILTER_VALUE_STRING;
@@ -82,7 +85,7 @@ enum FilterByAttributeType {
     },
     CLIPBOARD(ResultSetMessages.controls_resultset_viewer_action_filter_clipboard, UIIcon.FILTER_CLIPBOARD) {
         @Override
-        Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
+        public Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
         {
             try {
                 Object value = ResultSetUtils.getAttributeValueFromClipboard(attribute);
@@ -98,7 +101,7 @@ enum FilterByAttributeType {
     },
     NONE("None", UIIcon.FILTER_VALUE) {
         @Override
-        Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
+        public Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
         {
             return null;
         }
@@ -111,8 +114,13 @@ enum FilterByAttributeType {
         this.title = title;
         this.icon = DBeaverIcons.getImageDescriptor(icon);
     }
+
+    public String getTitle() {
+        return title;
+    }
+
     @Nullable
-    abstract Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault);
+    public abstract Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault);
 
     private static final Log log = Log.getLog(ResultSetViewer.class);
 

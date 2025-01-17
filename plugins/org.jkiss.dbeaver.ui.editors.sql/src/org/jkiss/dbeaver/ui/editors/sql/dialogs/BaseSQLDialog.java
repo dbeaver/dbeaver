@@ -113,6 +113,11 @@ public abstract class BaseSQLDialog extends BaseDialog {
             public DBCExecutionContext getExecutionContext() {
                 return BaseSQLDialog.this.getExecutionContext();
             }
+
+            @Override
+            protected boolean isAnnotationRulerVisible() {
+                return false;
+            }
         };
         updateSQL();
         sqlViewer.createPartControl(editorPH);
