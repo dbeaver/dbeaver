@@ -3260,12 +3260,14 @@ public abstract class LightGrid extends Canvas {
                 isSelectedCell = selectedCells.contains(new GridPos(col.getIndex(), row));
             }
 
+            boolean altPressed = CommonUtils.isBitSet(e.stateMask, SWT.MOD3);
+
             if (col == null && rowHeaderVisible && e.x <= rowHeaderWidth) {
                 // Click on header
-                boolean shift = ((e.stateMask & SWT.MOD2) != 0);
+                boolean shift = CommonUtils.isBitSet(e.stateMask, SWT.MOD2);
                 boolean ctrl = false;
                 if (!shift) {
-                    ctrl = ((e.stateMask & SWT.MOD1) != 0);
+                    ctrl = CommonUtils.isBitSet(e.stateMask, SWT.MOD1);
                 }
 
                 if (e.button == 1 && !shift && !ctrl) {
@@ -3293,7 +3295,7 @@ public abstract class LightGrid extends Canvas {
                     selectionEvent = updateCellSelection(cells, newStateMask, shift, ctrl, EventSource.MOUSE);
                     cellRowSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
 
-                    if (!shift) {
+                    if (!shift && !altPressed) {
                         //set focus back to the first visible column
                         focusColumn = getColumn(new Point(rowHeaderWidth + 1, e.y));
 
@@ -3312,15 +3314,15 @@ public abstract class LightGrid extends Canvas {
                         focusItem = row;
                     }
 
-                    //boolean isClickOnLink = focusColumn != null && focusItem != -1 && cellRenderer.isOverLink(focusColumn, focusItem, e.x, e.y);
-                    /*if (!isClickOnLink) */{
+                    if (!altPressed) {
                         selectionEvent = updateCellSelection(new GridPos(col.getIndex(), row), e.stateMask, false, true, EventSource.MOUSE);
-                        // Trigger selection event always!
-                        // It makes sense if grid content was changed but selection remains the same
-                        // If user clicks on the same selected cell value - selection event will trigger value redraw in panels
-                        selectionEvent = new Event();
-                        cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
                     }
+                    // Trigger selection event always!
+                    // It makes sense if grid content was changed but selection remains the same
+                    // If user clicks on the same selected cell value - selection event will trigger value redraw in panels
+                    selectionEvent = new Event();
+                    cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
+
                     //showColumn(col);
                     showItem(row);
                     redraw();
@@ -3919,8 +3921,8 @@ public abstract class LightGrid extends Canvas {
         int impliedFocusItem = focusItem;
         GridColumn impliedFocusColumn = focusColumn;
 
-        boolean ctrlPressed = ((e.stateMask & SWT.MOD1) != 0);
-        boolean shiftPressed = ((e.stateMask & SWT.MOD2) != 0);
+        boolean ctrlPressed = CommonUtils.isBitSet(e.stateMask, SWT.MOD1);
+        boolean shiftPressed = CommonUtils.isBitSet(e.stateMask, SWT.MOD2);
 
         //if (shiftPressed) {
             if (shiftSelectionAnchorColumn != null) {

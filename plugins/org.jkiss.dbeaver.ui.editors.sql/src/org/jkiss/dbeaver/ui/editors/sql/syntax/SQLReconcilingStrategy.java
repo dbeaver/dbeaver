@@ -125,7 +125,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         try {
             data = resource.getPersistentProperty(COLLAPSED_ANNOTATIONS);
         } catch (CoreException e) {
-            log.warn("Core Exception caught while reading saved collapsed folding positions", e);
+            log.warn("Core Exception caught while reading saved collapsed folding positions: " + e.getMessage());
             return Collections.emptySet();
         }
         if (data == null) {

@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -43,7 +44,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.ControlPropertyCommandListener;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -169,33 +169,40 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     }
 
     @Override
-    public void activatePart()
-    {
+    public void activatePart() {
         if (isLoaded) {
+            return;
+        }
+        DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null) {
             return;
         }
         isLoaded = true;
         LoadingJob.createService(
-            new DatabaseLoadService<List<MySQLPrivilege>>(MySQLUIMessages.editors_user_editor_general_service_load_catalog_privileges, getExecutionContext()) {
+            new DatabaseLoadService<>(
+                MySQLUIMessages.editors_user_editor_general_service_load_catalog_privileges,
+                executionContext
+            ) {
                 @Override
-                public List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                public List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
-                        final List<MySQLPrivilege> privList = getDatabaseObject().getDataSource().getPrivilegesByKind(monitor, MySQLPrivilege.Kind.ADMIN);
-                        for (Iterator<MySQLPrivilege> iterator = privList.iterator(); iterator.hasNext(); ) {
-                            MySQLPrivilege priv = iterator.next();
-                            // Remove proxy (it is not singleton)
-                            if (priv.getName().equalsIgnoreCase("proxy")) {
-                                iterator.remove();
-                            }
+                        MySQLUser user = getDatabaseObject();
+                        if (user == null) {
+                            isLoaded = false;
+                            return null;
                         }
-                        return privList;
+                        return user.getDataSource().getPrivilegesByKind(monitor, MySQLPrivilege.Kind.ADMIN)
+                            .stream()
+                            .filter(p -> !p.getName().equalsIgnoreCase("proxy"))
+                            .toList();
                     } catch (DBException e) {
+                        isLoaded = false;
                         throw new InvocationTargetException(e);
                     }
                 }
             },
-            pageControl.createLoadVisualizer())
-            .schedule();
+            pageControl.createLoadVisualizer()
+        ).schedule();
     }
 
     @Override

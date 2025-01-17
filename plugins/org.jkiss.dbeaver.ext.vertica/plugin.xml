@@ -180,7 +180,8 @@
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
-          id="org.jkiss.dbeaver.ext.vertica.model.data.VerticaValueHandlerProvider"
+          id="VerticaValueHandlerProvider"
+          parent="GenericValueHandlerProvider"
           class="org.jkiss.dbeaver.ext.vertica.model.data.VerticaValueHandlerProvider"
           label="Vertica data types provider"
           description="Vertica data types provider">

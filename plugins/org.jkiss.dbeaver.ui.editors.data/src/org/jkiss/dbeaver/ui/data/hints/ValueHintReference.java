@@ -34,8 +34,10 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.data.DBDValueHintActionHandler;
+import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
 
@@ -97,11 +99,18 @@ public class ValueHintReference implements DBDValueHint, DBDValueHintActionHandl
 
     @Override
     public void performAction(@NotNull IResultSetController controller, long state) throws DBException {
+        if (CommonUtils.isBitSet(state, SWT.ALT)) {
+            EditDictionaryPage editDictionaryPage = new EditDictionaryPage(association.getAssociatedEntity());
+            if (editDictionaryPage.edit(controller.getControl().getShell())) {
+                controller.refreshData(null);
+            }
+            return;
+        }
         boolean newWindow;
         if (RuntimeUtils.isMacOS()) {
-            newWindow = (state & SWT.COMMAND) == SWT.COMMAND;
+            newWindow = CommonUtils.isBitSet(state, SWT.COMMAND);
         } else {
-            newWindow = (state & SWT.CTRL) == SWT.CTRL;
+            newWindow = CommonUtils.isBitSet(state, SWT.CTRL);
         }
 
         new AbstractJob("Navigate association") {

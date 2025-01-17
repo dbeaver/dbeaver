@@ -311,6 +311,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             return null;
         }
 
+        @NotNull
         @Override
         public SQLDialect getSQLDialect() {
             return dialect;
@@ -442,7 +443,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         return Collections.emptyList();
     }
     @Override
-    public boolean hasUndresolvedSource() {
+    public boolean hasUnresolvedSource() {
         return false;
     }
 
@@ -517,7 +518,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         
         public DummyTableRowsSource(@NotNull STMTreeNode syntaxNode) {
             super(syntaxNode, new SQLQueryQualifiedName(
-                syntaxNode, Collections.emptyList(), new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable"), 0
+                syntaxNode, Collections.emptyList(), new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable", null), 0, null
             ), false);
         }
 

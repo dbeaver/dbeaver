@@ -86,7 +86,7 @@ public class SQLQueryRecognitionContext {
         return this.executionContext;
     }
 
-    boolean useRealMetadata() {
+    public boolean useRealMetadata() {
         return this.useRealMetadata;
     }
 

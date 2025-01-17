@@ -287,4 +287,9 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
         }
         return super.getTypeCastClause(attribute, expression, isInCondition);
     }
+
+    @Override
+    public boolean isEscapeBackslash() {
+        return true;
+    }
 }

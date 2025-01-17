@@ -27,11 +27,9 @@ public final class SQLModelPreferences {
     public static final String SQL_EDITOR_PROPOSAL_SHORT_NAME = "SQLEditor.ContentAssistant.proposals.short.name";
     public static final String SQL_EDITOR_PROPOSAL_ALWAYS_FQ = "SQLEditor.ContentAssistant.proposals.long.name";
 
-
-    public static final String EXPERIMENTAL_AUTOCOMPLETION_ENABLE = "SQLEditor.ContentAssistant.experimental.enable";
     public static final String ADVANCED_HIGHLIGHTING_ENABLE = "SQLEditor.Highlighting.advanced.enable";
     public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS = "SQLEditor.Semantics.metadata.read.enable";
     
-    public static final String EXPERIMENTAL_AUTOCOMPLETION_MODE = "SQLEditor.ContentAssistant.experimental.mode";
+    public static final String AUTOCOMPLETION_MODE = "SQLEditor.ContentAssistant.experimental.mode";
 
 }

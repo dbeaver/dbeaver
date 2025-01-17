@@ -25,13 +25,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.ai.AITextUtils;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -151,7 +150,7 @@ public class ScopeSelectorControl extends Composite {
 
     @NotNull
     public List<DBSEntity> getCustomEntities(@NotNull DBRProgressMonitor monitor) {
-        return loadCustomEntities(monitor, executionContext.getDataSource(), checkedObjectIds);
+        return AITextUtils.loadCustomEntities(monitor, executionContext.getDataSource(), checkedObjectIds);
     }
 
     @NotNull
@@ -206,7 +205,7 @@ public class ScopeSelectorControl extends Composite {
         try {
             // Find nodes of already selected objects
             context.run(true, true, monitor -> {
-                for (DBSEntity entity : loadCustomEntities(monitor, dataSource, ids)) {
+                for (DBSEntity entity : AITextUtils.loadCustomEntities(monitor, dataSource, ids)) {
                     DBNDatabaseNode node = navigator.getNodeByObject(monitor, entity, true);
                     if (node != null) {
                         nodes.add(node);
@@ -238,41 +237,6 @@ public class ScopeSelectorControl extends Composite {
             .map(DBSEntity.class::cast)
             .map(DBUtils::getObjectFullId)
             .collect(Collectors.toSet());
-    }
-
-    @NotNull
-    public static List<DBSEntity> loadCustomEntities(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSource dataSource,
-        @NotNull Set<String> ids
-    ) {
-        monitor.beginTask("Load custom entities", ids.size());
-        try {
-            return loadCheckedEntitiesById(monitor, dataSource.getContainer().getProject(), ids);
-        } catch (Exception e) {
-            log.error(e);
-            return List.of();
-        } finally {
-            monitor.done();
-        }
-    }
-
-    @NotNull
-    private static List<DBSEntity> loadCheckedEntitiesById(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPProject project,
-        @NotNull Set<String> ids
-    ) throws DBException {
-        final List<DBSEntity> output = new ArrayList<>();
-
-        for (String id : ids) {
-            if (DBUtils.findObjectById(monitor, project, id) instanceof DBSEntity entity) {
-                output.add(entity);
-            }
-            monitor.worked(1);
-        }
-
-        return output;
     }
 
     public void changeScope(@NotNull DAICompletionScope scope) {

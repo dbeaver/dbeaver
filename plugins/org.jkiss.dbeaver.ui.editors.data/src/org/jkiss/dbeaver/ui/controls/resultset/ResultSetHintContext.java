@@ -22,10 +22,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
+import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
+import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintContext;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHintProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.registry.data.hints.ValueHintContextConfiguration;
+import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderDescriptor;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintRegistry;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,15 +41,17 @@ import java.util.function.Supplier;
 /**
  * Result set hint context
  */
-class ResultSetHintContext implements DBDValueHintContext {
+public class ResultSetHintContext implements DBDValueHintContext {
     private static final Log log = Log.getLog(ResultSetHintContext.class);
 
     private final Supplier<DBSDataContainer> dataContainerSupplier;
+    private final Supplier<DBSEntity> entitySupplier;
     private final Map<String, Object> contextAttributes = new HashMap<>();
 
     private final Map<DBDValueHintProvider, HintProviderInfo> hintProviders = new IdentityHashMap<>();
+    private ValueHintContextConfiguration contextConfiguration;
 
-    private static class HintProviderInfo {
+    static class HintProviderInfo {
         final DBDValueHintProvider provider;
         boolean enabled;
         final Set<DBDAttributeBinding> attributes = new LinkedHashSet<>();
@@ -53,14 +61,21 @@ class ResultSetHintContext implements DBDValueHintContext {
         }
     }
 
-    ResultSetHintContext(Supplier<DBSDataContainer> dataContainerSupplier) {
+    ResultSetHintContext(Supplier<DBSDataContainer> dataContainerSupplier, Supplier<DBSEntity> entitySupplier) {
         this.dataContainerSupplier = dataContainerSupplier;
+        this.entitySupplier = entitySupplier;
     }
 
     @Nullable
     @Override
     public DBSDataContainer getDataContainer() {
         return dataContainerSupplier.get();
+    }
+
+    @Nullable
+    @Override
+    public DBSEntity getContextEntity() {
+        return entitySupplier.get();
     }
 
     @Nullable
@@ -78,11 +93,58 @@ class ResultSetHintContext implements DBDValueHintContext {
         }
     }
 
-    List<DBDValueHintProvider> getHintProviders(DBDAttributeBinding attr) {
-        List<DBDValueHintProvider> result = new ArrayList<>();
+    @Override
+    public HintConfigurationLevel getConfigurationLevel() {
+        return contextConfiguration.getLevel();
+    }
+
+    @Override
+    public void setConfigurationLevel(HintConfigurationLevel level) {
+        HintConfigurationLevel oldLevel = getConfigurationLevel();
+        if (oldLevel == level) {
+            return;
+        }
+        if (level.ordinal() < oldLevel.ordinal()) {
+            // Delete old configuration
+            contextConfiguration.deleteConfiguration();
+        }
+
+        // Detect new config
+        DBSDataContainer dataContainer = getDataContainer();
+        DBPDataSource ds = dataContainer == null || level == HintConfigurationLevel.GLOBAL ? null : dataContainer.getDataSource();
+        DBSEntity entity = ds == null || level != HintConfigurationLevel.ENTITY ? null : entitySupplier.get();
+        contextConfiguration = ValueHintRegistry.getInstance().getContextConfiguration(
+            ds == null ? null : ds.getContainer(),
+            entity,
+            true);
+
+        // Save new configuration
+        contextConfiguration.saveConfiguration();
+    }
+
+    public ValueHintContextConfiguration getContextConfiguration() {
+        return contextConfiguration;
+    }
+
+    public Set<DBDValueHintProvider> getApplicableHintProviders() {
+        return hintProviders.keySet();
+    }
+
+    public List<DBDCellHintProvider> getCellHintProviders(DBDAttributeBinding attr) {
+        List<DBDCellHintProvider> result = new ArrayList<>();
         for (HintProviderInfo pi : hintProviders.values()) {
-            if (pi.enabled && pi.attributes.contains(attr)) {
-                result.add(pi.provider);
+            if (pi.enabled && pi.provider instanceof DBDCellHintProvider chp && pi.attributes.contains(attr)) {
+                result.add(chp);
+            }
+        }
+        return result;
+    }
+
+    public List<DBDAttributeHintProvider> getColumnHintProviders(DBDAttributeBinding attr) {
+        List<DBDAttributeHintProvider> result = new ArrayList<>();
+        for (HintProviderInfo pi : hintProviders.values()) {
+            if (pi.enabled && pi.provider instanceof DBDAttributeHintProvider ahp && pi.attributes.contains(attr)) {
+                result.add(ahp);
             }
         }
         return result;
@@ -94,14 +156,29 @@ class ResultSetHintContext implements DBDValueHintContext {
     }
 
     void initProviders(DBDAttributeBinding[] attributes) {
+        DBSDataContainer dataContainer = getDataContainer();
+        DBPDataSource ds = dataContainer == null ? null : dataContainer.getDataSource();
+        DBSEntity entity = ds == null ? null : entitySupplier.get();
+
+        contextConfiguration = ValueHintRegistry.getInstance().getContextConfiguration(
+            ds == null ? null : ds.getContainer(),
+            entity,
+            false);
         try {
-            DBSDataContainer dataContainer = getDataContainer();
-            DBPDataSource ds = dataContainer == null ? null : dataContainer.getDataSource();
             for (DBDAttributeBinding attr : attributes) {
-                List<DBDValueHintProvider> attrHintProviders = ValueHintRegistry.getInstance().getAllValueBindings(ds, attr, null);
+                ValueHintRegistry hintRegistry = ValueHintRegistry.getInstance();
+                List<DBDValueHintProvider> attrHintProviders = hintRegistry.getAllValueBindings(
+                    this,
+                    ds,
+                    attr,
+                    attr.getValueHandler().getValueObjectType(attr));
                 for (DBDValueHintProvider provider : attrHintProviders) {
-                    HintProviderInfo providerInfo = hintProviders.computeIfAbsent(provider, HintProviderInfo::new);
-                    providerInfo.enabled = true;
+                    HintProviderInfo providerInfo = hintProviders.computeIfAbsent(provider, p -> {
+                        HintProviderInfo pi = new HintProviderInfo(p);
+                        ValueHintProviderDescriptor providerDescriptor = hintRegistry.getDescriptorByInstance(provider);
+                        pi.enabled = contextConfiguration.isHintEnabled(providerDescriptor);
+                        return pi;
+                    });
                     providerInfo.attributes.add(attr);
                 }
             }
@@ -112,13 +189,13 @@ class ResultSetHintContext implements DBDValueHintContext {
 
     public void cacheRequiredData(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable List<DBDAttributeBinding> attributes,
-        @NotNull List<ResultSetRow> rows,
+        @Nullable Collection<DBDAttributeBinding> attributes,
+        @NotNull Collection<? extends DBDValueRow> rows,
         boolean cleanupCache
     ) throws DBException {
         for (HintProviderInfo pi : hintProviders.values()) {
-            if (pi.enabled) {
-                pi.provider.cacheRequiredData(
+            if (pi.enabled && pi.provider instanceof DBDCellHintProvider chp) {
+                chp.cacheRequiredData(
                     monitor,
                     this,
                     !CommonUtils.isEmpty(attributes) ? attributes : pi.attributes,

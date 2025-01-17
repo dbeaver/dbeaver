@@ -735,7 +735,7 @@
         <provider
                 class="org.jkiss.dbeaver.ext.postgresql.model.data.PostgreValueHandlerProvider"
                 description="%provider.data.type.postgresql.description"
-                id="org.jkiss.dbeaver.ext.postgresql.model.data.PostgreValueHandlerProvider"
+                id="PostgreValueHandlerProvider"
                 label="%provider.data.type.postgresql.name">
 
             <datasource id="postgresql"/>

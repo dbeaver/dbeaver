@@ -29,6 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
@@ -45,7 +46,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLExperimentalAutocompletionMode;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLAutocompletionMode;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionAnalyzer;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
@@ -54,9 +55,11 @@ import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -67,7 +70,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 {
     private static final Log log = Log.getLog(SQLCompletionProcessor.class);
 
-    private static IContextInformationValidator VALIDATOR = new Validator();
+    private static final IContextInformationValidator VALIDATOR = new Validator();
     private static boolean lookupTemplates = false;
     private static boolean simpleMode = false;
 
@@ -84,6 +87,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     }
 
     private final SQLEditorBase editor;
+    private SQLContentAssistant contentAssistant;
 
     public SQLCompletionProcessor(SQLEditorBase editor)
     {
@@ -92,6 +96,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
     public void initAssistant(SQLContentAssistant contentAssistant) {
         contentAssistant.addCompletionListener(new CompletionListener());
+        this.contentAssistant = contentAssistant;
     }
 
     @Override
@@ -147,7 +152,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         request.setContentType(contentType);
 
-        List<? extends Object> proposals;
+        List<?> proposals;
         try {
             switch (contentType) {
                 case IDocument.DEFAULT_CONTENT_TYPE:
@@ -171,20 +176,23 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
                     DBPDataSource dataSource = editor.getDataSource();
 
-                    SQLExperimentalAutocompletionMode mode = SQLExperimentalAutocompletionMode.fromPreferences(this.editor.getActivePreferenceStore());
+                    DBPPreferenceStore store = this.editor.getActivePreferenceStore();
+                    SQLAutocompletionMode mode = SQLAutocompletionMode.fromPreferences(store);
+                    boolean useNewCompletionEngine = mode.useNewAnalyzer && store.getBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE)
+                        && store.getBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS);
 
                     // UIUtils.waitJobCompletion(..) uses job.isFinished() which is not dropped on reschedule,
                     // so we should be able to recreate the whole job object including all its non-reusable dependencies.
                     List<Supplier<ProposalsComputationJobHolder>> completionJobSuppliers = new ArrayList<>();
 
-                    if (request.getWordPart() != null && mode.useOldAnalyzer) {
+                    if (request.getWordPart() != null && mode.useOldAnalyzer || !useNewCompletionEngine) {
                         if (dataSource != null) {
                             completionJobSuppliers.add(() -> {
                                 // old analyzer is not reusable, but it doesn't matter because see the next comment below
                                 SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
                                 return new ProposalsComputationJobHolder(new ProposalSearchJob(analyzer)) {
                                     @Override
-                                    public List<? extends Object> getProposals() {
+                                    public List<?> getProposals() {
                                         return analyzer.getProposals();
                                     }
 
@@ -202,12 +210,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         }
                     }
 
-                    if (mode.useNewAnalyzer) {
+                    if (useNewCompletionEngine) {
                         // new analyzer is reusable
                         SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request, completionRequestPosition);
                         completionJobSuppliers.add(() -> new ProposalsComputationJobHolder(new NewProposalSearchJob(newAnalyzer)) {
                             @Override
-                            public List<? extends Object> getProposals() {
+                            public List<?> getProposals() {
                                 return newAnalyzer.getResult();
                             }
 
@@ -225,8 +233,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     break;
             }
 
+            int actualCompletionOffset = completionRequestPosition.getOffset();
             List<ICompletionProposal> result = new ArrayList<>(proposals.size());
-            if (completionRequestPosition.getOffset() != request.getDocumentOffset()) {
+            if (actualCompletionOffset != request.getDocumentOffset()) {
                 for (Object cp : proposals) {
                     if (cp instanceof ICompletionProposal proposal && (
                         (cp instanceof ICompletionProposalExtension2 exp && exp.validate(request.getDocument(), completionRequestPosition.getOffset(), null))
@@ -242,13 +251,14 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     }
                 }
             }
+            this.contentAssistant.setLastCompletionOffset(actualCompletionOffset);
             return ArrayUtils.toArray(ICompletionProposal.class, result);
         } finally {
             document.removePosition(completionRequestPosition);
         }
     }
 
-    private List<? extends Object> computeProposalsWithJobs(
+    private List<?> computeProposalsWithJobs(
         @NotNull SQLCompletionRequest request,
         @NotNull Position completionRequestPosition,
         @NotNull List<Supplier<ProposalsComputationJobHolder>> completionJobSuppliers
@@ -428,16 +438,18 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         return VALIDATOR;
     }
 
-    private static class CompletionListener implements ICompletionListener, ICompletionListenerExtension {
+    private class CompletionListener implements ICompletionListener, ICompletionListenerExtension {
 
         @Override
         public void assistSessionStarted(ContentAssistEvent event) {
             SQLCompletionProcessor.setSimpleMode(event.isAutoActivated);
+            contentAssistant.assistSessionStarted(event);
         }
 
         @Override
         public void assistSessionEnded(ContentAssistEvent event) {
             simpleMode = false;
+            contentAssistant.setLastCompletionOffset(-1);
         }
 
         @Override
@@ -473,15 +485,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
 
         @Override
-        public void install(IContextInformation info,
-            ITextViewer viewer, int offset)
+        public void install(IContextInformation info, ITextViewer viewer, int offset)
         {
             fInstallOffset = offset;
         }
 
         @Override
-        public boolean updatePresentation(int documentPosition,
-            TextPresentation presentation)
+        public boolean updatePresentation(int documentPosition, TextPresentation presentation)
         {
             return false;
         }
@@ -553,7 +563,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             this.job.schedule();
         }
 
-        public abstract List<? extends Object> getProposals();
+        public abstract List<?> getProposals();
 
         public abstract Integer getProposalsOriginOffset();
     }

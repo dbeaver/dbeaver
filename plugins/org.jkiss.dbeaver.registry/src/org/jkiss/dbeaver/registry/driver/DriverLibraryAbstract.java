@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.registry.driver;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -229,7 +231,22 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         final Path tempFile = tempFolder.resolve(SecurityUtils.makeDigest(localFile.toString()));
 
         WebUtils.downloadRemoteFile(monitor, taskName, externalURL, tempFile, getAuthInfo(monitor));
-        Files.move(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
+        if (DBWorkbench.isDistributed()) {
+            // save driver library file using file controller
+            try {
+                byte[] fileData = Files.readAllBytes(tempFile);
+                DBWorkbench.getPlatform().getFileController().saveFileData(
+                    DBFileController.TYPE_DATABASE_DRIVER,
+                    DriverUtils.getDistributedLibraryPath(localFile),
+                    fileData);
+            } catch (DBException e) {
+                throw new IOException(e.getMessage());
+            } finally {
+                Files.delete(tempFile);
+            }
+        } else {
+            Files.move(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     @Nullable

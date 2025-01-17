@@ -60,7 +60,7 @@ public class CustomFormEditor {
     private static final String LIST_VALUE_KEY = "form.data.list.value";
 
     private final Map<DBPPropertyDescriptor, Control> editorMap = new HashMap<>();
-    @NotNull
+    @Nullable
     private final DBSObject databaseObject;
     @Nullable
     private final DBECommandContext commandContext;
@@ -76,6 +76,12 @@ public class CustomFormEditor {
     public CustomFormEditor(@NotNull DBSObject databaseObject, @Nullable DBECommandContext commandContext, @NotNull DBPPropertySource propertySource) {
         this.databaseObject = databaseObject;
         this.commandContext = commandContext;
+        this.propertySource = propertySource;
+    }
+
+    public CustomFormEditor(@NotNull DBPPropertySource propertySource) {
+        this.databaseObject = null;
+        this.commandContext = null;
         this.propertySource = propertySource;
     }
 
@@ -197,7 +203,7 @@ public class CustomFormEditor {
 
     private void updatePropertyValue(DBPPropertyDescriptor prop, Object value) {
         if (!isLoading) {
-            if (prop.getId().equals(DBConstants.PROP_ID_NAME) && databaseObject.isPersisted()) {
+            if (prop.getId().equals(DBConstants.PROP_ID_NAME) && databaseObject != null && databaseObject.isPersisted()) {
                 DBEObjectRenamer renamer = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(propertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
                 if (commandContext != null && renamer != null) {
                     try {
@@ -467,4 +473,5 @@ public class CustomFormEditor {
             curButtonsContainer = null;
         }
     }
+
 }

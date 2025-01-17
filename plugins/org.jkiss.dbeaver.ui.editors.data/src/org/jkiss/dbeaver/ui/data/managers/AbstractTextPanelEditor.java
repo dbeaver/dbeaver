@@ -88,6 +88,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
     private static final String PREF_TEXT_EDITOR_WORD_WRAP = "content.text.editor.word-wrap";
     private static final String PREF_TEXT_EDITOR_AUTO_FORMAT = "content.text.editor.auto-format";
     private static final String PREF_TEXT_EDITOR_ENCODING = "content.text.editor.encoding";
+    private static final String PREF_TEXT_EDITOR_MINIFY = "content.text.editor.minify";
 
     private static final Log log = Log.getLog(AbstractTextPanelEditor.class);
     
@@ -191,6 +192,11 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             final Action afAction = new AutoFormatAction();
             afAction.setChecked(getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT));
             manager.add(afAction);
+            if (supportMinify()) {
+                final Action msAction = new SaveMinifyValue();
+                msAction.setChecked(getPanelSettings().getBoolean(PREF_TEXT_EDITOR_MINIFY));
+                manager.add(msAction);
+            }
         }
 
         if (textEditor != null) {
@@ -446,9 +452,13 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
                 monitor.done();
             }
         } else {
+            String text = control.getText();
+            if (getPanelSettings().getBoolean(PREF_TEXT_EDITOR_MINIFY)) {
+                text = minify(text);
+            }
             value.updateContents(
                 monitor,
-                new StringContentStorage(control.getText()));
+                new StringContentStorage(text));
         }
     }
 
@@ -497,6 +507,24 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             boolean newAF = !getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT);
             //setChecked(newAF);
             getPanelSettings().put(PREF_TEXT_EDITOR_AUTO_FORMAT, newAF);
+            applyEditorStyle();
+        }
+    }
+
+    private class SaveMinifyValue extends Action {
+        SaveMinifyValue() {
+            super(ResultSetMessages.panel_editor_text_minify_name, Action.AS_CHECK_BOX);
+        }
+
+        @Override
+        public boolean isChecked() {
+            return getPanelSettings().getBoolean(PREF_TEXT_EDITOR_MINIFY);
+        }
+
+        @Override
+        public void run() {
+            boolean newMF = !getPanelSettings().getBoolean(PREF_TEXT_EDITOR_MINIFY);
+            getPanelSettings().put(PREF_TEXT_EDITOR_MINIFY, newMF);
             applyEditorStyle();
         }
     }
@@ -583,5 +611,13 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
             UIUtils.setControlVisible(this, false);
             getParent().layout(true, true);
         }
+    }
+
+    public boolean supportMinify() {
+        return false;
+    }
+
+    public String minify(String value) {
+        return value;
     }
 }
