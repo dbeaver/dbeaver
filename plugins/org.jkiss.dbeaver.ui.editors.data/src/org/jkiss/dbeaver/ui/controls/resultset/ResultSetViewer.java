@@ -1679,8 +1679,11 @@ public class ResultSetViewer extends Viewer
         @Nullable Object value,
         boolean refreshHints) throws DBException {
         boolean updated = model.updateCellValue(attr, row, rowIndexes, value, true);
-        if (updated) {
-            refreshHintCache(attr, row, rowIndexes, refreshHints);
+        if (updated && refreshHints) {
+            refreshHintCache(
+                Collections.singletonList(attr),
+                Collections.singletonList(row),
+                rowIndexes);
         }
         return updated;
     }
@@ -1692,43 +1695,57 @@ public class ResultSetViewer extends Viewer
         @Nullable int[] rowIndexes
     ) {
         model.resetCellValue(attr, row, rowIndexes);
-        refreshHintCache(attr, row, rowIndexes, true);
+        refreshHintCache(
+            Collections.singletonList(attr),
+            Collections.singletonList(row),
+            rowIndexes);
     }
 
-    private void refreshHintCache(DBDAttributeBinding attr, ResultSetRow row, int[] rowIndexes, boolean refreshPresentation) {
+    @Override
+    public void refreshHintCache(
+        Collection<DBDAttributeBinding> attrs,
+        Collection<DBDValueRow> rows,
+        int[] rowIndexes
+    ) {
         // Refresh cached hints for changed row
 
         // Check that we could have hints
         boolean needRefresh = false;
-        Object cellValue = model.getCellValue(attr, row, rowIndexes, false);
-        List<DBDCellHintProvider> hintProviders = model.getHintContext().getCellHintProviders(attr);
-        for (DBDCellHintProvider provider : hintProviders) {
-            DBDValueHint[] hints = provider.getCellHints(
-                model,
-                attr,
-                row,
-                cellValue,
-                EnumSet.of(DBDValueHint.HintType.STRING),
-                DBDValueHintProvider.OPTION_INLINE);
-            if (hints != null) {
-                for (DBDValueHint hint : hints) {
-                    if (!CommonUtils.isEmpty(hint.getHintText())) {
-                        needRefresh = true;
-                        break;
+        for (DBDAttributeBinding attr : attrs) {
+            for (DBDValueRow row : rows) {
+                Object cellValue = model.getCellValue(attr, row, rowIndexes, false);
+                List<DBDCellHintProvider> hintProviders = model.getHintContext().getCellHintProviders(attr);
+                for (DBDCellHintProvider provider : hintProviders) {
+                    DBDValueHint[] hints = provider.getCellHints(
+                        model,
+                        attr,
+                        row,
+                        cellValue,
+                        EnumSet.of(DBDValueHint.HintType.STRING),
+                        DBDValueHintProvider.OPTION_INLINE);
+                    if (hints != null) {
+                        for (DBDValueHint hint : hints) {
+                            if (!CommonUtils.isEmpty(hint.getHintText())) {
+                                needRefresh = true;
+                                break;
+                            }
+                        }
                     }
+                    if (needRefresh) break;
                 }
+                if (needRefresh) break;
             }
             if (needRefresh) break;
         }
-        if (refreshPresentation) {
+        if (needRefresh) {
             new AbstractJob("Refresh hint cache") {
                 @Override
                 protected IStatus run(DBRProgressMonitor monitor) {
                     try {
                         model.getHintContext().cacheRequiredData(
                             monitor,
-                            Collections.singletonList(attr),
-                            Collections.singletonList(row),
+                            attrs,
+                            rows,
                             false);
                         UIUtils.syncExec(() -> redrawData(true, true));
                     } catch (DBException e) {

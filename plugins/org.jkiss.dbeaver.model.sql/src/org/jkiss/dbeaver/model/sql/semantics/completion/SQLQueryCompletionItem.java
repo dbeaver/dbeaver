@@ -21,11 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructContainer;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -112,6 +111,16 @@ public abstract class SQLQueryCompletionItem {
         @NotNull DBSObject object
     ) {
         return new SQLDbNamedObjectCompletionItem(score, filterKey, resolvedContext, object);
+    }
+
+    @NotNull
+    public static SQLQueryCompletionItem forCompositeField(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @NotNull DBSEntityAttribute attribute,
+        @NotNull SQLQueryExprType.SQLQueryExprTypeMemberInfo memberInfo
+    ) {
+        return new SQLCompositeFieldCompletionItem(score, filterKey, attribute, memberInfo);
     }
 
     public static SQLQueryCompletionItem forJoinCondition(
@@ -216,7 +225,7 @@ public abstract class SQLQueryCompletionItem {
 
         @NotNull
         @Override
-        public DBSObject getObject() {
+        public T getObject() {
             return this.object;
         }
     }
@@ -290,6 +299,32 @@ public abstract class SQLQueryCompletionItem {
         }
     }
 
+    public static class SQLCompositeFieldCompletionItem extends SQLDbObjectCompletionItem<DBSEntityAttribute>  {
+        @NotNull
+        public final SQLQueryExprType.SQLQueryExprTypeMemberInfo memberInfo;
+
+        SQLCompositeFieldCompletionItem(
+            int score,
+            @NotNull SQLQueryWordEntry filterKey,
+            @NotNull DBSEntityAttribute attribute,
+            @NotNull SQLQueryExprType.SQLQueryExprTypeMemberInfo memberInfo
+        ) {
+            super(score, filterKey, null, attribute);
+            this.memberInfo = memberInfo;
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return SQLQueryCompletionItemKind.COMPOSITE_FIELD_NAME;
+        }
+
+        @Override
+        protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitCompositeField(this);
+        }
+    }
+
     public static class SQLJoinConditionCompletionItem extends SQLQueryCompletionItem {
         @NotNull
         public final SQLColumnNameCompletionItem left;
@@ -330,6 +365,6 @@ public abstract class SQLQueryCompletionItem {
         return parts;
     }
 
-    public record ContextObjectInfo(@NotNull String string, @NotNull DBSObject object) {
+    public record ContextObjectInfo(@NotNull String string, @NotNull DBSObject object, boolean preventFullName) {
     }
 }

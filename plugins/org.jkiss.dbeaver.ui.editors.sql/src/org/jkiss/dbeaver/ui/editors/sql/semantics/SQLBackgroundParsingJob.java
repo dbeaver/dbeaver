@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -163,14 +164,14 @@ public class SQLBackgroundParsingJob {
      * Prepare completion context for the specified position in the text
      */
     @NotNull
-    public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPostion) {
+    public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPosition) {
         SQLScriptItemAtOffset scriptItem = null;
         do {
             final long requestStamp = System.currentTimeMillis();
             CompletableFuture<Long> expectedParsingSessionFinishStamp;
             synchronized (this.syncRoot) {
                 if (scriptItem == null || this.queuedForReparse.size() == 0) {
-                    int requestOffset = completionRequestPostion.getOffset();
+                    int requestOffset = completionRequestPosition.getOffset();
                     // the offset may be covered by adjacent scriptItem but still queued due to actual scriptItem being temporarily dropped
                     NodesIterator<QueuedRegionInfo> qit = this.queuedForReparse.nodesIteratorAt(requestOffset);
                     QueuedRegionInfo region = qit.getCurrValue() != null ? qit.getCurrValue() : (qit.prev() ? qit.getCurrValue() : null);
@@ -187,14 +188,14 @@ public class SQLBackgroundParsingJob {
                                 if (DEBUG) {
                                     log.debug("obtained model for " + scriptItem.item.getOriginalText());
                                 }
-                                return this.prepareCompletionContext(scriptItem, completionRequestPostion.getOffset());
+                                return this.prepareCompletionContext(scriptItem, completionRequestPosition.getOffset());
                             }
                         } else if (this.queuedForReparse.size() <= 0) {
                             // no script items here, so fallback to offquery context
                             if (DEBUG) {
                                 log.debug("fallback to offquery context");
                             }
-                            return SQLQueryCompletionContext.prepareOffquery(0, completionRequestPostion.getOffset());
+                            return SQLQueryCompletionContext.prepareOffquery(0, completionRequestPosition.getOffset());
                         }
                     }
                 }
@@ -206,13 +207,13 @@ public class SQLBackgroundParsingJob {
                 // when the job is not scheduled yet (so join returns immediately)
                 // job.schedule() performed only after the series of keypresses at after-change event
                 if (getFutureOrCancel(expectedParsingSessionFinishStamp, monitor.getNestedMonitor()) < requestStamp) {
-                    return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPostion.getOffset());
+                    return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
                 }
             } catch (InterruptedException | ExecutionException e) {
                 break;
             }
-        } while (!completionRequestPostion.isDeleted());
-        return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPostion.getOffset());
+        } while (!completionRequestPosition.isDeleted());
+        return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
     }
 
     @NotNull
@@ -234,7 +235,7 @@ public class SQLBackgroundParsingJob {
 
                 LSMInspections inspections = new LSMInspections(this.obtainCurrentSqlDialect(this.editor.getExecutionContext()), syntaxNode);
                 LSMInspections.SyntaxInspectionResult syntaxInspectionResult = inspections.prepareAbstractSyntaxInspection(position);
-                SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(Math.min(position, model.getSyntaxNode().getRealInterval().b));
+                SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(Math.min(position, model.getSyntaxNode().getRealInterval().b + 1));
                 if (context.deepestContext() == null) {
                     return SQLQueryCompletionContext.prepareEmpty(0, offset);
                 }
@@ -246,7 +247,15 @@ public class SQLBackgroundParsingJob {
                 ArrayDeque<STMTreeNode> nameNodes = nameInspectionResult.nameNodes();
 
                 SQLQueryLexicalScopeItem lexicalItem = context.lexicalItem();
-                if (nameNodes.isEmpty() || (lexicalItem != null && nameNodes.getLast().getRealInterval().b != lexicalItem.getSyntaxNode().getRealInterval().b)) {
+//                if (nameNodes.isEmpty() || (lexicalItem != null && nameNodes.getLast().getRealInterval().b != lexicalItem.getSyntaxNode().getRealInterval().b)) {
+                // no name nodes OR
+                if (lexicalItem != null && !(lexicalItem instanceof SQLQueryMemberAccessEntry) && (
+                    nameNodes.isEmpty() || (
+                    nameNodes.getFirst().getRealInterval().a > lexicalItem.getSyntaxNode().getRealInterval().a ||
+                    nameNodes.getLast().getRealInterval().b < lexicalItem.getSyntaxNode().getRealInterval().b
+                    )
+                )) {
+                    // lexicalItem is identifier (not an isolated Period character) outside nameNodes (actually, WTF?!)
                     lexicalItem = null;
                 }
                 return SQLQueryCompletionContext.prepare(

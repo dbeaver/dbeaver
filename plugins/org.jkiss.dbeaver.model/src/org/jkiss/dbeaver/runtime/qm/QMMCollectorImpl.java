@@ -132,6 +132,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         try {
             String sessionId = QMUtils.getQmSessionId(context);
             eventPool.add(new QMMetaEvent(object, action, sessionId));
+            // may be send event here
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
         }
