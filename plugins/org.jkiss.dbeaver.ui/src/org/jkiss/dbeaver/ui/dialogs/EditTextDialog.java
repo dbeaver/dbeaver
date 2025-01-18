@@ -22,11 +22,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class EditTextDialog extends BaseDialog {
 
     private String text;
+    private String infoLabelText = "";
     private Text textControl;
     protected int textWidth = 300;
     protected int textHeight = 200;
@@ -47,6 +50,10 @@ public class EditTextDialog extends BaseDialog {
         this.readonly = readonly;
     }
 
+    public void setLabelText(String text) {
+        this.infoLabelText = text;
+    }
+
     public void setMonospaceFont(boolean monospaceFont) {
         this.monospaceFont = monospaceFont;
     }
@@ -65,6 +72,15 @@ public class EditTextDialog extends BaseDialog {
     protected Composite createDialogArea(Composite parent) {
         Composite composite = super.createDialogArea(parent);
         createControlsBeforeText(composite);
+
+        if (infoLabelText.length() > 0) {
+            Label textLabel = new Label(composite, SWT.NONE);
+            textLabel.setText(infoLabelText);
+            GridData gd = new GridData();
+            gd.horizontalSpan = 1;
+            textLabel.setLayoutData(gd);
+        }
+
         textControl = new Text(composite, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
         if (text != null) {
             textControl.setText(text);
@@ -105,8 +121,15 @@ public class EditTextDialog extends BaseDialog {
         super.okPressed();
     }
 
-    public static String editText(Shell parentShell, String title, String text) {
+    @Nullable
+    public static String editText(Shell parentShell, @Nullable String title, @Nullable String text) {
+        return editText(parentShell, title, text, "");
+    }
+
+    @Nullable
+    public static String editText(Shell parentShell, @Nullable String title, @Nullable String text, @Nullable String infoLabelText) {
         EditTextDialog dialog = new EditTextDialog(parentShell, title, text);
+        dialog.setLabelText(infoLabelText);
         if (dialog.open() == IDialogConstants.OK_ID) {
             return dialog.text;
         } else {
