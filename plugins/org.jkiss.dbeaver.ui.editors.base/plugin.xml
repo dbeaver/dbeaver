@@ -131,4 +131,26 @@
 
     </extension>
 
+    <!-- File content types.
+      No special handling, just says to open these types in embedded text editor -->
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+                base-type="org.eclipse.core.runtime.text"
+                file-extensions="csv"
+                id="org.jkiss.dbeaver.csv"
+                name="CSV file"
+                priority="normal"/>
+        <content-type
+                base-type="org.eclipse.core.runtime.text"
+                file-extensions="tsv"
+                id="org.jkiss.dbeaver.tsv"
+                name="TSV file"
+                priority="normal"/>
+        <content-type
+                base-type="org.eclipse.core.runtime.text"
+                file-extensions="log"
+                id="org.jkiss.dbeaver.log"
+                name="Log file"
+                priority="normal"/>
+    </extension>
 </plugin>
