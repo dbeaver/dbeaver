@@ -408,7 +408,7 @@ updateStatement: UPDATE anyWordsWithProperty?? tableReference? (SET setClauseLis
 setClauseList: setClause (Comma setClause)*;
 setClause: ((setTarget | setTargetList) (EqualsOperator updateSource?)?)|anyUnexpected??;
 setTarget: columnName;
-setTargetList: columnNameList;
+setTargetList: LeftParen columnNameList? RightParen?;
 updateSource: updateValue | (LeftParen updateValue (Comma updateValue)* RightParen?);
 updateValue: valueExpression|DEFAULT;
 
