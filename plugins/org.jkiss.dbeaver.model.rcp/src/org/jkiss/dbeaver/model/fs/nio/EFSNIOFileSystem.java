@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.fs.nio;
 
-import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.provider.FileSystem;
 import org.jkiss.dbeaver.Log;
@@ -80,14 +79,17 @@ public class EFSNIOFileSystem extends FileSystem {
                                         relPath = URLDecoder.decode(relPath, StandardCharsets.UTF_8);
                                         path = fsNodeRoot.getPath().resolve(relPath);
                                     } catch (Exception e) {
-                                        log.debug("Error resolving path", e);
+                                        throw new IllegalArgumentException("Error resolving path '" + relPath + "'", e);
                                     }
                                 }
                             } else {
                                 log.debug("File system '" + fsType + ":" + fsId + "' not found");
                             }
                         } catch (Exception e) {
-                            log.debug("Error reading file systems", e);
+                            if (e instanceof RuntimeException re) {
+                                throw re;
+                            }
+                            throw new IllegalArgumentException("Error reading file systems", e);
                         }
                     }
                 }
@@ -95,8 +97,8 @@ public class EFSNIOFileSystem extends FileSystem {
         }
 
         if (path == null) {
-            log.debug("Invalid " + DBVFS_FS_ID + " URI: " + uri);
-            return EFS.getNullFileSystem().getStore(uri);
+            throw new IllegalArgumentException("Invalid " + DBVFS_FS_ID + " URI: " + uri);
+            //return EFS.getNullFileSystem().getStore(uri);
         }
         return new EFSNIOFileStore(uri, path);
     }

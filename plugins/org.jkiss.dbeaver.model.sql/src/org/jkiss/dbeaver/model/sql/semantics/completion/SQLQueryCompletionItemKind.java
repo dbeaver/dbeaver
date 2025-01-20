@@ -48,6 +48,11 @@ public enum SQLQueryCompletionItemKind {
      * */
     TABLE_COLUMN_NAME(false, true),
     /**
+     * Composite field name
+     * <p> (simple identifier)
+     * */
+    COMPOSITE_FIELD_NAME(false, true),
+    /**
      * Join condition based on the foreign key
      * <p> (expression, consisting of two column references)
      */

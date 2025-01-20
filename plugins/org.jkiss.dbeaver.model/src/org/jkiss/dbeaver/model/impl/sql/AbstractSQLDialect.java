@@ -1013,6 +1013,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean isEscapeBackslash() {
+        return false;
+    }
+
+    @Override
     public boolean hasCaseSensitiveFiltration() {
         return false;
     }

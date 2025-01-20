@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Dameng Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.dameng;singleton:=true
-Bundle-Version: 1.0.31.qualifier
-Bundle-Release-Date: 20250120
+Bundle-Version: 1.0.32.qualifier
+Bundle-Release-Date: 20250203
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
