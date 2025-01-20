@@ -14,23 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.sqlite.auth;
+package org.jkiss.dbeaver.ext.sqlite.ui.config;
 
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.sqlite.ui.internal.SQLiteMessages;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
 
-public class LibSQLAuthConfigurator extends DatabaseNativeAuthModelConfigurator {
 
-    private Text token;
+public class LibSQLTokenAuthModelConfigurator extends DatabaseNativeAuthModelConfigurator {
+
 
     @Override
-    public void createControl(@NotNull Composite parent, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
-        super.createControl(parent, object, propertyChangeListener);
-        token = UIUtils.createLabelText(parent, "Token", "");
+    public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
+        createPasswordControls(authPanel, propertyChangeListener);
+    }
+
+    @Override
+    protected String getPasswordFieldLabel() {
+        return SQLiteMessages.dialog_connection_auth_label_password;
     }
 }

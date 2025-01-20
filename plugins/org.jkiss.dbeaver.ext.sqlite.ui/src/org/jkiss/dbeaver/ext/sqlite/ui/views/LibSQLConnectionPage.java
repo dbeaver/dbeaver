@@ -14,20 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.sqlite.auth;
+package org.jkiss.dbeaver.ext.sqlite.ui.views;
 
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
-import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage;
+import org.jkiss.dbeaver.ext.sqlite.ui.internal.SQLiteMessages;
 
-public class LibSQLTokenCredentials extends AuthModelDatabaseNativeCredentials {
+public class LibSQLConnectionPage extends GenericConnectionPage {
     @Override
-    @Property(hidden = true)
-    public String getUserName() {
-        return super.getUserName();
-    }
-
-    @Override
-    public String getUserPassword() {
-        return super.getUserPassword();
+    protected String getServerLabel() {
+        return SQLiteMessages.dialog_connection_server_label;
     }
 }

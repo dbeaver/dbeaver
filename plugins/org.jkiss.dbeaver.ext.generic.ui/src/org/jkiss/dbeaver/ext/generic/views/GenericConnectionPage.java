@@ -169,7 +169,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
 
         {
             Label serverLabel = new Label(settingsGroup, SWT.NONE);
-            serverLabel.setText(GenericMessages.dialog_connection_server_label);
+            serverLabel.setText(getServerLabel());
             serverLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             serverText = new Text(settingsGroup, SWT.BORDER);
@@ -643,6 +643,10 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         return new IDialogPage[] {
             new DriverPropertiesDialogPage(this)
         };
+    }
+
+    protected String getServerLabel() {
+        return GenericMessages.dialog_connection_server_label;
     }
 
 }
