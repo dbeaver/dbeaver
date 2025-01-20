@@ -77,7 +77,7 @@ public class StatisticsTransmitter {
         try {
             String appSessionId = DBWorkbench.getPlatform().getApplication().getApplicationRunId();
             Path activityLogsFolder = FeatureStatisticsCollector.getActivityLogsFolder();
-            if (activityLogsFolder.toFile().exists() && !activityLogsFolder.toFile().canWrite()) {
+            if (Files.exists(activityLogsFolder) && !Files.isWritable(activityLogsFolder)) {
                 log.debug("Read-only metadata folder - can't send statistics");
                 return;
             }
@@ -114,7 +114,7 @@ public class StatisticsTransmitter {
     }
 
     private void sendLogFile(Path logFile, String timestamp, String sessionId) {
-        if (logFile.toFile().exists() && !logFile.toFile().canWrite()) {
+        if (Files.exists(logFile) && !Files.isWritable(logFile)) {
             log.debug("Statistics file is read-only, skipping transmission: " + logFile);
             return;
         }
