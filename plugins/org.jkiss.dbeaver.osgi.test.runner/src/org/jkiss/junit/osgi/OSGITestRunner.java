@@ -85,7 +85,6 @@ public class OSGITestRunner extends Runner {
     public OSGITestRunner(Class<? extends IApplicationTest> testClass) {
         this.testClass = testClass;
         if (isRunFromIDEA()) {
-            System.out.println("RUN FROM IDEA");
             //use UTF-8 for run
             try {
                 // Determine name of test bundle
@@ -102,8 +101,8 @@ public class OSGITestRunner extends Runner {
                 }
             } catch (Exception e) {
                 log.error(e);
-                this.productPath = findProduct();
             }
+            this.productPath = findProduct();
 
             getAppBundleFromAnnotation();
             this.framework = initializeFramework();
