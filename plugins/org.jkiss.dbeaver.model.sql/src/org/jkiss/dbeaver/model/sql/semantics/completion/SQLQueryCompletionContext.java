@@ -278,11 +278,6 @@ public abstract class SQLQueryCompletionContext {
 
                 List<SQLQueryCompletionSet> completionSets = new LinkedList<>();
 
-                boolean keywordsAllowed = (lexicalItem == null || (lexicalItem.getOrigin() != null && !lexicalItem.getOrigin().isChained()) || (lexicalItem.getSymbolClass() != null && potentialKeywordPartClassification.contains(lexicalItem.getSymbolClass()))) && !hasPeriod;
-                if (keywordsAllowed) {
-                    this.prepareKeywordCompletions(syntaxInspectionResult.predictedWords(), currentWord, completionSets);
-                }
-
                 if (lexicalItem != null) {
                     this.prepareLexicalItemCompletions(monitor, request, lexicalItem, position, parts, completionSets);
                 }  else if (syntaxInspectionResult.expectingIdentifier() || this.nameNodesAreUseful(parts)) {
@@ -291,6 +286,11 @@ public abstract class SQLQueryCompletionContext {
                     this.accomplishFromKnownOrigin(monitor, request, context.symbolsOrigin(), null, completionSets);
                 } else {
                     this.prepareInspectedFreeCompletions(monitor, request, completionSets);
+                }
+
+                boolean keywordsAllowed = (lexicalItem == null || (lexicalItem.getOrigin() != null && !lexicalItem.getOrigin().isChained()) || (lexicalItem.getSymbolClass() != null && potentialKeywordPartClassification.contains(lexicalItem.getSymbolClass()))) && !hasPeriod;
+                if (keywordsAllowed) {
+                    this.prepareKeywordCompletions(syntaxInspectionResult.predictedWords(), currentWord, completionSets);
                 }
 
                 completionSets.removeIf(c -> c == null || c.getItems().isEmpty());
