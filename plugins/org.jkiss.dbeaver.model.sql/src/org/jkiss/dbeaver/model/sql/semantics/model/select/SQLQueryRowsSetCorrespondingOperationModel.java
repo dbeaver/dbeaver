@@ -121,6 +121,7 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
                 }
             }
         } else { // require left and right to have columns subset as given with correspondingColumnNames
+            SQLQuerySymbolOrigin columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(left.combine(right));
             int resultColumnsCount = correspondingColumnNames.size();
             resultColumns = new ArrayList<>(resultColumnsCount);
             for (int i = 0; i < resultColumnsCount; i++) {
@@ -135,6 +136,7 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
                     SQLQueryExprType type = this.obtainCommonType(leftDef, rightDef);
 
                     column.getSymbol().setDefinition(column); // TODO combine multiple definitions
+                    column.setOrigin(columnNameOrigin);
                     resultColumns.add(new SQLQueryResultColumn(i, column.getSymbol(), this, null, null, type));
                 }
             }

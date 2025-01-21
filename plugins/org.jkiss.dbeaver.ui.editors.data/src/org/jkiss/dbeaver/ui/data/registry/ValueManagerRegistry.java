@@ -39,7 +39,7 @@ import java.util.*;
 /**
  * ValueManagerRegistry
  */
-public class ValueManagerRegistry extends AbstractValueBindingRegistry<IValueManager, ValueManagerDescriptor> {
+public class ValueManagerRegistry extends AbstractValueBindingRegistry<IValueManager, Object, ValueManagerDescriptor> {
 
     private static ValueManagerRegistry instance = null;
 
@@ -80,7 +80,7 @@ public class ValueManagerRegistry extends AbstractValueBindingRegistry<IValueMan
 
     @NotNull
     public static IValueManager findValueManager(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject typedObject, @NotNull Class<?> valueType) {
-        return getInstance().getValueBinding(dataSource, typedObject, valueType);
+        return getInstance().getValueBinding(typedObject, dataSource, typedObject, valueType);
     }
 
     @NotNull

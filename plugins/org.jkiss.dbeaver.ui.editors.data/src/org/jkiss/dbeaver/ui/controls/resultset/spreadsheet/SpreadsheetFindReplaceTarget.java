@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.text.IFindReplaceTargetExtension;
 import org.eclipse.jface.text.IFindReplaceTargetExtension3;
@@ -32,11 +34,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.UIStyles;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCellLocation;
@@ -45,9 +52,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetValueController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -58,6 +63,7 @@ import java.util.regex.PatternSyntaxException;
 class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTargetExtension, IFindReplaceTargetExtension3 {
 
     private static final Log log = Log.getLog(SpreadsheetFindReplaceTarget.class);
+    private static final Object REDRAW_SYNC = new Object();
     private static SpreadsheetFindReplaceTarget instance;
 
     /** Uses {@link Object#hashCode()} to identity the current owner and determine whether he was changed or not. */
@@ -67,6 +73,9 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     private boolean replaceAll;
     private boolean sessionActive = false;
     private List<GridPos> originalSelection = new ArrayList<>();
+    private final Set<DBDValueRow> updatedRows = new LinkedHashSet<>();
+    private final Set<DBDAttributeBinding> updatedAttributes = new LinkedHashSet<>();
+    private AbstractJob redrawJob = null;
 
     public static synchronized SpreadsheetFindReplaceTarget getInstance() {
         if (instance == null) {
@@ -152,6 +161,11 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     @Override
     public void beginSession()
     {
+        synchronized (REDRAW_SYNC) {
+            updatedRows.clear();
+            updatedAttributes.clear();
+        }
+
         final SpreadsheetPresentation owner = getActiveSpreadsheet(false);
         if (owner == null) {
             return;
@@ -372,24 +386,50 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         final Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(
             cell.col, cell.row, false);
         try {
-            if (originalValue instanceof DBDContent) {
-                ((DBDContent) originalValue)
-                    .updateContents(new VoidProgressMonitor(), new StringContentStorage(newValue));
+            if (originalValue instanceof DBDContent content) {
+                content.updateContents(new VoidProgressMonitor(), new StringContentStorage(newValue));
                 new ResultSetValueController(owner.getController(), cellLocation, IValueController.EditType.NONE, null)
-                    .updateValue(originalValue, true);
+                    .updateValue(originalValue, !replaceAll);
             } else {
                 owner.getController().updateCellValue(
                     cellLocation.getAttribute(),
                     cellLocation.getRow(),
                     cellLocation.getRowIndexes(),
                     newValue,
-                    true);
+                    !replaceAll);
             }
         } catch (DBException e) {
             log.error("Error updating contents", e);
         }
 
-        owner.getController().updatePanelsContent(false);
+        synchronized (REDRAW_SYNC) {
+            updatedAttributes.add(cellLocation.getAttribute());
+            updatedRows.add(cellLocation.getRow());
+
+            if (redrawJob == null) {
+                redrawJob = new AbstractJob("Redraw grid after replace") {
+                    @Override
+                    protected IStatus run(DBRProgressMonitor monitor) {
+                        Set<DBDAttributeBinding> attrs;
+                        Set<DBDValueRow> rows;
+                        synchronized (REDRAW_SYNC) {
+                            attrs = new LinkedHashSet<>(updatedAttributes);
+                            rows = new LinkedHashSet<>(updatedRows);
+                            updatedAttributes.clear();
+                            updatedRows.clear();
+                            redrawJob = null;
+                        }
+                        UIUtils.syncExec(() -> {
+                            owner.getController().refreshHintCache(attrs, rows, null);
+                            owner.getController().redrawData(false, true);
+                            owner.getController().updatePanelsContent(false);
+                        });
+                        return Status.OK_STATUS;
+                    }
+                };
+            }
+            redrawJob.schedule(150);
+        }
     }
 
     @Override

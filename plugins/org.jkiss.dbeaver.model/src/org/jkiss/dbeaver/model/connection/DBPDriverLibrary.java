@@ -93,9 +93,6 @@ public interface DBPDriverLibrary {
     @Nullable
     Path getLocalFile();
 
-    @Nullable
-    Path getLocalFile(@NotNull DBRProgressMonitor monitor);
-
     boolean matchesCurrentPlatform();
 
     @Nullable

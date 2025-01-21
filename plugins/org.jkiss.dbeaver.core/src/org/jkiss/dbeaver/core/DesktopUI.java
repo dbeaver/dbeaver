@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
@@ -74,6 +75,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 
 /**
  * DBeaver UI core
@@ -697,14 +699,51 @@ public class DesktopUI extends ConsoleUserInterface {
         String[] filterExt,
         String defaultValue
     ) {
+        DBNFileSystems fileSystemsNode = FileSystemExplorerView.getFileSystemsNode();
+        if (fileSystemsNode == null) {
+            log.error("File system root node not found");
+            return null;
+        }
+        DBNNode[] selectedNode = new DBNNode[1];
+        if (defaultValue != null) {
+            try {
+                UIUtils.runInProgressService(monitor -> {
+                    try {
+                        monitor.beginTask("Locate file", 1);
+                        monitor.subTask("Locate '" + defaultValue + "'");
+                        selectedNode[0] = fileSystemsNode.findNodeByPath(new VoidProgressMonitor(), defaultValue);
+                        monitor.done();
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        Predicate<String> extFilter = s -> {
+            if (filterExt != null && filterExt.length > 0) {
+                for (String mask : filterExt) {
+                    int i = mask.lastIndexOf('.');
+                    String ext = i == -1 ? mask : mask.substring(i);
+                    if (s.endsWith(ext)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return true;
+        };
         DBNNode object = ObjectBrowserDialog.selectObject(
             UIUtils.getActiveWorkbenchShell(),
             title,
-            FileSystemExplorerView.getFileSystemsNode(),
-            null,
-            null,
+            fileSystemsNode,
+            selectedNode[0],
             new Class[] { DBNPathBase.class },
-            null);
+            new Class[] { DBNPathBase.class },
+            null,
+            extFilter);
         if (object instanceof DBNPathBase path) {
             return path;
         }

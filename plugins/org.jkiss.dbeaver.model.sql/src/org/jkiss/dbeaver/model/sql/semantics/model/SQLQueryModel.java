@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.model;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
@@ -25,10 +26,10 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryPureResultTupleContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.utils.ListNode;
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Query model for recognition
@@ -38,16 +39,19 @@ public class SQLQueryModel extends SQLQueryNodeModel {
     private final Set<SQLQuerySymbolEntry> symbolEntries;
     @Nullable
     private final SQLQueryModelContent queryContent;
+    @NotNull
+    private final List<SQLQueryLexicalScopeItem> lexicalItems;
 
-    
     public SQLQueryModel(
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryModelContent queryContent,
-        @NotNull Set<SQLQuerySymbolEntry> symbolEntries
+        @NotNull Set<SQLQuerySymbolEntry> symbolEntries,
+        @NotNull List<SQLQueryLexicalScopeItem> lexicalItems
     ) {
         super(syntaxNode.getRealInterval(), syntaxNode, queryContent);
         this.queryContent = queryContent;
         this.symbolEntries = symbolEntries;
+        this.lexicalItems = lexicalItems;
     }
 
     @NotNull
@@ -142,6 +146,22 @@ public class SQLQueryModel extends SQLQueryNodeModel {
         // if context was not provided by the lexical scope, use one from the deepest model node
         if (context == null) {
             context = deepestContext;
+        }
+
+        if (lexicalItem == null) {
+            // table refs are not registered in lexical scopes properly for now (rowsets model being build bottom-to-top),
+            // so trying to find their components in the global list
+            int index = STMUtils.binarySearchByKey(this.lexicalItems, n -> n.getSyntaxNode().getRealInterval().a, textOffset - 1, Comparator.comparingInt(x -> x));
+            if (index < 0) {
+                index = ~index - 1;
+            }
+            if (index >= 0) {
+                SQLQueryLexicalScopeItem item = lexicalItems.get(index);
+                Interval interval = item.getSyntaxNode().getRealInterval();
+                if (interval.a < textOffset && interval.b + 1 >= textOffset) {
+                    lexicalItem = item;
+                }
+            }
         }
 
         return new LexicalContextResolutionResult(textOffset, nearestResultContext, context, lexicalItem);

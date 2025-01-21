@@ -47,6 +47,13 @@ public class CubridView extends GenericView
         this.owner = (CubridUser) container;
     }
 
+    @NotNull
+    @Property(viewable = true, editable = true, order =1)
+    @Override
+    public String getName() {
+        return super.getName().toLowerCase();
+    }
+
     public void setSchema(@NotNull CubridUser owner) {
         this.owner = owner;
     }
