@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * ObjectBrowserDialog
@@ -44,6 +45,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
     private final Class<?>[] allowedTypes;
     private final Class<?>[] resultTypes;
     private final Class<?>[] leafTypes;
+    private Predicate<String> nameFilter;
 
     private ObjectBrowserDialog(
         @NotNull Shell parentShell,
@@ -59,6 +61,10 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         this.allowedTypes = allowedTypes;
         this.resultTypes = resultTypes == null ? allowedTypes : resultTypes;
         this.leafTypes = leafTypes;
+    }
+
+    public void setNameFilter(Predicate<String> nameFilter) {
+        this.nameFilter = nameFilter;
     }
 
     @Override
@@ -101,6 +107,9 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
                         return ((DBNLocalFolder) element).hasConnected();
                     }
                 }
+                if (nameFilter != null && element instanceof DBNNode node && !node.hasChildren(false) && !nameFilter.test(node.getName())) {
+                    return false;
+                }
                 if (element instanceof TreeNodeSpecial ||
                     element instanceof DBNLocalFolder ||
                     element instanceof DBNFileSystem ||
@@ -109,14 +118,13 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
                     return true;
                 }
                 if (element instanceof DBNNode) {
-                    if (element instanceof DBNDatabaseFolder) {
-                        DBNDatabaseFolder folder = (DBNDatabaseFolder) element;
+                    if (element instanceof DBNDatabaseFolder folder) {
                         Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
                         return folderItemsClass != null && matchesType(folderItemsClass, false);
                     }
                     if (element instanceof DBNProject || element instanceof DBNProjectDatabases ||
                         element instanceof DBNDataSource ||
-                        (element instanceof DBSWrapper && matchesType(((DBSWrapper) element).getObject().getClass(), false))
+                        (element instanceof DBSWrapper wrapper && matchesType(wrapper.getObject().getClass(), false))
                     ) {
                         return true;
                     }
@@ -160,6 +168,20 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         @Nullable Class<?>[] resultTypes,
         @Nullable Class<?>[] leafTypes
     ) {
+        return selectObject(parentShell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes, null);
+    }
+
+    @Nullable
+    public static DBNNode selectObject(
+        @NotNull Shell parentShell,
+        @NotNull String title,
+        @NotNull DBNNode rootNode,
+        @Nullable DBNNode selectedNode,
+        @NotNull Class<?>[] allowedTypes,
+        @Nullable Class<?>[] resultTypes,
+        @Nullable Class<?>[] leafTypes,
+        @Nullable Predicate<String> nameFilter
+    ) {
         ObjectBrowserDialog scDialog = new ObjectBrowserDialog(
             parentShell,
             title,
@@ -170,6 +192,9 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
             resultTypes,
             leafTypes
         );
+        if (nameFilter != null) {
+            scDialog.setNameFilter(nameFilter);
+        }
         if (scDialog.open() == IDialogConstants.OK_ID) {
             List<DBNNode> result = scDialog.getSelectedObjects();
             return result.isEmpty() ? null : result.get(0);

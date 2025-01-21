@@ -536,7 +536,7 @@
         <provider
                 class="org.jkiss.dbeaver.ext.mssql.model.data.SQLServerStandardValueHandlerProvider"
                 description="sql server data types provider"
-                id="org.jkiss.dbeaver.ext.mssql.model.data.SQLServerStandardValueHandlerProvider"
+                id="SQLServerStandardValueHandlerProvider"
                 label="SQL Server data types provider">
 
             <datasource id="sqlserver"/>

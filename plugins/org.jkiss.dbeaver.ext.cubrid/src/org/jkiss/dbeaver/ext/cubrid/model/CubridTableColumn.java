@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -74,7 +75,14 @@ public class CubridTableColumn extends GenericTableColumn
 
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 20, listProvider = ColumnTypeNameListProvider.class)
+    @Property(viewable = true, editable = true, order = 10)
+    public String getName() {
+        return super.getName().toLowerCase();
+    }
+
+    @NotNull
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     public String getTypeName() {
         return super.getTypeName();
     }
@@ -83,7 +91,10 @@ public class CubridTableColumn extends GenericTableColumn
     @Override
     @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 40)
     public long getMaxLength() {
-        return super.getMaxLength();
+        if (getDataKind().equals(DBPDataKind.STRING)) {
+            return super.getMaxLength();
+        }
+        return 0;
     }
 
     @NotNull

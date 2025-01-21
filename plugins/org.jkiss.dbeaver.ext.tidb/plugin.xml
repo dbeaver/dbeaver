@@ -122,7 +122,8 @@
         <provider
             class="org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider"
             description="TiDB data types provider"
-            id="org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider"
+            id="TiDBValueHandlerProvider"
+            parent="GenericValueHandlerProvider"
             label="TiDB data types provider">
             <datasource id="tidb"/>
             <type standard="TIMESTAMP"/>
