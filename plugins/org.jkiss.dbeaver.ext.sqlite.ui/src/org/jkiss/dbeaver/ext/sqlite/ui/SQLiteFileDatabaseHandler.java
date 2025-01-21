@@ -45,7 +45,7 @@ public class SQLiteFileDatabaseHandler extends AbstractFileDatabaseHandler {
     }
 
     @Override
-    protected boolean isOpenAllTables() {
+    protected boolean isSingleDatabaseConnection() {
         return false;
     }
 }

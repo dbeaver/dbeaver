@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -67,8 +68,20 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
             log.error("Driver '" + getDriverReference() + "' not found");
             return;
         }
+
+        if (isSingleDatabaseConnection()) {
+            String databaseName = createDatabaseName(fileList);
+            createDatabaseConnection(databaseName, project, driver);
+        } else {
+            for (Path dbFile : fileList) {
+                String databaseName = createDatabaseName(Collections.singletonList(dbFile));
+                createDatabaseConnection(databaseName, project, driver);
+            }
+        }
+    }
+
+    private void createDatabaseConnection(@NotNull String databaseName, DBPProject project, DBPDriver driver) {
         DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
-        String databaseName = createDatabaseName(fileList);
         configuration.setDatabaseName(databaseName);
         DBPDataSourceContainer dsContainer = project.getDataSourceRegistry().createDataSource(driver, configuration);
         dsContainer.setName(databaseName);
@@ -86,7 +99,7 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
                 try {
                     if (dsContainer.connect(monitor, true, true)) {
                         DBPDataSource dataSource = dsContainer.getDataSource();
-                        if (isOpenAllTables()) {
+                        if (isSingleDatabaseConnection()) {
                             if (dataSource instanceof DBSObjectContainer container) {
                                 openEntitiesFrom(monitor, container);
                             }
@@ -145,7 +158,7 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
 
     protected abstract DriverReference getDriverReference();
 
-    protected boolean isOpenAllTables() {
+    protected boolean isSingleDatabaseConnection() {
         return true;
     }
 
