@@ -87,32 +87,33 @@ public class NavigatorDragSourceListener implements DragSourceListener {
     public void dragSetData(DragSourceEvent event) {
         if (!selection.isEmpty()) {
             final Map<DBNNode, NavigatorTransferInfo> info = collectNodesInfo(event);
-
-            if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
-                event.data = info.keySet();
-            } else if (DatabaseObjectTransfer.getInstance().isSupportedType(event.dataType)) {
-                event.data = info.values().stream()
-                    .map(NavigatorTransferInfo::getObject)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-            } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-                event.data = info.values().stream()
-                    .map(NavigatorTransferInfo::getName)
-                    .collect(Collectors.joining(CommonUtils.getLineSeparator()));
-            } else if (EditorInputTransfer.getInstance().isSupportedType(event.dataType)) {
-                event.data = info.values().stream()
-                    .map(NavigatorTransferInfo::createEditorInputData)
-                    .filter(Objects::nonNull)
-                    .toArray(EditorInputTransfer.EditorInputData[]::new);
-            } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
-                event.data = info.values().stream()
-                    .map(NavigatorTransferInfo::getName)
-                    .filter(name -> Files.exists(Path.of(name)))
-                    .toArray(String[]::new);
+            if (!info.isEmpty()) {
+                if (TreeNodeTransfer.getInstance().isSupportedType(event.dataType)) {
+                    event.data = info.keySet();
+                } else if (DatabaseObjectTransfer.getInstance().isSupportedType(event.dataType)) {
+                    event.data = info.values().stream()
+                        .map(NavigatorTransferInfo::getObject)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+                } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                    event.data = info.values().stream()
+                        .map(NavigatorTransferInfo::getName)
+                        .collect(Collectors.joining(CommonUtils.getLineSeparator()));
+                } else if (EditorInputTransfer.getInstance().isSupportedType(event.dataType)) {
+                    event.data = info.values().stream()
+                        .map(NavigatorTransferInfo::createEditorInputData)
+                        .filter(Objects::nonNull)
+                        .toArray(EditorInputTransfer.EditorInputData[]::new);
+                } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
+                    event.data = info.values().stream()
+                        .map(NavigatorTransferInfo::getName)
+                        .filter(name -> Files.exists(Path.of(name)))
+                        .toArray(String[]::new);
+                }
+                return;
             }
-        } else {
-            setEmptyData(event);
         }
+        setEmptyData(event);
     }
 
     @NotNull
