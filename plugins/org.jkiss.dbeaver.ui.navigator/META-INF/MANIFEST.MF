@@ -28,7 +28,7 @@ Export-Package: org.jkiss.dbeaver.tools.project,
  org.jkiss.dbeaver.ui.navigator.actions,
  org.jkiss.dbeaver.ui.navigator.database,
  org.jkiss.dbeaver.ui.navigator.database.load,
- org.jkiss.dbeaver.ui.navigator.dialogs,W
+ org.jkiss.dbeaver.ui.navigator.dialogs,
  org.jkiss.dbeaver.ui.navigator.itemlist,
  org.jkiss.dbeaver.ui.navigator.project,
  org.jkiss.dbeaver.ui.preferences,
