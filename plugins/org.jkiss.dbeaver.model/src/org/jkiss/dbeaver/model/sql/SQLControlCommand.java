@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 /**
  * SQL control command
@@ -57,6 +58,10 @@ public class SQLControlCommand implements SQLScriptElement {
         this.emptyCommand = emptyCommand;
 
         this.commandId = commandId == null ? command : commandId;
+    }
+
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSource == null ? null : dataSource.getContainer();
     }
 
     public DBPDataSource getDataSource() {
@@ -120,4 +125,5 @@ public class SQLControlCommand implements SQLScriptElement {
     public String toString() {
         return text;
     }
+
 }

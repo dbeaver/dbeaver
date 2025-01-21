@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.model.lsm.test;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
 import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap;
 import org.jkiss.dbeaver.model.stm.STMUtils;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -56,7 +56,7 @@ import java.util.stream.*;
  * <p>
  *
  */
-public class OffsetKeyedTreeMapTest extends OSGIMockDataTest {
+public class OffsetKeyedTreeMapTest extends DBeaverUnitTest {
 
     private static final Supplier<IntStream> SERIES = () -> Stream.of(
         IntStream.range(0, 26),

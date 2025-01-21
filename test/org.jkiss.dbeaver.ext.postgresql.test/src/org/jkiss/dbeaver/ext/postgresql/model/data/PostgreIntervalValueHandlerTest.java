@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Comparator;
 
-public class PostgreIntervalValueHandlerTest extends OSGIMockDataTest {
+public class PostgreIntervalValueHandlerTest extends DBeaverUnitTest {
 
     PostgreIntervalValueHandler postgreIntervalValueHandler = new PostgreIntervalValueHandler();
 

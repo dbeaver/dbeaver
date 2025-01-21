@@ -390,7 +390,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        ddl = "create or replace view \"" + dbResult.getString("View") + "\" as " + dbResult.getString("Create View");
+                        ddl = "create or replace view " + dbResult.getString("View") + " as " + dbResult.getString("Create View");
                         ddl = SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
                     }
                 }

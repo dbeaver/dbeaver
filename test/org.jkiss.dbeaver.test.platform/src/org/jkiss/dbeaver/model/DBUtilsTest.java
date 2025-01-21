@@ -28,17 +28,15 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.osgi.test.runner.OSGITestRunner;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.Pair;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-@RunWith(OSGITestRunner.class)
-public class DBUtilsTest extends OSGIMockDataTest {
+public class DBUtilsTest extends DBeaverUnitTest {
 
     BasicSQLDialect sqlDialect = new BasicSQLDialect() {
         @NotNull

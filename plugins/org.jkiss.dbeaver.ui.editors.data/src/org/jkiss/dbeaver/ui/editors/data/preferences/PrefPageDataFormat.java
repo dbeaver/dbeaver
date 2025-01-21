@@ -22,7 +22,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -68,7 +67,6 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     private DBDDataFormatterProfile formatterProfile;
 
-    private Font boldFont;
     private Combo typeCombo;
     private PropertyTreeViewer propertiesControl;
     private Text sampleText;
@@ -138,8 +136,6 @@ public class PrefPageDataFormat extends TargetPrefPage
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
-
         Composite composite = UIUtils.createComposite(parent, 2);
 
         // Locale
@@ -483,11 +479,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
-    public void dispose()
-    {
-        if (boldFont != null) {
-            boldFont.dispose();
-        }
+    public void dispose() {
         super.dispose();
     }
 

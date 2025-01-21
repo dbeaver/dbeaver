@@ -104,7 +104,7 @@
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
             class="org.jkiss.dbeaver.ext.wmi.model.WMIValueHandlerProvider"
-            id="org.jkiss.dbeaver.ext.wmi.model.WMIValueHandlerProvider"
+            id="WMIValueHandlerProvider"
             label="WMI data types provider">
 
             <datasource id="wmi"/>

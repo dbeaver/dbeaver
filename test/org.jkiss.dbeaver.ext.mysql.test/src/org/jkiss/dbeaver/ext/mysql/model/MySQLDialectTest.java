@@ -16,14 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
-import org.junit.Assert;
-
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class MySQLDialectTest extends OSGIMockDataTest{
+public class MySQLDialectTest extends DBeaverUnitTest {
 
     private final MySQLDialect dialect = new MySQLDialect();
 

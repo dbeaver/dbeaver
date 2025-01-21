@@ -23,7 +23,6 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.ProgressMonitorWithExceptionContext;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -62,11 +62,10 @@ class DriverDependenciesTree {
     private DBPDriver driver;
     private Collection<? extends DBPDriverLibrary> libraries;
     private final DBPDriverDependencies dependencies;
-    private boolean editable;
+    private final boolean editable;
 
-    private Tree filesTree;
+    private final Tree filesTree;
     private TreeEditor treeEditor;
-    private Font boldFont;
 
     public DriverDependenciesTree(Composite parent, DBRRunnableContext runnableContext, DBPDriverDependencies dependencies, DBPDriver driver, Collection<? extends DBPDriverLibrary> libraries, boolean editable) {
         this.runnableContext = runnableContext;
@@ -85,8 +84,6 @@ class DriverDependenciesTree {
         UIUtils.createTreeColumn(filesTree, SWT.LEFT, "Description");
 
         if (editable) {
-            boldFont = UIUtils.makeBoldFont(filesTree.getFont());
-
             treeEditor = new TreeEditor(filesTree);
             treeEditor.horizontalAlignment = SWT.RIGHT;
             treeEditor.verticalAlignment = SWT.CENTER;
@@ -106,8 +103,6 @@ class DriverDependenciesTree {
                     disposeOldEditor();
                 }
             });
-
-            filesTree.addDisposeListener(e -> UIUtils.dispose(boldFont));
         }
     }
 
@@ -164,7 +159,7 @@ class DriverDependenciesTree {
             item.setText(1, CommonUtils.notEmpty(library.getVersion()));
             item.setText(2, CommonUtils.notEmpty(library.getDescription()));
             if (editable) {
-                item.setFont(1, boldFont);
+                item.setFont(1, BaseThemeSettings.instance.baseFontBold);
             }
             totalItems++;
             if (addDependencies(item, node)) {

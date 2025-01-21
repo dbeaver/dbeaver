@@ -204,7 +204,10 @@ public interface DBPDriver extends DBPNamedObject
     @NotNull
     List<? extends DBPDriverFileSource> getDriverFileSources();
 
-    boolean needsExternalDependencies(@NotNull DBRProgressMonitor monitor);
+    /**
+     * Flag that shows if a driver needs external dependencies (f.e. not all files are present).
+     */
+    boolean needsExternalDependencies();
 
     @NotNull
     <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
@@ -241,8 +244,19 @@ public interface DBPDriver extends DBPNamedObject
     }
 
     /**
-     * download all required driver jar files without creating a driver instance
+     * Validates driver library files presence and download them if needed without creating a driver instance
      */
-    void downloadRequiredDependencies(@NotNull DBRProgressMonitor monitor);
+    void validateFilesPresence(@NotNull DBRProgressMonitor monitor);
+
+
+    /**
+     * Indicates whether the driver library files are installed.
+     */
+    boolean isDriverInstalled();
+
+    /**
+     * Downloads driver library files from external resources if it is possible.
+     */
+    boolean downloadDriverLibraries(@NotNull DBRProgressMonitor monitor, boolean resetVersions);
 
 }

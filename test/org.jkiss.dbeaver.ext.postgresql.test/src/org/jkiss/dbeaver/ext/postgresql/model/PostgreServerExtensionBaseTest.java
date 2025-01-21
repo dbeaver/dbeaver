@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
-import org.jkiss.dbeaver.model.OSGIMockDataTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -25,7 +25,7 @@ import org.mockito.Mock;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-public class PostgreServerExtensionBaseTest extends OSGIMockDataTest {
+public class PostgreServerExtensionBaseTest extends DBeaverUnitTest {
 
     @Mock
     private PostgreTableRegular table;

@@ -77,6 +77,13 @@ public class CubridTable extends GenericTable
 
     @NotNull
     @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 1)
+    public String getName() {
+        return super.getName().toLowerCase();
+    }
+
+    @NotNull
+    @Override
     public CubridDataSource getDataSource() {
         return (CubridDataSource) super.getDataSource();
     }

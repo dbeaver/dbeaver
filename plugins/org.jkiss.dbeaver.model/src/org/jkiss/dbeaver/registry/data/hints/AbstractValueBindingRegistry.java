@@ -26,9 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * EntityEditorsRegistry
+ * AbstractValueBindingRegistry
  */
-public abstract class AbstractValueBindingRegistry<TYPE, DESC extends AbstractValueBindingDescriptor<TYPE>> {
+public abstract class AbstractValueBindingRegistry<TYPE, CONTEXT, DESC extends AbstractValueBindingDescriptor<TYPE, CONTEXT>> {
 
     @NotNull
     protected abstract List<DESC> getDescriptors();
@@ -37,17 +37,22 @@ public abstract class AbstractValueBindingRegistry<TYPE, DESC extends AbstractVa
     protected abstract TYPE getDefaultValueBinding();
 
     @NotNull
-    public TYPE getValueBinding(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject type, @Nullable Class<?> valueType) {
+    public TYPE getValueBinding(
+        @NotNull CONTEXT context,
+        @Nullable DBPDataSource dataSource,
+        @NotNull DBSTypedObject type,
+        @Nullable Class<?> valueType
+    ) {
         // Check starting from most restrictive to less restrictive
-        TYPE valueBinding = findValueBinding(dataSource, type, valueType, true, true);
+        TYPE valueBinding = findValueBinding(context, dataSource, type, valueType, true, true);
         if (valueBinding == null) {
-            valueBinding = findValueBinding(dataSource, type, valueType, false, true);
+            valueBinding = findValueBinding(context, dataSource, type, valueType, false, true);
         }
         if (valueBinding == null) {
-            valueBinding = findValueBinding(dataSource, type, valueType, true, false);
+            valueBinding = findValueBinding(context, dataSource, type, valueType, true, false);
         }
         if (valueBinding == null) {
-            valueBinding = findValueBinding(dataSource, type, valueType, false, false);
+            valueBinding = findValueBinding(context, dataSource, type, valueType, false, false);
         }
         if (valueBinding == null) {
             valueBinding = getDefaultValueBinding();
@@ -55,9 +60,16 @@ public abstract class AbstractValueBindingRegistry<TYPE, DESC extends AbstractVa
         return valueBinding;
     }
 
-    private TYPE findValueBinding(@Nullable DBPDataSource dataSource, DBSTypedObject typedObject, Class<?> valueType, boolean checkDataSource, boolean checkType) {
+    private TYPE findValueBinding(
+        @NotNull CONTEXT context,
+        @Nullable DBPDataSource dataSource,
+        DBSTypedObject typedObject,
+        Class<?> valueType,
+        boolean checkDataSource,
+        boolean checkType
+    ) {
         for (DESC desc : getDescriptors()) {
-            if (desc.supportsType(dataSource, typedObject, valueType, checkDataSource, checkType)) {
+            if (desc.supportsType(context, dataSource, typedObject, valueType, checkDataSource, checkType)) {
                 return desc.getInstance();
             }
         }
@@ -65,10 +77,15 @@ public abstract class AbstractValueBindingRegistry<TYPE, DESC extends AbstractVa
     }
 
     @NotNull
-    public List<TYPE> getAllValueBindings(@Nullable DBPDataSource dataSource, @NotNull DBSTypedObject type, @Nullable Class<?> valueType) {
+    public List<TYPE> getAllValueBindings(
+        @NotNull CONTEXT context,
+        @Nullable DBPDataSource dataSource,
+        @NotNull DBSTypedObject type,
+        @Nullable Class<?> valueType
+    ) {
         List<TYPE> result = new ArrayList<>();
         for (DESC desc : getDescriptors()) {
-            if (desc.supportsAnyType(dataSource, type, valueType)) {
+            if (desc.supportsAnyType(context, dataSource, type, valueType)) {
                 result.add(desc.getInstance());
             }
         }
