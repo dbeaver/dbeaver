@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -595,20 +595,25 @@ public class EditorUtils {
     public static List<Path> openExternalFiles(@NotNull String[] fileNames, @Nullable DBPDataSourceContainer currentContainer) {
         log.debug("Open external file(s) [" + Arrays.toString(fileNames) + "]");
         List<Path> openedFiles = new ArrayList<>();
-
-        openFileEditors(fileNames, currentContainer, openedFiles);
+        Path[] filePaths = Arrays.stream(fileNames).map(Path::of).toArray(Path[]::new);
+        openFileEditors(filePaths, currentContainer, openedFiles);
 
         return openedFiles;
     }
 
-    private static void openFileEditors(
-        @NotNull String [] fileNames,
+    public static boolean openExternalFiles(@NotNull Path[] filePaths, @Nullable DBPDataSourceContainer currentContainer) {
+        log.debug("Open external file(s) [" + Arrays.toString(filePaths) + "]");
+        List<Path> openedFiles = new ArrayList<>();
+        return openFileEditors(filePaths, currentContainer, openedFiles);
+    }
+
+    public static boolean openFileEditors(
+        @NotNull Path[] fileNames,
         @Nullable DBPDataSourceContainer currentContainer,
         @NotNull List<Path> openedFiles
     ) {
         Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = new LinkedHashMap<>();
-        for (String filePath : fileNames) {
-            Path path = Path.of(filePath);
+        for (Path path : fileNames) {
             if (Files.exists(path)) {
                 String fileExtension = IOUtils.getFileExtension(path);
                 FileTypeHandlerDescriptor handler = CommonUtils.isEmpty(fileExtension) ?
@@ -616,7 +621,7 @@ public class EditorUtils {
                 filesByHandler.computeIfAbsent(handler, d -> new ArrayList<>()).add(path);
                 openedFiles.add(path);
             } else {
-                DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + filePath + "': file doesn't exist");
+                DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + path + "': file doesn't exist");
             }
         }
 
@@ -625,6 +630,9 @@ public class EditorUtils {
             List<Path> pathList = entry.getValue();
             if (handler == null) {
                 for (Path path : pathList) {
+                    if (!IOUtils.isLocalPath(path)) {
+                        return false;
+                    }
                     final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
                     EditorUtils.openExternalFileEditor(path.toFile(), window);
                 }
@@ -636,6 +644,7 @@ public class EditorUtils {
                 }
             }
         }
+        return true;
     }
 
 }

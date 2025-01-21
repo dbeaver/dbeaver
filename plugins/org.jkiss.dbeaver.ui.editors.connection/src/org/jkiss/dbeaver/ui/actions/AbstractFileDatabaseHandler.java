@@ -84,7 +84,7 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
         DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
         configuration.setDatabaseName(databaseName);
         DBPDataSourceContainer dsContainer = project.getDataSourceRegistry().createDataSource(driver, configuration);
-        dsContainer.setName(databaseName);
+        dsContainer.setName("File: " + databaseName);
         dsContainer.setTemporary(true);
 
         try {
