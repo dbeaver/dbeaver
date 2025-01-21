@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainerExt;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
@@ -100,7 +101,7 @@ class ErrorDetailsPart {
         text.setForeground(fgColor);
 
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
-        text.setText(reason.getMessage());
+        text.setText(GeneralUtils.normalizeLineSeparators(reason.getMessage()));
         text.setFont(UIUtils.getMonospaceFont());
 
         text.addListener(SWT.Resize, e -> {
