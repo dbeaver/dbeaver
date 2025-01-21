@@ -194,10 +194,6 @@ public class DBeaverInstanceServer implements IInstanceController {
             FileTypeHandlerDescriptor handler = entry.getKey();
             List<Path> pathList = entry.getValue();
             if (handler == null) {
-//                if (dataSourceContainer != null) {
-//                    EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
-//                }
-//                EditorUtils.openExternalFileEditor(file, window);
                 for (Path path : pathList) {
                     EditorUtils.openExternalFileEditor(path.toFile(), window);
                 }

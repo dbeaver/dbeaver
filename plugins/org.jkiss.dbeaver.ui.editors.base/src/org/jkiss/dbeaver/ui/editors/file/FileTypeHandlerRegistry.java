@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,9 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 public class FileTypeHandlerRegistry {
-    private static final Log log = Log.getLog(FileTypeHandlerRegistry.class);
-
-    public static final String CONFIG_FILE_NAME = "dataformat-profiles.xml"; //$NON-NLS-1$
 
     private static FileTypeHandlerRegistry instance = null;
 

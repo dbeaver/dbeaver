@@ -28,7 +28,7 @@ import org.jkiss.utils.CommonUtils;
 public class FileTypeHandlerDescriptor extends AbstractDescriptor {
     private static final Log log = Log.getLog(FileTypeHandlerDescriptor.class);
 
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.fileTypeHandler"; //$NON-NLS-1$
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.ui.fileTypeHandler"; //$NON-NLS-1$
 
     private final String id;
     private final String[] extensions;
