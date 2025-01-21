@@ -553,6 +553,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return arrayDelimiter;
     }
 
+    /**
+     * Returns array type whose element is this type
+     */
     @Property(category = CAT_ARRAY)
     public PostgreDataType getArrayItemType(DBRProgressMonitor monitor) {
         return arrayItemTypeId == 0 ? null : getDatabase().getDataType(monitor, arrayItemTypeId);

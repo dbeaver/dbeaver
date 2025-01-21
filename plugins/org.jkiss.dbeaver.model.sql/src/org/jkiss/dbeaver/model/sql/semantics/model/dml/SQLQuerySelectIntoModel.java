@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -53,9 +54,10 @@ public class SQLQuerySelectIntoModel extends SQLQueryRowsProjectionModel {
         @Nullable SQLQueryLexicalScope fromScope,
         @NotNull FiltersData<SQLQueryValueExpression> filterExprs,
         @NotNull FiltersData<SQLQueryLexicalScope> filterScopes,
-        @NotNull SQLQuerySelectionResultModel result
+        @NotNull SQLQuerySelectionResultModel result,
+        @Nullable SQLQueryLexicalScope tailScope
     ) {
-        super(syntaxNode, selectListScope, fromSource, fromScope, filterExprs, filterScopes, result);
+        super(syntaxNode, selectListScope, fromSource, fromScope, filterExprs, filterScopes, result, tailScope);
         this.intoKeywordSyntaxNode = intoKeywordSyntaxNode;
         this.targets = targets;
     }
@@ -105,7 +107,7 @@ public class SQLQuerySelectIntoModel extends SQLQueryRowsProjectionModel {
                 }
             }
 
-            this.targets.getTargetScope().setContext(context);
+            this.targets.getTargetScope().setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsetRefFromContext(context));
         }
         return context;
     }
@@ -156,8 +158,8 @@ public class SQLQuerySelectIntoModel extends SQLQueryRowsProjectionModel {
             syntaxNode,
             sourceModels,
             recognizer,
-            (node, selectListScope, sourceModel, fromScope, filterExprs, filtersScope, resultModel) ->
-                new SQLQuerySelectIntoModel(node, intoKeywordNode, selectListScope, targetsList, sourceModel, fromScope, filterExprs, filtersScope, resultModel)
+            (node, selectListScope, sourceModel, fromScope, filterExprs, filtersScope, resultModel, tailScope) ->
+                new SQLQuerySelectIntoModel(node, intoKeywordNode, selectListScope, targetsList, sourceModel, fromScope, filterExprs, filtersScope, resultModel, tailScope)
         );
     }
 
@@ -205,13 +207,13 @@ public class SQLQuerySelectIntoModel extends SQLQueryRowsProjectionModel {
         @Nullable
         @Override
         public SQLQueryDataContext getGivenDataContext() {
-            return this.targetScope.getContext();
+            return this.targetScope.getSymbolsOrigin().getDataContext();
         }
 
         @Nullable
         @Override
         public SQLQueryDataContext getResultDataContext() {
-            return this.targetScope.getContext();
+            return this.targetScope.getSymbolsOrigin().getDataContext();
         }
     }
 

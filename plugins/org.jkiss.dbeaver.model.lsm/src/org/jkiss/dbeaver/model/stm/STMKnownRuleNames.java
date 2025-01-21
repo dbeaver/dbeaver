@@ -357,7 +357,10 @@ public class STMKnownRuleNames {
     public static final String nonReserved = SQLStandardParser.ruleNames[SQLStandardParser.RULE_nonReserved];
 
     public static final String RECURSIVE_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.RECURSIVE);
+    public static final String SET_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.SET);
     public static final String SELECT_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.SELECT);
     public static final String INTO_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.INTO);
     public static final String PERIOD_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.Period);
+    public static final String RIGHT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LeftParen);
+    public static final String LEFT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.RightParen);
 }

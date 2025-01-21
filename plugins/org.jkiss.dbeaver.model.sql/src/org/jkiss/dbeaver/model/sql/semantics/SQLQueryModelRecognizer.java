@@ -162,18 +162,6 @@ public class SQLQueryModelRecognizer {
 
             model.propagateContext(this.queryDataContext, this.recognitionContext);
 
-            int actualTailPosition = model.getSyntaxNode().getRealInterval().b;
-            SQLQueryNodeModel tailNode = model.findNodeContaining(actualTailPosition);
-            if (tailNode != model) {
-                SQLQueryLexicalScope nodeScope = tailNode.findLexicalScope(actualTailPosition);
-                SQLQueryLexicalScope tailScope = new SQLQueryLexicalScope();
-                tailScope.setInterval(Interval.of(actualTailPosition, Integer.MAX_VALUE));
-                tailScope.setContext(nodeScope != null && nodeScope.getContext() != null
-                    ? nodeScope.getContext()
-                    : tailNode.getGivenDataContext());
-                model.registerLexicalScope(tailScope);
-            }
-
             for (SQLQuerySymbolEntry symbolEntry : this.symbolEntries) {
                 if (symbolEntry.isNotClassified() && this.reservedWords.contains(symbolEntry.getRawName().toUpperCase())) {
                     // (keywords are uppercased in dialect)
@@ -832,8 +820,7 @@ public class SQLQueryModelRecognizer {
                 expr = switch (step.getNodeKindId()) {
                     case SQLStandardParser.RULE_valueRefIndexingStep -> {
                         int s = i;
-                        for (; i < subnodes.size() && step.getNodeKindId() == SQLStandardParser.RULE_valueRefIndexingStep; i++) {
-                            step = subnodes.get(i);
+                        for (; i < subnodes.size() && (step = subnodes.get(i)).getNodeKindId() == SQLStandardParser.RULE_valueRefIndexingStep; i++) {
                             slicingFlags[i] = step.findFirstChildOfName(STMKnownRuleNames.valueRefIndexingStepSlice) != null;
                         }
                         boolean[] slicingSpec = Arrays.copyOfRange(slicingFlags, s, i);
@@ -848,7 +835,7 @@ public class SQLQueryModelRecognizer {
                         yield LazyExpr.of(new SQLQueryValueMemberExpression(range, node, expr.getExpression(true), memberName, memberAccessEntry));
                     }
                     default -> throw new UnsupportedOperationException(
-                        "Value member expression expected while facing with " + node.getNodeName()
+                        "Value member expression expected while facing with " + step.getNodeName()
                     );
                 };
             }
@@ -1008,7 +995,6 @@ public class SQLQueryModelRecognizer {
                 return;
             }
             done.add(o);
-            // System.out.println((prev == null ? "<NULL>" : prev.toString()) + " --> " + o.toString());
 
             if (o instanceof String || o.getClass().isPrimitive() || o.getClass().isEnum()) {
                 return;
