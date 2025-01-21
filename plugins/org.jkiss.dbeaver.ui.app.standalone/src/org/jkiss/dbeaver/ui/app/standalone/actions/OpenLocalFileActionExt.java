@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,15 +28,19 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerRegistry;
+import org.jkiss.utils.ArrayUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class OpenLocalFileActionExt extends AbstractHandler {
 
     private String filterPath;
+    private String filterExtension;
 
     /**
      * Creates a new action for opening a local file.
@@ -54,12 +58,29 @@ public class OpenLocalFileActionExt extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         Shell activeShell = HandlerUtil.getActiveShell(event);
+
+        Set<String> extensions = new LinkedHashSet<>();
+        for (FileTypeHandlerDescriptor dhd : FileTypeHandlerRegistry.getInstance().getHandlers()) {
+            extensions.add(Arrays.stream(dhd.getExtensions()).map(e -> "*." + e).collect(Collectors.joining(";")));
+        }
+        extensions.add("*.*");
+
         FileDialog dialog = new FileDialog(activeShell, SWT.OPEN | SWT.MULTI | SWT.SHEET);
         dialog.setText(IDEWorkbenchMessages.OpenLocalFileAction_title);
         dialog.setFilterPath(filterPath);
+        String[] dialogExtensions = extensions.toArray(new String[0]);
+        dialog.setFilterExtensions(dialogExtensions);
+        if (filterExtension != null) {
+            int extIndex = ArrayUtils.indexOf(dialogExtensions, filterExtension);
+            if (extIndex >= 0) {
+                dialog.setFilterIndex(extIndex);
+            }
+        }
         if (dialog.open() == null) {
             return null;
         }
+        filterExtension = dialog.getFilterExtensions()[dialog.getFilterIndex()];
+
         String[] names = dialog.getFileNames();
 
         if (names != null) {
