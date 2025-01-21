@@ -519,7 +519,13 @@ public class ResultSetModel implements DBDResultSetModel {
         row.values[rootIndex] = valueToEdit;
 
         if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL) {
-            changesCount++;
+            if (!(oldHistoricValue instanceof DBDValue) &&
+                !(valueToEdit instanceof DBDValue) &&
+                Objects.equals(oldHistoricValue, valueToEdit)) {
+                changesCount = Math.min(changesCount - 1, 0);
+            } else {
+                changesCount++;
+            }
         }
 
         return true;
