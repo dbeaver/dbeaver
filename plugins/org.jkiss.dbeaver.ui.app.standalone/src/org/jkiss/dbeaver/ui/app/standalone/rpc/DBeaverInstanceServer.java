@@ -37,11 +37,14 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.rest.RestClient;
 import org.jkiss.utils.rest.RestServer;
 
@@ -173,17 +176,37 @@ public class DBeaverInstanceServer implements IInstanceController {
     }
 
     private void openFileEditors(@NotNull IWorkbenchWindow window, @NotNull String [] fileNames) {
+        Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = new LinkedHashMap<>();
         for (String filePath : fileNames) {
             Path path = Path.of(filePath);
             if (Files.exists(path)) {
-                File file = path.toFile();
-                filesToConnect.add(file);
-                if (dataSourceContainer != null) {
-                    EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
-                }
-                EditorUtils.openExternalFileEditor(file, window);
+                String fileExtension = IOUtils.getFileExtension(path);
+                FileTypeHandlerDescriptor handler = CommonUtils.isEmpty(fileExtension) ?
+                    null : FileTypeHandlerRegistry.getInstance().findHandler(fileExtension);
+                filesByHandler.computeIfAbsent(handler, d -> new ArrayList<>()).add(path);
+                filesToConnect.add(path.toFile());
             } else {
                 DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + filePath + "': file doesn't exist");
+            }
+        }
+
+        for (Map.Entry<FileTypeHandlerDescriptor, List<Path>> entry : filesByHandler.entrySet()) {
+            FileTypeHandlerDescriptor handler = entry.getKey();
+            List<Path> pathList = entry.getValue();
+            if (handler == null) {
+//                if (dataSourceContainer != null) {
+//                    EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
+//                }
+//                EditorUtils.openExternalFileEditor(file, window);
+                for (Path path : pathList) {
+                    EditorUtils.openExternalFileEditor(path.toFile(), window);
+                }
+            } else {
+                try {
+                    handler.createHandler().openFiles(pathList, Map.of(), dataSourceContainer);
+                } catch (Exception e) {
+                    DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
+                }
             }
         }
     }
