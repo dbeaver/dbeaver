@@ -38,7 +38,7 @@ public class SQLGeneratorSimpleJoin extends SQLGenerator<DBSEntity> {
                 if (i > 0) sql.append(", ");
                 String alias = SQLUtils.generateEntityAlias(objects.get(i), s -> sqlDialect.getKeywordType(s) != null
                     || aliases.contains(s));
-                sql.append(sql).append(".*");
+                sql.append(alias).append(".*");
                 aliases.add(alias);
             }
             sql.append(getLineSeparator()).append("FROM ");
