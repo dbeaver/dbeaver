@@ -186,6 +186,7 @@ public class CubridUser extends GenericSchema
                 throws SQLException, DBException {
             String columnName = JDBCUtils.safeGetString(dbResult, "attr_name");
             String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
+            boolean isForeignKey = "YES".equals(JDBCUtils.safeGetString(dbResult, "is_foreign_key"));
             String showDataType = null;
             boolean autoIncrement = false;
             String tableName = table.isSystem() ? table.getName() : ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table);
@@ -196,20 +197,6 @@ public class CubridUser extends GenericSchema
                     if (result.next()) {
                         showDataType = JDBCUtils.safeGetString(result, "Type");
                         autoIncrement = CubridConstants.AUTO_INCREMENT.equals(JDBCUtils.safeGetString(result, "Extra"));
-                    }
-                }
-            }
-            boolean isForeignKey = false;
-            boolean isMultiSchema = ((CubridDataSource) table.getDataSource()).getSupportMultiSchema();
-            String sql1 = "select * from db_index a join db_index_key b on a.class_name = b.class_name "
-                        + (isMultiSchema ? "and a.owner_name = b.owner_name " : "")
-                        + "and a.index_name = b.index_name where is_foreign_key = 'YES' and a.class_name = ? and b.key_attr_name = ?";
-            try (JDBCPreparedStatement dbStat1 = session.prepareStatement(sql1)) {
-                dbStat1.setString(1, table.getName());
-                dbStat1.setString(2, columnName);
-                try (JDBCResultSet result1 = dbStat1.executeQuery()) {
-                    while (result1.next()) {
-                        isForeignKey = true;
                     }
                 }
             }
