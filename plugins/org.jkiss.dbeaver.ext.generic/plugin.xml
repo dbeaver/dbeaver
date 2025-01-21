@@ -1369,7 +1369,7 @@
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
                     <replace provider="generic" driver="salesforce_jdbc"/>
-                    <file type="jar" path="maven:/com.salesforce.datacloud:jdbc:RELEASE[0.20.0]" bundle="!drivers.salesforce_datacloud"/>
+                    <file type="jar" path="maven:/com.salesforce.datacloud:jdbc:RELEASE" bundle="!drivers.salesforce_datacloud"/>
                     <file type="jar" path="drivers/salesforce_datacloud" bundle="drivers.salesforce_datacloud"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.salesforce_datacloud"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce_datacloud"/>
