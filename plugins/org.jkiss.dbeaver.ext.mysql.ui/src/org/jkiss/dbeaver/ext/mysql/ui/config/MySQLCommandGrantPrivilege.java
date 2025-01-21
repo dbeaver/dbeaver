@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -65,7 +66,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
     @Override
     public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options)
     {
-        String privName = privilege.getFixedPrivilegeName();
+        String privName = privilege.getFixedPrivilegeName().toUpperCase(Locale.ROOT);
         String grantScript = "GRANT " + privName + //$NON-NLS-1$
             " ON " + getObjectName() + //$NON-NLS-1$
             " TO " + getObject().getFullName() + (withGrantOption ? " WITH GRANT OPTION" : ""); //$NON-NLS-1$ //$NON-NLS-2$

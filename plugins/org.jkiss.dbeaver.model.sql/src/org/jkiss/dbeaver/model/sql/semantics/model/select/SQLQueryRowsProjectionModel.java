@@ -246,7 +246,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                                     STMTreeNode columnNameNode = asClauseNode.findLastChildOfName(STMKnownRuleNames.columnName);
                                     SQLQuerySymbolEntry asColumnName = columnNameNode == null
                                         ? null
-                                        : recognizer.collectIdentifier(columnNameNode);
+                                        : recognizer.collectIdentifier(columnNameNode, null);
                                     resultModel.addColumnSpec(sublistNode, expr, asColumnName);
                                 } else {
                                     resultModel.addColumnSpec(sublistNode, expr);

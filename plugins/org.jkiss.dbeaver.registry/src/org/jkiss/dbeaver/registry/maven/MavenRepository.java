@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -234,7 +235,10 @@ public class MavenRepository
                 extPath = id;
                 break;
         }
-        Path homeFolder = DriverDescriptor.getCustomDriversHome().resolve("maven/" + extPath);
+        Path customDriversHome = DBWorkbench.getPlatform().getApplication().isMultiuser() ?
+            DriverDescriptor.getWorkspaceDriversStorageFolder() :
+            DriverDescriptor.getCustomDriversHome();
+        Path homeFolder = customDriversHome.resolve("maven/" + extPath);
         //File homeFolder = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "maven/" + extPath);
         if (!Files.exists(homeFolder)) {
             try {

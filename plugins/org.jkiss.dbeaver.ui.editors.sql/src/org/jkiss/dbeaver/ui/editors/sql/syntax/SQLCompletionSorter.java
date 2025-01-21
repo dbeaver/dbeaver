@@ -39,10 +39,10 @@ public class SQLCompletionSorter implements ICompletionProposalSorter {
 
     @Override
     public int compare(ICompletionProposal p1, ICompletionProposal p2) {
-        int a = getScore(p1);
-        int b = getScore(p2);
-        if (a > 0 || b > 0) {
-            int rc = a - b;
+        int score1 = getScore(p1);
+        int score2 = getScore(p2);
+        if (score1 > 0 || score2 > 0) {
+            int rc = -Integer.compare(score1, score2);
             if (rc != 0) {
                 return rc;
             }

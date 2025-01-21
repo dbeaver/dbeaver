@@ -85,7 +85,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
             DBSEntity realTable = dataContext.findRealTable(statistics.getMonitor(), nameStrings);
 
             if (realTable != null) {
-                this.tableName.setDefinition(realTable);
+                this.tableName.setDefinition(realTable, new SQLQuerySymbolOrigin.DbObjectFromContext(dataContext));
             } else {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.TABLE);
             }

@@ -612,6 +612,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
     @Override
     public void pasteFromClipboard(@Nullable ResultSetPasteSettings settings) {
         try {
+            List<DBDValueRow> updatedRows = new ArrayList<>();
+            Set<DBDAttributeBinding> updatedAttrs = new HashSet<>();
             if (settings != null) {
                 String strValue;
                 Clipboard clipboard = new Clipboard(Display.getCurrent());
@@ -673,6 +675,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             ) {
                                 continue;
                             }
+                            updatedAttrs.add(attr);
+                            updatedRows.add(row);
                             final Object newValue;
                             if (settings.isInsertNulls() && settings.getNullValueMark().equalsIgnoreCase(value)) {
                                 newValue = null;
@@ -756,6 +760,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             controller.redrawData(false, true);
             controller.updateEditControls();
             controller.updatePanelsContent(false);
+            controller.refreshHintCache(updatedAttrs, updatedRows, null);
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Cannot replace cell value", null, e);
         }
@@ -988,11 +993,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable IGridRow rowObject)
     {
         boolean recordMode = controller.isRecordMode();
-        final DBDAttributeBinding attr = getAttributeFromGrid(colObject, rowObject);
-        final ResultSetRow row = getResultRowFromGrid(colObject, rowObject);
+        final DBDAttributeBinding attr = colObject == null ? getFocusAttribute() : getAttributeFromGrid(colObject, rowObject);
+        final ResultSetRow row = rowObject == null ? getFocusRow() : getResultRowFromGrid(colObject, rowObject);
         controller.fillContextMenu(manager, attr, row, getRowNestedIndexes(rowObject));
 
-        if (attr != null && row == null) {
+        if (colObject != null && rowObject == null) {
             final List<IGridColumn> selectedColumns = spreadsheet.getColumnSelection();
             if (selectedColumns.size() == 1) {
                 IGridColumn attrCol = spreadsheet.getColumnByElement(attr);
@@ -1101,7 +1106,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
         }
-        if (row == null) {
+        if (rowObject == null) {
             if (!controller.getModel().getVisibleAttributes().isEmpty()) {
                 manager.insertAfter(
                     IResultSetController.MENU_GROUP_ADDITIONS,
