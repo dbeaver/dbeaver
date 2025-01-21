@@ -19,27 +19,23 @@ package org.jkiss.dbeaver.ui.app.standalone.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileInfo;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
-import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OpenLocalFileActionExt extends AbstractHandler {
 
-    private IWorkbenchWindow window;
     private String filterPath;
 
     /**
@@ -52,7 +48,6 @@ public class OpenLocalFileActionExt extends AbstractHandler {
 
     @Override
     public void dispose() {
-        window = null;
         filterPath = null;
     }
 
@@ -62,7 +57,9 @@ public class OpenLocalFileActionExt extends AbstractHandler {
         FileDialog dialog = new FileDialog(activeShell, SWT.OPEN | SWT.MULTI | SWT.SHEET);
         dialog.setText(IDEWorkbenchMessages.OpenLocalFileAction_title);
         dialog.setFilterPath(filterPath);
-        dialog.open();
+        if (dialog.open() == null) {
+            return null;
+        }
         String[] names = dialog.getFileNames();
 
         if (names != null) {
@@ -71,25 +68,20 @@ public class OpenLocalFileActionExt extends AbstractHandler {
 
             int numberOfFilesNotFound = 0;
             StringBuilder notFound = new StringBuilder();
+
+            List<Path> fileList = new ArrayList<>();
             for (String name : names) {
-                IFileStore fileStore = EFS.getLocalFileSystem().getStore(new Path(filterPath));
-                fileStore = fileStore.getChild(name);
-                IFileInfo fetchInfo = fileStore.fetchInfo();
-                if (!fetchInfo.isDirectory() && fetchInfo.exists()) {
-                    IWorkbenchPage page = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
-                    try {
-                        IDE.openEditorOnFileStore(page, fileStore);
-                    } catch (PartInitException e) {
-                        String msg = NLS.bind(IDEWorkbenchMessages.OpenLocalFileAction_message_errorOnOpen, fileStore.getName());
-                        IDEWorkbenchPlugin.log(msg, e.getStatus());
-                        MessageDialog.open(MessageDialog.ERROR, activeShell, IDEWorkbenchMessages.OpenLocalFileAction_title, msg, SWT.SHEET);
-                    }
-                } else {
+                Path filePath = Path.of(filterPath).resolve(name);
+                if (!Files.exists(filePath)) {
                     if (++numberOfFilesNotFound > 1)
                         notFound.append('\n');
-                    notFound.append(fileStore.getName());
+                    notFound.append(filePath);
+                } else {
+                    fileList.add(filePath);
                 }
             }
+            String[] fileNames = fileList.stream().map(p -> p.toAbsolutePath().toString()).toArray(String[]::new);
+            EditorUtils.openExternalFiles(fileNames, null);
 
             if (numberOfFilesNotFound > 0) {
                 String msgFmt = numberOfFilesNotFound == 1 ? IDEWorkbenchMessages.OpenLocalFileAction_message_fileNotFound : IDEWorkbenchMessages.OpenLocalFileAction_message_filesNotFound;
