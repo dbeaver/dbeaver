@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.ui.data.IDataController;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -254,4 +255,24 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     void removeListener(IResultSetListener listener);
 
     void updateDirtyFlag();
+
+    boolean updateCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        @Nullable Object value,
+        boolean refreshHints) throws DBException;
+
+    void resetCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes);
+
+    /**
+     * @param rowIndexes          applicable only when single row is passed
+     */
+    void refreshHintCache(
+        Collection<DBDAttributeBinding> attrs,
+        Collection<DBDValueRow> rows,
+        int[] rowIndexes);
 }

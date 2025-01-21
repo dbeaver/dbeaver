@@ -47,7 +47,7 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="appEdition" value="ce"/>
-            <property name="versionInfoCoord" value="112,228"/>
+            <property name="versionInfoCoord" value="112,230"/>
             <property name="versionInfoSize" value="8"/>
             <property name="versionInfoColor" value="255,255,255"/>
             <property name="startupMessageRect" value="60,273,240,21"/>
@@ -71,7 +71,7 @@
             <property name="email" value="%productEmail"/>
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver CE"/>
-            <property name="versionInfoCoord" value="112,228"/>
+            <property name="versionInfoCoord" value="112,230"/>
             <property name="versionInfoSize" value="8"/>
             <property name="versionInfoColor" value="255,255,255"/>
             <property name="startupMessageRect" value="60,273,240,21"/>
@@ -185,6 +185,13 @@
                 allowMultiple="false"
                 icon="icons/help.png"
                 name="Help"/-->
+        <view
+            name="%view.outline.title"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/toggle_outline.png"
+            category="org.eclipse.ui"
+            class="org.eclipse.ui.views.contentoutline.ContentOutline"
+            id="org.eclipse.ui.views.ContentOutline">
+        </view>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -462,18 +469,6 @@
         <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.WorkbenchInitializerNewConnection" priority="2"/>
     </extension>
 
-    <extension point="org.eclipse.ui.activities">
-        <activity id="hideE4Activity" name="%activity.hideE4Activity.name">
-          <enabledWhen>
-            <with variable="activePartId">
-              <equals value="nonExistentPartId"/>
-            </with>
-          </enabledWhen>
-        </activity>
-        <!-- Hide Eclipse userstorage activities -->
-        <activityPatternBinding activityId="hideE4Activity" pattern="org.eclipse.userstorage.*"/>
-    </extension>
-
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ui.app.standalone.DBeaverApplicationPreferenceInitializer"/>
     </extension>
@@ -495,6 +490,21 @@
 
     <!-- Disable Eclipse debug and refactoring in standalone applications -->
     <extension point="org.eclipse.ui.activities">
+        <activity id="hideE4Activity" name="%activity.hideE4Activity.name">
+            <enabledWhen>
+                <with variable="activePartId">
+                    <equals value="nonExistentPartId"/>
+                </with>
+            </enabledWhen>
+        </activity>
+        <!-- Hide Eclipse userstorage activities -->
+        <activityPatternBinding activityId="hideE4Activity" pattern="org.eclipse.userstorage.*"/>
+        <!-- Hide E4 view: Welcome, Bookmarks, Palette, Thumbnail -->
+        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.ui.internal.introview"/>
+        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.ui.views.BookmarkView"/>
+        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.gef.ui.palette_view"/>
+        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.graphiti.ui.internal.editor.thumbnailview"/>
+
         <activity id="dbeaver.app.StandaloneActivity" name="DBeaver standalone application activity"/>
         <category id="dbeaver.app.StandaloneCategory" name="DBeaver standalone application activity category"/>
 

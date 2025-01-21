@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.acl.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class ACLMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.acl.internal.ACLMessages"; //$NON-NLS-1$

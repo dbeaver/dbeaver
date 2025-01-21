@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
@@ -579,8 +580,14 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         return MultiValueInsertMode.NOT_SUPPORTED;
     }
 
+    @NotNull
     @Override
-    public String addFiltersToQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, String query, DBDDataFilter filter) {
+    public String addFiltersToQuery(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull String query,
+        @NotNull DBDDataFilter filter
+    ) throws DBException {
         return getQueryGenerator().getQueryWithAppliedFilters(monitor, dataSource, query, filter);
     }
 
@@ -1002,6 +1009,11 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean isStripCommentsBeforeBlocks() {
+        return false;
+    }
+
+    @Override
+    public boolean isEscapeBackslash() {
         return false;
     }
 

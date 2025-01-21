@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class CoreApplicationMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages"; //$NON-NLS-1$

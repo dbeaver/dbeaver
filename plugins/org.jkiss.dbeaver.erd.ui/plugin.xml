@@ -185,14 +185,14 @@
         </themeElementCategory>
         <fontDefinition
                 label="%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.label"
-                categoryId="org.jkiss.dbeaver.ui.fonts"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
                 id="org.jkiss.dbeaver.erd.diagram.font"
                 defaultsTo="org.jkiss.dbeaver.dbeaver.ui.fonts.main">
             <description>%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.description</description>
         </fontDefinition>
         <fontDefinition
                 id="org.jkiss.dbeaver.erd.diagram.font.notation.label"
-                categoryId="org.jkiss.dbeaver.ui.fonts"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
                 label="%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.notation.label"
                 value="Segoe UI-regular-8">
             <description>%fontDefinition.org.jkiss.dbeaver.erd.diagram.font.notation.description</description>
@@ -381,7 +381,7 @@
     </extension>
 
     <extension point="org.eclipse.e4.ui.css.swt.theme">
-        <stylesheet uri="css/e4-dark_erd_prefstyle.css">
+        <stylesheet uri="css/e4-dark-erd-editor.css">
             <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark">
             </themeid>
         </stylesheet>

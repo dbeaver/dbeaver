@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.databend.ui.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class DatabendMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.databend.ui.internal.DatabendMessages"; //$NON-NLS-1$

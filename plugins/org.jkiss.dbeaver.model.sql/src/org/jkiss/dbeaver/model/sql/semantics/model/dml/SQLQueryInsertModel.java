@@ -16,11 +16,10 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.model.dml;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
@@ -42,6 +41,8 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
     private final List<SQLQuerySymbolEntry> columnNames;
     @Nullable
     private final SQLQueryRowsSourceModel valuesRows;
+    @Nullable
+    private final SQLQueryLexicalScope columnsScope;
 
     @NotNull
     public static SQLQueryModelContent recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
@@ -50,6 +51,7 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
 
         List<SQLQuerySymbolEntry> columnNames;
         SQLQueryRowsSourceModel valuesRows;
+        SQLQueryLexicalScope insertColumnsScope;
 
         STMTreeNode insertColumnsAndSource = node.findFirstChildOfName(STMKnownRuleNames.insertColumnsAndSource);
         if (insertColumnsAndSource != null) {
@@ -58,23 +60,34 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
 
             STMTreeNode valuesNode = insertColumnsAndSource.findFirstChildOfName(STMKnownRuleNames.queryExpression);
             valuesRows = valuesNode == null ? null : recognizer.collectQueryExpression(valuesNode);
+
+            int columnsScopeFrom = insertColumnsAndSource.getRealInterval().a;
+            int columnsScopeTo = valuesNode == null ? insertColumnsAndSource.getRealInterval().b : valuesNode.getRealInterval().a;
+
+            insertColumnsScope = new SQLQueryLexicalScope();
+            insertColumnsScope.setInterval(Interval.of(columnsScopeFrom, columnsScopeTo));
         } else {
             columnNames = Collections.emptyList();
             valuesRows = null; // use default table?
+            insertColumnsScope = null;
         }
 
-        return new SQLQueryInsertModel(node, tableModel, columnNames, valuesRows);
+        return new SQLQueryInsertModel(node, tableModel, columnNames, valuesRows, insertColumnsScope);
     }
 
     private SQLQueryInsertModel(
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsTableDataModel tableModel,
         @Nullable List<SQLQuerySymbolEntry> columnNames,
-        @Nullable SQLQueryRowsSourceModel valuesRows
-    ) {
+        @Nullable SQLQueryRowsSourceModel valuesRows,
+        @Nullable SQLQueryLexicalScope columnsScope) {
         super(syntaxNode, tableModel);
         this.columnNames = columnNames;
         this.valuesRows = valuesRows;
+        this.columnsScope = columnsScope;
+        if (columnsScope != null) {
+            this.registerLexicalScope(columnsScope);
+        }
     }
 
     @Nullable
@@ -89,12 +102,16 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
 
     @Override
     public void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        if (this.columnsScope != null) {
+            this.columnsScope.setContext(context);
+        }
         if (this.columnNames != null) {
+            SQLQuerySymbolOrigin origin = new SQLQuerySymbolOrigin.ColumnNameFromContext(context);
             for (SQLQuerySymbolEntry columnName : this.columnNames) {
                 if (columnName.isNotClassified()) {
                     SQLQueryResultColumn column = context.resolveColumn(statistics.getMonitor(), columnName.getName());
-                    if (column != null || !context.hasUndresolvedSource()) {
-                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics);
+                    if (column != null || !context.hasUnresolvedSource()) {
+                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics, origin);
                     }
                 }
             }

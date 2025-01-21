@@ -320,7 +320,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         }
 
         SQLHeuristicScanner scanner = new SQLHeuristicScanner(document, syntaxManager);
-        SQLIndenter indenter = new SQLIndenter(document, scanner);
+        SQLIndenter indenter = new SQLIndenter(document, syntaxManager, scanner);
 
         //get previous token
         int previousToken = scanner.previousToken(command.offset - 1, SQLHeuristicScanner.UNBOUND);

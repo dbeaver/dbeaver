@@ -31,21 +31,19 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.sql.Types;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-@RunWith(MockitoJUnitRunner.class)
-public class PostgreValueParserTest {
+public class PostgreValueParserTest extends DBeaverUnitTest {
 
     private final PostgreDialect sqlDialect = new PostgreDialect();
 

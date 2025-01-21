@@ -33,12 +33,30 @@ public interface DBDValueHint {
         ACTION
     }
 
+    enum HintStyle {
+        NORMAL,
+        WARNING,
+        ERROR
+    }
+
+    int OPTION_READ_ONLY = 1;
+
     HintType getHintType();
 
     String getHintText();
 
     String getHintDescription();
 
-    DBPImage getHintIcon();
+    default DBPImage getHintIcon() {
+        return null;
+    }
+
+    default HintStyle getHintStyle() {
+        return HintStyle.NORMAL;
+    }
+
+    default int getHintOptions() {
+        return 0;
+    }
 
 }

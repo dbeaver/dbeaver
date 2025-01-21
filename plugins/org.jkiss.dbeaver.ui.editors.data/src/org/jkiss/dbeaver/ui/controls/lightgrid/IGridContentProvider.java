@@ -42,7 +42,7 @@ public interface IGridContentProvider extends IContentProvider {
     int STATE_DECORATED = 1 << 4;
     int STATE_EXPANDED = 1 << 5;
     int STATE_COLLAPSED = 1 << 6;
-    int STATE_HINT = 1 << 8;
+    int STATE_BOOLEAN = 1 << 7;
 
     int ALIGN_LEFT = 0;
     int ALIGN_CENTER = 1;
@@ -117,6 +117,8 @@ public interface IGridContentProvider extends IContentProvider {
     String getCellToolTip(IGridColumn colElement, IGridRow rowElement);
 
     List<IGridHint> getCellHints(IGridColumn colElement, IGridRow rowElement, Object cellValue, int options);
+
+    List<IGridHint> getColumnHints(IGridItem element, int options);
 
     int getColumnHintsWidth(IGridColumn colElement);
 
