@@ -24,5 +24,7 @@ public class DatabricksConstants {
     public static final String PROP_STORAGE_PROPERTIES = "Storage Properties";
     public static final String DRIVER_CLASS_LEGACY = "com.simba.spark.jdbc.Driver";
     public static final String JDBC_LEGACY_URL_SUBPROTOCOL = "jdbc:spark://";
+    public static final String STATUS_TABLE_OR_VIEW_NOT_FOUND = "42P01";
 
+    public static final String SCHEMA_NAME = "schema_name";
 }

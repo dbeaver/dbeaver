@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.databricks.DatabricksConstants;
 import org.jkiss.dbeaver.ext.databricks.DatabricksDataSource;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -35,14 +36,15 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
 
+import javax.xml.validation.Schema;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
 
@@ -74,6 +76,38 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         @NotNull String schemaName
     ) {
         return new DatabricksSchema(dataSource, catalog, schemaName);
+    }
+
+    @Override
+    public List<GenericSchema> loadSchemas(
+        JDBCSession session,
+        GenericDataSource dataSource,
+        GenericCatalog catalog
+    ) throws DBException {
+        List<GenericSchema> schemas = super.loadSchemas(session, dataSource, catalog);
+        Set<String> schemaNames = schemas.stream()
+            .map(GenericSchema::getName)
+            .collect(Collectors.toSet());
+
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "select schema_name from " + DBUtils.getQuotedIdentifier(catalog) + ".information_schema.schemata"
+        )) {
+            dbStat.executeStatement();
+            try (JDBCResultSet dbResult = dbStat.getResultSet()) {
+                while (dbResult.next()) {
+                    String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, DatabricksConstants.SCHEMA_NAME);
+                    if (!schemaNames.contains(schemaName)) {
+                        schemas.add(new DatabricksSchema(dataSource, catalog, schemaName));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            if (!DatabricksConstants.STATUS_TABLE_OR_VIEW_NOT_FOUND.equals(SQLState.getStateFromException(e))) {
+                log.warn("Cannot load system schemas", e);
+            }
+        }
+        schemas.sort(Comparator.comparing(GenericSchema::getName));
+        return schemas;
     }
 
     @Override
@@ -135,12 +169,10 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
-        @Nullable JDBCResultSet dbResult)
-    {
+        @Nullable JDBCResultSet dbResult) {
         if ((CommonUtils.isNotEmpty(tableName) && !tempViewsList.isEmpty()
-            && tempViewsList.stream().anyMatch(e -> e.name.equalsIgnoreCase(tableName))) ||
-            tableType != null && isView(tableType))
-        {
+             && tempViewsList.stream().anyMatch(e -> e.name.equalsIgnoreCase(tableName))) ||
+            tableType != null && isView(tableType)) {
             return new DatabricksView(
                 container,
                 tableName,
