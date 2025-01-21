@@ -22,10 +22,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FileTypeHandlerRegistry {
 
@@ -51,6 +48,7 @@ public class FileTypeHandlerRegistry {
                     handlerByExtension.put(fileExt, formatterDescriptor);
                 }
             }
+            handlers.sort(Comparator.comparingInt(FileTypeHandlerDescriptor::getOrder));
         }
     }
 

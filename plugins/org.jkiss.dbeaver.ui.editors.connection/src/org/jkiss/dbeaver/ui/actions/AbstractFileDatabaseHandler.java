@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
@@ -84,8 +86,24 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
                 try {
                     if (dsContainer.connect(monitor, true, true)) {
                         DBPDataSource dataSource = dsContainer.getDataSource();
-                        if (dataSource instanceof DBSObjectContainer container) {
-                            openEntitiesFrom(monitor, container);
+                        if (isOpenAllTables()) {
+                            if (dataSource instanceof DBSObjectContainer container) {
+                                openEntitiesFrom(monitor, container);
+                            }
+                        } else {
+                            UIUtils.syncExec(() -> {
+                                DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(monitor, dataSource, true);
+                                if (dsNode != null) {
+                                    NavigatorHandlerObjectOpen.openEntityEditor(
+                                        dsNode,
+                                        null,
+                                        null,
+                                        null,
+                                        UIUtils.getActiveWorkbenchWindow(),
+                                        true,
+                                        false);
+                                }
+                            });
                         }
                     }
                 } catch (DBException e) {
@@ -107,9 +125,7 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
             if (child instanceof DBSEntity) {
                 DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, child, true);
                 if (node != null) {
-                    UIUtils.asyncExec(() -> {
-                        NavigatorUtils.openNavigatorNode(node, UIUtils.getActiveWorkbenchWindow());
-                    });
+                    openNodeEditor(node);
                 }
             } else if (child instanceof DBSObjectContainer oc) {
                 openEntitiesFrom(monitor, oc);
@@ -117,10 +133,20 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
         }
     }
 
+    private static void openNodeEditor(DBNNode node) {
+        UIUtils.asyncExec(() -> {
+            NavigatorUtils.openNavigatorNode(node, UIUtils.getActiveWorkbenchWindow());
+        });
+    }
+
     protected abstract String getDatabaseTerm();
 
     protected abstract String createDatabaseName(@NotNull List<Path> fileList);
 
     protected abstract DriverReference getDriverReference();
+
+    protected boolean isOpenAllTables() {
+        return true;
+    }
 
 }

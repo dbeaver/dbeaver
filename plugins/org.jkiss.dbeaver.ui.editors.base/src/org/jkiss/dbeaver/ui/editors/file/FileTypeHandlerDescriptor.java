@@ -33,6 +33,7 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
     private final String id;
     private final String[] extensions;
     private final ObjectType handlerType;
+    private final int order;
 
     public FileTypeHandlerDescriptor(IConfigurationElement config) {
         super(config);
@@ -40,6 +41,7 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
         this.id = config.getAttribute("id");
         this.handlerType = new ObjectType(config.getAttribute("class"));
         this.extensions = CommonUtils.notEmpty(config.getAttribute("extensions")).split(",");
+        this.order = CommonUtils.toInt(config.getAttribute("order"));
     }
 
     public String getId() {
@@ -48,6 +50,10 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
 
     public String[] getExtensions() {
         return extensions;
+    }
+
+    public int getOrder() {
+        return order;
     }
 
     public IFileTypeHandler createHandler() throws ReflectiveOperationException {
