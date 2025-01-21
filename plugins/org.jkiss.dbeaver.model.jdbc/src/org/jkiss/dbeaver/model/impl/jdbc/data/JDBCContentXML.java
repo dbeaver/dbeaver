@@ -119,30 +119,39 @@ public class JDBCContentXML extends JDBCContentLOB {
                     if (e instanceof SQLException && !JDBCUtils.isFeatureNotSupportedError(session.getDataSource(), e)) {
                         throw (SQLException) e;
                     }
-                    // Try 3 jdbc methods to set character stream
-                    Reader streamReader = storage.getContentReader();
                     try {
-                        preparedStatement.setCharacterStream(
-                            paramIndex,
-                            streamReader);
+                        SQLXML sqlxml = preparedStatement.getConnection().createSQLXML();
+                        sqlxml.setString(new JDBCSQLXMLImpl(storage).getString());
+                        preparedStatement.setSQLXML(paramIndex, sqlxml);
                     } catch (Throwable e0) {
                         if (e0 instanceof SQLException && !JDBCUtils.isFeatureNotSupportedError(session.getDataSource(), e0)) {
                             throw (SQLException) e0;
                         }
-                        long streamLength = ContentUtils.calculateContentLength(storage.getContentReader());
+                        // Try 3 jdbc methods to set character stream
+                        Reader streamReader = storage.getContentReader();
                         try {
                             preparedStatement.setCharacterStream(
                                 paramIndex,
-                                streamReader,
-                                streamLength);
+                                streamReader);
                         } catch (Throwable e1) {
                             if (e1 instanceof SQLException && !JDBCUtils.isFeatureNotSupportedError(session.getDataSource(), e1)) {
                                 throw (SQLException) e1;
                             }
-                            preparedStatement.setCharacterStream(
-                                paramIndex,
-                                streamReader,
-                                (int) streamLength);
+                            long streamLength = ContentUtils.calculateContentLength(storage.getContentReader());
+                            try {
+                                preparedStatement.setCharacterStream(
+                                    paramIndex,
+                                    streamReader,
+                                    streamLength);
+                            } catch (Throwable e2) {
+                                if (e2 instanceof SQLException && !JDBCUtils.isFeatureNotSupportedError(session.getDataSource(), e2)) {
+                                    throw (SQLException) e2;
+                                }
+                                preparedStatement.setCharacterStream(
+                                    paramIndex,
+                                    streamReader,
+                                    (int) streamLength);
+                            }
                         }
                     }
                 }
