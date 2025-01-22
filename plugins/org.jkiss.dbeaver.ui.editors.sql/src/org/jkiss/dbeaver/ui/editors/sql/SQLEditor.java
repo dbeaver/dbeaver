@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2190,9 +2190,13 @@ public class SQLEditor extends SQLEditorBase implements
         this.globalScriptContext = new SQLScriptContext(
             parentContext,
             this,
-            EditorUtils.getPathFromInput(getEditorInput()),
+            EditorUtils.getPathFromInput(editorInput),
             new OutputLogWriter(),
-            new SQLEditorParametersProvider(getSite()));
+            new SQLEditorParametersProvider(site));
+        DBCExecutionContext inputExecutionContext = this.globalScriptContext.getExecutionContext();
+        if (inputExecutionContext != null) {
+            dataSourceContainer = inputExecutionContext.getDataSource().getContainer();
+        }
 
         this.globalScriptContext.addListener(new DBCScriptContextListener() {
             @Override
