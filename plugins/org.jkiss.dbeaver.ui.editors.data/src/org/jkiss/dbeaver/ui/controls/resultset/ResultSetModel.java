@@ -467,6 +467,12 @@ public class ResultSetModel implements DBDResultSetModel {
             topAttribute = attr.getTopParent();
             rootIndex = topAttribute.getOrdinalPosition();
         }
+        Object currentValue = row.values[rootIndex];
+        if (!(value instanceof DBDValue) &&
+            !(currentValue instanceof DBDValue) &&
+            String.valueOf(value).equals(String.valueOf(currentValue))) {
+            return false;
+        }
         if (row.getState() != ResultSetRow.STATE_NORMAL) {
             updateChanges = false;
         }
@@ -475,7 +481,7 @@ public class ResultSetModel implements DBDResultSetModel {
         }
 
         Object oldHistoricValue = updateChanges ? row.changes.get(topAttribute) : null;
-        Object currentValue = row.values[rootIndex];
+
         Object valueToEdit = currentValue;
 
         if (currentValue instanceof DBDValue) {
@@ -503,32 +509,49 @@ public class ResultSetModel implements DBDResultSetModel {
             row.changes.put(attr, topAttribute);
         }
 
-        if (value instanceof DBDValue) {
-            // New value if also a complex value. Probably DBDContent
-            // In this case it must be root attribute
-            if (attr != topAttribute && valueToEdit instanceof DBDValue ownerValue) {
-                DBUtils.updateAttributeValue(ownerValue, attr, rowIndexes, value);
+        boolean updated = true;
+        try {
+            if (value instanceof DBDValue) {
+                // New value if also a complex value. Probably DBDContent
+                // In this case it must be root attribute
+                if (attr != topAttribute && valueToEdit instanceof DBDValue ownerValue) {
+                    updated = DBUtils.updateAttributeValue(ownerValue, attr, rowIndexes, value);
+                } else {
+                    valueToEdit = value;
+                }
+            } else if (valueToEdit instanceof DBDValue complexValue) {
+                updated = DBUtils.updateAttributeValue(complexValue, attr, rowIndexes, value);
             } else {
                 valueToEdit = value;
             }
-        } else if (valueToEdit instanceof DBDValue complexValue) {
-            DBUtils.updateAttributeValue(complexValue, attr, rowIndexes, value);
-        } else {
-            valueToEdit = value;
+        } catch (DBCException e) {
+            clearChangesFor(row, attr, topAttribute);
+            throw e;
+        }
+
+        if (!updated) {
+            clearChangesFor(row, attr, topAttribute);
+            return false;
         }
         row.values[rootIndex] = valueToEdit;
 
         if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL) {
-            if (!(oldHistoricValue instanceof DBDValue) &&
-                !(valueToEdit instanceof DBDValue) &&
-                Objects.equals(oldHistoricValue, valueToEdit)) {
-                changesCount = Math.min(changesCount - 1, 0);
-            } else {
-                changesCount++;
-            }
+            changesCount++;
         }
 
         return true;
+    }
+
+    private void clearChangesFor(@NotNull ResultSetRow row, @NotNull DBDAttributeBinding attr, DBDAttributeBinding topAttribute) {
+        if (row.changes == null) {
+            return;
+        }
+        if (attr != topAttribute) {
+            row.changes.remove(attr);
+            row.changes.remove(topAttribute);
+        } else {
+            row.changes.remove(attr);
+        }
     }
 
     void resetCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {

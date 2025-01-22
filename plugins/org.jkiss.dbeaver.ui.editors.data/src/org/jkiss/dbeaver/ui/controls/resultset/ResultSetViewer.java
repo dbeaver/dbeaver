@@ -2578,7 +2578,7 @@ public class ResultSetViewer extends Viewer
     @Override
     public boolean isDirty()
     {
-        return model.isDirty();
+        return model.isDirty() || (activePresentation != null && activePresentation.isDirty());
     }
 
     @Override

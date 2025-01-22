@@ -770,7 +770,7 @@ public final class DBUtils {
         return curValue;
     }
 
-    public static void updateAttributeValue(
+    public static boolean updateAttributeValue(
         @NotNull DBDValue rootValue,
         @NotNull DBDAttributeBinding attribute,
         @Nullable int[] nestedIndexes,
@@ -827,12 +827,19 @@ public final class DBUtils {
         if (ownerValue == null) {
             throw new DBCException("Cannot determine owner value for update");
         } else if (ownerValue instanceof DBDCollection collection) {
+            if (String.valueOf(elementValue).equals(String.valueOf(collection.get(nestedIndexes[nestedIndexes.length - 1])))) {
+                return false;
+            }
             collection.setItem(nestedIndexes[nestedIndexes.length - 1], elementValue);
         } else if (ownerValue instanceof DBDComposite composite) {
+            if (String.valueOf(composite.getAttributeValue(attribute)).equals(String.valueOf(elementValue))) {
+                return false;
+            }
             composite.setAttributeValue(attribute, elementValue);
         } else {
             throw new DBCException("Don't know how to update complex value '" + ownerValue + "' (" + ownerValue.getClass().getSimpleName() + ")");
         }
+        return true;
     }
 
     @NotNull
