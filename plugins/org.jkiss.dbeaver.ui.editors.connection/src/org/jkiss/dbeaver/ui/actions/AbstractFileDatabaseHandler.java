@@ -147,7 +147,7 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
         }
     }
 
-    private List<DBSEntity> getConnectionEntities(
+    private void getConnectionEntities(
         DBRProgressMonitor monitor,
         DBSObjectContainer container,
         List<DBSEntity> entities
@@ -156,10 +156,9 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
             if (child instanceof DBSEntity entity) {
                 entities.add(entity);
             } else if (child instanceof DBSObjectContainer oc) {
-                entities.addAll(getConnectionEntities(monitor, oc, entities));
+                getConnectionEntities(monitor, oc, entities);
             }
         }
-        return entities;
     }
 
     private static void openNodeEditor(DBNNode node) {
