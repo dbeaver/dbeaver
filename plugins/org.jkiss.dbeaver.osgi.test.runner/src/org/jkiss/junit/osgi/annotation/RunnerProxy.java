@@ -14,18 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.junit;
+package org.jkiss.junit.osgi.annotation;
 
-import org.jkiss.junit.osgi.OSGITestRunner;
-import org.jkiss.junit.osgi.annotation.RunWithApplication;
-import org.jkiss.junit.osgi.annotation.RunnerProxy;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.runner.Runner;
 
+import java.lang.annotation.*;
 
-@RunnerProxy(MockitoJUnitRunner.class)
-@RunWith(OSGITestRunner.class)
-@RunWithApplication(bundleName = "org.jkiss.dbeaver.headless", registryName = "org.jkiss.dbeaver.headless.application")
-public abstract class ApplicationUnitTest {
-
+/**
+ * See {@link org.jkiss.junit.osgi.OSGITestRunner}
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Inherited
+public @interface RunnerProxy {
+    /**
+     * Proxy runner class
+     */
+    Class<? extends Runner> value();
 }
