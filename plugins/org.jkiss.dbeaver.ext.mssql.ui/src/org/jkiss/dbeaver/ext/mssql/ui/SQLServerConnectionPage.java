@@ -131,14 +131,13 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             hostLabel = new Label(addrGroup, SWT.NONE);
             hostLabel.setText(SQLServerUIMessages.dialog_connection_host_label);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            addControlToGroup(GROUP_CONNECTION, hostLabel);
 
             hostText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
             hostText.addModifyListener(textListener);
-            addControlToGroup(GROUP_CONNECTION, hostText);
+            addControlToGroup(GROUP_CONNECTION, hostLabel, hostText);
 
             if (isDriverAzure || !needsPort) {
                 // no port number for Azure
@@ -147,14 +146,13 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
                 portLabel = new Label(addrGroup, SWT.NONE);
                 portLabel.setText(SQLServerUIMessages.dialog_connection_port_label);
                 portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-                addControlToGroup(GROUP_CONNECTION, portLabel);
 
                 portText = new Text(addrGroup, SWT.BORDER);
                 gd = new GridData(GridData.CENTER);
                 gd.widthHint = UIUtils.getFontHeight(portText) * 7;
                 portText.setLayoutData(gd);
                 portText.addModifyListener(textListener);
-                addControlToGroup(GROUP_CONNECTION, portText);
+                addControlToGroup(GROUP_CONNECTION, portLabel, portText);
             }
         }
 
@@ -162,7 +160,6 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             dbLabel = new Label(addrGroup, SWT.NONE);
             dbLabel.setText(SQLServerUIMessages.dialog_connection_database_schema_label);
             dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            addControlToGroup(GROUP_CONNECTION, dbLabel);
 
             dbText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -171,7 +168,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             gd.horizontalSpan = 3;
             dbText.setLayoutData(gd);
             dbText.addModifyListener(textListener);
-            addControlToGroup(GROUP_CONNECTION, dbText);
+            addControlToGroup(GROUP_CONNECTION, dbLabel, dbText);
         }
 
         {

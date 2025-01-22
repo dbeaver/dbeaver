@@ -41,6 +41,12 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
         return prefix + rowsSourceAlias.sourceInfo.source.getSyntaxNode().getTextContent();
     }
 
+    @NotNull
+    public String visitCompositeField(@NotNull SQLCompositeFieldCompletionItem compositeField) {
+        String ownerTypeName = SQLQueryCompletionExtraTextProvider.prepareTypeNameString(compositeField.memberInfo.declaratorType());
+        return "Attribute " + compositeField.memberInfo.name() + " of the " + ownerTypeName + " composite type ";
+    }
+
     @Nullable
     @Override
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {

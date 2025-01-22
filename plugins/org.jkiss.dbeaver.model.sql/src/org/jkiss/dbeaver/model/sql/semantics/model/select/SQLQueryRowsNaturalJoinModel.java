@@ -38,7 +38,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     @Nullable
     private final List<SQLQuerySymbolEntry> columsToJoin;
 
-    @Nullable
+    @NotNull
     private final SQLQueryLexicalScope conditionScope;
 
     public SQLQueryRowsNaturalJoinModel(
@@ -92,7 +92,10 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     ) {
         SQLQueryDataContext left = this.left.propagateContext(context, statistics);
         SQLQueryDataContext right = this.right.propagateContext(context, statistics);
+        SQLQueryDataContext combinedContext = left.combineForJoin(right);
+
         if (this.columsToJoin != null) {
+            var columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(combinedContext);
             for (SQLQuerySymbolEntry column : columsToJoin) {
                 if (column.isNotClassified()) {
                     SQLQuerySymbol symbol = column.getSymbol();
@@ -102,22 +105,27 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
                         symbol.setDefinition(column); // TODO multiple definitions per symbol
                         symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN);
                     } else {
-                        if (leftColumnDef != null) {
-                            statistics.appendError(column, "Column " + column.getName() + " not found to the left of join");
+                        if (leftColumnDef == null) {
+                            statistics.appendError(column, "Column " + column.getName() + " not found on the left of join");
                         } else {
-                            statistics.appendError(column, "Column " + column.getName() + " not found to the right of join");
+                            statistics.appendError(column, "Column " + column.getName() + " not found on the right of join");
                         }
                         symbol.setSymbolClass(SQLQuerySymbolClass.ERROR);
                     }
+                    column.setOrigin(columnNameOrigin);
                 }
+            }
+            this.conditionScope.setSymbolsOrigin(columnNameOrigin);
+        } else {
+            var conditionOrigin = new SQLQuerySymbolOrigin.ValueRefFromContext(combinedContext);
+            this.setTailOrigin(conditionOrigin);
+
+            if (this.condition != null) {
+                this.condition.propagateContext(combinedContext, statistics);
+                this.conditionScope.setSymbolsOrigin(conditionOrigin);
             }
         }
 
-        SQLQueryDataContext combinedContext = left.combineForJoin(right);
-        if (this.condition != null) {
-            this.condition.propagateContext(combinedContext, statistics);
-        }
-        this.conditionScope.setContext(combinedContext);
         return combinedContext;
     }
 

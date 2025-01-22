@@ -18,13 +18,18 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 /**
  * IDataSourceConnectionEditor
  */
 public interface IDataSourceConnectionEditor extends IDialogPage {
-    void setSite(IDataSourceConnectionEditorSite site);
+    /**
+     * Sets editor site
+     */
+    void setSite(@NotNull IDataSourceConnectionEditorSite site);
 
     /**
      * @return true if all mandatory fields were completed
@@ -39,8 +44,22 @@ public interface IDataSourceConnectionEditor extends IDialogPage {
         return false;
     }
 
+    /**
+     * Load settings from active datasource info UI
+     */
     void loadSettings();
 
+    /**
+     * Save all properties info passed datasource
+     */
     void saveSettings(DBPDataSourceContainer dataSource);
+
+    // Called once after page activation
+    default void activateEditor() {
+        Control control = getControl();
+        if (control != null) {
+            control.setFocus();
+        }
+    }
 
 }

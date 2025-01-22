@@ -467,6 +467,11 @@ public interface SQLDialect {
     boolean isStripCommentsBeforeBlocks();
 
     /**
+     * Returns true if need to escape backslash character
+     */
+    boolean isEscapeBackslash();
+
+    /**
      * Returns true if query is definitely transactional. Otherwise returns false, however it still may be transactional.
      * You need to check query results to ensure that it is not transactional.
      */

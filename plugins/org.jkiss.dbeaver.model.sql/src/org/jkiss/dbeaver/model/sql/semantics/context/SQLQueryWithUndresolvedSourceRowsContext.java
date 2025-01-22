@@ -25,7 +25,7 @@ public class SQLQueryWithUndresolvedSourceRowsContext extends SQLQuerySyntaxCont
     }
 
     @Override
-    public boolean hasUndresolvedSource() {
+    public boolean hasUnresolvedSource() {
         return true;
     }
 }

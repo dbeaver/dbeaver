@@ -209,7 +209,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     @Override
     public boolean supportsRename() {
-        return false;
+        return true;
     }
 
     @Override
@@ -218,8 +218,11 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         try {
             setPath(Files.move(path, path.getParent().resolve(newName)));
         } catch (IOException e) {
-            throw new DBException("Can't rename resource", e);
+            throw new DBException("Cannot rename resource '" + getPath() + "'", e);
+        } catch (UnsupportedOperationException e) {
+            throw new DBException("File rename is not supported by file system '" + path.getFileSystem().provider().getScheme(), e);
         }
+        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
     }
 
     @Override
