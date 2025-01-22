@@ -38,9 +38,11 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +86,7 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
         DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
         configuration.setDatabaseName(databaseName);
         DBPDataSourceContainer dsContainer = project.getDataSourceRegistry().createDataSource(driver, configuration);
-        dsContainer.setName("File: " + databaseName);
+        dsContainer.setName("File: " + CommonUtils.truncateString(databaseName, 32));
         dsContainer.setTemporary(true);
 
         try {
@@ -99,23 +101,35 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
                 try {
                     if (dsContainer.connect(monitor, true, true)) {
                         DBPDataSource dataSource = dsContainer.getDataSource();
-                        if (isSingleDatabaseConnection()) {
-                            if (dataSource instanceof DBSObjectContainer container) {
-                                openEntitiesFrom(monitor, container);
+                        List<DBSEntity> entities = new ArrayList<>();
+                        if (dataSource instanceof DBSObjectContainer container) {
+                            getConnectionEntities(monitor, container, entities);
+                        }
+
+                        DBSObject objectToOpen;
+                        if (entities.size() == 1) {
+                            objectToOpen = entities.get(0);
+                        } else {
+                            if (entities.size() > 1) {
+                                objectToOpen = entities.get(0).getParentObject();
+                            } else {
+                                objectToOpen = dataSource;
                             }
+                        }
+                        DBNDatabaseNode openNode = DBNUtils.getNodeByObject(monitor, objectToOpen, true);
+
+                        if (openNode == null) {
+                            DBWorkbench.getPlatformUI().showError("No objects", "Cannot determine target node");
                         } else {
                             UIUtils.syncExec(() -> {
-                                DBNDatabaseNode dsNode = DBNUtils.getNodeByObject(monitor, dataSource, true);
-                                if (dsNode != null) {
-                                    NavigatorHandlerObjectOpen.openEntityEditor(
-                                        dsNode,
-                                        null,
-                                        null,
-                                        null,
-                                        UIUtils.getActiveWorkbenchWindow(),
-                                        true,
-                                        false);
-                                }
+                                NavigatorHandlerObjectOpen.openEntityEditor(
+                                    openNode,
+                                    null,
+                                    null,
+                                    null,
+                                    UIUtils.getActiveWorkbenchWindow(),
+                                    true,
+                                    false);
                             });
                         }
                     }
@@ -133,17 +147,19 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
         }
     }
 
-    private void openEntitiesFrom(DBRProgressMonitor monitor, DBSObjectContainer container) throws DBException {
+    private List<DBSEntity> getConnectionEntities(
+        DBRProgressMonitor monitor,
+        DBSObjectContainer container,
+        List<DBSEntity> entities
+    ) throws DBException {
         for (DBSObject child : container.getChildren(monitor)) {
-            if (child instanceof DBSEntity) {
-                DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, child, true);
-                if (node != null) {
-                    openNodeEditor(node);
-                }
+            if (child instanceof DBSEntity entity) {
+                entities.add(entity);
             } else if (child instanceof DBSObjectContainer oc) {
-                openEntitiesFrom(monitor, oc);
+                entities.addAll(getConnectionEntities(monitor, oc, entities));
             }
         }
+        return entities;
     }
 
     private static void openNodeEditor(DBNNode node) {
