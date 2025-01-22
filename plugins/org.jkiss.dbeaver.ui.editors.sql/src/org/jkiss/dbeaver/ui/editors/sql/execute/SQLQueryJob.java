@@ -831,6 +831,7 @@ public class SQLQueryJob extends DataSourceJob
             default:
                 return false;
         }
+
     }
 
     private void fetchExecutionResult(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull SQLQuery query) throws DBCException
