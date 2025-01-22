@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.junit.osgi.annotation.RunWithApplication;
 import org.jkiss.junit.osgi.annotation.RunWithProduct;
 import org.jkiss.junit.osgi.annotation.RunnerProxy;
-import org.jkiss.junit.osgi.behaviors.IApplicationTest;
+import org.jkiss.junit.osgi.behaviors.IAsyncApplication;
 import org.jkiss.junit.osgi.launcher.TestLauncher;
 import org.jkiss.utils.Pair;
 import org.junit.runner.Description;
@@ -72,7 +72,7 @@ public class OSGITestRunner extends Runner {
     public static final Pattern startLevel = Pattern.compile("@(\\d+):start");
     private static final Log log = Log.getLog(OSGITestRunner.class);
     private static final boolean DEBUG_BUNDLE_LAUNCH = false;
-    private final Class<? extends IApplicationTest> testClass;
+    private final Class<?> testClass;
     private Framework framework;
     private Path productPath;
 
@@ -82,7 +82,7 @@ public class OSGITestRunner extends Runner {
     private String appBundleName;
     private String[] args;
 
-    public OSGITestRunner(Class<? extends IApplicationTest> testClass) {
+    public OSGITestRunner(Class<? extends IAsyncApplication> testClass) {
         this.testClass = testClass;
         if (isRunFromIDEA()) {
             //use UTF-8 for run
@@ -187,36 +187,46 @@ public class OSGITestRunner extends Runner {
             BundleContext context = framework.getBundleContext();
             // Load and start all bundles
             loadAndStartBundles(context);
-            ServiceReference<EnvironmentInfo> configRef = context.getServiceReference(EnvironmentInfo.class);
-            EquinoxConfiguration equinoxConfig = (EquinoxConfiguration) context.getService(configRef);
-            equinoxConfig.setAllArgs(args);
-            equinoxConfig.setAppArgs(args);
+            EquinoxConfiguration equinoxConfig = null;
+            if (args != null) {
+                ServiceReference<EnvironmentInfo> configRef = context.getServiceReference(EnvironmentInfo.class);
+                equinoxConfig = (EquinoxConfiguration) context.getService(configRef);
+                equinoxConfig.setAllArgs(args);
+                equinoxConfig.setAppArgs(args);
+            }
             framework.start();
-            Method processCommandLine = CommandLineArgs.class.getDeclaredMethod(
-                "processCommandLine",
-                EnvironmentInfo.class
-            );
-            processCommandLine.setAccessible(true);
-            processCommandLine.invoke(null, equinoxConfig);
+            if (equinoxConfig != null) {
+                Method processCommandLine = CommandLineArgs.class.getDeclaredMethod(
+                    "processCommandLine",
+                    EnvironmentInfo.class
+                );
+                processCommandLine.setAccessible(true);
+                processCommandLine.invoke(null, equinoxConfig);
+            }
             TestLauncher launcher = new TestLauncher(context);
             context.registerService(ApplicationLauncher.class.getName(), launcher,
                 null
             );
-            Thread thread = new Thread(() -> launcher.start(appRegistryName, args));
-            thread.start();
-
+            if (IAsyncApplication.class.isAssignableFrom(testClass)) {
+                Thread thread = new Thread(() -> launcher.start(appRegistryName, args));
+                thread.start();
+            } else {
+                launcher.start(appRegistryName, args);
+            }
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
                 Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class)
                     .value()
                     .getName()).getConstructor(Class.class);
                 Class<?> runningClass = testBundle.loadClass(testClass.getName());
-                long startTime = System.currentTimeMillis();
-                long endTime = 0;
-                boolean setUpIsDone = false;
-                while (!setUpIsDone && endTime < 300000) {
-                    setUpIsDone = (boolean) runningClass.getMethod("verifyLaunched")
-                        .invoke(runningClass.getConstructor().newInstance());
-                    endTime = System.currentTimeMillis() - startTime;
+                if (IAsyncApplication.class.isAssignableFrom(testClass)) {
+                    long startTime = System.currentTimeMillis();
+                    long endTime = 0;
+                    boolean setUpIsDone = false;
+                    while (!setUpIsDone && endTime < 300000) {
+                        setUpIsDone = (boolean) runningClass.getMethod("verifyLaunched")
+                            .invoke(runningClass.getConstructor().newInstance());
+                        endTime = System.currentTimeMillis() - startTime;
+                    }
                 }
                 Object o = proxy.newInstance(runningClass);
                 Method runMethod = Arrays.stream(o.getClass().getMethods()).filter(it -> it.getName().equals("run"))

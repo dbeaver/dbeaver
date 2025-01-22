@@ -19,7 +19,7 @@ package org.jkiss.junit.osgi.behaviors;
 /**
  * Interface for application test
  */
-public interface IApplicationTest {
+public interface IAsyncApplication {
     /**
      * Verify that application was launched successfully
      */

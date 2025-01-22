@@ -16,11 +16,9 @@
  */
 package org.jkiss.junit;
 
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.junit.osgi.OSGITestRunner;
 import org.jkiss.junit.osgi.annotation.RunWithApplication;
 import org.jkiss.junit.osgi.annotation.RunnerProxy;
-import org.jkiss.junit.osgi.behaviors.IApplicationTest;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -28,9 +26,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunnerProxy(MockitoJUnitRunner.class)
 @RunWith(OSGITestRunner.class)
 @RunWithApplication(bundleName = "org.jkiss.dbeaver.headless", registryName = "org.jkiss.dbeaver.headless.application")
-public abstract class ApplicationUnitTest implements IApplicationTest {
-        @Override
-        public boolean verifyLaunched() {
-            return Platform.isRunning();
-        }
+public abstract class ApplicationUnitTest {
+
 }
