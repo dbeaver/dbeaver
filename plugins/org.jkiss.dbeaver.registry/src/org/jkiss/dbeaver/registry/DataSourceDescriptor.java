@@ -1053,7 +1053,7 @@ public class DataSourceDescriptor
         boolean succeeded = false;
         connecting = true;
         try {
-            getDriver().downloadRequiredDependencies(monitor);
+            getDriver().validateFilesPresence(monitor);
             if (isDetachedProcessEnabled() && !detachedProcess) {
                 // Open detached connection
                 succeeded = openDetachedConnection(monitor);

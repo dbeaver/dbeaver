@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.jkiss.dbeaver</groupId>
-        <artifactId>tests</artifactId>
+        <artifactId>plugins</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.osgi.test.runner</artifactId>
-    <version>1.0.103-SNAPSHOT</version>
+    <version>1.0.104-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
 </project>

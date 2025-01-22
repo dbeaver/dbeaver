@@ -155,12 +155,6 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         return platformFile;
     }
 
-    @Nullable
-    @Override
-    public Path getLocalFile(@NotNull DBRProgressMonitor monitor) {
-        return getLocalFile();
-    }
-
     private Path resolveCacheDir() {
         if (isUseOriginalJar()) {
             return DriverDescriptor.getProvidedDriversStorageFolder();
@@ -192,6 +186,10 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         if (file == null || !Files.exists(file)) {
             // Use custom drivers path
             file = DriverDescriptor.getCustomDriversHome().resolve(localPath);
+        }
+        if (!Files.exists(file) && (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser())) {
+            // driver file can be in workspace folder for multiuser applications
+            return DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(localPath);
         }
         return file;
     }

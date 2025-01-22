@@ -45,6 +45,18 @@ import java.util.Map;
 
 public class CubridTableColumnManager extends GenericTableColumnManager implements DBEObjectRenamer<GenericTableColumn>
 {
+   public ColumnModifier<GenericTableColumn> CubridDataTypeModifier = (monitor, column, sql, command) -> {
+        final String typeName = column.getTypeName();
+        DBPDataKind dataKind = column.getDataKind();
+        sql.append(' ').append(typeName);
+        String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), column, typeName, dataKind);
+        if (modifiers != null && !typeName.equalsIgnoreCase("STRING")) {
+            sql.append(modifiers);
+        } else if (modifiers == null && typeName.equalsIgnoreCase("VARCHAR")) {
+            sql.append('(').append(column.getPrecision()).append(')');
+        }
+    };
+
     @NotNull
     @Override
     protected CubridTableColumn createDatabaseObject(
@@ -85,7 +97,7 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), ((ObjectRenameCommand) command).getNewName());
         }
         decl.append(columnName);
-        for (ColumnModifier<GenericTableColumn> modifier : new ColumnModifier[]{DataTypeModifier, NullNotNullModifierConditional}) {
+        for (ColumnModifier<GenericTableColumn> modifier : new ColumnModifier[]{CubridDataTypeModifier, NullNotNullModifierConditional}) {
             modifier.appendModifier(monitor, column, decl, command);
         }
         if ((!column.isPersisted() && column.getDefaultValue() != null) || ((DBECommandComposite) command).hasProperty("defaultValue")) {

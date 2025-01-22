@@ -21,6 +21,10 @@ import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
+/**
+ * OSGI test run listener delegate
+ * This class is used to delegate test run events to dynamic listener
+ */
 public class OSGITestRunListener extends RunListenerDelegate {
 
     public OSGITestRunListener(Object dynamicListener) {

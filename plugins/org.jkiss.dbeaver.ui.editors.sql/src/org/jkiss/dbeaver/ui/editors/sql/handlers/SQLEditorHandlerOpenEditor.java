@@ -76,7 +76,10 @@ public class SQLEditorHandlerOpenEditor extends AbstractDataSourceHandler {
                 handler.openResource(resource);
             }
         } catch (Exception e) {
-            DBWorkbench.getPlatformUI().showError(UINavigatorMessages.actions_navigator_error_dialog_open_resource_title, "Can't open resource '" + resource.getName() + "'", e); //$NON-NLS-3$
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.actions_navigator_error_dialog_open_resource_title,
+                "Can't open resource '" + resource.getName() + "'",
+                e); //$NON-NLS-3$
         }
     }
 

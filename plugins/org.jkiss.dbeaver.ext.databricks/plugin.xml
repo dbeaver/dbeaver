@@ -55,7 +55,6 @@
 
                     <file type="jar" path="maven:/com.databricks:databricks-jdbc:RELEASE[2.6.40-patch-1]" bundle="!drivers.databricks_native"/>
                     <file type="jar" path="drivers/databricks_native" bundle="drivers.databricks_native"/>
-                    <file type="license" path="drivers/databricks_native/EULA.txt" bundle="drivers.databricks_native"/>
 
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-multi-insert" value="true"/>
