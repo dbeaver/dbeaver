@@ -36,7 +36,10 @@
         <generator id="tableMerge" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorMerge" label="MERGE" description="MERGE table" order="5">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </generator>
-        <generator id="tableJoin" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorJoin" label="JOIN" description="JOIN tables" order="6" multiObject="true">
+        <generator id="tableJoin" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorSimpleJoin" label="SIMPLE JOIN" description="JOIN tables" order="6" multiObject="true">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+        </generator>
+        <generator id="tableInnerJoin" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorInnerJoin" label="INNER JOIN" description="JOIN tables" order="7" multiObject="true">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </generator>
         <generator id="procedureCall" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorProcedureCall" label="CALL" description="Execute procedure" order="1000">
