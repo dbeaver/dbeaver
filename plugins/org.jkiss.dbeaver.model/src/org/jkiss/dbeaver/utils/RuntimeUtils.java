@@ -198,10 +198,10 @@ public final class RuntimeUtils {
             return String.format("%dh %dm %ds", hours, minutes, seconds);
         } else if (minutes > 0) {
             return String.format("%dm %ds", minutes, seconds);
-        } else if (seconds > 0) {
+        } else if (seconds >= 10) {
             return String.format("%ds", seconds);
         } else {
-            return String.format("%.03fs", millis / 1000.0);
+            return String.format("%d.%03ds", seconds, millis);
         }
     }
 
