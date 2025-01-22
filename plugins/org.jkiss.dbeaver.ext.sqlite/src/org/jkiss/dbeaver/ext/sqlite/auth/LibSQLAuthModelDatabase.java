@@ -20,5 +20,4 @@ import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 
 public class LibSQLAuthModelDatabase extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
-
 }

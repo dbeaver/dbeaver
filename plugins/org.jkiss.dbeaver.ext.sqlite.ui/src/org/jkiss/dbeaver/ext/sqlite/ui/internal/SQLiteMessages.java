@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.utils.NLS;
 public class SQLiteMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.sqlite.ui.internal.SQLiteResources";
 
-    public static String dialog_connection_server_label;
     public static String dialog_connection_auth_label_password;
 
     static {
