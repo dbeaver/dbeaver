@@ -130,6 +130,7 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
 
     @Override
     public String toString() {
-        return "ValueMember[(" + this.owner.toString() + ")." + this.identifier.getName() + ":" + this.type.toString() + "]";
+        return "ValueMember[(" + this.owner + ")." +
+            (this.identifier == null ? "<NULL>" : this.identifier.getName()) + ":" + this.type + "]";
     }
 }

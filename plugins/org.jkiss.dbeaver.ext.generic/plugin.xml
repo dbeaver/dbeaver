@@ -1353,6 +1353,7 @@
                     <replace provider="generic" driver="salesforce_jdbc"/>
                     <file type="jar" path="https://github.com/forcedotcom/Salesforce-CDP-jdbc/releases/download/release_2024.4B/Salesforce-cdp-1.19.4.jar"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                    <parameter name="read-only-meta-data" value="true"/>
                 </driver>
 
                 <!-- Salesforce Data Cloud -->
@@ -1373,6 +1374,7 @@
                     <file type="jar" path="drivers/salesforce_datacloud" bundle="drivers.salesforce_datacloud"/>
                     <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.salesforce_datacloud"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.salesforce_datacloud"/>
+                    <parameter name="read-only-meta-data" value="true"/>
                 </driver>
 
                 <!--
