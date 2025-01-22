@@ -224,7 +224,7 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 // from
 fromClause: FROM tableReference (Comma tableReference)*;
 nonjoinedTableReference: ((tableName (PARTITION anyProperty)?)|derivedTable) correlationSpecification?;
-tableReference: (nonjoinedTableReference|joinedTable) tableReferenceHints?? anyUnexpected??;
+tableReference: ((nonjoinedTableReference|joinedTable) tableReferenceHints??)|anyUnexpected??;
 tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: { validCorrelationNameFollows() }? (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
@@ -406,9 +406,9 @@ insertColumnList: columnNameList;
 // UPDATE
 updateStatement: UPDATE anyWordsWithProperty?? tableReference? (SET setClauseList? fromClause? whereClause? orderByClause? limitClause? anyWordsWithProperty??)?;
 setClauseList: setClause (Comma setClause)*;
-setClause: ((setTarget | setTargetList) (EqualsOperator updateSource)?)|anyUnexpected??;
-setTarget: valueReference;
-setTargetList: LeftParen valueReference? (Comma valueReference)* RightParen?;
+setClause: ((setTarget | setTargetList) (EqualsOperator updateSource?)?)|anyUnexpected??;
+setTarget: columnName;
+setTargetList: LeftParen columnNameList? RightParen?;
 updateSource: updateValue | (LeftParen updateValue (Comma updateValue)* RightParen?);
 updateValue: valueExpression|DEFAULT;
 

@@ -102,11 +102,11 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
 
     @Override
     public void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        var origin = new SQLQuerySymbolOrigin.ColumnNameFromContext(context);
         if (this.columnsScope != null) {
-            this.columnsScope.setContext(context);
+            this.columnsScope.setSymbolsOrigin(origin);
         }
         if (this.columnNames != null) {
-            SQLQuerySymbolOrigin origin = new SQLQuerySymbolOrigin.ColumnNameFromContext(context);
             for (SQLQuerySymbolEntry columnName : this.columnNames) {
                 if (columnName.isNotClassified()) {
                     SQLQueryResultColumn column = context.resolveColumn(statistics.getMonitor(), columnName.getName());
