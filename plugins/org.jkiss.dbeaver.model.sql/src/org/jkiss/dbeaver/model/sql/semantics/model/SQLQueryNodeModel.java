@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMUtils;
@@ -41,7 +42,8 @@ public abstract class SQLQueryNodeModel {
     private List<SQLQueryNodeModel> subnodes; // TODO validate that subnodes are being registered correctly for all nodes
     @Nullable
     private List<SQLQueryLexicalScope> lexicalScopes  = null;
-
+    @Nullable
+    private SQLQuerySymbolOrigin tailOrigin = null;
     
     protected SQLQueryNodeModel(@NotNull Interval region, @NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
         this.region = region;
@@ -55,6 +57,15 @@ public abstract class SQLQueryNodeModel {
                 .collect(Collectors.toCollection(() -> new ArrayList<>(subnodes.length)));
             this.subnodes.sort(Comparator.comparingInt(n -> n.region.a));
         }
+    }
+
+    protected void setTailOrigin(SQLQuerySymbolOrigin tailOrigin) {
+        this.tailOrigin = tailOrigin;
+    }
+
+    @Nullable
+    public SQLQuerySymbolOrigin getTailOrigin() {
+        return this.tailOrigin;
     }
 
     /**
@@ -353,8 +364,13 @@ public abstract class SQLQueryNodeModel {
                     if (node.lexicalScopes != null && node.lexicalScopes.size() > 0) {
                         List<Range> layer = range.createSubrangesLayer();
                         for (var s : node.lexicalScopes) {
-                            if (s.getContext() != null) {
-                                layer.add(new Range("lexical: " + s.getContext().getClass().getSimpleName(), s.getInterval()));
+                            SQLQuerySymbolOrigin origin = s.getSymbolsOrigin();
+                            if (origin != null) {
+                                String originName = origin.getClass().getSimpleName();
+                                String contextName = origin instanceof SQLQuerySymbolOrigin.DataContextSymbolOrigin o
+                                    ? "(" + o.getDataContext().getClass().getSimpleName() + ")"
+                                    : "";
+                                layer.add(new Range("lexical: " + originName + contextName, s.getInterval()));
                             }
                         }
                     }

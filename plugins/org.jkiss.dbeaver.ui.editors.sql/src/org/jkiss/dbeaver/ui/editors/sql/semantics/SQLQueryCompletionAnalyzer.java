@@ -57,8 +57,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     private final Position completionRequestPosition;
     @NotNull
     private final AtomicReference<Pair<Integer, List<SQLQueryCompletionProposal>>> result = new AtomicReference<>(Pair.of(null, Collections.emptyList()));
-
-    private final SQLQueryCompletionProposalContext proposalContext;
+    private SQLQueryCompletionProposalContext proposalContext;
 
     public SQLQueryCompletionAnalyzer(
         @NotNull SQLEditorBase editor,
@@ -68,7 +67,6 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         this.editor = editor;
         this.request = request;
         this.completionRequestPosition = completionRequestPosition;
-        this.proposalContext = new SQLQueryCompletionProposalContext(request);
     }
 
     @Override
@@ -81,6 +79,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
 //            completionContext = this.editor.obtainCompletionContext(this.completionRequestPostion);
 //        }
 
+        this.proposalContext = new SQLQueryCompletionProposalContext(request, completionContext.getRequestOffset());
         Pair<Integer, List<SQLQueryCompletionProposal>> result;
         if (completionContext != null && this.request.getContext().getDataSource() != null) {
             // TODO don't we want to be able to accomplish subqueries and such even without the connection?

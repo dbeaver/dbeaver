@@ -411,7 +411,13 @@ public class SQLBackgroundParsingJob {
             if (this.job.getState() != Job.RUNNING) {
                 this.job.cancel();
             }
-            this.job.schedule(schedulingTimeoutMilliseconds * (this.isRunning ? 2 : 1));
+            long delay;
+            if (event != null && SQLConstants.DOT.equals(event.getText())) {
+                delay = this.isRunning ? schedulingTimeoutMilliseconds / 2 : 0;
+            } else {
+                delay = schedulingTimeoutMilliseconds * (this.isRunning ? 2 : 1);
+            }
+            this.job.schedule(delay);
         }
     }
 
