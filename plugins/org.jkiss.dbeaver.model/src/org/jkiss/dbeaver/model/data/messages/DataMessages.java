@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.junit.osgi.annotation;
+package org.jkiss.dbeaver.model.data.messages;
 
-import org.jkiss.junit.osgi.OSGITestRunner;
+import org.jkiss.dbeaver.utils.NLS;
 
-import java.lang.annotation.*;
+public class DataMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.data.messages.DataMessages"; //$NON-NLS-1$
 
-/**
- * Run with product used for @{@link OSGITestRunner}
- * product should contain the test bundle
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Inherited
-public @interface RunWithProduct {
-    /**
-     * Product ID
-     */
-    String value();
+    public static String hint_attr_keys_unique_key;
+    public static String hint_attr_keys_part_of;
+    public static String hint_attr_keys_refers_to;
 
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, DataMessages.class);
+    }
+
+    private DataMessages() {
+    }
 }

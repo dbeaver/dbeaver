@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -203,6 +204,14 @@ public class UITextUtils {
 
         resultBuilder.append(str.substring(offset));
         return resultBuilder.toString();
+    }
+
+
+    public static String truncateText(@Nullable String str, int maxLength) {
+        if (str != null && str.length() > maxLength) {
+            return str.substring(0, maxLength) + "...";
+        }
+        return str;
     }
 
 }

@@ -22,7 +22,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -36,10 +35,7 @@ import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.RemoteNativeClientLocation;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.ShellUtils;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -65,8 +61,6 @@ public class ClientHomesPanel extends Composite {
     private final Text productNameText;
     private final Text productVersionText;
     private final Button removeButton;
-    private final Font fontBold;
-    private final Font fontItalic;
 
     private DBPDriver driver;
 
@@ -85,13 +79,6 @@ public class ClientHomesPanel extends Composite {
         Composite parent,
         int style) {
         super(parent, style);
-
-        fontBold = UIUtils.makeBoldFont(parent.getFont());
-        fontItalic = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
-        addDisposeListener(e -> {
-            UIUtils.dispose(fontBold);
-            UIUtils.dispose(fontItalic);
-        });
 
         GridLayout layout = new GridLayout(2, false);
         setLayout(layout);
@@ -281,10 +268,10 @@ public class ClientHomesPanel extends Composite {
         homeItem.setImage(DBeaverIcons.getImage(UIIcon.HOME));
         homeItem.setData(homeInfo);
         if (!homeInfo.isProvided) {
-            homeItem.setFont(fontItalic);
+            homeItem.setFont(BaseThemeSettings.instance.baseFontItalic);
         } else {
             if (homeInfo.isDefault) {
-                homeItem.setFont(fontBold);
+                homeItem.setFont(BaseThemeSettings.instance.baseFontBold);
             }
         }
         return homeItem;

@@ -16,13 +16,22 @@
  */
 package org.jkiss.junit.osgi.annotation;
 
-import org.junit.runner.Runner;
+import org.jkiss.junit.osgi.OSGITestRunner;
 
 import java.lang.annotation.*;
 
+/**
+ * Run with product used for @{@link OSGITestRunner}
+ * product should contain the test bundle
+ * See {@link org.jkiss.junit.osgi.OSGITestRunner}
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Inherited
-public @interface RunnerProxy {
-    Class<? extends Runner> value();
+public @interface RunWithProduct {
+    /**
+     * Product ID
+     */
+    String value();
+
 }

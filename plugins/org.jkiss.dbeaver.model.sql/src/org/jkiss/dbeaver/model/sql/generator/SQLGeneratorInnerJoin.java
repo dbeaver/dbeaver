@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,40 +18,40 @@ package org.jkiss.dbeaver.model.sql.generator;
 
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class SQLGeneratorJoin extends SQLGenerator<DBSEntity> {
-
+public class SQLGeneratorInnerJoin extends SQLGenerator<DBSEntity> {
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
         StringBuilder sql = new StringBuilder(100);
+        SQLDialect sqlDialect = objects.get(0).getDataSource().getSQLDialect();
+        final List<String> aliases = new ArrayList<>();
         try {
             sql.append("SELECT ");
             for (int i = 0; i < objects.size(); i++) {
                 if (i > 0) sql.append(", ");
-                sql.append(SQLUtils.getTableAlias(objects.get(i))).append(".*");
+                String alias = SQLUtils.generateEntityAlias(objects.get(i), s -> sqlDialect.getKeywordType(s) != null
+                    || aliases.contains(s));
+                sql.append(alias).append(".*");
+                aliases.add(alias);
             }
             sql.append(getLineSeparator()).append("FROM ");
-            for (int i = 0; i < objects.size(); i++) {
-                DBSEntity entity = objects.get(i);
-                if (i > 0) sql.append(", ");
-                sql.append(getEntityName(entity)).append(" ").append(SQLUtils.getTableAlias(entity));
-            }
-            sql.append(getLineSeparator()).append("WHERE ");
-            boolean hasCond = false;
+            sql.append(getEntityName(objects.get(0))).append(" ").append(aliases.get(0));
             for (int i = 1; i < objects.size(); i++) {
                 boolean foundJoin = false;
                 for (int k = 0; k < i; k++) {
                     String tableJoin = SQLUtils.generateTableJoin(
-                        monitor, objects.get(k), SQLUtils.getTableAlias(objects.get(k)), objects.get(i), SQLUtils.getTableAlias(objects.get(i)));
+                        monitor, objects.get(k), aliases.get(k), objects.get(i), aliases.get(i));
                     if (tableJoin != null) {
-                        sql.append(getLineSeparator()).append("\t");
-                        if (hasCond) sql.append("AND ");
+                        sql.append(getLineSeparator()).append("\tJOIN ").append(objects.get(i)).append(" ")
+                            .append(aliases.get(i)).append(" ON ");
                         sql.append(tableJoin);
-                        hasCond = true;
                         foundJoin = true;
                         break;
                     }

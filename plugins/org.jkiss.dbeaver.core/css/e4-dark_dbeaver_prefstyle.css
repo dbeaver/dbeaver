@@ -1,7 +1,7 @@
  IEclipsePreferences#org-eclipse-ui-workbench:org-jkiss-dbeaver-core {
         preferences:
             'org.jkiss.dbeaver.txn.color.committed.background=11,60,0'
-            'org.jkiss.dbeaver.txn.color.reverted.background=135,19,5'
+            'org.jkiss.dbeaver.txn.color.reverted.background=72,19,5'
             'org.jkiss.dbeaver.txn.color.transaction.background=4,84,113'
 
             'org.jkiss.dbeaver.hex.editor.color.caret=80,80,80'

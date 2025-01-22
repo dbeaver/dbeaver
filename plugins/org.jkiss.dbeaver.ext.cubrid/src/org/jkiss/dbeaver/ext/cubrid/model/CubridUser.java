@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
@@ -106,6 +107,11 @@ public class CubridUser extends GenericSchema
     @Override
     public TableCache createTableCache(@NotNull GenericDataSource datasource) {
         return new CubridTableCache(datasource);
+    }
+
+    @Override
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+        return getTable(monitor, childName.toLowerCase());
     }
 
     @NotNull
