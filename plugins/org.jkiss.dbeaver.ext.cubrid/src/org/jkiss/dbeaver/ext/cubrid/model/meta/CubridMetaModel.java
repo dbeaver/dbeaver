@@ -115,17 +115,19 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT a.*, a.def_order + 1 AS ref_order, i.is_foreign_key "
                 + "FROM db_attribute a LEFT JOIN (SELECT k.key_attr_name AS attr_name, "
-                + "i.class_name, i.is_foreign_key, i.owner_name FROM db_index i "
-                + "JOIN db_index_key k ON i.index_name = k.index_name "
-                + "WHERE i.is_foreign_key = 'YES') i ON a.class_name = i.class_name "
-                + "AND a.attr_name = i.attr_name AND a.owner_name = i.owner_name ");
+                + "i.class_name, i.is_foreign_key "
+                + (multiSchema ? ", i.owner_name " : "")
+                + "FROM db_index i JOIN db_index_key k "
+                + "ON i.index_name = k.index_name WHERE i.is_foreign_key = 'YES') i ON "
+                + "a.class_name = i.class_name AND a.attr_name = i.attr_name "
+                + (multiSchema ? "AND a.owner_name = i.owner_name " : ""));
         if (forTable != null) {
-            sql.append("where a.class_name = ? ");
+            sql.append("WHERE a.class_name = ? ");
             if (multiSchema) {
-                sql.append("and a.owner_name = ? ");
+                sql.append("AND a.owner_name = ? ");
             }
         }
-        sql.append("order by def_order");
+        sql.append("ORDER BY def_order");
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
         if (forTable != null) {
             dbStat.setString(1, forTable.getName());
