@@ -74,6 +74,8 @@
                     <parameter name="supports-indexes" value="true"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="term-server" value="%props.term.server.name"/>
+
                 </driver>
                 <main-properties drivers="libsql_jdbc">
                     <propertyGroup label="Settings">
@@ -130,7 +132,7 @@
                 description="LibSQL token based authentication"
                 class="org.jkiss.dbeaver.ext.sqlite.auth.LibSQLAuthModelDatabase"
                 default="true">
-            <datasource id="sqlite"/>
+            <datasource driver="libsql_jdbc"/>
             <replace model="native"/>
         </authModel>
     </extension>
