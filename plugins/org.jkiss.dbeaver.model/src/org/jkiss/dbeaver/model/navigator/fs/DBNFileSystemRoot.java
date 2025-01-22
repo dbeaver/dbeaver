@@ -64,6 +64,11 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     }
 
     @Override
+    public boolean supportsRename() {
+        return false;
+    }
+
+    @Override
     public String getNodeType() {
         return NodePathType.dbvfs.name() + ".folder";
     }
