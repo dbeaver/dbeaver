@@ -210,7 +210,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             case UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
             case RESERVED -> UIIcon.SQL_TEXT;
             case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
-            case DERIVED_COLUMN_NAME -> DBIcon.TREE_FOREIGN_KEY_COLUMN;
+            case DERIVED_COLUMN_NAME -> DBIcon.TREE_FOREIGN_KEY_DERIVED_COLUMN;
             case NEW_TABLE_NAME, USED_TABLE_NAME -> {
                 DBPObject object = item.getObject();
                 yield object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
