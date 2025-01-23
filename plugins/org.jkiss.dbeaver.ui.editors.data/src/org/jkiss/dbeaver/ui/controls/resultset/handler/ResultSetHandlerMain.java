@@ -703,7 +703,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
     }
     
     private void updateColors(ResultSetViewer resultSetViewer, DBVEntity entity, boolean refresh) {
-        resultSetViewer.getModel().updateColorMapping(true);
+        resultSetViewer.getModel().updateColorMapping(entity, true);
         entity.persistConfiguration();
         if (refresh) {
             resultSetViewer.redrawData(false, false);

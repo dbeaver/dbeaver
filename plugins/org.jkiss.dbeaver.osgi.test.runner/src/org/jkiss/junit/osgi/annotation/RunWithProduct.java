@@ -23,6 +23,7 @@ import java.lang.annotation.*;
 /**
  * Run with product used for @{@link OSGITestRunner}
  * product should contain the test bundle
+ * See {@link org.jkiss.junit.osgi.OSGITestRunner}
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

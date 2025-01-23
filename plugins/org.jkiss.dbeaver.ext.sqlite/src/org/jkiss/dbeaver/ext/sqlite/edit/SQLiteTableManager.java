@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -96,5 +97,18 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
     @Override
     protected boolean isIncludeDropInDDL(@NotNull GenericTableBase tableBase) {
         return false;
+    }
+
+    @Override
+    protected void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        GenericTableBase table,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter
+    ) {
+        if (table instanceof SQLiteTable sqliteTable && sqliteTable.isHasStrictTyping()) {
+            ddl.append(" STRICT"); //$NON-NLS-1$
+        }
     }
 }

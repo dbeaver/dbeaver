@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.utils.CommonUtils;
 
 public class SQLPreferenceConstants {
 
@@ -47,18 +48,11 @@ public class SQLPreferenceConstants {
             return NOTHING;
         }
         public static EmptyScriptCloseBehavior getByName(String name) {
-            switch (name) {
-                case "true":
-                    return SQLPreferenceConstants.EmptyScriptCloseBehavior.DELETE_NEW;
-                case "false":
-                    return SQLPreferenceConstants.EmptyScriptCloseBehavior.NOTHING;
-                default:
-                    try {
-                        return SQLPreferenceConstants.EmptyScriptCloseBehavior.valueOf(name);
-                    } catch (IllegalArgumentException e) {
-                        return NOTHING;
-                    }
-            }
+            return switch (name) {
+                case "true" -> EmptyScriptCloseBehavior.DELETE_NEW;
+                case "false" -> EmptyScriptCloseBehavior.NOTHING;
+                default -> CommonUtils.valueOf(EmptyScriptCloseBehavior.class, name, NOTHING);
+            };
         }
 
     }
@@ -84,15 +78,7 @@ public class SQLPreferenceConstants {
         }
 
         public static SQLAutocompletionMode valueByName(String name) {
-            if (name == null) {
-                return DEFAULT;
-            }  else {
-                try {
-                    return SQLAutocompletionMode.valueOf(name);
-                } catch (IllegalArgumentException e) {
-                    return SQLAutocompletionMode.DEFAULT;
-                }
-            }
+            return CommonUtils.valueOf(SQLAutocompletionMode.class, name, DEFAULT);
         }
 
         @NotNull
@@ -297,18 +283,11 @@ public class SQLPreferenceConstants {
             return StatisticsTabOnExecutionBehavior.NEVER;
         }
         public static StatisticsTabOnExecutionBehavior getByName(String name) {
-            switch (name) {
-                case "true":
-                    return StatisticsTabOnExecutionBehavior.FOR_MULTIPLE_QUERIES;
-                case "false":
-                    return StatisticsTabOnExecutionBehavior.NEVER;
-                default:
-                    try {
-                        return StatisticsTabOnExecutionBehavior.valueOf(name);
-                    } catch (IllegalArgumentException e) {
-                        return StatisticsTabOnExecutionBehavior.NEVER;
-                    }
-            }
+            return switch (name) {
+                case "true" -> StatisticsTabOnExecutionBehavior.FOR_MULTIPLE_QUERIES;
+                case "false" -> StatisticsTabOnExecutionBehavior.NEVER;
+                default -> CommonUtils.valueOf(StatisticsTabOnExecutionBehavior.class, name, NEVER);
+            };
         }
 
     }

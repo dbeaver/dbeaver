@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.junit.osgi.annotation;
+package org.jkiss.junit.osgi.behaviors;
 
-import org.junit.runner.Runner;
-
-import java.lang.annotation.*;
-
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Inherited
-public @interface RunnerProxy {
-    Class<? extends Runner> value();
+/**
+ * Interface for application test
+ */
+public interface IAsyncApplication {
+    /**
+     * Verify that application was launched successfully
+     */
+    boolean verifyLaunched();
 }

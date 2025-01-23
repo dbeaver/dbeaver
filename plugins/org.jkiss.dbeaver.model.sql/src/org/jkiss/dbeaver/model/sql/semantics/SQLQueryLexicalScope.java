@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.sql.semantics;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.utils.Pair;
@@ -46,7 +45,7 @@ public class SQLQueryLexicalScope {
     };
 
     @Nullable
-    private SQLQueryDataContext context = null;
+    private SQLQuerySymbolOrigin.DataContextSymbolOrigin symbolsOrigin = null;
     @NotNull
     private final List<SQLQueryLexicalScopeItem> items;
     @NotNull
@@ -95,12 +94,12 @@ public class SQLQueryLexicalScope {
      * Returns lexical scope context. If it is not set, then use context of the model node, from which the scope was obtained.
      */
     @Nullable
-    public SQLQueryDataContext getContext() {
-        return this.context;
+    public SQLQuerySymbolOrigin.DataContextSymbolOrigin getSymbolsOrigin() {
+        return this.symbolsOrigin;
     }
     
-    public void setContext(@Nullable SQLQueryDataContext context) {
-        this.context = context;
+    public void setSymbolsOrigin(@NotNull SQLQuerySymbolOrigin.DataContextSymbolOrigin symbolsOrigin) {
+        this.symbolsOrigin = symbolsOrigin;
     }
 
     /**
