@@ -18,42 +18,71 @@ package org.jkiss.dbeaver.ui.controls;
 
 import jakarta.annotation.PostConstruct;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.*;
 import org.eclipse.ui.internal.Workbench;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
 import org.jkiss.dbeaver.ui.controls.breadcrumb.BreadcrumbViewer;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
+
+import java.util.Collections;
+import java.util.List;
 
 public class BreadcrumbTrim {
+    private static final Log log = Log.getLog(BreadcrumbTrim.class);
+
     @PostConstruct
     public void createControls(Composite parent) {
-        var breadcrumb = new BreadcrumbViewer(parent);
+        var breadcrumb = new BreadcrumbViewer(parent) {
+            @Override
+            protected void contributeDropDownElements(@NotNull List<Object> elements, @NotNull Object input) {
+                DBNNode node = (DBNNode) input;
+                DBNNode[] children;
+
+                try {
+                    children = node.getParentNode().getChildren(new LocalCacheProgressMonitor(new VoidProgressMonitor()));
+                } catch (DBException e) {
+                    log.error("Error getting children of " + node, e);
+                    return;
+                }
+
+                if (children == null) {
+                    return;
+                }
+
+                Collections.addAll(elements, children);
+            }
+        };
         breadcrumb.setLabelProvider(new BreadcrumbNodeLabelProvider());
         breadcrumb.setContentProvider(new BreadcrumbNodeContentProvider());
+        breadcrumb.addDoubleClickListener(e -> openEditor((IStructuredSelection) e.getSelection()));
+        breadcrumb.addOpenListener(e -> openEditor(((IStructuredSelection) e.getSelection())));
         breadcrumb.addMenuDetectListener(e -> {
             IWorkbenchWindow window = Workbench.getInstance().getActiveWorkbenchWindow();
-            IWorkbenchPart part = window.getActivePage().getActivePart();
+            IEditorPart part = window.getActivePage().getActiveEditor();
+            IEditorSite site = part instanceof EntityEditor ee ? ee.getActiveEditor().getEditorSite() : part.getEditorSite();
 
             MenuManager manager = new MenuManager();
-            NavigatorUtils.addStandardMenuItem(part.getSite(), manager, breadcrumb);
-            part.getSite().registerContextMenu(manager, breadcrumb);
+            NavigatorUtils.addStandardMenuItem(site, manager, breadcrumb);
 
             Menu menu = manager.createContextMenu(breadcrumb.getControl());
             menu.setLocation(e.x + 10, e.y + 10);
@@ -63,42 +92,57 @@ public class BreadcrumbTrim {
         installListeners(breadcrumb);
     }
 
+    private static void openEditor(@NotNull IStructuredSelection selection) {
+        NavigatorHandlerObjectOpen.openEntityEditor(
+            (DBNNode) selection.getFirstElement(),
+            null,
+            PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+        );
+    }
+
     private static void installListeners(@NotNull BreadcrumbViewer viewer) {
-        var activeWindow = UIUtils.getActiveWorkbenchWindow();
-        var activePage = activeWindow.getActivePage();
-        if (activePage != null) {
-            var listener = new AbstractPartListener() {
-                private final ISelectionChangedListener listener = event -> {
-                    if (event.getStructuredSelection().getFirstElement() instanceof DBNDatabaseNode node) {
-                        viewer.setInput(node);
-                    }
-                };
+        var selectionListener = new ISelectionListener() {
+            @Override
+            public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+                log.debug("selectionChanged(" + part + ", " + selection + ")");
+            }
+        };
 
-                @Override
-                public void partActivated(IWorkbenchPart part) {
-                    if (part instanceof IEditorPart ep && ep.getEditorInput() instanceof INavigatorEditorInput input) {
-                        viewer.setInput(input.getNavigatorNode());
-                    } else if (part instanceof INavigatorModelView view) {
-                        Viewer viewer = view.getNavigatorViewer();
-                        if (viewer != null) {
-                            viewer.addSelectionChangedListener(listener);
-                        }
-                    }
+        var partListener = new AbstractPartListener() {
+            @Override
+            public void partActivated(IWorkbenchPart part) {
+                if (part instanceof IEditorPart editorPart && editorPart.getEditorInput() instanceof INavigatorEditorInput input) {
+                    viewer.setInput(input.getNavigatorNode());
+                } else {
+                    viewer.setInput(null);
                 }
+            }
 
-                @Override
-                public void partDeactivated(IWorkbenchPart part) {
-                    if (part instanceof INavigatorModelView view) {
-                        Viewer viewer = view.getNavigatorViewer();
-                        if (viewer != null) {
-                            viewer.removeSelectionChangedListener(listener);
-                        }
-                    }
-                }
-            };
+            @Override
+            public void partDeactivated(IWorkbenchPart part) {
+                viewer.setInput(null);
+            }
+        };
 
-            activePage.addPartListener(listener);
-            viewer.getControl().addDisposeListener(e -> activePage.removePartListener(listener));
+        var pageListener = new AbstractPageListener() {
+            @Override
+            public void pageOpened(IWorkbenchPage page) {
+                page.addPartListener(partListener);
+                page.addSelectionListener(selectionListener);
+            }
+
+            @Override
+            public void pageClosed(IWorkbenchPage page) {
+                page.removePartListener(partListener);
+                page.removeSelectionListener(selectionListener);
+            }
+        };
+
+        IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
+        window.addPageListener(pageListener);
+
+        for (IWorkbenchPage page : window.getPages()) {
+            page.addPartListener(partListener);
         }
     }
 

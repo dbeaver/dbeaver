@@ -16,26 +16,47 @@
  */
 package org.jkiss.dbeaver.ui.controls.breadcrumb;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Item;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
+
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 final class BreadcrumbItem extends Item {
+    private final Log log = Log.getLog(BreadcrumbItem.class);
+
     private final BreadcrumbViewer viewer;
+    private final MenuManager manager;
 
     private final Composite container;
-    private final BreadcrumbItemDetails detailsBlock;
-    private final BreadcrumbItemDropDown expandBlock;
+    private final Composite detailComposite;
+    private final Label elementArrow;
+    private final Label elementImage;
+    private final Label elementText;
 
     private ILabelProvider labelProvider;
     private ITreeContentProvider contentProvider;
     private ILabelProvider toolTipLabelProvider;
+
+    private boolean selected; // todo use
 
     public BreadcrumbItem(@NotNull BreadcrumbViewer viewer, @NotNull Composite parent) {
         super(parent, SWT.NONE);
@@ -45,28 +66,69 @@ final class BreadcrumbItem extends Item {
         container.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         container.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).spacing(0, 0).create());
 
-        expandBlock = new BreadcrumbItemDropDown(this, container);
-        detailsBlock = new BreadcrumbItemDetails(this, container);
+        elementArrow = new Label(container, SWT.NONE);
+        elementArrow.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
+        elementArrow.setImage(DBeaverIcons.getImage(UIIcon.TREE_EXPAND));
+
+        detailComposite = new Composite(container, SWT.NONE);
+        detailComposite.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        detailComposite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).spacing(0, 0).create());
+
+        var imageComposite = new Composite(detailComposite, SWT.NONE);
+        imageComposite.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        imageComposite.setLayout(GridLayoutFactory.fillDefaults().margins(2, 1).create());
+
+        var textComposite = new Composite(detailComposite, SWT.NONE);
+        textComposite.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        textComposite.setLayout(GridLayoutFactory.fillDefaults().margins(2, 2).create());
+
+        elementImage = new Label(imageComposite, SWT.NONE);
+        elementImage.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+
+        elementText = new Label(textComposite, SWT.NONE);
+        elementText.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+
+        addElementListener(detailComposite);
+        addElementListener(imageComposite);
+        addElementListener(textComposite);
+        addElementListener(elementImage);
+        addElementListener(elementText);
+
+        manager = new MenuManager();
+        manager.setRemoveAllWhenShown(true);
+        manager.addMenuListener(manager -> {
+            List<Object> elements = new ArrayList<>();
+            getViewer().contributeDropDownElements(elements, getData());
+
+            for (Object element : elements) {
+                var provider = (ILabelProvider) viewer.getLabelProvider();
+                var name = provider.getText(element);
+                var image = provider.getImage(element);
+
+                manager.add(new Action(name, ImageDescriptor.createFromImage(image)) {
+                    @Override
+                    public void run() {
+                        openElement(element);
+                    }
+                });
+            }
+        });
     }
 
     @Override
     public void dispose() {
         super.dispose();
+        manager.dispose();
         container.dispose();
     }
 
     public void refresh() {
         Object input = getData();
 
-        detailsBlock.setText(labelProvider.getText(input));
-        detailsBlock.setImage(labelProvider.getImage(input));
-        detailsBlock.setToolTipText(toolTipLabelProvider.getText(input));
-
-        refreshArrow();
-    }
-
-    public void refreshArrow() {
-        expandBlock.setEnabled(contentProvider.getParent(getData()) != null);
+        setText(labelProvider.getText(input));
+        setImage(labelProvider.getImage(input));
+        setToolTipText(toolTipLabelProvider.getText(input));
+        setArrowVisible(contentProvider.getParent(getData()) != null);
     }
 
     @NotNull
@@ -96,11 +158,73 @@ final class BreadcrumbItem extends Item {
         this.toolTipLabelProvider = toolTipLabelProvider;
     }
 
-    public void setIsLastItem(boolean last) {
-        ((GridData) container.getLayoutData()).grabExcessHorizontalSpace = last;
+    public void setImage(@Nullable Image image) {
+        if (image != elementImage.getImage()) {
+            elementImage.setImage(image);
+        }
+    }
+
+    public void setText(@Nullable String text) {
+        if (text == null) {
+            text = "";
+        }
+        if (!text.equals(elementText.getText())) {
+            elementText.setText(text);
+        }
+    }
+
+    public void setToolTipText(@Nullable String toolTipText) {
+        elementText.getParent().setToolTipText(toolTipText);
+        elementText.setToolTipText(toolTipText);
+        elementImage.setToolTipText(toolTipText);
     }
 
     public void setSelected(boolean selected) {
-        detailsBlock.setSelected(selected);
+        this.selected = selected;
+    }
+
+    public void setTrailing(boolean trailing) {
+        ((GridData) container.getLayoutData()).grabExcessHorizontalSpace = trailing;
+    }
+
+    private void setArrowVisible(boolean visible) {
+        UIUtils.setControlVisible(elementArrow, visible);
+    }
+
+    private void showMenu() {
+        Point location = detailComposite.toDisplay(0, 0);
+
+        Menu menu = manager.createContextMenu(container);
+        menu.setLocation(location);
+        menu.setVisible(true);
+
+        UIUtils.asyncExec(() -> {
+            Rectangle size;
+
+            try {
+                Method method = Menu.class.getDeclaredMethod("getBounds");
+                method.setAccessible(true);
+                size = (Rectangle) method.invoke(menu);
+            } catch (Throwable e) {
+                log.error("Error getting menu bounds", e);
+                return;
+            }
+
+            location.y -= size.height;
+            menu.setLocation(location.x, location.y - size.height);
+        });
+    }
+
+    private void openElement(@NotNull Object element) {
+        viewer.fireMenuSelection(element);
+    }
+
+    private void addElementListener(@NotNull Control control) {
+        control.addMenuDetectListener(e -> showMenu());
+        control.addMouseListener(MouseListener.mouseDoubleClickAdapter(e -> {
+            BreadcrumbViewer viewer = getViewer();
+            viewer.selectItem(BreadcrumbItem.this);
+            viewer.fireDoubleClick();
+        }));
     }
 }
