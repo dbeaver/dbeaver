@@ -37,8 +37,6 @@ final class BreadcrumbItem extends Item {
     private ITreeContentProvider contentProvider;
     private ILabelProvider toolTipLabelProvider;
 
-    private boolean last;
-
     public BreadcrumbItem(@NotNull BreadcrumbViewer viewer, @NotNull Composite parent) {
         super(parent, SWT.NONE);
         this.viewer = viewer;
@@ -47,8 +45,8 @@ final class BreadcrumbItem extends Item {
         container.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         container.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).spacing(0, 0).create());
 
-        detailsBlock = new BreadcrumbItemDetails(this, container);
         expandBlock = new BreadcrumbItemDropDown(this, container);
+        detailsBlock = new BreadcrumbItemDetails(this, container);
     }
 
     @Override
@@ -68,12 +66,17 @@ final class BreadcrumbItem extends Item {
     }
 
     public void refreshArrow() {
-        expandBlock.setEnabled(contentProvider.hasChildren(getData()));
+        expandBlock.setEnabled(contentProvider.getParent(getData()) != null);
     }
 
     @NotNull
     public BreadcrumbViewer getViewer() {
         return viewer;
+    }
+
+    @NotNull
+    public Composite getContainer() {
+        return container;
     }
 
     @NotNull
@@ -93,8 +96,11 @@ final class BreadcrumbItem extends Item {
         this.toolTipLabelProvider = toolTipLabelProvider;
     }
 
-    public void setLast(boolean last) {
-        this.last = last;
+    public void setIsLastItem(boolean last) {
         ((GridData) container.getLayoutData()).grabExcessHorizontalSpace = last;
+    }
+
+    public void setSelected(boolean selected) {
+        detailsBlock.setSelected(selected);
     }
 }

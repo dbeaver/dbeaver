@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.breadcrumb;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -24,6 +25,8 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.MenuDetectEvent;
+import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -37,10 +40,13 @@ import java.util.List;
 import java.util.Objects;
 
 public /*abstract*/ class BreadcrumbViewer extends StructuredViewer {
-    private final List<BreadcrumbItem> items = new ArrayList<>();
+    private final List<BreadcrumbItem> breadcrumbItems = new ArrayList<>();
+    private final ListenerList<MenuDetectListener> menuListeners = new ListenerList<>();
+
     private final Composite container;
 
     private ILabelProvider toolTipLabelProvider;
+    private BreadcrumbItem selectedItem;
 
     public BreadcrumbViewer(@NotNull Composite parent) {
         container = new Composite(parent, SWT.NONE);
@@ -55,10 +61,10 @@ public /*abstract*/ class BreadcrumbViewer extends StructuredViewer {
 
     @Override
     protected Object getRoot() {
-        if (items.isEmpty()) {
+        if (breadcrumbItems.isEmpty()) {
             return null;
         }
-        return items.get(0);
+        return breadcrumbItems.get(0);
     }
 
     @Override
@@ -68,17 +74,17 @@ public /*abstract*/ class BreadcrumbViewer extends StructuredViewer {
         }
 
         try (var ignored = UIUtils.disableRedraw(container)) {
-            if (!items.isEmpty()) {
-                items.get(items.size() - 1).setLast(false);
+            if (!breadcrumbItems.isEmpty()) {
+                breadcrumbItems.get(breadcrumbItems.size() - 1).setIsLastItem(false);
             }
 
             int lastIndex = buildItemChain(input);
             if (lastIndex > 0) {
-                items.get(lastIndex - 1).setLast(true);
+                breadcrumbItems.get(lastIndex - 1).setIsLastItem(true);
             }
 
-            while (lastIndex < items.size()) {
-                BreadcrumbItem item = items.remove(items.size() - 1);
+            while (lastIndex < breadcrumbItems.size()) {
+                BreadcrumbItem item = breadcrumbItems.remove(breadcrumbItems.size() - 1);
                 unmapElement(item.getData());
                 item.dispose();
             }
@@ -100,7 +106,7 @@ public /*abstract*/ class BreadcrumbViewer extends StructuredViewer {
         if (element == null) {
             return null;
         }
-        for (BreadcrumbItem item : items) {
+        for (BreadcrumbItem item : breadcrumbItems) {
             if (Objects.equals(element, item.getData())) {
                 return item;
             }
@@ -127,7 +133,10 @@ public /*abstract*/ class BreadcrumbViewer extends StructuredViewer {
 
     @Override
     protected List<?> getSelectionFromWidget() {
-        return List.of(); // TODO Support selection
+        if (selectedItem == null || selectedItem.getData() == null) {
+            return List.of();
+        }
+        return List.of(selectedItem.getData());
     }
 
     @Override
@@ -135,7 +144,7 @@ public /*abstract*/ class BreadcrumbViewer extends StructuredViewer {
         try (var ignored = UIUtils.disableRedraw(container)) {
             BreadcrumbItem item = (BreadcrumbItem) doFindInputItem(element);
             if (item == null) {
-                for (BreadcrumbItem item1 : items) {
+                for (BreadcrumbItem item1 : breadcrumbItems) {
                     item1.refresh();
                 }
             } else {
@@ -151,7 +160,21 @@ public /*abstract*/ class BreadcrumbViewer extends StructuredViewer {
 
     @Override
     protected void setSelectionToWidget(List l, boolean reveal) {
-        // TODO Support selection
+        for (BreadcrumbItem item : breadcrumbItems) {
+            item.setSelected(false);
+        }
+
+        if (l == null) {
+            return;
+        }
+
+        for (Object element : l) {
+            BreadcrumbItem item = (BreadcrumbItem) doFindItem(element);
+            if (item != null) {
+                item.setSelected(true);
+                selectedItem = item;
+            }
+        }
     }
 
     @Override
@@ -161,11 +184,34 @@ public /*abstract*/ class BreadcrumbViewer extends StructuredViewer {
 
     @Override
     protected void handleDispose(DisposeEvent event) {
-        for (BreadcrumbItem item : items) {
+        for (BreadcrumbItem item : breadcrumbItems) {
             item.dispose();
         }
 
         super.handleDispose(event);
+    }
+
+    void selectItem(@Nullable BreadcrumbItem item) {
+        if (selectedItem != null) {
+            selectedItem.setSelected(false);
+        }
+
+        selectedItem = item;
+        setSelectionToWidget(getSelection(), false);
+    }
+
+    public void addMenuDetectListener(@NotNull MenuDetectListener listener) {
+        menuListeners.add(listener);
+    }
+
+    public void removeMenuDetectListener(@NotNull MenuDetectListener listener) {
+        menuListeners.remove(listener);
+    }
+
+    void fireMenuDetect(@NotNull MenuDetectEvent event) {
+        for (MenuDetectListener listener : menuListeners) {
+            listener.menuDetected(event);
+        }
     }
 
     @Nullable
@@ -187,12 +233,12 @@ public /*abstract*/ class BreadcrumbViewer extends StructuredViewer {
         int index = buildItemChain(parent);
 
         BreadcrumbItem item;
-        if (index < items.size()) {
-            item = items.get(index);
+        if (index < breadcrumbItems.size()) {
+            item = breadcrumbItems.get(index);
             unmapElement(item.getData());
         } else {
             item = createItem();
-            items.add(item);
+            breadcrumbItems.add(item);
         }
 
         if (equals(element, item.getData())) {
@@ -218,7 +264,7 @@ public /*abstract*/ class BreadcrumbViewer extends StructuredViewer {
             item.setToolTipLabelProvider((ILabelProvider) getLabelProvider());
         }
         return item;
-	}
+    }
 
     // public abstract void handleSelection(@NotNull BreadcrumbItem item);
     //

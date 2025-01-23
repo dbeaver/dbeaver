@@ -17,13 +17,17 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import jakarta.annotation.PostConstruct;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.internal.Workbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -35,6 +39,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.breadcrumb.BreadcrumbViewer;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 public class BreadcrumbTrim {
     @PostConstruct
@@ -42,6 +47,18 @@ public class BreadcrumbTrim {
         var breadcrumb = new BreadcrumbViewer(parent);
         breadcrumb.setLabelProvider(new BreadcrumbNodeLabelProvider());
         breadcrumb.setContentProvider(new BreadcrumbNodeContentProvider());
+        breadcrumb.addMenuDetectListener(e -> {
+            IWorkbenchWindow window = Workbench.getInstance().getActiveWorkbenchWindow();
+            IWorkbenchPart part = window.getActivePage().getActivePart();
+
+            MenuManager manager = new MenuManager();
+            NavigatorUtils.addStandardMenuItem(part.getSite(), manager, breadcrumb);
+            part.getSite().registerContextMenu(manager, breadcrumb);
+
+            Menu menu = manager.createContextMenu(breadcrumb.getControl());
+            menu.setLocation(e.x + 10, e.y + 10);
+            menu.setVisible(true);
+        });
 
         installListeners(breadcrumb);
     }

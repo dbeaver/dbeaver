@@ -18,9 +18,13 @@ package org.jkiss.dbeaver.ui.controls.breadcrumb;
 
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseTrackAdapter;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -29,17 +33,19 @@ final class BreadcrumbItemDetails {
     private final BreadcrumbItem item;
     private final Composite composite;
 
+    private final Composite detailComposite;
     private final Label elementText;
     private final Label elementImage;
 
-    private boolean selected;
+    private boolean hovered;
     private boolean focused;
+    private boolean selected;
 
     BreadcrumbItemDetails(@NotNull BreadcrumbItem item, @NotNull Composite composite) {
         this.item = item;
         this.composite = composite;
 
-        var detailComposite = new Composite(composite, SWT.NONE);
+        detailComposite = new Composite(composite, SWT.NONE);
         detailComposite.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         detailComposite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).spacing(0, 0).create());
 
@@ -53,15 +59,61 @@ final class BreadcrumbItemDetails {
         var textComposite = new Composite(detailComposite, SWT.NONE);
         textComposite.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         textComposite.setLayout(GridLayoutFactory.fillDefaults().margins(2, 2).create());
+        textComposite.addPaintListener(e -> {
+            if (isHovered()) {
+                e.gc.drawFocus(e.x, e.y, e.width, e.height);
+            }
+        });
 
         elementText = new Label(textComposite, SWT.NONE);
         elementText.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
 
-        textComposite.addPaintListener(e -> {
-            if (focused) {
-                e.gc.drawFocus(e.x, e.y, e.width, e.height);
+        MouseTrackAdapter listener = new MouseTrackAdapter() {
+            @Override
+            public void mouseEnter(MouseEvent e) {
+                if (isOver(e)) {
+                    setHovered(true);
+                }
             }
-        });
+
+            @Override
+            public void mouseExit(MouseEvent e) {
+                if (!isOver(e)) {
+                    setHovered(false);
+                }
+            }
+
+            private boolean isOver(MouseEvent e) {
+                Point point = e.display.map((Control) e.widget, detailComposite, e.x, e.y);
+                Point size = detailComposite.getSize();
+                return point.x >= 0 && point.y >= 0 && point.x < size.x && point.y < size.y;
+            }
+        };
+
+        addElementListener(detailComposite);
+        addElementListener(imageComposite);
+        addElementListener(elementImage);
+        addElementListener(textComposite);
+        addElementListener(elementText);
+    }
+
+    public boolean isHovered() {
+        return hovered;
+    }
+
+    public void setHovered(boolean hovered) {
+        if (this.hovered != hovered) {
+            this.hovered = hovered;
+            this.elementText.getParent().redraw();
+        }
+    }
+
+    public boolean isFocused() {
+        return focused;
+    }
+
+    public void setFocused(boolean focused) {
+        this.focused = focused;
     }
 
     public boolean isSelected() {
@@ -71,14 +123,6 @@ final class BreadcrumbItemDetails {
     public void setSelected(boolean selected) {
         this.selected = selected;
         this.focused &= selected;
-    }
-
-    public boolean isFocused() {
-        return focused;
-    }
-
-    public void setFocused(boolean focused) {
-        this.focused = focused;
     }
 
     public void setImage(@Nullable Image image) {
@@ -100,5 +144,34 @@ final class BreadcrumbItemDetails {
         elementText.getParent().setToolTipText(toolTipText);
         elementText.setToolTipText(toolTipText);
         elementImage.setToolTipText(toolTipText);
+    }
+
+    private void addElementListener(@NotNull Control control) {
+        control.addMouseTrackListener(new MouseTrackAdapter() {
+            @Override
+            public void mouseEnter(MouseEvent e) {
+                if (isOver(e)) {
+                    setHovered(true);
+                }
+            }
+
+            @Override
+            public void mouseExit(MouseEvent e) {
+                if (!isOver(e)) {
+                    setHovered(false);
+                }
+            }
+
+            private boolean isOver(MouseEvent e) {
+                Point point = e.display.map((Control) e.widget, detailComposite, e.x, e.y);
+                Point size = detailComposite.getSize();
+                return point.x >= 0 && point.y >= 0 && point.x < size.x && point.y < size.y;
+            }
+        });
+        control.addMenuDetectListener(e -> {
+            BreadcrumbViewer viewer = item.getViewer();
+            viewer.selectItem(item);
+            viewer.fireMenuDetect(e);
+        });
     }
 }
