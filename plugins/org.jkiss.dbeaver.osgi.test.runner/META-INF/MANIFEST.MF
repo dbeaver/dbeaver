@@ -8,11 +8,12 @@ Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.junit.osgi,
- org.jkiss.junit.osgi.annotation
+ org.jkiss.junit.osgi.annotation,
+ org.jkiss.junit.osgi.behaviors,
+ org.jkiss.junit.osgi.delegate
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.junit;visibility:=reexport,
- org.jkiss.dbeaver.headless,
  org.mockito.mockito-core;visibility:=reexport,
  org.apache.felix.scr,
  org.jkiss.utils,

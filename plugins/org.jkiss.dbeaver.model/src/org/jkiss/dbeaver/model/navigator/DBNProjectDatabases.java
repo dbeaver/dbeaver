@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,8 @@ import java.util.*;
  */
 public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEventListener
 {
-    private List<DBNDataSource> dataSources = new ArrayList<>();
     private DBPDataSourceRegistry dataSourceRegistry;
+    private final List<DBNDataSource> dataSources = new ArrayList<>();
     private volatile DBNNode[] children;
     private final IdentityHashMap<DBPDataSourceFolder, DBNLocalFolder> folderNodes = new IdentityHashMap<>();
 
@@ -59,12 +59,13 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    protected void dispose(boolean reflect)
-    {
-        for (DBNDataSource dataSource : dataSources) {
-            DBNUtils.disposeNode(dataSource, reflect);
+    protected void dispose(boolean reflect) {
+        synchronized (dataSources) {
+            for (DBNDataSource dataSource : dataSources) {
+                DBNUtils.disposeNode(dataSource, reflect);
+            }
+            dataSources.clear();
         }
-        dataSources.clear();
         folderNodes.clear();
         children = null;
         if (dataSourceRegistry != null) {
@@ -138,9 +139,10 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public boolean allowsChildren()
-    {
-        return !dataSources.isEmpty() || !dataSourceRegistry.getRootFolders().isEmpty();
+    public boolean allowsChildren() {
+        synchronized (dataSources) {
+            return !dataSources.isEmpty() || !dataSourceRegistry.getRootFolders().isEmpty();
+        }
     }
 
     @Override
@@ -159,14 +161,16 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                     childNodes.add(folderNode);
                 }
             }
-            // Add only visible root datasources
-            for (DBNDataSource dataSource : dataSources) {
-                if (dataSource == null ||
-                    dataSource.getDataSourceContainer().isHidden() ||
-                    dataSource.getDataSourceContainer().getFolder() != null) {
-                    continue;
+            synchronized (dataSources) {
+                // Add only visible root datasources
+                for (DBNDataSource dataSource : dataSources) {
+                    if (dataSource == null ||
+                        dataSource.getDataSourceContainer().isHidden() ||
+                        dataSource.getDataSourceContainer().getFolder() != null) {
+                        continue;
+                    }
+                    childNodes.add(dataSource);
                 }
-                childNodes.add(dataSource);
             }
             sortNodes(childNodes);
             this.children = childNodes.toArray(new DBNNode[0]);
@@ -189,8 +193,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     public void moveNodesToFolder(Collection<DBNNode> nodes, DBPDataSourceFolder toFolder) throws DBException {
         Set<DBPDataSourceRegistry> registryToRefresh = new LinkedHashSet<>();
         for (DBNNode node : nodes) {
-            if (node instanceof DBNDataSource) {
-                DBNDataSource dataSource = (DBNDataSource) node;
+            if (node instanceof DBNDataSource dataSource) {
                 dataSource.moveToFolder(dataSource.getOwnerProject(), toFolder);
                 DBPDataSourceContainer oldContainer = dataSource.getDataSourceContainer();
                 registryToRefresh.add(oldContainer.getRegistry());
@@ -209,8 +212,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
                 dataSourceRegistry.addDataSource(newContainer);
                 registryToRefresh.add(dataSourceRegistry);
-            } else if (node instanceof DBNLocalFolder) {
-                final DBNLocalFolder folder = (DBNLocalFolder) node;
+            } else if (node instanceof DBNLocalFolder folder) {
                 folder.getFolder().setParent(toFolder);
                 registryToRefresh.add(folder.getDataSourceRegistry());
             }
@@ -230,8 +232,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public boolean allowsOpen()
-    {
+    public boolean allowsOpen() {
         return true;
     }
 
@@ -254,24 +255,27 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         }
     }
 
-    public List<DBNDataSource> getDataSources()
-    {
+    public List<DBNDataSource> getDataSources() {
         return dataSources;
     }
 
     public DBNDataSource getDataSource(String id) {
-        for (DBNDataSource dataSource : dataSources) {
-            if (dataSource.getDataSourceContainer().getId().equals(id)) {
-                return dataSource;
+        synchronized (dataSources) {
+            for (DBNDataSource dataSource : dataSources) {
+                if (dataSource.getDataSourceContainer().getId().equals(id)) {
+                    return dataSource;
+                }
             }
         }
         return null;
     }
 
     public DBNDataSource getDataSource(DBPDataSourceContainer ds) {
-        for (DBNDataSource dataSource : dataSources) {
-            if (dataSource.getDataSourceContainer() == ds) {
-                return dataSource;
+        synchronized (dataSources) {
+            for (DBNDataSource dataSource : dataSources) {
+                if (dataSource.getDataSourceContainer() == ds) {
+                    return dataSource;
+                }
             }
         }
         return null;
@@ -287,11 +291,13 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         if (!getModel().isNodeVisible(newNode)) {
             return null;
         }
-        if (dataSources.stream().anyMatch(node -> node.getDataSourceContainer() == descriptor)) {
-            // current node already contains provided data source
-            return null;
+        synchronized (dataSources) {
+            if (dataSources.stream().anyMatch(node -> node.getDataSourceContainer() == descriptor)) {
+                // current node already contains provided data source
+                return null;
+            }
+            dataSources.add(newNode);
         }
-        dataSources.add(newNode);
 
         DBPDataSourceFolder dsFolder = descriptor.getFolder();
         if (dsFolder != null) {
@@ -310,15 +316,16 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return newNode;
     }
 
-    void removeDataSource(DBPDataSourceContainer descriptor)
-    {
+    void removeDataSource(DBPDataSourceContainer descriptor) {
         DBNDataSource removedNode = null;
-        for (Iterator<DBNDataSource> iter = dataSources.iterator(); iter.hasNext(); ) {
-            DBNDataSource dataSource = iter.next();
-            if (dataSource.getObject() == descriptor) {
-                iter.remove();
-                removedNode = dataSource;
-                break;
+        synchronized (dataSources) {
+            for (Iterator<DBNDataSource> iter = dataSources.iterator(); iter.hasNext(); ) {
+                DBNDataSource dataSource = iter.next();
+                if (dataSource.getObject() == descriptor) {
+                    iter.remove();
+                    removedNode = dataSource;
+                    break;
+                }
             }
         }
         if (removedNode != null) {
