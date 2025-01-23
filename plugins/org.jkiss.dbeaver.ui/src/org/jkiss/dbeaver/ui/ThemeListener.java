@@ -148,9 +148,7 @@ public class ThemeListener {
                         Font normalFont = currentTheme.getFontRegistry().get(property);
                         font = UIUtils.makeBoldFont(normalFont);
                         if (normalFont.getDevice() instanceof Display display) {
-                            display.disposeExec(() -> {
-                                font.dispose();
-                            });
+                            display.disposeExec(font::dispose);
                         }
                     } else {
                         font = currentTheme.getFontRegistry().getBold(property);
