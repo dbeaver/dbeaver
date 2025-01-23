@@ -12,6 +12,7 @@ Bundle-ClassPath: .
 Require-Bundle: org.eclipse.e4.ui.model.workbench,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.workbench.renderers.swt,
+ com.google.gson,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui.editors.base;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.tools.project,

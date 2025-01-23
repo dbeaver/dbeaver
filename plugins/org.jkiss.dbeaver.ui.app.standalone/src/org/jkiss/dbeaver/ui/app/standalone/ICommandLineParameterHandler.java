@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.apache.commons.cli.CommandLine;
 
-public interface CommandLineParameterHandler {
+public interface ICommandLineParameterHandler {
 
     void handleParameter(CommandLine commandLine, String name, String value);
 
