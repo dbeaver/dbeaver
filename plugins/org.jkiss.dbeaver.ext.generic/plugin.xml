@@ -788,7 +788,7 @@
                 <driver
                     id="machbase"
                     label="Machbase"
-                    class="com.machbase.jdbc.driver"
+                    class="com.machbase.jdbc.MachDriver"
                     sampleURL="jdbc:machbase://{host}/mhdb"
                     defaultPort="5656"
                     description="MACHBASE standard driver"
@@ -796,7 +796,7 @@
                     webURL="http://www.machbase.com"
                     iconBig="icons/machbase_icon_big.png"
                     categories="timeseries">
-                    <file type="jar" path="https://www.machbase.com/dist/machbase.jar"/>
+                    <file type="jar" path="maven:/com.machbase:machjdbc:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
 

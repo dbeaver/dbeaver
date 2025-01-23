@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import com.google.gson.reflect.TypeToken;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
@@ -82,6 +84,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
 
@@ -93,6 +97,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
     ITabbedFolderContainer, DBPDataSourceContainerProvider, IEntityEditorContext
 {
     public static final String ID = "org.jkiss.dbeaver.ui.editors.entity.EntityEditor"; //$NON-NLS-1$
+
+    public static final String TABS_CONFIG_FILE = "entity-editor-tabs.json"; //$NON-NLS-1$
 
     // fired when editor is initialized with a database object (e.g. after lazy loading, navigation or history browsing).
     private static final int PROP_OBJECT_INIT = 0x212;
@@ -110,21 +116,23 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private static final Map<String, EditorDefaults> defaultPageMap = new HashMap<>();
+    private static Map<String, EditorDefaults> defaultPageMap;
 
     private final Map<String, IEditorPart> editorMap = new LinkedHashMap<>();
     private IEditorPart activeEditor;
     private DBECommandAdapter commandListener;
-    private ITabbedFolderListener folderListener;
+    private final ITabbedFolderListener folderListener;
     private boolean hasPropertiesEditor;
-    private Map<IEditorPart, IEditorActionBarContributor> actionContributors = new HashMap<>();
+    private final Map<IEditorPart, IEditorActionBarContributor> actionContributors = new HashMap<>();
     private volatile boolean saveInProgress = false;
 
     private Menu breadcrumbsMenu;
     private ISelectionProvider savedPartSelectionProvider = null;
 
-    public EntityEditor()
-    {
+    public EntityEditor() {
+        if (defaultPageMap == null) {
+            defaultPageMap = loadTabsConfiguration();
+        }
         folderListener = folderId -> {
             IEditorPart editor = getActiveEditor();
             if (editor != null) {
@@ -162,8 +170,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
+        saveTabsConfiguration();
+
         if (breadcrumbsMenu != null) {
             breadcrumbsMenu.dispose();
             breadcrumbsMenu = null;
@@ -752,13 +761,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
     private void updateEditorDefaults(String pageId, @Nullable String folderId)
     {
         IDatabaseEditorInput editorInput = getEditorInput();
-        if (editorInput instanceof DatabaseEditorInput) {
-            ((DatabaseEditorInput) editorInput).setDefaultPageId(pageId);
-            ((DatabaseEditorInput) editorInput).setDefaultFolderId(folderId);
+        if (editorInput instanceof DatabaseEditorInput<?> dei) {
+            dei.setDefaultPageId(pageId);
+            dei.setDefaultFolderId(folderId);
         }
         DBSObject object = editorInput.getDatabaseObject();
         if (object != null) {
-            synchronized (defaultPageMap) {
+            {
                 EditorDefaults editorDefaults = defaultPageMap.get(object.getClass().getName());
                 if (editorDefaults == null) {
                     editorDefaults = new EditorDefaults(pageId, folderId);
@@ -772,6 +781,37 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     }
                 }
             }
+        }
+    }
+
+    private static Map<String, EditorDefaults> loadTabsConfiguration() {
+        Map<String, EditorDefaults> pageMap = null;
+        try {
+            // Save
+            Path configFile = DBWorkbench.getPlatform().getLocalConfigurationFile(TABS_CONFIG_FILE);
+            if (Files.exists(configFile)) {
+                pageMap = JSONUtils.GSON.fromJson(
+                    Files.newBufferedReader(configFile),
+                    new TypeToken<Map<String, EditorDefaults>>(){}.getType());
+            }
+        } catch (Exception e) {
+            log.error("Error saving tabs configuration", e);
+        }
+        if (pageMap == null) {
+            pageMap = new HashMap<>();
+        }
+        return pageMap;
+    }
+
+    private static void saveTabsConfiguration() {
+        try {
+            // Save
+            Path configPath = DBWorkbench.getPlatform().getLocalConfigurationFile(TABS_CONFIG_FILE);
+            Files.writeString(
+                configPath,
+                JSONUtils.GSON.toJson(defaultPageMap));
+        } catch (Exception e) {
+            log.error("Error saving tabs configuration", e);
         }
     }
 
@@ -826,11 +866,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
     {
         boolean changed = false;
         for (IEditorPart editor : editorMap.values()) {
-            if (editor instanceof ITabbedFolderContainer) {
+            if (editor instanceof ITabbedFolderContainer tfc) {
                 if (getActiveEditor() != editor) {
                     setActiveEditor(editor);
                 }
-                if (((ITabbedFolderContainer)editor).switchFolder(folderId)) {
+                if (tfc.switchFolder(folderId)) {
                     changed = true;
                 }
             }
