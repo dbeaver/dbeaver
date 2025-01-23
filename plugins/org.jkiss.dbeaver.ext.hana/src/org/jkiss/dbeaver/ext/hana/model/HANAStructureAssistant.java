@@ -136,7 +136,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
             if (ArrayUtils.contains(objectTypes, RelationalObjectType.TYPE_TABLE_COLUMN)) {
                 findTableColumnsByMask(session, parentSchema, params, result);
             }
-            if (ArrayUtils.contains(objectTypes,RelationalObjectType.TYPE_VIEW_COLUMN)) {
+            if (ArrayUtils.contains(objectTypes, RelationalObjectType.TYPE_VIEW_COLUMN)) {
                 findViewColumnsByMask(session, parentSchema, params, result);
             }
         } catch (SQLException ex) {
@@ -222,19 +222,19 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
             log.warn(HANAObjectType.SCHEMA + " '" + schemaName + "' is not found");
             return;
         }
-        result.add(
-            new AbstractObjectReference<>(schemaName, schema.getParentObject(), null, HANAObjectType.SCHEMA.getTypeClass(), HANAObjectType.SCHEMA) {
-                @Override
-                public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                    return schema;
-                }
+        result.add(new AbstractObjectReference<>(schemaName, schema.getParentObject(), null, HANAObjectType.SCHEMA.getTypeClass(),
+            HANAObjectType.SCHEMA) {
+            @Override
+            public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                return schema;
+            }
 
-                @NotNull
-                @Override
-                public String getFullyQualifiedName(DBPEvaluationContext context) {
-                    return super.getFullyQualifiedName(context);
-                }
-            });
+            @NotNull
+            @Override
+            public String getFullyQualifiedName(DBPEvaluationContext context) {
+                return super.getFullyQualifiedName(context);
+            }
+        });
     }
 
     private void findTablesByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,

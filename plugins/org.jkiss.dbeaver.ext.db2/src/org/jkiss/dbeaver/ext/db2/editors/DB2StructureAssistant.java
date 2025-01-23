@@ -157,7 +157,8 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         // fixme to refactor code below to single query is better, probably
         // Tables, Alias, Views, Nicknames, MQT
         if (db2ObjectTypes.stream().anyMatch(x -> isTable(x) || x == DB2ObjectType.SCHEMA)) {
-            searchTablesAndSchemas(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults, params.isSearchInDefinitions());
+            searchTablesAndSchemas(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults,
+                params.isSearchInDefinitions());
             if (nbResults >= maxResults) {
                 return objects;
             }
@@ -192,7 +193,8 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
     // --------------
 
     private void searchTablesAndSchemas(@NotNull JDBCSession session, @Nullable DBPNamedObject schema, @NotNull String mask,
-                                        @NotNull List<DB2ObjectType> db2ObjectTypes, int maxResults, @NotNull Collection<? super DBSObjectReference> objects,
+                                        @NotNull List<DB2ObjectType> db2ObjectTypes, int maxResults,
+                                        @NotNull Collection<? super DBSObjectReference> objects,
                                         int nbResults, boolean searchInDefinitions) throws SQLException, DBException {
         String sql;
         if (schema != null) {
@@ -236,7 +238,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
                     dbStat.setString(n++, schema.getName());
                 }
             }
-            if(isNeedSearchSchemas) {
+            if (isNeedSearchSchemas) {
                 dbStat.setString(n, mask);
             }
 
@@ -405,8 +407,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
 
     private class DB2ObjectReference extends AbstractObjectReference<DBSObject> {
 
-        private DB2ObjectReference(String objectName, DBPDataSource dataSource, DB2ObjectType objectType)
-        {
+        private DB2ObjectReference(String objectName, DBPDataSource dataSource, DB2ObjectType objectType) {
             super(objectName, dataSource, null, DB2Schema.class, objectType);
         }
 

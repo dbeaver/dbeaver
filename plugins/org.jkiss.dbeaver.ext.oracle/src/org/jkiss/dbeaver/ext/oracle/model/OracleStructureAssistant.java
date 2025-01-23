@@ -229,7 +229,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
             }
         }
         StringJoiner objectTypeClause = new StringJoiner(",");
-        for (DBSObjectType objectType: oracleObjectTypes) {
+        for (DBSObjectType objectType : oracleObjectTypes) {
             objectTypeClause.add("'" + objectType.getTypeName() + "'");
         }
         if (objectTypeClause.length() == 0) {

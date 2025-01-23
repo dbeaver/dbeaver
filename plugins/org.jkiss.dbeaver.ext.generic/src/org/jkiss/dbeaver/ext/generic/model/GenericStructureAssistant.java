@@ -139,8 +139,11 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         }
     }
 
-    private void findSchemasByMask(JDBCSession session, GenericCatalog catalog, ObjectsSearchParams params, List<DBSObjectReference> objects)
-        throws SQLException, DBException {
+    private void findSchemasByMask(JDBCSession session,
+                                   GenericCatalog catalog,
+                                   ObjectsSearchParams params,
+                                   List<DBSObjectReference> objects
+    ) throws SQLException, DBException {
         final GenericMetaObject schemaObject = getDataSource().getMetaObject(GenericConstants.OBJECT_SCHEMA);
         final DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCResultSet dbResult = session.getMetaData().getSchemas(catalog == null ? null : catalog.getName(), params.getMask())) {
@@ -251,14 +254,12 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
 
     private class SchemaReference extends ObjectReference {
 
-        private SchemaReference(GenericStructContainer container, String schemaName, String description)
-        {
+        private SchemaReference(GenericStructContainer container, String schemaName, String description) {
             super(container, schemaName, description, GenericTable.class, RelationalObjectType.TYPE_SCHEMA);
         }
 
         @Override
-        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
-        {
+        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
             GenericSchema schema = getContainer().getCatalog().getSchema(monitor, getName());
             if (schema == null) {
                 throw new DBException("Can't find schema '" + getName() + "' in '" + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");

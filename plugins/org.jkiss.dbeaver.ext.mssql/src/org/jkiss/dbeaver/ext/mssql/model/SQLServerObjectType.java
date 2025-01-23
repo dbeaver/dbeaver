@@ -57,7 +57,7 @@ public enum SQLServerObjectType implements DBSObjectType {
 	U ("U", SQLServerTable.class, DBIcon.TREE_TABLE, "Table"),
 	UQ ("UQ", SQLServerTableUniqueKey.class, DBIcon.TREE_CONSTRAINT, "UNIQUE constraint"),
 	V ("V", SQLServerView.class, DBIcon.TREE_VIEW, "View"),
-	X ("X", SQLServerProcedure.class, DBIcon.TREE_PROCEDURE, "Extended stored procedure"),
+    X("X", SQLServerProcedure.class, DBIcon.TREE_PROCEDURE, "Extended stored procedure"),
     SCHEMA("SCHEMA", SQLServerSchema.class, DBIcon.TREE_SCHEMA, "Schema", false);
 
 
@@ -114,6 +114,16 @@ public enum SQLServerObjectType implements DBSObjectType {
         return type;
     }
 
+    /**
+     * Finds and retrieves an object by name from the given SQL Server schema based on its type.
+     * If the object type is unsupported or the schema is null, returns {@code null} and logs a debug message.
+     *
+     * @param monitor    the progress monitor for tracking progress of the operation.
+     * @param schema     the schema to search in, can be {@code null}.
+     * @param objectName the name of the object to find.
+     * @return the found object, or {@code null} if not found or unsupported.
+     * @throws DBException if an error occurs during the search.
+     */
     public DBSObject findObject(DBRProgressMonitor monitor, SQLServerSchema schema, String objectName) throws DBException {
         if (schema == null) {
             log.debug("Null schema in table " + objectName + " search (" + name() + ")");
