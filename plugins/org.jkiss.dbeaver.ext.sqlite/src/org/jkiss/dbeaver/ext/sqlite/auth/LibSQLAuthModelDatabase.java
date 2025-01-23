@@ -20,4 +20,13 @@ import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
 
 public class LibSQLAuthModelDatabase extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
+    @Override
+    public boolean isUserNameApplicable() {
+        return false;
+    }
+
+    @Override
+    public boolean isUserPasswordApplicable() {
+        return false;
+    }
 }
