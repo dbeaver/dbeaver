@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.databend.ui.DatabendSSLConfigurator"/>
+    </extension>
+</plugin>

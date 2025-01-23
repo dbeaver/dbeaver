@@ -18,16 +18,14 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.Trie;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TrieLookupComparator;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-@RunWith(MockitoJUnitRunner.class)
-public class TrieTest {
+public class TrieTest extends DBeaverUnitTest {
 
     class TestToken {
         private String key;

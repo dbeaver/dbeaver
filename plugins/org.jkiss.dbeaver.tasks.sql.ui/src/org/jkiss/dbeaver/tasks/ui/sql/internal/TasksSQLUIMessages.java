@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.tasks.ui.sql.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class TasksSQLUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.tasks.ui.sql.internal.TasksSQLUIMessages"; //$NON-NLS-1$

@@ -34,8 +34,6 @@ import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionSet;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.Pair;
@@ -59,8 +57,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     private final Position completionRequestPosition;
     @NotNull
     private final AtomicReference<Pair<Integer, List<SQLQueryCompletionProposal>>> result = new AtomicReference<>(Pair.of(null, Collections.emptyList()));
-
-    private final SQLQueryCompletionProposalContext proposalContext;
+    private SQLQueryCompletionProposalContext proposalContext;
 
     public SQLQueryCompletionAnalyzer(
         @NotNull SQLEditorBase editor,
@@ -70,7 +67,6 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         this.editor = editor;
         this.request = request;
         this.completionRequestPosition = completionRequestPosition;
-        this.proposalContext = new SQLQueryCompletionProposalContext(request);
     }
 
     @Override
@@ -83,6 +79,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
 //            completionContext = this.editor.obtainCompletionContext(this.completionRequestPostion);
 //        }
 
+        this.proposalContext = new SQLQueryCompletionProposalContext(request, completionContext.getRequestOffset());
         Pair<Integer, List<SQLQueryCompletionProposal>> result;
         if (completionContext != null && this.request.getContext().getDataSource() != null) {
             // TODO don't we want to be able to accomplish subqueries and such even without the connection?
@@ -142,7 +139,8 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             columnListString,
             completionContext.getRequestOffset() - 1,
             1,
-            null
+            null,
+            Integer.MAX_VALUE
         );
 
         return List.of(proposal);
@@ -176,7 +174,8 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
                         replacementString,
                         completionSet.getReplacementPosition(),
                         completionSet.getReplacementLength(),
-                        item.getFilterInfo()
+                        item.getFilterInfo(),
+                        item.getScore()
                     ));
                 }
             }
@@ -188,11 +187,10 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     @NotNull
     private String prepareReplacementString(@NotNull SQLQueryCompletionItem item, @NotNull String text, @NotNull SQLQueryCompletionContext completionContext) {
         LSMInspections.SyntaxInspectionResult inspectionResult = completionContext.getInspectionResult();
-        boolean whitespaceNeeded = item.getKind() == SQLQueryCompletionItemKind.RESERVED
-            || (!text.endsWith(" ") && this.proposalContext.isInsertSpaceAfterProposal() && (
-                (inspectionResult.expectingTableReference && item.getKind().isTableName)
-                ||
-                (inspectionResult.expectingColumnReference && item.getKind().isColumnName)
+        boolean whitespaceNeeded = item.getKind() == SQLQueryCompletionItemKind.RESERVED ||
+            (!text.endsWith(" ") && this.proposalContext.isInsertSpaceAfterProposal() && (
+                (inspectionResult.expectingTableReference() && item.getKind().isTableName) ||
+                ((inspectionResult.expectingColumnReference() || inspectionResult.expectingColumnName()) && item.getKind().isColumnName)
             ));
         return whitespaceNeeded ? text + " " : text;
     }
@@ -208,16 +206,19 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
 
     @NotNull
     private DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
-        DBPImage image = switch (item.getKind()) {
+        return switch (item.getKind()) {
             case UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
             case RESERVED -> UIIcon.SQL_TEXT;
             case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
-            case DERIVED_COLUMN_NAME -> DBIcon.TREE_FOREIGN_KEY_COLUMN;
-            case NEW_TABLE_NAME -> DBIcon.TREE_TABLE;
-            case USED_TABLE_NAME -> UIIcon.EDIT_TABLE;
+            case DERIVED_COLUMN_NAME -> DBIcon.TREE_DERIVED_COLUMN;
+            case NEW_TABLE_NAME, USED_TABLE_NAME -> {
+                DBPObject object = item.getObject();
+                yield object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
+            }
             case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
+            case COMPOSITE_FIELD_NAME -> DBIcon.TREE_DATA_TYPE;
+            case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
             default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
         };
-        return image;
     }
 }

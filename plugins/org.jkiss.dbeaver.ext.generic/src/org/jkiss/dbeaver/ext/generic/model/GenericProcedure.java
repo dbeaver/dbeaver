@@ -85,13 +85,13 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         this.source = source;
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, order = 3, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
     public GenericCatalog getCatalog()
     {
         return getContainer().getCatalog();
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 4)
     public GenericSchema getSchema()
     {
         return getContainer().getSchema();

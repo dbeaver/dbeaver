@@ -78,6 +78,7 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
         }
         if (index.isPersisted()) {
             try {
+
                 String indexDDL = index.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS);
                 if (!CommonUtils.isEmpty(indexDDL)) {
                     actions.add(
@@ -141,6 +142,19 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
     protected String getDropIndexPattern(SQLServerTableIndex index)
     {
         return "DROP INDEX " + index.getName() + " ON " + index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
+    }
+
+
+    @Override
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
+        addObjectDeleteActions(monitor, executionContext, actionList, new ObjectDeleteCommand(command.getObject(), command.getTitle()), options);
+        addObjectCreateActions(monitor, executionContext, actionList, makeCreateCommand(command.getObject(), options), options);
     }
 
 }

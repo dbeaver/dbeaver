@@ -158,14 +158,14 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         }
         if (CommonUtils.isEmpty(filterName)) {
             // Reset filter
-            StringEditorTable.fillFilterValues(includeTable, null, null);
-            StringEditorTable.fillFilterValues(excludeTable, null, null);
+            StringEditorTable.replaceAllStringValues(includeTable, null, null);
+            StringEditorTable.replaceAllStringValues(excludeTable, null, null);
         } else {
             // Find saved filter
             DBSObjectFilter savedFilter = dsRegistry.getSavedFilter(filterName);
             if (savedFilter != null) {
-                StringEditorTable.fillFilterValues(includeTable, savedFilter.getInclude(), null);
-                StringEditorTable.fillFilterValues(excludeTable, savedFilter.getExclude(), null);
+                StringEditorTable.replaceAllStringValues(includeTable, savedFilter.getInclude(), null);
+                StringEditorTable.replaceAllStringValues(excludeTable, savedFilter.getExclude(), null);
             }
         }
         filter.setName(filterName);
@@ -184,8 +184,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
     private void saveConfigurations() {
         filter.setEnabled(enableButton.getSelection());
-        filter.setInclude(StringEditorTable.collectValues(includeTable));
-        filter.setExclude(StringEditorTable.collectValues(excludeTable));
+        filter.setInclude(StringEditorTable.collectStringValues(includeTable));
+        filter.setExclude(StringEditorTable.collectStringValues(excludeTable));
         filter.setName(namesCombo.getText());
         if (!CommonUtils.isEmpty(filter.getName())) {
             dsRegistry.updateSavedFilter(filter);

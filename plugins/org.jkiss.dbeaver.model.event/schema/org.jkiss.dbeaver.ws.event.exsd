@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appInfo>
+         <meta.schema plugin="org.jkiss.dbeaver.ws.event" id="org.jkiss.dbeaver.ws.event.handler" name="WebSocket event"/>
+      </appInfo>
+      <documentation>
+         WebSocket events
+      </documentation>
+   </annotation>
+</schema>

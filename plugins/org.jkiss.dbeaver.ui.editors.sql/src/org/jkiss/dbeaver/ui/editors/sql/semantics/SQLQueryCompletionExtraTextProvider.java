@@ -36,22 +36,32 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
 
     @NotNull
     @Override
-    public String visitSubqueryAlias(@Nullable SQLRowsSourceAliasCompletionItem rowsSourceAlias) {
+    public String visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem rowsSourceAlias) {
         return rowsSourceAlias.sourceInfo.tableOrNull != null ? " - Table alias" : " - Subquery alias";
+    }
+
+    @Nullable
+    public static String prepareTypeNameString(@NotNull SQLQueryExprType type) {
+        return type == null || type == SQLQueryExprType.UNKNOWN ? null : type.getDisplayName();
+    }
+
+    @NotNull
+    public String visitCompositeField(@NotNull SQLCompositeFieldCompletionItem compositeField) {
+        String typeName = this.prepareTypeNameString(compositeField.memberInfo.type());
+        return typeName == null ? " - Composite attribute" : (" : " + typeName);
     }
 
     @NotNull
     @Override
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
-        SQLQueryExprType type = columnName.columnInfo.type;
-        String typeName = type == null || type == SQLQueryExprType.UNKNOWN ? null : type.getDisplayName();
+        String typeName = this.prepareTypeNameString(columnName.columnInfo.type);
         return typeName == null ? " - Column" : (" : " + typeName);
     }
 
     @NotNull
     @Override
     public String visitTableName(@NotNull SQLTableNameCompletionItem tableName) {
-        return (DBUtils.isView(tableName.table) ? " - View " : " - Table ");
+        return (DBUtils.isView(tableName.object) ? " - View " : " - Table ");
     }
 
     @Nullable
@@ -75,5 +85,11 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
             }
         }
         return CommonUtils.isEmpty(typeName) ? null : (" - " + typeName);
+    }
+
+    @Nullable
+    @Override
+    public String visitJoinCondition(@NotNull SQLJoinConditionCompletionItem joinCondition) {
+        return " - Known foreign key relation";
     }
 }

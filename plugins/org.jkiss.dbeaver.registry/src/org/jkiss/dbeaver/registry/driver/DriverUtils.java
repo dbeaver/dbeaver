@@ -211,7 +211,7 @@ public class DriverUtils {
 
     public static boolean downloadDriverFiles(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDriver driverDescriptor,
+        @NotNull DriverDescriptor driverDescriptor,
         @NotNull DBPDriverDependencies dependencies
     ) {
         try {
@@ -237,7 +237,19 @@ public class DriverUtils {
                 return false;
             }
         }
+        driverDescriptor.setModified(true);
         return true;
+    }
+
+    /**
+     * Returns relative driver library path if application is distributed.
+     */
+    @NotNull
+    public static String getDistributedLibraryPath(@NotNull Path path) {
+        if (DBWorkbench.isDistributed() && path.isAbsolute()) {
+            return DriverDescriptor.getWorkspaceDriversStorageFolder().relativize(path).toString();
+        }
+        return path.toString();
     }
 
     public static class DriverNameComparator implements Comparator<DBPDriver> {

@@ -34,13 +34,12 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,8 +47,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@RunWith(MockitoJUnitRunner.class)
-public class SQLScriptParserTest {
+public class SQLScriptParserTest extends DBeaverUnitTest {
     @Mock
     private JDBCDataSource dataSource;
     @Mock

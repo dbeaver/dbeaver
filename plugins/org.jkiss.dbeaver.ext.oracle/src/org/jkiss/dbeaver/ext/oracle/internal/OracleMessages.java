@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class OracleMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.oracle.internal.OracleMessages"; //$NON-NLS-1$

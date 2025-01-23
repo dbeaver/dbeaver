@@ -106,7 +106,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         this.preferenceStore = preferenceStore;
         this.ruleManager = editor.getRuleScanner();
         this.contextInformer = new SQLContextInformer(editor, editor.getSyntaxManager());
-        this.hyperlinkDetector = new SQLHyperlinkDetector(editor, this.contextInformer);
+        this.hyperlinkDetector = new SQLHyperlinkDetector(this.contextInformer);
         this.reconcilingStrategy = reconcilingStrategy;
     }
 
@@ -203,7 +203,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
         // Configure how content assist information will appear.
         configureContentAssistant(store, assistant);
-        assistant.setSorter(new SQLCompletionSorter());
+        assistant.setSorter(new SQLCompletionSorter(editor));
 
         assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
 

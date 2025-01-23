@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class PostgreMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.PostgresResources"; //$NON-NLS-1$

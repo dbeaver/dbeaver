@@ -27,7 +27,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
+import org.jkiss.dbeaver.erd.ui.editor.ERDThemeSettings;
 import org.jkiss.dbeaver.erd.ui.model.EntityDiagram;
 import org.jkiss.dbeaver.erd.ui.part.DiagramPart;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -69,7 +69,7 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
                     Image image = new Image(null, contentBounds.width + MARGIN_X * 2, contentBounds.height + MARGIN_Y * 2);
                     try {
                         gc = new GC(image);
-                        gc.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+                        gc.setBackground(ERDThemeSettings.instance.diagramBackground);
                         gc.fillRectangle(image.getBounds());
                         //gc.setClipping(0, 0, contentBounds.width + MARGIN_X * 2, contentBounds.height + MARGIN_Y * 2);
                         graphics = new SWTGraphics(gc);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.utils;
 
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,7 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 //@RunWith(PowerMockRunner.class)
-public class CommonUtilsTest {
+public class CommonUtilsTest extends DBeaverUnitTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();

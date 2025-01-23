@@ -38,13 +38,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
@@ -75,7 +75,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 /**
  * DBeaver UI core
@@ -84,7 +84,6 @@ public class DesktopUI extends ConsoleUserInterface {
 
     private static final Log log = Log.getLog(DesktopUI.class);
 
-    private TrayIconHandler trayItem;
     private WorkbenchContextListener contextListener;
 
     public static DesktopUI getInstance() {
@@ -103,15 +102,10 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     private void dispose() {
-        if (trayItem != null) {
-            trayItem.hide();
-        }
     }
 
     // This method is called during startup thru @ComponentReference in workbench
     public void initialize() {
-        this.trayItem = new TrayIconHandler();
-
         new AbstractJob("Workbench listener") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
@@ -131,26 +125,6 @@ public class DesktopUI extends ConsoleUserInterface {
         if (contextListener != null) {
             contextListener.deactivatePartContexts(part);
             contextListener.activatePartContexts(part);
-        }
-    }
-
-    @Override
-    public void notifyAgent(String message, int status) {
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY)) {
-            // Notifications disabled
-            return;
-        }
-        if (TrayIconHandler.isSupported()) {
-            UIUtils.syncExec(() -> Display.getCurrent().beep());
-            getInstance().trayItem.notify(message, status);
-        } else {
-            DBeaverNotifications.showNotification(
-                "agent.notify",
-                "Agent Notification",
-                message,
-                status == IStatus.INFO ? DBPMessageType.INFORMATION :
-                    (status == IStatus.ERROR ? DBPMessageType.ERROR : DBPMessageType.WARNING),
-                null);
         }
     }
 
@@ -337,18 +311,18 @@ public class DesktopUI extends ConsoleUserInterface {
         }
         final List<Reply> reply = labels.stream()
             .map(s -> CommonUtils.isEmpty(s) ? null : new Reply(s))
-            .collect(Collectors.toList());
+            .toList();
 
-        return UIUtils.syncExec(new RunnableWithResult<UserChoiceResponse>() {
+        return UIUtils.syncExec(new RunnableWithResult<>() {
             public UserChoiceResponse runWithResult() {
                 List<Button> extraCheckboxes = new ArrayList<>(forAllLabels.size());
-                Integer[] selectedCheckboxIndex = { null };
+                Integer[] selectedCheckboxIndex = {null};
                 MessageBoxBuilder mbb = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
                     .setTitle(title)
                     .setMessage(message)
                     .setReplies(reply.stream().filter(Objects::nonNull).toArray(Reply[]::new))
                     .setPrimaryImage(DBIcon.STATUS_WARNING);
-                
+
                 if (previousChoice != null && reply.get(previousChoice) != null) {
                     mbb.setDefaultReply(reply.get(previousChoice));
                 }
@@ -373,7 +347,7 @@ public class DesktopUI extends ConsoleUserInterface {
                         }
                     });
                 }
-                
+
                 Reply result = mbb.showMessageBox();
                 int choiceIndex = reply.indexOf(result);
                 return new UserChoiceResponse(choiceIndex, selectedCheckboxIndex[0]);
@@ -384,11 +358,6 @@ public class DesktopUI extends ConsoleUserInterface {
     @Override
     public UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue) {
         return ExecutionQueueErrorJob.showError(task, error, queue);
-    }
-
-    @Override
-    public long getLongOperationTimeout() {
-        return DBWorkbench.getPlatform().getPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT);
     }
 
     private static UserResponse showDatabaseError(String message, DBException error)
@@ -452,7 +421,7 @@ public class DesktopUI extends ConsoleUserInterface {
                 final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly, showSavePassword);
                 authDialog.setUserNameLabel(userNameLabel);
                 authDialog.setPasswordLabel(passwordLabel);
-                authDialog.setDescription(description);
+                authDialog.setDescription(description == null ? prompt : description);
                 if (!passwordOnly) {
                     authDialog.setUserName(userName);
                 }
@@ -730,14 +699,51 @@ public class DesktopUI extends ConsoleUserInterface {
         String[] filterExt,
         String defaultValue
     ) {
+        DBNFileSystems fileSystemsNode = FileSystemExplorerView.getFileSystemsNode();
+        if (fileSystemsNode == null) {
+            log.error("File system root node not found");
+            return null;
+        }
+        DBNNode[] selectedNode = new DBNNode[1];
+        if (defaultValue != null) {
+            try {
+                UIUtils.runInProgressService(monitor -> {
+                    try {
+                        monitor.beginTask("Locate file", 1);
+                        monitor.subTask("Locate '" + defaultValue + "'");
+                        selectedNode[0] = fileSystemsNode.findNodeByPath(new VoidProgressMonitor(), defaultValue);
+                        monitor.done();
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        Predicate<String> extFilter = s -> {
+            if (filterExt != null && filterExt.length > 0) {
+                for (String mask : filterExt) {
+                    int i = mask.lastIndexOf('.');
+                    String ext = i == -1 ? mask : mask.substring(i);
+                    if (s.endsWith(ext)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return true;
+        };
         DBNNode object = ObjectBrowserDialog.selectObject(
             UIUtils.getActiveWorkbenchShell(),
             title,
-            FileSystemExplorerView.getFileSystemsNode(),
-            null,
-            null,
+            fileSystemsNode,
+            selectedNode[0],
             new Class[] { DBNPathBase.class },
-            null);
+            new Class[] { DBNPathBase.class },
+            null,
+            extFilter);
         if (object instanceof DBNPathBase path) {
             return path;
         }

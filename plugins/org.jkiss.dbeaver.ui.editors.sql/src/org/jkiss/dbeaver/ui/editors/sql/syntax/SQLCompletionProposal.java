@@ -57,7 +57,7 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
 
     private static final Log log = Log.getLog(SQLCompletionProposal.class);
 
-    private String replacementLast;
+    private final String replacementLast;
     
     private boolean isNeverAddSpaceAfter = false;
 

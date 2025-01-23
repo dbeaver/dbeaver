@@ -52,8 +52,10 @@ import org.jkiss.utils.IOUtils;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.InvalidPathException;
-import java.util.List;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -568,11 +570,11 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         String paramCreate = CommonUtils.toString(site.getDriver().getDriverParameter(GenericConstants.PARAM_CREATE_URL_PARAM));
 
         DataSourceDescriptor dataSource = (DataSourceDescriptor) site.getActiveDataSource();
-        final DataSourceDescriptor testDataSource = new DataSourceDescriptor(
-            site.getDataSourceRegistry(),
+        DataSourceDescriptor testDataSource = site.getDataSourceRegistry().createDataSource(
             dataSource.getId(),
             dataSource.getDriver(),
-            new DBPConnectionConfiguration(dataSource.getConnectionConfiguration()));
+            new DBPConnectionConfiguration(dataSource.getConnectionConfiguration())
+        );
 
         saveSettings(testDataSource);
         DBPConnectionConfiguration cfg = testDataSource.getConnectionConfiguration();
@@ -620,7 +622,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
     }
 
     private void showControlGroup(String group, boolean show) {
-        List<Control> controlList = propGroupMap.get(group);
+        Set<Control> controlList = propGroupMap.get(group);
         if (controlList != null) {
             for (Control control : controlList) {
                 Object gd = control.getLayoutData();

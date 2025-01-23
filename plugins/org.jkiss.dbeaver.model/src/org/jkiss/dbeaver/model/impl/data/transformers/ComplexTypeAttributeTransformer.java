@@ -20,14 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDAttributeBindingType;
-import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.struct.DBSBindableDataType;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -65,20 +60,15 @@ public class ComplexTypeAttributeTransformer implements DBDAttributeTransformer 
         @NotNull DBSDataType dataType
     ) throws DBException {
         List<? extends DBSEntityAttribute> nestedAttrs = null;
-        if (dataType instanceof DBSBindableDataType) {
-            DBSEntityAttribute entityAttribute = attribute.getTopParent().getEntityAttribute();
-            if (entityAttribute != null) {
-                DBSEntity container = entityAttribute.getParentObject();
-                DBSBindableDataType bindable = (DBSBindableDataType) dataType;
-                nestedAttrs = bindable.bindAttributesToContext(session.getProgressMonitor(), container, entityAttribute);
-            }
+        if (dataType instanceof DBSBindableDataType bdt) {
+            nestedAttrs = bdt.bindAttributesToContext(session.getProgressMonitor(), attribute);
         }
         if (nestedAttrs == null) {
-            if (dataType instanceof DBSEntity) {
-                nestedAttrs = ((DBSEntity) dataType).getAttributes(session.getProgressMonitor());
+            if (dataType instanceof DBSEntity entity) {
+                nestedAttrs = entity.getAttributes(session.getProgressMonitor());
             }
         }
-        
+
         List<DBDAttributeBinding> nestedBindings = new ArrayList<>();
         for (DBSEntityAttribute nestedAttr : CommonUtils.safeCollection(nestedAttrs)) {
             DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(attribute, nestedAttr, nestedBindings.size());

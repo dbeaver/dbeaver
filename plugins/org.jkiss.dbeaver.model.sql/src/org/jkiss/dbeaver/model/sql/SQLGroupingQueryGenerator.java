@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.sql;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -29,7 +28,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -56,7 +54,7 @@ public class SQLGroupingQueryGenerator {
     @NotNull
     private final SQLSyntaxManager syntaxManager;
     @NotNull
-    private final List<String> groupAttributes;
+    private final List<SQLGroupingAttribute> groupAttributes;
     @NotNull
     private final List<String> groupFunctions;
 
@@ -68,7 +66,7 @@ public class SQLGroupingQueryGenerator {
         @NotNull DBSDataContainer container,
         @NotNull SQLDialect dialect,
         @NotNull SQLSyntaxManager syntaxManager,
-        @NotNull List<String> groupAttributes,
+        @NotNull List<SQLGroupingAttribute> groupAttributes,
         @NotNull List<String> groupFunctions,
         boolean showDuplicatesOnly
     ) {
@@ -80,7 +78,6 @@ public class SQLGroupingQueryGenerator {
         this.groupFunctions = groupFunctions;
         this.showDuplicatesOnly = showDuplicatesOnly;
     }
-
 
     public String generateGroupingQuery(String queryText) throws DBException {
 
@@ -107,11 +104,22 @@ public class SQLGroupingQueryGenerator {
                 funcAliases[i] = groupFunctions.get(i);
             }
         }
-        if (!(container instanceof DBSEntity) && dialect.supportsSubqueries()) {
+        String subqueryAlias;
+        Statement statement = null;
+        try {
+            statement = SQLSemanticProcessor.parseQuery(dataSource.getSQLDialect(), queryText);
+        } catch (Throwable e) {
+            log.debug("SQL parse error", e);
+        }
+        boolean isCTE = statement instanceof Select select && select.getWithItemsList() != null && !select.getWithItemsList().isEmpty();
+        if (!(container instanceof DBSEntity) && dialect.supportsSubqueries() && !isCTE) {
+            subqueryAlias = "src";
             sql.append("SELECT ");
             for (int i = 0; i < groupAttributes.size(); i++) {
-                if (i > 0) sql.append(", ");
-                sql.append(quotedGroupingString(dataSource, groupAttributes.get(i)));
+                if (i > 0) {
+                    sql.append(", ");
+                }
+                sql.append(groupAttributes.get(i).prepareSqlString(subqueryAlias));
             }
             for (int i = 0; i < groupFunctions.size(); i++) {
                 String func = groupFunctions.get(i);
@@ -122,48 +130,47 @@ public class SQLGroupingQueryGenerator {
             }
             sql.append(" FROM (\n");
             sql.append(queryText);
-            sql.append("\n) src");
+            sql.append("\n) ").append(subqueryAlias);
         } else {
-            try {
-                Statement statement = SQLSemanticProcessor.parseQuery(dataSource.getSQLDialect(), queryText);
-                if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
-                    PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
-                    select.setOrderByElements(null);
-
-                    SQLDialect sqlDialect = dataSource.getSQLDialect();
-                    if (select.getFromItem() instanceof Table table) {
-                        select.setFromItem(new FormattedTable(table, sqlDialect));
-                    }
-
-                    List<SelectItem> selectItems = new ArrayList<>();
-                    select.setSelectItems(selectItems);
-                    for (String groupAttribute : groupAttributes) {
-                        selectItems.add(
-                            new SelectExpressionItem(
-                                new Column(
-                                    quotedGroupingString(dataSource, groupAttribute))));
-                    }
-                    for (int i = 0; i < groupFunctions.size(); i++) {
-                        String func = groupFunctions.get(i);
-                        Expression expression = SQLSemanticProcessor.parseExpression(func);
-                        SelectExpressionItem sei = new SelectExpressionItem(expression);
-                        if (useAliasForColumns) {
-                            sei.setAlias(new Alias(funcAliases[i]));
-                        }
-                        selectItems.add(sei);
-                    }
+            subqueryAlias = null;
+            if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect select) {
+                select.setOrderByElements(null);
+                SQLDialect sqlDialect = dataSource.getSQLDialect();
+                if (select.getFromItem() instanceof Table table) {
+                    FormattedTable formattedTable = new FormattedTable(table, sqlDialect);
+                    // implicitly parsed where-conditions might have use table alias if presented,
+                    // so don't forget it while replacing the table reference
+                    formattedTable.setAlias(table.getAlias());
+                    select.setFromItem(formattedTable);
                 }
-                queryText = statement.toString();
-            } catch (Throwable e) {
-                log.debug("SQL parse error", e);
+
+                List<SelectItem> selectItems = new ArrayList<>();
+                select.setSelectItems(selectItems);
+                for (SQLGroupingAttribute groupAttribute : groupAttributes) {
+                    selectItems.add(new SelectExpressionItem(groupAttribute.prepareExpression()));
+                }
+                for (int i = 0; i < groupFunctions.size(); i++) {
+                    String func = groupFunctions.get(i);
+                    Expression expression = SQLSemanticProcessor.parseExpression(func);
+                    SelectExpressionItem sei = new SelectExpressionItem(expression);
+                    if (useAliasForColumns) {
+                        sei.setAlias(new Alias(funcAliases[i]));
+                    }
+                    selectItems.add(sei);
+                }
             }
-            sql.append(queryText);
+            if (statement != null) {
+                queryText = statement.toString();
+                sql.append(queryText);
+            }
         }
 
         sql.append("\nGROUP BY ");
         for (int i = 0; i < groupAttributes.size(); i++) {
-            if (i > 0) sql.append(", ");
-            sql.append(quotedGroupingString(dataSource, groupAttributes.get(i)));
+            if (i > 0) {
+                sql.append(", ");
+            }
+            sql.append(groupAttributes.get(i).prepareSqlString(subqueryAlias));
         }
         boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equalsIgnoreCase(DEFAULT_FUNCTION);
 
@@ -194,18 +201,6 @@ public class SQLGroupingQueryGenerator {
             return alias.toString().toLowerCase(Locale.ENGLISH);
         }
         return "i_" + funcIndex;
-    }
-
-    private String quotedGroupingString(DBPDataSource dataSource, String string) {
-        try {
-            Expression expression = SQLSemanticProcessor.parseExpression(string);
-            if (!(expression instanceof Column)) {
-                return string;
-            }
-        } catch (DBException e) {
-            log.debug("Can't parse expression " + string, e);
-        }
-        return DBUtils.getQuotedIdentifier(dataSource, string);
     }
 
     public String[] getFuncAliases() {

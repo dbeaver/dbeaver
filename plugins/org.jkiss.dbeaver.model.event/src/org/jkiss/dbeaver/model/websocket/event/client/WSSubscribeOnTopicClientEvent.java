@@ -17,13 +17,14 @@
 package org.jkiss.dbeaver.model.websocket.event.client;
 
 import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
-import org.jkiss.dbeaver.model.websocket.event.WSClientEventType;
 
 /**
  * Subscribe on event topic
  */
 public class WSSubscribeOnTopicClientEvent extends WSClientEvent {
+    public static final String ID = "cb_client_topic_subscribe";
+
     public WSSubscribeOnTopicClientEvent(String topicId) {
-        super(WSClientEventType.TOPIC_SUBSCRIBE.getEventId(), topicId);
+        super(ID, topicId);
     }
 }

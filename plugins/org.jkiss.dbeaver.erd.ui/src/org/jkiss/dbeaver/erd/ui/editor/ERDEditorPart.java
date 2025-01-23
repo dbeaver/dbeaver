@@ -35,13 +35,18 @@ import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.widgets.CompositeFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
 import org.eclipse.swt.printing.PrinterData;
@@ -84,6 +89,7 @@ import org.jkiss.dbeaver.erd.ui.notations.ERDNotationRegistry;
 import org.jkiss.dbeaver.erd.ui.part.*;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.erd.ui.router.ERDConnectionRouterRegistry;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceTask;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -126,6 +132,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     @Nullable
     protected ProgressControl progressControl;
+
+    private EditModeComposite editModeComposite;
 
     /**
      * the undoable <code>IPropertySheetPage</code>
@@ -272,6 +280,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             isLoaded = true;
         }
 
+        editModeComposite = new EditModeComposite(contentContainer);
+        contentContainer = editModeComposite.getPlaceholder();
+
         super.createPartControl(contentContainer);
 
         if (hasProgressControl()) {
@@ -396,6 +407,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     public abstract boolean isReadOnly();
 
+    public void setEditMode(boolean editMode) {
+        if (editModeComposite != null) {
+            editModeComposite.setEditMode(editMode);
+        }
+    }
+
     protected boolean hasProgressControl() {
         return true;
     }
@@ -497,7 +514,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         viewer.createControl(parent);
 
         // configure the viewer
-        viewer.getControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        viewer.getControl().setBackground(ERDThemeSettings.instance.diagramBackground);
         viewer.setRootEditPart(rootPart);
         installKeyHandler(viewer);
 
@@ -522,7 +539,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected void configureGraphicalViewer()
     {
         super.configureGraphicalViewer();
-        this.getGraphicalViewer().getControl().setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        this.getGraphicalViewer().getControl().setBackground(ERDThemeSettings.instance.diagramBackground);
 
         GraphicalViewer graphicalViewer = getGraphicalViewer();
 
@@ -699,7 +716,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             this.getSite().getPage(),
             this.getPaletteViewerProvider(),
             this.getPalettePreferences());
-        paletteComposite.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+        paletteComposite.setBackground(ERDThemeSettings.instance.diagramBackground);
         return paletteComposite;
     }
 
@@ -1327,7 +1344,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         {
             Control graphicalControl = getGraphicalControl();
             if (graphicalControl != null) {
-                graphicalControl.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+                graphicalControl.setBackground(ERDThemeSettings.instance.diagramBackground);
             }
             return new LoadVisualizer();
         }
@@ -1414,7 +1431,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         if (graphicalControl == null) {
             return entityDiagram;
         }
-        UIUtils.syncExec(() -> graphicalControl.setBackground(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND)));
+        UIUtils.syncExec(() -> graphicalControl.setBackground(ERDThemeSettings.instance.diagramBackground));
         isLoaded = true;
         Control control = getGraphicalViewer().getControl();
         if (control == null || control.isDisposed()) {
@@ -1552,7 +1569,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     }
                 }
                 if (!CommonUtils.isEmpty(nodes)) {
-                    Color color = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_SEARCH_HIGHLIGHTING);
+                    Color color = ERDThemeSettings.instance.searchHighlightColor;
                     DBPNamedObject focusedNode = null;
                     for (DBPNamedObject erdNode : nodes) {
                         if (matchesSearch(erdNode)) {
@@ -1735,5 +1752,58 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             progressControl.setShowDivider(true);
         }
         return this.progressControl;
+    }
+
+    /**
+     * A special composite responsible for showing a warning label along
+     * with a border around the diagram control.
+     *
+     * @see #setEditMode(boolean)
+     */
+    private static class EditModeComposite extends Composite {
+        private static final int EDIT_MODE_BORDER_SIZE = 2;
+
+        private final Composite placeholder;
+        private final CLabel label;
+
+        public EditModeComposite(@NotNull Composite parent) {
+            super(parent, SWT.NONE);
+
+            GridLayoutFactory.fillDefaults()
+                .spacing(0, 0)
+                .applyTo(this);
+
+            placeholder = CompositeFactory.newComposite(SWT.NONE)
+                .layout(new FillLayout())
+                .layoutData(GridDataFactory.fillDefaults().grab(true, true).create())
+                .create(this);
+
+            placeholder.addPaintListener(e -> {
+                e.gc.setBackground(ERDThemeSettings.instance.linesForeground);
+                e.gc.fillRectangle(e.x, e.y, e.width, e.height);
+            });
+
+            label = new CLabel(this, SWT.LEFT);
+            label.setImage(DBeaverIcons.getImage(DBIcon.SMALL_WARNING));
+            label.setText(ERDUIMessages.erd_editor_control_edit_mode_label);
+
+            setEditMode(false);
+        }
+
+        void setEditMode(boolean editMode) {
+            var layout = (FillLayout) placeholder.getLayout();
+            var margin = editMode ? EDIT_MODE_BORDER_SIZE : 0;
+            layout.marginWidth = margin;
+            layout.marginHeight = margin;
+
+            UIUtils.setControlVisible(label, editMode);
+
+            layout(true, true);
+        }
+
+        @NotNull
+        Composite getPlaceholder() {
+            return placeholder;
+        }
     }
 }

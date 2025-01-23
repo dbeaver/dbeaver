@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.exasol;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class ExasolMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.exasol.ExasolResources"; //$NON-NLS-1$
