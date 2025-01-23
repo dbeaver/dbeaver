@@ -22,6 +22,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
@@ -53,6 +54,7 @@ public class ThemeListener {
 
         IPropertyChangeListener themeChangeListener = this::updateThemeProperty;
         themeManager.addPropertyChangeListener(themeChangeListener);
+
 
         for (Field field : getClass().getFields()) {
             String propId = null;
@@ -145,6 +147,11 @@ public class ThemeListener {
                         }
                         Font normalFont = currentTheme.getFontRegistry().get(property);
                         font = UIUtils.makeBoldFont(normalFont);
+                        if (normalFont.getDevice() instanceof Display display) {
+                            display.disposeExec(() -> {
+                                font.dispose();
+                            });
+                        }
                     } else {
                         font = currentTheme.getFontRegistry().getBold(property);
                     }
