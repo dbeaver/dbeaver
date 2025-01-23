@@ -774,7 +774,8 @@ public final class DBUtils {
         @NotNull DBDValue rootValue,
         @NotNull DBDAttributeBinding attribute,
         @Nullable int[] nestedIndexes,
-        @Nullable Object elementValue
+        @Nullable Object elementValue,
+        boolean needToUpdateIfSameValue
     ) throws DBCException {
         final int depth = attribute.getLevel();
 
@@ -827,12 +828,14 @@ public final class DBUtils {
         if (ownerValue == null) {
             throw new DBCException("Cannot determine owner value for update");
         } else if (ownerValue instanceof DBDCollection collection) {
-            if (String.valueOf(elementValue).equals(String.valueOf(collection.get(nestedIndexes[nestedIndexes.length - 1])))) {
+            if (!needToUpdateIfSameValue &&
+                String.valueOf(collection.getItem(nestedIndexes[nestedIndexes.length - 1])).equals(String.valueOf(elementValue))) {
                 return false;
             }
             collection.setItem(nestedIndexes[nestedIndexes.length - 1], elementValue);
         } else if (ownerValue instanceof DBDComposite composite) {
-            if (String.valueOf(composite.getAttributeValue(attribute)).equals(String.valueOf(elementValue))) {
+            if (!needToUpdateIfSameValue &&
+                String.valueOf(composite.getAttributeValue(attribute)).equals(String.valueOf(elementValue))) {
                 return false;
             }
             composite.setAttributeValue(attribute, elementValue);

@@ -515,12 +515,12 @@ public class ResultSetModel implements DBDResultSetModel {
                 // New value if also a complex value. Probably DBDContent
                 // In this case it must be root attribute
                 if (attr != topAttribute && valueToEdit instanceof DBDValue ownerValue) {
-                    updated = DBUtils.updateAttributeValue(ownerValue, attr, rowIndexes, value);
+                    updated = DBUtils.updateAttributeValue(ownerValue, attr, rowIndexes, value, oldHistoricValue != null);
                 } else {
                     valueToEdit = value;
                 }
             } else if (valueToEdit instanceof DBDValue complexValue) {
-                updated = DBUtils.updateAttributeValue(complexValue, attr, rowIndexes, value);
+                updated = DBUtils.updateAttributeValue(complexValue, attr, rowIndexes, value, oldHistoricValue != null);
             } else {
                 valueToEdit = value;
             }
