@@ -20,6 +20,7 @@ Export-Package: org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.actions,
  org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.editors,
+ org.jkiss.dbeaver.ui.editors.file,
  org.jkiss.dbeaver.ui.editors.text,
  org.jkiss.dbeaver.ui.editors.text.handlers
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.base

@@ -2,6 +2,7 @@
 <?eclipse version="3.2"?>
 
 <plugin>
+    <extension-point id="org.jkiss.dbeaver.ui.fileTypeHandler" name="File type handlers" schema="schema/org.jkiss.dbeaver.ui.fileTypeHandlers.exsd"/>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester

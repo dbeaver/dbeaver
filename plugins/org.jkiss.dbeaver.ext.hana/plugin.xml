@@ -38,6 +38,9 @@
                                     <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
                                         <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true"/>
                                     </items>
+                                </folder>                                
+                                <folder type="org.jkiss.dbeaver.ext.hana.model.HANAPartition" label="%tree.partitions.node.name" icon="#partitions">
+                                    <items label="%tree.partitions.node.name" path="partition" property="partitions" icon="#partition"/>
                                 </folder>
                                 <folder label="%tree.references.node.name" icon="#references" virtual="true">
                                     <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
