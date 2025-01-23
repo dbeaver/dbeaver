@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
@@ -37,11 +38,14 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
+
 import java.util.List;
 import java.util.Map;
 
 public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericStructContainer> /*implements DBEObjectRenamer<OracleSchema>*/
 {
+
+    private static final int MAX_NAME_GEN_ATTEMPTS = 100;
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
@@ -66,7 +70,8 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
             @Nullable Object copyFrom,
             @NotNull Map<String, Object> options) {
 
-        CubridPrivilage user = new CubridPrivilage((CubridDataSource) container, "NEW_USER", null);
+        String newName = this.getNewName(monitor, (CubridDataSource) container, "NEW_USER");
+        CubridPrivilage user = new CubridPrivilage((CubridDataSource) container, newName, null);
         return user;
     }
 
@@ -147,5 +152,18 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
         }
     }
 
+    @NotNull
+    private String getNewName(@NotNull DBRProgressMonitor monitor, @NotNull CubridDataSource container, @NotNull String baseName) {
+        for (int i = 0; i < MAX_NAME_GEN_ATTEMPTS; i++) {
+            String transform = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? baseName : (baseName + "_" + i));
+            DBSObject child = container.getCubridPrivilageCache().getCachedObject(transform);
+            if (child == null) {
+                return transform;
+            }
+        }
+        log.error("Error generating child object name: max attempts reached");
+        return baseName;
+
+    }
 
 }

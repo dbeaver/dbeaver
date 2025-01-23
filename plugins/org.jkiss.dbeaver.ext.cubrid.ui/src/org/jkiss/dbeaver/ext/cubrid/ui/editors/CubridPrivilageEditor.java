@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.ControlPropertyCommandListener;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.utils.CommonUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -96,13 +97,16 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
             ControlPropertyCommandListener.create(this, name, CubridPrivilageHandler.NAME);
         }
         {
-            String loginedUser = user.getDataSource().getContainer().getConnectionConfiguration().getUserName().toUpperCase();
-            boolean allowEditPassword = new ArrayList<>(Arrays.asList("DBA", user.getName())).contains(loginedUser);
+            String loginedUser = user.getDataSource().getContainer().getConnectionConfiguration().getUserName();
             Text t = UIUtils.createLabelText(container, "Password ", "", SWT.BORDER | SWT.PASSWORD);
             GridData gd1 = new GridData();
             gd1.widthHint = 400;
             t.setLayoutData(gd1);
-            t.setEditable(allowEditPassword);
+
+            if (CommonUtils.isNotEmpty(loginedUser)) {
+                boolean allowEditPassword = new ArrayList<>(Arrays.asList("DBA", user.getName())).contains(loginedUser.toUpperCase());
+                t.setEditable(allowEditPassword);
+            }
             ControlPropertyCommandListener.create(this, t, CubridPrivilageHandler.PASSWORD);
         }
         {
@@ -149,7 +153,7 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
                                 table.removeAll();
                                 groups.clear();
                                 for (CubridPrivilage privilage : cubridUsers) {
-                                    if (!privilage.getName().equals(user.getName())) {
+                                    if (privilage.isPersisted() && !privilage.getName().equals(user.getName())) {
                                         TableItem item = new TableItem(table, SWT.BREAK);
                                         item.setImage(DBeaverIcons.getImage(DBIcon.TREE_USER_GROUP));
                                         item.setText(0, privilage.getName());
