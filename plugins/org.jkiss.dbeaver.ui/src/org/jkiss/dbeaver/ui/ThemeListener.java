@@ -28,6 +28,7 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.Field;
@@ -133,9 +134,19 @@ public class ThemeListener {
                     }
                     field.set(this, font);
                 } else if (param != null && param.bold()) {
-                    Font font = currentTheme.getFontRegistry().getBold(property);
-                    if (font == null) {
-                        log.error("Font '" + property + "' (bold) not found in registry");
+                    Font font;
+                    if (RuntimeUtils.isMacOS()) {
+                        // Create bold here because default getBold is broken on MacOS
+                        // getBold implementation differs from our makeBoldFont
+                        // because it doesn't copy all font metrics
+                        Object oldValue = field.get(this);
+                        if (oldValue instanceof Font oldFont) {
+                            oldFont.dispose();
+                        }
+                        Font normalFont = currentTheme.getFontRegistry().get(property);
+                        font = UIUtils.makeBoldFont(normalFont);
+                    } else {
+                        font = currentTheme.getFontRegistry().getBold(property);
                     }
                     field.set(this, font);
                 } else {
