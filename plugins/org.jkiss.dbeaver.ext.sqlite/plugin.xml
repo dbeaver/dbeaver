@@ -139,7 +139,7 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
-                id="libsql_jdbc"
+                id="libsql_token_jdbc"
                 label="LibSQL Authentication"
                 description="LibSQL token based authentication"
                 class="org.jkiss.dbeaver.ext.sqlite.auth.LibSQLAuthModelDatabase"

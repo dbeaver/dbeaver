@@ -24,8 +24,6 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurat
 
 
 public class LibSQLTokenAuthModelConfigurator extends DatabaseNativeAuthModelConfigurator {
-
-
     @Override
     public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
         createPasswordControls(authPanel, propertyChangeListener);
