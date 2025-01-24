@@ -43,10 +43,12 @@ public class GBase8sTableColumnManager extends GenericTableColumnManager
         implements DBEObjectRenamer<GenericTableColumn> {
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext,
-            List<DBEPersistAction> actions,
-            SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectCreateCommand command,
-            Map<String, Object> options) throws DBException {
+    protected void addObjectCreateActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actions,
+            @NotNull SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectCreateCommand command,
+            @NotNull Map<String, Object> options) throws DBException {
         super.addObjectCreateActions(monitor, executionContext, actions, command, options);
         if (CommonUtils.isNotEmpty(command.getObject().getDescription())) {
             addColumnCommentAction(actions, command.getObject(), command.getObject().getParentObject());
@@ -54,8 +56,10 @@ public class GBase8sTableColumnManager extends GenericTableColumnManager
     }
 
     @Override
-    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+    protected void addObjectRenameActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actions,
             @NotNull SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectRenameCommand command,
             @NotNull Map<String, Object> options) {
         final GenericTableColumn column = command.getObject();
@@ -66,7 +70,10 @@ public class GBase8sTableColumnManager extends GenericTableColumnManager
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, GenericTableColumn object, Map<String, Object> options,
+    public void renameObject(
+            DBECommandContext commandContext,
+            GenericTableColumn object,
+            Map<String, Object> options,
             String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }

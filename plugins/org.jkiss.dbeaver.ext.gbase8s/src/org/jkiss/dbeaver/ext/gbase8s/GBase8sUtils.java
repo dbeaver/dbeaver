@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -67,9 +67,9 @@ public class GBase8sUtils {
     }
 
     public static boolean isOracleSqlMode(DBPDataSourceContainer container) {
-        final DBPDriver driver = container.getDriver();
-        Map<String, Object> cprops = driver.getConnectionProperties();
-        for (Map.Entry<String, Object> entry : cprops.entrySet()) {
+        final DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
+        Map<String, String> cprops = configuration.getProperties();
+        for (Map.Entry<String, String> entry : cprops.entrySet()) {
             if (Objects.equals(entry.getKey().toLowerCase(), "sqlmode")) {
                 if (Objects.equals(entry.getValue().toString().trim().toLowerCase(), "oracle")) {
                     return true;
