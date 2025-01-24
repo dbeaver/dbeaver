@@ -262,5 +262,5 @@ public interface DBPDriver extends DBPNamedObject
     /**
      * Compare driverId to this driver and its replacements
      */
-    boolean matchesTo(@NotNull String driverId);
+    boolean matchesId(@NotNull String driverId);
 }

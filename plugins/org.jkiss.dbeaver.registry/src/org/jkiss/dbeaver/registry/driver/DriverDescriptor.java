@@ -2105,7 +2105,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @Override
-    public boolean matchesTo(@NotNull String driverId) {
+    public boolean matchesId(@NotNull String driverId) {
         if (driverId.equals(this.id)) return true;
         for (ReplaceInfo replace : driverReplacements) {
             if (driverId.equals(replace.driverId)) {

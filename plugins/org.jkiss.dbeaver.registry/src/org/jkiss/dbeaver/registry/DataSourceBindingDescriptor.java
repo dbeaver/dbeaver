@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -57,7 +56,7 @@ public class DataSourceBindingDescriptor extends AbstractContextDescriptor {
             if (!CommonUtils.isEmpty(id) && !driver.getProviderDescriptor().matchesId(id)) {
                 return false;
             }
-            if (!CommonUtils.isEmpty(this.driver) && !driver.matchesTo(this.driver)) {
+            if (!CommonUtils.isEmpty(this.driver) && !driver.matchesId(this.driver)) {
                 return false;
             }
             if (expression != null) {
