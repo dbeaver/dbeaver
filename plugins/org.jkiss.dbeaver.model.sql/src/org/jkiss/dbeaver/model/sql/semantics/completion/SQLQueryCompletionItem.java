@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -129,6 +130,15 @@ public abstract class SQLQueryCompletionItem {
         @NotNull SQLColumnNameCompletionItem first,
         @NotNull SQLColumnNameCompletionItem second) {
         return new SQLJoinConditionCompletionItem(score, filterKey, first, second);
+    }
+
+    public static SQLQueryCompletionItem forProcedureObject(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @Nullable ContextObjectInfo resolvedContext,
+        @NotNull DBSProcedure object
+    ) {
+        return new SQLProcedureCompletionItem(score, filterKey, resolvedContext, object);
     }
 
     public static class SQLRowsSourceAliasCompletionItem extends SQLQueryCompletionItem {
@@ -366,5 +376,23 @@ public abstract class SQLQueryCompletionItem {
     }
 
     public record ContextObjectInfo(@NotNull String string, @NotNull DBSObject object, boolean preventFullName) {
+    }
+
+    public static class SQLProcedureCompletionItem extends SQLDbObjectCompletionItem<DBSProcedure> {
+
+        public SQLProcedureCompletionItem(int score, @NotNull SQLQueryWordEntry filterKey, @Nullable ContextObjectInfo resolvedContext, @NotNull DBSProcedure object) {
+            super(score, filterKey, resolvedContext, object);
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return SQLQueryCompletionItemKind.PROCEDURE;
+        }
+
+        @Override
+        protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitProcedure(this);
+        }
     }
 }

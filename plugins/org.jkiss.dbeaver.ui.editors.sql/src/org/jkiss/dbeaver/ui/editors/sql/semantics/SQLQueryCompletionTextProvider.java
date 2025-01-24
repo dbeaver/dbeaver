@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,7 +29,6 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolDefinition;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem;
@@ -236,5 +234,11 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     @NotNull
     private String prepareDefiningEntryName(@NotNull SQLQuerySymbol symbol) {
         return symbol.getDefinition() instanceof SQLQuerySymbolEntry entry ? entry.getRawName() : symbol.getName();
+    }
+
+    @NotNull
+    @Override
+    public String visitProcedure(@NotNull SQLProcedureCompletionItem procedure) {
+        return this.prepareObjectName(procedure);
     }
 }

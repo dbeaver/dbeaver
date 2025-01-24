@@ -42,4 +42,7 @@ public interface SQLQueryCompletionItemVisitor<R> {
 
     @Nullable
     R visitJoinCondition(@NotNull SQLJoinConditionCompletionItem joinCondition);
+
+    @Nullable
+    R visitProcedure(@NotNull SQLProcedureCompletionItem procedure);
 }

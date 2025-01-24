@@ -26,8 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -306,7 +305,7 @@ public abstract class SQLQueryCompletionContext {
                 if ((syntaxInspectionResult.expectingColumnName() || syntaxInspectionResult.expectingColumnReference())
                     && nameNodes.length == 0
                 ) {
-                    this.prepareNonPrefixedColumnCompletions(monitor, context.deepestContext(), null, completionSets);
+                    this.prepareNonPrefixedColumnCompletions(monitor, request, context.deepestContext(), null, completionSets);
                 }
                 if (syntaxInspectionResult.expectingTableReference() && nameNodes.length == 0) {
                     this.prepareTableCompletions(monitor, request, context.deepestContext(), null, completionSets);
@@ -330,7 +329,6 @@ public abstract class SQLQueryCompletionContext {
                 }
             }
 
-            @Nullable
             private void prepareInspectedIdentifierCompletions(@NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
                 @NotNull List<SQLQueryWordEntry> parts,
@@ -353,7 +351,7 @@ public abstract class SQLQueryCompletionContext {
                 SQLQueryDataContext defaultContext = context.deepestContext();
 
                 if (syntaxInspectionResult.expectingColumnReference() || syntaxInspectionResult.expectingColumnName()) {
-                    this.accomplishColumnReference(monitor, defaultContext, prefix, tail, results);
+                    this.accomplishColumnReference(monitor, request, defaultContext, prefix, tail, results);
                 } else if (syntaxInspectionResult.expectingTableReference()) {
                     this.accomplishTableReference(monitor, request, defaultContext, prefix, tail, results);
                 } else {
@@ -361,7 +359,6 @@ public abstract class SQLQueryCompletionContext {
                 }
             }
 
-            @Nullable
             private void accomplishTableReference(@NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
                 @NotNull SQLQueryDataContext context,
@@ -451,6 +448,7 @@ public abstract class SQLQueryCompletionContext {
             @NotNull
             private void accomplishColumnReference(
                 @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
                 @NotNull SQLQueryDataContext context,
                 @NotNull List<SQLQueryWordEntry> prefix,
                 @Nullable SQLQueryWordEntry tail,
@@ -459,7 +457,7 @@ public abstract class SQLQueryCompletionContext {
                 if (prefix.size() > 0) { // table-ref-prefixed column
                     this.preparePrefixedColumnCompletions(context, prefix, tail, results);
                 } else { // table-ref not introduced yet or non-prefixed column, so try both cases
-                    this.prepareNonPrefixedColumnCompletions(monitor, context, tail, results);
+                    this.prepareNonPrefixedColumnCompletions(monitor, request, context, tail, results);
                 }
             }
 
@@ -520,7 +518,6 @@ public abstract class SQLQueryCompletionContext {
                 }
             }
 
-            @Nullable
             private void prepareObjectComponentCompletions(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull DBSObject object,
@@ -587,7 +584,6 @@ public abstract class SQLQueryCompletionContext {
                 return def;
             }
 
-            @Nullable
             private void prepareLexicalItemCompletions(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
@@ -646,7 +642,6 @@ public abstract class SQLQueryCompletionContext {
                 }
             }
 
-            @Nullable
             private void accomplishFromKnownOriginOrFallback(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
@@ -694,16 +689,13 @@ public abstract class SQLQueryCompletionContext {
 
                     @Override
                     public void visitValueRefFromContext(SQLQuerySymbolOrigin.ValueRefFromContext origin) {
-                        prepareNonPrefixedColumnCompletions(monitor, origin.getDataContext(), filterOrNull, results);
+                        prepareNonPrefixedColumnCompletions(monitor, request, origin.getDataContext(), filterOrNull, results);
                     }
 
                     @Override
                     public void visitColumnRefFromReferencedContext(SQLQuerySymbolOrigin.ColumnRefFromReferencedContext origin) {
-                        makeFilteredCompletionSet(
-                            filterOrNull,
-                            prepareTupleColumns(origin.getRowsSource().source.getResultDataContext(), filterOrNull, false),
-                            results
-                        );
+                        SQLQueryDataContext referencedContext = origin.getRowsSource().source.getResultDataContext();
+                        makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(referencedContext, filterOrNull, false), results);
                     }
 
                     @Override
@@ -853,9 +845,9 @@ public abstract class SQLQueryCompletionContext {
                 return result;
             }
 
-            @NotNull
             private void prepareNonPrefixedColumnCompletions(
                 @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
                 @NotNull SQLQueryDataContext context,
                 @Nullable SQLQueryWordEntry filterOrNull,
                 @NotNull List<SQLQueryCompletionSet> results
@@ -886,7 +878,35 @@ public abstract class SQLQueryCompletionContext {
                     ? this.prepareJoinConditionCompletions(monitor, context, filterOrNull)
                     : Collections.emptyList();
 
-                this.makeFilteredCompletionSet(filterOrNull, Stream.of(subsetColumns, tableRefs, joinConditions).flatMap(Collection::stream).toList(), results);
+                LinkedList<SQLQueryCompletionItem> procedureItems = this.prepareProceduresCompletions(monitor, request, context, null, filterOrNull);
+                this.makeFilteredCompletionSet(
+                    filterOrNull,
+                    Stream.of(subsetColumns, tableRefs, joinConditions, procedureItems).flatMap(Collection::stream).toList(),
+                    results
+                );
+            }
+
+            @NotNull
+            private LinkedList<SQLQueryCompletionItem> prepareProceduresCompletions(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
+                @NotNull SQLQueryDataContext context,
+                @Nullable DBSObjectContainer container,
+                @Nullable SQLQueryWordEntry filterOrNull
+            ) {
+                if (container == null) {
+                    container = this.obtainDefaultContext(request);
+                }
+                LinkedList<SQLQueryCompletionItem> proceduresItems = new LinkedList<>();
+                try {
+                    if (container != null) {
+                        this.collectProcedures(monitor, request, container, null, filterOrNull, proceduresItems);
+                    }
+                    this.collectPackages(monitor, request, context, this.exposedContexts, null, filterOrNull, proceduresItems);
+                } catch (DBException ex) {
+                    log.error(ex);
+                }
+                return proceduresItems;
             }
 
             @NotNull
@@ -907,8 +927,8 @@ public abstract class SQLQueryCompletionContext {
                 return subsetColumns.toList();
             }
 
-            @NotNull
-            private void prepareTableCompletions(@NotNull DBRProgressMonitor monitor,
+            private void prepareTableCompletions(
+                @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
                 @NotNull SQLQueryDataContext context,
                 @Nullable SQLQueryWordEntry filterOrNull,
@@ -927,26 +947,36 @@ public abstract class SQLQueryCompletionContext {
 
                 if (dbcExecutionContext != null) {
                     try {
-                        DBCExecutionContextDefaults<?, ?> defaults = dbcExecutionContext.getContextDefaults();
-                        if (defaults != null) {
-                            DBSSchema defaultSchema = defaults.getDefaultSchema();
-                            DBSCatalog defaultCatalog = defaults.getDefaultCatalog();
-                            if (defaultCatalog == null && defaultSchema == null && dbcExecutionContext.getDataSource() instanceof DBSObjectContainer container) {
-                                this.collectTables(monitor, context, container, null, filterOrNull, completions);
-                            } else if ((request.getContext().isSearchGlobally() || defaultSchema == null) && defaultCatalog != null) {
-                                this.collectTables(monitor, context, defaultCatalog, null, filterOrNull, completions);
-                            } else if (defaultSchema != null) {
-                                this.collectTables(monitor, context, defaultSchema, null, filterOrNull, completions);
-                            }
+                        DBSObjectContainer container = this.obtainDefaultContext(request);
+                        if (container != null) {
+                            this.collectTables(monitor, context, container, null, filterOrNull, completions);
+                            this.collectProcedures(monitor, request, container, null, filterOrNull, completions);
                         }
-
                         this.collectContextSchemasAndCatalogs(monitor, this.exposedContexts, null, filterOrNull, completions);
+                        this.collectPackages(monitor, request, context, this.exposedContexts,  null, filterOrNull, completions);
                     } catch (DBException e) {
                         log.error(e);
                     }
                 }
                 
                 this.makeFilteredCompletionSet(filterOrNull, completions, results);
+            }
+
+            @Nullable
+            private DBSObjectContainer obtainDefaultContext(@NotNull SQLCompletionRequest request) {
+                DBCExecutionContextDefaults<?, ?> defaults = dbcExecutionContext.getContextDefaults();
+                if (defaults != null) {
+                    DBSSchema defaultSchema = defaults.getDefaultSchema();
+                    DBSCatalog defaultCatalog = defaults.getDefaultCatalog();
+                    if (defaultCatalog == null && defaultSchema == null && dbcExecutionContext.getDataSource() instanceof DBSObjectContainer container) {
+                        return container;
+                    } else if ((request.getContext().isSearchGlobally() || defaultSchema == null) && defaultCatalog != null) {
+                        return defaultCatalog;
+                    } else if (defaultSchema != null) {
+                        return defaultSchema;
+                    }
+                }
+                return null;
             }
 
             private void collectContextSchemasAndCatalogs(
@@ -969,6 +999,50 @@ public abstract class SQLQueryCompletionContext {
                     }
                 }
             }
+
+            private void collectPackages(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
+                @NotNull SQLQueryDataContext context,
+                @NotNull Collection<DBSObjectContainer> contexts,
+                @Nullable SQLQueryCompletionItem.ContextObjectInfo contextObjext,
+                @Nullable SQLQueryWordEntry filterOrNull,
+                @NotNull LinkedList<SQLQueryCompletionItem> accumulator
+            ) throws DBException {
+                if (request.getContext().isSearchProcedures()) {
+                    for (DBSObjectContainer container : contexts) {
+                        this.collectImmediateChildren(
+                            monitor,
+                            context,
+                            container,
+                            o -> o instanceof DBSProcedureContainer,
+                            contextObjext,
+                            filterOrNull,
+                            accumulator
+                        );
+                    }
+                }
+            }
+
+            private void collectProcedures(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
+                @NotNull DBSObjectContainer container,
+                @Nullable SQLQueryCompletionItem.ContextObjectInfo contextObjext,
+                @Nullable SQLQueryWordEntry filterOrNull,
+                @NotNull LinkedList<SQLQueryCompletionItem> accumulator
+            ) throws DBException {
+                if (request.getContext().isSearchProcedures() && container instanceof DBSProcedureContainer pc) {
+                    for (DBSProcedure p : pc.getProcedures(monitor)) {
+                        SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, p.getName());
+                        int score = childName.matches(filterOrNull, this.searchInsideWords);
+                        if (score > 0) {
+                            accumulator.addLast(SQLQueryCompletionItem.forProcedureObject(score, childName, contextObjext, p));
+                        }
+                    }
+                }
+            }
+
             private void collectTables(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLQueryDataContext context,
@@ -980,7 +1054,7 @@ public abstract class SQLQueryCompletionContext {
                 this.collectImmediateChildren(
                     monitor, context, container,
                     o -> o instanceof DBSTable || o instanceof DBSView,
-                    null, filterOrNull, accumulator
+                    contextObjext, filterOrNull, accumulator
                 );
             }
 

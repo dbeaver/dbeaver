@@ -56,7 +56,11 @@ public enum SQLQueryCompletionItemKind {
      * Join condition based on the foreign key
      * <p> (expression, consisting of two column references)
      */
-    JOIN_CONDITION(false, false);
+    JOIN_CONDITION(false, false),
+    /**
+     * Procedure or function
+     */
+    PROCEDURE(false, false);
 
 
     public final boolean isTableName;

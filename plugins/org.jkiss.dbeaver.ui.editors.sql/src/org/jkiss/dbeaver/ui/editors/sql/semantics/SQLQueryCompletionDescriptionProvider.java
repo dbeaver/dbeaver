@@ -98,4 +98,10 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
         return "Join condition on the foreign key known from the database schema: " +
             joinCondition.left.apply(this) + " vs " + joinCondition.right.apply(this);
     }
+
+    @Nullable
+    @Override
+    public String visitProcedure(@NotNull SQLProcedureCompletionItem procedure) {
+        return procedure.getObject().getDescription();
+    }
 }

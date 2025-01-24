@@ -87,9 +87,19 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
         return CommonUtils.isEmpty(typeName) ? null : (" - " + typeName);
     }
 
-    @Nullable
+    @NotNull
     @Override
     public String visitJoinCondition(@NotNull SQLJoinConditionCompletionItem joinCondition) {
         return " - Known foreign key relation";
+    }
+
+    @NotNull
+    @Override
+    public String visitProcedure(@NotNull SQLProcedureCompletionItem procedure) {
+        return switch (procedure.getObject().getProcedureType()) {
+            case FUNCTION -> " - Function";
+            case PROCEDURE -> " - Procedure";
+            default -> " - Stored routine";
+        };
     }
 }
