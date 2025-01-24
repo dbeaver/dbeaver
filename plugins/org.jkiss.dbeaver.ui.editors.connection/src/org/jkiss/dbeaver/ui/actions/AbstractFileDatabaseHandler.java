@@ -88,39 +88,45 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
     private void createDatabaseConnection(String connectionName, @NotNull String databaseName, DBPProject project, DBPDriver driver) {
         DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
         configuration.setDatabaseName(databaseName);
+
         DBPDataSourceRegistry registry = project.getDataSourceRegistry();
-        DBPDataSourceContainer dsContainer = registry.createDataSource(driver, configuration);
-        int conNameSuffix = 1;
-        connectionName = "File - " + CommonUtils.truncateString(connectionName, 64);
-        String finalConnectionName = connectionName;
-        while (registry.findDataSourceByName(finalConnectionName) != null) {
-            conNameSuffix++;
-            finalConnectionName = connectionName + " " + conNameSuffix;
-        }
-        dsContainer.setName(finalConnectionName);
-        dsContainer.setTemporary(true);
-        DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
-        DBNModel navigatorModel = project.getNavigatorModel();
-        if (navigatorModel != null) {
-            DBNProject projectNode = navigatorModel.getRoot().getProjectNode(project);
-            if (projectNode != null) {
-                projectNode.getDatabases().getFolderNode(folder);
+        String connectionId = "file_database_" + CommonUtils.escapeIdentifier(databaseName);
+        DBPDataSourceContainer dsContainer = registry.getDataSource(connectionId);
+        if (dsContainer == null) {
+            dsContainer = registry.createDataSource(connectionId, driver, configuration);
+            int conNameSuffix = 1;
+            connectionName = "File - " + CommonUtils.truncateString(connectionName, 64);
+            String finalConnectionName = connectionName;
+            while (registry.findDataSourceByName(finalConnectionName) != null) {
+                conNameSuffix++;
+                finalConnectionName = connectionName + " " + conNameSuffix;
+            }
+            dsContainer.setName(finalConnectionName);
+            dsContainer.setTemporary(true);
+            DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
+            DBNModel navigatorModel = project.getNavigatorModel();
+            if (navigatorModel != null) {
+                DBNProject projectNode = navigatorModel.getRoot().getProjectNode(project);
+                if (projectNode != null) {
+                    projectNode.getDatabases().getFolderNode(folder);
+                }
+            }
+            dsContainer.setFolder(folder);
+
+            try {
+                registry.addDataSource(dsContainer);
+            } catch (DBException e) {
+                log.error(e);
+                return;
             }
         }
-        dsContainer.setFolder(folder);
 
         try {
-            registry.addDataSource(dsContainer);
-        } catch (DBException e) {
-            log.error(e);
-            return;
-        }
-
-        try {
+            DBPDataSourceContainer finalDsContainer = dsContainer;
             UIUtils.runInProgressService(monitor -> {
                 try {
-                    if (dsContainer.connect(monitor, true, true)) {
-                        DBPDataSource dataSource = dsContainer.getDataSource();
+                    if (finalDsContainer.isConnected() || finalDsContainer.connect(monitor, true, true)) {
+                        DBPDataSource dataSource = finalDsContainer.getDataSource();
                         List<DBSEntity> entities = new ArrayList<>();
                         if (dataSource instanceof DBSObjectContainer container) {
                             getConnectionEntities(monitor, container, entities);
