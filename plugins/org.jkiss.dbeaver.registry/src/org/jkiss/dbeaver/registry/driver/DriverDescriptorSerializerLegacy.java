@@ -155,6 +155,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     xml.addAttribute(RegistryConstants.ATTR_TYPE, lib.getType().name());
                     xml.addAttribute(RegistryConstants.ATTR_PATH, substitutePathVariables(pathSubstitutions, lib.getPath()));
                     xml.addAttribute(RegistryConstants.ATTR_CUSTOM, lib.isCustom());
+                    if (lib.isEmbedded()) {
+                        xml.addAttribute(RegistryConstants.ATTR_EMBEDDED, true);
+                    }
                     if (lib.isDisabled()) {
                         xml.addAttribute(RegistryConstants.ATTR_DISABLED, true);
                     }
