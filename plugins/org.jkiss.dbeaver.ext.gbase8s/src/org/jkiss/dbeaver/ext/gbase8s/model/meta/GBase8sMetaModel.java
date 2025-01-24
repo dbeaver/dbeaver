@@ -203,9 +203,11 @@ public class GBase8sMetaModel extends GenericMetaModel {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load procedures")) {
             if (hasProcedureSupport()) {
                 // Read procedures/functions
-                String query = "SELECT procid, procname, isproc, specificname, type, procflags, paramtypes::LVARCHAR AS columntypenames,"
-                        + " mode FROM sysprocedures ";
-                dbState = session.prepareStatement(query);
+                String sql = """
+                        SELECT procid, procname, isproc, specificname, type, procflags, paramtypes::LVARCHAR AS columntypenames, mode
+                        FROM sysprocedures
+                        """;
+                dbState = session.prepareStatement(sql);
                 dbResult = dbState.executeQuery();
 
                 while (dbResult.next()) {
@@ -301,50 +303,55 @@ public class GBase8sMetaModel extends GenericMetaModel {
         String schema = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
                 : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
         boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
-        String ownerPattern = isOracleMode ? schema + "." : catalog + ":";
-        String sql = "SELECT"
-                + " t.tabname::VARCHAR(128) AS TABLE_NAME,"
-                + " c.colname::VARCHAR(128) AS COLUMN_NAME,"
-                + " get_data_type(c.coltype, c.extended_id, 0)::SMALLINT AS DATA_TYPE,"
-                + " 0::SMALLINT AS SOURCE_DATA_TYPE,"
-                + " schema_coltypename(c.coltype, c.extended_id)::VARCHAR(128) AS TYPE_NAME,"
-                + " schema_precision(c.coltype, c.extended_id, c.collength)::INTEGER AS COLUMN_SIZE,"
-                + " schema_numscale(c.coltype, c.collength)::INTEGER AS DECIMAL_DIGITS,"
-                + " schema_numprecradix(c.coltype)::INTEGER AS NUM_PREC_RADIX,"
-                + " CASE d.type"
-                + " WHEN 'L' THEN get_default_value(c.coltype, c.extended_id, c.collength, d.default::lvarchar(256))::VARCHAR(254)"
-                + " WHEN 'E' THEN read_defaultstr(c.tabid, c.colno, c.coltype, c.collength, c.extended_id)::VARCHAR(32731)"
-                + " WHEN 'C' THEN 'current' || replace(get_colname(c.coltype, c.collength, c.extended_id, 1), schema_coltypename(c.coltype, c.extended_id), '')::VARCHAR(254)"
-                + " WHEN 'S' THEN 'dbservername'::VARCHAR(254)"
-                + " WHEN 'U' THEN 'user'::VARCHAR(254)"
-                + " WHEN 'T' THEN 'today'::VARCHAR(254)"
-                + " WHEN 'N' THEN 'null'::VARCHAR(10)"
-                + " ELSE null::VARCHAR(254)"
-                + " END AS COLUMN_DEF,"
-                + " cc.comments AS REMARKS,"
-                + " schema_isnullable(c.coltype)::INTEGER AS NULLABLE,"
-                + " schema_nullable(c.coltype)::VARCHAR(3) AS ISNULLABLE,"
-                + " c.coltype::INTEGER AS SQL_DATA_TYPE,"
-                + " schema_datetype(c.coltype, c.collength)::INTEGER AS DB_DATA_TYPE,"
-                + " schema_charlen(c.coltype, c.extended_id, c.collength)::INTEGER AS CHAR_OCTET_LENGTH,"
-                + " c.colno::integer AS ORDINAL_POSITION,"
-                + " schema_isautoincr(c.coltype)::VARCHAR(3) AS IS_AUTOINCREMENT,"
-                + " null::VARCHAR(254) AS IS_GENERATEDCOLUMN,"
-                + " c.extended_id::INTEGER AS EXTENDED_ID,"
-                + " c.colattr::INTEGER AS COLATTR,"
-                + " c.coltype"
-                + " FROM"
-                + " " + ownerPattern + "systables t,"
-                + " OUTER " + ownerPattern + "sysdefaults d,"
-                + " " + ownerPattern + "syscolumns c,"
-                + " OUTER " + ownerPattern + "syscolcomms cc"
-                + " WHERE"
-                + " t.tabid = c.tabid"
-                + " AND d.tabid = t.tabid"
-                + " AND c.colno = d.colno"
-                + " AND t.tabid = cc.tabid"
-                + " AND c.colno = cc.colno"
-                + " AND t.tabname = ?";
+        String ownerPattern = """
+                %s%s
+                """.formatted(isOracleMode ? schema : catalog, isOracleMode ? "." : ":");
+        String sql = """
+                SELECT
+                    t.tabname::VARCHAR(128) AS TABLE_NAME,
+                    c.colname::VARCHAR(128) AS COLUMN_NAME,
+                    get_data_type(c.coltype, c.extended_id, 0)::SMALLINT AS DATA_TYPE,
+                    0::SMALLINT AS SOURCE_DATA_TYPE,
+                    schema_coltypename(c.coltype, c.extended_id)::VARCHAR(128) AS TYPE_NAME,
+                    schema_precision(c.coltype, c.extended_id, c.collength)::INTEGER AS COLUMN_SIZE,
+                    schema_numscale(c.coltype, c.collength)::INTEGER AS DECIMAL_DIGITS,
+                    schema_numprecradix(c.coltype)::INTEGER AS NUM_PREC_RADIX,
+                    CASE d.type
+                        WHEN 'L' THEN get_default_value(c.coltype, c.extended_id, c.collength, d.default::lvarchar(256))::VARCHAR(254)
+                        WHEN 'E' THEN read_defaultstr(c.tabid, c.colno, c.coltype, c.collength, c.extended_id)::VARCHAR(32731)
+                        WHEN 'C' THEN 'current' || replace(get_colname(c.coltype, c.collength, c.extended_id, 1), schema_coltypename(c.coltype, c.extended_id), '')::VARCHAR(254)
+                        WHEN 'S' THEN 'dbservername'::VARCHAR(254)
+                        WHEN 'U' THEN 'user'::VARCHAR(254)
+                        WHEN 'T' THEN 'today'::VARCHAR(254)
+                        WHEN 'N' THEN 'null'::VARCHAR(10)
+                        ELSE null::VARCHAR(254)
+                    END AS COLUMN_DEF,
+                    cc.comments AS REMARKS,
+                    schema_isnullable(c.coltype)::INTEGER AS NULLABLE,
+                    schema_nullable(c.coltype)::VARCHAR(3) AS ISNULLABLE,
+                    c.coltype::INTEGER AS SQL_DATA_TYPE,
+                    schema_datetype(c.coltype, c.collength)::INTEGER AS DB_DATA_TYPE,
+                    schema_charlen(c.coltype, c.extended_id, c.collength)::INTEGER AS CHAR_OCTET_LENGTH,
+                    c.colno::integer AS ORDINAL_POSITION,
+                    schema_isautoincr(c.coltype)::VARCHAR(3) AS IS_AUTOINCREMENT,
+                    null::VARCHAR(254) AS IS_GENERATEDCOLUMN,
+                    c.extended_id::INTEGER AS EXTENDED_ID,
+                    c.colattr::INTEGER AS COLATTR,
+                    c.coltype
+                FROM
+                    %ssystables t,
+                    OUTER %ssysdefaults d,
+                    %ssyscolumns c,
+                    OUTER %ssyscolcomms cc
+                WHERE
+                    t.tabid = c.tabid
+                    AND d.tabid = t.tabid
+                    AND c.colno = d.colno
+                    AND t.tabid = cc.tabid
+                    AND c.colno = cc.colno
+                    AND t.tabname = ?
+                """
+                .formatted(ownerPattern, ownerPattern, ownerPattern, ownerPattern);
         JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, tableName);
         return dbStat;
@@ -353,14 +360,16 @@ public class GBase8sMetaModel extends GenericMetaModel {
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session,
             @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws SQLException {
-        String query = "SELECT T1.trigname as TRIGGER_NAME, T1.*, T2.tabname AS OWNER FROM systriggers AS T1, systables AS T2 "
-                + "WHERE T2.tabid = T1.tabid " + (table != null ? "AND T2.tabname = ?" : "");
-
+        String query = """
+                SELECT T1.trigname as TRIGGER_NAME, T1.*, T2.tabname AS OWNER
+                FROM systriggers AS T1, systables AS T2
+                WHERE T2.tabid = T1.tabid
+                %s
+                """.formatted(table != null ? "AND T2.tabname = ?" : "");
         JDBCPreparedStatement dbStat = session.prepareStatement(query);
         if (table != null) {
             dbStat.setString(1, table.getName());
         }
-
         return dbStat;
     }
 
@@ -388,20 +397,30 @@ public class GBase8sMetaModel extends GenericMetaModel {
         String schema = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
                 : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
         boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
-        String ownerPattern = isOracleMode ? schema + "." : catalog + ":";
-        
-        String sql = "SELECT t.tabid, t.tabname AS TABLE_NAME, t.owner AS "
-                + (isOracleMode ? "TABLE_SCHEM" : "TABLE_CATALOG") + ","
-                + " CASE WHEN t.tabtype = 'T' AND t.tabid <= (SELECT tabid FROM systables WHERE trim(tabname) = 'VERSION') THEN 'SYSTEM TABLE'"
-                + " WHEN t.tabtype = 'V' AND t.tabid <= (SELECT tabid FROM systables WHERE trim(tabname) = 'VERSION') THEN 'SYSTEM VIEW'"
-                + " WHEN t.tabtype = 'T' THEN 'TABLE'"
-                + " WHEN t.tabtype = 'V' THEN 'VIEW'"
-                + " ELSE 'SYNONYM'"
-                + " END AS TABLE_TYPE,"
-                + " c.comments AS REMARKS"
-                + " FROM " + ownerPattern + "systables t"
-                + " LEFT JOIN " + ownerPattern + "syscomms c ON t.tabid = c.tabid" + " WHERE t.tabname LIKE ?"
-                + (types != null ? " AND t.tabtype IN (" + String.join(", ", Collections.nCopies(types.length, "?")) + ")" : "");
+        String ownerPattern = """
+                %s%s
+                """.formatted(isOracleMode ? schema : catalog, isOracleMode ? "." : ":");
+        String sql = """
+                SELECT t.tabid, t.tabname AS TABLE_NAME, t.owner AS
+                    %s,
+                    CASE
+                        WHEN t.tabtype = 'T' AND t.tabid <= (SELECT tabid FROM systables WHERE trim(tabname) = 'VERSION') THEN 'SYSTEM TABLE'
+                        WHEN t.tabtype = 'V' AND t.tabid <= (SELECT tabid FROM systables WHERE trim(tabname) = 'VERSION') THEN 'SYSTEM VIEW'
+                        WHEN t.tabtype = 'T' THEN 'TABLE'
+                        WHEN t.tabtype = 'V' THEN 'VIEW'
+                        ELSE 'SYNONYM'
+                    END AS TABLE_TYPE,
+                    c.comments AS REMARKS
+                FROM %ssystables t
+                LEFT JOIN %ssyscomms c ON t.tabid = c.tabid
+                WHERE t.tabname LIKE ?
+                %s
+                """
+                .formatted(isOracleMode ? "TABLE_SCHEM" : "TABLE_CATALOG", ownerPattern, ownerPattern,
+                        (types != null
+                                ? " AND t.tabtype IN (" + String.join(", ", Collections.nCopies(types.length, "?"))
+                                        + ")"
+                                : ""));
         JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         int paramIndex = 1;
         dbStat.setString(paramIndex++, tableNamePattern);
@@ -411,9 +430,6 @@ public class GBase8sMetaModel extends GenericMetaModel {
             }
         }
         return dbStat;
-        // The getTables(...) interface returns a result that does not include information about table comments.
-//        return session.getMetaData().getTables(isOracleMode ? catalog : schemaPattern,
-//                isOracleMode ? schemaPattern : catalog, tableNamePattern, types).getSourceStatement();
     }
 
     @Override
