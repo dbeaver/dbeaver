@@ -70,7 +70,7 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
             @Nullable Object copyFrom,
             @NotNull Map<String, Object> options) {
 
-        String newName = this.getNewName(monitor, (CubridDataSource) container, "NEW_USER");
+        String newName = this.getNewName((CubridDataSource) container, "NEW_USER");
         CubridPrivilage user = new CubridPrivilage((CubridDataSource) container, newName, null);
         return user;
     }
@@ -153,7 +153,7 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
     }
 
     @NotNull
-    private String getNewName(@NotNull DBRProgressMonitor monitor, @NotNull CubridDataSource container, @NotNull String baseName) {
+    private String getNewName(@NotNull CubridDataSource container, @NotNull String baseName) {
         for (int i = 0; i < MAX_NAME_GEN_ATTEMPTS; i++) {
             String transform = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? baseName : (baseName + "_" + i));
             DBSObject child = container.getCubridPrivilageCache().getCachedObject(transform);
