@@ -259,6 +259,8 @@ public interface DBPDriver extends DBPNamedObject
      */
     boolean downloadDriverLibraries(@NotNull DBRProgressMonitor monitor, boolean resetVersions);
 
-    @NotNull
+    /**
+     * Compare driverId to this driver and its replacements
+     */
     boolean matchesTo(@NotNull String driverId);
 }
