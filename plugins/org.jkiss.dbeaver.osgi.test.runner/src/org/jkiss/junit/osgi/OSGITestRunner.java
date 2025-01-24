@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,18 @@
  */
 package org.jkiss.junit.osgi;
 
+import org.eclipse.equinox.internal.app.CommandLineArgs;
 import org.eclipse.osgi.internal.framework.EquinoxBundle;
+import org.eclipse.osgi.internal.framework.EquinoxConfiguration;
+import org.eclipse.osgi.service.environment.EnvironmentInfo;
 import org.eclipse.osgi.service.runnable.ApplicationLauncher;
 import org.eclipse.osgi.util.ManifestElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.junit.osgi.annotation.RunWithApplication;
 import org.jkiss.junit.osgi.annotation.RunWithProduct;
 import org.jkiss.junit.osgi.annotation.RunnerProxy;
+import org.jkiss.junit.osgi.behaviors.IAsyncApplication;
 import org.jkiss.junit.osgi.launcher.TestLauncher;
 import org.jkiss.utils.Pair;
 import org.junit.runner.Description;
@@ -31,6 +36,7 @@ import org.junit.runner.notification.RunNotifier;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.framework.wiring.BundleWiring;
@@ -41,7 +47,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -51,31 +59,33 @@ import java.util.stream.Collectors;
  * <h2>OSGITestRunner</h2>
  * <p>
  *     The class is responsible for running the OSGi tests inside IDEA.
- *     Does it by bundles and starting the OSGi framework.
+ *     It does by starting the OSGi framework and loading all the required bundles.
  *     If OSGI environment is already running, it will not start a new one.
- *     Uses {@link RunWithProduct} annotation to specify the product to run the test in.
- *     and {@link RunnerProxy} to specify the runner which should be execute in OSGI environment
+ *     <li>{@link RunWithProduct} annotation to specify the product to run the test in.</li>
+ *     <li>{@link RunnerProxy} to specify the runner which should be executed in OSGI environment.</li>
+ *     <li>{@link RunWithApplication} to specify the application to run the test in.</li>
+ *     <br>
  *     Should allow debugging of the tests in the IDEA.
- * </p>
- * <h3>Temporary Limitations</h3>
- * <p>
- *     No UI results are shown in the IDE for the tests if OSGI environment was created.
  * </p>
  */
 public class OSGITestRunner extends Runner {
     public static final Pattern startLevel = Pattern.compile("@(\\d+):start");
     private static final Log log = Log.getLog(OSGITestRunner.class);
-    private static final String WORKSPACE_DIR = "../../../dbeaver-workspace/products";
+    private static final boolean DEBUG_BUNDLE_LAUNCH = false;
     private final Class<?> testClass;
     private Framework framework;
     private Path productPath;
 
     private String testBundleName;
     private Bundle testBundle;
+    private String appRegistryName;
+    private String appBundleName;
+    private String[] args;
 
-    public OSGITestRunner(Class<?> testClass) {
+    public OSGITestRunner(Class<? extends IAsyncApplication> testClass) {
         this.testClass = testClass;
         if (isRunFromIDEA()) {
+            //use UTF-8 for run
             try {
                 // Determine name of test bundle
                 // Analyze classpath, we don't have other way because we are not in OSGI container yet
@@ -92,9 +102,21 @@ public class OSGITestRunner extends Runner {
             } catch (Exception e) {
                 log.error(e);
             }
-
             this.productPath = findProduct();
+
+            getAppBundleFromAnnotation();
             this.framework = initializeFramework();
+        }
+    }
+
+    private void getAppBundleFromAnnotation() {
+        if (testClass.getAnnotation(RunWithApplication.class) != null) {
+            RunWithApplication annotation = testClass.getAnnotation(RunWithApplication.class);
+            this.appRegistryName = annotation.registryName();
+            this.appBundleName = annotation.bundleName();
+            this.args = annotation.args();
+        } else {
+            throw new IllegalArgumentException("Application not found");
         }
     }
 
@@ -120,11 +142,24 @@ public class OSGITestRunner extends Runner {
         if (testClass.getAnnotation(RunWithProduct.class) != null) {
             RunWithProduct annotation = testClass.getAnnotation(RunWithProduct.class);
             String product = annotation.value();
-            Path workspace = Path.of(WORKSPACE_DIR);
+            Path workspace = Path.of(findWorkspaceDir().toString());
             return workspace.resolve(product);
         } else {
             throw new IllegalArgumentException("Product not found");
         }
+    }
+
+    private static Path findWorkspaceDir() {
+        Path workPath = Paths.get("").toAbsolutePath();
+        Path currentPath = workPath.toAbsolutePath();
+        while (currentPath != null) {
+            Path potentialWorkspaceDir = currentPath.resolve("dbeaver-workspace/products");
+            if (Files.exists(potentialWorkspaceDir)) {
+                return workPath.relativize(potentialWorkspaceDir);
+            }
+            currentPath = currentPath.getParent();
+        }
+        throw new IllegalStateException("dbeaver-workspace/products directory not found");
     }
 
     private void launchInExistingOSGI(RunNotifier notifier) {
@@ -151,22 +186,53 @@ public class OSGITestRunner extends Runner {
             // Start the OSGi framework
             BundleContext context = framework.getBundleContext();
             // Load and start all bundles
-            Bundle bundle = loadAndStartBundles(context);
+            loadAndStartBundles(context);
+            EquinoxConfiguration equinoxConfig = null;
+            if (args != null) {
+                ServiceReference<EnvironmentInfo> configRef = context.getServiceReference(EnvironmentInfo.class);
+                equinoxConfig = (EquinoxConfiguration) context.getService(configRef);
+                equinoxConfig.setAllArgs(args);
+                equinoxConfig.setAppArgs(args);
+            }
             framework.start();
+            if (equinoxConfig != null) {
+                Method processCommandLine = CommandLineArgs.class.getDeclaredMethod(
+                    "processCommandLine",
+                    EnvironmentInfo.class
+                );
+                processCommandLine.setAccessible(true);
+                processCommandLine.invoke(null, equinoxConfig);
+            }
             TestLauncher launcher = new TestLauncher(context);
             context.registerService(ApplicationLauncher.class.getName(), launcher,
                 null
             );
-            launcher.start(bundle.getSymbolicName());
-
+            if (IAsyncApplication.class.isAssignableFrom(testClass)) {
+                Thread thread = new Thread(() -> launcher.start(appRegistryName, args));
+                thread.start();
+            } else {
+                launcher.start(appRegistryName, args);
+            }
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
-                Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class).value().getName()).getConstructor(Class.class);
-                Object o = proxy.newInstance(testBundle.loadClass(testClass.getName()));
+                Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class)
+                    .value()
+                    .getName()).getConstructor(Class.class);
+                Class<?> runningClass = testBundle.loadClass(testClass.getName());
+                if (IAsyncApplication.class.isAssignableFrom(testClass)) {
+                    long startTime = System.currentTimeMillis();
+                    long endTime = 0;
+                    boolean setUpIsDone = false;
+                    while (!setUpIsDone && endTime < 300000) {
+                        setUpIsDone = (boolean) runningClass.getMethod("verifyLaunched")
+                            .invoke(runningClass.getConstructor().newInstance());
+                        endTime = System.currentTimeMillis() - startTime;
+                    }
+                }
+                Object o = proxy.newInstance(runningClass);
                 Method runMethod = Arrays.stream(o.getClass().getMethods()).filter(it -> it.getName().equals("run"))
                     .findFirst().orElseThrow();
                 Object proxyNotifier = createProxyNotifier(notifier);
                 runMethod.invoke(o, proxyNotifier);
-
             }
         } catch (Throwable throwable) {
             log.error("An error occurred while running the test", throwable);
@@ -181,7 +247,9 @@ public class OSGITestRunner extends Runner {
     }
 
     @NotNull
-    private Object createProxyNotifier(RunNotifier notifier) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
+    private Object createProxyNotifier(
+        RunNotifier notifier
+    ) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
         Object newOsgiNotifier = testBundle.loadClass(RunNotifier.class.getName()).getConstructor().newInstance();
 
         try {
@@ -201,7 +269,16 @@ public class OSGITestRunner extends Runner {
         Map<String, String> config = new HashMap<>();
         config.put("org.osgi.framework.storage", "osgi-cache");
         config.put("org.osgi.framework.storage.clean", "onFirstInit");
+        // Specify the directory where the dev.properties file is located
         config.put("osgi.dev", "file:" + productPath.toAbsolutePath().resolve("dev.properties").normalize());
+        if (DEBUG_BUNDLE_LAUNCH) {
+            config.put("osgi.debug", "file:" + productPath.toAbsolutePath().resolve("debug_config").normalize());
+            config.put("org.osgi.framework.debug", "true");
+            config.put("org.osgi.framework.debug.loader", "true");
+            config.put("org.osgi.framework.debug.resolver", "true");
+        }
+        // Enable boot delegation, to avoid class loading issues for some classes
+        config.put("osgi.compatibility.bootdelegation", "true");
         FrameworkFactory frameworkFactory = ServiceLoader.load(FrameworkFactory.class).iterator().next();
         return frameworkFactory.newFramework(config);
     }
@@ -221,10 +298,7 @@ public class OSGITestRunner extends Runner {
         });
         // Install all bundles from the directory
         for (String bundleFile : ManifestElement.getArrayFromList(props.getProperty("osgi.bundles"))) {
-//            if (bundleFile.contains("junit")) {
-//                continue;
-//            }
-            if (bundleFile.contains(".app") && !bundleFile.contains("headless") && !bundleFile.contains("org.eclipse")) {
+            if (bundleFile.contains(".app") && !bundleFile.contains(appBundleName) && !bundleFile.contains("org.eclipse")) {
                 continue;
             }
             Matcher matcher = startLevel.matcher(bundleFile);
@@ -249,9 +323,9 @@ public class OSGITestRunner extends Runner {
         }
 
         Bundle appBundle = null;
-        // find headless app bundle
+        // find appBundleContainingClassname app bundle
         for (Bundle bundle : context.getBundles()) {
-            if (bundle.getSymbolicName().contains("headless")) {
+            if (bundle.getSymbolicName().contains(this.appBundleName)) {
                 appBundle = bundle;
                 break;
             }

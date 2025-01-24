@@ -268,7 +268,8 @@ class ColumnsMappingDialog extends DialogPage {
 
             @Override
             protected boolean canEdit(Object element) {
-                return true;
+                DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
+                return attrMapping.getMappingType() == DatabaseMappingType.create;
             }
 
             @Override
