@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
-import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -54,9 +53,10 @@ import java.text.SimpleDateFormat;
 public class FileSystemExplorerView extends DatabaseBrowserView {
 
     private static final Log log = Log.getLog(FileSystemExplorerView.class);
+    public static final SimpleDateFormat FILE_TIMESTAMP_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
+    public static final NumberFormat FILE_SIZE_FORMAT = new DecimalFormat();
 
     private ViewerColumnController<?,?> columnController;
-    private static final NumberFormat sizeFormat = new DecimalFormat();
 
     public static DBNFileSystems getFileSystemsNode() {
         DBNProject projectNode = getGlobalNavigatorModel().getRoot().getProjectNode(
@@ -133,8 +133,8 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
 
                 @Override
                 public String getToolTipText(Object element) {
-                    if (mainLabelProvider instanceof IToolTipProvider) {
-                        return ((IToolTipProvider) mainLabelProvider).getToolTipText(element);
+                    if (mainLabelProvider instanceof IToolTipProvider toolTipProvider) {
+                        return toolTipProvider.getToolTipText(element);
                     }
                     return null;
                 }
@@ -146,10 +146,10 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
             new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
-                    if (element instanceof DBNPath dbnPath && !dbnPath.allowsChildren()) {
+                    if (element instanceof DBNPath dbnPath && !dbnPath.isDirectory()) {
                         Path path = dbnPath.getPath();
                         try {
-                            return sizeFormat.format(Files.size(path));
+                            return FILE_SIZE_FORMAT.format(Files.size(path));
                         } catch (IOException e) {
                             log.debug(e);
                         }
@@ -161,16 +161,14 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
             UINavigatorMessages.navigator_project_explorer_columns_modified_description,
             SWT.RIGHT, false, false,
             new ColumnLabelProvider() {
-                private final SimpleDateFormat sdf = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
-
                 @Override
                 public String getText(Object element) {
-                    if (element instanceof DBNPath) {
-                        Path path = ((DBNPathBase) element).getPath();
-                        if (path != null && Files.isRegularFile(path)) {
+                    if (element instanceof DBNPath pathNode) {
+                        Path path = pathNode.getPath();
+                        if (path != null && !pathNode.isDirectory()) {
                             try {
                                 FileTime lastModified = Files.getLastModifiedTime(path);
-                                return sdf.format(lastModified.toMillis());
+                                return FILE_TIMESTAMP_FORMAT.format(lastModified.toMillis());
                             } catch (IOException e) {
                                 log.debug(e);
                             }
@@ -179,6 +177,7 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
                     return "";
                 }
             });
+
         createExtraColumns(columnController, viewer);
 
         final var closure = new Object() {
