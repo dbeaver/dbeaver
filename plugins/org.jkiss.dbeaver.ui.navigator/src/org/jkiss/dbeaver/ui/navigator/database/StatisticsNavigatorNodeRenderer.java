@@ -229,7 +229,11 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         if (UIStyles.isDarkHighContrastTheme() && PERCENT_FILL_WIDTH - width < PERCENT_FILL_WIDTH / 2) {
             gc.setForeground(tree.getBackground());
         } else {
-            gc.setForeground(tree.getForeground());
+            if (CommonUtils.isBitSet(event.detail, SWT.SELECTED)) {
+                gc.setForeground(UIStyles.getDefaultTextSelectionForeground());
+            } else {
+                gc.setForeground(tree.getForeground());
+            }
         }
         gc.setFont(tree.getFont());
         gc.drawText(text, bounds.x + bounds.width - textSize.x, bounds.y + (bounds.height - textSize.y) / 2, true);
