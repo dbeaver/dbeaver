@@ -14,10 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.sqlite.auth;
+package org.jkiss.dbeaver.ext.sqlite.ui.internal;
 
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
+import org.jkiss.dbeaver.utils.NLS;
 
-public class LibSQLAuthModelDatabase extends AuthModelDatabaseNative<AuthModelDatabaseNativeCredentials> {
+public class SQLiteUIMessages extends NLS {
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.sqlite.ui.internal.SQLiteUIMessages";
+
+    public static String dialog_connection_auth_label_token;
+
+    static {
+        // initialize resource bundle
+        NLS.initializeMessages(BUNDLE_NAME, SQLiteUIMessages.class);
+    }
 }

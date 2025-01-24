@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ext.sqlite.ui.config;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.sqlite.ui.internal.SQLiteMessages;
+import org.jkiss.dbeaver.ext.sqlite.ui.internal.SQLiteUIMessages;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
 
@@ -31,6 +31,6 @@ public class LibSQLTokenAuthModelConfigurator extends DatabaseNativeAuthModelCon
 
     @Override
     protected String getPasswordFieldLabel() {
-        return SQLiteMessages.dialog_connection_auth_label_password;
+        return SQLiteUIMessages.dialog_connection_auth_label_token;
     }
 }

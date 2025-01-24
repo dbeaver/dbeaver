@@ -14,7 +14,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
-        <propertyConfigurator class="org.jkiss.dbeaver.ext.sqlite.auth.LibSQLAuthModelDatabase"
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.sqlite.auth.LibSQLAuthModelToken"
                               uiClass="org.jkiss.dbeaver.ext.sqlite.ui.config.LibSQLTokenAuthModelConfigurator"/>
     </extension>
 
