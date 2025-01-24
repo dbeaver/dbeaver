@@ -2104,4 +2104,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return libraries.toArray(new String[0]);
     }
 
+    @Override
+    @NotNull
+    public boolean matchesTo(@NotNull String driverId) {
+        if (driverId.equals(this.id)) return true;
+        for (ReplaceInfo replace : driverReplacements) {
+            if (driverId.equals(replace.driverId)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
