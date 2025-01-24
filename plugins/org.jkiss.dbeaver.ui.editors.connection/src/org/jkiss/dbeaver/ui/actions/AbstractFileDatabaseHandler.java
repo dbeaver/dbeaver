@@ -23,11 +23,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -54,6 +56,7 @@ import java.util.Map;
 public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
 
     private static final Log log = Log.getLog(AbstractFileDatabaseHandler.class);
+    private static final String FILE_DATABASES_FOLDER = "File databases";
 
     @Override
     public void openFiles(
@@ -99,6 +102,12 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
         }
         dsContainer.setName(finalConnectionName);
         dsContainer.setTemporary(true);
+        DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
+        if (folder == null) {
+            registry.addFolder(null, FILE_DATABASES_FOLDER);
+            DBNModel.updateConfigAndRefreshDatabases(project.getNavigatorModel().getRoot());
+        }
+        dsContainer.setFolder(folder);
 
         try {
             registry.addDataSource(dsContainer);
