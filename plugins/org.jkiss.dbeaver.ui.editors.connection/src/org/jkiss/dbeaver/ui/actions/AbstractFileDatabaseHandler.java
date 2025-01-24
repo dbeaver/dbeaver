@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -103,9 +100,12 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
         dsContainer.setName(finalConnectionName);
         dsContainer.setTemporary(true);
         DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
-        if (folder == null) {
-            registry.addFolder(null, FILE_DATABASES_FOLDER);
-            DBNModel.updateConfigAndRefreshDatabases(project.getNavigatorModel().getRoot());
+        DBNModel navigatorModel = project.getNavigatorModel();
+        if (navigatorModel != null) {
+            DBNProject projectNode = navigatorModel.getRoot().getProjectNode(project);
+            if (projectNode != null) {
+                projectNode.getDatabases().getFolderNode(folder);
+            }
         }
         dsContainer.setFolder(folder);
 
