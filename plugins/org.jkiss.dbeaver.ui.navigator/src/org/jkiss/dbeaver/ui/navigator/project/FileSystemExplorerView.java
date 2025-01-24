@@ -142,7 +142,7 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
 
         columnController.addColumn(UINavigatorMessages.navigator_project_explorer_columns_size_text,
             UINavigatorMessages.navigator_project_explorer_columns_size_description,
-            SWT.RIGHT, true, false, true, null,
+            SWT.RIGHT, false, false, true, null,
             new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
@@ -159,7 +159,7 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
             }, null);
         columnController.addColumn(UINavigatorMessages.navigator_project_explorer_columns_modified_text,
             UINavigatorMessages.navigator_project_explorer_columns_modified_description,
-            SWT.RIGHT, true, false,
+            SWT.RIGHT, false, false,
             new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
