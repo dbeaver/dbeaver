@@ -110,7 +110,7 @@
                 </driver>
                 <provider-properties drivers="*">
                     <propertyGroup label="Advanced">
-                        <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                        <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string" supportedConfigurationTypes="MANUAL,URL"/>
                     </propertyGroup>
                 </provider-properties>
 

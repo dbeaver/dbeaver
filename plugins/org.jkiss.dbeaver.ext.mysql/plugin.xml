@@ -199,7 +199,7 @@
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
                     <provider-properties>
                         <propertyGroup label="Advanced">
-                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string" supportedConfigurationTypes="MANUAL,URL"/>
                         </propertyGroup>
                     </provider-properties>
                 </driver>
@@ -314,7 +314,7 @@
                 </driver>
                 <provider-properties drivers="*">
                     <propertyGroup label="Advanced">
-                        <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
+                        <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string" supportedConfigurationTypes="MANUAL,URL"/>
                     </propertyGroup>
                 </provider-properties>
             </drivers>
