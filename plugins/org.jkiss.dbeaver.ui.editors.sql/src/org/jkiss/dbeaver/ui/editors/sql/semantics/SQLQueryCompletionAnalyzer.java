@@ -218,7 +218,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
             case COMPOSITE_FIELD_NAME -> DBIcon.TREE_DATA_TYPE;
             case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
-            case PROCEDURE -> DBValueFormatting.getObjectImage(item.getObject());
+            case PROCEDURE -> item.getObject() == null ? DBIcon.TREE_FUNCTION : DBValueFormatting.getObjectImage(item.getObject());
             default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
         };
     }

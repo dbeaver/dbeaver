@@ -45,4 +45,7 @@ public interface SQLQueryCompletionItemVisitor<R> {
 
     @Nullable
     R visitProcedure(@NotNull SQLProcedureCompletionItem procedure);
+
+    @Nullable
+    R visitBuiltinFunction(@NotNull SQLBuiltinFunctionCompletionItem function);
 }

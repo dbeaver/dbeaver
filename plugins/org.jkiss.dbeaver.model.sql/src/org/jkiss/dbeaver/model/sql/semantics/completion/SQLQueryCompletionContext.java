@@ -359,7 +359,8 @@ public abstract class SQLQueryCompletionContext {
                 }
             }
 
-            private void accomplishTableReference(@NotNull DBRProgressMonitor monitor,
+            private void accomplishTableReference(
+                @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
                 @NotNull SQLQueryDataContext context,
                 @NotNull List<SQLQueryWordEntry> prefix,
@@ -383,7 +384,7 @@ public abstract class SQLQueryCompletionContext {
 
                     if (prefixObject != null) {
                         SQLQueryCompletionItem.ContextObjectInfo prefixInfo = this.prepareContextInfo(request, prefix, tail, prefixObject);
-                        List<SQLQueryCompletionItem> items = this.accomplishTableReferences(monitor, context, prefixObject, prefixInfo, tail);
+                        List<SQLQueryCompletionItem> items = this.accomplishTableReferences(monitor, request, context, prefixObject, prefixInfo, tail);
                         this.makeFilteredCompletionSet(prefix.isEmpty() ? tail : prefix.get(0), items, results);
                     } else {
                         // do nothing
@@ -393,6 +394,7 @@ public abstract class SQLQueryCompletionContext {
 
             private List<SQLQueryCompletionItem> accomplishTableReferences(
                 @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
                 @NotNull SQLQueryDataContext context,
                 @NotNull DBSObject prefixContext,
                 @Nullable SQLQueryCompletionItem.ContextObjectInfo prefixInfo,
@@ -400,8 +402,25 @@ public abstract class SQLQueryCompletionContext {
             ) {
                 LinkedList<SQLQueryCompletionItem> items = new LinkedList<>();
                 if (prefixContext instanceof DBSObjectContainer container) {
+                    Set<Class<?>> expectedTypes = new HashSet<>();
+                    expectedTypes.add(DBSSchema.class);
+                    expectedTypes.add(DBSCatalog.class);
+                    expectedTypes.add(DBSTable.class);
+                    expectedTypes.add(DBSView.class);
+                    if (request.getContext().isSearchProcedures()) {
+                        expectedTypes.add(DBSProcedure.class);
+                        expectedTypes.add(DBSPackage.class);
+                    }
                     try {
-                        this.collectImmediateChildren(monitor, context, container, o -> true, prefixInfo, filterOrNull, items);
+                        this.collectImmediateChildren(
+                            monitor,
+                            context,
+                            container,
+                            o -> expectedTypes.stream().anyMatch(c -> c.isAssignableFrom(o.getClass())),
+                            prefixInfo,
+                            filterOrNull,
+                            items
+                        );
                     } catch (DBException e) {
                         log.error(e);
                     }
@@ -432,13 +451,10 @@ public abstract class SQLQueryCompletionContext {
                                     o,
                                     context.getKnownSources().getReferencedTables().contains(o)
                                 ));
-                            } else if (child instanceof DBSSchema || child instanceof DBSCatalog) {
-                                accumulator.addLast(SQLQueryCompletionItem.forDbObject(
-                                    score,
-                                    childName,
-                                    contextObjext,
-                                    child
-                                ));
+                            } else if (child instanceof DBSProcedure p) {
+                                accumulator.addLast(SQLQueryCompletionItem.forProcedureObject(score, childName, contextObjext, p));
+                            } else {
+                                accumulator.addLast(SQLQueryCompletionItem.forDbObject(score, childName, contextObjext, child));
                             }
                         }
                     }
@@ -455,13 +471,15 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull List<SQLQueryCompletionSet> results
             ) {
                 if (prefix.size() > 0) { // table-ref-prefixed column
-                    this.preparePrefixedColumnCompletions(context, prefix, tail, results);
+                    this.preparePrefixedColumnCompletions(monitor, request, context, prefix, tail, results);
                 } else { // table-ref not introduced yet or non-prefixed column, so try both cases
                     this.prepareNonPrefixedColumnCompletions(monitor, request, context, tail, results);
                 }
             }
 
             private void preparePrefixedColumnCompletions(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
                 @NotNull SQLQueryDataContext context,
                 @NotNull List<SQLQueryWordEntry> prefix,
                 @Nullable SQLQueryWordEntry tail,
@@ -672,7 +690,7 @@ public abstract class SQLQueryCompletionContext {
                         SQLQueryCompletionItem.ContextObjectInfo prefixInfo = new SQLQueryCompletionItem.ContextObjectInfo("", origin.getObject(), true);
                         makeFilteredCompletionSet(
                             filterOrNull,
-                            accomplishTableReferences(monitor, context.deepestContext(), origin.getObject(), prefixInfo, filterOrNull),
+                            accomplishTableReferences(monitor, request, context.deepestContext(), origin.getObject(), prefixInfo, filterOrNull),
                             results
                         );
                     }
@@ -1039,6 +1057,13 @@ public abstract class SQLQueryCompletionContext {
                         if (score > 0) {
                             accumulator.addLast(SQLQueryCompletionItem.forProcedureObject(score, childName, contextObjext, p));
                         }
+                    }
+                }
+                for (String fname : request.getContext().getDataSource().getSQLDialect().getFunctions()) {
+                    SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, fname);
+                    int score = childName.matches(filterOrNull, this.searchInsideWords);
+                    if (score > 0) {
+                        accumulator.addLast(SQLQueryCompletionItem.forBuiltinFunction(score, childName, fname));
                     }
                 }
             }

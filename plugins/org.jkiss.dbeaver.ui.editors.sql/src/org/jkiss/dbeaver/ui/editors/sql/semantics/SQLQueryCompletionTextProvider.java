@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemVisitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -239,6 +241,40 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     @NotNull
     @Override
     public String visitProcedure(@NotNull SQLProcedureCompletionItem procedure) {
-        return this.prepareObjectName(procedure);
+        String name = this.prepareObjectName(procedure);
+
+        try {
+            String text;
+            Collection<? extends DBSProcedureParameter> parameters = procedure.getObject().getParameters(monitor);
+            if (!CommonUtils.isEmpty(parameters)) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(name).append("(");
+                int index = 0;
+                for (DBSProcedureParameter param : parameters) {
+                    if (param.getParameterKind().isInput()) {
+                        if (index++ > 0) {
+                            sb.append(", ");
+                        }
+                        sb.append(":").append(param.getName());
+                    }
+                }
+                sb.append(")");
+                text = sb.toString();
+            } else {
+                text = name + "()";
+            }
+            return text;
+        } catch (DBException e) {
+            log.error("Failed to obtain procedure parameters info", e);
+            return name;
+        }
     }
+
+    @Nullable
+    @Override
+    public String visitBuiltinFunction(@NotNull SQLBuiltinFunctionCompletionItem function) {
+        return function.name + "()";
+    }
+
+
 }

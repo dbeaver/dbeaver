@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
@@ -159,8 +161,34 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             }
         } else if (this.tableName == null && this.columnName != null && this.columnName.isNotClassified()) {
             Pair<SQLQueryResultColumn, SQLQueryExprType> columnAndType = resolveColumn(context, statistics, this.columnName, this.rowRefAllowed);
-            resultColumn = columnAndType.getFirst();
-            type = columnAndType.getSecond() != null ? columnAndType.getSecond() : SQLQueryExprType.UNKNOWN;
+            if (columnAndType.getFirst() != null) {
+                resultColumn = columnAndType.getFirst();
+                type = columnAndType.getSecond() != null ? columnAndType.getSecond() : SQLQueryExprType.UNKNOWN;
+            } else { // maybe prefix of the uncompleted qualified identifier apparently
+                List<String> nameParts = List.of(this.columnName.getName());
+                SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), nameParts);
+                if (rr != null) {
+                    SQLQuerySymbolDefinition def;
+                    if (rr.aliasOrNull != null) {
+                        def = rr.aliasOrNull.getDefinition();
+                    } else if (rr.source instanceof SQLQueryRowsTableDataModel table) {
+                        def = table.getName().entityName.getDefinition();
+                    } else {
+                        def = null;
+                    }
+                    this.columnName.setDefinition(def);
+                    type = SQLQueryExprType.forReferencedRow(this.columnName, rr);
+                } else {
+                    DBSObject object = context.findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, nameParts);
+                    if (object != null) {
+                        this.columnName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(object, SQLQuerySymbolClass.UNKNOWN));
+                    }
+                    statistics.appendError(this.columnName, "Column or tuple reference expected");
+                    type = SQLQueryExprType.UNKNOWN;
+                }
+                this.columnName.setOrigin(columnRefOrigin);
+                resultColumn = null;
+            }
         } else {
             resultColumn = null;
             type = SQLQueryExprType.UNKNOWN;

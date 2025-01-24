@@ -102,4 +102,10 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
             default -> " - Stored routine";
         };
     }
+
+    @Nullable
+    @Override
+    public String visitBuiltinFunction(@NotNull SQLBuiltinFunctionCompletionItem function) {
+        return " - Builtin function";
+    }
 }

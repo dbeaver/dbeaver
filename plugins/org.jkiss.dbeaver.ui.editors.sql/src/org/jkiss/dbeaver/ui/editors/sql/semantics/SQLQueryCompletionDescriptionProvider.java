@@ -104,4 +104,10 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
     public String visitProcedure(@NotNull SQLProcedureCompletionItem procedure) {
         return procedure.getObject().getDescription();
     }
+
+    @Nullable
+    @Override
+    public String visitBuiltinFunction(@NotNull SQLBuiltinFunctionCompletionItem function) {
+        return "Builtin function of the database.";
+    }
 }

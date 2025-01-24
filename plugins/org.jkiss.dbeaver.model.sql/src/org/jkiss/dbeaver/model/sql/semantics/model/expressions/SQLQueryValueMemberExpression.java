@@ -81,7 +81,14 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
         if (this.identifier == null) {
             this.type = SQLQueryExprType.UNKNOWN;
             if (this.memberAccessEntry != null) {
-                this.memberAccessEntry.setOrigin(memberOrigin);
+                if (this.owner instanceof SQLQueryValueColumnReferenceExpression c && c.getColumnName() != null
+                    && c.getColumnName().getDefinition() instanceof SQLQuerySymbolByDbObjectDefinition dbObj
+                ) {
+                    // TODO refactor column reference recognition to include this case
+                    this.memberAccessEntry.setOrigin(new SQLQuerySymbolOrigin.DbObjectFromDbObject(dbObj.getDbObject()));
+                } else {
+                    this.memberAccessEntry.setOrigin(memberOrigin);
+                }
             }
         } else if (this.identifier.isNotClassified()) {
             SQLQueryExprType type = tryResolveMemberReference(statistics, this.owner.getValueType(), this.identifier, memberOrigin);

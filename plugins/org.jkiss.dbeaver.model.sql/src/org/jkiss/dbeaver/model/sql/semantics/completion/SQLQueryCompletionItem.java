@@ -132,6 +132,14 @@ public abstract class SQLQueryCompletionItem {
         return new SQLJoinConditionCompletionItem(score, filterKey, first, second);
     }
 
+    public static SQLQueryCompletionItem forBuiltinFunction(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @NotNull String name
+    ) {
+        return new SQLBuiltinFunctionCompletionItem(score, filterKey, name);
+    }
+
     public static SQLQueryCompletionItem forProcedureObject(
         int score,
         @NotNull SQLQueryWordEntry filterKey,
@@ -376,6 +384,28 @@ public abstract class SQLQueryCompletionItem {
     }
 
     public record ContextObjectInfo(@NotNull String string, @NotNull DBSObject object, boolean preventFullName) {
+    }
+
+    public static class SQLBuiltinFunctionCompletionItem extends SQLQueryCompletionItem {
+
+        @NotNull
+        public final String name;
+
+        private SQLBuiltinFunctionCompletionItem(int score, @NotNull SQLQueryWordEntry filterKey, @NotNull String name) {
+            super(score, filterKey);
+            this.name = name;
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return SQLQueryCompletionItemKind.PROCEDURE;
+        }
+
+        @Override
+        protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitBuiltinFunction(this);
+        }
     }
 
     public static class SQLProcedureCompletionItem extends SQLDbObjectCompletionItem<DBSProcedure> {
