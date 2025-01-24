@@ -495,6 +495,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             secretController.setPrivateSecretValue(
                 profile.getSecretKeyId(),
                 null);
+            secretController.flushChanges();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing network profile credentials from secret storage", e);
         }
@@ -562,6 +563,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
                 secretController.setPrivateSecretValue(
                     profile.getSecretKeyId(),
                     null);
+                secretController.flushChanges();
             } catch (DBException e) {
                 DBWorkbench.getPlatformUI().showError("Secret remove error", "Error removing auth profile credentials from secret storage", e);
             }

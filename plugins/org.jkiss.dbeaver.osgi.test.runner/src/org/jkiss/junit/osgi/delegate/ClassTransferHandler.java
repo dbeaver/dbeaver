@@ -23,7 +23,13 @@ import org.junit.runner.notification.RunListener;
 import java.io.*;
 
 public class ClassTransferHandler {
-    static Gson gson = new GsonBuilder().create();
+
+    /**
+     * Transfer object to another classloader
+     * @param value object to transfer
+     * @param targetClassloader target classloader
+     * @return transferred object or delegated object or null if transfer is not possible or failed
+     */
     public static Object transfer(Object value, ClassLoader targetClassloader) {
         if (value.getClass().getClassLoader().equals(targetClassloader)) {
             return value;
@@ -50,8 +56,6 @@ public class ClassTransferHandler {
     }
 
     private static Object deserialize(byte[] data, ClassLoader classLoader) throws IOException, ClassNotFoundException {
-        //Object gson = classLoader.loadClass(ClassTransferHandler.gson.getClass().getName()).getConstructor().newInstance();
-        //Object o = gson.getClass().getMethod("fromJson").invoke(gson, data, classLoader.loadClass(classname));
         ByteArrayInputStream buffer = new ByteArrayInputStream(data);
         return new ObjectInputStream(buffer) {
             @Override
