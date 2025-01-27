@@ -474,6 +474,7 @@ public class DataSourceDescriptor
         return connectionReadOnly;
     }
 
+    @Override
     public void setConnectionReadOnly(boolean connectionReadOnly) {
         this.connectionReadOnly = connectionReadOnly;
     }
