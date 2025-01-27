@@ -100,13 +100,13 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         for (ColumnModifier<GenericTableColumn> modifier : new ColumnModifier[]{CubridDataTypeModifier, NullNotNullModifierConditional}) {
             modifier.appendModifier(monitor, column, decl, command);
         }
-        if ((!column.isPersisted() && column.getDefaultValue() != null) || ((DBECommandComposite) command).hasProperty("defaultValue")) {
+        if (column.getDefaultValue() != null || ((DBECommandComposite) command).hasProperty("defaultValue")) {
             decl.append(" DEFAULT ").append(SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDefaultValue())));
         }
         if (column.isAutoIncrement() && (column.getTypeName().equals("INTEGER") || column.getTypeName().equals("BIGINT"))) {
             decl.append(" AUTO_INCREMENT");
         }
-        if ((!column.isPersisted() && column.getDescription() != null) || ((DBECommandComposite) command).hasProperty("description")) {
+        if (column.getDescription() != null || ((DBECommandComposite) command).hasProperty("description")) {
             decl.append(" COMMENT ").append(SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription())));
         }
         return decl;
