@@ -163,7 +163,7 @@ class ErrorDetailsPart {
 
     private String getDetails(IStatus status) {
         if (status.getException() != null) {
-            return getStackTrace(status.getException());
+            return GeneralUtils.normalizeLineSeparators(getStackTrace(status.getException()));
         }
 
         return ""; //$NON-NLS-1$
