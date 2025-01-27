@@ -192,6 +192,7 @@ public class CubridUser extends GenericSchema
                 throws SQLException, DBException {
             String columnName = JDBCUtils.safeGetString(dbResult, "attr_name");
             String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
+            boolean isForeignKey = "YES".equals(JDBCUtils.safeGetString(dbResult, "is_foreign_key"));
             String showDataType = null;
             boolean autoIncrement = false;
             String tableName = table.isSystem() ? table.getName() : ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table);
@@ -205,7 +206,7 @@ public class CubridUser extends GenericSchema
                     }
                 }
             }
-            return new CubridTableColumn(table, columnName, showDataType == null ? dataType : showDataType, autoIncrement, dbResult);
+            return new CubridTableColumn(table, columnName, showDataType == null ? dataType : showDataType, autoIncrement, isForeignKey, dbResult);
         }
     }
 
