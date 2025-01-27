@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCellLocation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetValueController;
@@ -299,48 +300,57 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             findPattern = Pattern.compile(pattern, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
         }
         int minColumnNum = owner.getController().isRecordMode() ? -1 : 0;
+        boolean firstCheck = true;
         for (GridPos curPosition = new GridPos(startPosition);;) {
-            //Object element = contentProvider.getElement(curPosition);
-            if (searchForward) {
-                curPosition.col++;
-                if (curPosition.col >= columnCount) {
-                    curPosition.col = minColumnNum;
-                    curPosition.row++;
-                }
-            } else {
-                curPosition.col--;
-                if (curPosition.col < minColumnNum) {
-                    curPosition.col = columnCount - 1;
-                    curPosition.row--;
-                }
-            }
-            if ((firstRow >= 0 && curPosition.row < firstRow) || (lastRow >= 0 && curPosition.row > lastRow)) {
-                if (offset == -1) {
-                    // Wrap search - redo search one more time
-                    offset = 0;
-                    if (searchForward) {
-                        curPosition = new GridPos(0, firstRow);
-                    } else {
-                        curPosition = new GridPos(columnCount - 1, lastRow);
+            if (!firstCheck) {
+                if (searchForward) {
+                    curPosition.col++;
+                    if (curPosition.col >= columnCount) {
+                        curPosition.col = minColumnNum;
+                        curPosition.row++;
                     }
                 } else {
-                    // Not found
-                    spreadsheet.redraw();
-                    return -1;
+                    curPosition.col--;
+                    if (curPosition.col < minColumnNum) {
+                        curPosition.col = columnCount - 1;
+                        curPosition.row--;
+                    }
+                }
+
+                if ((firstRow >= 0 && curPosition.row < firstRow) || (lastRow >= 0 && curPosition.row > lastRow)) {
+                    if (offset == -1) {
+                        // Wrap search - redo search one more time
+                        offset = 0;
+                        if (searchForward) {
+                            curPosition = new GridPos(0, firstRow);
+                        } else {
+                            curPosition = new GridPos(columnCount - 1, lastRow);
+                        }
+                    } else {
+                        // Not found
+                        spreadsheet.redraw();
+                        return -1;
+                    }
                 }
             }
-            String cellText;
+            firstCheck = false;
+            String cellText = null;
             if (owner.getController().isRecordMode() && curPosition.col == minColumnNum) {
                 // Header
-                cellText = spreadsheet.getLabelProvider().getText(spreadsheet.getRow(curPosition.row));
+                IGridRow gridRow = spreadsheet.getRow(curPosition.row);
+                if (gridRow != null) {
+                    cellText = spreadsheet.getLabelProvider().getText(gridRow);
+                }
             } else {
                 GridCell cell = spreadsheet.posToCell(curPosition);
                 if (cell != null) {
                     cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false));
-                } else {
-                    continue;
                 }
             }
+            if (cellText == null) {
+                continue;
+            }
+
             Matcher matcher = findPattern.matcher(cellText);
             if (wholeWord ? matcher.matches() : matcher.find()) {
                 if (curPosition.col == minColumnNum) {
