@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -60,7 +61,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
     // TODO DF: Work in progess
 
     private static final DBSObjectType[] SUPP_OBJ_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
-        DB2ObjectType.MQT, DB2ObjectType.NICKNAME, DB2ObjectType.COLUMN, DB2ObjectType.ROUTINE };
+        DB2ObjectType.MQT, DB2ObjectType.NICKNAME, DB2ObjectType.COLUMN, DB2ObjectType.ROUTINE, DB2ObjectType.SCHEMA };
 
     private static final DBSObjectType[] HYPER_LINKS_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
         DB2ObjectType.MQT, DB2ObjectType.NICKNAME, DB2ObjectType.ROUTINE, };
@@ -153,9 +154,11 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
         int nbResults = 0;
         int maxResults = params.getMaxResults();
 
+        // fixme to refactor code below to single query is better, probably
         // Tables, Alias, Views, Nicknames, MQT
-        if (db2ObjectTypes.stream().anyMatch(DB2StructureAssistant::isTable)) {
-            searchTables(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults, params.isSearchInDefinitions());
+        if (db2ObjectTypes.stream().anyMatch(x -> isTable(x) || x == DB2ObjectType.SCHEMA)) {
+            searchTablesAndSchemas(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults,
+                params.isSearchInDefinitions());
             if (nbResults >= maxResults) {
                 return objects;
             }
@@ -189,9 +192,10 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
     // Helper Classes
     // --------------
 
-    private void searchTables(@NotNull JDBCSession session, @Nullable DBPNamedObject schema, @NotNull String mask,
-                              @NotNull List<DB2ObjectType> db2ObjectTypes, int maxResults, @NotNull Collection<? super DBSObjectReference> objects,
-                              int nbResults, boolean searchInDefinitions) throws SQLException, DBException {
+    private void searchTablesAndSchemas(@NotNull JDBCSession session, @Nullable DBPNamedObject schema, @NotNull String mask,
+                                        @NotNull List<DB2ObjectType> db2ObjectTypes, int maxResults,
+                                        @NotNull Collection<? super DBSObjectReference> objects,
+                                        int nbResults, boolean searchInDefinitions) throws SQLException, DBException {
         String sql;
         if (schema != null) {
             sql =
@@ -212,6 +216,12 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             }
             sql += buildTableSQL(query.toString(), db2ObjectTypes);
         }
+        boolean isNeedSearchSchemas = db2ObjectTypes.contains(DB2ObjectType.SCHEMA);
+        if (isNeedSearchSchemas) {
+            sql += "\nUNION ALL " +
+                "SELECT SCHEMANAME AS TABSCHEMA, NULL AS TABNAME, 'SCHEMA' AS TYPE FROM SYSCAT.SCHEMATA\n" +
+                "WHERE SCHEMANAME LIKE ?";
+        }
 
         sql += LF + WITH_UR;
 
@@ -223,11 +233,13 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             }
             dbStat.setString(n++, mask);
             if (searchInDefinitions) {
-                dbStat.setString(n, mask);
-                n++;
+                dbStat.setString(n++, mask);
                 if (schema != null) {
-                    dbStat.setString(n, schema.getName());
+                    dbStat.setString(n++, schema.getName());
                 }
+            }
+            if (isNeedSearchSchemas) {
+                dbStat.setString(n, mask);
             }
 
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
@@ -235,6 +247,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
             String schemaName;
             String objectName;
             DB2Schema db2Schema;
+            String typeObjectFromResultSet;
             DB2TableType tableType;
             DB2ObjectType objectType;
 
@@ -250,14 +263,19 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
 
                     schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
                     objectName = JDBCUtils.safeGetString(dbResult, "TABNAME");
-                    tableType = CommonUtils.valueOf(DB2TableType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
+                    typeObjectFromResultSet = JDBCUtils.safeGetString(dbResult, "TYPE");
 
                     db2Schema = dataSource.getSchema(session.getProgressMonitor(), schemaName);
                     if (db2Schema == null) {
                         LOG.debug("Schema '" + schemaName + "' not found. Probably was filtered");
                         continue;
                     }
+                    if (DB2ObjectType.SCHEMA.toString().equals(typeObjectFromResultSet)) {
+                        objects.add(new DB2ObjectReference(schemaName, dataSource, DB2ObjectType.SCHEMA));
+                        continue;
+                    }
 
+                    tableType = CommonUtils.valueOf(DB2TableType.class, typeObjectFromResultSet);
                     objectType = tableType.getDb2ObjectType();
                     objects.add(new DB2ObjectReference(objectName, db2Schema, objectType));
                 }
@@ -389,6 +407,10 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
 
     private class DB2ObjectReference extends AbstractObjectReference<DBSObject> {
 
+        private DB2ObjectReference(String objectName, DBPDataSource dataSource, DB2ObjectType objectType) {
+            super(objectName, dataSource, null, DB2Schema.class, objectType);
+        }
+
         private DB2ObjectReference(String objectName, DB2Schema db2Schema, DB2ObjectType objectType)
         {
             super(objectName, db2Schema, null, DB2Schema.class, objectType);
@@ -410,30 +432,39 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
 
             DB2ObjectType db2ObjectType = (DB2ObjectType) getObjectType();
 
-            if (getContainer() instanceof DB2Schema) {
-                DB2Schema db2Schema = (DB2Schema) getContainer();
+            DBSObject container = getContainer();
+            String objectName = getName();
+            if (container instanceof DB2DataSource) {
+                DB2Schema schema = dataSource.getSchema(monitor, objectName);
+                if (schema == null) {
+                    throw new DBException(db2ObjectType + " '" + objectName + "' not found in datasource '" + dataSource.getName() + "'");
+                }
+                return schema;
+            }
+            if (container instanceof DB2Schema) {
+                DB2Schema db2Schema = (DB2Schema) container;
 
-                DBSObject object = db2ObjectType.findObject(monitor, db2Schema, getName());
+                DBSObject object = db2ObjectType.findObject(monitor, db2Schema, objectName);
                 if (object == null) {
-                    throw new DBException(db2ObjectType + " '" + getName() + "' not found in schema '" + db2Schema.getName() + "'");
+                    throw new DBException(db2ObjectType + " '" + objectName + "' not found in schema '" + db2Schema.getName() + "'");
                 }
                 return object;
             }
-            if (getContainer() instanceof DB2Table) {
-                DB2Table db2Table = (DB2Table) getContainer();
+            if (container instanceof DB2Table) {
+                DB2Table db2Table = (DB2Table) container;
 
-                DBSObject object = db2ObjectType.findObject(monitor, db2Table, getName());
+                DBSObject object = db2ObjectType.findObject(monitor, db2Table, objectName);
                 if (object == null) {
-                    throw new DBException(db2ObjectType + " '" + getName() + "' not found in table '" + db2Table.getName() + "'");
+                    throw new DBException(db2ObjectType + " '" + objectName + "' not found in table '" + db2Table.getName() + "'");
                 }
                 return object;
             }
-            if (getContainer() instanceof DB2View) {
-                DB2View db2View = (DB2View) getContainer();
+            if (container instanceof DB2View) {
+                DB2View db2View = (DB2View) container;
 
-                DBSObject object = db2ObjectType.findObject(monitor, db2View, getName());
+                DBSObject object = db2ObjectType.findObject(monitor, db2View, objectName);
                 if (object == null) {
-                    throw new DBException(db2ObjectType + " '" + getName() + "' not found in view '" + db2View.getName() + "'");
+                    throw new DBException(db2ObjectType + " '" + objectName + "' not found in view '" + db2View.getName() + "'");
                 }
                 return object;
             }
