@@ -960,10 +960,14 @@ public class DriverEditDialog extends HelpEnabledDialog {
             // Add new library files
             Path localFilePath = Path.of(newLib.getPath());
             String shortFileName = localFilePath.getFileName().toString();
+            if (!localFilePath.isAbsolute()) {
+                localFilePath = DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(localFilePath);
+            }
             if (!Files.exists(localFilePath)) {
                 log.error("Driver library doesn't exist: " + localFilePath + ".");
                 continue;
             }
+            driver.removeLibraryFiles(newLib);
             if (Files.isDirectory(localFilePath)) {
                 synAddDriverLibDirectory(newLib, localFilePath, shortFileName);
             } else {
@@ -990,11 +994,11 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private void synAddDriverLibDirectory(DBPDriverLibrary newLib, Path localFilePath, String shortFileName) throws DBException {
         try (Stream<Path> list = Files.list(localFilePath)) {
             for (Path file : list.toList()) {
-                shortFileName = shortFileName + "/" + file.getFileName().toString();
+                String shortFileNameForCurrentLevel = shortFileName + "/" + file.getFileName().toString();
                 if (Files.isDirectory(file)) {
-                    synAddDriverLibDirectory(newLib, file, shortFileName + "/" + file.getFileName().toString());
+                    synAddDriverLibDirectory(newLib, file, shortFileNameForCurrentLevel + "/" + file.getFileName().toString());
                 } else {
-                    syncAddDriverLibFile(newLib, file, shortFileName);
+                    syncAddDriverLibFile(newLib, file, shortFileNameForCurrentLevel);
                 }
             }
         } catch (IOException e) {
@@ -1005,8 +1009,15 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private void syncAddDriverLibFile(DBPDriverLibrary library, Path localFilePath, String shortFileName) throws DBException {
         DBFileController fileController = DBWorkbench.getPlatform().getFileController();
 
-        String driverFilePath = driver.getId() + "/" + shortFileName;
-        if (library instanceof DriverLibraryLocal libraryLocal) {
+        String driverFilePath;
+        boolean isNewLib = Path.of(library.getPath()).isAbsolute();
+        if (isNewLib) {
+            driverFilePath = driver.getId() + "/" + shortFileName;
+        } else {
+            driverFilePath = DriverDescriptor.getWorkspaceDriversStorageFolder().relativize(localFilePath).toString();
+        }
+
+        if (library instanceof DriverLibraryLocal libraryLocal && isNewLib) {
             libraryLocal.setPath(driverFilePath);
         }
 
@@ -1020,7 +1031,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             throw new DBException("IO error while saving driver file", e);
         }
         DriverDescriptor.DriverFileInfo fileInfo = new DriverDescriptor.DriverFileInfo(
-            driverFilePath, null, DBPDriverLibrary.FileType.jar, Path.of(driverFilePath));
+            driverFilePath, null, library.getType(), Path.of(driverFilePath));
         fileInfo.setFileCRC(DriverDescriptor.calculateFileCRC(localFilePath));
         driver.addLibraryFile(library, fileInfo);
     }
