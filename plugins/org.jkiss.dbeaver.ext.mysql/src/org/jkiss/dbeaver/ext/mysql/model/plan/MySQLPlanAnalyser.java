@@ -20,7 +20,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -29,8 +28,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.*;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanSerializer;
 import org.jkiss.dbeaver.model.impl.plan.ExecutionPlanDeserializer;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -52,12 +49,6 @@ public class MySQLPlanAnalyser extends AbstractExecutionPlanSerializer implement
     }
 
     public MySQLPlanAbstract explain(JDBCSession session, String query) throws DBCException {
-        final SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);
-        final String plainQuery = SQLUtils.stripComments(dialect, query).toUpperCase();
-        final String firstKeyword = SQLUtils.getFirstKeyword(dialect, plainQuery);
-        if (!"SELECT".equalsIgnoreCase(firstKeyword) && !"WITH".equalsIgnoreCase(firstKeyword)) {
-            throw new DBCException(MySQLMessages.exception_only_select_could_produce_execution_plan);
-        }
         if (supportsExplainJSON()) {
             return new MySQLPlanJSON(session, query);
         } else {

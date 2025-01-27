@@ -29,6 +29,9 @@ import org.jkiss.dbeaver.model.sql.SQLTableAliasInsertMode;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolDefinition;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
@@ -75,7 +78,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     @NotNull
     @Override
     public String visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem subqueryAlias) {
-        return subqueryAlias.symbol.getName();
+        return this.prepareDefiningEntryName(subqueryAlias.symbol);
     }
 
     @NotNull
@@ -102,7 +105,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
         String prefix;
         if (columnName.sourceInfo != null && this.queryCompletionContext.getInspectionResult().expectingColumnReference() && columnName.absolute) {
             if (columnName.sourceInfo.aliasOrNull != null) {
-                prefix = columnName.sourceInfo.aliasOrNull.getName() + this.structSeparator;
+                prefix = this.prepareDefiningEntryName(columnName.sourceInfo.aliasOrNull) + this.structSeparator;
             } else if (columnName.sourceInfo.tableOrNull != null) {
                 prefix = this.prepareObjectName(columnName.sourceInfo.tableOrNull) + this.structSeparator;
             } else {
@@ -230,4 +233,8 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
         return result;
     }
 
+    @NotNull
+    private String prepareDefiningEntryName(@NotNull SQLQuerySymbol symbol) {
+        return symbol.getDefinition() instanceof SQLQuerySymbolEntry entry ? entry.getRawName() : symbol.getName();
+    }
 }

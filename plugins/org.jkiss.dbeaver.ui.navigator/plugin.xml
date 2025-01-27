@@ -99,6 +99,11 @@
                 </adapt>
             </enabledWhen>
         </page>
+        <page class="org.jkiss.dbeaver.ui.project.PrefPageProjectResourceDetails" id="org.jkiss.dbeaver.preferences.resourceDetails"  name="%page.org.jkiss.dbeaver.preferences.resourceDetails.name">
+            <enabledWhen>
+                <adapt type="org.jkiss.dbeaver.model.navigator.fs.DBNPath"/>
+            </enabledWhen>
+        </page>
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">

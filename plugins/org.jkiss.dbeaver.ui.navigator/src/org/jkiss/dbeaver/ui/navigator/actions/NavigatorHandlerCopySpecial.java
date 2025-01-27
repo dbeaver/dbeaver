@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.ui.CopyMode;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -40,6 +41,8 @@ public class NavigatorHandlerCopySpecial extends NavigatorHandlerCopyAbstract {
         DBPQualifiedObject adapted = RuntimeUtils.getObjectAdapter(object, DBPQualifiedObject.class);
         if (adapted != null) {
             return adapted.getFullyQualifiedName(DBPEvaluationContext.UI);
+        } else if (object instanceof DBNPathBase pathBase) {
+            return pathBase.getPath().toUri().toString();
         } else if (object instanceof DBNNode nwr) {
             IResource resource = nwr.getAdapter(IResource.class);
             if (resource != null) {

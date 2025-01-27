@@ -334,7 +334,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @NotNull
     @Override
-    public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) {
+    public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
         final TaskRunJob runJob = createJob((TaskImpl) task, listener);
         runJob.schedule();
         if (serviceJob == null) {
