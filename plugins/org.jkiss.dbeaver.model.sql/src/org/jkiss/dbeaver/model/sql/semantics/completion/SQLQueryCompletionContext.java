@@ -1059,11 +1059,13 @@ public abstract class SQLQueryCompletionContext {
                         }
                     }
                 }
-                for (String fname : request.getContext().getDataSource().getSQLDialect().getFunctions()) {
-                    SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, fname);
-                    int score = childName.matches(filterOrNull, this.searchInsideWords);
-                    if (score > 0) {
-                        accumulator.addLast(SQLQueryCompletionItem.forBuiltinFunction(score, childName, fname));
+                if (request.isSimpleMode()) {
+                    for (String fname : request.getContext().getDataSource().getSQLDialect().getFunctions()) {
+                        SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, fname);
+                        int score = childName.matches(filterOrNull, this.searchInsideWords);
+                        if (score > 0) {
+                            accumulator.addLast(SQLQueryCompletionItem.forBuiltinFunction(score, childName, fname));
+                        }
                     }
                 }
             }

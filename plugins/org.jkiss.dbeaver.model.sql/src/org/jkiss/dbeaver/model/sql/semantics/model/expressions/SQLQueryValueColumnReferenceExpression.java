@@ -161,34 +161,8 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
             }
         } else if (this.tableName == null && this.columnName != null && this.columnName.isNotClassified()) {
             Pair<SQLQueryResultColumn, SQLQueryExprType> columnAndType = resolveColumn(context, statistics, this.columnName, this.rowRefAllowed);
-            if (columnAndType.getFirst() != null) {
-                resultColumn = columnAndType.getFirst();
-                type = columnAndType.getSecond() != null ? columnAndType.getSecond() : SQLQueryExprType.UNKNOWN;
-            } else { // maybe prefix of the uncompleted qualified identifier apparently
-                List<String> nameParts = List.of(this.columnName.getName());
-                SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), nameParts);
-                if (rr != null) {
-                    SQLQuerySymbolDefinition def;
-                    if (rr.aliasOrNull != null) {
-                        def = rr.aliasOrNull.getDefinition();
-                    } else if (rr.source instanceof SQLQueryRowsTableDataModel table) {
-                        def = table.getName().entityName.getDefinition();
-                    } else {
-                        def = null;
-                    }
-                    this.columnName.setDefinition(def);
-                    type = SQLQueryExprType.forReferencedRow(this.columnName, rr);
-                } else {
-                    DBSObject object = context.findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, nameParts);
-                    if (object != null) {
-                        this.columnName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(object, SQLQuerySymbolClass.UNKNOWN));
-                    }
-                    statistics.appendError(this.columnName, "Column or tuple reference expected");
-                    type = SQLQueryExprType.UNKNOWN;
-                }
-                this.columnName.setOrigin(columnRefOrigin);
-                resultColumn = null;
-            }
+            resultColumn = columnAndType.getFirst();
+            type = columnAndType.getSecond() != null ? columnAndType.getSecond() : SQLQueryExprType.UNKNOWN;
         } else {
             resultColumn = null;
             type = SQLQueryExprType.UNKNOWN;
@@ -218,6 +192,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
 
             SourceResolutionResult rowsSourceIfAllowed;
             SQLQuerySymbolDefinition rowsSourceDef;
+            DBSObject dbObject;
             SQLQuerySymbolClass forcedClass = null;
             if (resultColumn == null) {
                 rowsSourceIfAllowed = rowRefAllowed
@@ -229,8 +204,10 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                         : rowsSourceIfAllowed.source instanceof SQLQueryRowsTableDataModel tableModel && tableModel.getName() != null
                         ? tableModel.getName().entityName
                         : null;
+                    dbObject = null;
                 } else {
                     rowsSourceDef = null;
+                    dbObject = context.findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, List.of(columnName.getName()));
                 }
 
                 if (rowsSourceDef == null && columnName.isNotClassified()) {
@@ -243,12 +220,15 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 }
             } else {
                 rowsSourceDef = null; // TODO check actual priority between columnRef and tableRef
+                dbObject = null;
                 rowsSourceIfAllowed = null;
             }
 
-            if (rowsSourceDef != null) {
+            if (dbObject != null) {
+                columnName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(dbObject, SQLQuerySymbolClass.UNKNOWN));
+                type = null;
+            } else if (rowsSourceDef != null) {
                 columnName.setDefinition(rowsSourceDef);
-                columnName.setOrigin(columnRefOrigin);
                 type = SQLQueryExprType.forReferencedRow(columnName, rowsSourceIfAllowed);
             } else if (forcedClass != null) {
                 columnName.getSymbol().setSymbolClass(forcedClass);
@@ -258,6 +238,10 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                     propagateColumnDefinition(columnName, resultColumn, statistics, columnRefOrigin);
                 }
                 type = resultColumn != null ? resultColumn.type : null;
+            }
+
+            if (columnName.getOrigin() == null) {
+                columnName.setOrigin(columnRefOrigin);
             }
         }
 
