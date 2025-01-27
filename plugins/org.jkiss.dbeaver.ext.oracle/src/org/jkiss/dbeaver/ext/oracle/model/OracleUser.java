@@ -218,16 +218,13 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     }
 
     @Override
-    public boolean isPersisted()
-    {
+    public boolean isPersisted() {
         return persisted;
     }
 
     @Override
-    public void setPersisted(boolean persisted)
-    {
+    public void setPersisted(boolean persisted) {
         this.persisted = persisted;
-        DBUtils.fireObjectUpdate(this);
     }
 
     public static class OracleUserPasswordValueValidator implements IPropertyValueValidator<OracleUser, Object> {
