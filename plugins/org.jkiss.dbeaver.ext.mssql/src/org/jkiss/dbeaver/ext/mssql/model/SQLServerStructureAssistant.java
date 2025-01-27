@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -84,6 +85,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
             RelationalObjectType.TYPE_VIEW,
             SQLServerObjectType.SN,
             RelationalObjectType.TYPE_PROCEDURE,
+            SQLServerObjectType.SCHEMA
         };
     }
 
@@ -139,7 +141,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         Collection<SQLServerDatabase> databases;
         SQLServerSchema schema = null;
 
-        if (parentObject == null || parentObject instanceof SQLServerDataSource) {
+        if (parentObject == null || parentObject instanceof DataSourceDescriptor) {
             if (globalSearch) {
                 databases = executionContext.getDataSource().getDatabases(monitor);
             } else {
@@ -212,7 +214,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
         }
         boolean hasMask = !CommonUtils.isEmpty(params.getMask()) && !params.getMask().equals("%");
 
-        StringBuilder sqlBuilder = new StringBuilder("SELECT TOP %d * FROM %s o");
+        StringBuilder sqlBuilder = new StringBuilder("SELECT TOP %d schema_id, name, type FROM %s o");
         if (params.isSearchInComments()) {
             sqlBuilder.append(" LEFT JOIN sys.extended_properties ep ON ((o.parent_object_id = 0 AND ep.minor_id = 0 AND o.object_id = ep.major_id) OR (o.parent_object_id <> 0 AND ep.minor_id = o.parent_object_id AND ep.major_id = o.object_id)) ");
         }
@@ -237,10 +239,15 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 sqlBuilder.append(") ");
             }
         }
+        boolean isNeedSchemaSearch = supObjectTypes.contains(SQLServerObjectType.SCHEMA);
         if (schema != null) {
             sqlBuilder.append("AND o.schema_id = ? ");
+        } else if (isNeedSchemaSearch) {
+            sqlBuilder.append(" UNION ALL\nSELECT TOP %d schema_id, name, 'SCHEMA'\n");
+            sqlBuilder.append("FROM %s\n");
+            sqlBuilder.append("WHERE name LIKE ? \n");
+            sqlBuilder.append("ORDER BY o.name");
         }
-        sqlBuilder.append("ORDER BY o.name");
         String template = sqlBuilder.toString();
 
         List<DBSObjectReference> objects = new ArrayList<>();
@@ -250,7 +257,11 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                 if (rowsToFetch < 1) {
                     break;
                 }
-                String sql = String.format(template, rowsToFetch, SQLServerUtils.getSystemTableName(database, "all_objects"));
+                String sql = String.format(template,
+                    rowsToFetch,
+                    SQLServerUtils.getSystemTableName(database, "all_objects"),
+                    rowsToFetch,
+                    SQLServerUtils.getSystemTableName(database, "schemas"));
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                     int idx = 1;
                     if (hasMask) {
@@ -267,6 +278,8 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                     }
                     if (schema != null) {
                         dbStat.setLong(idx, schema.getObjectId());
+                    } else if (isNeedSchemaSearch) {
+                        dbStat.setString(idx++, params.getMask());
                     }
                     dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
 
@@ -286,7 +299,7 @@ public class SQLServerStructureAssistant implements DBSStructureAssistant<SQLSer
                             {
                                 @Override
                                 public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                                    DBSObject object = objectType.findObject(session.getProgressMonitor(), database, objectSchema, objectName);
+                                    DBSObject object = objectType.findObject(session.getProgressMonitor(), objectSchema, objectName);
                                     if (object == null) {
                                         throw new DBException(objectTypeName + " '" + objectName + "' not found");
                                     }
