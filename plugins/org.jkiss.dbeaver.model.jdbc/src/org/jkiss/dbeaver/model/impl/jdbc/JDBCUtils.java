@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -856,6 +857,11 @@ public class JDBCUtils {
     public static boolean isRollbackWarning(SQLException sqlError) {
         return
             SQLState.SQL_25P01.getCode().equals(sqlError.getSQLState());
+    }
+
+    public static boolean isFeatureNotSupportedError(DBPDataSource dataSource, Throwable ex) {
+        return ex instanceof SQLFeatureNotSupportedException || DBExecUtils.discoverErrorType(dataSource, ex)
+            == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED;
     }
 
 }
