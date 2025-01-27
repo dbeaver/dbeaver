@@ -207,7 +207,11 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                     dbObject = null;
                 } else {
                     rowsSourceDef = null;
-                    dbObject = context.findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, List.of(columnName.getName()));
+                    dbObject = context.findRealObject(
+                        statistics.getMonitor(),
+                        RelationalObjectType.TYPE_UNKNOWN,
+                        List.of(columnName.getName())
+                    );
                 }
 
                 if (rowsSourceDef == null && columnName.isNotClassified()) {

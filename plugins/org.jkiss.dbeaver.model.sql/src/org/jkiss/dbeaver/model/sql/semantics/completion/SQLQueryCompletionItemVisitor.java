@@ -43,9 +43,15 @@ public interface SQLQueryCompletionItemVisitor<R> {
     @Nullable
     R visitJoinCondition(@NotNull SQLJoinConditionCompletionItem joinCondition);
 
+    /**
+     * Visit method for user-defned procedures
+     */
     @Nullable
     R visitProcedure(@NotNull SQLProcedureCompletionItem procedure);
 
+    /**
+     * Visit method for dialect specific builtin functions
+     */
     @Nullable
     R visitBuiltinFunction(@NotNull SQLBuiltinFunctionCompletionItem function);
 }

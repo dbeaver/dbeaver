@@ -132,6 +132,9 @@ public abstract class SQLQueryCompletionItem {
         return new SQLJoinConditionCompletionItem(score, filterKey, first, second);
     }
 
+    /**
+     * Returns completion item that describes functions that comes from the dialect
+     */
     public static SQLQueryCompletionItem forBuiltinFunction(
         int score,
         @NotNull SQLQueryWordEntry filterKey,
@@ -140,6 +143,9 @@ public abstract class SQLQueryCompletionItem {
         return new SQLBuiltinFunctionCompletionItem(score, filterKey, name);
     }
 
+    /**
+     * Returns completion item that describes database user-created functions
+     */
     public static SQLQueryCompletionItem forProcedureObject(
         int score,
         @NotNull SQLQueryWordEntry filterKey,
@@ -410,7 +416,12 @@ public abstract class SQLQueryCompletionItem {
 
     public static class SQLProcedureCompletionItem extends SQLDbObjectCompletionItem<DBSProcedure> {
 
-        public SQLProcedureCompletionItem(int score, @NotNull SQLQueryWordEntry filterKey, @Nullable ContextObjectInfo resolvedContext, @NotNull DBSProcedure object) {
+        public SQLProcedureCompletionItem(
+            int score,
+            @NotNull SQLQueryWordEntry filterKey,
+            @Nullable ContextObjectInfo resolvedContext,
+            @NotNull DBSProcedure object
+        ) {
             super(score, filterKey, resolvedContext, object);
         }
 

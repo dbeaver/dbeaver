@@ -384,7 +384,14 @@ public abstract class SQLQueryCompletionContext {
 
                     if (prefixObject != null) {
                         SQLQueryCompletionItem.ContextObjectInfo prefixInfo = this.prepareContextInfo(request, prefix, tail, prefixObject);
-                        List<SQLQueryCompletionItem> items = this.accomplishTableReferences(monitor, request, context, prefixObject, prefixInfo, tail);
+                        List<SQLQueryCompletionItem> items = this.accomplishTableReferences(
+                            monitor,
+                            request,
+                            context,
+                            prefixObject,
+                            prefixInfo,
+                            tail
+                        );
                         this.makeFilteredCompletionSet(prefix.isEmpty() ? tail : prefix.get(0), items, results);
                     } else {
                         // do nothing
@@ -687,10 +694,14 @@ public abstract class SQLQueryCompletionContext {
                 origin.apply(new SQLQuerySymbolOrigin.Visitor() {
                     @Override
                     public void visitDbObjectFromDbObject(SQLQuerySymbolOrigin.DbObjectFromDbObject origin) {
-                        SQLQueryCompletionItem.ContextObjectInfo prefixInfo = new SQLQueryCompletionItem.ContextObjectInfo("", origin.getObject(), true);
+                        SQLQueryCompletionItem.ContextObjectInfo prefix = new SQLQueryCompletionItem.ContextObjectInfo(
+                            "",
+                            origin.getObject(),
+                            true
+                        );
                         makeFilteredCompletionSet(
                             filterOrNull,
-                            accomplishTableReferences(monitor, request, context.deepestContext(), origin.getObject(), prefixInfo, filterOrNull),
+                            accomplishTableReferences(monitor, request, context.deepestContext(), origin.getObject(), prefix, filterOrNull),
                             results
                         );
                     }
@@ -896,7 +907,13 @@ public abstract class SQLQueryCompletionContext {
                     ? this.prepareJoinConditionCompletions(monitor, context, filterOrNull)
                     : Collections.emptyList();
 
-                LinkedList<SQLQueryCompletionItem> procedureItems = this.prepareProceduresCompletions(monitor, request, context, null, filterOrNull);
+                LinkedList<SQLQueryCompletionItem> procedureItems = this.prepareProceduresCompletions(
+                    monitor,
+                    request,
+                    context,
+                    null,
+                    filterOrNull
+                );
                 this.makeFilteredCompletionSet(
                     filterOrNull,
                     Stream.of(subsetColumns, tableRefs, joinConditions, procedureItems).flatMap(Collection::stream).toList(),
@@ -986,7 +1003,9 @@ public abstract class SQLQueryCompletionContext {
                 if (defaults != null) {
                     DBSSchema defaultSchema = defaults.getDefaultSchema();
                     DBSCatalog defaultCatalog = defaults.getDefaultCatalog();
-                    if (defaultCatalog == null && defaultSchema == null && dbcExecutionContext.getDataSource() instanceof DBSObjectContainer container) {
+                    if (defaultCatalog == null && defaultSchema == null
+                        && dbcExecutionContext.getDataSource() instanceof DBSObjectContainer container
+                    ) {
                         return container;
                     } else if ((request.getContext().isSearchGlobally() || defaultSchema == null) && defaultCatalog != null) {
                         return defaultCatalog;
@@ -1059,7 +1078,7 @@ public abstract class SQLQueryCompletionContext {
                         }
                     }
                 }
-                if (request.isSimpleMode()) {
+                if (filterOrNull != null) {
                     for (String fname : request.getContext().getDataSource().getSQLDialect().getFunctions()) {
                         SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, fname);
                         int score = childName.matches(filterOrNull, this.searchInsideWords);
