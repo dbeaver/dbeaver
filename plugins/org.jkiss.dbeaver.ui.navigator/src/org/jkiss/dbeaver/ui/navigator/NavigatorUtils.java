@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
@@ -42,12 +43,15 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -82,6 +86,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -531,35 +536,56 @@ public class NavigatorUtils {
     }
 
     public static void openNavigatorNode(Object node, IWorkbenchWindow window, Map<?, ?> parameters) {
-        IResource resource = node instanceof IAdaptable ? ((IAdaptable) node).getAdapter(IResource.class) : null;
-        if (resource instanceof IFile) {
-            UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-            if (serviceSQL != null) {
-                serviceSQL.openResource(resource);
-            }
-        } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
-            if (node instanceof DBNObjectNode) {
-                INavigatorObjectManager objectManager = GeneralUtils.adapt(((DBNObjectNode) node).getNodeObject(), INavigatorObjectManager.class);
-                if (objectManager != null) {
-                    if (((objectManager.getSupportedFeatures() & INavigatorObjectManager.FEATURE_OPEN)) != 0) {
-                        try {
-                            objectManager.openObjectEditor(window, (DBNObjectNode) node);
-                        } catch (Exception e) {
-                            DBWorkbench.getPlatformUI().showError(
-                                "Error opening object",
-                                "Error while opening object '" + ((DBNObjectNode) node).getNodeObject() + "'",
-                                e);
-                        }
+        try {
+            IResource resource = node instanceof IAdaptable ? ((IAdaptable) node).getAdapter(IResource.class) : null;
+            if (resource instanceof IFile file) {
+                if ("sql".equals(file.getFileExtension())) {
+                    UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+                    if (serviceSQL != null) {
+                        serviceSQL.openResource(resource);
                     }
-                    return;
+                } else {
+                    if (node instanceof DBNPathBase dbnPath) {
+                        if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null)) {
+                            openResourceWithHandler(file, resource);
+                        }
+                    } else {
+                        openResourceWithHandler(file, resource);
+                    }
                 }
+            } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
+                openEntityEditor(node, window, parameters);
             }
-            Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
-            NavigatorHandlerObjectOpen.openEntityEditor(
-                (DBNNode) node,
-                CommonUtils.toString(activePage, null),
-                window);
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(
+                "Error opening object",
+                "Error while opening object '" + node + "'",
+                e);
         }
+    }
+
+    private static void openResourceWithHandler(IFile file, IResource resource) throws CoreException, DBException {
+        DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(resource);
+        if (handler != null) {
+            handler.openResource(file);
+        }
+    }
+
+    private static void openEntityEditor(Object node, IWorkbenchWindow window, Map<?, ?> parameters) throws DBException {
+        if (node instanceof DBNObjectNode objectNode) {
+            INavigatorObjectManager objectManager = GeneralUtils.adapt(objectNode.getNodeObject(), INavigatorObjectManager.class);
+            if (objectManager != null) {
+                if (((objectManager.getSupportedFeatures() & INavigatorObjectManager.FEATURE_OPEN)) != 0) {
+                    objectManager.openObjectEditor(window, objectNode);
+                }
+                return;
+            }
+        }
+        Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
+        NavigatorHandlerObjectOpen.openEntityEditor(
+            (DBNNode) node,
+            CommonUtils.toString(activePage, null),
+            window);
     }
 
     @Nullable
