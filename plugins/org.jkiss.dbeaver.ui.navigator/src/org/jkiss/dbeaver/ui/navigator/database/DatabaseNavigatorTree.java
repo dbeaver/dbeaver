@@ -92,7 +92,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private String filterPlaceholderText = UINavigatorMessages.actions_navigator_search_tip;
     private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.table;
     private volatile ProgressPainter treeLoadingListener;
-    ;
 
     // It is static to share loading nodes between all tree controls
     private static final Set<DBNNode> nodeInLoadingProcess = new HashSet<>();
