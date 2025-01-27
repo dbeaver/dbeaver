@@ -109,7 +109,7 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
                 ddl.append("COLUMNSTORE ");
             }
         }
-        ddl.append("INDEX ").append(index.getName()).append(" ON ").append(indexTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        ddl.append("INDEX ").append(DBUtils.getQuotedIdentifier(index)).append(" ON ").append(indexTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
         List<SQLServerTableIndexColumn> indexColumns = index.getAttributeReferences(monitor);
         if (columnStore && index.getIndexType() == DBSIndexType.CLUSTERED) {
             // Do not add columns list in this case, it will not work (SQL Error [35335] [S0001])
@@ -141,7 +141,7 @@ public class SQLServerIndexManager extends SQLIndexManager<SQLServerTableIndex, 
 
     protected String getDropIndexPattern(SQLServerTableIndex index)
     {
-        return "DROP INDEX " + index.getName() + " ON " + index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
+        return "DROP INDEX " + DBUtils.getQuotedIdentifier(index) + " ON " + index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
     }
 
 
