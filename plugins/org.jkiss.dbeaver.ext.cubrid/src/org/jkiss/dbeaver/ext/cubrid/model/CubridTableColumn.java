@@ -32,16 +32,19 @@ import org.jkiss.dbeaver.model.meta.Property;
 public class CubridTableColumn extends GenericTableColumn
 {
     final static String [] customTypes = {"ENUM", "JSON"};
+    public boolean isForeignKey;
 
     public CubridTableColumn(
             @NotNull GenericTableBase table,
             @Nullable String columnName,
             @Nullable String dataType,
-            @Nullable Boolean autoIncrement,
+            boolean autoIncrement,
+            boolean isForeignKey,
             @Nullable JDBCResultSet dbResult)
             throws DBException {
         super(table);
         if (dbResult != null) {
+            this.isForeignKey = isForeignKey;
             setName(columnName);
             setDataType(dataType);
             setPrecision(JDBCUtils.safeGetInteger(dbResult, "prec"));
@@ -54,6 +57,11 @@ public class CubridTableColumn extends GenericTableColumn
             setOrdinalPosition(JDBCUtils.safeGetInteger(dbResult, "ref_order"));
             setPersisted(true);
         }
+    }
+
+    @NotNull
+    public boolean isForeignKey() {
+        return isForeignKey;
     }
 
     public void setDataType(@NotNull String fullTypeName) throws DBException {
@@ -81,7 +89,7 @@ public class CubridTableColumn extends GenericTableColumn
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 40)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 40)
     public long getMaxLength() {
         if (getDataKind().equals(DBPDataKind.STRING)) {
             return super.getMaxLength();
@@ -91,14 +99,14 @@ public class CubridTableColumn extends GenericTableColumn
 
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 50)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 50)
     public boolean isRequired() {
         return super.isRequired();
     }
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 70)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 70)
     public String getDefaultValue() {
         return super.getDefaultValue();
     }

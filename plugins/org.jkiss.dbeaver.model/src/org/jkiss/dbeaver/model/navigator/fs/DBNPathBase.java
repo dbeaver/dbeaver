@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,12 +97,17 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     @Override
     public boolean allowsChildren() {
-        return Files.isDirectory(getPath());
+        return isDirectory();
+    }
+
+    public boolean isDirectory() {
+        DBNFileSystemRoot rootNode = getFileSystemRoot();
+        return rootNode != null && rootNode.getRoot().getFileSystem().isDirectory(getPath());
     }
 
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (children == null && allowsChildren() && !monitor.isForceCacheUsage()) {
+        if (children == null && isDirectory() && !monitor.isForceCacheUsage()) {
             this.children = readChildNodes(monitor);
         }
         return children;
@@ -111,7 +116,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
         List<DBNNode> result;
         Path path = getPath();
-        if (allowsChildren() && Files.exists(path)) {
+        if (isDirectory() && Files.exists(path)) {
             try {
                 try (Stream<Path> fileList = Files.list(path)) {
                     result = new ArrayList<>();
@@ -252,12 +257,12 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         if (thisResource == null) {
             return;
         }
-        if (Files.isDirectory(thisResource)) {
+        if (isDirectory()) {
             folder = thisResource;
         } else {
             folder = thisResource.getParent();
         }
-        if (!Files.isDirectory(folder)) {
+        if (!isDirectory()) {
             throw new DBException("Can't drop files into non-folder '" + folder + "'");
         }
         if (nodes.isEmpty()) {
@@ -354,12 +359,10 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     protected void sortChildren(DBNNode[] list) {
         Arrays.sort(list, (o1, o2) -> {
-            if (o1 instanceof DBNPathBase && o2 instanceof DBNPathBase) {
-                Path res1 = ((DBNPathBase) o1).getPath();
-                Path res2 = ((DBNPathBase) o2).getPath();
-                if (Files.isDirectory(res1) && !Files.isDirectory(res2)) {
+            if (o1 instanceof DBNPathBase p1 && o2 instanceof DBNPathBase p2) {
+                if (p1.isDirectory() && !p2.isDirectory()) {
                     return -1;
-                } else if (Files.isDirectory(res2) && !Files.isDirectory(res1)) {
+                } else if (p2.isDirectory() && !p1.isDirectory()) {
                     return 1;
                 }
             }
