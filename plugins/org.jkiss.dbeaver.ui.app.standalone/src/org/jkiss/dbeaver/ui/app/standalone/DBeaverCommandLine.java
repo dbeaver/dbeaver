@@ -106,7 +106,7 @@ public class DBeaverCommandLine
         boolean hasArg;
         boolean exitAfterExecute;
         boolean exclusiveMode;
-        CommandLineParameterHandler handler;
+        ICommandLineParameterHandler handler;
 
         public ParameterDescriptor(IConfigurationElement config) throws Exception {
             this.name = config.getAttribute("name");
@@ -117,7 +117,7 @@ public class DBeaverCommandLine
             this.exclusiveMode = CommonUtils.toBoolean(config.getAttribute("exclusiveMode"));
             Bundle cBundle = Platform.getBundle(config.getContributor().getName());
             Class<?> implClass = cBundle.loadClass(config.getAttribute("handler"));
-            handler = (CommandLineParameterHandler) implClass.getConstructor().newInstance();
+            handler = (ICommandLineParameterHandler) implClass.getConstructor().newInstance();
         }
     }
 
@@ -287,7 +287,8 @@ public class DBeaverCommandLine
         }
 
         try {
-            return executeCommandLineCommands(commandLine, DBeaverInstanceServer.createClient(instanceLoc), false);
+            IInstanceController client = DBeaverInstanceServer.createClient(instanceLoc);
+            return executeCommandLineCommands(commandLine, client, false);
         } catch (Throwable e) {
             log.error("Error while calling remote server", e);
         }
