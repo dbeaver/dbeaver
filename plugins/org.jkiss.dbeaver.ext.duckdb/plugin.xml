@@ -19,7 +19,8 @@
         <provider
                 class="org.jkiss.dbeaver.ext.duckdb.model.data.DuckDBValueHandlerProvider"
                 description="DuckDB data types provider"
-                id="org.jkiss.dbeaver.ext.duckdb.model.data.DuckDBValueHandlerProvider"
+                id="DuckDBValueHandlerProvider"
+                parent="GenericValueHandlerProvider"
                 label="DuckDB data types provider">
 
             <datasource class="org.jkiss.dbeaver.ext.duckdb.model.DuckDBDataSource"/>

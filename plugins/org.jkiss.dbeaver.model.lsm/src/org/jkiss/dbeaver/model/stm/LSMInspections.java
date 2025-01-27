@@ -159,10 +159,9 @@ public class LSMInspections {
 
     @Nullable
     public SyntaxInspectionResult prepareAbstractSyntaxInspection(int position) {
-        STMTreeNode subroot = this.root;
         ATN atn = SQLStandardParser._ATN;
 
-        Interval range = subroot.getRealInterval();
+        Interval range = this.root.getRealInterval();
         if (position < range.a) {
             return prepareOffquerySyntaxInspection();
         } else {
@@ -174,7 +173,6 @@ public class LSMInspections {
                 if (this.allNonErrorTerms.size() > 0) {
                     index = this.allNonErrorTerms.size() - 1;
                     node = this.allNonErrorTerms.get(index);
-                    subroot = node.getParentNode();
                     initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
                 } else {
                     return SyntaxInspectionResult.EMPTY;
@@ -185,17 +183,17 @@ public class LSMInspections {
                     index = ~index - 1;
                 }
 
+                // TODO consider when to take previous term to get correct inspected keywords
+
                 node = this.allNonErrorTerms.get(index);
-                subroot = node.getParentNode();
                 Interval nodeRange = node.getRealInterval();
                 if (nodeRange.a <= position) {
                     if (nodeRange.b >= position) {
                         // containing term found
-                        if (KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType())) {
+                        if (KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType()) || (nodeRange.a == position && index > 0)) {
                             // we need target state of the previous term
                             node = this.allNonErrorTerms.get(index - 1);
                             initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
-                            subroot = node.getParentNode();
                         } else {
                             // we need its start state
                             initialState = atn.states.get(node.getAtnState());
@@ -208,14 +206,13 @@ public class LSMInspections {
                     // use previous node, its rule end state
                     node = this.allNonErrorTerms.get(index - 1);
                     initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
-                    subroot = node.getParentNode();
                 } else {
                     // subroot itself contains given position, use its rule start state
-                    initialState = atn.states.get(subroot.getAtnState());
+                    initialState = atn.states.get(node.getParentNode().getAtnState());
                 }
             }
 
-            return inspectAbstractSyntaxAtTreeState(subroot, initialState);
+            return inspectAbstractSyntaxAtTreeState(node, initialState);
         }            
     }
 
@@ -248,7 +245,7 @@ public class LSMInspections {
         ListNode<Integer> stack = ListNode.of(null);
         {
             var path = new LinkedList<RuleNode>();
-            for (STMTreeNode n = node instanceof TerminalNode ? node.getParentNode() : node;
+            for (STMTreeNode n = node.getParentNode();
                  n instanceof RuleNode rn;
                  n = n.getParentNode()) {
                 path.addFirst(rn);

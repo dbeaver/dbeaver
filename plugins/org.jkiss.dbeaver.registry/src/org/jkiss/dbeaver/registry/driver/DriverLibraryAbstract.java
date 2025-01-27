@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.registry.driver;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -49,6 +51,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
     protected String path;
     private boolean optional;
     protected boolean custom;
+    protected boolean embedded;
     protected boolean disabled;
 
     public static DriverLibraryAbstract createFromPath(DriverDescriptor driver, FileType type, String path, String preferredVersion) {
@@ -95,6 +98,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         this.type = copyFrom.type;
         this.system = copyFrom.system;
         this.path = copyFrom.path;
+        this.embedded = copyFrom.embedded;
         this.optional = copyFrom.optional;
         this.custom = copyFrom.custom;
         this.disabled = copyFrom.disabled;
@@ -121,6 +125,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
             osName,
             config.getAttribute(RegistryConstants.ATTR_ARCH));
         this.path = config.getAttribute(RegistryConstants.ATTR_PATH);
+        this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED), false);
         this.optional = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL), false);
         this.custom = false;
     }
@@ -182,6 +187,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
     }
 
     @Override
+    public boolean isEmbedded() {
+        return embedded;
+    }
+
+    @Override
     public boolean isCustom() {
         return custom;
     }
@@ -229,7 +239,22 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         final Path tempFile = tempFolder.resolve(SecurityUtils.makeDigest(localFile.toString()));
 
         WebUtils.downloadRemoteFile(monitor, taskName, externalURL, tempFile, getAuthInfo(monitor));
-        Files.move(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
+        if (DBWorkbench.isDistributed()) {
+            // save driver library file using file controller
+            try {
+                byte[] fileData = Files.readAllBytes(tempFile);
+                DBWorkbench.getPlatform().getFileController().saveFileData(
+                    DBFileController.TYPE_DATABASE_DRIVER,
+                    DriverUtils.getDistributedLibraryPath(localFile),
+                    fileData);
+            } catch (DBException e) {
+                throw new IOException(e.getMessage());
+            } finally {
+                Files.delete(tempFile);
+            }
+        } else {
+            Files.move(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     @Nullable
