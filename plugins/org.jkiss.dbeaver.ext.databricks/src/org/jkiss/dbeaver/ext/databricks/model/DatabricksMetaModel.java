@@ -36,15 +36,14 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
 
-import javax.xml.validation.Schema;
 import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
 
@@ -84,29 +83,21 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         GenericDataSource dataSource,
         GenericCatalog catalog
     ) throws DBException {
-        List<GenericSchema> schemas = super.loadSchemas(session, dataSource, catalog);
-        Set<String> schemaNames = schemas.stream()
-            .map(GenericSchema::getName)
-            .collect(Collectors.toSet());
-
+        List<GenericSchema> schemas = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "select schema_name from " + DBUtils.getQuotedIdentifier(catalog) + ".information_schema.schemata"
+            "SHOW DATABASES IN " + catalog.getName()
         )) {
             dbStat.executeStatement();
             try (JDBCResultSet dbResult = dbStat.getResultSet()) {
                 while (dbResult.next()) {
                     String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, DatabricksConstants.SCHEMA_NAME);
-                    if (!schemaNames.contains(schemaName)) {
-                        schemas.add(new DatabricksSchema(dataSource, catalog, schemaName));
-                    }
+                    schemas.add(new DatabricksSchema(dataSource, catalog, schemaName));
                 }
             }
         } catch (SQLException e) {
-            if (!DatabricksConstants.STATUS_TABLE_OR_VIEW_NOT_FOUND.equals(SQLState.getStateFromException(e))) {
-                log.warn("Cannot load system schemas", e);
-            }
+            log.error("Cannot load schemas", e);
         }
-        schemas.sort(Comparator.comparing(GenericSchema::getName));
+
         return schemas;
     }
 
@@ -172,7 +163,8 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         @Nullable JDBCResultSet dbResult) {
         if ((CommonUtils.isNotEmpty(tableName) && !tempViewsList.isEmpty()
              && tempViewsList.stream().anyMatch(e -> e.name.equalsIgnoreCase(tableName))) ||
-            tableType != null && isView(tableType)) {
+            tableType != null && isView(tableType))
+        {
             return new DatabricksView(
                 container,
                 tableName,
