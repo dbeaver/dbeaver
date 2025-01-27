@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.IFindReplaceTarget;
+import org.eclipse.jface.text.IFindReplaceTargetExtension;
+import org.eclipse.jface.text.IFindReplaceTargetExtension3;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -43,7 +46,6 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCellLocation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetValueController;
@@ -74,7 +76,6 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     private final Set<DBDValueRow> updatedRows = new LinkedHashSet<>();
     private final Set<DBDAttributeBinding> updatedAttributes = new LinkedHashSet<>();
     private AbstractJob redrawJob = null;
-    private IRegion scope;
 
     public static synchronized SpreadsheetFindReplaceTarget getInstance() {
         if (instance == null) {
@@ -194,7 +195,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     @Override
     public IRegion getScope()
     {
-        return scope;
+        return null;
     }
 
     @Override
@@ -204,12 +205,14 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             return;
         }
         if (scope == null || scope.getLength() == 0) {
-            Point selection = getSelection();
-            scope = new Region(selection.x, selection.y);
+            owner.highlightRows(-1, -1, null);
+            if (scope == null) {
+                owner.getSpreadsheet().deselectAll();
+                owner.getSpreadsheet().selectCells(this.originalSelection);
+            }
+        } else {
+            owner.highlightRows(scope.getOffset(), scope.getLength(), scopeHighlightColor);
         }
-        owner.highlightRows(scope.getOffset(), scope.getLength(), scopeHighlightColor);
-
-        this.scope = scope;
     }
 
     @Override
@@ -298,6 +301,19 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         int minColumnNum = owner.getController().isRecordMode() ? -1 : 0;
         for (GridPos curPosition = new GridPos(startPosition);;) {
             //Object element = contentProvider.getElement(curPosition);
+            if (searchForward) {
+                curPosition.col++;
+                if (curPosition.col >= columnCount) {
+                    curPosition.col = minColumnNum;
+                    curPosition.row++;
+                }
+            } else {
+                curPosition.col--;
+                if (curPosition.col < minColumnNum) {
+                    curPosition.col = columnCount - 1;
+                    curPosition.row--;
+                }
+            }
             if ((firstRow >= 0 && curPosition.row < firstRow) || (lastRow >= 0 && curPosition.row > lastRow)) {
                 if (offset == -1) {
                     // Wrap search - redo search one more time
@@ -313,48 +329,32 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                     return -1;
                 }
             }
-            String cellText = null;
+            String cellText;
             if (owner.getController().isRecordMode() && curPosition.col == minColumnNum) {
                 // Header
-                IGridRow gridRow = spreadsheet.getRow(curPosition.row);
-                if (gridRow != null) {
-                    cellText = spreadsheet.getLabelProvider().getText(gridRow);
-                }
+                cellText = spreadsheet.getLabelProvider().getText(spreadsheet.getRow(curPosition.row));
             } else {
                 GridCell cell = spreadsheet.posToCell(curPosition);
                 if (cell != null) {
                     cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false));
+                } else {
+                    continue;
                 }
             }
-            if (cellText != null) {
-                Matcher matcher = findPattern.matcher(cellText);
-                if (wholeWord ? matcher.matches() : matcher.find()) {
-                    if (curPosition.col == minColumnNum) {
-                        curPosition.col = 0;
-                    }
-                    spreadsheet.setFocusColumn(curPosition.col);
-                    spreadsheet.setFocusItem(curPosition.row);
-                    spreadsheet.setCellSelection(curPosition);
-                    if (!owner.getController().isHasMoreData() || !replaceAll || (curPosition.row >= spreadsheet.getTopIndex() && curPosition.row < spreadsheet.getBottomIndex())) {
-                        // Do not scroll to invisible rows to avoid scrolling and slow update
-                        spreadsheet.showSelection();
-                    }
-                    searchPattern = findPattern;
-                    return curPosition.row;
+            Matcher matcher = findPattern.matcher(cellText);
+            if (wholeWord ? matcher.matches() : matcher.find()) {
+                if (curPosition.col == minColumnNum) {
+                    curPosition.col = 0;
                 }
-            }
-            if (searchForward) {
-                curPosition.col++;
-                if (curPosition.col >= columnCount) {
-                    curPosition.col = minColumnNum;
-                    curPosition.row++;
+                spreadsheet.setFocusColumn(curPosition.col);
+                spreadsheet.setFocusItem(curPosition.row);
+                spreadsheet.setCellSelection(curPosition);
+                if (!owner.getController().isHasMoreData() || !replaceAll || (curPosition.row >= spreadsheet.getTopIndex() && curPosition.row < spreadsheet.getBottomIndex())) {
+                    // Do not scroll to invisible rows to avoid scrolling and slow update
+                    spreadsheet.showSelection();
                 }
-            } else {
-                curPosition.col--;
-                if (curPosition.col < minColumnNum) {
-                    curPosition.col = columnCount - 1;
-                    curPosition.row--;
-                }
+                searchPattern = findPattern;
+                return curPosition.row;
             }
         }
     }
