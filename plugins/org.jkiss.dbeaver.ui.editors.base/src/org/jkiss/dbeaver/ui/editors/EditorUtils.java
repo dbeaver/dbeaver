@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,19 +46,26 @@ import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.LocalFileStorage;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerRegistry;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.*;
 
 /**
  * EditorUtils
@@ -584,4 +591,60 @@ public class EditorUtils {
         }
         tip.append(EditorsMessages.database_editor_project).append(": ").append(project.getName());
     }
+
+    public static List<Path> openExternalFiles(@NotNull String[] fileNames, @Nullable DBPDataSourceContainer currentContainer) {
+        log.debug("Open external file(s) [" + Arrays.toString(fileNames) + "]");
+        List<Path> openedFiles = new ArrayList<>();
+        Path[] filePaths = Arrays.stream(fileNames).map(Path::of).toArray(Path[]::new);
+        openFileEditors(filePaths, currentContainer, openedFiles);
+
+        return openedFiles;
+    }
+
+    public static boolean openExternalFiles(@NotNull Path[] filePaths, @Nullable DBPDataSourceContainer currentContainer) {
+        log.debug("Open external file(s) [" + Arrays.toString(filePaths) + "]");
+        List<Path> openedFiles = new ArrayList<>();
+        return openFileEditors(filePaths, currentContainer, openedFiles);
+    }
+
+    public static boolean openFileEditors(
+        @NotNull Path[] fileNames,
+        @Nullable DBPDataSourceContainer currentContainer,
+        @NotNull List<Path> openedFiles
+    ) {
+        Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = new LinkedHashMap<>();
+        for (Path path : fileNames) {
+            if (Files.exists(path)) {
+                String fileExtension = IOUtils.getFileExtension(path);
+                FileTypeHandlerDescriptor handler = CommonUtils.isEmpty(fileExtension) ?
+                    null : FileTypeHandlerRegistry.getInstance().findHandler(fileExtension);
+                filesByHandler.computeIfAbsent(handler, d -> new ArrayList<>()).add(path);
+                openedFiles.add(path);
+            } else {
+                DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + path + "': file doesn't exist");
+            }
+        }
+
+        for (Map.Entry<FileTypeHandlerDescriptor, List<Path>> entry : filesByHandler.entrySet()) {
+            FileTypeHandlerDescriptor handler = entry.getKey();
+            List<Path> pathList = entry.getValue();
+            if (handler == null) {
+                for (Path path : pathList) {
+                    if (!IOUtils.isLocalPath(path)) {
+                        return false;
+                    }
+                    final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
+                    EditorUtils.openExternalFileEditor(path.toFile(), window);
+                }
+            } else {
+                try {
+                    handler.createHandler().openFiles(pathList, Map.of(), currentContainer);
+                } catch (Exception e) {
+                    DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
+                }
+            }
+        }
+        return true;
+    }
+
 }

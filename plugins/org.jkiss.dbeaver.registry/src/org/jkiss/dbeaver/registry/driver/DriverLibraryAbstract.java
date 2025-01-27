@@ -51,6 +51,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
     protected String path;
     private boolean optional;
     protected boolean custom;
+    protected boolean embedded;
     protected boolean disabled;
 
     public static DriverLibraryAbstract createFromPath(DriverDescriptor driver, FileType type, String path, String preferredVersion) {
@@ -97,6 +98,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         this.type = copyFrom.type;
         this.system = copyFrom.system;
         this.path = copyFrom.path;
+        this.embedded = copyFrom.embedded;
         this.optional = copyFrom.optional;
         this.custom = copyFrom.custom;
         this.disabled = copyFrom.disabled;
@@ -123,6 +125,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
             osName,
             config.getAttribute(RegistryConstants.ATTR_ARCH));
         this.path = config.getAttribute(RegistryConstants.ATTR_PATH);
+        this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED), false);
         this.optional = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL), false);
         this.custom = false;
     }
@@ -181,6 +184,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
     @Override
     public boolean isOptional() {
         return optional;
+    }
+
+    @Override
+    public boolean isEmbedded() {
+        return embedded;
     }
 
     @Override

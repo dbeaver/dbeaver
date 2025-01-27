@@ -29,6 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -54,7 +55,10 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * DBeaver instance controller.
@@ -160,25 +164,9 @@ public class DBeaverInstanceServer implements IInstanceController {
 
     @Override
     public void openExternalFiles(@NotNull String[] fileNames) {
-        log.debug("Open external file(s) [" + Arrays.toString(fileNames) + "]");
-
-        final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-        final Shell shell = window.getShell();
         UIUtils.asyncExec(() -> {
-            for (String filePath : fileNames) {
-                File file = new File(filePath);
-                if (file.exists()) {
-                    filesToConnect.add(file);
-                    if (dataSourceContainer != null) {
-                        EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
-                    }
-                    EditorUtils.openExternalFileEditor(file, window);
-                } else {
-                    DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + file.getAbsolutePath() + "': file doesn't exist");
-                }
-            }
-            shell.setMinimized(false);
-            shell.forceActive();
+            List<Path> paths = EditorUtils.openExternalFiles(fileNames, dataSourceContainer);
+            filesToConnect.addAll(paths.stream().map(Path::toFile).toList());
         });
     }
 
@@ -187,30 +175,35 @@ public class DBeaverInstanceServer implements IInstanceController {
         // Do not log it (#3788)
         //log.debug("Open external database connection [" + connectionSpec + "]");
         InstanceConnectionParameters instanceConParameters = new InstanceConnectionParameters();
-        final DBPDataSourceContainer dataSource = DataSourceUtils.getDataSourceBySpec(
-            DBWorkbench.getPlatform().getWorkspace().getActiveProject(),
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (activeProject == null) {
+            log.error("No active project in workspace");
+            return;
+        }
+        dataSourceContainer = DataSourceUtils.getDataSourceBySpec(
+            activeProject,
             GeneralUtils.replaceVariables(connectionSpec, SystemVariablesResolver.INSTANCE),
             instanceConParameters,
             false,
             instanceConParameters.createNewConnection);
-        if (dataSource == null) {
+        if (dataSourceContainer == null) {
             filesToConnect.clear();
             return;
         }
         if (!CommonUtils.isEmpty(filesToConnect)) {
             for (File file : filesToConnect) {
-                EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSource));
+                EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
             }
         }
         if (instanceConParameters.openConsole) {
             final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             UIUtils.syncExec(() -> {
-                SQLEditorHandlerOpenEditor.openSQLConsole(workbenchWindow, new SQLNavigatorContext(dataSource), dataSource.getName(), "");
+                SQLEditorHandlerOpenEditor.openSQLConsole(workbenchWindow, new SQLNavigatorContext(dataSourceContainer), dataSourceContainer.getName(), "");
                 workbenchWindow.getShell().forceActive();
 
             });
         } else if (instanceConParameters.makeConnect) {
-            DataSourceHandler.connectToDataSource(null, dataSource, null);
+            DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
         }
         filesToConnect.clear();
     }
@@ -248,11 +241,9 @@ public class DBeaverInstanceServer implements IInstanceController {
 
         UIUtils.syncExec(() -> {
             IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-            if (window != null) {
-                IWorkbenchPage page = window.getActivePage();
-                if (page != null) {
-                    page.closeAllEditors(false);
-                }
+            IWorkbenchPage page = window.getActivePage();
+            if (page != null) {
+                page.closeAllEditors(false);
             }
         });
     }
@@ -318,19 +309,21 @@ public class DBeaverInstanceServer implements IInstanceController {
 
         @Override
         public boolean setParameter(String name, String value) {
-            switch (name) {
-                case "connect":
+            return switch (name) {
+                case "connect" -> {
                     makeConnect = CommonUtils.toBoolean(value);
-                    return true;
-                case "openConsole":
+                    yield true;
+                }
+                case "openConsole" -> {
                     openConsole = CommonUtils.toBoolean(value);
-                    return true;
-                case "create":
+                    yield true;
+                }
+                case "create" -> {
                     createNewConnection = CommonUtils.toBoolean(value);
-                    return true;
-                default:
-                    return false;
-            }
+                    yield true;
+                }
+                default -> false;
+            };
         }
     }
 }
