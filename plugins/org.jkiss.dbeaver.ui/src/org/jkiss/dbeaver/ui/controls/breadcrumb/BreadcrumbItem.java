@@ -21,8 +21,9 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -33,10 +34,15 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 final class BreadcrumbItem extends Item {
-    private static final int MAX_DROP_DOWN_ITEMS = 20;
     private final Log log = Log.getLog(BreadcrumbItem.class);
+
+    private static final int DROP_DOWN_MIN_WIDTH = 250;
+    private static final int DROP_DOWN_MAX_WIDTH = 500;
+    private static final int DROP_DOWN_MIN_HEIGHT = 200;
+    private static final int DROP_DOWN_MAX_HEIGHT = 300;
 
     private final BreadcrumbViewer viewer;
 
@@ -50,6 +56,7 @@ final class BreadcrumbItem extends Item {
     private ILabelProvider toolTipLabelProvider;
 
     private Shell menuShell;
+    private TreeViewer menuViewer;
 
     public BreadcrumbItem(@NotNull BreadcrumbViewer viewer, @NotNull Composite parent) {
         super(parent, SWT.NONE);
@@ -160,16 +167,20 @@ final class BreadcrumbItem extends Item {
     }
 
     private void showMenu() {
-        menuShell = new Shell(container.getShell(), SWT.RESIZE | SWT.CLOSE | SWT.TOOL | SWT.ON_TOP);
+        menuShell = new Shell(container.getShell(), SWT.RESIZE | SWT.TOOL | SWT.ON_TOP);
         menuShell.setLayout(new FillLayout());
 
-        var menuViewer = new TreeViewer(menuShell, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
-        var input = getData();
+        Object input = getData();
+
+        menuViewer = new TreeViewer(menuShell, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
         viewer.configureDropDownViewer(menuViewer, input);
         menuViewer.setInput(input);
 
-        menuShell.setBounds(100, 100, 200, 200);
+        configureShellBounds(menuShell);
+        configureShellCloser(menuShell);
+
         menuShell.setVisible(true);
+        menuShell.setFocus();
     }
 
     private void openElement(@NotNull Object element) {
@@ -183,5 +194,78 @@ final class BreadcrumbItem extends Item {
             viewer.selectItem(BreadcrumbItem.this);
             viewer.fireDoubleClick();
         }));
+    }
+
+    private void configureShellBounds(@NotNull Shell shell) {
+        shell.pack();
+
+        var shellSize = shell.getSize();
+        int width = CommonUtils.clamp(shellSize.x, DROP_DOWN_MIN_WIDTH, DROP_DOWN_MAX_WIDTH);
+        int height = CommonUtils.clamp(shellSize.y, DROP_DOWN_MIN_HEIGHT, DROP_DOWN_MAX_HEIGHT);
+
+        var itemBounds = container.getBounds();
+        var trimBounds = shell.computeTrim(0, 0, width, height);
+
+        var location = new Point(0, 0);
+        location.x = trimBounds.x + elementArrow.getSize().x;
+        location.y -= height + trimBounds.y + itemBounds.y;
+
+        shell.setLocation(container.toDisplay(location));
+        shell.setSize(width, height);
+    }
+
+    private void configureShellCloser(@NotNull Shell shell) {
+        Listener focusListener = e -> {
+            switch (e.type) {
+                case SWT.FocusIn -> {
+                    Widget focusElement= e.widget;
+                    boolean isFocusBreadcrumbTreeFocusWidget = focusElement == shell || focusElement instanceof Tree tree && tree.getShell() == shell;
+                    boolean isFocusWidgetParentShell = focusElement instanceof Control control && control.getShell().getParent() == shell;
+
+                    if (!isFocusBreadcrumbTreeFocusWidget && !isFocusWidgetParentShell) {
+                        shell.close();
+                    }
+                }
+                case SWT.FocusOut -> {
+                    if (e.display.getActiveShell() == null) {
+                        shell.close();
+                    }
+                }
+            }
+        };
+
+        Display display= shell.getDisplay();
+        display.addFilter(SWT.FocusIn, focusListener);
+        display.addFilter(SWT.FocusOut, focusListener);
+
+        ControlListener controlListener = new ControlListener() {
+            @Override
+            public void controlMoved(ControlEvent e) {
+                shell.close();
+            }
+
+            @Override
+            public void controlResized(ControlEvent e) {
+                shell.close();
+            }
+        };
+
+        container.addControlListener(controlListener);
+
+        shell.addDisposeListener(e -> {
+            display.removeFilter(SWT.FocusIn, focusListener);
+            display.removeFilter(SWT.FocusOut, focusListener);
+
+            if (!container.isDisposed()) {
+                container.removeControlListener(controlListener);
+            }
+        });
+        shell.addShellListener(new ShellAdapter() {
+            @Override
+            public void shellClosed(ShellEvent e) {
+                menuShell = null;
+                menuViewer = null;
+            }
+        });
     }
 }
