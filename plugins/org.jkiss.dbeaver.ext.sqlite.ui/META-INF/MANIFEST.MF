@@ -9,7 +9,8 @@ Require-Bundle: org.jkiss.dbeaver.ext.sqlite,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ui.editors.connection,
- org.jkiss.dbeaver.ui.editors.data
+ org.jkiss.dbeaver.ui.editors.data,
+ org.jkiss.dbeaver.ext.generic.ui
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp

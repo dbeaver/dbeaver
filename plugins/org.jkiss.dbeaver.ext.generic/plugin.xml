@@ -159,6 +159,8 @@
                     <property id="read-only-meta-data" label="Driver cannot modify meta data" description="Driver does not support meta data (e.g. table or column creating) editing." type="boolean" required="false" defaultValue="false"/>
                     <property id="supports-multi-insert" label="Driver supports multi insert mode" description="Driver supports multi insert mode: INSERT VALUES(,,)(,,). Used for the multi insert data import" type="boolean" required="false" defaultValue="false"/>
                     <property id="supports-embedded-database-creation" label="Can create database from scratch" description="Driver supports creation of the database structure from scratch.\nControls whether the button 'Create' is visible on the connection page.\nUsed by some embedded databases" type="boolean" required="false" defaultValue="true"/>
+                    <property id="term-server" label="Driver server label" description="Custom value for driver server label in connection page" type="string" required="false" defaultValue=""/>
+                    <property id="term-database" label="Driver database label" description="Custom value for driver database label in connection page" type="string" required="false" defaultValue=""/>
                 </propertyGroup>
                 <propertyGroup label="Queries" description="Custom driver queries">
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
