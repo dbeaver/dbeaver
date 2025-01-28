@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -47,12 +48,12 @@ public class BreadcrumbTrim {
         var breadcrumb = new BreadcrumbViewer(parent) {
             @Override
             protected void configureDropDownViewer(@NotNull TreeViewer viewer, @NotNull Object input) {
-                viewer.setContentProvider(new BreadcrumbNodeContentProvider(false));
+                viewer.setContentProvider(new BreadcrumbNodeContentProvider(true));
                 viewer.setLabelProvider(new BreadcrumbNodeLabelProvider());
             }
         };
         breadcrumb.setLabelProvider(new BreadcrumbNodeLabelProvider());
-        breadcrumb.setContentProvider(new BreadcrumbNodeContentProvider(true));
+        breadcrumb.setContentProvider(new BreadcrumbNodeContentProvider(false));
         breadcrumb.addOpenListener(e -> openEditor(e.getSelection()));
         breadcrumb.addDoubleClickListener(e -> openEditor(e.getSelection()));
 
@@ -123,7 +124,7 @@ public class BreadcrumbTrim {
         }
     }
 
-    private record BreadcrumbNodeContentProvider(boolean allowChildren) implements ITreeContentProvider {
+    private record BreadcrumbNodeContentProvider(boolean allowFoldersOnly) implements ITreeContentProvider {
         @Override
         public Object[] getElements(Object inputElement) {
             DBNNode child = (DBNNode) inputElement;
@@ -160,7 +161,11 @@ public class BreadcrumbTrim {
 
         @Override
         public boolean hasChildren(Object element) {
-            return allowChildren && !ArrayUtils.isEmpty(getCachedChildren((DBNNode) element));
+            if (!allowFoldersOnly || element instanceof DBNLocalFolder) {
+                return !ArrayUtils.isEmpty(getCachedChildren((DBNNode) element));
+            } else {
+                return false;
+            }
         }
 
         @Nullable

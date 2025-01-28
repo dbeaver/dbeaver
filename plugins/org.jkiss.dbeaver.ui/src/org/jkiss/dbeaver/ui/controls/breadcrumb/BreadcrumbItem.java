@@ -44,7 +44,6 @@ final class BreadcrumbItem extends Item {
     private static final int DROP_DOWN_MIN_WIDTH = 250;
     private static final int DROP_DOWN_MAX_WIDTH = 500;
     private static final int DROP_DOWN_MIN_HEIGHT = 200;
-    private static final int DROP_DOWN_MAX_HEIGHT = 300;
 
     private final BreadcrumbViewer viewer;
 
@@ -227,9 +226,12 @@ final class BreadcrumbItem extends Item {
     private void configureShellBounds(@NotNull Shell shell) {
         shell.pack();
 
+        var window = UIUtils.getActiveWorkbenchWindow();
+        var windowSize = window.getShell().getSize();
+
         var shellSize = shell.getSize();
         int width = CommonUtils.clamp(shellSize.x, DROP_DOWN_MIN_WIDTH, DROP_DOWN_MAX_WIDTH);
-        int height = CommonUtils.clamp(shellSize.y, DROP_DOWN_MIN_HEIGHT, DROP_DOWN_MAX_HEIGHT);
+        int height = CommonUtils.clamp(shellSize.y, DROP_DOWN_MIN_HEIGHT, windowSize.y / 2);
 
         var itemBounds = container.getBounds();
         var trimBounds = shell.computeTrim(0, 0, width, height);
