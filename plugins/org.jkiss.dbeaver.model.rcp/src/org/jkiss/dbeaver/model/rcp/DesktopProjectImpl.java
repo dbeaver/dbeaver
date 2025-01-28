@@ -76,7 +76,7 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
 
     @NotNull
     private final IProject project;
-    protected volatile TaskManagerImpl taskManager;
+    protected volatile DBTTaskManager taskManager;
 
     private volatile boolean projectInvalidated;
 
@@ -208,7 +208,7 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
             fsRoot,
             fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
         );
-        if (Files.isDirectory(path)) {
+        if (fsRoot.getFileSystem().isDirectory(path)) {
             return new EFSNIOFolder(root, path);
         } else {
             return new EFSNIOFile(root, path);
@@ -228,10 +228,7 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
         if (taskManager == null) {
             synchronized (metadataSync) {
                 if (taskManager == null) {
-                    taskManager = new TaskManagerImpl(
-                        this,
-                        getWorkspace().getMetadataFolder().resolve(TaskConstants.TASK_STATS_FOLDER)
-                    );
+                    taskManager = createTaskManager();
                 }
             }
         }
@@ -245,6 +242,14 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
             return taskManager;
         }
         return create ? getTaskManager() : null;
+    }
+
+    @NotNull
+    protected DBTTaskManager createTaskManager() {
+        return new TaskManagerImpl(
+            this,
+            getWorkspace().getMetadataFolder().resolve(TaskConstants.TASK_STATS_FOLDER)
+        );
     }
 
     /**

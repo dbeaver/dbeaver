@@ -250,6 +250,11 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 //log.warn("Folder node '" + folder.getFolderPath() + "' not found");
                 folderNode = new DBNLocalFolder(this, folder);
                 folderNodes.put(folder, folderNode);
+
+                getModel().fireNodeEvent(new DBNEvent(
+                    this,
+                    DBNEvent.Action.ADD,
+                    folderNode));
             }
             return folderNode;
         }

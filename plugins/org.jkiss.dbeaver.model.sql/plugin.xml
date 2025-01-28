@@ -73,7 +73,7 @@
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
                 base-type="org.eclipse.core.runtime.text"
-                file-extensions="sql"
+                file-extensions="sql,ddl"
                 id="org.jkiss.dbeaver.sql"
                 name="SQL Script"
                 priority="high"

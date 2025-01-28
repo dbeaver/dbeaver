@@ -43,8 +43,8 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
     private String savePasswordToolTipText;
     private String description;
 
-    private Text usernameText;
-    private Text passwordText;
+    protected Text usernameText;
+    protected Text passwordText;
     private Button savePasswordCheck;
 
     public BaseAuthDialog(Shell parentShell, String title, boolean passwordOnly, boolean showSavePassword) {

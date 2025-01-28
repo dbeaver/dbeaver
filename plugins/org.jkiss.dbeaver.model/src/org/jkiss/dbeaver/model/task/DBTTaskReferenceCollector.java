@@ -14,22 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mysql;
+package org.jkiss.dbeaver.model.task;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.jkiss.code.NotNull;
 
-public class MySQLMessages extends NLS {
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mysql.MySQLMessages";
+import java.util.List;
 
-    public static String exception_direct_database_rename;
-    public static String table_column_length_tooltip;
-    public static String table_column_length;
+/**
+ * Task reference collector.
+ * <p>
+ * May be implemented by {@link DBTTaskHandler}
+ */
+public interface DBTTaskReferenceCollector extends DBTTaskHandler {
 
-    static {
-        NLS.initializeMessages(BUNDLE_NAME, MySQLMessages.class);
-    }
-
-    private MySQLMessages() {
-    }
-
+    void collectTaskReferences(@NotNull DBTTask task, @NotNull List<DBTTaskReference> references);
 }
