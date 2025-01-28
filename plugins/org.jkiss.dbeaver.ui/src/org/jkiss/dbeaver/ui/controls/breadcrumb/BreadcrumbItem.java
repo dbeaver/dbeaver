@@ -32,7 +32,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -40,8 +39,6 @@ import org.jkiss.dbeaver.ui.controls.DoubleClickMouseAdapter;
 import org.jkiss.utils.CommonUtils;
 
 final class BreadcrumbItem extends Item {
-    private final Log log = Log.getLog(BreadcrumbItem.class);
-
     private static final int DROP_DOWN_MIN_WIDTH = 250;
     private static final int DROP_DOWN_MAX_WIDTH = 500;
     private static final int DROP_DOWN_MIN_HEIGHT = 200;
