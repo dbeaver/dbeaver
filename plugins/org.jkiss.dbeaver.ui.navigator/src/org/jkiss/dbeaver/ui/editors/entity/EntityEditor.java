@@ -366,6 +366,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             final IEditorInput input = ((IUnloadableEditorInput) getEditorInput()).unloadInput();
             deactivateEditor();
             setInput(input);
+            firePropertyChange(PROP_INPUT);
             recreateEditorControl();
             return true;
         } else {

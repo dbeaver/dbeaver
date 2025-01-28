@@ -60,6 +60,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
             // Pages re-initialization. Do not call init because it recreates selection provider
             setSite(site);
             setInput(input);
+            firePropertyChange(PROP_INPUT);
         }
         setPartName(input.getName());
         setTitleImage(input.getImageDescriptor());

@@ -25,10 +25,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -37,8 +35,11 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
 import org.jkiss.dbeaver.ui.controls.breadcrumb.BreadcrumbViewer;
+import org.jkiss.dbeaver.ui.editors.ILazyEditorInput;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
 import org.jkiss.utils.ArrayUtils;
+
+import java.util.function.Consumer;
 
 public class BreadcrumbTrim {
     private static final Log log = Log.getLog(BreadcrumbTrim.class);
@@ -67,26 +68,50 @@ public class BreadcrumbTrim {
     }
 
     private static void installListeners(@NotNull BreadcrumbViewer viewer) {
-        var selectionListener = new ISelectionListener() {
+        var propertyListener = new IPropertyListener() {
             @Override
-            public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-                log.debug("selectionChanged(" + part + ", " + selection + ")");
+            public void propertyChanged(Object source, int propId) {
+                if (propId == IEditorPart.PROP_INPUT && source instanceof IEditorPart editorPart) {
+                    setInput(viewer, editorPart.getEditorInput());
+                }
             }
         };
 
         var partListener = new AbstractPartListener() {
+            IEditorPart lastEditorPart;
+
             @Override
             public void partActivated(IWorkbenchPart part) {
-                if (part instanceof IEditorPart editorPart && editorPart.getEditorInput() instanceof INavigatorEditorInput input) {
-                    viewer.setInput(input.getNavigatorNode());
-                } else {
-                    viewer.setInput(null);
+                if (part instanceof IEditorPart editorPart) {
+                    setLastEditorPart(editorPart);
                 }
             }
 
             @Override
             public void partDeactivated(IWorkbenchPart part) {
-                viewer.setInput(null);
+                if (part instanceof IEditorPart editorPart) {
+                    setLastEditorPart(editorPart);
+                }
+            }
+
+            @Override
+            public void partClosed(IWorkbenchPart part) {
+                if (part instanceof IEditorPart) {
+                    setLastEditorPart(null);
+                }
+            }
+
+            private void setLastEditorPart(@Nullable IEditorPart part) {
+                if (lastEditorPart != null) {
+                    lastEditorPart.removePropertyListener(propertyListener);
+                    lastEditorPart = null;
+                    viewer.setInput(null);
+                }
+                if (part != null) {
+                    lastEditorPart = part;
+                    lastEditorPart.addPropertyListener(propertyListener);
+                    setInput(viewer, part.getEditorInput());
+                }
             }
         };
 
@@ -94,13 +119,11 @@ public class BreadcrumbTrim {
             @Override
             public void pageOpened(IWorkbenchPage page) {
                 page.addPartListener(partListener);
-                page.addSelectionListener(selectionListener);
             }
 
             @Override
             public void pageClosed(IWorkbenchPage page) {
                 page.removePartListener(partListener);
-                page.removeSelectionListener(selectionListener);
             }
         };
 
@@ -110,6 +133,33 @@ public class BreadcrumbTrim {
         for (IWorkbenchPage page : window.getPages()) {
             page.addPartListener(partListener);
         }
+    }
+
+    private static void setInput(@NotNull BreadcrumbViewer viewer, @NotNull IEditorInput input) {
+        if (!tryExtractNode(input, viewer::setInput)) {
+            viewer.setInput(null);
+        }
+    }
+
+    private static boolean tryExtractNode(@NotNull IEditorInput input, @NotNull Consumer<? super DBNNode> consumer) {
+        if (input instanceof ILazyEditorInput lazyEditorInput && input instanceof DBPDataSourceContainerProvider provider) {
+            DBNModel navigatorModel = lazyEditorInput.getProject().getNavigatorModel();
+            if (navigatorModel != null) {
+                DBNDatabaseNode node = navigatorModel.findNode(provider.getDataSourceContainer());
+                if (node != null) {
+                    consumer.accept(node);
+                    return true;
+                }
+            }
+        }
+        if (input instanceof INavigatorEditorInput navigatorEditorInput) {
+            DBNNode node = navigatorEditorInput.getNavigatorNode();
+            if (node != null) {
+                consumer.accept(node);
+                return true;
+            }
+        }
+        return false;
     }
 
     private static class BreadcrumbNodeLabelProvider extends LabelProvider {
