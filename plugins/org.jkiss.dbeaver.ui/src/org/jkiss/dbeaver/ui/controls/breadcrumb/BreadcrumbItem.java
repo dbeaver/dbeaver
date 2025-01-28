@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.DoubleClickMouseAdapter;
 import org.jkiss.utils.CommonUtils;
 
 final class BreadcrumbItem extends Item {
@@ -216,11 +217,19 @@ final class BreadcrumbItem extends Item {
 
     private void addElementListener(@NotNull Control control) {
         control.addMenuDetectListener(e -> showMenu());
-        control.addMouseListener(MouseListener.mouseDoubleClickAdapter(e -> {
-            BreadcrumbViewer viewer = getViewer();
-            viewer.selectItem(BreadcrumbItem.this);
-            viewer.fireDoubleClick();
-        }));
+        control.addMouseListener(new DoubleClickMouseAdapter() {
+            @Override
+            public void onMouseSingleClick(@NotNull MouseEvent e) {
+                showMenu();
+            }
+
+            @Override
+            public void onMouseDoubleClick(@NotNull MouseEvent e) {
+                BreadcrumbViewer viewer = getViewer();
+                viewer.selectItem(BreadcrumbItem.this);
+                viewer.fireDoubleClick();
+            }
+        });
     }
 
     private void configureShellBounds(@NotNull Shell shell) {

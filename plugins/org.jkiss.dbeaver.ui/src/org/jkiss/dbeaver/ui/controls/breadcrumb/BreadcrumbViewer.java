@@ -17,13 +17,10 @@
 package org.jkiss.dbeaver.ui.controls.breadcrumb;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.MenuDetectEvent;
-import org.eclipse.swt.events.MenuDetectListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -38,7 +35,6 @@ import java.util.Objects;
 
 public abstract class BreadcrumbViewer extends StructuredViewer {
     private final List<BreadcrumbItem> breadcrumbItems = new ArrayList<>();
-    private final ListenerList<MenuDetectListener> menuListeners = new ListenerList<>();
 
     private final Composite container;
 
@@ -186,20 +182,6 @@ public abstract class BreadcrumbViewer extends StructuredViewer {
     void selectItem(@Nullable BreadcrumbItem item) {
         selectedItem = item;
         setSelectionToWidget(getSelection(), false);
-    }
-
-    public void addMenuDetectListener(@NotNull MenuDetectListener listener) {
-        menuListeners.add(listener);
-    }
-
-    public void removeMenuDetectListener(@NotNull MenuDetectListener listener) {
-        menuListeners.remove(listener);
-    }
-
-    void fireMenuDetect(@NotNull MenuDetectEvent event) {
-        for (MenuDetectListener listener : menuListeners) {
-            listener.menuDetected(event);
-        }
     }
 
     void fireMenuSelection(@NotNull Object element) {
