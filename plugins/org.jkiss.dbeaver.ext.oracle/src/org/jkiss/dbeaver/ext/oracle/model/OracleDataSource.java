@@ -137,6 +137,11 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return this.publicSchema;
     }
 
+    @NotNull
+    public UserCache getUserCache() {
+        return this.userCache;
+    }
+
     @Override
     public Object getDataSourceFeature(String featureId) {
         switch (featureId) {
@@ -1144,5 +1149,9 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     @Override
     public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return KNOWN_GLOBAL_PSEUDO_ATTRS;
+    }
+
+    public boolean supportsUserPasswordEdit() {
+        return false;
     }
 }

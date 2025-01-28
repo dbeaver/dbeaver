@@ -40,7 +40,10 @@ public class SQLControlCommand implements SQLScriptElement {
         this.dataSource = dataSource;
 
         this.text = text;
-        if (text.startsWith(syntaxManager.getControlCommandPrefix())) {
+        final String multilineCommandPrefix = syntaxManager.getControlCommandPrefix().repeat(2);
+        if (text.startsWith(multilineCommandPrefix)) {
+            text = text.substring(multilineCommandPrefix.length(), text.length() - multilineCommandPrefix.length());
+        } else if (text.startsWith(syntaxManager.getControlCommandPrefix())) {
             text = text.substring(syntaxManager.getControlCommandPrefix().length());
         }
         int divPos = -1;

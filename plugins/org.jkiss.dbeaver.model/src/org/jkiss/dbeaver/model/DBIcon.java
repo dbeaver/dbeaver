@@ -69,6 +69,7 @@ public class DBIcon implements DBPImage {
     public static final DBIcon TREE_UNIQUE_KEY = new DBIcon("unique-key", "tree/unique_constraint.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_FOREIGN_KEY = new DBIcon("foreign-key", "tree/foreign_key.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_FOREIGN_KEY_COLUMN = new DBIcon("foreign-key-column", "tree/foreign_key_column.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_DERIVED_COLUMN = new DBIcon("derived-column", "tree/derived_column.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_REFERENCE = new DBIcon("reference", "tree/reference.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TRIGGER = new DBIcon("trigger", "tree/trigger.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_USER = new DBIcon("user", "tree/user.png"); //$NON-NLS-1$ //$NON-NLS-2$
