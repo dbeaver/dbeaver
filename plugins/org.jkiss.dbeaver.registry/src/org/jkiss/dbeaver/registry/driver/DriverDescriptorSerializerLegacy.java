@@ -299,6 +299,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curProvider.addDriver(curDriver);
                     } else if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
                         curDriver.resetDriverInstance();
+                        // xml file that parsed now has already full information about current driver
+                        // which means that driver libraries will be set from it
+                        curDriver.setDriverLibraries(List.of());
                     }
 
                     if (providedDrivers || curProvider.isDriversManagable()) {
