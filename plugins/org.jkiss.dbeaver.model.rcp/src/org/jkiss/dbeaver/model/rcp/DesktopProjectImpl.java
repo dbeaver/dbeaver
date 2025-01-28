@@ -208,7 +208,7 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
             fsRoot,
             fsRoot.getFileSystem().getType() + "/" + fsRoot.getFileSystem().getId() + "/" + fsRoot.getRootId()
         );
-        if (Files.isDirectory(path)) {
+        if (fsRoot.getFileSystem().isDirectory(path)) {
             return new EFSNIOFolder(root, path);
         } else {
             return new EFSNIOFile(root, path);

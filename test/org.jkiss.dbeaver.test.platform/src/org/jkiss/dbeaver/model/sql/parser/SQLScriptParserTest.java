@@ -524,7 +524,25 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
         SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 15, false, false);
         Assert.assertEquals("@set col1 = '1'", element.getText());
     }
-    
+
+    @Test
+    public void parseMultilineCommandFromCursorPosition() throws DBException {
+        String query = """
+            @@set var1 = 'I have a long text for
+            multiple lines'@@
+            
+            SELECT var1 FROM dual;""";
+        String expected = """
+            @@set var1 = 'I have a long text for
+            multiple lines'@@""";
+        SQLParserContext context = createParserContext(setDialect("oracle"), query);
+        var positions = List.of(0, 1, 2, 5, 12, 25, 36, 52, 53, 54);
+        for (var pos : positions) {
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
+            Assert.assertEquals(expected, element.getText());
+        }
+    }
+
     @Test
     public void parseOracleQStringRule() throws DBException {
         final List<String> qstrings = List.of(
