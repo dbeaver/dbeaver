@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -41,13 +42,10 @@ public class OracleChangeUserPasswordManager implements DBAUserPasswordManager {
         // Do not use numbers in the password beginning
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {
             session.enableLogging(false);
-            // need to check username in database,
-            // otherwise lowercase username will be considered as login that should be quoted
-            String userNameInDatabase = null;
-            if (!DBUtils.isQuotedIdentifier(dataSource, userName)) {
-                userNameInDatabase = JDBCUtils.queryString(session, "SELECT SYS_CONTEXT('USERENV', 'SESSION_USER') FROM DUAL");
-            }
-            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource, userNameInDatabase == null ? userName : userNameInDatabase) + " IDENTIFIED BY " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(newPassword)) +
+            String transformedUserName = DBObjectNameCaseTransformer.transformName(dataSource, userName);
+            JDBCUtils.executeSQL(session, "ALTER USER " + DBUtils.getQuotedIdentifier(dataSource,
+                transformedUserName != null ? transformedUserName : userName) + " IDENTIFIED BY " +
+                DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(newPassword)) +
                 " REPLACE " + DBUtils.getQuotedIdentifier(dataSource, CommonUtils.notEmpty(oldPassword)));
         } catch (SQLException e) {
             throw new DBCException("Error changing user password", e);
