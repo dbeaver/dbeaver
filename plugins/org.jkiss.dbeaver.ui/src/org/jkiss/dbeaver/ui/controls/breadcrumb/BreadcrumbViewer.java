@@ -157,10 +157,6 @@ public abstract class BreadcrumbViewer extends StructuredViewer {
 
     @Override
     protected void setSelectionToWidget(List l, boolean reveal) {
-        for (BreadcrumbItem item : breadcrumbItems) {
-            item.setSelected(false);
-        }
-
         if (l == null) {
             return;
         }
@@ -168,7 +164,6 @@ public abstract class BreadcrumbViewer extends StructuredViewer {
         for (Object element : l) {
             BreadcrumbItem item = (BreadcrumbItem) doFindItem(element);
             if (item != null) {
-                item.setSelected(true);
                 selectedItem = item;
             }
         }
@@ -189,10 +184,6 @@ public abstract class BreadcrumbViewer extends StructuredViewer {
     }
 
     void selectItem(@Nullable BreadcrumbItem item) {
-        if (selectedItem != null) {
-            selectedItem.setSelected(false);
-        }
-
         selectedItem = item;
         setSelectionToWidget(getSelection(), false);
     }
@@ -228,7 +219,14 @@ public abstract class BreadcrumbViewer extends StructuredViewer {
         this.toolTipLabelProvider = toolTipLabelProvider;
     }
 
-    protected abstract void contributeDropDownElements(@NotNull List<Object> elements, @NotNull Object input);
+    /**
+     * Configure the given drop down viewer. The given input is used for the viewers input. Clients
+     * must at least set the label and the content provider for the viewer.
+     *
+     * @param viewer the viewer to configure
+     * @param input  the input for the viewer
+     */
+    protected abstract void configureDropDownViewer(@NotNull TreeViewer viewer, @NotNull Object input);
 
     private int buildItemChain(@Nullable Object element) {
         if (element == null) {

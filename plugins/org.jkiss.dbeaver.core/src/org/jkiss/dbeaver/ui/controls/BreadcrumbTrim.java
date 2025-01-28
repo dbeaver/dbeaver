@@ -17,16 +17,12 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import jakarta.annotation.PostConstruct;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.*;
-import org.eclipse.ui.internal.Workbench;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -40,12 +36,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
 import org.jkiss.dbeaver.ui.controls.breadcrumb.BreadcrumbViewer;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
-
-import java.util.Collections;
-import java.util.List;
+import org.jkiss.utils.ArrayUtils;
 
 public class BreadcrumbTrim {
     private static final Log log = Log.getLog(BreadcrumbTrim.class);
@@ -54,40 +46,16 @@ public class BreadcrumbTrim {
     public void createControls(Composite parent) {
         var breadcrumb = new BreadcrumbViewer(parent) {
             @Override
-            protected void contributeDropDownElements(@NotNull List<Object> elements, @NotNull Object input) {
-                DBNNode node = (DBNNode) input;
-                DBNNode[] children;
-
-                try {
-                    children = node.getParentNode().getChildren(new LocalCacheProgressMonitor(new VoidProgressMonitor()));
-                } catch (DBException e) {
-                    log.error("Error getting children of " + node, e);
-                    return;
-                }
-
-                if (children == null) {
-                    return;
-                }
-
-                Collections.addAll(elements, children);
+            protected void configureDropDownViewer(@NotNull TreeViewer viewer, @NotNull Object input) {
+                log.debug("configureDropDownViewer");
+                viewer.setContentProvider(new BreadcrumbNodeContentProvider(false));
+                viewer.setLabelProvider(new BreadcrumbNodeLabelProvider());
             }
         };
         breadcrumb.setLabelProvider(new BreadcrumbNodeLabelProvider());
-        breadcrumb.setContentProvider(new BreadcrumbNodeContentProvider());
-        breadcrumb.addDoubleClickListener(e -> openEditor((IStructuredSelection) e.getSelection()));
+        breadcrumb.setContentProvider(new BreadcrumbNodeContentProvider(true));
         breadcrumb.addOpenListener(e -> openEditor(((IStructuredSelection) e.getSelection())));
-        breadcrumb.addMenuDetectListener(e -> {
-            IWorkbenchWindow window = Workbench.getInstance().getActiveWorkbenchWindow();
-            IEditorPart part = window.getActivePage().getActiveEditor();
-            IEditorSite site = part instanceof EntityEditor ee ? ee.getActiveEditor().getEditorSite() : part.getEditorSite();
-
-            MenuManager manager = new MenuManager();
-            NavigatorUtils.addStandardMenuItem(site, manager, breadcrumb);
-
-            Menu menu = manager.createContextMenu(breadcrumb.getControl());
-            menu.setLocation(e.x + 10, e.y + 10);
-            menu.setVisible(true);
-        });
+        breadcrumb.addDoubleClickListener(e -> openEditor((IStructuredSelection) e.getSelection()));
 
         installListeners(breadcrumb);
     }
@@ -158,7 +126,17 @@ public class BreadcrumbTrim {
         }
     }
 
-    private static class BreadcrumbNodeContentProvider extends TreeContentProvider {
+    private record BreadcrumbNodeContentProvider(boolean allowChildren) implements ITreeContentProvider {
+        @Override
+        public Object[] getElements(Object inputElement) {
+            DBNNode child = (DBNNode) inputElement;
+            DBNNode parent = child.getParentNode();
+            if (parent != null) {
+                return getChildren(parent);
+            }
+            return new Object[0];
+        }
+
         @Override
         public Object getParent(Object element) {
             DBNNode child = (DBNNode) element;
@@ -176,12 +154,26 @@ public class BreadcrumbTrim {
 
         @Override
         public Object[] getChildren(Object parentElement) {
-            throw new UnsupportedOperationException();
+            var children = getCachedChildren((DBNNode) parentElement);
+            if (children != null) {
+                return children;
+            }
+            return new Object[0];
         }
 
         @Override
         public boolean hasChildren(Object element) {
-            return ((DBNNode) element).hasChildren(true);
+            return allowChildren && !ArrayUtils.isEmpty(getCachedChildren((DBNNode) element));
+        }
+
+        @Nullable
+        private static DBNNode[] getCachedChildren(@NotNull DBNNode parent) {
+            try {
+                return parent.getChildren(new LocalCacheProgressMonitor(new VoidProgressMonitor()));
+            } catch (DBException e) {
+                log.error("Error getting children", e); // should not happen
+                return null;
+            }
         }
     }
 }
