@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -292,12 +292,12 @@ public class ObjectPropertyTester extends PropertyTester {
         if (node instanceof DBNProject && DBWorkbench.isDistributed()) {
             return false;
         }
-        if (node instanceof DBNDatabaseNode) {
-            if (((DBNDatabaseNode)node).isVirtual()) {
+        if (node instanceof DBNDatabaseNode dbNode) {
+            if (dbNode.isVirtual()) {
                 // Can't create virtual objects
                 return false;
             }
-            DBPDataSource dataSource = ((DBNDatabaseNode) node).getDataSource();
+            DBPDataSource dataSource = dbNode.getDataSource();
             if (dataSource != null && dataSource.getInfo().isReadOnlyMetaData()) {
                 return false;
             }
@@ -372,18 +372,18 @@ public class ObjectPropertyTester extends PropertyTester {
     }
 
     private static boolean supportsCreatingColumnObject(@Nullable DBNNode node, @NotNull Class<?> supertype) {
-        if (!(node instanceof DBNDatabaseItem)) {
+        if (!(node instanceof DBNDatabaseItem databaseItem)) {
             return false;
         }
-        DBNDatabaseItem databaseItem = (DBNDatabaseItem) node;
         DBSObject attributeObject = databaseItem.getObject();
-        if (!(attributeObject instanceof DBSEntityAttribute)) {
+        if (!(attributeObject instanceof DBSEntityAttribute entityAttribute)) {
             return false;
         }
-        DBSObject entityObject = attributeObject.getParentObject();
-        if (!(entityObject instanceof DBSEntity)) {
+        DBPDataSource dataSource = entityAttribute.getDataSource();
+        if (dataSource == null || dataSource.getInfo().isReadOnlyMetaData()) {
             return false;
         }
+        DBSEntity entityObject = entityAttribute.getParentObject();
         DBEStructEditor<?> structEditor = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(entityObject.getClass(), DBEStructEditor.class);
         if (structEditor == null) {
             return false;

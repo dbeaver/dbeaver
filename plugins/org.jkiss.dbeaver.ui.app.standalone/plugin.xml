@@ -49,10 +49,8 @@
             <property name="appEdition" value="ce"/>
             <property name="versionInfoCoord" value="112,230"/>
             <property name="versionInfoSize" value="8"/>
-            <property name="versionInfoColor" value="255,255,255"/>
             <property name="startupMessageRect" value="60,273,240,21"/>
             <property name="startupProgressRect" value="0,295,601,6"/>
-            <property name="startupForegroundColor" value="FFFFFF"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
@@ -73,10 +71,8 @@
             <property name="appName" value="DBeaver CE"/>
             <property name="versionInfoCoord" value="112,230"/>
             <property name="versionInfoSize" value="8"/>
-            <property name="versionInfoColor" value="255,255,255"/>
             <property name="startupMessageRect" value="60,273,240,21"/>
             <property name="startupProgressRect" value="0,295,601,6"/>
-            <property name="startupForegroundColor" value="FFFFFF"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
@@ -501,7 +497,6 @@
         <activityPatternBinding activityId="hideE4Activity" pattern="org.eclipse.userstorage.*"/>
         <!-- Hide E4 view: Welcome, Bookmarks, Palette, Thumbnail -->
         <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.ui.internal.introview"/>
-        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.ui.views.BookmarkView"/>
         <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.gef.ui.palette_view"/>
         <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.graphiti.ui.internal.editor.thumbnailview"/>
 
@@ -523,6 +518,7 @@
         <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
             <editorOnboardingCommand id="org.jkiss.dbeaver.core.new.connection"/>
             <editorOnboardingCommand id="org.jkiss.dbeaver.core.sql.editor.recent"/>
+            <editorOnboardingCommand id="org.eclipse.ui.edit.text.openLocalFile"/>
             <editorOnboardingCommand id="org.eclipse.ui.window.showKeyAssist"/>
             <editorOnboardingCommand id="org.eclipse.ui.window.quickAccess"/>
         </perspectiveExtension>

@@ -1500,7 +1500,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             return false;
         }
         if (resetVersions) {
+            Map<DBPDriverLibrary, List<DriverFileInfo>> tempResolvedFiles = new HashMap<>();
+            // some drivers need to have embedded driver files so we cannot remove it from resolved files
+            resolvedFiles.forEach((key, value) -> {
+                if (key.isEmbedded()) {
+                    tempResolvedFiles.put(key, value);
+                }
+            });
             resetDriverInstance();
+            resolvedFiles.putAll(tempResolvedFiles);
         }
         for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
             List<DriverFileInfo> info = new ArrayList<>();
@@ -2104,4 +2112,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return libraries.toArray(new String[0]);
     }
 
+    @Override
+    public boolean matchesId(@NotNull String driverId) {
+        if (driverId.equals(this.id)) {
+            return true;
+        }
+        for (ReplaceInfo replace : driverReplacements) {
+            if (driverId.equals(replace.driverId)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

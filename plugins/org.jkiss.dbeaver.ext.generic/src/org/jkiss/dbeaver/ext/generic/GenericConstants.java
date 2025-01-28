@@ -75,6 +75,8 @@ public class GenericConstants {
     public static final String PARAM_SUPPORTS_EMBEDDED_DATABASE_CREATION = "supports-embedded-database-creation";
     public static final String PARAM_IDENTIFIER_QUOTES = "identifier-quotes";
     public static final String PARAM_DATABASE_FILE_EXTENSIONS = "database-file-extensions";
+    public static final String PARAM_TERM_SERVER = "term-server";
+    public static final String PARAM_TERM_DATABASE = "term-database";
 
     public static final String PARAM_NATIVE_FORMAT_TIMESTAMP = "native-format-timestamp";
     public static final String PARAM_NATIVE_FORMAT_TIME = "native-format-time";

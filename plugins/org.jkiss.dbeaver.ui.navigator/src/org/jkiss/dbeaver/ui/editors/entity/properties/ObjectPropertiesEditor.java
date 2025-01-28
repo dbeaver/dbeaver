@@ -516,20 +516,26 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
-        if (propertiesPanel != null) {
-            if (propertiesPanel.refreshPart(source, force) == RefreshResult.CANCELED) {
-                return RefreshResult.CANCELED;
-            }
-        }
-        if (folderComposite != null && folderComposite.getFolders() != null) {
-            for (TabbedFolderInfo folder : folderComposite.getFolders()) {
-                if (folder.getContents() instanceof IRefreshablePart) {
-                    if (((IRefreshablePart) folder.getContents()).refreshPart(source, force) == RefreshResult.CANCELED) {
-                        return RefreshResult.CANCELED;
+
+        Runnable afterRefresh = () -> {
+            if (folderComposite != null && folderComposite.getFolders() != null) {
+                for (TabbedFolderInfo folder : folderComposite.getFolders()) {
+                    if (folder.getContents() instanceof IRefreshablePart) {
+                        ((IRefreshablePart) folder.getContents()).refreshPart(source, force);
                     }
                 }
             }
+        };
+
+        if (propertiesPanel != null) {
+            if (propertiesPanel.refreshPart(force, afterRefresh) == RefreshResult.CANCELED) {
+                return RefreshResult.CANCELED;
+            }
+        } else {
+            // we still have to refresh folders in that way
+            UIUtils.asyncExec(afterRefresh);
         }
+
         return RefreshResult.REFRESHED;
     }
 
