@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ui.controls.breadcrumb;
 
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.util.OpenStrategy;
 import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -173,6 +175,28 @@ final class BreadcrumbItem extends Item {
         Object input = getData();
 
         menuViewer = new TreeViewer(menuShell, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+        menuViewer.addOpenListener(e -> {
+            if (e.getSelection() instanceof IStructuredSelection selection) {
+                Object element = selection.getFirstElement();
+                if (element != null) {
+                    openElement(element);
+                }
+            }
+        });
+        menuViewer.getTree().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseUp(MouseEvent e) {
+                if (e.button != 1 || (OpenStrategy.getOpenMethod() & OpenStrategy.SINGLE_CLICK) != 0) {
+                    return;
+                }
+                Tree tree = (Tree) e.widget;
+                Item item = tree.getItem(new Point(e.x, e.y));
+                if (item != null) {
+                    openElement(item.getData());
+                }
+            }
+        });
+
         viewer.configureDropDownViewer(menuViewer, input);
         menuViewer.setInput(input);
 
@@ -185,6 +209,10 @@ final class BreadcrumbItem extends Item {
 
     private void openElement(@NotNull Object element) {
         viewer.fireMenuSelection(element);
+
+        if (menuShell != null) {
+            menuShell.dispose();
+        }
     }
 
     private void addElementListener(@NotNull Control control) {
@@ -218,7 +246,7 @@ final class BreadcrumbItem extends Item {
         Listener focusListener = e -> {
             switch (e.type) {
                 case SWT.FocusIn -> {
-                    Widget focusElement= e.widget;
+                    Widget focusElement = e.widget;
                     boolean isFocusBreadcrumbTreeFocusWidget = focusElement == shell || focusElement instanceof Tree tree && tree.getShell() == shell;
                     boolean isFocusWidgetParentShell = focusElement instanceof Control control && control.getShell().getParent() == shell;
 
@@ -234,7 +262,7 @@ final class BreadcrumbItem extends Item {
             }
         };
 
-        Display display= shell.getDisplay();
+        Display display = shell.getDisplay();
         display.addFilter(SWT.FocusIn, focusListener);
         display.addFilter(SWT.FocusOut, focusListener);
 

@@ -30,13 +30,13 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
 import org.jkiss.dbeaver.ui.controls.breadcrumb.BreadcrumbViewer;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.ArrayUtils;
 
 public class BreadcrumbTrim {
@@ -47,25 +47,22 @@ public class BreadcrumbTrim {
         var breadcrumb = new BreadcrumbViewer(parent) {
             @Override
             protected void configureDropDownViewer(@NotNull TreeViewer viewer, @NotNull Object input) {
-                log.debug("configureDropDownViewer");
                 viewer.setContentProvider(new BreadcrumbNodeContentProvider(false));
                 viewer.setLabelProvider(new BreadcrumbNodeLabelProvider());
             }
         };
         breadcrumb.setLabelProvider(new BreadcrumbNodeLabelProvider());
         breadcrumb.setContentProvider(new BreadcrumbNodeContentProvider(true));
-        breadcrumb.addOpenListener(e -> openEditor(((IStructuredSelection) e.getSelection())));
-        breadcrumb.addDoubleClickListener(e -> openEditor((IStructuredSelection) e.getSelection()));
+        breadcrumb.addOpenListener(e -> openEditor(e.getSelection()));
+        breadcrumb.addDoubleClickListener(e -> openEditor(e.getSelection()));
 
         installListeners(breadcrumb);
     }
 
-    private static void openEditor(@NotNull IStructuredSelection selection) {
-        NavigatorHandlerObjectOpen.openEntityEditor(
-            (DBNNode) selection.getFirstElement(),
-            null,
-            PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-        );
+    private static void openEditor(@NotNull ISelection selection) {
+        if (selection instanceof IStructuredSelection ss && ss.getFirstElement() instanceof DBNNode node) {
+            DBWorkbench.getPlatformUI().openEntityEditor(node, null);
+        }
     }
 
     private static void installListeners(@NotNull BreadcrumbViewer viewer) {
