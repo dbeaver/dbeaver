@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity.properties;
 
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
@@ -32,6 +34,8 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBValueFormatting;
@@ -58,12 +62,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 /**
  * TabbedFolderPageProperties
  */
 public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshablePart, ICustomActionsProvider {
 
+    private static final Log log = Log.getLog(TabbedFolderPageForm.class);
     private final IWorkbenchPart part;
     private final IDatabaseEditorInput input;
 
@@ -167,7 +171,11 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 		super.dispose();
 	}
 
-    private void refreshProperties() {
+    private void refreshProperties(){
+        refreshProperties(null);
+    }
+
+    private void refreshProperties(@Nullable Runnable afterRefresh) {
         if (curPropertySource == null) {
             return;
         }
@@ -332,7 +340,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         }
 
         UIUtils.installAndUpdateMainFont(propertiesGroup);
-        refreshPropertyValues(allProps, firstInit);
+        refreshPropertyValues(allProps, firstInit, afterRefresh);
     }
 
     private void showAlterScript() {
@@ -353,7 +361,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         return null;
     }
 
-    private void refreshPropertyValues(List<DBPPropertyDescriptor> allProps, boolean disableControls) {
+    private void refreshPropertyValues(List<DBPPropertyDescriptor> allProps, boolean disableControls, Runnable afterRefresh) {
         DBSObject databaseObject = input.getDatabaseObject();
         if (databaseObject == null) {
             // Disposed
@@ -363,44 +371,59 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         disableControls = false;
         ControlEnableState blockEnableState = disableControls ? ControlEnableState.disable(propertiesGroup) : null;
 
-        ownerControl.runService(
-            LoadingJob.createService(
-                new DatabaseLoadService<Map<DBPPropertyDescriptor, Object>>("Load main properties", databaseObject.getDataSource()) {
-                    @Override
-                    public Map<DBPPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor) {
-                        DBPPropertySource propertySource = TabbedFolderPageForm.this.curPropertySource;
-                        monitor.beginTask("Load '" + DBValueFormatting.getDefaultValueDisplayString(propertySource.getEditableValue(), DBDDisplayFormat.UI) + "' properties", allProps.size());
-                        Map<DBPPropertyDescriptor, Object> propValues = new HashMap<>();
-                        for (DBPPropertyDescriptor prop : allProps) {
-                            if (monitor.isCanceled()) {
-                                break;
-                            }
-                            Object value = propertySource.getPropertyValue(monitor, prop.getId());
-                            propValues.put(prop, value);
-                            monitor.worked(1);
+        LoadingJob<Map<DBPPropertyDescriptor, Object>> service = LoadingJob.createService(
+            new DatabaseLoadService<>("Load main properties", databaseObject.getDataSource()) {
+                @Override
+                public Map<DBPPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor) {
+                    DBPPropertySource propertySource = TabbedFolderPageForm.this.curPropertySource;
+                    monitor.beginTask("Load '" + DBValueFormatting.getDefaultValueDisplayString(propertySource.getEditableValue(), DBDDisplayFormat.UI) + "' properties", allProps.size());
+                    Map<DBPPropertyDescriptor, Object> propValues = new HashMap<>();
+                    for (DBPPropertyDescriptor prop : allProps) {
+                        if (monitor.isCanceled()) {
+                            break;
                         }
-                        monitor.done();
-                        return propValues;
+                        Object value = propertySource.getPropertyValue(monitor, prop.getId());
+                        propValues.put(prop, value);
+                        monitor.worked(1);
                     }
-                },
-                ownerControl.createDefaultLoadVisualizer(editorValues -> {
-                    if (ownerControl.isDisposed()) {
-                        return;
-                    }
-                    formEditor.loadEditorValues(editorValues);
-                    if (blockEnableState != null) {
-                        blockEnableState.restore();
-                    }
-                })
-            )
+                    monitor.done();
+                    return propValues;
+                }
+            },
+            ownerControl.createDefaultLoadVisualizer(editorValues -> {
+                if (ownerControl.isDisposed()) {
+                    return;
+                }
+                formEditor.loadEditorValues(editorValues);
+                if (blockEnableState != null) {
+                    blockEnableState.restore();
+                }
+            })
         );
+        service.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                try {
+                    if (afterRefresh != null) {
+                        UIUtils.asyncExec(afterRefresh);
+                    }
+                } catch (Exception e) {
+                    log.warn("Exception after refreshing in TabbedFolderPageForm", e);
+                }
+            }
+        });
+        ownerControl.runService(service);
     }
 
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
+        return refreshPart(force, null);
+    }
+
+    public RefreshResult refreshPart(boolean force, @Nullable Runnable afterRefresh) {
         // Refresh props only on force refresh (manual)
         if (force) {
-            refreshProperties();
+            refreshProperties(afterRefresh);
             updateEditButtonsState();
             return RefreshResult.REFRESHED;
         }

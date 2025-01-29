@@ -43,16 +43,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAlias;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
-import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.registry.RuntimeProjectPropertiesConstant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
@@ -90,7 +89,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     private boolean filterShowConnected = false;
     private String filterPlaceholderText = UINavigatorMessages.actions_navigator_search_tip;
-    private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.table;
+    private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.connection;
     private volatile ProgressPainter treeLoadingListener;
 
     // It is static to share loading nodes between all tree controls
@@ -849,10 +848,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             if (!needToMatch && element instanceof DBNDatabaseNode node) {
                 DBSObject object = node.getObject();
                 switch (filterObjectType) {
-                    case connection:
-                        needToMatch = (object instanceof DBPDataSourceContainer);
-                        break;
-                    case container:
+                    case connection -> needToMatch = (object instanceof DBPDataSourceContainer);
+                    case container -> {
                         needToMatch = object instanceof DBSSchema || object instanceof DBSCatalog;
                         if (needToMatch) {
                             try {
@@ -862,18 +859,12 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                                 log.debug(e);
                             }
                         }
-                        break;
-                    default:
-                        needToMatch =
-                            object instanceof DBSEntity ||
-                            object instanceof DBSProcedure ||
-                            object instanceof DBSTableIndex ||
-                            object instanceof DBSTrigger ||
-                            object instanceof DBSPackage ||
-                            object instanceof DBSSequence ||
-                            object instanceof DBSAlias ||
-                            object instanceof DBAUser;
-                        break;
+                    }
+                    default -> needToMatch = !(object instanceof DBPDataSourceContainer) &&
+                                             !(object instanceof DBSSchema) &&
+                                             !(object instanceof DBSCatalog) &&
+                                             !(object instanceof DBNDatabaseFolder) &&
+                                             !(object instanceof DBSTableColumn);
                 }
             }
             if (!needToMatch) {
