@@ -132,7 +132,7 @@ public class SQLGroupingQueryGenerator {
             sql.append("\n) ").append(subqueryAlias);
         } else {
             subqueryAlias = null;
-            if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect select) {
+            if (statement instanceof PlainSelect select) {
                 select.setOrderByElements(null);
                 SQLDialect sqlDialect = dataSource.getSQLDialect();
                 if (select.getFromItem() instanceof Table table) {
