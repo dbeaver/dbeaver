@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -1176,12 +1174,5 @@ public final class SQLUtils {
         }
         actualIdentifierString = forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, true, false);
         return actualIdentifierString;
-    }
-
-    /**
-     * Checks if provided expression is of type ParenthesedExpressionList and has only one expression inside
-     */
-    public static boolean isSingleExpressionInParenthesis(@NotNull Expression expr) {
-        return expr instanceof ParenthesedExpressionList<?> parenthesis && parenthesis.size() == 1;
     }
 }
