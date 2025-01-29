@@ -1359,8 +1359,8 @@
                 <driver
                         id="teiid"
                         label="Teiid"
-		                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/connection/database_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.model/icons/connection/database_icon.png"
+		                icon="icons/teiid_icon.png"
+                        iconBig="icons/teiid_icon_big.png"
                         class="org.teiid.jdbc.TeiidDriver"
                         sampleURL="jdbc:teiid:{database}@mms://{host}:{port}"
                         defaultPort="31000"
