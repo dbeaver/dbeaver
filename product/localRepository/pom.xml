@@ -44,7 +44,7 @@
 						<id>default-cli</id>
 						<configuration>
 							<artifacts>
-								<artifact><id>com.github.jsqlparser:jsqlparser:4.5</id></artifact>
+								<artifact><id>com.github.jsqlparser:jsqlparser:5.1</id></artifact>
 <!--								<artifact><id>com.manticore-projects.jsqlformatter:jsqlformatter:0.1.7</id></artifact>-->
 
 								<artifact><id>org.apache.commons:commons-jexl3:3.1</id></artifact>

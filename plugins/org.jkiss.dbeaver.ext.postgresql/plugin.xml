@@ -660,19 +660,19 @@
 
                 <provider-properties drivers="*">
                     <propertyGroup label="Misc">
-                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection" supportedConfigurationTypes="MANUAL,URL"/>
+                        <property id="@dbeaver-chosen-role@" label="User role" type="string" description="User role for connection"/>
                     </propertyGroup>
                     <propertyGroup label="Database list">
                         <property id="@dbeaver-show-non-default-db@" label="Show all databases" type="boolean" description="Show all databases on server. Otherwise show current database only."/>
                         <property id="@dbeaver-show-template-db@" label="Show template databases" type="boolean" description="Show template databases."/>
                         <property id="@dbeaver-show-unavailable-db@" label="Show unavailable databases" type="boolean" description="Show databases not unavailable for connection."/>
-                        <property id="show-database-statistics" label="Show database statistics" type="boolean" description="Show statistics for entire databases. May be slow if you have big number of databases." supportedConfigurationTypes="MANUAL,URL"/>
-                        <property id="@dbeaver-read-all-data-types-db@" label="Read all data types" type="boolean" description="Read all database data types. Including array types." supportedConfigurationTypes="MANUAL,URL"/>
-                        <property id="read-keys-with-columns" label="Read table keys with columns" type="boolean" description="Read table constraints at the stage of reading columns for proper keys recognition. This setting may reduce metadata loading performance." supportedConfigurationTypes="MANUAL,URL"/>
+                        <property id="show-database-statistics" label="Show database statistics" type="boolean" description="Show statistics for entire databases. May be slow if you have big number of databases."/>
+                        <property id="@dbeaver-read-all-data-types-db@" label="Read all data types" type="boolean" description="Read all database data types. Including array types."/>
+                        <property id="read-keys-with-columns" label="Read table keys with columns" type="boolean" description="Read table constraints at the stage of reading columns for proper keys recognition. This setting may reduce metadata loading performance."/>
                     </propertyGroup>
                     <propertyGroup label="SQL">
-                        <property id="postgresql.dd.plain.string" label="Show $$ quote as String" type="boolean" description="Show $$ quote as String" supportedConfigurationTypes="MANUAL,URL"/>
-                        <property id="postgresql.dd.tag.string" label="Show $tagName$ quote as String" type="boolean" description="Show $tagName$ quote as String" supportedConfigurationTypes="MANUAL,URL"/>
+                        <property id="postgresql.dd.plain.string" label="Show $$ quote as String" type="boolean" description="Show $$ quote as String"/>
+                        <property id="postgresql.dd.tag.string" label="Show $tagName$ quote as String" type="boolean" description="Show $tagName$ quote as String"/>
                     </propertyGroup>
                 </provider-properties>
 

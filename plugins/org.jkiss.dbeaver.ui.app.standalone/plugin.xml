@@ -497,7 +497,6 @@
         <activityPatternBinding activityId="hideE4Activity" pattern="org.eclipse.userstorage.*"/>
         <!-- Hide E4 view: Welcome, Bookmarks, Palette, Thumbnail -->
         <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.ui.internal.introview"/>
-        <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.ui.views.BookmarkView"/>
         <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.gef.ui.palette_view"/>
         <activityPatternBinding activityId="hideE4Activity" pattern=".*/org.eclipse.graphiti.ui.internal.editor.thumbnailview"/>
 
