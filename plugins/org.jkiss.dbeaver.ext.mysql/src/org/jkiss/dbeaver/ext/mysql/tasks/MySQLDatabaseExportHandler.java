@@ -179,7 +179,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
         private final Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`[^*]*`@`[0-9a-z\\-_\\.%]*`", Pattern.CASE_INSENSITIVE);
 
         DumpFilterJob(DBRProgressMonitor monitor, InputStream stream, Path outFile, Log log) {
-            super("MySQL databasse dump filter", monitor, stream, outFile, log);
+            super("MySQL database dump filter", monitor, stream, outFile, log);
         }
 
         @Override
