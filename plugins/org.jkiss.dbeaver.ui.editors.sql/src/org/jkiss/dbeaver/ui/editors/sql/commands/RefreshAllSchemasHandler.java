@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.commands;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.jkiss.dbeaver.Log;
 
 public class RefreshAllSchemasHandler extends AbstractSchemaHandler {
 
@@ -28,12 +29,8 @@ public class RefreshAllSchemasHandler extends AbstractSchemaHandler {
             var contextDefaults = getExecutionContext(sqlEditor);
             var catalog = contextDefaults.getDefaultCatalog();
             if (catalog != null) {
-                try {
-                    var schemaNodes = getSchemaNodes(sqlEditor, catalog);
-                    refreshNodes(schemaNodes);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                var schemaNodes = getDatabaseNode(sqlEditor, catalog);
+                refreshNode(schemaNodes);
             }
         }
         return null;

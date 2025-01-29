@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.editors.sql.commands;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
-import java.util.List;
-
 public class RefreshActiveSchemaHandler extends AbstractSchemaHandler {
 
     @Override
@@ -30,12 +28,9 @@ public class RefreshActiveSchemaHandler extends AbstractSchemaHandler {
             var contextDefaults = getExecutionContext(sqlEditor);
             var schema = contextDefaults.getDefaultSchema();
             if (schema != null) {
-                var navigatorModel = getNavigatorModel(sqlEditor);
-                if (navigatorModel != null) {
-                    var node = navigatorModel.findNode(schema);
-                    if (node != null) {
-                        refreshNodes(List.of(node));
-                    }
+                var node = getDatabaseNode(sqlEditor, schema);
+                if (node != null) {
+                    refreshNode(node);
                 }
             }
         }

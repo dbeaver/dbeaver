@@ -19,19 +19,15 @@ package org.jkiss.dbeaver.ui.editors.sql.commands;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractSchemaHandler extends AbstractHandler {
@@ -44,30 +40,28 @@ public abstract class AbstractSchemaHandler extends AbstractHandler {
         return (DBCExecutionContextDefaults<?, ?>) editor.getExecutionContext();
     }
 
-    protected DBNModel getNavigatorModel(SQLEditor editor) {
-        return editor.getProject().getNavigatorModel();
+    protected DBNModel getNavigatorModel(DBPProject project) {
+        return project.getNavigatorModel();
     }
 
-    protected List<DBNDatabaseNode> getSchemaNodes(SQLEditor editor, DBSCatalog catalog) throws DBException {
-        var schemaNodes = new ArrayList<DBNDatabaseNode>();
-        var monitor = new VoidProgressMonitor();
-        for (DBSObject child : catalog.getChildren(monitor)) {
-            if (child instanceof DBSSchema schema) {
-                var navigatorModel = getNavigatorModel(editor);
-                if (navigatorModel != null) {
-                    var schemaNode = navigatorModel.findNode(schema);
-                    if (schemaNode != null) {
-                        schemaNodes.add(schemaNode);
-                    }
-                }
+    protected DBPProject getProject(SQLEditor editor) {
+        return editor.getProject();
+    }
+
+    protected DBNDatabaseNode getDatabaseNode(SQLEditor editor, DBSObject object) {
+        var project = getProject(editor);
+        if (project != null) {
+            var navigatorModel = getNavigatorModel(project);
+            if (navigatorModel != null) {
+                return navigatorModel.findNode(object);
             }
         }
-        return schemaNodes;
+        return null;
     }
 
-    protected void refreshNodes(List<DBNDatabaseNode> nodes) {
-        if (!nodes.isEmpty()) {
-            NavigatorHandlerRefresh.refreshNavigator(nodes);
+    protected void refreshNode(DBNDatabaseNode node) {
+        if (node != null) {
+            NavigatorHandlerRefresh.refreshNavigator(List.of(node));
         }
     }
 }
