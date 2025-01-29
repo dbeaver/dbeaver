@@ -156,6 +156,11 @@ class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
+    public void setConnectionReadOnly(boolean connectionReadOnly) {
+        
+    }
+
+    @Override
     public boolean isSavePassword() {
         return false;
     }
