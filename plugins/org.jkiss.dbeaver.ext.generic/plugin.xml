@@ -1364,7 +1364,7 @@
                         class="org.teiid.jdbc.TeiidDriver"
                         sampleURL="jdbc:teiid:{database}@mms://{host}:{port}"
                         defaultPort="31000"
-                        webURL="https://jdbc.teiid.org/"
+                        webURL="https://github.com/teiid/teiid"
                         description="Teiid JDBC Driver.">
 
                     <file type="jar" path="maven:/org.teiid:teiid:jdbc:LATEST" bundle="!drivers.teiid" custom="true"/>
