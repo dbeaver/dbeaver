@@ -958,15 +958,13 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 continue;
             }
             // Add new library files
-            Path localFilePath = Path.of(newLib.getPath());
-            String shortFileName = localFilePath.getFileName().toString();
-            if (!localFilePath.isAbsolute()) {
-                localFilePath = DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(localFilePath);
-            }
-            if (!Files.exists(localFilePath)) {
+            Path localFilePath = newLib.getLocalFile();
+            if (localFilePath == null || !Files.exists(localFilePath)) {
                 log.error("Driver library doesn't exist: " + localFilePath + ".");
                 continue;
             }
+            String shortFileName = localFilePath.getFileName().toString();
+
             driver.removeLibraryFiles(newLib);
             if (Files.isDirectory(localFilePath)) {
                 synAddDriverLibDirectory(newLib, localFilePath, shortFileName);
