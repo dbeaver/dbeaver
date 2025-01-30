@@ -115,7 +115,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 @Override
                 public String getText(Object element) {
                     if (element instanceof DBNPathBase path) {
-                        return path.getPath().toUri().toString();
+                        return DBFUtils.getUriFromPath(path.getPath()).toString();
                     }
                     DBNNode node = (DBNNode) element;
                     DBPProject ownerProject = node.getOwnerProject();
@@ -192,7 +192,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                                 SWT.OPEN,
                                 false,
                                 new String[]{"*.sql", "*"},
-                                nextScript instanceof DBNPathBase sp ? sp.getPath().toUri().toString() : null);
+                                nextScript instanceof DBNPathBase sp ? DBFUtils.getUriFromPath(sp.getPath()).toString() : null);
                             if (selected != null) {
                                 if (!selectedScripts.contains(selected)) {
                                     selectedScripts.add(selected);
@@ -519,7 +519,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         List<String> scriptPaths = new ArrayList<>();
         for (DBNNode resource : selectedScripts) {
             if (resource instanceof DBNPathBase pn) {
-                scriptPaths.add(pn.getPath().toUri().toString());
+                scriptPaths.add(DBFUtils.getUriFromPath(pn.getPath()).toString());
             } else {
                 IResource res = resource.getAdapter(IResource.class);
                 if (res instanceof IFile && getWizard().getProject() instanceof RCPProject rcpProject) {

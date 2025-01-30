@@ -104,7 +104,7 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     @Override
     public String getObjectFullName(@NotNull DBRProgressMonitor monitor) throws IOException {
         Path inputFile = getInputFile();
-        return inputFile == null ? "N/A" : getInputFile().toUri().toString();
+        return inputFile == null ? "N/A" : DBFUtils.getUriFromPath(getInputFile()).toString();
     }
 
     @Override
