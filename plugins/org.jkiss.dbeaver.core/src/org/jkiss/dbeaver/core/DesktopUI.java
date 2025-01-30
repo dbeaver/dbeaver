@@ -709,7 +709,7 @@ public class DesktopUI extends ConsoleUserInterface {
                     monitor.beginTask("Locate file", 1);
                     monitor.subTask("Locate '" + defaultValue + "'");
                     try {
-                        return fileSystemsNode.findNodeByPath(new VoidProgressMonitor(), defaultValue);
+                        return fileSystemsNode.findNodeByPath(monitor, defaultValue);
                     } finally {
                         monitor.done();
                     }
