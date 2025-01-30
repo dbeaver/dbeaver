@@ -126,6 +126,14 @@ public class GeneralUtils {
         return System.getProperty(StandardConstants.ENV_LINE_SEPARATOR, "\n");
     }
 
+    /**
+     * Replaces all line separators with system line separators
+     */
+    @NotNull
+    public static String normalizeLineSeparators(@NotNull String str) {
+        return str.replaceAll("\r\n|\r|\n", getDefaultLineSeparator());
+    }
+
     public static void writeBytesAsHex(Writer out, byte[] buf, int off, int len) throws IOException {
         for (int i = 0; i < len; i++) {
             byte b = buf[off + i];

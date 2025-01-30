@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.databricks.DatabricksConstants;
 import org.jkiss.dbeaver.ext.databricks.DatabricksDataSource;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -74,6 +75,30 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         @NotNull String schemaName
     ) {
         return new DatabricksSchema(dataSource, catalog, schemaName);
+    }
+
+    @Override
+    public List<GenericSchema> loadSchemas(
+        JDBCSession session,
+        GenericDataSource dataSource,
+        GenericCatalog catalog
+    ) throws DBException {
+        List<GenericSchema> schemas = new ArrayList<>();
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SHOW DATABASES IN " + catalog.getName()
+        )) {
+            dbStat.executeStatement();
+            try (JDBCResultSet dbResult = dbStat.getResultSet()) {
+                while (dbResult.next()) {
+                    String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, DatabricksConstants.SCHEMA_NAME);
+                    schemas.add(new DatabricksSchema(dataSource, catalog, schemaName));
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Cannot load schemas", e);
+        }
+
+        return schemas;
     }
 
     @Override
@@ -135,10 +160,9 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
-        @Nullable JDBCResultSet dbResult)
-    {
+        @Nullable JDBCResultSet dbResult) {
         if ((CommonUtils.isNotEmpty(tableName) && !tempViewsList.isEmpty()
-            && tempViewsList.stream().anyMatch(e -> e.name.equalsIgnoreCase(tableName))) ||
+             && tempViewsList.stream().anyMatch(e -> e.name.equalsIgnoreCase(tableName))) ||
             tableType != null && isView(tableType))
         {
             return new DatabricksView(

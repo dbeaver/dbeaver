@@ -57,8 +57,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     private final Position completionRequestPosition;
     @NotNull
     private final AtomicReference<Pair<Integer, List<SQLQueryCompletionProposal>>> result = new AtomicReference<>(Pair.of(null, Collections.emptyList()));
-
-    private final SQLQueryCompletionProposalContext proposalContext;
+    private SQLQueryCompletionProposalContext proposalContext;
 
     public SQLQueryCompletionAnalyzer(
         @NotNull SQLEditorBase editor,
@@ -68,7 +67,6 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         this.editor = editor;
         this.request = request;
         this.completionRequestPosition = completionRequestPosition;
-        this.proposalContext = new SQLQueryCompletionProposalContext(request);
     }
 
     @Override
@@ -81,6 +79,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
 //            completionContext = this.editor.obtainCompletionContext(this.completionRequestPostion);
 //        }
 
+        this.proposalContext = new SQLQueryCompletionProposalContext(request, completionContext.getRequestOffset());
         Pair<Integer, List<SQLQueryCompletionProposal>> result;
         if (completionContext != null && this.request.getContext().getDataSource() != null) {
             // TODO don't we want to be able to accomplish subqueries and such even without the connection?
@@ -207,11 +206,11 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
 
     @NotNull
     private DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
-        DBPImage image = switch (item.getKind()) {
+        return switch (item.getKind()) {
             case UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
             case RESERVED -> UIIcon.SQL_TEXT;
             case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
-            case DERIVED_COLUMN_NAME -> DBIcon.TREE_FOREIGN_KEY_COLUMN;
+            case DERIVED_COLUMN_NAME -> DBIcon.TREE_DERIVED_COLUMN;
             case NEW_TABLE_NAME, USED_TABLE_NAME -> {
                 DBPObject object = item.getObject();
                 yield object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
@@ -221,6 +220,5 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
             default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
         };
-        return image;
     }
 }

@@ -48,9 +48,12 @@ public class SQLQueryCompletionProposalContext {
 
     private final SQLCompletionRequest completionRequest;
     private final boolean insertSpaceAfterProposal;
+    private final int requestOffset;
 
-    public SQLQueryCompletionProposalContext(@NotNull SQLCompletionRequest completionRequest) {
+    public SQLQueryCompletionProposalContext(@NotNull SQLCompletionRequest completionRequest, int requestOffset) {
         this.completionRequest = completionRequest;
+        this.requestOffset = requestOffset;
+
         DBCExecutionContext executionContext = completionRequest.getContext().getExecutionContext();
         this.insertSpaceAfterProposal = executionContext == null || executionContext.getDataSource().getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
     }
@@ -66,7 +69,7 @@ public class SQLQueryCompletionProposalContext {
     }
 
     public int getRequestOffset() {
-        return this.completionRequest.getDocumentOffset();
+        return this.requestOffset;
     }
 
     public boolean isInsertSpaceAfterProposal() {
