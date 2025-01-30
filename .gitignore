@@ -1,6 +1,7 @@
 #################
 ## Misc
 
+osgi-cache/
 bin/
 tmp/
 *.tmp
