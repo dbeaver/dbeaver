@@ -585,8 +585,7 @@ public class DBNModel {
     public static void updateConfigAndRefreshDatabases(DBNNode node)
     {
         for (DBNNode parentNode = node; parentNode != null; parentNode = parentNode.getParentNode()) {
-            if (parentNode instanceof DBNProjectDatabases) {
-                DBNProjectDatabases projectDatabases = (DBNProjectDatabases) parentNode;
+            if (parentNode instanceof DBNProjectDatabases projectDatabases) {
                 projectDatabases.getDataSourceRegistry().flushConfig();
                 projectDatabases.refreshChildren();
                 break;
