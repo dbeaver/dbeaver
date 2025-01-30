@@ -375,22 +375,23 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         }
 
         getWizard().createVariablesEditButton(composite);
-
-        try {
-            getWizard().getContainer().run(true, true, monitor -> {
-                try {
-                    loadSettings(new DefaultProgressMonitor(monitor));
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            setErrorMessage("Error loading settings: " + e.getTargetException().getMessage());
-        } catch (InterruptedException e) {
-            // ignore
-        }
-
         setControl(composite);
+
+        UIUtils.asyncExec(() -> {
+            try {
+                getWizard().getContainer().run(true, true, monitor -> {
+                    try {
+                        loadSettings(new DefaultProgressMonitor(monitor));
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                setErrorMessage("Error loading settings: " + e.getTargetException().getMessage());
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        });
     }
 
     private void refreshScripts() {
@@ -471,10 +472,15 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 if (IOUtils.isLocalFile(filePath)) {
                     Path workspaceFile;
                     RMControllerProvider rmControllerProvider = DBUtils.getAdapter(RMControllerProvider.class, project);
-                    if (rmControllerProvider != null) {
-                        workspaceFile = project.getAbsolutePath().resolve(filePath);
-                    } else {
-                        workspaceFile = DTUtils.findProjectFile(project, filePath);
+                    try {
+                        if (rmControllerProvider != null) {
+                            workspaceFile = project.getAbsolutePath().resolve(filePath);
+                        } else {
+                            workspaceFile = DTUtils.findProjectFile(project, filePath);
+                        }
+                    } catch (Exception e) {
+                        log.error(e);
+                        continue;
                     }
                     if (workspaceFile == null) {
                         UIUtils.syncExec(() -> setMessage("Script file '" + filePath + "' not found", WARNING));

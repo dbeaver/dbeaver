@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,9 @@ import org.junit.rules.ExpectedException;
 
 public class MimeTypeTest extends DBeaverUnitTest {
 
-  @Rule public final ExpectedException thrown = ExpectedException.none();
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
+
   @Test
   public void testParse() {
     Assert.assertEquals("application/*", new MimeType("application").toString());
@@ -42,7 +44,7 @@ public class MimeTypeTest extends DBeaverUnitTest {
     Assert.assertFalse(new MimeType().match(new MimeType("text", "json")));
     Assert.assertTrue(new MimeType("application", "json").match(new MimeType("application", "*")));
     Assert.assertFalse(new MimeType("application", "json").match(new MimeType("application", "text")));
-    
+
     Assert.assertTrue(new MimeType("application", "json").match("application/json"));
   }
 }
