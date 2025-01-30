@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver Snowflake Model
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.snowflake;singleton:=true
+Bundle-Version: 1.0.169.qualifier
+Bundle-Release-Date: 20250217
+Bundle-Vendor: DBeaver Corp
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.jkiss.dbeaver.ext.snowflake.internal.SnowflakeActivator
+Require-Bundle: com.sun.jna,
+ com.sun.jna.platform,
+ org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.sql;visibility:=reexport,
+ org.jkiss.dbeaver.ext.generic;visibility:=reexport
+Export-Package: org.jkiss.dbeaver.ext.snowflake,
+ org.jkiss.dbeaver.ext.snowflake.model,
+ org.jkiss.dbeaver.ext.snowflake.model.auth
+Bundle-Localization: OSGI-INF/l10n/bundle
+Automatic-Module-Name: org.jkiss.dbeaver.ext.snowflake

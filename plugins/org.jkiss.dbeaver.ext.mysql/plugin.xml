@@ -197,11 +197,6 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
-                    <provider-properties>
-                        <propertyGroup label="Advanced">
-                            <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
-                        </propertyGroup>
-                    </provider-properties>
                 </driver>
 
                 <driver

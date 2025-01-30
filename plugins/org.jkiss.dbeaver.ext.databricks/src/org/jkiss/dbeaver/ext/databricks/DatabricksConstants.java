@@ -25,4 +25,5 @@ public class DatabricksConstants {
     public static final String DRIVER_CLASS_LEGACY = "com.simba.spark.jdbc.Driver";
     public static final String JDBC_LEGACY_URL_SUBPROTOCOL = "jdbc:spark://";
 
+    public static final String SCHEMA_NAME = "databaseName";
 }
