@@ -35,6 +35,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.databaseBrowser";
 
     private static final Log log = Log.getLog(DatabaseBrowserView.class);
+    private DBNNode rootNode;
 
     public DatabaseBrowserView()
     {
@@ -47,15 +48,19 @@ public class DatabaseBrowserView extends NavigatorViewBase {
     }
 
     @Override
-    public DBNNode getRootNode()
-    {
-        String secondaryId = getViewSite().getSecondaryId();
-        if (!CommonUtils.isEmpty(secondaryId)) {
-            try {
-                return getNodeFromSecondaryId(secondaryId);
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Open database browser", "Can't find database navigator node", e);
+    public DBNNode getRootNode() {
+        if (rootNode == null) {
+            String secondaryId = getViewSite().getSecondaryId();
+            if (!CommonUtils.isEmpty(secondaryId)) {
+                try {
+                    rootNode = getNodeFromSecondaryId(secondaryId);
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Open database browser", "Can't find database navigator node", e);
+                }
             }
+        }
+        if (rootNode != null) {
+            return rootNode;
         }
         return getDefaultRootNode();
     }
@@ -111,7 +116,15 @@ public class DatabaseBrowserView extends NavigatorViewBase {
         DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
         if (projectMeta != null) {
             navigatorModel.ensureProjectLoaded(projectMeta);
-            node = UIUtils.runWithMonitor(monitor -> navigatorModel.getNodeByPath(monitor, projectMeta, nodePath));
+            node = UIUtils.runWithMonitor(monitor -> {
+                monitor.beginTask("Find navigator node", 1);
+                try {
+                    monitor.subTask("Find node " + nodePath);
+                    return navigatorModel.getNodeByPath(monitor, projectMeta, nodePath);
+                } finally {
+                    monitor.done();
+                }
+            });
         }
         if (node == null) {
             log.error("Node " + nodePath + " not found for browse view");
