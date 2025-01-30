@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,9 +110,7 @@ public class DesktopUI extends ConsoleUserInterface {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 if (PlatformUI.isWorkbenchRunning() && !PlatformUI.getWorkbench().isStarting()) {
-                    UIUtils.asyncExec(() -> {
-                        contextListener = WorkbenchContextListener.registerInWorkbench();
-                    });
+                    UIUtils.asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
                 } else {
                     schedule(50);
                 }
@@ -704,17 +702,16 @@ public class DesktopUI extends ConsoleUserInterface {
             log.error("File system root node not found");
             return null;
         }
-        DBNNode[] selectedNode = new DBNNode[1];
+        DBNNode selectedNode = null;
         if (defaultValue != null) {
             try {
-                UIUtils.runInProgressService(monitor -> {
+                selectedNode = UIUtils.runWithMonitor(monitor -> {
+                    monitor.beginTask("Locate file", 1);
+                    monitor.subTask("Locate '" + defaultValue + "'");
                     try {
-                        monitor.beginTask("Locate file", 1);
-                        monitor.subTask("Locate '" + defaultValue + "'");
-                        selectedNode[0] = fileSystemsNode.findNodeByPath(new VoidProgressMonitor(), defaultValue);
+                        return fileSystemsNode.findNodeByPath(new VoidProgressMonitor(), defaultValue);
+                    } finally {
                         monitor.done();
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
                 });
             } catch (Exception e) {
@@ -739,7 +736,7 @@ public class DesktopUI extends ConsoleUserInterface {
             UIUtils.getActiveWorkbenchShell(),
             title,
             fileSystemsNode,
-            selectedNode[0],
+            selectedNode,
             new Class[] { DBNPathBase.class },
             new Class[] { DBNPathBase.class },
             null,

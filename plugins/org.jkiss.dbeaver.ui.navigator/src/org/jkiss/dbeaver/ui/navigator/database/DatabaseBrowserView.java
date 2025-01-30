@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.utils.CommonUtils;
 
@@ -111,7 +111,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
         DBPProject projectMeta = DBWorkbench.getPlatform().getWorkspace().getProject(projectName);
         if (projectMeta != null) {
             navigatorModel.ensureProjectLoaded(projectMeta);
-            node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), projectMeta, nodePath);
+            node = UIUtils.runWithMonitor(monitor -> navigatorModel.getNodeByPath(monitor, projectMeta, nodePath));
         }
         if (node == null) {
             log.error("Node " + nodePath + " not found for browse view");
