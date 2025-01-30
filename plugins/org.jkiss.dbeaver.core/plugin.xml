@@ -407,7 +407,6 @@
         </handler>
 
         <!-- Query log view handlers -->
-        <handler commandId="org.jkiss.dbeaver.core.qm.filter" class="org.jkiss.dbeaver.ui.views.qm.QueryManagerFilterHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.qm.clear" class="org.jkiss.dbeaver.ui.views.qm.QueryManagerClearHandler"/>
 
         <!-- Process view handlers -->
@@ -770,7 +769,7 @@
         <!-- QM menu & toolbar -->
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.queryManager">
-            <command commandId="org.jkiss.dbeaver.core.qm.filter"/>
+            <separator name="refresh" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
             <command commandId="org.eclipse.ui.file.refresh" label="%command.org.jkiss.dbeaver.core.qm.refresh.name" tooltip="%command.org.jkiss.dbeaver.core.qm.refresh.description"/>
             <separator name="additions" visible="true"/>
@@ -778,7 +777,6 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.queryManager">
-            <command commandId="org.jkiss.dbeaver.core.qm.filter"/>
             <separator name="refresh" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
             <command commandId="org.eclipse.ui.file.refresh" label="%command.org.jkiss.dbeaver.core.qm.refresh.name" tooltip="%command.org.jkiss.dbeaver.core.qm.refresh.description"/>
