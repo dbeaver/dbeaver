@@ -6,7 +6,7 @@ Bundle-Version: 1.0.169.qualifier
 Bundle-Release-Date: 20250217
 Bundle-Activator: org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeUIActivator
 Require-Bundle: org.jkiss.dbeaver.ext.generic.ui,
- org.jkiss.dbeaver.ext.snowflake.core
+ org.jkiss.dbeaver.ext.snowflake
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp

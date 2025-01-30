@@ -836,8 +836,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 return false;
             }
             if ((filterShowConnected ||
-                 getFilterObjectType() == DatabaseNavigatorTreeFilterObjectType.connection ||
-                 (hasPattern && filter.filterFolders())) && element instanceof DBNLocalFolder) {
+                (hasPattern && getFilterObjectType() == DatabaseNavigatorTreeFilterObjectType.connection) ||
+                (hasPattern && filter.filterFolders())) && element instanceof DBNLocalFolder
+            ) {
                 return hasVisibleConnections(viewer, (DBNLocalFolder) element);
             }
             if (!filter.select(element)) {

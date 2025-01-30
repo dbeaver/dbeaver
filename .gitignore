@@ -40,8 +40,6 @@ buildNumber.properties
 .project
 .classpath
 .settings/
-
-## Eclipse PDE
 *.product.launch
 
 # Dev executables
