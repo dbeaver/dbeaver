@@ -355,6 +355,15 @@ public class DBPConnectionConfiguration implements DBPObject {
         }
     }
 
+    /**
+     * Removes handler by the given {@code id}
+     *
+     * @param id handler id
+     */
+    public void removeHandler(@NotNull String id) {
+        handlers.removeIf(handler -> handler.getId().equals(id));
+    }
+
     @Nullable
     public DBWHandlerConfiguration getHandler(String id) {
         synchronized (handlers) {

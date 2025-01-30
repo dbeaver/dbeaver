@@ -273,15 +273,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 tabFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
                     @Override
                     public void close(CTabFolderEvent event) {
-                        if (confirmTabClose((CTabItem) event.item)) {
-                            final ConnectionPageNetworkHandler page = (ConnectionPageNetworkHandler) event.item.getData();
-                            final NetworkHandlerDescriptor descriptor = page.getHandlerDescriptor();
-                            final DBPConnectionConfiguration configuration = getActiveDataSource().getConnectionConfiguration();
-                            final DBWHandlerConfiguration handler = configuration.getHandler(descriptor.getId());
-
-                            if (handler != null) {
-                                handler.setEnabled(false);
-                            }
+                        CTabItem item = (CTabItem) event.item;
+                        if (confirmTabClose(item)) {
+                            ConnectionPageNetworkHandler page = (ConnectionPageNetworkHandler) item.getData();
+                            page.setHandlerMarkedForRemoval(true);
                         } else {
                             event.doit = false;
                         }
@@ -391,20 +386,20 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     private boolean canShowInChevron(@NotNull IDialogPage page) {
-        if (isPagePinned(page) || !(page instanceof ConnectionPageNetworkHandler)) {
+        if (isPagePinned(page) || !(page instanceof ConnectionPageNetworkHandler networkHandler)) {
             return false;
         }
 
-        final NetworkHandlerDescriptor descriptor = ((ConnectionPageNetworkHandler) page).getHandlerDescriptor();
+        final NetworkHandlerDescriptor descriptor = networkHandler.getHandlerDescriptor();
         final DBPConnectionConfiguration configuration = getActiveDataSource().getConnectionConfiguration();
         final DBWHandlerConfiguration handler = configuration.getHandler(descriptor.getId());
 
-        return handler == null || !handler.isEnabled();
+        return handler == null || networkHandler.isHandlerMarkedForRemoval();
     }
 
     private static boolean isPagePinned(@NotNull IDialogPage page) {
-        if (page instanceof ConnectionPageNetworkHandler) {
-            return ((ConnectionPageNetworkHandler) page).getHandlerDescriptor().isPinned();
+        if (page instanceof ConnectionPageNetworkHandler networkHandler) {
+            return networkHandler.getHandlerDescriptor().isPinned();
         } else {
             return true;
         }
@@ -743,6 +738,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             handler.setEnabled(true);
             tabFolder.setSelection(createPageTab(page, Math.min(tabFolder.getItemCount(), index)));
+            page.setHandlerMarkedForRemoval(false);
             activateCurrentItem();
         }
     }

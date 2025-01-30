@@ -580,7 +580,6 @@
                 description="SSL settings"
                 desktop="false"
                 secured="false"
-                pinned="true"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.mssql.model.SQLServerSSLHandlerImpl">
             <propertyGroup label="Parameters">

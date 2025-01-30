@@ -98,7 +98,6 @@
                 description="SSL settings"
                 secured="false"
                 desktop="false"
-                pinned="true"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSSLImpl">
             <propertyGroup label="SSL Settings">
