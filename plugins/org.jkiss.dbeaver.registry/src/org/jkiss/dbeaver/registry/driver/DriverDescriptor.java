@@ -1492,7 +1492,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Override
     public boolean downloadDriverLibraries(@NotNull DBRProgressMonitor monitor, boolean resetVersions) {
-        final DriverDependencies dependencies = getDriverDependencies(resetVersions);
+        final DriverDependencies dependencies = getDriverDependencies(resetVersions, false);
         if (dependencies == null) {
             return true;
         }
@@ -1525,14 +1525,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Override
     public boolean isDriverInstalled() {
-        return getDriverDependencies(false) == null;
+        return getDriverDependencies(false, true) == null;
     }
 
     /**
      * Returns driver dependencies if some driver files are not found and can be downloaded.
      */
     @Nullable
-    public DriverDependencies getDriverDependencies(boolean resetVersions) {
+    public DriverDependencies getDriverDependencies(boolean resetVersions, boolean skipLicense) {
         boolean localLibsExists = false;
         final List<DBPDriverLibrary> downloadCandidates = new ArrayList<>();
         for (DBPDriverLibrary library : libraries) {
@@ -1542,6 +1542,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
             if (!library.matchesCurrentPlatform()) {
                 // Wrong OS or architecture
+                continue;
+            }
+            if (skipLicense && library.getType() == DBPDriverLibrary.FileType.license) {
+                // Do not validate driver presence if not a license is absent
                 continue;
             }
             if (library.isDownloadable()) {
@@ -2116,4 +2120,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return libraries.toArray(new String[0]);
     }
 
+    @Override
+    public boolean matchesId(@NotNull String driverId) {
+        if (driverId.equals(this.id)) {
+            return true;
+        }
+        for (ReplaceInfo replace : driverReplacements) {
+            if (driverId.equals(replace.driverId)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

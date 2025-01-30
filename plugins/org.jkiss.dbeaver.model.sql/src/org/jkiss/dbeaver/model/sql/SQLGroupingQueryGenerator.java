@@ -22,7 +22,6 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -133,7 +132,7 @@ public class SQLGroupingQueryGenerator {
             sql.append("\n) ").append(subqueryAlias);
         } else {
             subqueryAlias = null;
-            if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect select) {
+            if (statement instanceof PlainSelect select) {
                 select.setOrderByElements(null);
                 SQLDialect sqlDialect = dataSource.getSQLDialect();
                 if (select.getFromItem() instanceof Table table) {
@@ -144,15 +143,15 @@ public class SQLGroupingQueryGenerator {
                     select.setFromItem(formattedTable);
                 }
 
-                List<SelectItem> selectItems = new ArrayList<>();
+                List<SelectItem<?>> selectItems = new ArrayList<>();
                 select.setSelectItems(selectItems);
                 for (SQLGroupingAttribute groupAttribute : groupAttributes) {
-                    selectItems.add(new SelectExpressionItem(groupAttribute.prepareExpression()));
+                    selectItems.add(new SelectItem<>(groupAttribute.prepareExpression()));
                 }
                 for (int i = 0; i < groupFunctions.size(); i++) {
                     String func = groupFunctions.get(i);
                     Expression expression = SQLSemanticProcessor.parseExpression(func);
-                    SelectExpressionItem sei = new SelectExpressionItem(expression);
+                    SelectItem<?> sei = new SelectItem<>(expression);
                     if (useAliasForColumns) {
                         sei.setAlias(new Alias(funcAliases[i]));
                     }
