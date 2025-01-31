@@ -112,6 +112,9 @@ public class SQLQueryCallModel extends SQLQueryModelContent {
         return visitor.visitCallStatement(this, arg);
     }
 
+    /**
+     * Returns new instance of SQLQueryCallModel class by syntax tree
+     */
     @NotNull
     public static SQLQueryModelContent recognize(
         @NotNull SQLQueryModelRecognizer recognizer,

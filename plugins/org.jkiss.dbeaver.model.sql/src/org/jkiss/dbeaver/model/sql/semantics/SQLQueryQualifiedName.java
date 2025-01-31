@@ -209,6 +209,9 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
         return this.entityName.isNotClassified() && this.scopeName.stream().filter(Objects::nonNull).allMatch(SQLQuerySymbolEntry::isNotClassified);
     }
 
+    /**
+     * Resolve object and origin from name parts
+     */
     public static void performPartialResolution(
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics,
@@ -238,11 +241,11 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
         List<SQLQuerySymbolEntry> nameFragment = nameParts;
         for (int len = nameParts.size(); len > 0 && object == null; len--) {
             nameFragment = nameParts.subList(0, len);
-            List<String> fragmentStrings = nameFragment.stream().map(s -> s.getName()).toList();
+            List<String> fragmentStrings = nameFragment.stream().map(SQLQuerySymbolEntry::getName).toList();
             object = context.findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, fragmentStrings);
         }
 
-        if (object != null && nameFragment.size() > 0) {
+        if (object != null && !nameFragment.isEmpty()) {
             setNamePartsDefinition(
                 nameFragment.subList(0, nameFragment.size() - 1),
                 nameFragment.get(nameFragment.size() - 1),
@@ -251,7 +254,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
             if (nameParts.size() > nameFragment.size()) {
                 nameParts.get(nameFragment.size()).setOrigin(new SQLQuerySymbolOrigin.DbObjectFromDbObject(object, objectTypes));
             }
-        } else if (nameFragment.size() > 0) {
+        } else if (!nameFragment.isEmpty()) {
             nameFragment.get(0).setOrigin(origin);
         }
     }

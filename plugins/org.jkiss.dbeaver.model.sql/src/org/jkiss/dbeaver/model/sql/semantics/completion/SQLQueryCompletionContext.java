@@ -481,15 +481,13 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull List<SQLQueryCompletionSet> results
             ) {
                 if (prefix.size() > 0) { // table-ref-prefixed column
-                    this.preparePrefixedColumnCompletions(monitor, request, context, prefix, tail, results);
+                    this.preparePrefixedColumnCompletions(context, prefix, tail, results);
                 } else { // table-ref not introduced yet or non-prefixed column, so try both cases
                     this.prepareNonPrefixedColumnCompletions(monitor, request, context, tail, results);
                 }
             }
 
             private void preparePrefixedColumnCompletions(
-                @NotNull DBRProgressMonitor monitor,
-                @NotNull SQLCompletionRequest request,
                 @NotNull SQLQueryDataContext context,
                 @NotNull List<SQLQueryWordEntry> prefix,
                 @Nullable SQLQueryWordEntry tail,
@@ -969,13 +967,14 @@ public abstract class SQLQueryCompletionContext {
                 @Nullable DBSObjectContainer container,
                 @Nullable SQLQueryWordEntry filterOrNull
             ) {
-                if (container == null) {
-                    container = this.obtainDefaultContext(request);
+                DBSObjectContainer objectContainer = container;
+                if (objectContainer == null) {
+                    objectContainer = this.obtainDefaultContext(request);
                 }
                 LinkedList<SQLQueryCompletionItem> proceduresItems = new LinkedList<>();
                 try {
-                    if (container != null) {
-                        this.collectProcedures(monitor, request, container, null, filterOrNull, proceduresItems);
+                    if (objectContainer != null) {
+                        this.collectProcedures(monitor, request, objectContainer, null, filterOrNull, proceduresItems);
                     }
                     this.collectPackages(monitor, request, context, this.exposedContexts, null, filterOrNull, proceduresItems);
                 } catch (DBException ex) {
@@ -1060,10 +1059,10 @@ public abstract class SQLQueryCompletionContext {
                             filterOrNull,
                             completions
                         );
-                        if (request.getContext().isSearchProcedures()) {
-                            if (objectTypes.stream().anyMatch(t -> DBSProcedure.class.isAssignableFrom(t.getTypeClass()))) {
-                                this.collectProcedures(monitor, request, container, contextObjext, filterOrNull, completions);
-                            }
+                        if (request.getContext().isSearchProcedures()
+                            && objectTypes.stream().anyMatch(t -> DBSProcedure.class.isAssignableFrom(t.getTypeClass()))
+                        ) {
+                            this.collectProcedures(monitor, request, container, contextObjext, filterOrNull, completions);
                         }
                     }
                 } catch (DBException e) {

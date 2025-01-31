@@ -222,7 +222,13 @@ public class SQLQueryModelRecognizer {
                             // TODO performPartialResolution here as well?
                         }
                     } else {
-                        SQLQueryQualifiedName.performPartialResolution(this.queryDataContext, this.recognitionContext, e, objectNameOrigin, Set.of(RelationalObjectType.TYPE_UNKNOWN));
+                        SQLQueryQualifiedName.performPartialResolution(
+                            this.queryDataContext,
+                            this.recognitionContext,
+                            e,
+                            objectNameOrigin,
+                            Set.of(RelationalObjectType.TYPE_UNKNOWN)
+                        );
                     }
                 }
                 return table;
