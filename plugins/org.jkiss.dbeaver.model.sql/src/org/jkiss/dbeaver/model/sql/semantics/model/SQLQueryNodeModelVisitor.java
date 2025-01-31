@@ -220,4 +220,10 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitRowsProjectionInto(SQLQuerySelectIntoModel selectIntoStatement, T arg);
 
     R visitRowsProjectionIntoTargetsList(SQLQuerySelectIntoModel.SQLQuerySelectIntoTargetsList targetsList, T arg);
+
+    /**
+     * Visit CALL, EXEC, EXECUTE queries
+     */
+    @Nullable
+    R visitCallStatement(@NotNull SQLQueryCallModel callStatement, T arg);
 }

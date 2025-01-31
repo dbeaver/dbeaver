@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
@@ -29,10 +30,7 @@ import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class SQLQueryTableCreateModel extends SQLQueryModelContent {
 
@@ -85,7 +83,10 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
             DBSEntity realTable = dataContext.findRealTable(statistics.getMonitor(), nameStrings);
 
             if (realTable != null) {
-                this.tableName.setDefinition(realTable, new SQLQuerySymbolOrigin.DbObjectFromContext(dataContext));
+                this.tableName.setDefinition(
+                    realTable,
+                    new SQLQuerySymbolOrigin.DbObjectFromContext(dataContext, RelationalObjectType.TYPE_TABLE)
+                );
             } else {
                 this.tableName.setSymbolClass(SQLQuerySymbolClass.TABLE);
             }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
@@ -29,6 +30,8 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+
+import java.util.Set;
 
 /**
  * Describes several columns from the table
@@ -81,7 +84,13 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
                         "Table or subquery " + this.tableName.toIdentifierString() + " not found");
                 }
             } else {
-                SQLQueryQualifiedName.performPartialResolution(context, statistics, this.tableName, tableNameOrigin);
+                SQLQueryQualifiedName.performPartialResolution(
+                    context,
+                    statistics,
+                    this.tableName,
+                    tableNameOrigin,
+                    Set.of(RelationalObjectType.TYPE_UNKNOWN)
+                );
                 statistics.appendError(this.getSyntaxNode(), "Invalid tuple reference");
             }
             type = SQLQueryExprType.UNKNOWN;

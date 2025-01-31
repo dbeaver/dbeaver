@@ -221,7 +221,7 @@ public abstract class SQLQueryNodeModel {
                     columns.register(r.a); // 7
                     columns.register((r.b + r.a) / 2);
                     columns.register(r.b + 1); // 8
-                    b.columns = columns.columns.subMap(r.a, true, r.b + 1, false); // [7,8)
+                    b.columns = columns.columns.subMap(r.a, true, (r.b == Integer.MAX_VALUE ? r.a : r.b) + 1, false); // [7,8)
                     System.out.println(r + " : " +  b.columns.size());
                 }
             }

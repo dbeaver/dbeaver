@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
@@ -85,7 +86,10 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
                     && c.getColumnName().getDefinition() instanceof SQLQuerySymbolByDbObjectDefinition dbObj
                 ) {
                     // TODO refactor column reference recognition to include this case
-                    this.memberAccessEntry.setOrigin(new SQLQuerySymbolOrigin.DbObjectFromDbObject(dbObj.getDbObject()));
+                    this.memberAccessEntry.setOrigin(
+                        new SQLQuerySymbolOrigin.DbObjectFromDbObject(dbObj.getDbObject(),
+                            RelationalObjectType.TYPE_UNKNOWN)
+                    );
                 } else {
                     this.memberAccessEntry.setOrigin(memberOrigin);
                 }

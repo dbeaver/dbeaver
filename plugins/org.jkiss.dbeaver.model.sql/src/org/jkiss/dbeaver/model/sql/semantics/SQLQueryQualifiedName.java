@@ -22,11 +22,13 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -35,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -92,13 +95,27 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
     /**
      * Set the definition to the qualified name components based on the database metadata
      */
-    public void setDefinition(@NotNull DBSObject realObject, SQLQuerySymbolClass entityNameClass, SQLQuerySymbolOrigin origin) {
-        SQLQuerySymbolEntry lastPart = this.entityName;
-        this.entityName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(realObject, entityNameClass));
+    public void setDefinition(
+        @NotNull DBSObject realObject,
+        @NotNull SQLQuerySymbolClass entityNameClass,
+        @NotNull SQLQuerySymbolOrigin origin
+    ) {
+        setNamePartsDefinition(this.scopeName, this.entityName, realObject, entityNameClass, origin);
+    }
+
+    private static void setNamePartsDefinition(
+        @NotNull List<SQLQuerySymbolEntry> scopeName,
+        @NotNull SQLQuerySymbolEntry entityName,
+        @NotNull DBSObject realObject,
+        @NotNull SQLQuerySymbolClass entityNameClass,
+        @NotNull SQLQuerySymbolOrigin origin
+    ) {
+        SQLQuerySymbolEntry lastPart = entityName;
+        entityName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(realObject, entityNameClass));
         DBSObject object = realObject.getParentObject();
-        int scopeNameIndex = this.scopeName.size() - 1;
+        int scopeNameIndex = scopeName.size() - 1;
         while (object != null && scopeNameIndex >= 0) {
-            SQLQuerySymbolEntry nameEntry = this.scopeName.get(scopeNameIndex);
+            SQLQuerySymbolEntry nameEntry = scopeName.get(scopeNameIndex);
             String objectName = SQLUtils.identifierToCanonicalForm(object.getDataSource().getSQLDialect(), DBUtils.getQuotedIdentifier(object), false, true);
             if (objectName.equalsIgnoreCase(nameEntry.getName())) {
                 SQLQuerySymbolClass objectNameClass;
@@ -110,7 +127,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
                     objectNameClass = SQLQuerySymbolClass.UNKNOWN; // TODO consider OBJECT is not necessarily TABLE
                 }
                 nameEntry.setDefinition(new SQLQuerySymbolByDbObjectDefinition(object, objectNameClass));
-                lastPart.setOrigin(new SQLQuerySymbolOrigin.DbObjectFromDbObject(object));
+                lastPart.setOrigin(new SQLQuerySymbolOrigin.DbObjectFromDbObject(object, RelationalObjectType.TYPE_UNKNOWN));
                 lastPart = nameEntry;
                 scopeNameIndex--;
             }
@@ -192,28 +209,50 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
         return this.entityName.isNotClassified() && this.scopeName.stream().filter(Objects::nonNull).allMatch(SQLQuerySymbolEntry::isNotClassified);
     }
 
-    public static void performPartialResolution(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics, SQLQueryQualifiedName name, SQLQuerySymbolOrigin origin) {
-        List<String> nameParts = new ArrayList<>(name.scopeName.size());
+    public static void performPartialResolution(
+        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull SQLQueryQualifiedName name,
+        @NotNull SQLQuerySymbolOrigin origin,
+        @NotNull Set<DBSObjectType> objectTypes
+    ) {
+        if (!statistics.useRealMetadata() || context instanceof SQLQueryDummyDataSourceContext) {
+            return;
+        }
+
+        List<SQLQuerySymbolEntry> nameParts = new ArrayList<>(name.scopeName.size());
         boolean closed = false;
         for (SQLQuerySymbolEntry entry : name.scopeName) {
             if (entry != null) {
-                nameParts.add(entry.getName());
+                nameParts.add(entry);
             } else {
                 closed = true;
                 break;
             }
         }
         if (!closed && name.entityName != null) {
-            nameParts.add(name.entityName.getName());
+            nameParts.add(name.entityName);
         }
-        DBSObject object = context.findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, nameParts);
-        if (object != null) {
-            name.setDefinition(object, origin);
-            if (name.endingPeriodNode != null) {
-                name.endingPeriodNode.setOrigin(name.entityName.getOrigin());
+
+        DBSObject object = null;
+        List<SQLQuerySymbolEntry> nameFragment = nameParts;
+        for (int len = nameParts.size(); len > 0 && object == null; len--) {
+            nameFragment = nameParts.subList(0, len);
+            List<String> fragmentStrings = nameFragment.stream().map(s -> s.getName()).toList();
+            object = context.findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, fragmentStrings);
+        }
+
+        if (object != null && nameFragment.size() > 0) {
+            setNamePartsDefinition(
+                nameFragment.subList(0, nameFragment.size() - 1),
+                nameFragment.get(nameFragment.size() - 1),
+                object, SQLQuerySymbolClass.OBJECT, origin
+            );
+            if (nameParts.size() > nameFragment.size()) {
+                nameParts.get(nameFragment.size()).setOrigin(new SQLQuerySymbolOrigin.DbObjectFromDbObject(object, objectTypes));
             }
-        } else {
-            // TODO resolve name parts manually and propagate origin
+        } else if (nameFragment.size() > 0) {
+            nameFragment.get(0).setOrigin(origin);
         }
     }
 }

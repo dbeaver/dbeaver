@@ -36,10 +36,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.Pair;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -227,7 +224,12 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                 }
             } else {
                 context = context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList()).markHasUnresolvedSource();
-                SQLQueryQualifiedName.performPartialResolution(context, statistics, this.name, rowsetRefOrigin);
+                SQLQueryQualifiedName.performPartialResolution(
+                    context,
+                    statistics,
+                    this.name,
+                    rowsetRefOrigin, Set.of(RelationalObjectType.TYPE_UNKNOWN)
+                );
                 statistics.appendError(this.getSyntaxNode(), "Invalid table reference");
             }
         } else {

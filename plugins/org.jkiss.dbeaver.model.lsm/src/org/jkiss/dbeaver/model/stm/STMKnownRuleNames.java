@@ -334,6 +334,8 @@ public class STMKnownRuleNames {
     public static final String constraintNameList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_constraintNameList];
     public static final String commitStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_commitStatement];
     public static final String rollbackStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_rollbackStatement];
+    public static final String callStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_callStatement];
+    public static final String callStatementParams = SQLStandardParser.ruleNames[SQLStandardParser.RULE_callStatementParams];
 
     // session
     public static final String sqlSessionStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_sqlSessionStatement];

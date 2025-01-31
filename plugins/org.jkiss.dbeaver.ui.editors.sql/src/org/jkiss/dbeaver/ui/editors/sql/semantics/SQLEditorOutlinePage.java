@@ -1090,6 +1090,16 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
 
         @Nullable
         @Override
+        public Object visitCallStatement(@NotNull SQLQueryCallModel callStatement, OutlineQueryNode arg) {
+            SQLQueryObjectDataModel obj = callStatement.getObject();
+            if (obj != null) {
+                obj.apply(this, arg);
+            }
+            return null;
+        }
+
+        @Nullable
+        @Override
         public Object visitRowsSetCorrespondingOp(
             @NotNull SQLQueryRowsSetCorrespondingOperationModel correspondingOp,
             @NotNull OutlineQueryNode arg

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -27,8 +28,12 @@ import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceMode
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -44,16 +49,23 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
     private final SQLQueryQualifiedName name;
     @NotNull
     private DBSObjectType objectType;
+    @NotNull
+    private Set<DBSObjectType> objectContainerTypes;
     @Nullable
     private DBSObject object = null;
 
+    private SQLQuerySymbolOrigin objectNameOrigin = null;
+
     public SQLQueryObjectDataModel(
-        @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQueryQualifiedName name,
-        @NotNull DBSObjectType objectType) {
+            @NotNull STMTreeNode syntaxNode,
+            @NotNull SQLQueryQualifiedName name,
+            @NotNull DBSObjectType objectTypes,
+            @NotNull Set<DBSObjectType> objectContainerTypes
+    ) {
         super(syntaxNode);
         this.name = name;
-        this.objectType = objectType;
+        this.objectType = objectTypes;
+        this.objectContainerTypes = objectContainerTypes;
     }
 
     @NotNull
@@ -71,23 +83,45 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
         return object;
     }
 
-    @NotNull
-    @Override
-    public SQLQuerySymbolClass getSymbolClass() {
-        return this.object != null ? SQLQuerySymbolClass.TABLE : SQLQuerySymbolClass.ERROR;
+    @Nullable
+    public SQLQuerySymbolOrigin getObjectNameOrigin() {
+        return this.objectNameOrigin;
     }
 
     @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    public SQLQuerySymbolClass getSymbolClass() {
+        return this.object instanceof DBSTable || this.object instanceof DBSView
+            ? SQLQuerySymbolClass.TABLE
+            : this.object != null ? SQLQuerySymbolClass.OBJECT : SQLQuerySymbolClass.ERROR;
+    }
+
+    @NotNull
+    @Override
+    protected SQLQueryDataContext propagateContextImpl(
+        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        Set<DBSObjectType> scopeMemberTypes = new HashSet<>();
+        scopeMemberTypes.addAll(this.objectContainerTypes);
+        scopeMemberTypes.add(this.objectType);
+        this.objectNameOrigin = new SQLQuerySymbolOrigin.DbObjectFromContext(context, scopeMemberTypes, false);
+
         if (this.name.isNotClassified()) {
             List<String> nameStrings = this.name.toListOfStrings();
             this.object = context.findRealObject(statistics.getMonitor(), objectType, nameStrings);
 
             if (this.object != null) {
-                this.name.setDefinition(object, new SQLQuerySymbolOrigin.DbObjectFromContext(context));
+                this.name.setDefinition(this.object, this.objectNameOrigin);
+                if (!this.objectType.getTypeClass().isAssignableFrom(this.object.getClass())) {
+                    statistics.appendError(
+                        this.getSyntaxNode(),
+                        DBUtils.getObjectTypeName(this.object) + " found while expecting " + this.objectType.getTypeName()
+                    );
+                }
             } else {
-                statistics.appendError(getSyntaxNode(), "Object " + this.name.toIdentifierString() + " not found in the database");
+                SQLQueryQualifiedName.performPartialResolution(context, statistics, this.name, this.objectNameOrigin, scopeMemberTypes);
+                statistics.appendError(this.getSyntaxNode(), "Object " + this.name.toIdentifierString() + " not found in the database");
             }
         }
         return context;
