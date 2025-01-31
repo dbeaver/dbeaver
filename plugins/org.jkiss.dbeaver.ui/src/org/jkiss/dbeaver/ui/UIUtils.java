@@ -1066,8 +1066,8 @@ public class UIUtils {
             public void controlResized(ControlEvent e) {
                 Rectangle area = scrolledComposite.getClientArea();
                 Point size = content.computeSize(
-                    (scrolledComposite.getStyle() & SWT.HORIZONTAL) != 0 ? SWT.DEFAULT : area.width,
-                    (scrolledComposite.getStyle() & SWT.VERTICAL) != 0 ? SWT.DEFAULT : area.height
+                    (scrolledComposite.getStyle() & SWT.H_SCROLL) != 0 ? SWT.DEFAULT : area.width,
+                    (scrolledComposite.getStyle() & SWT.V_SCROLL) != 0 ? SWT.DEFAULT : area.height
                 );
 
                 content.setSize(size);
