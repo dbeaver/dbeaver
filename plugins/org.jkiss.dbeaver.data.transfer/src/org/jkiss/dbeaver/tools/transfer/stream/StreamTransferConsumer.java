@@ -683,7 +683,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         if (settings.isOutputClipboard()) {
             return getObjectName();
         }
-        return DBFUtils.getUriFromPath(makeOutputFile(monitor)).toString();
+        return DBFUtils.convertPathToString(makeOutputFile(monitor));
     }
 
     @Override

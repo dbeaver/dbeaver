@@ -43,7 +43,7 @@ public class NavigatorHandlerCopySpecial extends NavigatorHandlerCopyAbstract {
         if (adapted != null) {
             return adapted.getFullyQualifiedName(DBPEvaluationContext.UI);
         } else if (object instanceof DBNPathBase pathBase) {
-            return DBFUtils.getUriFromPath(pathBase.getPath()).toString();
+            return DBFUtils.convertPathToString(pathBase.getPath());
         } else if (object instanceof DBNNode nwr) {
             IResource resource = nwr.getAdapter(IResource.class);
             if (resource != null) {

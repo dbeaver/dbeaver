@@ -63,7 +63,7 @@ public class PrefPageProjectResourceDetails extends AbstractPrefPage implements 
         if (resourcePath == null) {
             return composite;
         }
-        UIUtils.createLabelText(composite, "URI", DBFUtils.getUriFromPath(resourcePath).toString(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(composite, "Path", DBFUtils.convertPathToString(resourcePath), SWT.BORDER | SWT.READ_ONLY);
         FileAttributeView fileAttributeView = Files.getFileAttributeView(resourcePath, PosixFileAttributeView.class);
         if (fileAttributeView == null) {
             fileAttributeView = Files.getFileAttributeView(resourcePath, FileOwnerAttributeView.class);

@@ -58,7 +58,6 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -367,7 +366,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             item.setImage(0, DBeaverIcons.getImage(getProducerProcessor().getIcon()));
             if (producer instanceof StreamTransferProducer stp) {
                 Path inputFile = stp.getInputFile();
-                item.setText(0, IOUtils.isLocalPath(inputFile) ? inputFile.toString() : DBFUtils.getUriFromPath(inputFile).toString());
+                item.setText(0, DBFUtils.convertPathToString(inputFile));
             } else {
                 item.setText(0, String.valueOf(producer.getObjectName()));
             }
