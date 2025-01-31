@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -364,8 +365,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             item.setText(0, DTUIMessages.stream_consumer_page_settings_item_text_none);
         } else {
             item.setImage(0, DBeaverIcons.getImage(getProducerProcessor().getIcon()));
-            item.setText(0, producer instanceof StreamTransferProducer stp ?
-                DBFUtils.getUriFromPath(stp.getInputFile()).toString() : String.valueOf(producer.getObjectName()));
+            if (producer instanceof StreamTransferProducer stp) {
+                Path inputFile = stp.getInputFile();
+                item.setText(0, IOUtils.isLocalPath(inputFile) ? inputFile.toString() : DBFUtils.getUriFromPath(inputFile).toString());
+            } else {
+                item.setText(0, String.valueOf(producer.getObjectName()));
+            }
         }
 
         IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();

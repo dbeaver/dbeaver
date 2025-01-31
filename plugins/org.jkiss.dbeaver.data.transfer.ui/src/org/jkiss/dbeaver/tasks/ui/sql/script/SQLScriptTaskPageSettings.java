@@ -114,8 +114,9 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             scriptsViewer.setLabelProvider(new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
-                    if (element instanceof DBNPathBase path) {
-                        return DBFUtils.getUriFromPath(path.getPath()).toString();
+                    if (element instanceof DBNPathBase pathNode) {
+                        Path path = pathNode.getPath();
+                        return IOUtils.isLocalPath(path) ? path.toString() : DBFUtils.getUriFromPath(path).toString();
                     }
                     DBNNode node = (DBNNode) element;
                     DBPProject ownerProject = node.getOwnerProject();
