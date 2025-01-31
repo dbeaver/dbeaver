@@ -484,7 +484,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                     }
                     if (workspaceFile == null) {
                         UIUtils.syncExec(() -> setMessage("Script file '" + filePath + "' not found", WARNING));
-                        log.debug("Script file '" + filePath + "' not found");
+                        log.error("Script file '" + filePath + "' not found");
                         continue;
                     }
                     DBNNode resource = projectNode.findResource(monitor, workspaceFile);
@@ -497,6 +497,9 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                         DBNPathBase pathNode = fsNode.findNodeByPath(monitor, filePath);
                         if (pathNode != null) {
                             selectedScripts.add(pathNode);
+                        } else {
+                            UIUtils.syncExec(() -> setErrorMessage("Cannot find navigator node for path " + filePath));
+                            log.error("Cannot find navigator node for path " + filePath);
                         }
                     }
                 }
@@ -513,6 +516,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         UIUtils.syncExec(() -> {
             scriptsViewer.setInput(selectedScripts);
             dataSourceViewer.setInput(selectedDataSources);
+            determinePageCompletion();
         });
     }
 

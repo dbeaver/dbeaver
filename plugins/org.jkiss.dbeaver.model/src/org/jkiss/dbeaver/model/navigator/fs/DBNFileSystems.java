@@ -199,9 +199,6 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
             plainPath = plainPath.substring(0, divPos);
         }
         for (String name : plainPath.split("/")) {
-            if (name.endsWith(":")) {
-                name = name.substring(0, name.length() - 1);
-            }
             if (name.isEmpty()) {
                 continue;
             }
