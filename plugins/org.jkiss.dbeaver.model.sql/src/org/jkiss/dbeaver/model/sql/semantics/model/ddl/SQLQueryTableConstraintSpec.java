@@ -93,12 +93,13 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
     ) {
         List<SQLQueryResultColumn> referenceKey;
         if (this.tupleColumnsList != null && !this.tupleColumnsList.isEmpty() && tableContext != null) {
+            SQLQuerySymbolOrigin columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(tableContext);
             referenceKey = new ArrayList<>(this.tupleColumnsList.size());
             for (SQLQuerySymbolEntry columnRef : this.tupleColumnsList) {
                 if (columnRef.isNotClassified()) {
                     SQLQueryResultColumn rc = tableContext.resolveColumn(statistics.getMonitor(), columnRef.getName());
                     if (rc != null) {
-                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics);
+                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics, columnNameOrigin);
                     } else {
                         columnRef.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
                         statistics.appendWarning(columnRef, "Column " + columnRef.getName() + " not found");

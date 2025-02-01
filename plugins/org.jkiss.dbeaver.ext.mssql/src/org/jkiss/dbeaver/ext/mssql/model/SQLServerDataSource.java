@@ -20,8 +20,7 @@ import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -556,15 +555,11 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         boolean hasNextValExpr = false;
         try {
             Statement statement = SQLSemanticProcessor.parseQuery(this.sqlDialect, query.getText());
-            if (statement instanceof Select) {
-                SelectBody selectBody = ((Select) statement).getSelectBody();
-                if (selectBody instanceof PlainSelect plainSelect) {
-                    if (plainSelect.getFromItem() == null) {
-                        hasNextValExpr = plainSelect.getSelectItems().stream().anyMatch(
-                            item -> (item instanceof SelectExpressionItem) 
-                                && (((SelectExpressionItem) item).getExpression() instanceof NextValExpression)
-                        );
-                    }
+            if (statement instanceof PlainSelect plainSelect) {
+                if (plainSelect.getFromItem() == null) {
+                    hasNextValExpr = plainSelect.getSelectItems()
+                        .stream()
+                        .anyMatch(item -> item.getExpression() instanceof NextValExpression);
                 }
             }
         } catch (DBCException e) {
@@ -659,7 +654,11 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
         @Nullable
         @Override
-        protected SQLServerLogin fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDataSource dataSource, @NotNull JDBCResultSet resultSet) {
+        protected SQLServerLogin fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull SQLServerDataSource dataSource,
+            @NotNull JDBCResultSet resultSet
+        ) {
             String loginName = JDBCUtils.safeGetString(resultSet, "name");
             if (CommonUtils.isNotEmpty(loginName)) {
                 return new SQLServerLogin(dataSource, loginName, resultSet);

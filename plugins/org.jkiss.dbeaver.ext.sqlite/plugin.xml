@@ -17,6 +17,18 @@
                 label="SQLite"
                 icon="icons/sqlite_icon.png"
                 dialect="sqlite">
+
+            <treeInjection path="generic/catalog/schema/table"
+                changeFolderType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable"/>
+            <treeInjection path="generic/catalog/schema/table/attribute"
+                changeFolderType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn"/>
+            <treeInjection path="generic/catalog/schema/table/association"
+                changeFolderType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey"/>
+            <treeInjection path="generic/catalog/schema/view"
+                changeFolderType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteView"/>
+            <treeInjection path="generic/catalog/schema/view/attribute"
+                changeFolderType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn"/>
+
             <drivers managable="true">
                 <driver
                         id="sqlite_jdbc"
@@ -41,7 +53,8 @@
                     <replace provider="generic" driver="sqlite_jdbc"/>
 
                     <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.sqlite.xerial"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"
+                          bundle="!drivers.sqlite.xerial"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.sqlite.xerial"/>
                     <file type="jar" path="drivers/sqlite/xerial" bundle="drivers.sqlite.xerial"/>
 
@@ -73,6 +86,8 @@
                     <parameter name="supports-indexes" value="true"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="term-server" value="%props.term.server.name"/>
+
                 </driver>
                 <main-properties drivers="libsql_jdbc">
                     <propertyGroup label="Settings">
@@ -85,17 +100,22 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
-        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable"/>
-        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableColumnManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn"/>
-        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableForeignKeyManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey"/>
-        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteViewManager" objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteView"/>
+        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableManager"
+                 objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable"/>
+        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableColumnManager"
+                 objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteTableForeignKeyManager"
+                 objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.sqlite.edit.SQLiteViewManager"
+                 objectType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteView"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
                 class="org.jkiss.dbeaver.ext.sqlite.model.data.SQLiteValueHandlerProvider"
                 description="SQLite data types provider"
-                id="org.jkiss.dbeaver.ext.sqlite.model.data.SQLiteValueHandlerProvider"
+                id="SQLiteValueHandlerProvider"
+                parent="GenericValueHandlerProvider"
                 label="SQLite data types provider">
 
             <datasource id="sqlite"/>
@@ -104,14 +124,28 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlInsertMethod">
-        <method id="sqLiteInsertIgnore" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteInsertReplaceMethodIgnore" label="INSERT OR IGNORE" description="Insert ignore duplicate key value"/>
-        <method id="sqLiteReplaceIgnore" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteInsertReplaceMethod" label="INSERT OR REPLACE" description="Insert replace duplicate key value"/>
+        <method id="sqLiteInsertIgnore" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteInsertReplaceMethodIgnore"
+                label="INSERT OR IGNORE" description="Insert ignore duplicate key value"/>
+        <method id="sqLiteReplaceIgnore" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteInsertReplaceMethod"
+                label="INSERT OR REPLACE" description="Insert replace duplicate key value"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="sqlite" parent="generic" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLDialect" label="SQLite" description="SQLite dialect." icon="icons/sqlite_icon.png">
+        <dialect id="sqlite" parent="generic" class="org.jkiss.dbeaver.ext.sqlite.model.SQLiteSQLDialect" label="SQLite"
+                 description="SQLite dialect." icon="icons/sqlite_icon.png">
             <property name="insertMethods" value="sqLiteInsertIgnore,sqLiteReplaceIgnore"/>
         </dialect>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+                id="libsql_token_jdbc"
+                label="LibSQL Authentication"
+                description="LibSQL token based authentication"
+                class="org.jkiss.dbeaver.ext.sqlite.auth.LibSQLAuthModelToken"
+                default="true">
+            <datasource driver="libsql_jdbc"/>
+            <replace model="native"/>
+        </authModel>
+    </extension>
 </plugin>

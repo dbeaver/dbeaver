@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ui.data.IValueManager;
 /**
  * ValueManagerDescriptor
  */
-public class ValueManagerDescriptor extends AbstractValueBindingDescriptor<IValueManager> {
+public class ValueManagerDescriptor extends AbstractValueBindingDescriptor<IValueManager, Object> {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataManager"; //$NON-NLS-1$
     public static final String TAG_MANAGER = "manager"; //$NON-NLS-1$

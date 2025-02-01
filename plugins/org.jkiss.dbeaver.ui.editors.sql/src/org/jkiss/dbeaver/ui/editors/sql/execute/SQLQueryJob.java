@@ -117,7 +117,7 @@ public class SQLQueryJob extends DataSourceJob
     private DBCStatistics statistics;
     private int fetchResultSetNumber;
     private int resultSetNumber;
-    private SQLQuery lastGoodQuery;
+    private SQLScriptElement lastGoodQuery;
 
     private boolean skipConfirmation;
     private int fetchSize;
@@ -418,6 +418,7 @@ public class SQLQueryJob extends DataSourceJob
                 if (!(e instanceof DBException)) {
                     log.error("Unexpected error while processing SQL command", e);
                 }
+                lastGoodQuery = element;
                 lastError = e;
                 return false;
             } finally {
@@ -593,11 +594,12 @@ public class SQLQueryJob extends DataSourceJob
             monitor.done();
         }
 
+        lastGoodQuery = originalQuery;
+
         if (curResult.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
             return false;
         }
         // Success
-        lastGoodQuery = originalQuery;
         return true;
     }
 
@@ -606,10 +608,7 @@ public class SQLQueryJob extends DataSourceJob
         if (statement instanceof Insert ||
             statement instanceof Delete ||
             statement instanceof Update ||
-            (statement instanceof Select &&
-                ((Select) statement).getSelectBody() instanceof PlainSelect &&
-                !CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables())))
-        {
+            (statement instanceof PlainSelect select && !CommonUtils.isEmpty(select.getIntoTables()))) {
             return false;
         }
         return true;

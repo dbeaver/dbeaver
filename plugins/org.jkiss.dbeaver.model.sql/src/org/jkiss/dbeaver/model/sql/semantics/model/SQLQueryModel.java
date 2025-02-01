@@ -16,19 +16,17 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.model;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScopeItem;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryPureResultTupleContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.utils.ListNode;
 
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Query model for recognition
@@ -38,16 +36,19 @@ public class SQLQueryModel extends SQLQueryNodeModel {
     private final Set<SQLQuerySymbolEntry> symbolEntries;
     @Nullable
     private final SQLQueryModelContent queryContent;
+    @NotNull
+    private final List<SQLQueryLexicalScopeItem> lexicalItems;
 
-    
     public SQLQueryModel(
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryModelContent queryContent,
-        @NotNull Set<SQLQuerySymbolEntry> symbolEntries
+        @NotNull Set<SQLQuerySymbolEntry> symbolEntries,
+        @NotNull List<SQLQueryLexicalScopeItem> lexicalItems
     ) {
         super(syntaxNode.getRealInterval(), syntaxNode, queryContent);
         this.queryContent = queryContent;
         this.symbolEntries = symbolEntries;
+        this.lexicalItems = lexicalItems;
     }
 
     @NotNull
@@ -79,6 +80,21 @@ public class SQLQueryModel extends SQLQueryNodeModel {
         if (this.queryContent != null) {
             this.queryContent.applyContext(dataContext, recognitionContext);
         }
+
+        int actualTailPosition = this.getSyntaxNode().getRealInterval().b;
+        SQLQueryNodeModel tailNode = this.findNodeContaining(actualTailPosition);
+        if (tailNode != this) {
+            SQLQuerySymbolOrigin tailOrigin = tailNode.getTailOrigin();
+            if (tailOrigin == null) {
+                SQLQueryLexicalScope tailNodeScope = tailNode.findLexicalScope(actualTailPosition);
+                if (tailNodeScope != null) {
+                    tailOrigin = tailNodeScope.getSymbolsOrigin();
+                }
+            }
+            if (tailOrigin != null) {
+                this.setTailOrigin(tailOrigin);
+            }
+        }
     }
 
     /**
@@ -98,7 +114,8 @@ public class SQLQueryModel extends SQLQueryNodeModel {
         int textOffset,
         SQLQueryDataContext nearestResultContext,
         SQLQueryDataContext deepestContext,
-        SQLQueryLexicalScopeItem lexicalItem
+        SQLQueryLexicalScopeItem lexicalItem,
+        SQLQuerySymbolOrigin symbolsOrigin
     ) {
     }
 
@@ -133,7 +150,9 @@ public class SQLQueryModel extends SQLQueryNodeModel {
             SQLQueryNodeModel node = stack.data;
             scope = node.findLexicalScope(textOffset);
             if (scope != null) {
-                context = scope.getContext();
+                if (scope.getSymbolsOrigin() != null) {
+                    context = scope.getSymbolsOrigin().getDataContext();
+                }
                 lexicalItem = scope.findNearestItem(textOffset);
             }
             stack = stack.next;
@@ -144,7 +163,31 @@ public class SQLQueryModel extends SQLQueryNodeModel {
             context = deepestContext;
         }
 
-        return new LexicalContextResolutionResult(textOffset, nearestResultContext, context, lexicalItem);
+        if (lexicalItem == null) {
+            // table refs are not registered in lexical scopes properly for now (because rowsets model being build bottom-to-top),
+            // so trying to find their components in the global list
+            int index = STMUtils.binarySearchByKey(this.lexicalItems, n -> n.getSyntaxNode().getRealInterval().a, textOffset - 1, Comparator.comparingInt(x -> x));
+            if (index < 0) {
+                index = ~index - 1;
+            }
+            if (index >= 0) {
+                SQLQueryLexicalScopeItem item = lexicalItems.get(index);
+                Interval interval = item.getSyntaxNode().getRealInterval();
+                if (interval.a < textOffset && interval.b + 1 >= textOffset) {
+                    lexicalItem = item;
+                }
+            }
+        }
+
+        SQLQuerySymbolOrigin symbolsOrigin = lexicalItem == null ? null : lexicalItem.getOrigin();
+        if (symbolsOrigin == null && textOffset > this.getInterval().b) {
+            symbolsOrigin = this.getTailOrigin();
+        }
+        if (symbolsOrigin == null && scope != null) {
+            symbolsOrigin = scope.getSymbolsOrigin();
+        }
+
+        return new LexicalContextResolutionResult(textOffset, nearestResultContext, context, lexicalItem, symbolsOrigin);
     }
 
     @Override

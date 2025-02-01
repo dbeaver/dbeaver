@@ -212,6 +212,9 @@
         <hintProvider id="binary-size" for="cell" class="org.jkiss.dbeaver.model.data.hints.standard.BinaryCellHintProvider" label="Binary data" description="Shows size of binary value">
             <supports kind="BINARY"/>
         </hintProvider>
+        <hintProvider id="date-timezone" for="cell" class="org.jkiss.dbeaver.model.data.hints.standard.TimeZoneCellHintProvider" label="%hints.date-timezone.label" description="%hints.date-timezone.description">
+            <supports kind="DATETIME"/>
+        </hintProvider>
     </extension>
 
     <extension point="org.jkiss.dbeaver.settings">

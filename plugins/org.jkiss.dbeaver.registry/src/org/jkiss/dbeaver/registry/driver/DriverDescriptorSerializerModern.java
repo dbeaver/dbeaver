@@ -91,6 +91,9 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
                         json.beginObject();
                         JSONUtils.fieldNE(json, RegistryConstants.ATTR_TYPE, lib.getType().name());
                         JSONUtils.field(json, RegistryConstants.ATTR_CUSTOM, lib.isCustom());
+                        if (lib.isEmbedded()) {
+                            JSONUtils.field(json, RegistryConstants.ATTR_EMBEDDED, true);
+                        }
                         if (lib.isDisabled()) {
                             JSONUtils.field(json, RegistryConstants.ATTR_DISABLED, true);
                         }

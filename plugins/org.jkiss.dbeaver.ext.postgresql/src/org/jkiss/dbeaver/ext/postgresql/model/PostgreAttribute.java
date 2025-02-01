@@ -532,9 +532,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Nullable
     @Override
-    public DBSTypeDescriptor getTypeDescriptor() {
-        return this.arrayDim > 0 && this.getDataType() != null
-            ? new PostgreArrayAttrTypeDescriptor(false, this.arrayDim, this.getDataType())
+    public DBSTypeDescriptor getTypeDescriptor(@NotNull DBRProgressMonitor monitor) {
+        PostgreDataType type = this.getDataType();
+        return this.arrayDim > 0 && type != null && type.isArray()
+            ? new PostgreArrayAttrTypeDescriptor(false, this.arrayDim, type, type.getElementType(monitor))
             : null;
     }
 
@@ -549,18 +550,26 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private static class PostgreArrayAttrTypeDescriptor implements DBSTypeDescriptor {
         private final boolean isItemType;
         private final int arrayDim;
-        private final DBSDataType itemType;
+        private final PostgreDataType arrayType;
+        private final PostgreDataType elementType;
 
-        public  PostgreArrayAttrTypeDescriptor(boolean isItemType, int arrayDim, @NotNull DBSDataType itemType) {
+        public  PostgreArrayAttrTypeDescriptor(boolean isItemType, int arrayDim, PostgreDataType arrayType, PostgreDataType elementType) {
             this.isItemType = isItemType;
             this.arrayDim = arrayDim;
-            this.itemType = itemType;
+            this.arrayType = arrayType;
+            this.elementType = elementType;
         }
 
         @Nullable
         @Override
         public DBSDataType getUnderlyingType() {
-            return isItemType ? itemType : null;
+            if (this.isItemType) {
+                return this.elementType;
+            } else if (this.arrayDim == this.arrayType.getArrayDim()) {
+                return this.arrayType;
+            } else {
+                return null;
+            }
         }
 
         @Override
@@ -571,7 +580,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         @NotNull
         @Override
         public String getTypeName() {
-            return this.itemType.getFullTypeName() + "[]".repeat(isItemType ? 0 : arrayDim);
+            return this.elementType.getFullTypeName() + "[]".repeat(isItemType ? 0 : arrayDim);
         }
 
         @Override
@@ -582,11 +591,12 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         @Nullable
         @Override
         public DBSTypeDescriptor getIndexableItemType(int depth, boolean[] slicingSpecOrNull) {
+            // TODO clarify postgre indexing and slicing rules
             if (isItemType) {
                 return null;
             } else {
                 if (slicingSpecOrNull == null) {
-                    return depth == arrayDim ? new PostgreArrayAttrTypeDescriptor(true, this.arrayDim, this.itemType)
+                    return depth == arrayDim ? new PostgreArrayAttrTypeDescriptor(true, this.arrayDim, this.arrayType, this.elementType)
                         : (depth > arrayDim ? null : this);
                 } else if (slicingSpecOrNull.length != arrayDim) {
                     return slicingSpecOrNull.length > arrayDim ? null : this;
@@ -596,7 +606,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                             return this;
                         }
                     }
-                    return new PostgreArrayAttrTypeDescriptor(true, this.arrayDim, this.itemType);
+                    return new PostgreArrayAttrTypeDescriptor(true, this.arrayDim, this.arrayType, this.elementType);
                 }
             }
         }
@@ -604,9 +614,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         @Override
         public boolean equals(Object obj) {
             return obj instanceof PostgreArrayAttrTypeDescriptor other && ((
-                    !this.isItemType && !other.isItemType && this.arrayDim == other.arrayDim && this.itemType.equals(other.itemType)
+                    !this.isItemType && !other.isItemType && this.arrayDim == other.arrayDim && this.arrayType.equals(other.arrayType) && this.elementType.equals(other.elementType)
                 ) || (
-                    this.isItemType && other.isItemType && this.itemType.equals(other.itemType)
+                    this.isItemType && other.isItemType && this.elementType.equals(other.elementType)
                 ));
         }
     }

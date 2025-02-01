@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.sql.parser;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.parser.StringProvider;
@@ -111,14 +111,10 @@ public class SQLSemanticProcessor {
         }
     }
 
-    public static boolean isSelectQuery(SQLDialect dialect, String query)
-    {
+    public static boolean isSelectQuery(SQLDialect dialect, String query) {
         try {
             Statement statement = parseQuery(dialect, query);
-            return
-                statement instanceof Select select &&
-                select.getSelectBody() instanceof PlainSelect plainSelect &&
-                CommonUtils.isEmpty(plainSelect.getIntoTables());
+            return statement instanceof PlainSelect plainSelect && CommonUtils.isEmpty(plainSelect.getIntoTables());
         } catch (Throwable e) {
             //log.debug(e);
             return false;
@@ -160,8 +156,14 @@ public class SQLSemanticProcessor {
     ) throws DBException {
         try {
             Statement statement = parseQuery(dataSource.getSQLDialect(), sqlQuery);
-            if (statement instanceof Select select && select.getSelectBody() instanceof PlainSelect plainSelect) {
+            if (statement instanceof PlainSelect plainSelect) {
                 if (patchSelectQuery(monitor, dataSource, plainSelect, dataFilter)) {
+                    return statement.toString();
+                } else if (plainSelect.getWithItemsList() != null && !plainSelect.getWithItemsList().isEmpty()) {
+                    addWhereCondition(dataSource, plainSelect, dataFilter);
+                    if (dataFilter.hasOrdering()) {
+                        addOrderByClause(monitor, dataSource, plainSelect, dataFilter);
+                    }
                     return statement.toString();
                 }
             }
@@ -184,7 +186,12 @@ public class SQLSemanticProcessor {
         return dataSource.getSQLDialect().getQueryGenerator().getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
     }
 
-    private static boolean patchSelectQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter) throws DBException {
+    private static boolean patchSelectQuery(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull PlainSelect select,
+        @NotNull DBDDataFilter filter
+    ) throws DBException {
         // WHERE
         if (filter.hasConditions()) {
             for (DBDAttributeConstraint co : filter.getConstraints()) {
@@ -204,45 +211,61 @@ public class SQLSemanticProcessor {
                     }
                 }
             }
-            StringBuilder whereString = new StringBuilder();
-            SQLUtils.appendConditionString(filter, dataSource, null, whereString, true);
-            String condString = whereString.toString();
-            addWhereToSelect(select, condString);
+            addWhereCondition(dataSource, select, filter);
         }
         // ORDER
         if (filter.hasOrdering()) {
-            List<OrderByElement> orderByElements = select.getOrderByElements();
-            if (orderByElements == null) {
-                orderByElements = new ArrayList<>();
-                select.setOrderByElements(orderByElements);
-            }
-            List<DBDAttributeConstraint> orderConstraints = filter.getOrderConstraints();
-            if (!CommonUtils.isEmpty(orderConstraints)) {
-                for (DBDAttributeConstraint co : orderConstraints) {
-                    String columnName = co.getAttributeName();
-                    boolean forceNumeric = filter.hasNameDuplicates(columnName) || !SQLUtils.PATTERN_SIMPLE_NAME.matcher(columnName).matches();
-                    Expression orderExpr = getOrderConstraintExpression(monitor, dataSource, select, filter, co, forceNumeric);
-                    OrderByElement element = new OrderByElement();
-                    element.setExpression(orderExpr);
-                    if (co.isOrderDescending()) {
-                        element.setAsc(false);
-                        element.setAscDescPresent(true);
-                    }
-                    orderByElements.add(element);
-                }
-            }
-            String filterOrder = filter.getOrder();
-            if (!CommonUtils.isEmpty(filterOrder)) {
-                // expression = CCJSqlParserUtil.parseExpression(filterOrder);
-                // It's good place to use parseExpression, but it parse fine just one column name, not "column1,column2" or "column1 DESC"
-                Expression expression = new CustomExpression(filterOrder);
-                OrderByElement element = new OrderByElement();
-                element.setExpression(expression);
-                orderByElements.add(element);
-            }
-
+            addOrderByClause(monitor, dataSource, select, filter);
         }
         return true;
+    }
+
+    private static void addWhereCondition(
+        @NotNull DBPDataSource dataSource,
+        @NotNull PlainSelect select,
+        @NotNull DBDDataFilter filter
+    ) throws DBException {
+        StringBuilder whereString = new StringBuilder();
+        SQLUtils.appendConditionString(filter, dataSource, null, whereString, true);
+        String condString = whereString.toString();
+        addWhereToSelect(select, condString);
+    }
+
+    private static void addOrderByClause(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull PlainSelect select,
+        @NotNull DBDDataFilter filter
+    ) throws DBException {
+        List<OrderByElement> orderByElements = select.getOrderByElements();
+        if (orderByElements == null) {
+            orderByElements = new ArrayList<>();
+            select.setOrderByElements(orderByElements);
+        }
+        List<DBDAttributeConstraint> orderConstraints = filter.getOrderConstraints();
+        if (!CommonUtils.isEmpty(orderConstraints)) {
+            for (DBDAttributeConstraint co : orderConstraints) {
+                String columnName = co.getAttributeName();
+                boolean forceNumeric = filter.hasNameDuplicates(columnName) || !SQLUtils.PATTERN_SIMPLE_NAME.matcher(columnName).matches();
+                Expression orderExpr = getOrderConstraintExpression(monitor, dataSource, select, filter, co, forceNumeric);
+                OrderByElement element = new OrderByElement();
+                element.setExpression(orderExpr);
+                if (co.isOrderDescending()) {
+                    element.setAsc(false);
+                    element.setAscDescPresent(true);
+                }
+                orderByElements.add(element);
+            }
+        }
+        String filterOrder = filter.getOrder();
+        if (!CommonUtils.isEmpty(filterOrder)) {
+            // expression = CCJSqlParserUtil.parseExpression(filterOrder);
+            // It's good place to use parseExpression, but it parse fine just one column name, not "column1,column2" or "column1 DESC"
+            Expression expression = new CustomExpression(filterOrder);
+            OrderByElement element = new OrderByElement();
+            element.setExpression(expression);
+            orderByElements.add(element);
+        }
     }
 
     private static boolean isDynamicAttribute(@Nullable DBSAttributeBase attribute) {
@@ -342,7 +365,7 @@ public class SQLSemanticProcessor {
 
     @Nullable
     public static Table getTableFromSelect(Select select) {
-        if (select.getSelectBody() instanceof PlainSelect plainSelect) {
+        if (select instanceof PlainSelect plainSelect) {
             FromItem fromItem = plainSelect.getFromItem();
             if (fromItem instanceof Table table) {
                 return table;
@@ -362,8 +385,7 @@ public class SQLSemanticProcessor {
 
     @Nullable
     public static Table findTableByNameOrAlias(Select select, String tableName) {
-        SelectBody selectBody = select.getSelectBody();
-        if (selectBody instanceof PlainSelect plainSelect) {
+        if (select instanceof PlainSelect plainSelect) {
             FromItem fromItem = plainSelect.getFromItem();
             if (fromItem instanceof Table table && equalTables(table, tableName)) {
                 return table;
@@ -398,7 +420,7 @@ public class SQLSemanticProcessor {
         if (sourceWhere == null) {
             select.setWhere(conditionExpr);
         } else {
-            select.setWhere(new AndExpression(new Parenthesis(sourceWhere), conditionExpr));
+            select.setWhere(new AndExpression(new ParenthesedExpressionList<>(sourceWhere), conditionExpr));
         }
     }
 

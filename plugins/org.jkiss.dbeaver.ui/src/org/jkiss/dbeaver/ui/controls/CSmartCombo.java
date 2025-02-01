@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
@@ -51,20 +50,15 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private TableFilter<ITEM_TYPE> tableFilter = null;
     private ITEM_TYPE selectedItem;
     private Label imageLabel;
-    private StyledText text;
+    private Text text;
     private Tree dropDownControl;
     private int visibleItemCount = 10;
-    private int widthHint = SWT.DEFAULT;
     private Shell popup;
     private long disposeTime = -1;
     private Button arrow;
     private boolean hasFocus;
     private Listener listener, filter;
-    private Font font;
     private Point sizeHint;
-    // Size of Text with border. Needed for calc of height in computeSize
-    // On MacOS edit with border is much higher
-    private final Point borderTextSize;
 
     public CSmartCombo(Composite parent, int style, ILabelProvider labelProvider)
     {
@@ -83,26 +77,12 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         gridLayout.verticalSpacing = 0;
         this.setLayout(gridLayout);
 
-        int heightHint = 0;
-        {
-            Text sampleText = new Text(this, SWT.NONE);
-            sampleText.setText("X");
-            borderTextSize = sampleText.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-            heightHint = borderTextSize.y + 2;
-            sampleText.dispose();
-        }
-
         this.imageLabel = new Label(this, SWT.NONE);
-        this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
+        this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        this.text = new StyledText(this, SWT.SINGLE | SWT.READ_ONLY);
-        this.text.setIndent(3);
-        this.text.setCaret(null);
+        this.text = new Text(this, SWT.SINGLE | SWT.READ_ONLY);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
-        gd.heightHint = heightHint;
         this.text.setLayoutData(gd);
-
-        this.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 
         int arrowStyle = SWT.ARROW | SWT.DOWN;
         if ((style & SWT.FLAT) != 0) {
@@ -110,9 +90,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
         this.arrow = new Button(this, arrowStyle);
         gd = new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER);
-        gd.heightHint = heightHint;
         this.arrow.setLayoutData(gd);
 
+        this.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         this.setEnabled(true, true);
         this.setForeground(UIStyles.getDefaultTextForeground());
 
@@ -165,11 +145,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         for (int arrowEvent : arrowEvents) {
             this.arrow.addListener(arrowEvent, this.listener);
         }
-    }
-
-    public void setWidthHint(int widthHint)
-    {
-        this.widthHint = widthHint;
     }
 
     public void setTableFilter(TableFilter<ITEM_TYPE> tableFilter) {
@@ -267,49 +242,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     {
         int mask = SWT.BORDER | SWT.READ_ONLY | SWT.FLAT | SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT | SWT.CHECK;
         return style & mask;
-    }
-
-    @Override
-    public Point computeSize(int wHint, int hHint, boolean changed)
-    {
-        if (wHint != SWT.DEFAULT) {
-            return super.computeSize(wHint, hHint, changed);
-        }
-        checkWidget();
-
-        int borderWidth = getBorderWidth ();
-        Point arrowSize = arrow.computeSize (SWT.DEFAULT, SWT.DEFAULT, changed);
-        arrowSize.x += 2 * borderWidth;
-        arrowSize.y += 2 * borderWidth;
-
-        Point textSize = super.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed);
-        Point listSize = new Point(0, 0);
-        try {
-            GC gc = new GC(getDisplay());
-            for (ITEM_TYPE item : items) {
-                String itemText = labelProvider.getText(item);
-                Point point = gc.stringExtent(itemText);
-                listSize.x = Math.max(listSize.x, point.x);
-                listSize.y = Math.max(listSize.y, point.y);
-            }
-            gc.dispose();
-        } catch (Throwable e) {
-            // ignore. Something is wrong with GC? #4539
-        }
-        listSize.x += imageLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed).x;
-        listSize.x += arrowSize.x;
-        listSize.x += 20;
-
-        int height = Math.max(hHint, textSize.y);
-        int width = Math.max(wHint, Math.max(listSize.x, textSize.x));
-        if (widthHint != SWT.DEFAULT) {
-            width = widthHint;
-        }
-
-        height = Math.max (height, arrowSize.y);
-        height = Math.max (height, borderTextSize.y);
-
-        return new Point (width, height);
     }
 
     public String getItemText(int index)
@@ -417,7 +349,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     {
         checkWidget();
         super.setFont(font);
-        this.font = font;
         this.text.setFont(font);
     }
 
@@ -543,9 +474,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         Tree table = new Tree(this.popup, listStyle);
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.dropDownControl = table;
-        if (this.font != null) {
-            table.setFont(this.font);
-        }
         new TreeColumn(table, SWT.LEFT);
         createTableItems(table);
 

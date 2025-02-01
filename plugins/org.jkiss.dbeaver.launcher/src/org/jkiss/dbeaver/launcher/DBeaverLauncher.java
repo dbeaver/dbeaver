@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1614,8 +1614,13 @@ public class DBeaverLauncher {
 
             // check for args with parameters. If we are at the last argument or if the next one
             // has a '-' as the first character, then we can't have an arg with a parm so continue.
-            if (i == args.length - 1 || args[i + 1].startsWith("-")) //$NON-NLS-1$
+            if (i == args.length - 1 || args[i + 1].startsWith("-")) { //$NON-NLS-1$
+                if (!args[i].startsWith("-")) {
+                    // Suppress splash
+                    splashDown = true;
+                }
                 continue;
+            }
             String arg = args[++i];
 
             // look for the development mode and class path entries.

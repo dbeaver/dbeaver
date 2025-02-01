@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.data.hints.DBDAttributeHintProvider;
 import org.jkiss.dbeaver.model.data.hints.DBDValueHint;
 import org.jkiss.dbeaver.model.data.hints.ValueHintText;
+import org.jkiss.dbeaver.model.data.messages.DataMessages;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
@@ -61,7 +62,7 @@ public class AttributeKeysHintProvider implements DBDAttributeHintProvider {
         ) {
             hints.add(
                 new ValueHintText(
-                    "Unique key: " +
+                    DataMessages.hint_attr_keys_unique_key + ": " +
                         rowIdentifier.getEntity().getName() +
                         "(" +
                         rowIdentifier.getAttributes().stream().map(DBDAttributeBinding::getName)
@@ -74,7 +75,7 @@ public class AttributeKeysHintProvider implements DBDAttributeHintProvider {
         if (rowIdentifier != null && rowIdentifier.hasAttribute(attribute)) {
             hints.add(
                 new ValueHintText(
-                    "Part of key: " +
+                    DataMessages.hint_attr_keys_part_of + ": " +
                         DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI),
                     null,
                     DBIcon.OVER_KEY));
@@ -82,7 +83,7 @@ public class AttributeKeysHintProvider implements DBDAttributeHintProvider {
         if (!CommonUtils.isEmpty(attribute.getReferrers())) {
             hints.add(
                 new ValueHintText(
-                    "Refers to: " + getRefTableNames(attribute.getReferrers()),
+                    DataMessages.hint_attr_keys_refers_to + ": " + getRefTableNames(attribute.getReferrers()),
                     null,
                     DBIcon.OVER_REFERENCE));
         }

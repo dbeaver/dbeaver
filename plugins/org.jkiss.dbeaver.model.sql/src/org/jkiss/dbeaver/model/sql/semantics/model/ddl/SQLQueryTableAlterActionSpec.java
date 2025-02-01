@@ -77,6 +77,8 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
         @Nullable SQLQueryDataContext tableContext,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
+        SQLQuerySymbolOrigin columnRefOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(tableContext);
+
         if (this.columnSpec != null) {
             SQLQuerySymbolEntry columnRef = columnSpec.getColumnName();
             if (columnRef != null) {
@@ -84,10 +86,11 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
                 if (columnRef.isNotClassified()) {
                     if (tableContext != null) {
                         SQLQueryResultColumn rc = tableContext.resolveColumn(statistics.getMonitor(), columnName.getName());
-                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics);
+                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics, columnRefOrigin);
                     } else {
                         columnName.setDefinition(columnRef);
                         columnName.setSymbolClass(SQLQuerySymbolClass.COLUMN);
+                        columnRef.setOrigin(columnRefOrigin);
                     }
                 }
 
@@ -99,9 +102,10 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
             if (tableContext != null) {
                 SQLQueryResultColumn rc = tableContext.resolveColumn(statistics.getMonitor(), columnName.getName());
                 if (rc != null) {
-                    SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(this.columnName, rc, statistics);
+                    SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(this.columnName, rc, statistics, columnRefOrigin);
                 } else {
                     columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
+                    columnName.setOrigin(columnRefOrigin);
                     statistics.appendWarning(columnName, "Column " + columnName.getName() + " not found");
                 }
             } else {

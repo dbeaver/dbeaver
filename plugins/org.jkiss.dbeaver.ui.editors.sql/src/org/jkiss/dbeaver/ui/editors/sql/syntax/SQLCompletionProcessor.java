@@ -29,6 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
@@ -54,7 +55,10 @@ import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -66,7 +70,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 {
     private static final Log log = Log.getLog(SQLCompletionProcessor.class);
 
-    private static IContextInformationValidator VALIDATOR = new Validator();
+    private static final IContextInformationValidator VALIDATOR = new Validator();
     private static boolean lookupTemplates = false;
     private static boolean simpleMode = false;
 
@@ -148,7 +152,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         request.setContentType(contentType);
 
-        List<? extends Object> proposals;
+        List<?> proposals;
         try {
             switch (contentType) {
                 case IDocument.DEFAULT_CONTENT_TYPE:
@@ -172,20 +176,23 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
                     DBPDataSource dataSource = editor.getDataSource();
 
-                    SQLAutocompletionMode mode = SQLAutocompletionMode.fromPreferences(this.editor.getActivePreferenceStore());
+                    DBPPreferenceStore store = this.editor.getActivePreferenceStore();
+                    SQLAutocompletionMode mode = SQLAutocompletionMode.fromPreferences(store);
+                    boolean useNewCompletionEngine = mode.useNewAnalyzer && store.getBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE)
+                        && store.getBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS);
 
                     // UIUtils.waitJobCompletion(..) uses job.isFinished() which is not dropped on reschedule,
                     // so we should be able to recreate the whole job object including all its non-reusable dependencies.
                     List<Supplier<ProposalsComputationJobHolder>> completionJobSuppliers = new ArrayList<>();
 
-                    if (request.getWordPart() != null && mode.useOldAnalyzer) {
+                    if (request.getWordPart() != null && mode.useOldAnalyzer || !useNewCompletionEngine) {
                         if (dataSource != null) {
                             completionJobSuppliers.add(() -> {
                                 // old analyzer is not reusable, but it doesn't matter because see the next comment below
                                 SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
                                 return new ProposalsComputationJobHolder(new ProposalSearchJob(analyzer)) {
                                     @Override
-                                    public List<? extends Object> getProposals() {
+                                    public List<?> getProposals() {
                                         return analyzer.getProposals();
                                     }
 
@@ -203,12 +210,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         }
                     }
 
-                    if (mode.useNewAnalyzer) {
+                    if (useNewCompletionEngine) {
                         // new analyzer is reusable
                         SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request, completionRequestPosition);
                         completionJobSuppliers.add(() -> new ProposalsComputationJobHolder(new NewProposalSearchJob(newAnalyzer)) {
                             @Override
-                            public List<? extends Object> getProposals() {
+                            public List<?> getProposals() {
                                 return newAnalyzer.getResult();
                             }
 
@@ -251,7 +258,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
     }
 
-    private List<? extends Object> computeProposalsWithJobs(
+    private List<?> computeProposalsWithJobs(
         @NotNull SQLCompletionRequest request,
         @NotNull Position completionRequestPosition,
         @NotNull List<Supplier<ProposalsComputationJobHolder>> completionJobSuppliers
@@ -556,7 +563,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             this.job.schedule();
         }
 
-        public abstract List<? extends Object> getProposals();
+        public abstract List<?> getProposals();
 
         public abstract Integer getProposalsOriginOffset();
     }
