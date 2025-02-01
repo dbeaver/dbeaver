@@ -36,6 +36,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -94,6 +95,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
     private static final String VIEWER_ID = "DBeaver.QM.LogViewer"; //$NON-NLS-1$
+    private static final String CMD_FILTER_ID = "org.jkiss.dbeaver.core.qm.filter";
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
     private static abstract class LogColumn {
@@ -317,6 +319,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private QMEventFilter defaultFilter = new DefaultEventFilter();
     private QMEventFilter filter;
+    private QMEventCriteria criteria;
     private boolean useDefaultFilter = true;
     private final boolean currentSessionOnly;
 
@@ -393,7 +396,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             public void handleEvent(Event event) {
                 logTable.removeListener(SWT.Resize, this);
                 if (!reloadInProgress) {
-                    reloadEvents(null);
+                    reloadEvents(criteria);
                 }
             }
         });
@@ -417,6 +420,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     public void setUseDefaultFilter(boolean useDefaultFilter) {
         this.useDefaultFilter = useDefaultFilter;
+    }
+
+    public void setCriteria(@Nullable QMEventCriteria criteria) {
+        this.criteria = criteria;
     }
 
     private void showEventDetails(QMEvent event) {
@@ -505,7 +512,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     @Override
     public void refresh() {
-        reloadEvents(searchText.getText());
+        reloadEvents(criteria);
     }
 
     private static String getObjectType(QMMObject object) {
@@ -583,7 +590,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         return null;
     }
 
-    private void reloadEvents(@Nullable String searchString) {
+    private void reloadEvents(@Nullable QMEventCriteria criteria) {
         if (reloadInProgress) {
             log.debug("Event reload is in progress. Skip"); //$NON-NLS-1$
             return;
@@ -598,7 +605,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         // Extract events
 
-        EventHistoryReadService loadingService = new EventHistoryReadService(searchString);
+        if (criteria == null) {
+            criteria = QMUtils.createDefaultCriteria(DBWorkbench.getPlatform().getPreferenceStore());
+        }
+
+        criteria.setSearchString(CommonUtils.nullIfEmpty(searchText.getText().trim()));
+        criteria.setFetchingSize(entriesPerPage);
+
+        EventHistoryReadService loadingService = new EventHistoryReadService(criteria);
         LoadingJob.createService(
                 loadingService,
                 new EvenHistoryReadVisualizer(loadingService))
@@ -849,8 +863,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             };
             manager.add(toggleAction);
         }
-        manager.add(new Separator());
-        manager.add(ActionUtils.makeCommandContribution(site, "org.jkiss.dbeaver.core.qm.filter"));
+        if (ActionUtils.isCommandEnabled(CMD_FILTER_ID, site)) {
+            manager.add(new Separator());
+            manager.add(ActionUtils.makeCommandContribution(site, CMD_FILTER_ID, CommandContributionItem.STYLE_CHECK));
+        }
     }
 
     private void openSelectionInEditor() {
@@ -1194,12 +1210,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         private static final int RETRIES_QM_WAITING = 60;
         private static final int WAITING_QM_SESSION_SECONDS_PER_TRY = 1;
-        @Nullable
-        private final String searchString;
+        private final QMEventCriteria criteria;
 
-        protected EventHistoryReadService(@Nullable String searchString) {
+        protected EventHistoryReadService(@NotNull QMEventCriteria criteria) {
             super("Load query history"); //$NON-NLS-1$
-            this.searchString = searchString;
+            this.criteria = criteria;
         }
 
         @Override
@@ -1207,13 +1222,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             final List<QMEvent> events = new ArrayList<>();
             QMEventBrowser eventBrowser = QMUtils.getEventBrowser(currentSessionOnly);
             if (eventBrowser != null) {
-                QMEventCriteria criteria = QMUtils.createDefaultCriteria(DBWorkbench.getPlatform().getPreferenceStore());
-                criteria.setSearchString(CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim());
-                criteria.setFetchingSize(entriesPerPage);
-
                 monitor.beginTask("Load query history", 1); //$NON-NLS-1$
-                if (!CommonUtils.isEmpty(searchString)) {
-                    monitor.subTask("Search queries: " + searchString); //$NON-NLS-1$
+                if (!CommonUtils.isEmpty(criteria.getSearchString())) {
+                    monitor.subTask("Search queries: " + criteria.getSearchString()); //$NON-NLS-1$
                 } else {
                     monitor.subTask("Load all queries"); //$NON-NLS-1$
                 }

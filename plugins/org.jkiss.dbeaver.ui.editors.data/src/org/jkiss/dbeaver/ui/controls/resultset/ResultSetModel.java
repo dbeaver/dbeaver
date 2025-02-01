@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -350,12 +350,12 @@ public class ResultSetModel implements DBDResultSetModel {
     void refreshValueHandlersConfiguration() {
         for (DBDAttributeBinding binding : attributes) {
             DBDValueHandler valueHandler = binding.getValueHandler();
-            if (valueHandler instanceof DBDValueHandlerConfigurable) {
-                ((DBDValueHandlerConfigurable) valueHandler).refreshValueHandlerConfiguration(binding);
+            if (valueHandler instanceof DBDValueHandlerConfigurable vhc) {
+                vhc.refreshValueHandlerConfiguration(binding);
             }
             DBDValueRenderer valueRenderer = binding.getValueRenderer();
-            if (valueRenderer != valueHandler && valueRenderer instanceof DBDValueHandlerConfigurable) {
-                ((DBDValueHandlerConfigurable) valueRenderer).refreshValueHandlerConfiguration(binding);
+            if (valueRenderer != valueHandler && valueRenderer instanceof DBDValueHandlerConfigurable vhc) {
+                vhc.refreshValueHandlerConfiguration(binding);
             }
         }
     }
@@ -477,6 +477,14 @@ public class ResultSetModel implements DBDResultSetModel {
         Object oldHistoricValue = updateChanges ? row.changes.get(topAttribute) : null;
         Object currentValue = row.values[rootIndex];
         Object valueToEdit = currentValue;
+
+        // Check for changes
+        if (!attr.getDataKind().isComplex() && Objects.equals(
+            CommonUtils.toString(currentValue, null),
+            CommonUtils.toString(value, null))
+        ) {
+            return false;
+        }
 
         if (currentValue instanceof DBDValue) {
             // It is complex
@@ -814,7 +822,7 @@ public class ResultSetModel implements DBDResultSetModel {
                                     if (acs.colorBackground != null && acs.colorBackground2 != null && value >= minValue && value <= maxValue) {
                                             RGB bgRowRGB = ResultSetUtils.makeGradientValue(acs.colorBackground.getRGB(), acs.colorBackground2.getRGB(), minValue, maxValue, value);
                                             background = UIUtils.getSharedColor(bgRowRGB);
-                                            
+
                                         // FIXME: coloring value before and after range. Maybe we need an option for this.
                                         /* else if (value < minValue) {
                                             foreground = acs.colorForeground;
@@ -1160,7 +1168,7 @@ public class ResultSetModel implements DBDResultSetModel {
                     } else {
                     	result = DBUtils.compareDataValues(cell1, cell2);
                     }
-                          
+
                     if (co.isOrderDescending()) {
                         result = -result;
                     }

@@ -226,6 +226,9 @@ public class OSGITestRunner extends Runner {
                         setUpIsDone = (boolean) runningClass.getMethod("verifyLaunched")
                             .invoke(runningClass.getConstructor().newInstance());
                         endTime = System.currentTimeMillis() - startTime;
+                        if (!setUpIsDone) {
+                            Thread.sleep(100);
+                        }
                     }
                 }
                 Object o = proxy.newInstance(runningClass);
