@@ -88,6 +88,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     @Nullable
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+        monitor.assertNotCancelled();
         // TODO consider differentiating direct references vs expanded aliases: each alias expansion should be treated as a virtual table
         DBSObject obj = expandAliases(monitor, this.findRealObjectImpl(monitor, tableName));
         return obj instanceof DBSTable table ? table : (obj instanceof DBSView view ? view : null);
@@ -100,6 +101,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
         @NotNull DBSObjectType objectType,
         @NotNull List<String> objectName
     ) {
+        monitor.assertNotCancelled();
         DBSObject obj = this.findRealObjectImpl(monitor, objectName);
         return obj != null && objectType.getTypeClass().isInstance(obj) ? obj : null;
     }

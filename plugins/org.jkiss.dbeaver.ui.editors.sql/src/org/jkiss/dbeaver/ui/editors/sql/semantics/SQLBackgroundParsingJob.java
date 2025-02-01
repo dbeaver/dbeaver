@@ -670,6 +670,8 @@ public class SQLBackgroundParsingJob {
                         }
                         itemContext.refreshCompleted();
                     }
+                } catch (DBRProgressMonitor.CancelledException e) {
+                    // just ignore, don't spam logs
                 } catch (Throwable ex) {
                     log.debug("Error while analyzing query text: " + element.getOriginalText(), ex);
                 }

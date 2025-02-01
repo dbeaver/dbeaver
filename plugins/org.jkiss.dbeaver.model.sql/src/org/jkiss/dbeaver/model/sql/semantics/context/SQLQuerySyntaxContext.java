@@ -58,6 +58,7 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
     @Nullable
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+        monitor.assertNotCancelled();
         return this.parent.findRealTable(monitor, tableName);
     }
 
@@ -74,30 +75,35 @@ public abstract class SQLQuerySyntaxContext extends SQLQueryDataContext {
         @NotNull DBSObjectType objectType,
         @NotNull List<String> objectName
     ) {
+        monitor.assertNotCancelled();
         return this.parent.findRealObject(monitor, objectType, objectName);
     }
 
     @Nullable
     @Override
-    public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String columnName) {
+    public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String columnName){
+        monitor.assertNotCancelled();
         return this.parent.resolveColumn(monitor, columnName);
     }
 
     @Override
     @Nullable
-    public SQLQueryResultPseudoColumn resolvePseudoColumn(DBRProgressMonitor monitor, @NotNull String name) {
+    public SQLQueryResultPseudoColumn resolvePseudoColumn(DBRProgressMonitor monitor, @NotNull String name){
+        monitor.assertNotCancelled();
         return this.parent.resolvePseudoColumn(monitor, name);
     }
 
     @Nullable
     @Override
-    public SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
+    public SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(@NotNull DBRProgressMonitor monitor, @NotNull String name){
+        monitor.assertNotCancelled();
         return this.parent.resolveGlobalPseudoColumn(monitor, name);
     }
 
     @Nullable
     @Override
-    public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+    public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName){
+        monitor.assertNotCancelled();
         SourceResolutionResult result = super.resolveSource(monitor, tableName);
         return result != null ? result : this.parent.resolveSource(monitor, tableName);
     }

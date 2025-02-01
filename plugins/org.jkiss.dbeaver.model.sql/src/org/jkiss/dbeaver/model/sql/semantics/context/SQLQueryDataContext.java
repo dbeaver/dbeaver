@@ -103,6 +103,7 @@ public abstract class SQLQueryDataContext {
      */
     @Nullable
     public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+        monitor.assertNotCancelled();
         DBSEntity table = this.findRealTable(monitor, tableName);
         SQLQueryRowsSourceModel source = table == null ? null : this.findRealSource(table);
         return source == null ? null : SourceResolutionResult.forRealTableByName(source, table); 

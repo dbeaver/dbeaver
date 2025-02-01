@@ -44,6 +44,7 @@ public class SQLQueryAliasedRowsContext extends SQLQuerySyntaxContext {
     @Nullable
     @Override
     public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+        monitor.assertNotCancelled();
         return tableName.size() == 1 && tableName.get(0).equals(this.alias.getName())
             ? SourceResolutionResult.forSourceByAlias(this.source, this.alias)
             : super.resolveSource(monitor, tableName);

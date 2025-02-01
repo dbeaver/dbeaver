@@ -62,6 +62,7 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
     @Nullable
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+        monitor.assertNotCancelled();
         return anyOfTwo(parent.findRealTable(monitor, tableName), otherParent.findRealTable(monitor, tableName)); // TODO consider ambiguity
     }
 
@@ -72,12 +73,14 @@ public class SQLQueryCombinedContext extends SQLQueryResultTupleContext {
         @NotNull DBSObjectType objectType,
         @NotNull List<String> objectName
     ) {
+        monitor.assertNotCancelled();
         return anyOfTwo(parent.findRealObject(monitor, objectType, objectName), otherParent.findRealObject(monitor, objectType, objectName)); // TODO consider ambiguity
     }
 
     @Nullable
     @Override
     public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+        monitor.assertNotCancelled();
         return anyOfTwo(parent.resolveSource(monitor, tableName), otherParent.resolveSource(monitor, tableName)); // TODO consider ambiguity
     }
 

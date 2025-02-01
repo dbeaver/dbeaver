@@ -456,6 +456,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
     @Override
     public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+        monitor.assertNotCancelled();
         List<String> rawTableName = tableName.stream().map(this.dialect::getUnquotedIdentifier).toList();
         DummyDbObject catalog = rawTableName.size() > 2
             ? this.dummyDataSource.getChildrenMapImpl().get(rawTableName.get(rawTableName.size() - 3)) : this.defaultDummyCatalog;
@@ -476,6 +477,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         @NotNull DBSObjectType objectType,
         @NotNull List<String> objectName
     ) {
+        monitor.assertNotCancelled();
         return objectType.isCompatibleWith(RelationalObjectType.TYPE_TABLE) || objectType.isCompatibleWith(RelationalObjectType.TYPE_VIEW)
             ? this.findRealTable(monitor, objectName)
             : null;

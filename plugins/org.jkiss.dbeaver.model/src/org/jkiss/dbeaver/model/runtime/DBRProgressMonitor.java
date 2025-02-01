@@ -53,4 +53,12 @@ public interface DBRProgressMonitor {
         return false;
     }
 
+    default void assertNotCancelled() {
+        if (isCanceled()) {
+            throw new CancelledException();
+        }
+    }
+
+    class CancelledException extends RuntimeException {
+    }
 }
