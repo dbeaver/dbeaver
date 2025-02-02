@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.file.Path;
@@ -53,9 +52,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     public DBNProject(DBNNode parentNode, DBPProject project) {
         super(parentNode);
         this.project = project;
-        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
-            DBNRegistry.getInstance().extendNode(this, false);
-        }
+        DBNRegistry.getInstance().extendNode(this, false);
     }
 
     @NotNull
@@ -168,9 +165,8 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
         children.add(new DBNProjectDatabases(this, dataSourceRegistry));
         addProjectNodes(monitor, children);
 
-        List<DBNNode> en = getExtraNodes();
-        if (!CommonUtils.isEmpty(en)) {
-            children.addAll(en);
+        if (!CommonUtils.isEmpty(extraNodes)) {
+            children.addAll(extraNodes);
         }
         filterChildren(children);
         return children.toArray(DBNNode[]::new);
@@ -206,18 +202,12 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     @Override
     public List<DBNNode> getExtraNodes() {
         if (extraNodes == null) {
-            DBNRegistry.getInstance().extendNode(this, false);
-        }
-        if (extraNodes == null) {
             return Collections.emptyList();
         }
         return extraNodes;
     }
 
     public <T> T getExtraNode(Class<T> nodeType) {
-        if (extraNodes == null) {
-            DBNRegistry.getInstance().extendNode(this, false);
-        }
         if (extraNodes != null) {
             for (DBNNode node : extraNodes) {
                 if (nodeType.isAssignableFrom(node.getClass())) {
