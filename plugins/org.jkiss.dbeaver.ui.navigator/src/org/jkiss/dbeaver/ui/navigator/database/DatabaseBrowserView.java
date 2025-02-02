@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
-import org.jkiss.dbeaver.ui.navigator.project.SimpleNavigatorTreeFilter;
+import org.jkiss.dbeaver.ui.navigator.SmartNavigatorTreeFilter;
 import org.jkiss.utils.CommonUtils;
 
 public class DatabaseBrowserView extends NavigatorViewBase {
@@ -45,7 +45,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
 
     @Override
     protected INavigatorFilter getNavigatorFilter() {
-        return new SimpleNavigatorTreeFilter();
+        return new SmartNavigatorTreeFilter();
     }
 
     @Override

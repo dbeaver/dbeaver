@@ -118,4 +118,8 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
         this.path = path;
     }
 
+    @Override
+    public String toString() {
+        return root.getRootId() + "@" + root.getFileSystem().getId() + "->" + super.toString();
+    }
 }
