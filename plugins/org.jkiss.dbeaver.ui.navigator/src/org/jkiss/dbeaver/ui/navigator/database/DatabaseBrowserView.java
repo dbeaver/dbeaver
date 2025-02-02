@@ -75,6 +75,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
     public void createPartControl(Composite parent)
     {
         super.createPartControl(parent);
+        getNavigatorTree().setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.table);
 
         String secondaryId = getViewSite().getSecondaryId();
         if (!CommonUtils.isEmpty(secondaryId)) {
