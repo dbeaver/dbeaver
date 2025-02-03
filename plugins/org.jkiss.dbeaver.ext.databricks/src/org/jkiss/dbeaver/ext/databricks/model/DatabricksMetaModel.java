@@ -95,7 +95,7 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
                 }
             }
         } catch (SQLException e) {
-            log.error("Cannot load schemas with query", e);
+            log.debug("Cannot load schemas with query", e);
             return super.loadSchemas(session, dataSource, catalog);
         }
 
