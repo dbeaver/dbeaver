@@ -1067,18 +1067,25 @@
 
                 <separator name="context" visible="true"/>
 
-                <command commandId="org.jkiss.dbeaver.ui.tools.select.connection">
-                    <parameter name="noCustomLabel" value="true"/>
-                    <visibleWhen>
-                        <with variable="activeEditor">
-                            <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                                <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
-                            </adapt>
-                        </with>
-                    </visibleWhen>
-                </command>
-                <command commandId="org.jkiss.dbeaver.ui.tools.select.schema"><parameter name="noCustomLabel" value="true"/></command>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection"/>
+                <menu label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.context.label">
+                    <separator name="context_toggles" visible="true"/>
+                    <command commandId="org.jkiss.dbeaver.ui.tools.select.connection">
+                        <parameter name="noCustomLabel" value="true"/>
+                        <visibleWhen>
+                            <with variable="activeEditor">
+                                <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                                    <test property="org.jkiss.dbeaver.core.datasource.projectResourceEditable"/>
+                                </adapt>
+                            </with>
+                        </visibleWhen>
+                    </command>
+                    <command commandId="org.jkiss.dbeaver.ui.tools.select.schema">
+                        <parameter name="noCustomLabel" value="true"/>
+                    </command>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection"/>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.refresh.current.schema"/>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.refresh.all.schemas"/>
+                </menu>
 
                 <separator name="options" visible="true"/>
 
@@ -1167,8 +1174,6 @@
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.copy.query"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.search.web"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.refresh.current.schema"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.refresh.all.schemas"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=generate">
