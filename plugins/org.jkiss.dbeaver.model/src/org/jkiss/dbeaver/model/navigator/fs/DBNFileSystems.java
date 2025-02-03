@@ -145,7 +145,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         }
         DBFFileSystemManager fileSystemManager = project.getFileSystemManager();
 
-        for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems()) {
+        for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems(monitor)) {
             DBNFileSystem newChild = null;
             if (mergeWith != null) {
                 for (DBNFileSystem oldFS : mergeWith) {
