@@ -18,11 +18,17 @@ package org.jkiss.dbeaver.model.fs.event;
 
 import org.jkiss.code.NotNull;
 
-public interface DBFEventListener {
+/**
+ * File system event
+ */
+public record DBFEvent(Action action) {
 
-    /**
-     * Handle file system event
-     */
-    void handleFileSystemEvent(@NotNull DBFEvent event);
+    public enum Action {
+        REFRESH
+    }
+
+    public DBFEvent(@NotNull Action action) {
+        this.action = action;
+    }
 
 }
