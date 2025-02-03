@@ -148,6 +148,7 @@ import org.jkiss.utils.Pair;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.List;
@@ -2190,9 +2191,14 @@ public class SQLEditor extends SQLEditorBase implements
         this.globalScriptContext = new SQLScriptContext(
             parentContext,
             this,
-            EditorUtils.getPathFromInput(editorInput),
+            null,
             new OutputLogWriter(),
-            new SQLEditorParametersProvider(site));
+            new SQLEditorParametersProvider(site)) {
+            @Override
+            public Path getSourceFile() {
+                return EditorUtils.getPathFromInput(getEditorInput());
+            }
+        };
         DBCExecutionContext inputExecutionContext = this.globalScriptContext.getExecutionContext();
         if (inputExecutionContext != null) {
             dataSourceContainer = inputExecutionContext.getDataSource().getContainer();
