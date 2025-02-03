@@ -236,7 +236,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             return true;
         }
 
-        if (Files.isRegularFile(getPath())) {
+        if (!this.isDirectory()) {
             return getParentNode().supportsDrop(otherNode);
         }
 
