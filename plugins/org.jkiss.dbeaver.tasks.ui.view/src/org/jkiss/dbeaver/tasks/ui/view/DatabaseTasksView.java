@@ -357,6 +357,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                     }
                 }
                 case TASK_EXECUTE -> refresh();
+                case TASK_ACTIVATE -> tasksTree.getViewer().setSelection(new StructuredSelection(task), true);
             }
         });
     }
