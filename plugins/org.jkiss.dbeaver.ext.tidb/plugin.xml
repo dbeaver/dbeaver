@@ -25,7 +25,8 @@
             id="tidb"
             parent="mysql"
             dialect="tidb"
-            label="TiDB">
+            label="TiDB"
+            inheritProviderProperties="true">
 
             <treeInjection path="mysql/database" replaceChildren="true">
                  <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
@@ -108,11 +109,6 @@
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss"/>
                 </driver>
-                <provider-properties drivers="*">
-                    <propertyGroup label="Advanced">
-                        <property id="@dbeaver-serverTimezone@" label="Server Time Zone" type="string"/>
-                    </propertyGroup>
-                </provider-properties>
 
             </drivers>
         </datasource>

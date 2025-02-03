@@ -40,13 +40,9 @@ public class QueryTransformerLimitVertica extends QueryTransformerLimit implemen
     }
 
     public boolean isLimitApplicable(Statement statement) {
-        if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
-            PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
-            return selectBody.getFromItem() != null &&
-                CommonUtils.isEmpty(selectBody.getIntoTables()) &&
-                selectBody.getLimit() == null &&
-                selectBody.getTop() == null &&
-                !selectBody.isForUpdate();
+        if (statement instanceof PlainSelect plainSelect) {
+            return plainSelect.getFromItem() != null && CommonUtils.isEmpty(plainSelect.getIntoTables())
+                && plainSelect.getLimit() == null && plainSelect.getTop() == null && plainSelect.getForUpdateTable() == null;
         }
         return false;
     }

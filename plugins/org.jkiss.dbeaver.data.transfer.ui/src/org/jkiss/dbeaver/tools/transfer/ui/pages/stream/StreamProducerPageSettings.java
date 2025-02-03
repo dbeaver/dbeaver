@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -364,8 +364,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             item.setText(0, DTUIMessages.stream_consumer_page_settings_item_text_none);
         } else {
             item.setImage(0, DBeaverIcons.getImage(getProducerProcessor().getIcon()));
-            item.setText(0, producer instanceof StreamTransferProducer stp ?
-                stp.getInputFile().toString() : String.valueOf(producer.getObjectName()));
+            if (producer instanceof StreamTransferProducer stp) {
+                Path inputFile = stp.getInputFile();
+                item.setText(0, DBFUtils.convertPathToString(inputFile));
+            } else {
+                item.setText(0, String.valueOf(producer.getObjectName()));
+            }
         }
 
         IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();

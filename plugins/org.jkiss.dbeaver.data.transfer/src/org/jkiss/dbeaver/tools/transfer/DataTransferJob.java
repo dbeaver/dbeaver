@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,15 +116,16 @@ public class DataTransferJob extends AbstractJob {
         return Status.OK_STATUS;
     }
 
-    private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe) throws Exception
-    {
+    private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe) throws Exception {
         IDataTransferProducer producer = transferPipe.getProducer();
         IDataTransferConsumer consumer = transferPipe.getConsumer();
 
+        String inputName = producer.getObjectFullName(monitor);
+        String outputName = consumer.getObjectFullName(monitor);
         monitor.beginTask(
             NLS.bind(DTMessages.data_transfer_wizard_job_container_name,
-                CommonUtils.truncateString(producer.getObjectName(), 200),
-                CommonUtils.truncateString(consumer.getObjectName(), 200)), 1);
+                CommonUtils.truncateString(inputName, 200),
+                CommonUtils.truncateString(outputName, 200)), 1);
 
         IDataTransferSettings nodeSettings = settings.getNodeSettings(settings.getProducer());
         try {
@@ -140,7 +141,7 @@ public class DataTransferJob extends AbstractJob {
             return true;
         } catch (Exception e) {
             consumer.finishTransfer(monitor, e, task, false);
-            log.error("Error transferring data from " + producer.getObjectName() + " to " + consumer.getObjectName(), e);
+            log.error("Error transferring data from " + inputName + " to " + outputName, e);
             throw e;
         } finally {
             monitor.done();

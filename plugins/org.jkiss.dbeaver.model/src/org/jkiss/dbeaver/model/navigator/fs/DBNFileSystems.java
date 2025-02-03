@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.fs.DBFFileSystemManager;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.fs.DBFVirtualFileSystem;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -144,7 +145,7 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         }
         DBFFileSystemManager fileSystemManager = project.getFileSystemManager();
 
-        for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems()) {
+        for (DBFVirtualFileSystem fs : fileSystemManager.getVirtualFileSystems(monitor)) {
             DBNFileSystem newChild = null;
             if (mergeWith != null) {
                 for (DBNFileSystem oldFS : mergeWith) {
@@ -185,9 +186,20 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
         } catch (URISyntaxException e) {
             throw new DBException("Bad path: " + path, e);
         }
+        // Detect file system and path
+        String fsId = DBFUtils.getQueryParameters(uri.getRawQuery()).get(DBFFileSystemManager.QUERY_PARAM_FS_ID);
+        if (fsId != null) {
+            curPath = getFileSystem(uri.getScheme(), fsId);
+        }
+
         String plainPath = uri.getSchemeSpecificPart();
+        int divPos = plainPath.lastIndexOf('?');
+        if (divPos != -1) {
+            // Cut off query part
+            plainPath = plainPath.substring(0, divPos);
+        }
         for (String name : plainPath.split("/")) {
-            if (name.isEmpty() || (curPath == null && name.endsWith(":"))) {
+            if (name.isEmpty()) {
                 continue;
             }
             {
