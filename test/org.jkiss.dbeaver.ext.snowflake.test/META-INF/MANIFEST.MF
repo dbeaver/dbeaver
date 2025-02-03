@@ -7,7 +7,7 @@ Bundle-Release-Date: 20250217
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
-Fragment-Host: org.jkiss.dbeaver.ext.snowflake.core
+Fragment-Host: org.jkiss.dbeaver.ext.snowflake
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.junit,
  org.jkiss.dbeaver.model,

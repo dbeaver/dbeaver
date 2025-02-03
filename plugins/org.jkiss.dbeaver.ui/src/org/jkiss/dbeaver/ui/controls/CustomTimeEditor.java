@@ -332,7 +332,7 @@ public class CustomTimeEditor {
         return null;
     }
 
-    @Nullable
+    @NotNull
     public Date getValueAsDate() {
 
         switch (inputMode) {

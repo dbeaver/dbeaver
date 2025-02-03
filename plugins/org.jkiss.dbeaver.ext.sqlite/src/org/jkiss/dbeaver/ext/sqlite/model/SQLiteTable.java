@@ -32,8 +32,6 @@ import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -71,11 +69,8 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
 
     private DBDPseudoAttribute[] allPseudoAttributes = null;
 
-    private boolean hasStrictTyping;
-
     public SQLiteTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
-        hasStrictTyping = dbResult != null && JDBCUtils.safeGetBoolean(dbResult, "STRICT"); //$NON-NLS-1$
     }
 
     @Override
@@ -171,15 +166,6 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
             }
         }
         return false;
-    }
-
-    @Property(viewable = true, editable = true, order = 40)
-    public boolean isHasStrictTyping() {
-        return hasStrictTyping;
-    }
-
-    public void setHasStrictTyping(boolean hasStrictTyping) {
-        this.hasStrictTyping = hasStrictTyping;
     }
 
     @SuppressWarnings("unchecked")
