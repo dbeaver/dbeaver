@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.views.qm;
 
-package org.jkiss.dbeaver.ext.snowflake.model.auth;
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
-import org.jkiss.dbeaver.model.meta.Property;
-
-/**
- * Snowflake native credentials.
- */
-public class AuthModelSnowflakeCredentials extends AuthModelDatabaseNativeCredentials {
-
-    private String role;
-
-
-    @Property
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
+public interface QueryManagerViewFilter {
+    void createControl(@NotNull Composite parent, @NotNull QueryLogViewer viewer);
 }
