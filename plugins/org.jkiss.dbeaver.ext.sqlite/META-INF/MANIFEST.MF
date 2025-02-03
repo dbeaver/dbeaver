@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver SQLite Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.sqlite;singleton:=true
-Bundle-Version: 1.0.197.qualifier
-Bundle-Release-Date: 20250203
+Bundle-Version: 1.0.198.qualifier
+Bundle-Release-Date: 20250217
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis,

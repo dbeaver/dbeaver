@@ -210,12 +210,13 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
         if (database != null) {
             databaseNamePrefix = "'" + database.getName() + ".' +";
         }
+        String indexName = DBUtils.getQuotedIdentifier(this);
 
         String sql =
             "SELECT ' CREATE ' + \n" +
                 needToInsertUnique +
                 "    I.type_desc COLLATE DATABASE_DEFAULT +' INDEX ' +   \n" +
-                "    I.name  + ' ON '  +  \n" +
+                "    '" + indexName + "' + ' ON '  +  \n" +
                 "   " + databaseNamePrefix + "Schema_name(T.Schema_id)+'.'+T.name + ' ( ' + \n" +
                 "    KeyColumns + ' )  ' + \n" +
                 "    ISNULL('\n\t INCLUDE ('+IncludedColumns+' ) ','') + \n" +

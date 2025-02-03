@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.slf4j;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.helpers.MessageFormatter;
@@ -41,27 +42,27 @@ public class SLFLogger implements Logger {
 
     @Override
     public void trace(String s) {
-
+        log.trace(formatMessage(s));
     }
 
     @Override
     public void trace(String s, Object o) {
-
+        log.trace(formatMessage(s, o));
     }
 
     @Override
     public void trace(String s, Object o, Object o1) {
-
+        log.trace(formatMessage(s, o, o1));
     }
 
     @Override
     public void trace(String s, Object... objects) {
-
+        log.trace(formatMessage(s, objects));
     }
 
     @Override
     public void trace(String s, Throwable throwable) {
-
+        log.trace(formatMessage(s), throwable);
     }
 
     @Override
@@ -71,27 +72,27 @@ public class SLFLogger implements Logger {
 
     @Override
     public void trace(Marker marker, String s) {
-
+        this.trace(s);
     }
 
     @Override
     public void trace(Marker marker, String s, Object o) {
-
+        this.trace(s, o);
     }
 
     @Override
     public void trace(Marker marker, String s, Object o, Object o1) {
-
+        this.trace(s, o, o1);
     }
 
     @Override
     public void trace(Marker marker, String s, Object... objects) {
-
+        this.trace(s, objects);
     }
 
     @Override
     public void trace(Marker marker, String s, Throwable throwable) {
-
+        this.trace(s, throwable);
     }
 
     @Override
@@ -102,7 +103,7 @@ public class SLFLogger implements Logger {
     @Override
     public void debug(String s) {
         if (Log.DEV_DEBUG_ENABLED) {
-            log.debug(s);
+            log.debug(formatMessage(s));
         }
     }
 
@@ -116,21 +117,21 @@ public class SLFLogger implements Logger {
     @Override
     public void debug(String s, Object o, Object o1) {
         if (Log.DEV_DEBUG_ENABLED) {
-            log.debug(log.getName() + ": " + formatMessage(s, o, o1));
+            log.debug(formatMessage(s, o, o1));
         }
     }
 
     @Override
     public void debug(String s, Object... objects) {
         if (Log.DEV_DEBUG_ENABLED) {
-            log.debug(log.getName() + ":" + formatMessage(s, objects));
+            log.debug(formatMessage(s, objects));
         }
     }
 
     @Override
     public void debug(String s, Throwable throwable) {
         if (Log.DEV_DEBUG_ENABLED) {
-            log.debug(log.getName() + ":" + s, throwable);
+            log.debug(formatMessage(s), throwable);
         }
     }
 
@@ -141,22 +142,27 @@ public class SLFLogger implements Logger {
 
     @Override
     public void debug(Marker marker, String s) {
+        this.debug(s);
     }
 
     @Override
     public void debug(Marker marker, String s, Object o) {
+        this.debug(s, o);
     }
 
     @Override
     public void debug(Marker marker, String s, Object o, Object o1) {
+        this.debug(s, o, o1);
     }
 
     @Override
     public void debug(Marker marker, String s, Object... objects) {
+        this.debug(s, objects);
     }
 
     @Override
     public void debug(Marker marker, String s, Throwable throwable) {
+        this.debug(s, throwable);
     }
 
     @Override
@@ -166,7 +172,7 @@ public class SLFLogger implements Logger {
 
     @Override
     public void info(String s) {
-        log.info(s);
+        log.info(formatMessage(s));
     }
 
     @Override
@@ -186,7 +192,7 @@ public class SLFLogger implements Logger {
 
     @Override
     public void info(String s, Throwable throwable) {
-        log.info(s, throwable);
+        log.info(formatMessage(s), throwable);
     }
 
     @Override
@@ -196,22 +202,27 @@ public class SLFLogger implements Logger {
 
     @Override
     public void info(Marker marker, String s) {
+        this.info(s);
     }
 
     @Override
     public void info(Marker marker, String s, Object o) {
+        this.info(s, o);
     }
 
     @Override
     public void info(Marker marker, String s, Object o, Object o1) {
+        this.info(s, o, o1);
     }
 
     @Override
     public void info(Marker marker, String s, Object... objects) {
+        this.info(s, objects);
     }
 
     @Override
     public void info(Marker marker, String s, Throwable throwable) {
+        this.info(s, throwable);
     }
 
     @Override
@@ -221,7 +232,7 @@ public class SLFLogger implements Logger {
 
     @Override
     public void warn(String s) {
-        log.warn(s);
+        log.warn(formatMessage(s));
     }
 
     @Override
@@ -241,7 +252,7 @@ public class SLFLogger implements Logger {
 
     @Override
     public void warn(String s, Throwable throwable) {
-        log.warn(s, throwable);
+        log.warn(formatMessage(s), throwable);
     }
 
     @Override
@@ -251,22 +262,27 @@ public class SLFLogger implements Logger {
 
     @Override
     public void warn(Marker marker, String s) {
+        this.warn(s);
     }
 
     @Override
     public void warn(Marker marker, String s, Object o) {
+        this.warn(s, o);
     }
 
     @Override
     public void warn(Marker marker, String s, Object o, Object o1) {
+        this.warn(s, o, o1);
     }
 
     @Override
     public void warn(Marker marker, String s, Object... objects) {
+        this.warn(s, objects);
     }
 
     @Override
     public void warn(Marker marker, String s, Throwable throwable) {
+        this.warn(s, throwable);
     }
 
     @Override
@@ -276,7 +292,7 @@ public class SLFLogger implements Logger {
 
     @Override
     public void error(String s) {
-        log.error(s);
+        log.error(formatMessage(s));
     }
 
     @Override
@@ -296,7 +312,7 @@ public class SLFLogger implements Logger {
 
     @Override
     public void error(String s, Throwable throwable) {
-        log.error(s, throwable);
+        log.error(formatMessage(s), throwable);
     }
 
     @Override
@@ -306,25 +322,31 @@ public class SLFLogger implements Logger {
 
     @Override
     public void error(Marker marker, String s) {
+        this.error(s);
     }
 
     @Override
     public void error(Marker marker, String s, Object o) {
+        this.error(s, o);
     }
 
     @Override
     public void error(Marker marker, String s, Object o, Object o1) {
+        this.error(s, o, o1);
     }
 
     @Override
     public void error(Marker marker, String s, Object... objects) {
+        this.error(s, objects);
     }
 
     @Override
     public void error(Marker marker, String s, Throwable throwable) {
+        this.error(s, throwable);
     }
 
     private Object formatMessage(String message, Object... params) {
-        return MessageFormatter.arrayFormat(message, params).getMessage();
+        return getName() + ": " + (ArrayUtils.isEmpty(params) ?
+            message : MessageFormatter.arrayFormat(message, params).getMessage());
     }
 }

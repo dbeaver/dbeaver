@@ -37,14 +37,13 @@ public class QueryTransformerLimitCubrid extends QueryTransformerLimit
     }
 
     public boolean isLimitApplicable(Statement statement) {
-        if (statement instanceof Select select
-                && select.getSelectBody() instanceof PlainSelect selectBody) {
-            String where = String.valueOf(selectBody.getWhere()).toUpperCase();
+        if (statement instanceof PlainSelect select) {
+            String where = String.valueOf(select.getWhere()).toUpperCase();
             if (where.contains("ROWNUM") || where.contains("INST_NUM")) {
                 return false;
             }
 
-            String having = String.valueOf(selectBody.getHaving()).toUpperCase();
+            String having = String.valueOf(select.getHaving()).toUpperCase();
             if (having.contains("GROUPBY_NUM")) {
                 return false;
             }

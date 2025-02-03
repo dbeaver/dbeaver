@@ -206,11 +206,11 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
 
     @NotNull
     private DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
-        DBPImage image = switch (item.getKind()) {
+        return switch (item.getKind()) {
             case UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
             case RESERVED -> UIIcon.SQL_TEXT;
             case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
-            case DERIVED_COLUMN_NAME -> DBIcon.TREE_FOREIGN_KEY_COLUMN;
+            case DERIVED_COLUMN_NAME -> DBIcon.TREE_DERIVED_COLUMN;
             case NEW_TABLE_NAME, USED_TABLE_NAME -> {
                 DBPObject object = item.getObject();
                 yield object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
@@ -220,6 +220,5 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
             default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
         };
-        return image;
     }
 }

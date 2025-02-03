@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,8 +74,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         }
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
-        if (selection instanceof IStructuredSelection) {
-            final IStructuredSelection structSelection = (IStructuredSelection)selection;
+        if (selection instanceof IStructuredSelection structSelection) {
             if (structSelection.size() > MAX_OBJECT_SIZE_NO_CONFIRM) {
                 if (!UIUtils.confirmAction(HandlerUtil.getActiveShell(event),
                     NLS.bind(UINavigatorMessages.actions_navigator_open_editors_title, structSelection.size()),
@@ -86,14 +85,14 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             }
             for (Object element : structSelection) {
                 DBNNode node = null;
-                if (element instanceof IResource) {
+                if (element instanceof IResource resource && "sql".equals(resource.getFileExtension())) {
                     UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
                     if (serviceSQL != null) {
-                        serviceSQL.openResource((IResource) element);
+                        serviceSQL.openResource(resource);
                     }
                     continue;
-                } else if (element instanceof DBNNode) {
-                    node = (DBNNode) element;
+                } else if (element instanceof DBNNode n) {
+                    node = n;
                 } else {
                     DBSObject object = RuntimeUtils.getObjectAdapter(element, DBSObject.class);
                     if (object != null) {
@@ -192,8 +191,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 return editor;
             }
 
-            if (selectedNode instanceof DBNDatabaseNode) {
-                DBNDatabaseNode dnNode = (DBNDatabaseNode) selectedNode;
+            if (selectedNode instanceof DBNDatabaseNode dnNode) {
                 DBSObject databaseObject = dnNode.getObject();
                 if (databaseObject != null) {
                     if (!databaseObject.isPersisted()) {
@@ -205,8 +203,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                         return null;
                     }
 
-                    if (selectedNode instanceof DBNDatabaseObject) {
-                        DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
+                    if (selectedNode instanceof DBNDatabaseObject objectNode) {
                         if (!objectNode.isPersisted()) {
                             return null;
                         }

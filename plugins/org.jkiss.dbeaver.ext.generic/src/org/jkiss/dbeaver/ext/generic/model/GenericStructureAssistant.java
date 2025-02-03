@@ -59,12 +59,15 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
     @Override
     public DBSObjectType[] getSupportedObjectTypes() {
         if (dataSource.getInfo().supportsStoredCode()) {
-            return new DBSObjectType[] {
+            return new DBSObjectType[]{
                 RelationalObjectType.TYPE_TABLE,
-                RelationalObjectType.TYPE_PROCEDURE
+                RelationalObjectType.TYPE_PROCEDURE,
+                RelationalObjectType.TYPE_SCHEMA
             };
         } else {
-            return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
+            return new DBSObjectType[]{RelationalObjectType.TYPE_TABLE,
+                RelationalObjectType.TYPE_SCHEMA
+            };
         }
     }
 
@@ -100,6 +103,8 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
             findTablesByMask(session, catalog, schema, objectNameMask, params.getMaxResults(), references);
         } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
             findProceduresByMask(session, catalog, schema, objectNameMask, params.getMaxResults(), references);
+        } else if (objectType == RelationalObjectType.TYPE_SCHEMA) {
+            findSchemasByMask(session, catalog, params, references);
         }
     }
 
@@ -128,6 +133,35 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
                     tableName,
                     GenericUtils.safeGetString(tableObject, dbResult, JDBCConstants.REMARKS)));
                 if (objects.size() >= maxResults) {
+                    break;
+                }
+            }
+        }
+    }
+
+    private void findSchemasByMask(JDBCSession session,
+                                   GenericCatalog catalog,
+                                   ObjectsSearchParams params,
+                                   List<DBSObjectReference> objects
+    ) throws SQLException, DBException {
+        final GenericMetaObject schemaObject = getDataSource().getMetaObject(GenericConstants.OBJECT_SCHEMA);
+        final DBRProgressMonitor monitor = session.getProgressMonitor();
+        try (JDBCResultSet dbResult = session.getMetaData().getSchemas(catalog == null ? null : catalog.getName(), params.getMask())) {
+            while (dbResult.next()) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                String catalogName = GenericUtils.safeGetStringTrimmed(schemaObject, dbResult, JDBCConstants.TABLE_CAT);
+                String schemaName = GenericUtils.safeGetStringTrimmed(schemaObject, dbResult, JDBCConstants.TABLE_SCHEM);
+                if (CommonUtils.isEmpty(schemaName)) {
+                    continue;
+                }
+
+                objects.add(new SchemaReference(
+                    catalog != null ? catalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName),
+                    schemaName,
+                    GenericUtils.safeGetString(schemaObject, dbResult, JDBCConstants.REMARKS)));
+                if (objects.size() >= params.getMaxResults()) {
                     break;
                 }
             }
@@ -215,6 +249,22 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
                 throw new DBException("Can't find table '" + getName() + "' in '" + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
             }
             return table;
+        }
+    }
+
+    private class SchemaReference extends ObjectReference {
+
+        private SchemaReference(GenericStructContainer container, String schemaName, String description) {
+            super(container, schemaName, description, GenericTable.class, RelationalObjectType.TYPE_SCHEMA);
+        }
+
+        @Override
+        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+            GenericSchema schema = getContainer().getCatalog().getSchema(monitor, getName());
+            if (schema == null) {
+                throw new DBException("Can't find schema '" + getName() + "' in '" + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
+            }
+            return schema;
         }
     }
 
