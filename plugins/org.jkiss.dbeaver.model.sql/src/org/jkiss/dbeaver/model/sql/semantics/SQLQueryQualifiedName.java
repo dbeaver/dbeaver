@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -223,19 +223,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
             return;
         }
 
-        List<SQLQuerySymbolEntry> nameParts = new ArrayList<>(name.scopeName.size());
-        boolean closed = false;
-        for (SQLQuerySymbolEntry entry : name.scopeName) {
-            if (entry != null) {
-                nameParts.add(entry);
-            } else {
-                closed = true;
-                break;
-            }
-        }
-        if (!closed && name.entityName != null) {
-            nameParts.add(name.entityName);
-        }
+        List<SQLQuerySymbolEntry> nameParts = prepareNamePartsList(name);
 
         DBSObject object = null;
         List<SQLQuerySymbolEntry> nameFragment = nameParts;
@@ -257,5 +245,23 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
         } else if (!nameFragment.isEmpty()) {
             nameFragment.get(0).setOrigin(origin);
         }
+    }
+
+    @NotNull
+    private static List<SQLQuerySymbolEntry> prepareNamePartsList(@NotNull SQLQueryQualifiedName name) {
+        List<SQLQuerySymbolEntry> nameParts = new ArrayList<>(name.scopeName.size());
+        boolean closed = false;
+        for (SQLQuerySymbolEntry entry : name.scopeName) {
+            if (entry != null) {
+                nameParts.add(entry);
+            } else {
+                closed = true;
+                break;
+            }
+        }
+        if (!closed && name.entityName != null) {
+            nameParts.add(name.entityName);
+        }
+        return nameParts;
     }
 }

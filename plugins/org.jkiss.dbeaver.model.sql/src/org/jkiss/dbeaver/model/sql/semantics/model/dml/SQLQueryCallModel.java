@@ -89,6 +89,11 @@ public class SQLQueryCallModel extends SQLQueryModelContent {
         return this.dataContext;
     }
 
+    @NotNull
+    public List<SQLQueryValueExpression> getExpressions() {
+        return this.expressions;
+    }
+
     @Override
     protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
         this.dataContext = dataContext;
