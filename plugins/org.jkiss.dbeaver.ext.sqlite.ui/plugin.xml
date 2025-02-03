@@ -13,4 +13,9 @@
         <handler id="sqlite" class="org.jkiss.dbeaver.ext.sqlite.ui.SQLiteFileDatabaseHandler" order="101" extensions="db,sdb,sqlite,db3,s3db,sqlite3,sl3,db2,s2db,sqlite2,sl2"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.sqlite.auth.LibSQLAuthModelToken"
+                              uiClass="org.jkiss.dbeaver.ext.sqlite.ui.config.LibSQLTokenAuthModelConfigurator"/>
+    </extension>
+
 </plugin>
