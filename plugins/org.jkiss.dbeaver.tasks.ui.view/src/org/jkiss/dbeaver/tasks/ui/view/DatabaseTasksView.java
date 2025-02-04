@@ -148,6 +148,8 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             }
         });
         tasksTree.getViewer().addSelectionChangedListener(event -> UIUtils.asyncExec(() -> loadTaskRuns(false)));
+
+        DatabaseTasksTree.addDragAndDropSourceSupport(tasksTree.getViewer());
     }
 
     private void createTaskRunTable(Composite parent) {
