@@ -110,7 +110,7 @@ public class NavigatorStatePersister {
     }
 
     public static void saveFilterState(@NotNull DatabaseNavigatorTree tree, @NotNull IMemento memento) {
-        memento.putString(PROP_FILTER_TYPE, tree.getFilterObjectType().name());
+        saveFilterTypeState(tree, memento);
         final Text filterControl = tree.getFilterControl();
         if (filterControl != null && !filterControl.isDisposed() && CommonUtils.isNotEmpty(filterControl.getText())) {
             memento.putString(PROP_FILTER_TEXT, filterControl.getText());
@@ -119,19 +119,7 @@ public class NavigatorStatePersister {
 
     public static void restoreFilterState(@NotNull DatabaseNavigatorTree tree, @NotNull IMemento memento) {
         UIUtils.syncExec(() -> {
-            final DatabaseNavigatorTreeFilterObjectType type = CommonUtils.valueOf(
-                DatabaseNavigatorTreeFilterObjectType.class,
-                memento.getString(PROP_FILTER_TYPE)
-            );
-            if (type != null && tree.getFilterObjectType() != type) {
-                tree.setFilterObjectType(type);
-                tree.getViewer().getControl().setRedraw(false);
-                try {
-                    tree.getViewer().refresh();
-                } finally {
-                    tree.getViewer().getControl().setRedraw(true);
-                }
-            }
+            restoreFilterType(tree, memento);
 
             final String text = memento.getString(PROP_FILTER_TEXT);
             final Text filterControl = tree.getFilterControl();
@@ -140,6 +128,26 @@ public class NavigatorStatePersister {
                 filterControl.notifyListeners(SWT.Modify, new Event());
             }
         });
+    }
+
+    public static void restoreFilterTypeState(@NotNull DatabaseNavigatorTree tree, @NotNull IMemento memento) {
+        UIUtils.syncExec(() -> restoreFilterType(tree, memento));
+    }
+
+    private static void restoreFilterType(DatabaseNavigatorTree tree, IMemento memento) {
+        final DatabaseNavigatorTreeFilterObjectType type = CommonUtils.valueOf(
+            DatabaseNavigatorTreeFilterObjectType.class,
+            memento.getString(PROP_FILTER_TYPE)
+        );
+        if (type != null && tree.getFilterObjectType() != type) {
+            tree.setFilterObjectType(type);
+            tree.getViewer().getControl().setRedraw(false);
+            try {
+                tree.getViewer().refresh();
+            } finally {
+                tree.getViewer().getControl().setRedraw(true);
+            }
+        }
     }
 
     private static DBNNode findNode(String nodeIdentifier, DBNNode rootNode, int currentDepth, int maxDepth, DBRProgressMonitor monitor) throws DBException {
@@ -183,4 +191,7 @@ public class NavigatorStatePersister {
         return identifier.toString();
     }
 
+    public static void saveFilterTypeState(DatabaseNavigatorTree navigatorTree, IMemento memento) {
+        memento.putString(PROP_FILTER_TYPE, navigatorTree.getFilterObjectType().name());
+    }
 }
