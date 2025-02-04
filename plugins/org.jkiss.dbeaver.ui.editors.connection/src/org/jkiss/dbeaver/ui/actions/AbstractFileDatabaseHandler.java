@@ -29,10 +29,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
@@ -42,7 +38,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Database file handler
@@ -124,23 +123,7 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
                 try {
                     if (finalDsContainer.isConnected() || finalDsContainer.connect(monitor, true, true)) {
                         DBPDataSource dataSource = finalDsContainer.getDataSource();
-                        List<DBSEntity> entities = new ArrayList<>();
-                        if (dataSource instanceof DBSObjectContainer container) {
-                            getConnectionEntities(monitor, container, entities);
-                        }
-
-                        DBSObject objectToOpen;
-                        if (entities.size() == 1) {
-                            objectToOpen = entities.get(0);
-                        } else {
-                            if (entities.size() > 1) {
-                                objectToOpen = entities.get(0).getParentObject();
-                            } else {
-                                objectToOpen = dataSource;
-                            }
-                        }
-                        DBNDatabaseNode openNode = DBNUtils.getNodeByObject(monitor, objectToOpen, true);
-
+                        DBNDatabaseNode openNode = DBNUtils.getDefaultDatabaseNodeToOpen(monitor, dataSource);
                         if (openNode == null) {
                             DBWorkbench.getPlatformUI().showError("No objects", "Cannot determine target node");
                         } else {
@@ -167,20 +150,6 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
                 e.getTargetException());
         } catch (InterruptedException ignore) {
 
-        }
-    }
-
-    private void getConnectionEntities(
-        DBRProgressMonitor monitor,
-        DBSObjectContainer container,
-        List<DBSEntity> entities
-    ) throws DBException {
-        for (DBSObject child : container.getChildren(monitor)) {
-            if (child instanceof DBSEntity entity) {
-                entities.add(entity);
-            } else if (child instanceof DBSObjectContainer oc) {
-                getConnectionEntities(monitor, oc, entities);
-            }
         }
     }
 
