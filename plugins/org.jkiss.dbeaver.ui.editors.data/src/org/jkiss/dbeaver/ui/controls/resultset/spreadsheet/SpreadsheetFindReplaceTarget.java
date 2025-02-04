@@ -72,10 +72,15 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     private Color scopeHighlightColor;
     private boolean replaceAll;
     private boolean sessionActive = false;
+    private boolean firstSearchInSession = true;
     private List<GridPos> originalSelection = new ArrayList<>();
     private final Set<DBDValueRow> updatedRows = new LinkedHashSet<>();
     private final Set<DBDAttributeBinding> updatedAttributes = new LinkedHashSet<>();
     private AbstractJob redrawJob = null;
+    private String currentFindString = "";
+    private boolean currentCaseSensitive;
+    private boolean currentWholeWord;
+    private boolean currentRegEx;
 
     public static synchronized SpreadsheetFindReplaceTarget getInstance() {
         if (instance == null) {
@@ -252,145 +257,132 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     }
 
     @Override
-    public int findAndSelect(int offset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord, boolean regExSearch)
-    {
+    public int findAndSelect(
+        int offset,
+        String findString,
+        boolean searchForward,
+        boolean caseSensitive,
+        boolean wholeWord,
+        boolean regExSearch
+    ) {
+        this.currentFindString = findString;
+        this.currentCaseSensitive = caseSensitive;
+        this.currentWholeWord = wholeWord;
+        this.currentRegEx = regExSearch;
+
         final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        if (owner == null) {
-            return - 1;
-        }
-        searchPattern = null;
+        if (owner == null) return -1;
 
         ResultSetModel model = owner.getController().getModel();
-        if (model.isEmpty()) {
-            return -1;
-        }
+        if (model.isEmpty()) return -1;
+
         Spreadsheet spreadsheet = owner.getSpreadsheet();
         int rowCount = spreadsheet.getItemCount();
         int columnCount = spreadsheet.getColumnCount();
-        Collection<GridPos> selection = spreadsheet.getSelection();
-        int firstRow = owner.getHighlightScopeFirstLine();
-        if (firstRow < 0) firstRow = 0;
-        int lastRow = owner.getHighlightScopeLastLine();
-        if (lastRow >= rowCount || lastRow < 0) lastRow = rowCount - 1;
 
-        GridPos startPosition = selection.isEmpty() ? null : selection.iterator().next();
-        if (startPosition == null) {
-            int startRow = searchForward ? firstRow : lastRow;
-            if (startRow >= 0) {
-                startPosition = new GridPos(0, startRow);
-            } else {
-                // From the beginning
-                startPosition = new GridPos(0, 0);
+        // Handle record mode special column (-1 indicates record selector column)
+        boolean recordMode = owner.getController().isRecordMode();
+        int minColumn = recordMode ? -1 : 0;
+
+        int firstRow = Math.max(owner.getHighlightScopeFirstLine(), 0);
+        int lastRow = Math.min(owner.getHighlightScopeLastLine(), rowCount - 1);
+        if (lastRow < 0) lastRow = rowCount - 1;
+
+        GridPos startPos = getStartPosition(
+            spreadsheet,
+            searchForward,
+            firstRow,
+            lastRow,
+            minColumn,
+            columnCount,
+            firstSearchInSession
+        );
+
+        if (firstSearchInSession) {
+            firstSearchInSession = false;
+            storeLastFoundPosition(startPos);
+        }
+
+        Pattern pattern = createSearchPattern(currentFindString, currentCaseSensitive, currentWholeWord, currentRegEx);
+        if (pattern == null) return -1;
+        this.searchPattern = pattern;
+
+        GridPos currentPos = new GridPos(startPos.col, startPos.row);
+        boolean wrapped = false;
+        int totalCells = (lastRow - firstRow + 1) * (columnCount - minColumn);
+        int checked = 0;
+
+        while (checked <= totalCells) {
+            if (isCellInScope(currentPos, firstRow, lastRow, minColumn, columnCount)) {
+                String cellText = getCellText(spreadsheet, currentPos, recordMode, minColumn);
+
+                // Match found handling
+                if (cellText != null && pattern.matcher(cellText).find()) {
+                    selectCell(spreadsheet, currentPos, minColumn);
+                    storeLastFoundPosition(currentPos);
+                    return currentPos.row;
+                }
+                checked++;
+            }
+
+            currentPos = getNextPosition(currentPos, searchForward, columnCount, minColumn, firstRow, lastRow);
+
+            // Handle search wrap-around
+            if (!isCellInScope(currentPos, firstRow, lastRow, minColumn, columnCount)) {
+                if (wrapped) break; // Prevent infinite loop
+                currentPos = getWrapAroundPosition(searchForward, firstRow, lastRow, minColumn, columnCount);
+                wrapped = true;
             }
         }
-        Pattern findPattern;
-        if (regExSearch) {
-            try {
-                findPattern = Pattern.compile(findString, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
-            } catch (PatternSyntaxException e) {
-                log.warn("Bad regex pattern: " + findString);
-                return -1;
-            }
-        } else {
-            String pattern = Pattern.quote(findString);
-            if (wholeWord) {
-                pattern = "\\b" + pattern + "\\b";
-            }
-            findPattern = Pattern.compile(pattern, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
-        }
-        int minColumnNum = owner.getController().isRecordMode() ? -1 : 0;
-        for (GridPos curPosition = new GridPos(startPosition);;) {
-            //Object element = contentProvider.getElement(curPosition);
-            if (searchForward) {
-                curPosition.col++;
-                if (curPosition.col >= columnCount) {
-                    curPosition.col = minColumnNum;
-                    curPosition.row++;
-                }
-            } else {
-                curPosition.col--;
-                if (curPosition.col < minColumnNum) {
-                    curPosition.col = columnCount - 1;
-                    curPosition.row--;
-                }
-            }
-            if ((firstRow >= 0 && curPosition.row < firstRow) || (lastRow >= 0 && curPosition.row > lastRow)) {
-                if (offset == -1) {
-                    // Wrap search - redo search one more time
-                    offset = 0;
-                    if (searchForward) {
-                        curPosition = new GridPos(0, firstRow);
-                    } else {
-                        curPosition = new GridPos(columnCount - 1, lastRow);
-                    }
-                } else {
-                    // Not found
-                    spreadsheet.redraw();
-                    return -1;
-                }
-            }
-            String cellText;
-            if (owner.getController().isRecordMode() && curPosition.col == minColumnNum) {
-                // Header
-                cellText = spreadsheet.getLabelProvider().getText(spreadsheet.getRow(curPosition.row));
-            } else {
-                GridCell cell = spreadsheet.posToCell(curPosition);
-                if (cell != null) {
-                    cellText = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false));
-                } else {
-                    continue;
-                }
-            }
-            Matcher matcher = findPattern.matcher(cellText);
-            if (wholeWord ? matcher.matches() : matcher.find()) {
-                if (curPosition.col == minColumnNum) {
-                    curPosition.col = 0;
-                }
-                spreadsheet.setFocusColumn(curPosition.col);
-                spreadsheet.setFocusItem(curPosition.row);
-                spreadsheet.setCellSelection(curPosition);
-                if (!owner.getController().isHasMoreData() || !replaceAll || (curPosition.row >= spreadsheet.getTopIndex() && curPosition.row < spreadsheet.getBottomIndex())) {
-                    // Do not scroll to invisible rows to avoid scrolling and slow update
-                    spreadsheet.showSelection();
-                }
-                searchPattern = findPattern;
-                return curPosition.row;
-            }
-        }
+        return -1; // No matches found
     }
 
     @Override
-    public void replaceSelection(String text, boolean regExReplace)
-    {
+    public void replaceSelection(
+        String text,
+        boolean regExReplace
+    ) {
         final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        if (owner == null) {
-            return;
-        }
-        GridPos selection = owner.getSelection().getFirstElement();
-        if (selection == null) {
-            return;
-        }
-        GridCell cell = owner.getSpreadsheet().posToCell(selection);
-        if (cell == null) {
-            return;
-        }
-        ResultSetCellLocation cellLocation = owner.getCellLocation(cell);
+        if (owner == null) return;
 
+        // Lazy initialization of search pattern
+        if (searchPattern == null && !currentFindString.isEmpty()) {
+            searchPattern = createSearchPattern(
+                currentFindString,
+                currentCaseSensitive,
+                currentWholeWord,
+                currentRegEx
+            );
+        }
+
+        GridPos selection = owner.getSelection().getFirstElement();
+        if (selection == null) return;
+
+        GridCell cell = owner.getSpreadsheet().posToCell(selection);
+        if (cell == null) return;
+
+        ResultSetCellLocation cellLocation = owner.getCellLocation(cell);
         String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(
             cell.col, cell.row, true));
-        String newValue = text;
+        String newValue = oldValue;
+
         if (searchPattern != null) {
-            newValue = searchPattern.matcher(oldValue).replaceAll(newValue);
+            newValue = searchPattern.matcher(oldValue).replaceAll(text);
         }
 
-        final Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(
-            cell.col, cell.row, false);
         try {
+            if (oldValue.equals(newValue)) return;
+
+            Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(
+                cell.col, cell.row, false);
+
             if (originalValue instanceof DBDContent content) {
+                // Special handling for content/blob values
                 content.updateContents(new VoidProgressMonitor(), new StringContentStorage(newValue));
                 new ResultSetValueController(owner.getController(), cellLocation, IValueController.EditType.NONE, null)
                     .updateValue(originalValue, !replaceAll);
             } else {
+                // Standard value update
                 owner.getController().updateCellValue(
                     cellLocation.getAttribute(),
                     cellLocation.getRow(),
@@ -399,37 +391,278 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                     !replaceAll);
             }
         } catch (DBException e) {
-            log.error("Error updating contents", e);
+            log.error("Error updating cell value", e);
         }
 
-        synchronized (REDRAW_SYNC) {
-            updatedAttributes.add(cellLocation.getAttribute());
-            updatedRows.add(cellLocation.getRow());
-
-            if (redrawJob == null) {
-                redrawJob = new AbstractJob("Redraw grid after replace") {
-                    @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
-                        Set<DBDAttributeBinding> attrs;
-                        Set<DBDValueRow> rows;
-                        synchronized (REDRAW_SYNC) {
-                            attrs = new LinkedHashSet<>(updatedAttributes);
-                            rows = new LinkedHashSet<>(updatedRows);
-                            updatedAttributes.clear();
-                            updatedRows.clear();
-                            redrawJob = null;
+        GridPos currentPos = owner.getSpreadsheet().getFocusPos();
+        storeLastFoundPosition(currentPos);
+        if (!replaceAll) {
+            owner.getController().redrawData(true, true);
+            synchronized (REDRAW_SYNC) {
+                updatedAttributes.add(cellLocation.getAttribute());
+                updatedRows.add(cellLocation.getRow());
+                if (redrawJob == null) {
+                    redrawJob = new AbstractJob("Redraw grid after replace") {
+                        @Override
+                        protected IStatus run(DBRProgressMonitor monitor) {
+                            Set<DBDAttributeBinding> attrs;
+                            Set<DBDValueRow> rows;
+                            synchronized (REDRAW_SYNC) {
+                                attrs = new LinkedHashSet<>(updatedAttributes);
+                                rows = new LinkedHashSet<>(updatedRows);
+                                updatedAttributes.clear();
+                                updatedRows.clear();
+                                redrawJob = null;
+                            }
+                            UIUtils.syncExec(() -> {
+                                owner.getController().refreshHintCache(attrs, rows, null);
+                                owner.getController().redrawData(false, true);
+                                owner.getController().updatePanelsContent(false);
+                            });
+                            return Status.OK_STATUS;
                         }
-                        UIUtils.syncExec(() -> {
-                            owner.getController().refreshHintCache(attrs, rows, null);
-                            owner.getController().redrawData(false, true);
-                            owner.getController().updatePanelsContent(false);
-                        });
-                        return Status.OK_STATUS;
-                    }
-                };
+                    };
+                    redrawJob.schedule(150); // 150ms delay for batch updates
+                }
             }
-            redrawJob.schedule(150);
         }
+    }
+
+    private Pattern createSearchPattern(
+        String findString,
+        boolean caseSensitive,
+        boolean wholeWord,
+        boolean regEx
+    ) {
+        if (findString == null || findString.isEmpty()) return null;
+
+        try {
+            if (regEx) {
+                return Pattern.compile(findString, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
+            } else {
+                String pattern = wholeWord
+                    ? "\\b" + Pattern.quote(findString) + "\\b"
+                    : Pattern.quote(findString);
+                return Pattern.compile(pattern, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
+            }
+        } catch (PatternSyntaxException e) {
+            log.error("Invalid search pattern: " + findString, e);
+            return null;
+        }
+    }
+
+    public int replaceAll(String replacement) {
+        if (!prepareTargetForEditing()) {
+            return 0;
+        }
+
+        final SpreadsheetPresentation owner = getActiveSpreadsheet();
+        if (owner == null) return 0;
+
+        final Spreadsheet spreadsheet = owner.getSpreadsheet();
+        final Control control = owner.getControl();
+        if (control == null || control.isDisposed()) return 0;
+
+        Pattern pattern = createSearchPattern(currentFindString, currentCaseSensitive, currentWholeWord, currentRegEx);
+        if (pattern == null) return 0;
+
+        // Performance optimization: disable UI updates during bulk operation
+        control.setRedraw(false);
+        int replacementsCount = 0;
+        try {
+            int rowCount = spreadsheet.getItemCount();
+            int colCount = spreadsheet.getColumnCount();
+            int firstRow = Math.max(owner.getHighlightScopeFirstLine(), 0);
+            int lastRow = Math.min(owner.getHighlightScopeLastLine(), rowCount - 1);
+            if (lastRow < 0) lastRow = rowCount - 1;
+
+            for (int row = firstRow; row <= lastRow; row++) {
+                for (int col = 0; col < colCount; col++) {
+                    GridPos pos = new GridPos(col, row);
+                    GridCell cell = spreadsheet.posToCell(pos);
+                    if (cell == null) {
+                        continue;
+                    }
+
+                    String oldValue = CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(
+                        cell.col, cell.row, true));
+                    if (oldValue == null || oldValue.isEmpty()){
+                        continue;
+                    }
+
+                    Matcher matcher = pattern.matcher(oldValue);
+                    if (matcher.find()) {
+                        String newValue = matcher.replaceAll(replacement);
+                        if (!oldValue.equals(newValue)) {
+                            ResultSetCellLocation cellLocation = owner.getCellLocation(cell);
+                            try {
+                                Object originalValue = spreadsheet.getContentProvider().getCellValue(
+                                    cell.col, cell.row, false);
+
+                                if (originalValue instanceof DBDContent content) {
+                                    // Handle content/blob updates
+                                    content.updateContents(new VoidProgressMonitor(), new StringContentStorage(newValue));
+                                    new ResultSetValueController(owner.getController(), cellLocation,
+                                        IValueController.EditType.NONE, null)
+                                        .updateValue(originalValue, false);
+                                } else {
+                                    owner.getController().updateCellValue(
+                                        cellLocation.getAttribute(),
+                                        cellLocation.getRow(),
+                                        cellLocation.getRowIndexes(),
+                                        newValue,
+                                        false);
+                                }
+                                replacementsCount++;
+                            } catch (DBException e) {
+                                log.error("Error updating cell value at " + cellLocation, e);
+                            }
+                        }
+                    }
+                }
+            }
+        } finally {
+            // Restore UI updates and refresh
+            control.setRedraw(true);
+            owner.getController().redrawData(false, true);
+        }
+        return replacementsCount;
+    }
+
+    // Helper method to determine initial search position
+    private GridPos getStartPosition(
+        Spreadsheet spreadsheet,
+        boolean searchForward,
+        int firstRow,
+        int lastRow,
+        int minColumn,
+        int columnCount,
+        boolean isFirstSearch
+    ) {
+        GridPos currentPos = spreadsheet.getCursorPosition();
+
+        // Default to boundary positions when no cursor
+        if (currentPos == null) {
+            return searchForward ?
+                new GridPos(minColumn, firstRow) :  // Start from top-left
+                new GridPos(columnCount - 1, lastRow); // Start from bottom-right
+        }
+
+        // Use current position for first search, next position otherwise
+        return isFirstSearch ? currentPos :
+            getNextPosition(currentPos, searchForward, columnCount, minColumn, firstRow, lastRow);
+    }
+
+    // Stores the last found position for subsequent operations
+    private void storeLastFoundPosition(GridPos pos) {
+        final SpreadsheetPresentation owner = getActiveSpreadsheet();
+        if (owner != null) {
+            Spreadsheet spreadsheet = owner.getSpreadsheet();
+            // Adjust column for record mode
+            if (owner.getController().isRecordMode() && pos.col == -1) {
+                pos = new GridPos(0, pos.row);
+            }
+            // Update spreadsheet focus and selection
+            spreadsheet.setFocusColumn(pos.col);
+            spreadsheet.setFocusItem(pos.row);
+            spreadsheet.setCellSelection(pos);
+            spreadsheet.showSelection();
+        }
+    }
+
+    // Retrieves cell text based on mode and position
+    private String getCellText(
+        Spreadsheet spreadsheet,
+        GridPos pos,
+        boolean recordMode,
+        int minColumn
+    ) {
+        // Handle record mode special column
+        if (recordMode && pos.col == minColumn) {
+            return spreadsheet.getLabelProvider().getText(spreadsheet.getRow(pos.row));
+        }
+        // Standard cell value retrieval
+        GridCell cell = spreadsheet.posToCell(pos);
+        return cell != null ?
+            CommonUtils.toString(spreadsheet.getContentProvider().getCellValue(cell.col, cell.row, false)) :
+            null;
+    }
+
+    // Selects a cell and updates UI focus
+    private void selectCell(
+        Spreadsheet spreadsheet,
+        GridPos pos,
+        int minColumn
+    ) {
+        // Adjust position for record mode
+        if (pos.col == minColumn) pos = new GridPos(0, pos.row);
+        // Update spreadsheet state
+        spreadsheet.setFocusColumn(pos.col);
+        spreadsheet.setFocusItem(pos.row);
+        spreadsheet.setCellSelection(pos);
+        spreadsheet.showSelection();
+    }
+
+    // Calculates next cell position based on search direction
+    private GridPos getNextPosition(
+        GridPos pos,
+        boolean searchForward,
+        int columnCount,
+        int minColumn,
+        int firstRow,
+        int lastRow
+    ) {
+        GridPos next = new GridPos(pos.col, pos.row);
+
+        if (searchForward) {
+            // Move right, wrap to next row
+            next.col++;
+            if (next.col >= columnCount) {
+                next.col = minColumn;
+                next.row = (next.row >= lastRow) ? firstRow : next.row + 1;
+            }
+        } else {
+            // Move left, wrap to previous row
+            next.col--;
+            if (next.col < minColumn) {
+                next.col = columnCount - 1;
+                next.row = (next.row <= firstRow) ? lastRow : next.row - 1;
+            }
+        }
+        return next;
+    }
+
+    // Returns wrap-around position when reaching boundary
+    private GridPos getWrapAroundPosition(
+        boolean searchForward,
+        int firstRow,
+        int lastRow,
+        int minColumn,
+        int columnCount
+    ) {
+        return searchForward ?
+            new GridPos(minColumn, firstRow) :  // Top-left corner
+            new GridPos(columnCount - 1, lastRow); // Bottom-right corner
+    }
+
+    private boolean isCellInScope(
+        GridPos pos,
+        int firstRow,
+        int lastRow,
+        int minColumn,
+        int columnCount
+    ) {
+        return pos.row >= firstRow &&
+               pos.row <= lastRow &&
+               pos.col >= minColumn &&
+               pos.col < columnCount;
+    }
+
+    private boolean prepareTargetForEditing()
+    {
+        SpreadsheetPresentation owner = getActiveSpreadsheet();
+        return owner != null &&
+               owner.getController().getReadOnlyStatus() == null;
     }
 
     @Override
@@ -443,7 +676,8 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         return "Target: " + (dataContainer == null ? null : dataContainer.getName());
     }
 
-    private void refreshOwner(@NotNull SpreadsheetPresentation newOwner) {
+    private void refreshOwner(@NotNull SpreadsheetPresentation newOwner)
+    {
         if (this.ownerIdentity == newOwner.hashCode()) {
             return;
         }
@@ -460,12 +694,14 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     }
 
     @Nullable
-    private SpreadsheetPresentation getActiveSpreadsheet() {
+    private SpreadsheetPresentation getActiveSpreadsheet()
+    {
         return getActiveSpreadsheet(true);
     }
 
     @Nullable
-    private SpreadsheetPresentation getActiveSpreadsheet(boolean refreshActiveSpreadsheet) {
+    private SpreadsheetPresentation getActiveSpreadsheet(boolean refreshActiveSpreadsheet)
+    {
         final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         if (workbenchWindow == null) {
             return null;
