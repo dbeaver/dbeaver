@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
@@ -109,7 +110,7 @@ public class ObjectPropertyTester extends PropertyTester {
                     clipboard.dispose();
                 }
 */
-                if (node instanceof DBNResource) {
+                if (node instanceof DBNResource || node instanceof DBNPath) {
                     return property.equals(PROP_CAN_PASTE);
                 }
                 return canCreateObject(node, null);
