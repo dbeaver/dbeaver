@@ -119,7 +119,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
     @Override
     public String getObjectFullName(@NotNull DBRProgressMonitor monitor) throws IOException {
-        return getObjectName() + "@" + dataSourceContainer.getName();
+        DBPDataSourceContainer container = getDataSourceContainer();
+        return getObjectName() + (container == null ? "" : "@" + container.getName());
     }
 
     @Override
