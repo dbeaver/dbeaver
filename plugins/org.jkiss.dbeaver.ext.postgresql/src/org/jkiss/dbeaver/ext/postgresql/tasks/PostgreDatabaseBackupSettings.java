@@ -46,6 +46,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     private String compression;
     private String encoding;
     private boolean showViews;
+    private boolean completeBackup;
     private boolean useInserts;
     private boolean noPrivileges;
     private boolean noOwner;
@@ -54,7 +55,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
 
     public PostgreDatabaseBackupSettings() {
     }
-    
+
     public PostgreDatabaseBackupSettings(@NotNull DBPProject project) {
         super(project);
     }
@@ -90,6 +91,14 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
 
     public void setShowViews(boolean showViews) {
         this.showViews = showViews;
+    }
+
+    public boolean isCompleteBackup() {
+        return completeBackup;
+    }
+
+    public void setCompleteBackup(boolean completeBackup) {
+        this.completeBackup = completeBackup;
     }
 
     public boolean isUseInserts() {
@@ -179,6 +188,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         compression = store.getString("pg.export.compression");
         encoding = store.getString("pg.export.encoding");
         showViews = store.getBoolean("pg.export.showViews");
+        completeBackup = store.getBoolean("pg.export.completeBackup");
         useInserts = store.getBoolean("pg.export.useInserts");
         noPrivileges = store.getBoolean("pg.export.noPrivileges");
         noOwner = store.getBoolean("pg.export.noOwner");
@@ -204,7 +214,6 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
             }
         }
     }
-
 
     private PostgreDatabaseBackupInfo loadDatabaseExportInfo(DBRRunnableContext runnableContext, String catalogId, List<String> schemaNames, List<String> tableNames) {
         PostgreDatabaseBackupInfo[] exportInfo = new PostgreDatabaseBackupInfo[1];
@@ -252,12 +261,14 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         }
         return exportInfo[0];
     }
+
     @Override
     public void saveSettings(DBRRunnableContext runnableContext, DBPPreferenceStore store) {
         super.saveSettings(runnableContext, store);
         store.setValue("pg.export.compression", compression);
         store.setValue("pg.export.encoding", encoding);
         store.setValue("pg.export.showViews", showViews);
+        store.setValue("pg.export.completeBackup", completeBackup);
         store.setValue("pg.export.useInserts", useInserts);
         store.setValue("pg.export.noPrivileges", noPrivileges);
         store.setValue("pg.export.noOwner", noOwner);

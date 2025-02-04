@@ -59,6 +59,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     private PostgreSchema curSchema;
     private PostgreDatabase dataBase;
     private Button exportViewsCheck;
+    private Button completeBackupCheck;
 
     PostgreBackupWizardPageObjects(PostgreBackupWizard wizard)
     {
@@ -97,8 +98,17 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             schemasTable.setLayoutData(gd);
 
             Composite buttonsPanel = UIUtils.createComposite(catPanel, 3);
+            
+                        
+            completeBackupCheck = UIUtils.createCheckbox(buttonsPanel, PostgreMessages.wizard_backup_page_object_checkbox_complete_backup, false);
+            completeBackupCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    wizard.getSettings().setCompleteBackup(completeBackupCheck.getSelection());
+                }
+            });
+            completeBackupCheck.setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            new Label(buttonsPanel, SWT.NONE).setLayoutData(new GridData(GridData.GRAB_HORIZONTAL));
             createCheckButtons(buttonsPanel, schemasTable);
         }
 
@@ -120,6 +130,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             Composite buttonsPanel = UIUtils.createComposite(tablesPanel, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             exportViewsCheck = UIUtils.createCheckbox(buttonsPanel, PostgreMessages.wizard_backup_page_object_checkbox_show_view, false);
+            exportViewsCheck.setSelection(wizard.getSettings().isCompleteBackup());
             exportViewsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -333,9 +344,28 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
         }
     }
 
+    private boolean isAllSchemaSelected() {
+        boolean allSchemasSelected = true;
+        for (TableItem item : schemasTable.getItems()) {
+            if (!item.getChecked()) {
+                allSchemasSelected = false;
+                break;
+            }
+        }
+        return allSchemasSelected;
+    }
+    private void updateCompleteBackupState() {
+    	boolean allSchemasSelected =isAllSchemaSelected();
+        completeBackupCheck.setEnabled(allSchemasSelected);
+        if (!allSchemasSelected) {
+            completeBackupCheck.setSelection(false);
+            wizard.getSettings().setCompleteBackup(false);
+        }
+    }
     @Override
     protected void updateState()
     {
+    	updateCompleteBackupState();
         updatePageCompletion();
         getContainer().updateButtons();
     }
