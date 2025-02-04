@@ -56,10 +56,6 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
         if (preferences.getBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER)) {
             NavigatorStatePersister.saveFilterState(getNavigatorTree(), memento);
         }
-        if (preferences.getBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER_TYPE)) {
-            NavigatorStatePersister.saveFilterTypeState(getNavigatorTree(), memento);
-        }
-
     }
 
     private void restoreState() {
@@ -70,9 +66,6 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
         }
         if (preferences.getBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER)) {
             NavigatorStatePersister.restoreFilterState(getNavigatorTree(), memento);
-        }
-        if (preferences.getBoolean(NavigatorPreferences.NAVIGATOR_RESTORE_FILTER_TYPE)) {
-            NavigatorStatePersister.restoreFilterTypeState(getNavigatorTree(), memento);
         }
     }
 
