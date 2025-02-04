@@ -59,7 +59,7 @@
             description="%handler.socks_proxy.description"
             desktop="true"
             secured="true"
-            order="10"
+            order="3"
             handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
     </extension>
 
