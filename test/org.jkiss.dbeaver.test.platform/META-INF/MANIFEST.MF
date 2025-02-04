@@ -22,6 +22,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ext.postgresql,
  org.jkiss.dbeaver.osgi.test.runner;visibility:=reexport,
  org.jkiss.dbeaver.ext.oracle,
- org.jkiss.dbeaver.ext.snowflake.core,
+ org.jkiss.dbeaver.ext.snowflake,
  org.jkiss.dbeaver.ext.hana,
  org.jkiss.dbeaver.ext.mssql

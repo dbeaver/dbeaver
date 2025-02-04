@@ -48,8 +48,10 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.LocalFileStorage;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerDescriptor;
 import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerRegistry;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
@@ -647,4 +649,43 @@ public class EditorUtils {
         return true;
     }
 
+    public static void activatePartContexts(IWorkbenchPart part) {
+        IContextService contextService = PlatformUI.getWorkbench().getService(IContextService.class);
+        if (contextService == null) {
+            return;
+        }
+        try {
+            contextService.deferUpdates(true);
+//            if (part instanceof INavigatorModelView) {
+            // We check for instanceof (do not use adapter) because otherwise it become active
+            // for all entity editor and clashes with SQL editor and other complex stuff.
+//                if (activationNavigator != null) {
+//                    //log.debug("Double activation of navigator context");
+//                    contextService.deactivateContext(activationNavigator);
+//                }
+//                activationNavigator = contextService.activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
+//            }
+
+            // What the point of setting SQL editor context here? It is set by editor itself
+//            if (part instanceof SQLEditorBase || part.getAdapter(SQLEditorBase.class) != null) {
+//                if (activationSQL != null) {
+//                    //log.debug("Double activation of SQL context");
+//                    contextService.deactivateContext(activationSQL);
+//                }
+//                activationSQL = contextService.activateContext(SQLEditorContributions.SQL_EDITOR_CONTEXT);
+//            }
+            // Refresh auto-commit element state (#3315)
+            ActionUtils.fireCommandRefresh(ConnectionCommands.CMD_TOGGLE_AUTOCOMMIT);
+        } finally {
+            contextService.deferUpdates(false);
+        }
+    }
+
+    public static void deactivatePartContexts(IWorkbenchPart part) {
+    }
+
+    public static void refreshPartContexts(IWorkbenchPart part) {
+        deactivatePartContexts(part);
+        activatePartContexts(part);
+    }
 }

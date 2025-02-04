@@ -65,7 +65,7 @@ public class IconDialog extends TrayDialog {
     protected Composite createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
 
-        ScrolledComposite viewport = UIUtils.createScrolledComposite(composite, SWT.VERTICAL);
+        ScrolledComposite viewport = UIUtils.createScrolledComposite(composite, SWT.V_SCROLL);
         viewport.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(700, 500).create());
 
         Composite container = new Composite(viewport, SWT.NONE);

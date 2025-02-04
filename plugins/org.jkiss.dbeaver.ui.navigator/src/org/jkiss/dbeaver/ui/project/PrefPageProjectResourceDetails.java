@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.project.FileSystemExplorerView;
@@ -62,7 +63,7 @@ public class PrefPageProjectResourceDetails extends AbstractPrefPage implements 
         if (resourcePath == null) {
             return composite;
         }
-        UIUtils.createLabelText(composite, "URI", resourcePath.toUri().toString(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(composite, "Path", DBFUtils.convertPathToString(resourcePath), SWT.BORDER | SWT.READ_ONLY);
         FileAttributeView fileAttributeView = Files.getFileAttributeView(resourcePath, PosixFileAttributeView.class);
         if (fileAttributeView == null) {
             fileAttributeView = Files.getFileAttributeView(resourcePath, FileOwnerAttributeView.class);

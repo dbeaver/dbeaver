@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,7 +147,15 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, MySQLExportSettings settings, final MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException, DBException {
+    protected void startProcessHandler(
+        DBRProgressMonitor monitor,
+        DBTTask task,
+        MySQLExportSettings settings,
+        final MySQLDatabaseExportInfo arg,
+        ProcessBuilder processBuilder,
+        Process process,
+        Log log
+    ) throws IOException, DBException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
         String outFileStr = settings.getOutputFile(arg);
         Path outFile = DBFUtils.resolvePathFromString(monitor, task.getProject(), outFileStr);
@@ -157,6 +165,8 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
             // https://github.com/dbeaver/dbeaver/issues/11532
             throw new IOException("Output file already exists");
         }
+
+        log.debug("Dump database into " + outFile.toUri());
         boolean isFiltering = settings.isRemoveDefiner();
         Thread job = isFiltering ?
             new DumpFilterJob(monitor, process.getInputStream(), outFile, log) :
@@ -169,7 +179,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
         private final Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`[^*]*`@`[0-9a-z\\-_\\.%]*`", Pattern.CASE_INSENSITIVE);
 
         DumpFilterJob(DBRProgressMonitor monitor, InputStream stream, Path outFile, Log log) {
-            super("MySQL databasse dump filter", monitor, stream, outFile, log);
+            super("MySQL database dump filter", monitor, stream, outFile, log);
         }
 
         @Override

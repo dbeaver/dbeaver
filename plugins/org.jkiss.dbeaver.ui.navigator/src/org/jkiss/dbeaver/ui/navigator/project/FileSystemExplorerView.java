@@ -73,7 +73,7 @@ public class FileSystemExplorerView extends DatabaseBrowserView {
 
     @Override
     protected INavigatorFilter getNavigatorFilter() {
-        return null;
+        return new SimpleNavigatorTreeFilter();
     }
 
     @Override

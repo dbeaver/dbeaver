@@ -479,7 +479,7 @@ public class ResultSetModel implements DBDResultSetModel {
         Object valueToEdit = currentValue;
 
         // Check for changes
-        if (!attr.getDataKind().isComplex() && Objects.equals(
+        if (!attr.getDataKind().isComplex() && !(value instanceof DBDValue) && Objects.equals(
             CommonUtils.toString(currentValue, null),
             CommonUtils.toString(value, null))
         ) {
