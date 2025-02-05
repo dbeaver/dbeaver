@@ -85,7 +85,7 @@ public class DatabaseBrowserView extends NavigatorViewBase {
                     setPartName(node.getNodeDisplayName());
                     setTitleImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
                 } catch (DBException e) {
-                    // ignore
+                    log.error("Error creating DB browser view", e);
                 }
             });
         }
