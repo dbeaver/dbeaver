@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceDrivers;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.VersionUtils;
-import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
-import org.jkiss.utils.StandardConstants;
+import org.jkiss.utils.*;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -60,6 +57,7 @@ import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1471,12 +1469,57 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     continue;
                 }
                 Path localFile = library.getLocalFile();
-                if (localFile != null) {
+                if (localFile == null) {
+                    continue;
+                }
+
+                if (IOUtils.isFileFromDefaultFS(localFile)) {
                     if (Files.isDirectory(localFile)) {
                         result.addAll(readJarsFromDir(localFile));
                     }
                     if (!result.contains(localFile)) {
                         result.add(localFile);
+                    }
+                } else {
+                    Path tempDriversDir = getTempWorkspaceDriversStorageFolder();
+                    Path driverLibsFolder = Files.isDirectory(localFile) ? Path.of(library.getPath()) :
+                        Path.of(library.getPath()).getParent();
+                    Path realDriverLibsFolder = tempDriversDir.resolve(driverLibsFolder);
+
+                    List<Path> externalLibraryFiles = new ArrayList<>();
+
+                    if (Files.isDirectory(localFile)) {
+                        externalLibraryFiles.addAll(readJarsFromDir(localFile));
+                    } else {
+                        externalLibraryFiles.add(localFile);
+                    }
+
+                    try {
+                        for (Path externalLibraryFilePath : externalLibraryFiles) {
+                            // toString to avoid conflict between fs
+                            String jarName = externalLibraryFilePath.getFileName().toString();
+                            Path realLibraryPath = realDriverLibsFolder.resolve(jarName);
+
+                            if (!Files.exists(realLibraryPath.getParent())) {
+                                Files.createDirectories(realLibraryPath.getParent());
+                            }
+                            if (!Files.exists(realLibraryPath) ||
+                                Files.getLastModifiedTime(realLibraryPath).toInstant()
+                                    .isBefore(Files.getLastModifiedTime(externalLibraryFilePath).toInstant())) {
+                                log.info("Copy driver library from from external file system " + externalLibraryFilePath + " to " +
+                                    "the temporary location " + realLibraryPath);
+                                Files.copy(
+                                    externalLibraryFilePath,
+                                    realLibraryPath,
+                                    StandardCopyOption.REPLACE_EXISTING
+                                );
+                            }
+                            if (!result.contains(realLibraryPath)) {
+                                result.add(realLibraryPath);
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.error("Error during copy of library file '" + library + "'", e);
                     }
                 }
             }
@@ -1647,6 +1690,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         List<Path> localFilePaths = new ArrayList<>();
 
         final Map<DBPDriverLibrary, List<DriverFileInfo>> downloadCandidates = new LinkedHashMap<>();
+        Path driverFolder = getTempWorkspaceDriversStorageFolder();
         for (DBPDriverLibrary library : libraries) {
             if (monitor.isCanceled()) {
                 break;
@@ -1672,10 +1716,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                     if (monitor.isCanceled()) {
                         break;
                     }
-                    Path driverFolder = getWorkspaceDriversStorageFolder();
                     Path localDriverFile = driverFolder.resolve(depFile.getFile().toString());
-                    if (!Files.exists(localDriverFile) || depFile.getFileCRC() == 0 ||
-                        depFile.getFileCRC() != calculateFileCRC(localDriverFile))
+                    if (crcNotMatch(depFile, localDriverFile))
                     {
                         downloadCandidates
                             .computeIfAbsent(library, key -> new ArrayList<>())
@@ -1701,7 +1743,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         break;
                     }
                     try {
-                        Path driverFolder = getWorkspaceDriversStorageFolder();
                         Path localDriverFile = driverFolder.resolve(fileInfo.getFile().toString());
                         if (!Files.exists(localDriverFile.getParent())) {
                             Files.createDirectories(localDriverFile.getParent());
@@ -1726,6 +1767,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
 
         return localFilePaths;
+    }
+
+    private static boolean crcNotMatch(@NotNull DriverFileInfo depFile, @NotNull Path localDriverFile) {
+        return !Files.exists(localDriverFile) || depFile.getFileCRC() == 0 ||
+            depFile.getFileCRC() != calculateFileCRC(localDriverFile);
     }
 
     public static long calculateFileCRC(Path localDriverFile) {
@@ -2038,6 +2084,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     /////////////////////////////////////////
     // Static utilities
+
+    // used to download drivers from external fs or distributed to a temp folder
+    @NotNull
+    public static Path getTempWorkspaceDriversStorageFolder() {
+        try {
+            return DBWorkbench.getPlatform().getTempFolder(new LoggingProgressMonitor(), DBFileController.DATA_FOLDER)
+                .resolve(DBFileController.TYPE_DATABASE_DRIVER);
+        } catch (IOException e) {
+            throw new RuntimeException("Error getting drivers temp folder", e);
+        }
+    }
 
     public static Path getWorkspaceDriversStorageFolder() {
         return DBWorkbench.getPlatform().getWorkspace().getAbsolutePath()
