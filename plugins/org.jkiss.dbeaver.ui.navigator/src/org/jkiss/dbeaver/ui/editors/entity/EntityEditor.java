@@ -84,8 +84,10 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.*;
 
@@ -807,9 +809,14 @@ public class EntityEditor extends MultiPageDatabaseEditor
         try {
             // Save
             Path configPath = DBWorkbench.getPlatform().getLocalConfigurationFile(TABS_CONFIG_FILE);
+            if (!Files.exists(configPath.getParent())) {
+                Files.createDirectories(configPath.getParent());
+            }
             Files.writeString(
                 configPath,
-                JSONUtils.GSON.toJson(defaultPageMap));
+                JSONUtils.GSON.toJson(defaultPageMap),
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE);
         } catch (Exception e) {
             log.error("Error saving tabs configuration", e);
         }

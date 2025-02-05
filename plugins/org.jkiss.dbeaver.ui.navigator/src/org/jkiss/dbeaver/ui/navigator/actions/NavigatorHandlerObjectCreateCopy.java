@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,9 +40,9 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
@@ -57,7 +57,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCreateBase {
 
@@ -80,22 +79,35 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         DBNNode curNode = NavigatorUtils.getSelectedNode(selection);
+        if (curNode == null) {
+            return null;
+        }
         DBPProject toProject = curNode.getOwnerProject();
-        if (curNode != null) {
-            Clipboard clipboard = new Clipboard(Display.getDefault());
-            List<String> failedToPasteResources = new LinkedList<>();
-            try {
-                @SuppressWarnings("unchecked")
-                Collection<DBNNode> cbNodes = (Collection<DBNNode>) clipboard.getContents(TreeNodeTransfer.getInstance());
-                if (cbNodes != null) {
-                    for (DBNNode nodeObject : cbNodes) {
-                        if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
-                            if (toProject != null && !toProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
-                                failedToPasteResources.add(nodeObject.getName());
-                            }
+        Clipboard clipboard = new Clipboard(Display.getDefault());
+        List<String> failedToPasteResources = new LinkedList<>();
+        try {
+            @SuppressWarnings("unchecked")
+            Collection<DBNNode> cbNodes = (Collection<DBNNode>) clipboard.getContents(TreeNodeTransfer.getInstance());
+            if (cbNodes != null) {
+                for (DBNNode nodeObject : cbNodes) {
+                    if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
+                        if (!toProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                            failedToPasteResources.add(nodeObject.getName());
                         }
                     }
-                    if (failedToPasteResources.isEmpty()) {
+                }
+                if (failedToPasteResources.isEmpty()) {
+                    if (curNode instanceof DBNPathBase pathTarget) {
+                        try {
+                            UIUtils.runWithMonitor(monitor -> {
+                                pathTarget.dropNodes(monitor, cbNodes);
+                                return null;
+                            });
+                        } catch (DBException e) {
+                            DBWorkbench.getPlatformUI().showError("Paste error", "Can't paste nodes", e);
+                            failedToPasteResources.addAll(cbNodes.stream().map(DBNNode::getNodeDisplayName).toList());
+                        }
+                    } else {
                         for (DBNNode nodeObject : cbNodes) {
                             if (curNode instanceof DBNResource && ((DBNResource) curNode).supportsPaste(nodeObject)) {
                                 try {
@@ -108,69 +120,66 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                                 createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode) nodeObject));
                             } else if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
                                 pasteResource((DBNResource) nodeObject, (DBNResource) curNode);
+                            } else {
+                                log.error("Paste is not supported for " + curNode);
                             }
                         }
                     }
-                } else if (curNode instanceof DBNResource) {
-                    String[] files = (String[]) clipboard.getContents(FileTransfer.getInstance());
-                    if (files != null) {
+                }
+            } else if (curNode instanceof DBNResource) {
+                String[] files = (String[]) clipboard.getContents(FileTransfer.getInstance());
+                if (files != null) {
+                    for (String fileName : files) {
+                        final File file = new File(fileName);
+                        if (file.exists()) {
+                            if (!toProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
+                                failedToPasteResources.add(fileName);
+                            }
+                        }
+                    }
+                    if (failedToPasteResources.isEmpty()) {
                         for (String fileName : files) {
                             final File file = new File(fileName);
                             if (file.exists()) {
-                                if (toProject != null && !toProject.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT)) {
-                                    failedToPasteResources.add(fileName);
-                                }
+                                pasteResource(file, (DBNResource) curNode);
                             }
                         }
-                        if (failedToPasteResources.isEmpty()) {
-                            for (String fileName : files) {
-                                final File file = new File(fileName);
-                                if (file.exists()) {
-                                    pasteResource(file, (DBNResource) curNode);
-                                }
-                            }
-                        }
-                    } else {
-                        log.debug("Paste error: unsupported clipboard format. File or folder were expected.");
-                        Display.getCurrent().beep();
                     }
                 } else {
-                    log.debug("Paste error: clipboard contains data in unsupported format");
+                    log.debug("Paste error: unsupported clipboard format. File or folder were expected.");
                     Display.getCurrent().beep();
                 }
-                if (failedToPasteResources.size() > 0) {
-                    DBWorkbench.getPlatformUI().showError(
-                        UINavigatorMessages.failed_to_paste_due_to_permissions_title,
-                        NLS.bind(
-                            UINavigatorMessages.failed_to_paste_due_to_permissions_message,
-                            toProject.getDisplayName(),
-                            failedToPasteResources.stream().collect(Collectors.joining(",\n"))
-                        )
-                    );
-                }
-            } finally {
-                clipboard.dispose();
+            } else {
+                log.debug("Paste error: clipboard contains data in unsupported format");
+                Display.getCurrent().beep();
             }
-
+            if (!failedToPasteResources.isEmpty()) {
+                DBWorkbench.getPlatformUI().showError(
+                    UINavigatorMessages.failed_to_paste_due_to_permissions_title,
+                    NLS.bind(
+                        UINavigatorMessages.failed_to_paste_due_to_permissions_message,
+                        toProject.getDisplayName(),
+                        String.join(",\n", failedToPasteResources)
+                    )
+                );
+            }
+        } finally {
+            clipboard.dispose();
         }
+
         return null;
     }
 
     private void pasteResource(DBNResource resourceNode, DBNResource toFolder) {
         final IResource resource = resourceNode.getResource();
         final IResource targetResource = toFolder.getResource();
-        assert resource != null;
-        assert targetResource != null;
         final IContainer targetFolder = targetResource instanceof IContainer ? (IContainer) targetResource : targetResource.getParent();
         try {
-            UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        copyResource(monitor, resource, targetFolder);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
+            UIUtils.runInProgressService(monitor -> {
+                try {
+                    copyResource(monitor, resource, targetFolder);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
                 }
             });
         } catch (InvocationTargetException e) {
@@ -180,7 +189,11 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
         }
     }
 
-    private void copyResource(@NotNull DBRProgressMonitor monitor, @NotNull IResource resource, @NotNull IContainer targetFolder) throws CoreException, IOException {
+    private void copyResource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IResource resource,
+        @NotNull IContainer targetFolder
+    ) throws CoreException, IOException {
         final IProgressMonitor nestedMonitor = RuntimeUtils.getNestedMonitor(monitor);
         final String extension = resource.getFileExtension();
         String targetName = resource.getName();
@@ -226,18 +239,14 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
     }
 
     private void pasteResource(final File file, DBNResource toFolder) {
-        final IResource targetResource = toFolder.getResource();
-        assert targetResource != null;
-        final IContainer targetFolder = targetResource instanceof IContainer ? (IContainer) targetResource : targetResource.getParent();
+        IResource targetResource = toFolder.getResource();
+        IContainer targetFolder = targetResource instanceof IContainer container ? container : targetResource.getParent();
         try {
-            UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        copyFileInFolder(monitor, targetFolder, file);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
+            UIUtils.runInProgressService(monitor -> {
+                try {
+                    copyFileInFolder(monitor, targetFolder, file);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
                 }
             });
         } catch (InvocationTargetException e) {
