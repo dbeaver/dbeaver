@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.completion;
 public abstract class CompletionProposalBase {
 
     protected abstract int getReplacementOffset();
+    
     protected abstract String getReplacementString();
 
     @Override
@@ -33,9 +34,10 @@ public abstract class CompletionProposalBase {
 
     @Override
     public int hashCode() {
-        int hashCode = 181846194;
-        hashCode = hashCode * -1521134295 + this.getReplacementString().hashCode();
-        hashCode = hashCode * -1521134295 + Integer.hashCode(this.getReplacementOffset());
+        int hashCode = 7;
+        hashCode = hashCode * 31 + this.getReplacementString().hashCode();
+        hashCode = hashCode * 31 + Integer.hashCode(this.getReplacementOffset());
+        jdk.internal.util.ArraysSupport.hashCode
         return hashCode;
     }
 }
