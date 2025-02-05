@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -79,7 +81,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     }
 
     private Table profilesTable;
-    private TabFolder handlersFolder;
+    private CTabFolder handlersFolder;
 
     private ToolItem deleteProfileItem;
     private ToolItem copyProfileItem;
@@ -108,13 +110,14 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         {
             Composite handlersComp = UIUtils.createComposite(divider, 1);
             preCreateHandlerControls(handlersComp);
-            handlersFolder = new TabFolder(handlersComp, SWT.TOP | SWT.FLAT);
+            handlersFolder = new CTabFolder(handlersComp, SWT.TOP | SWT.FLAT);
             handlersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
             for (NetworkHandlerDescriptor nhd : NetworkHandlerRegistry.getInstance().getDescriptors()) {
                 if (!nhd.hasObjectTypes() && isHandlerApplicable(nhd)) {
                     createHandlerTab(nhd);
                 }
             }
+            handlersFolder.setSelection(0);
             handlersFolder.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -251,7 +254,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         if (selectedProfile == null) {
             return;
         }
-        for (TabItem handlerTab : handlersFolder.getItems()) {
+        for (CTabItem handlerTab : handlersFolder.getItems()) {
             NetworkHandlerDescriptor handler = (NetworkHandlerDescriptor) handlerTab.getData();
             HandlerBlock handlerBlock = configurations.get(handler);
             DBWHandlerConfiguration handlerConfiguration = handlerBlock.loadedConfigs.get(selectedProfile);
@@ -285,8 +288,11 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
 
     @Nullable
     private NetworkHandlerDescriptor getSelectedHandler() {
-        TabItem[] selection = handlersFolder.getSelection();
-        return ArrayUtils.isEmpty(selection) ? null : (NetworkHandlerDescriptor) selection[0].getData();
+        CTabItem selection = handlersFolder.getSelection();
+        if (selection == null) {
+            selection = handlersFolder.getItem(0);
+        }
+        return selection == null ? null : (NetworkHandlerDescriptor) selection.getData();
     }
 
     private void createHandlerTab(final NetworkHandlerDescriptor descriptor)
@@ -305,7 +311,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         }
         allHandlers.add(descriptor);
 
-        TabItem tabItem = new TabItem(handlersFolder, SWT.NONE);
+        CTabItem tabItem = new CTabItem(handlersFolder, SWT.NONE);
         tabItem.setText(descriptor.getLabel());
         tabItem.setToolTipText(descriptor.getDescription());
         tabItem.setData(descriptor);
