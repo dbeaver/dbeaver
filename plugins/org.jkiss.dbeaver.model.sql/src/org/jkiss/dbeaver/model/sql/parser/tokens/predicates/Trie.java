@@ -160,7 +160,10 @@ public class Trie<T, V> {
         }
 
         @Nullable
-        private ListNode<TrieNode<T, V>> accumulatePartiallyComparableSubnodes(@NotNull T term, @Nullable ListNode<TrieNode<T, V>> results) {
+        private ListNode<TrieNode<T, V>> accumulatePartiallyComparableSubnodes(
+            @NotNull T term,
+            @Nullable ListNode<TrieNode<T, V>> results
+        ) {
             TrieLookupComparator<T> comparer = Trie.this.lookupPartialComparer;
             ListNode<TrieNode<T, V>> accumulatedResults = results;
             int index = Collections.binarySearch(this.childKeys, term, comparer);
@@ -218,7 +221,7 @@ public class Trie<T, V> {
 
         // walk down the tree while terms of the key path sequence match the corresponding keys of the nodes
         // till the end of the key sequence or boundary of the data structure, where no more child nodes could be matched
-        ListNode<TrieNode<T, V>> activeNodes = ListNode.of(root); // - nodes to lookup down the tree by the current term from the key sequence
+        ListNode<TrieNode<T, V>> activeNodes = ListNode.of(root); // nodes to lookup down the tree by the current term from the key sequence
         ListNode<Set<V>> results = null; // - total accumulated values from all the nodes met along the key sequence path
 
         do {
