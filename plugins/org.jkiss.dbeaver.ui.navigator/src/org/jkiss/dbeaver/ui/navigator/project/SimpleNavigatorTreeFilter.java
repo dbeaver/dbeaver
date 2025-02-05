@@ -14,45 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ui.navigator.project;
 
-package org.jkiss.dbeaver.model.task;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 
-/**
- * Task event.
- * Fired whenever task is create/deleted/updated.
- * Every task run also triggers UPDATE event.
- */
-public class DBTTaskEvent {
-
-    public enum Action
-    {
-        TASK_ADD,
-        TASK_UPDATE,
-        TASK_REMOVE,
-        TASK_EXECUTE,
-        TASK_ACTIVATE,
-    }
-
-    private final DBTTask task;
-    private final Action action;
-
-    public DBTTaskEvent(DBTTask task, Action action) {
-        this.task = task;
-        this.action = action;
-    }
-
-    public Action getAction()
-    {
-        return action;
-    }
-
-    public DBTTask getTask() {
-        return task;
+public class SimpleNavigatorTreeFilter implements INavigatorFilter {
+    @Override
+    public boolean filterFolders() {
+        return false;
     }
 
     @Override
-    public String toString() {
-        return action + " " + task;
+    public boolean isLeafObject(Object object) {
+        return object instanceof DBNNode node && !node.hasChildren(true);
     }
 
+    @Override
+    public boolean filterObjectByPattern(Object object) {
+        // Filter only leaf items
+        return isLeafObject(object);
+    }
+
+    @Override
+    public boolean select(Object toTest) {
+        return true;
+    }
 }

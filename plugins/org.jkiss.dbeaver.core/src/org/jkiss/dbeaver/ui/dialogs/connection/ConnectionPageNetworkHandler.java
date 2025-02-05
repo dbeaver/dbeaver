@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,8 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
     private Combo profileCombo;
     private Button useHandlerCheck;
     private DBWNetworkProfile activeProfile;
-    private final List<DBWNetworkProfile> allProfiles = new ArrayList<>();;
+    private final List<DBWNetworkProfile> allProfiles = new ArrayList<>();
+    private boolean handlerMarkedForRemoval;
 
     public ConnectionPageNetworkHandler(IDataSourceConnectionEditorSite site, NetworkHandlerDescriptor descriptor) {
         super(ConnectionPageNetworkHandler.class.getSimpleName() + "." + descriptor.getId());
@@ -107,17 +108,15 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
         Composite buttonsGroup = UIUtils.createComposite(composite, 5);
         buttonsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        if (handlerDescriptor.isPinned()) {
-            useHandlerCheck = UIUtils.createCheckbox(buttonsGroup,
-                NLS.bind(UIConnectionMessages.dialog_tunnel_checkbox_use_handler, handlerDescriptor.getLabel()), false);
-            useHandlerCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    handlerConfiguration.setEnabled(useHandlerCheck.getSelection());
-                    enableHandlerContent();
-                }
-            });
-        }
+        useHandlerCheck = UIUtils.createCheckbox(buttonsGroup,
+            NLS.bind(UIConnectionMessages.dialog_tunnel_checkbox_use_handler, handlerDescriptor.getLabel()), false);
+        useHandlerCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                handlerConfiguration.setEnabled(useHandlerCheck.getSelection());
+                enableHandlerContent();
+            }
+        });
 
         UIUtils.createEmptyLabel(buttonsGroup, 1, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -303,6 +302,16 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
+        DBPConnectionConfiguration connectionConfiguration = dataSource.getConnectionConfiguration();
+        if (handlerMarkedForRemoval) {
+            // FIXME A profile applies all its handlers to the connection, so we have to remove it.
+            // https://github.com/dbeaver/pro/issues/3456
+            // https://github.com/dbeaver/dbeaver/issues/34341
+            connectionConfiguration.setConfigProfile(null);
+            connectionConfiguration.removeHandler(handlerDescriptor.getId());
+            return;
+        }
+
         if (activeProfile == null) {
             if (handlerConfiguration != null) {
                 // Just copy handler config prom profile
@@ -317,8 +326,8 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
                 handlerConfiguration.setProperties(Collections.emptyMap());
                 configurator.saveSettings(handlerConfiguration);
             }
-            dataSource.getConnectionConfiguration().setConfigProfile(activeProfile);
-            dataSource.getConnectionConfiguration().updateHandler(handlerConfiguration);
+            connectionConfiguration.setConfigProfile(activeProfile);
+            connectionConfiguration.updateHandler(handlerConfiguration);
         }
     }
 
@@ -332,5 +341,13 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage implement
     @NotNull
     public NetworkHandlerDescriptor getHandlerDescriptor() {
         return handlerDescriptor;
+    }
+
+    public boolean isHandlerMarkedForRemoval() {
+        return handlerMarkedForRemoval;
+    }
+
+    public void setHandlerMarkedForRemoval(boolean handlerMarkedForRemoval) {
+        this.handlerMarkedForRemoval = handlerMarkedForRemoval;
     }
 }
