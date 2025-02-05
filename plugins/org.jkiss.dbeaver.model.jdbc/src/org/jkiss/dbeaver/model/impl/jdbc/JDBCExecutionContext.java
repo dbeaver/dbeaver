@@ -40,6 +40,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Savepoint;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -65,6 +66,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     private volatile Integer transactionIsolationLevel;
     private transient volatile boolean txnIsolationLevelReadInProgress;
     private final ReentrantLock queryExecutionLock;
+    private final CompletableFuture<Void> connectionCloseFuture = new CompletableFuture<>();
 
     public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance.getDataSource(), purpose);
@@ -210,6 +212,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 log.debug("Connection close timeout");
             }
             this.connection = null;
+            connectionCloseFuture.complete(null);
         }
         // Notify QM
         super.closeContext();
@@ -547,4 +550,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         }
     }
 
+    public CompletableFuture<Void> getConnectionCloseFuture() {
+        return connectionCloseFuture;
+    }
 }
