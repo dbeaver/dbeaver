@@ -118,7 +118,8 @@ public class TextWithOpen {
             }
             if (isMultiFileSystem()) {
                 final ToolItem remoteFsItem = new ToolItem(toolbar, SWT.NONE);
-                remoteFsItem.setImage(DBeaverIcons.getImage((getPanelStyle() & SWT.OPEN) != 0 ? UIIcon.OPEN_EXTERNAL : UIIcon.SAVE_EXTERNAL));
+                remoteFsItem.setImage(DBeaverIcons.getImage(
+                    (getPanelStyle() & SWT.OPEN) != 0 ? UIIcon.OPEN_EXTERNAL : UIIcon.SAVE_EXTERNAL));
                 remoteFsItem.setToolTipText(UIMessages.text_with_open_dialog_browse_remote);
                 remoteFsItem.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -219,6 +220,9 @@ public class TextWithOpen {
         text.setEnabled(enabled);
     }
 
+    /**
+     * Sets panel layout data
+     */
     public void setLayoutData(Object data) {
         panel.setLayoutData(data);
     }
@@ -227,6 +231,9 @@ public class TextWithOpen {
         return panel.getShell();
     }
 
+    /**
+     * Sets tooltip for text and panel
+     */
     public void setToolTipText(String toolTip) {
         this.panel.setToolTipText(toolTip);
         this.text.setToolTipText(toolTip);
