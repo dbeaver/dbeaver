@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.sql.completion;
 public abstract class CompletionProposalBase {
 
     protected abstract int getReplacementOffset();
-
+    
     protected abstract String getReplacementString();
 
     @Override
