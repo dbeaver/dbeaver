@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1066,8 +1066,8 @@ public class UIUtils {
             public void controlResized(ControlEvent e) {
                 Rectangle area = scrolledComposite.getClientArea();
                 Point size = content.computeSize(
-                    (scrolledComposite.getStyle() & SWT.HORIZONTAL) != 0 ? SWT.DEFAULT : area.width,
-                    (scrolledComposite.getStyle() & SWT.VERTICAL) != 0 ? SWT.DEFAULT : area.height
+                    (scrolledComposite.getStyle() & SWT.H_SCROLL) != 0 ? SWT.DEFAULT : area.width,
+                    (scrolledComposite.getStyle() & SWT.V_SCROLL) != 0 ? SWT.DEFAULT : area.height
                 );
 
                 content.setSize(size);
@@ -2522,10 +2522,12 @@ public class UIUtils {
             boolean showSchema = true;
             if (checkChangePossibility) {
                 DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
-                DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
-                if (contextDefaults != null) {
-                    showCatalog = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
-                    showSchema = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
+                if (defaultContext != null) {
+                    DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
+                    if (contextDefaults != null) {
+                        showCatalog = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
+                        showSchema = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
+                    }
                 }
             }
 

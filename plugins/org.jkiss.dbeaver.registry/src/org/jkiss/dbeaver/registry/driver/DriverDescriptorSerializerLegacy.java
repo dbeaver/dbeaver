@@ -393,10 +393,13 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             lib.resetVersion();
                             isLibraryUpgraded = true;
                         }
+                    } else if (lib.isDisabled()) {
+                        // library was enabled in config file
+                        lib.setDisabled(false);
                     }
-                    if (lib instanceof DriverLibraryMavenArtifact) {
-                        ((DriverLibraryMavenArtifact) lib).setIgnoreDependencies(CommonUtils.toBoolean(atts.getValue("ignore-dependencies")));
-                        ((DriverLibraryMavenArtifact) lib).setLoadOptionalDependencies(CommonUtils.toBoolean(atts.getValue("load-optional-dependencies")));
+                    if (lib instanceof DriverLibraryMavenArtifact mvnLibrary) {
+                        mvnLibrary.setIgnoreDependencies(CommonUtils.toBoolean(atts.getValue("ignore-dependencies")));
+                        mvnLibrary.setLoadOptionalDependencies(CommonUtils.toBoolean(atts.getValue("load-optional-dependencies")));
                     }
                     curLibrary = lib;
                     break;

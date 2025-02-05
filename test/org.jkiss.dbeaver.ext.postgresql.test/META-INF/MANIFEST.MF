@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver PostgreSQL Tests
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql.test
-Bundle-Version: 1.0.105.qualifier
-Bundle-Release-Date: 20250203
+Bundle-Version: 1.0.106.qualifier
+Bundle-Release-Date: 20250217
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
