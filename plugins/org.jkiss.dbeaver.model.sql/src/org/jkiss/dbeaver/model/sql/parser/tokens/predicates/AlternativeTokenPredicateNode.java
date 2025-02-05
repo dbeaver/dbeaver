@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 /**
  * Represents node of token predicate describing one possible of alternatives of token subsequences
  */
-class AlternativeTokenPredicateNode extends GroupTokenPredicatesNode {
+public class AlternativeTokenPredicateNode extends GroupTokenPredicatesNode {
     public AlternativeTokenPredicateNode(TokenPredicateNode... childs) {
         super(childs);
     }
