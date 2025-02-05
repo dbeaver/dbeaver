@@ -180,11 +180,11 @@ public class SQLQueryModel extends SQLQueryNodeModel {
         }
 
         SQLQuerySymbolOrigin symbolsOrigin = lexicalItem == null ? null : lexicalItem.getOrigin();
-        if (symbolsOrigin == null && scope != null) {
-            symbolsOrigin = scope.getSymbolsOrigin();
-        }
         if (symbolsOrigin == null && textOffset > this.getInterval().b) {
             symbolsOrigin = this.getTailOrigin();
+        }
+        if (symbolsOrigin == null && scope != null) {
+            symbolsOrigin = scope.getSymbolsOrigin();
         }
 
         return new LexicalContextResolutionResult(textOffset, nearestResultContext, context, lexicalItem, symbolsOrigin);

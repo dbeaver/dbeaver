@@ -14,15 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.fs.event;
+package org.jkiss.dbeaver.ui.views.qm;
 
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 
-public interface DBFEventListener {
-
-    /**
-     * Handle file system event
-     */
-    void handleFileSystemEvent(@NotNull DBFEvent event);
-
+public interface QueryManagerViewFilter {
+    void createControl(@NotNull Composite parent, @NotNull QueryLogViewer viewer);
 }

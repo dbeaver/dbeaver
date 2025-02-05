@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,9 @@ import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarHandler;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 
 import java.util.HashSet;
@@ -190,51 +188,14 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
 
     @Override
     public void partActivated(IWorkbenchPart part) {
-        activatePartContexts(part);
+        EditorUtils.activatePartContexts(part);
 //        log.info(part.getClass().getSimpleName() + " ACTIVATED: " + contextService.getActiveContextIds());
-    }
-
-    void activatePartContexts(IWorkbenchPart part) {
-        IContextService contextService = PlatformUI.getWorkbench().getService(IContextService.class);
-        if (contextService == null) {
-            return;
-        }
-        try {
-            contextService.deferUpdates(true);
-//            if (part instanceof INavigatorModelView) {
-                // We check for instanceof (do not use adapter) because otherwise it become active
-                // for all entity editor and clashes with SQL editor and other complex stuff.
-//                if (activationNavigator != null) {
-//                    //log.debug("Double activation of navigator context");
-//                    contextService.deactivateContext(activationNavigator);
-//                }
-//                activationNavigator = contextService.activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
-//            }
-
-            // What the point of setting SQL editor context here? It is set by editor itself
-//            if (part instanceof SQLEditorBase || part.getAdapter(SQLEditorBase.class) != null) {
-//                if (activationSQL != null) {
-//                    //log.debug("Double activation of SQL context");
-//                    contextService.deactivateContext(activationSQL);
-//                }
-//                activationSQL = contextService.activateContext(SQLEditorContributions.SQL_EDITOR_CONTEXT);
-//            }
-            // Refresh auto-commit element state (#3315)
-            // Refresh OpenSeparateConnection
-            ActionUtils.fireCommandRefresh(ConnectionCommands.CMD_TOGGLE_AUTOCOMMIT, SQLEditorCommands.CMD_TOGGLE_SEPARATE_CONNECTION);
-        }
-        finally {
-            contextService.deferUpdates(false);
-        }
     }
 
     @Override
     public void partDeactivated(IWorkbenchPart part) {
-        deactivatePartContexts(part);
+        EditorUtils.deactivatePartContexts(part);
 //        log.info(part.getClass().getSimpleName() + " DEACTIVATED: " + contextService.getActiveContextIds());
-    }
-
-    void deactivatePartContexts(IWorkbenchPart part) {
     }
 
     @Override

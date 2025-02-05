@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
@@ -145,11 +145,12 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
     void readLocalClientInfo() {
         WizardPage currentPage = (WizardPage) getStartingPage();
 
-        if (isNativeClientHomeRequired()) {
-            String clientHomeId = getSettings().getDataSourceContainer().getConnectionConfiguration().getClientHomeId();
-            List<DBPNativeClientLocation> nativeClientLocations = getSettings().getDataSourceContainer().getDriver().getNativeClientLocations();
+        DBPDataSourceContainer dataSourceContainer = getSettings().getDataSourceContainer();
+        if (isNativeClientHomeRequired() && dataSourceContainer != null) {
+            String clientHomeId = dataSourceContainer.getConnectionConfiguration().getClientHomeId();
+            List<DBPNativeClientLocation> nativeClientLocations = dataSourceContainer.getDriver().getNativeClientLocations();
             if (CommonUtils.isEmpty(clientHomeId)) {
-                if (nativeClientLocations != null && !nativeClientLocations.isEmpty()) {
+                if (!nativeClientLocations.isEmpty()) {
                     settings.setClientHome(nativeClientLocations.get(0));
                 } else {
                     settings.setClientHome(null);

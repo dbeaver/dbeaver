@@ -14,15 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.fs.event;
+package org.jkiss.dbeaver.ui.navigator;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 
-public interface DBFEventListener {
+public class SimpleNavigatorTreeFilter implements INavigatorFilter {
+    @Override
+    public boolean filterFolders() {
+        return false;
+    }
 
-    /**
-     * Handle file system event
-     */
-    void handleFileSystemEvent(@NotNull DBFEvent event);
+    @Override
+    public boolean isLeafObject(Object object) {
+        return object instanceof DBNNode node && !node.hasChildren(true);
+    }
 
+    @Override
+    public boolean filterObjectByPattern(Object object) {
+        // Filter only leaf items
+        return isLeafObject(object);
+    }
+
+    @Override
+    public boolean select(Object toTest) {
+        return true;
+    }
 }
