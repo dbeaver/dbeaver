@@ -114,17 +114,6 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     }
 
     @Override
-    public int findAndSelect(
-        int widgetOffset,
-        @NotNull String findString,
-        boolean searchForward,
-        boolean caseSensitive,
-        boolean wholeWord
-    ) {
-        return findAndSelect(widgetOffset, findString, searchForward, caseSensitive, wholeWord, false);
-    }
-
-    @Override
     public Point getSelection() {
         final SpreadsheetPresentation owner = getActiveSpreadsheet();
         if (owner == null) {
@@ -160,11 +149,6 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     }
 
     @Override
-    public void replaceSelection(String text) {
-        replaceSelection(text, false);
-    }
-
-    @Override
     public void beginSession() {
         synchronized (REDRAW_SYNC) {
             updatedRows.clear();
@@ -189,6 +173,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         }
         this.sessionActive = false;
         this.searchPattern = null;
+        this.firstSearchInSession = true;
         Control control = owner.getControl();
         if (control != null && !control.isDisposed()) {
             owner.getSpreadsheet().deselectAll();
@@ -248,6 +233,127 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     @Override
     public void setReplaceAllMode(boolean replaceAll) {
         this.replaceAll = replaceAll;
+    }
+
+    @Override
+    public void replaceSelection(String text) {
+        replaceSelection(text, false);
+    }
+
+    @Override
+    public void replaceSelection(
+        @NotNull String text,
+        boolean regExReplace
+    ) {
+        final SpreadsheetPresentation owner = getActiveSpreadsheet();
+        if (owner == null) {
+            return;
+        }
+
+        // Lazy initialization of search pattern
+        if (searchPattern == null && !currentFindString.isEmpty()) {
+            searchPattern = createSearchPattern(
+                currentFindString,
+                currentCaseSensitive,
+                currentWholeWord,
+                currentRegEx
+            );
+        }
+
+        GridPos selection = owner.getSelection().getFirstElement();
+        if (selection == null) {
+            return;
+        }
+
+        GridCell cell = owner.getSpreadsheet().posToCell(selection);
+        if (cell == null) {
+            return;
+        }
+
+        ResultSetCellLocation cellLocation = owner.getCellLocation(cell);
+        String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(
+            cell.col, cell.row, true));
+        String newValue = oldValue;
+
+
+        if (searchPattern != null) {
+            newValue = searchPattern.matcher(oldValue).replaceAll(text);
+        }
+
+        try {
+            if (oldValue.equals(newValue)) {
+                return;
+            }
+
+            Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(
+                cell.col, cell.row, false);
+
+            if (originalValue instanceof DBDContent content) {
+                // Special handling for content/blob values
+                content.updateContents(new VoidProgressMonitor(), new StringContentStorage(newValue));
+                new ResultSetValueController(owner.getController(), cellLocation, IValueController.EditType.NONE, null)
+                    .updateValue(originalValue, !replaceAll);
+            } else {
+                // Standard value update
+                owner.getController().updateCellValue(
+                    cellLocation.getAttribute(),
+                    cellLocation.getRow(),
+                    cellLocation.getRowIndexes(),
+                    newValue,
+                    !replaceAll);
+            }
+        } catch (DBException e) {
+            log.error("Error updating cell value", e);
+        } finally {
+            if (replaceAll) {
+                searchPattern = null;
+                currentFindString = "";
+            }
+        }
+
+        GridPos currentPos = owner.getSpreadsheet().getFocusPos();
+        storeLastFoundPosition(currentPos);
+        if (!replaceAll) {
+            owner.getController().redrawData(true, true);
+            synchronized (REDRAW_SYNC) {
+                updatedAttributes.add(cellLocation.getAttribute());
+                updatedRows.add(cellLocation.getRow());
+                if (redrawJob == null) {
+                    redrawJob = new AbstractJob("Redraw grid after replace") {
+                        @Override
+                        protected IStatus run(DBRProgressMonitor monitor) {
+                            Set<DBDAttributeBinding> attrs;
+                            Set<DBDValueRow> rows;
+                            synchronized (REDRAW_SYNC) {
+                                attrs = new LinkedHashSet<>(updatedAttributes);
+                                rows = new LinkedHashSet<>(updatedRows);
+                                updatedAttributes.clear();
+                                updatedRows.clear();
+                                redrawJob = null;
+                            }
+                            UIUtils.syncExec(() -> {
+                                owner.getController().refreshHintCache(attrs, rows, null);
+                                owner.getController().redrawData(false, true);
+                                owner.getController().updatePanelsContent(false);
+                            });
+                            return Status.OK_STATUS;
+                        }
+                    };
+                    redrawJob.schedule(150);
+                }
+            }
+        }
+    }
+
+    @Override
+    public int findAndSelect(
+        int widgetOffset,
+        @NotNull String findString,
+        boolean searchForward,
+        boolean caseSensitive,
+        boolean wholeWord
+    ) {
+        return findAndSelect(widgetOffset, findString, searchForward, caseSensitive, wholeWord, false);
     }
 
     @Override
@@ -340,112 +446,13 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         return -1; // No matches found
     }
 
-    @Override
-    public void replaceSelection(
-        @NotNull String text,
-        boolean regExReplace
-    ) {
-        final SpreadsheetPresentation owner = getActiveSpreadsheet();
-        if (owner == null) {
-            return;
-        }
-
-        // Lazy initialization of search pattern
-        if (searchPattern == null && !currentFindString.isEmpty()) {
-            searchPattern = createSearchPattern(
-                currentFindString,
-                currentCaseSensitive,
-                currentWholeWord,
-                currentRegEx
-            );
-        }
-
-        GridPos selection = owner.getSelection().getFirstElement();
-        if (selection == null) {
-            return;
-        }
-
-        GridCell cell = owner.getSpreadsheet().posToCell(selection);
-        if (cell == null) {
-            return;
-        }
-
-        ResultSetCellLocation cellLocation = owner.getCellLocation(cell);
-        String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(
-            cell.col, cell.row, true));
-        String newValue = oldValue;
-
-        if (searchPattern != null) {
-            newValue = searchPattern.matcher(oldValue).replaceAll(text);
-        }
-
-        try {
-            if (oldValue.equals(newValue)) {
-                return;
-            }
-
-            Object originalValue = owner.getSpreadsheet().getContentProvider().getCellValue(
-                cell.col, cell.row, false);
-
-            if (originalValue instanceof DBDContent content) {
-                // Special handling for content/blob values
-                content.updateContents(new VoidProgressMonitor(), new StringContentStorage(newValue));
-                new ResultSetValueController(owner.getController(), cellLocation, IValueController.EditType.NONE, null)
-                    .updateValue(originalValue, !replaceAll);
-            } else {
-                // Standard value update
-                owner.getController().updateCellValue(
-                    cellLocation.getAttribute(),
-                    cellLocation.getRow(),
-                    cellLocation.getRowIndexes(),
-                    newValue,
-                    !replaceAll);
-            }
-        } catch (DBException e) {
-            log.error("Error updating cell value", e);
-        }
-
-        GridPos currentPos = owner.getSpreadsheet().getFocusPos();
-        storeLastFoundPosition(currentPos);
-        if (!replaceAll) {
-            owner.getController().redrawData(true, true);
-            synchronized (REDRAW_SYNC) {
-                updatedAttributes.add(cellLocation.getAttribute());
-                updatedRows.add(cellLocation.getRow());
-                if (redrawJob == null) {
-                    redrawJob = new AbstractJob("Redraw grid after replace") {
-                        @Override
-                        protected IStatus run(DBRProgressMonitor monitor) {
-                            Set<DBDAttributeBinding> attrs;
-                            Set<DBDValueRow> rows;
-                            synchronized (REDRAW_SYNC) {
-                                attrs = new LinkedHashSet<>(updatedAttributes);
-                                rows = new LinkedHashSet<>(updatedRows);
-                                updatedAttributes.clear();
-                                updatedRows.clear();
-                                redrawJob = null;
-                            }
-                            UIUtils.syncExec(() -> {
-                                owner.getController().refreshHintCache(attrs, rows, null);
-                                owner.getController().redrawData(false, true);
-                                owner.getController().updatePanelsContent(false);
-                            });
-                            return Status.OK_STATUS;
-                        }
-                    };
-                    redrawJob.schedule(150);
-                }
-            }
-        }
-    }
-
     private Pattern createSearchPattern(
         @NotNull String findString,
         boolean caseSensitive,
         boolean wholeWord,
         boolean regEx
     ) {
-        if (findString == null || findString.isEmpty()) {
+        if (findString.isEmpty()) {
             return null;
         }
 
