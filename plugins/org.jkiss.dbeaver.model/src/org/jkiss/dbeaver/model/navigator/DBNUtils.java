@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
@@ -48,6 +51,7 @@ import java.util.*;
 public class DBNUtils {
 
     private static final Log log = Log.getLog(DBNUtils.class);
+    private static final String FILE_DATABASES_FOLDER = "File databases";
 
     public static DBNDatabaseNode getNodeByObject(DBSObject object) {
         DBNModel model = getNavigatorModel(object);
@@ -329,6 +333,47 @@ public class DBNUtils {
             }
         }
         return DBNUtils.getNodeByObject(monitor, objectToOpen, true);
+    }
+
+    @Nullable
+    public static DBPDataSourceContainer createTemporaryDataSourceContainer(
+        String connectionName,
+        DBPProject project,
+        DBPDriver driver,
+        DBPConnectionConfiguration configuration
+    ) {
+        DBPDataSourceRegistry registry = project.getDataSourceRegistry();
+        String connectionId = "file_database_" + CommonUtils.truncateString(CommonUtils.escapeIdentifier(configuration.getDatabaseName()), 48) + "_" + UUID.randomUUID();
+        DBPDataSourceContainer dsContainer = registry.getDataSource(connectionId);
+        if (dsContainer == null) {
+            dsContainer = registry.createDataSource(connectionId, driver, configuration);
+            int conNameSuffix = 1;
+            connectionName = "File - " + CommonUtils.truncateString(connectionName, 64);
+            String finalConnectionName = connectionName;
+            while (registry.findDataSourceByName(finalConnectionName) != null) {
+                conNameSuffix++;
+                finalConnectionName = connectionName + " " + conNameSuffix;
+            }
+            dsContainer.setName(finalConnectionName);
+            dsContainer.setTemporary(true);
+            DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
+            DBNModel navigatorModel = project.getNavigatorModel();
+            if (navigatorModel != null) {
+                DBNProject projectNode = navigatorModel.getRoot().getProjectNode(project);
+                if (projectNode != null) {
+                    projectNode.getDatabases().getFolderNode(folder);
+                }
+            }
+            dsContainer.setFolder(folder);
+
+            try {
+                registry.addDataSource(dsContainer);
+            } catch (DBException e) {
+                log.error(e);
+                return null;
+            }
+        }
+        return dsContainer;
     }
 
     private static void getConnectionEntities(

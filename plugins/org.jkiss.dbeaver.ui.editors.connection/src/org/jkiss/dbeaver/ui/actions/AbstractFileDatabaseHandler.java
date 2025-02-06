@@ -23,25 +23,23 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Database file handler
@@ -49,7 +47,6 @@ import java.util.UUID;
 public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
 
     private static final Log log = Log.getLog(AbstractFileDatabaseHandler.class);
-    private static final String FILE_DATABASES_FOLDER = "File databases";
 
     @Override
     public void openFiles(
@@ -85,36 +82,9 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
         DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
         configuration.setDatabaseName(databaseName);
 
-        DBPDataSourceRegistry registry = project.getDataSourceRegistry();
-        String connectionId = "file_database_" + CommonUtils.truncateString(CommonUtils.escapeIdentifier(databaseName), 48) + "_" + UUID.randomUUID();
-        DBPDataSourceContainer dsContainer = registry.getDataSource(connectionId);
+        DBPDataSourceContainer dsContainer = DBNUtils.createTemporaryDataSourceContainer(connectionName, project, driver, configuration);
         if (dsContainer == null) {
-            dsContainer = registry.createDataSource(connectionId, driver, configuration);
-            int conNameSuffix = 1;
-            connectionName = "File - " + CommonUtils.truncateString(connectionName, 64);
-            String finalConnectionName = connectionName;
-            while (registry.findDataSourceByName(finalConnectionName) != null) {
-                conNameSuffix++;
-                finalConnectionName = connectionName + " " + conNameSuffix;
-            }
-            dsContainer.setName(finalConnectionName);
-            dsContainer.setTemporary(true);
-            DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
-            DBNModel navigatorModel = project.getNavigatorModel();
-            if (navigatorModel != null) {
-                DBNProject projectNode = navigatorModel.getRoot().getProjectNode(project);
-                if (projectNode != null) {
-                    projectNode.getDatabases().getFolderNode(folder);
-                }
-            }
-            dsContainer.setFolder(folder);
-
-            try {
-                registry.addDataSource(dsContainer);
-            } catch (DBException e) {
-                log.error(e);
-                return;
-            }
+            return;
         }
 
         try {
