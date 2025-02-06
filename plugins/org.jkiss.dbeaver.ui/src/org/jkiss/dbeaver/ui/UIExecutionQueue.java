@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.ui.internal.progress.ProgressManager;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
@@ -57,9 +59,12 @@ public class UIExecutionQueue {
     private static void executeInUI() {
         Runnable nextJob;
         synchronized (execQueue) {
+            boolean workbenchStarted = DBWorkbench.getPlatform() instanceof DBPPlatformDesktop pd && pd.isWorkbenchStarted();
             ProgressManager progressManager = ProgressManager.getInstance();
-            if (runCount > 0 || !ArrayUtils.isEmpty(progressManager.getJobInfos(false))) {
-                // If job is running or some Eclipse job is active in UI thread then retry later
+            if (runCount > 0 || !workbenchStarted || !ArrayUtils.isEmpty(progressManager.getJobInfos(false))) {
+                // If workbench wasn't fully started or
+                // job is running or
+                // some Eclipse job is active in UI thread then retry later
                 UIUtils.asyncExec(UIExecutionQueue::executeInUI);
                 return;
             }
