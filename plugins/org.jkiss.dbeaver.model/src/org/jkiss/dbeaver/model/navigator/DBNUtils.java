@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -135,7 +136,7 @@ public class DBNUtils {
             {
                 if (isResources) {
                     Arrays.sort(children, NodeFolderComparator.INSTANCE);
-                } else if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY) || isMergedEntity(firstChild)) {
+                } else if (isSortingRequired(prefStore, firstChild) || isMergedEntity(firstChild)) {
                     if (!(firstChild instanceof DBNContainer)) {
                         Arrays.sort(children, NodeNameComparator.INSTANCE);
                     }
@@ -145,6 +146,17 @@ public class DBNUtils {
             }
         }
 
+    }
+
+    private static boolean isSortingRequired(DBPPreferenceStore prefStore,  DBNNode child) {
+        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
+            return true;
+        } else if (child instanceof DBNDatabaseItem item) {
+            DBSObject object = item.getObject();
+            return !(object instanceof DBSTableColumn);
+        } else {
+            return false;
+        }
     }
 
     private static boolean isMergedEntity(DBNNode node) {
