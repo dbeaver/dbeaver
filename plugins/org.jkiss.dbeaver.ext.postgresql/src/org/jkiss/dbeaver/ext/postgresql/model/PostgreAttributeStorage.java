@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import java.util.Arrays;
+
 /**
  * PostgreAttributeStorage
  */
@@ -32,6 +34,10 @@ public enum PostgreAttributeStorage {
         this.code = code;
     }
 
+    protected boolean isSupported(PostgreDataSource dataSource) {
+        return (! this.code.equals("?")) || dataSource.isServerVersionAtLeast(16, 0);
+    }
+
     public String getCode() {
         return code;
     }
@@ -44,4 +50,10 @@ public enum PostgreAttributeStorage {
         }
         return DEFAULT;
     }
+
+    public static PostgreAttributeStorage[] getValues(PostgreDataSource dataSource) {
+        return Arrays.stream(values())
+            .filter(e -> e.isSupported(dataSource))
+            .toArray(PostgreAttributeStorage[]::new);
+    } 
 }

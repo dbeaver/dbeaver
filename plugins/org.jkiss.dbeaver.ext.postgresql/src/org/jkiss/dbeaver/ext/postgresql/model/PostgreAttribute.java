@@ -553,7 +553,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
         @Override
         public Object[] getPossibleValues(PostgreAttribute object) {
-            return PostgreAttributeStorage.values();
+            return PostgreAttributeStorage.getValues(object.getDataSource());
         }
     }
 

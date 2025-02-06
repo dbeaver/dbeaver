@@ -156,7 +156,6 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     {
         ColumnModifier[] modifiers = {
             PostgreDataTypeModifier,
-            PostgreStorageModifier,
             PostgreDefaultModifier,
             PostgreIdentityModifier,
             PostgreCollateModifier,
@@ -167,6 +166,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         }
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
             modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, PostgreCommentModifier);
+        }
+        if (column.getDataSource().isServerVersionAtLeast(16, 0)) {
+            modifiers = ArrayUtils.insertArea(ColumnModifier.class, modifiers, 1, new ColumnModifier[]{PostgreStorageModifier});
         }
         return modifiers;
     }
@@ -203,6 +205,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         String sql = "ALTER " + table.getTableTypeName() + " " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + " ADD " +
             getNestedDeclaration(monitor, table, command, options);
         actions.add(new SQLDatabasePersistAction("Create new table column", sql));
+        if (command.getObject().getStorage() != null && !table.getDataSource().isServerVersionAtLeast(16, 0)) {
+            addColumnStorageAction(actions, command.getObject());
+        }
         if (!CommonUtils.isEmpty(command.getObject().getDescription())) {
             addColumnCommentAction(actions, command.getObject());
         }
@@ -239,7 +244,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             actionList.add(new SQLDatabasePersistActionAtomic("Set column nullability", prefix + (column.isRequired() ? "SET" : "DROP") + " NOT NULL", isAtomic));
         }
         if (command.hasProperty("storage") && column.getStorage() != null) {
-            actionList.add(new SQLDatabasePersistActionAtomic("Set column storage", prefix + "SET STORAGE " + column.getStorage(), isAtomic));
+            addColumnStorageAction(actionList, column);
         }
 
         if (command.hasProperty(DBConstants.PROP_ID_DEFAULT_VALUE)) {
@@ -252,6 +257,13 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             addColumnCommentAction(actionList, column);
         }
+    }
+
+    public static void addColumnStorageAction(List<DBEPersistAction> actionList, PostgreAttribute column) {
+        PostgreTableBase table = (PostgreTableBase) column.getTable();
+        String prefix = "ALTER " + table.getTableTypeName() + " " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) +
+            " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
+        actionList.add(new SQLDatabasePersistActionAtomic("Set column storage", prefix + "SET STORAGE " + column.getStorage(), column.getDataSource().getServerType().isAlterTableAtomic()));
     }
 
     public static void addColumnCommentAction(List<DBEPersistAction> actionList, PostgreAttribute column) {
