@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -129,6 +130,29 @@ public abstract class SQLQueryCompletionItem {
         @NotNull SQLColumnNameCompletionItem first,
         @NotNull SQLColumnNameCompletionItem second) {
         return new SQLJoinConditionCompletionItem(score, filterKey, first, second);
+    }
+
+    /**
+     * Returns completion item that describes functions that comes from the dialect
+     */
+    public static SQLQueryCompletionItem forBuiltinFunction(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @NotNull String name
+    ) {
+        return new SQLBuiltinFunctionCompletionItem(score, filterKey, name);
+    }
+
+    /**
+     * Returns completion item that describes database user-created functions
+     */
+    public static SQLQueryCompletionItem forProcedureObject(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @Nullable ContextObjectInfo resolvedContext,
+        @NotNull DBSProcedure object
+    ) {
+        return new SQLProcedureCompletionItem(score, filterKey, resolvedContext, object);
     }
 
     public static class SQLRowsSourceAliasCompletionItem extends SQLQueryCompletionItem {
@@ -366,5 +390,50 @@ public abstract class SQLQueryCompletionItem {
     }
 
     public record ContextObjectInfo(@NotNull String string, @NotNull DBSObject object, boolean preventFullName) {
+    }
+
+    public static class SQLBuiltinFunctionCompletionItem extends SQLQueryCompletionItem {
+
+        @NotNull
+        public final String name;
+
+        private SQLBuiltinFunctionCompletionItem(int score, @NotNull SQLQueryWordEntry filterKey, @NotNull String name) {
+            super(score, filterKey);
+            this.name = name;
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return SQLQueryCompletionItemKind.PROCEDURE;
+        }
+
+        @Override
+        protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitBuiltinFunction(this);
+        }
+    }
+
+    public static class SQLProcedureCompletionItem extends SQLDbObjectCompletionItem<DBSProcedure> {
+
+        public SQLProcedureCompletionItem(
+            int score,
+            @NotNull SQLQueryWordEntry filterKey,
+            @Nullable ContextObjectInfo resolvedContext,
+            @NotNull DBSProcedure object
+        ) {
+            super(score, filterKey, resolvedContext, object);
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return SQLQueryCompletionItemKind.PROCEDURE;
+        }
+
+        @Override
+        protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitProcedure(this);
+        }
     }
 }
