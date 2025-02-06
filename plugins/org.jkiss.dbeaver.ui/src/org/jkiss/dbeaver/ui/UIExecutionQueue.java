@@ -65,7 +65,9 @@ public class UIExecutionQueue {
                 // If workbench wasn't fully started or
                 // job is running or
                 // some Eclipse job is active in UI thread then retry later
-                UIUtils.asyncExec(UIExecutionQueue::executeInUI);
+                if (!DBWorkbench.getPlatform().isShuttingDown()) {
+                    UIUtils.asyncExec(UIExecutionQueue::executeInUI);
+                }
                 return;
             }
             if (execQueue.isEmpty()) {
