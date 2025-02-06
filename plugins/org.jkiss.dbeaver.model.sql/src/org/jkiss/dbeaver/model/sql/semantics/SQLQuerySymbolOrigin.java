@@ -21,6 +21,9 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
+
+import java.util.Set;
 
 /**
  * The origin providing symbols occurring as identifiers in a query text (actually faced with or potential)
@@ -77,14 +80,29 @@ public abstract class SQLQuerySymbolOrigin {
      */
     public static class DbObjectFromDbObject extends SQLQuerySymbolOrigin {
 
+        @NotNull
         private final DBSObject object;
 
-        public DbObjectFromDbObject(DBSObject object) {
-            this.object = object;
+        @NotNull
+        private final Set<DBSObjectType> objectTypes;
+
+        public DbObjectFromDbObject(@NotNull DBSObject object, @NotNull DBSObjectType memberType) {
+            this(object, Set.of(memberType));
         }
 
+        public DbObjectFromDbObject(@NotNull DBSObject object, @NotNull Set<DBSObjectType> objectTypes) {
+            this.object = object;
+            this.objectTypes = objectTypes;
+        }
+
+        @NotNull
         public DBSObject getObject() {
             return this.object;
+        }
+
+        @NotNull
+        public Set<DBSObjectType> getMemberTypes() {
+            return this.objectTypes;
         }
 
         @Override
@@ -103,8 +121,35 @@ public abstract class SQLQuerySymbolOrigin {
      */
     public static class DbObjectFromContext extends DataContextSymbolOrigin {
 
-        public DbObjectFromContext(SQLQueryDataContext dataContext) {
+        @NotNull
+        private final Set<DBSObjectType> objectTypes;
+
+        private final boolean includingRowsets;
+
+        public DbObjectFromContext(
+            @NotNull SQLQueryDataContext dataContext,
+            @NotNull DBSObjectType objectType
+        ) {
+            this(dataContext, Set.of(objectType), false);
+        }
+
+        public DbObjectFromContext(
+            @NotNull SQLQueryDataContext dataContext,
+            @NotNull Set<DBSObjectType> objectTypes,
+            boolean includingRowsets
+        ) {
             super(dataContext);
+            this.objectTypes = objectTypes;
+            this.includingRowsets = includingRowsets;
+        }
+
+        @NotNull
+        public Set<DBSObjectType> getObjectTypes() {
+            return this.objectTypes;
+        }
+        
+        public boolean isIncludingRowsets() {
+            return this.includingRowsets;
         }
 
         @Override
