@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -67,16 +69,20 @@ public class GBase8sUtils {
     }
 
     public static boolean isOracleSqlMode(DBPDataSourceContainer container) {
-        final DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
+        DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
         Map<String, String> cprops = configuration.getProperties();
-        for (Map.Entry<String, String> entry : cprops.entrySet()) {
-            if (Objects.equals(entry.getKey().toLowerCase(), "sqlmode")) {
-                if (Objects.equals(entry.getValue().toString().trim().toLowerCase(), "oracle")) {
-                    return true;
-                }
+        for (String key : cprops.keySet()) {
+            if ("sqlmode".equalsIgnoreCase(key)) {
+                return "oracle".equalsIgnoreCase(cprops.get(key).trim());
             }
         }
-        return false;
+        DBPDriver driver = container.getDriver();
+        Map<String, Object> driverProps = driver.getConnectionProperties();
+        return driverProps.values().stream()
+                .filter(Objects::nonNull)
+                .map(Object::toString)
+                .map(String::trim)
+                .anyMatch(value -> "oracle".equalsIgnoreCase(value));
     }
 
     public static String listToString(List<String> value, String delimiter) {
