@@ -2025,9 +2025,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 }
                 List<DriverFileInfo> libraryFiles = new ArrayList<>();
                 for (DriverFileInfo fileInfo : libraryResolvedFiles) {
-                    Path targetFile = targetFileLocation.resolve(fileInfo.getFile());
-                    if (Files.exists(targetFile)) {
-                        libraryFiles.add(fileInfo);
+                    try {
+                        Path targetFile = targetFileLocation.resolve(fileInfo.getFile());
+
+                        if (Files.exists(targetFile)) {
+                            libraryFiles.add(fileInfo);
+                        }
+                    } catch (Exception e) {
+                        log.error("Error resolve: " + targetFileLocation + " with " + fileInfo.getFile());
+                        log.error(e.getMessage(), e);
                     }
                 }
                 if (!libraryFiles.isEmpty()) {
