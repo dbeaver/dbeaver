@@ -30,10 +30,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.BaseThemeSettings;
-import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
-import org.jkiss.dbeaver.ui.UIFonts;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.screenreaders.ScreenReader;
 import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 import org.jkiss.utils.CommonUtils;
@@ -152,7 +149,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
                 // Sample toolbar's height as it fits quite nicely.
                 ToolBar toolBar = new ToolBar(tabFolder, SWT.FLAT | SWT.RIGHT);
                 // Add a dummy item as empty toolbars are considered {0, 0} on some platforms
-                new ToolItem(toolBar, SWT.SEPARATOR);
+                new ToolItem(toolBar, SWT.PUSH).setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
                 tabFolder.setTabHeight(toolBar.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
                 toolBar.dispose();
             }
