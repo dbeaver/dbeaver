@@ -96,7 +96,7 @@ public class BreadcrumbTrim {
 
             @Override
             public void partClosed(IWorkbenchPart part) {
-                if (part instanceof IEditorPart) {
+                if (part instanceof IEditorPart && part == lastEditorPart) {
                     setLastEditorPart(null);
                 }
             }
