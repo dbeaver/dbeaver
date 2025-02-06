@@ -315,6 +315,9 @@ public class DBNUtils {
         node.dispose(reflect);
     }
 
+    /**
+     * Get default node to open. Useful in case of open flat files with one table.
+     */
     @Nullable
     public static DBNDatabaseNode getDefaultDatabaseNodeToOpen(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBException {
         List<DBSEntity> entities = new ArrayList<>();
@@ -335,6 +338,9 @@ public class DBNUtils {
         return DBNUtils.getNodeByObject(monitor, objectToOpen, true);
     }
 
+    /**
+     * Create temporary connection. Useful in case of flat files.
+     */
     @Nullable
     public static DBPDataSourceContainer createTemporaryDataSourceContainer(
         String connectionName,
@@ -343,7 +349,8 @@ public class DBNUtils {
         DBPConnectionConfiguration configuration
     ) {
         DBPDataSourceRegistry registry = project.getDataSourceRegistry();
-        String connectionId = "file_database_" + CommonUtils.truncateString(CommonUtils.escapeIdentifier(configuration.getDatabaseName()), 48) + "_" + UUID.randomUUID();
+        String connectionId = "file_database_" + CommonUtils.truncateString(CommonUtils.escapeIdentifier(configuration.getDatabaseName()),
+            48) + "_" + UUID.randomUUID();
         DBPDataSourceContainer dsContainer = registry.getDataSource(connectionId);
         if (dsContainer == null) {
             dsContainer = registry.createDataSource(connectionId, driver, configuration);
