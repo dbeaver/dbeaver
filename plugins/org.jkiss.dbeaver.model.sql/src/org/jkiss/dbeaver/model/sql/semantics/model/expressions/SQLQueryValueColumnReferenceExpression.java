@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
@@ -190,6 +192,7 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
 
             SourceResolutionResult rowsSourceIfAllowed;
             SQLQuerySymbolDefinition rowsSourceDef;
+            DBSObject dbObject;
             SQLQuerySymbolClass forcedClass = null;
             if (resultColumn == null) {
                 rowsSourceIfAllowed = rowRefAllowed
@@ -201,8 +204,14 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                         : rowsSourceIfAllowed.source instanceof SQLQueryRowsTableDataModel tableModel && tableModel.getName() != null
                         ? tableModel.getName().entityName
                         : null;
+                    dbObject = null;
                 } else {
                     rowsSourceDef = null;
+                    dbObject = context.findRealObject(
+                        statistics.getMonitor(),
+                        RelationalObjectType.TYPE_UNKNOWN,
+                        List.of(columnName.getName())
+                    );
                 }
 
                 if (rowsSourceDef == null && columnName.isNotClassified()) {
@@ -215,12 +224,15 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                 }
             } else {
                 rowsSourceDef = null; // TODO check actual priority between columnRef and tableRef
+                dbObject = null;
                 rowsSourceIfAllowed = null;
             }
 
-            if (rowsSourceDef != null) {
+            if (dbObject != null) {
+                columnName.setDefinition(new SQLQuerySymbolByDbObjectDefinition(dbObject, SQLQuerySymbolClass.UNKNOWN));
+                type = null;
+            } else if (rowsSourceDef != null) {
                 columnName.setDefinition(rowsSourceDef);
-                columnName.setOrigin(columnRefOrigin);
                 type = SQLQueryExprType.forReferencedRow(columnName, rowsSourceIfAllowed);
             } else if (forcedClass != null) {
                 columnName.getSymbol().setSymbolClass(forcedClass);
@@ -230,6 +242,10 @@ public class SQLQueryValueColumnReferenceExpression extends SQLQueryValueExpress
                     propagateColumnDefinition(columnName, resultColumn, statistics, columnRefOrigin);
                 }
                 type = resultColumn != null ? resultColumn.type : null;
+            }
+
+            if (columnName.getOrigin() == null) {
+                columnName.setOrigin(columnRefOrigin);
             }
         }
 

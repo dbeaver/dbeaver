@@ -85,7 +85,7 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
     ) throws DBException {
         List<GenericSchema> schemas = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SHOW DATABASES IN " + catalog.getName()
+            "SHOW SCHEMAS IN " + catalog.getName()
         )) {
             dbStat.executeStatement();
             try (JDBCResultSet dbResult = dbStat.getResultSet()) {
@@ -95,7 +95,8 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
                 }
             }
         } catch (SQLException e) {
-            log.error("Cannot load schemas", e);
+            log.debug("Cannot load schemas with query", e);
+            return super.loadSchemas(session, dataSource, catalog);
         }
 
         return schemas;

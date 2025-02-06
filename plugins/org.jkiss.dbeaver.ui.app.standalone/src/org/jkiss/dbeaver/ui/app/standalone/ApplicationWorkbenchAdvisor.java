@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
@@ -274,6 +275,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
                 desktop.addAppEventListener(systemSleepListener);
             }
         }
+
+        if (DBWorkbench.getPlatform() instanceof DBPPlatformDesktop platformDesktop) {
+            platformDesktop.setWorkbenchStarted(true);
+        }
     }
 
     @Override
@@ -393,6 +398,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             // Dispose navigator model earlier because it may lock some UI resources
             // and we want to free them before application display will be disposed
             basePlatform.disposeNavigatorModel();
+        }
+        if (DBWorkbench.getPlatform() instanceof DBPPlatformDesktop platformDesktop) {
+            platformDesktop.setWorkbenchStarted(false);
         }
     }
 

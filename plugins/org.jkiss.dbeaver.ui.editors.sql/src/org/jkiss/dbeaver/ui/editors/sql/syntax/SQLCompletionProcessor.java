@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionActivityTracker;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
+import org.jkiss.dbeaver.model.sql.completion.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
@@ -55,10 +52,7 @@ import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -66,8 +60,7 @@ import java.util.stream.Collectors;
  * The SQL content assist processor. This content assist processor proposes text
  * completions and computes context information for a SQL content type.
  */
-public class SQLCompletionProcessor implements IContentAssistProcessor
-{
+public class SQLCompletionProcessor implements IContentAssistProcessor {
     private static final Log log = Log.getLog(SQLCompletionProcessor.class);
 
     private static final IContextInformationValidator VALIDATOR = new Validator();
@@ -133,7 +126,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             document,
             documentOffset,
             editor.extractQueryAtPos(documentOffset),
-            simpleMode);
+            simpleMode
+        );
         SQLWordPartDetector wordDetector = request.getWordDetector();
 
 
@@ -178,12 +172,33 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
                     DBPPreferenceStore store = this.editor.getActivePreferenceStore();
                     SQLAutocompletionMode mode = SQLAutocompletionMode.fromPreferences(store);
-                    boolean useNewCompletionEngine = mode.useNewAnalyzer && store.getBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE)
+                    boolean useNewCompletionEngine = mode.useNewAnalyzer
+                        && store.getBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE)
                         && store.getBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS);
 
                     // UIUtils.waitJobCompletion(..) uses job.isFinished() which is not dropped on reschedule,
                     // so we should be able to recreate the whole job object including all its non-reusable dependencies.
                     List<Supplier<ProposalsComputationJobHolder>> completionJobSuppliers = new ArrayList<>();
+
+                    if (useNewCompletionEngine) {
+                        // new analyzer is reusable
+                        SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(
+                            this.editor,
+                            request,
+                            completionRequestPosition
+                        );
+                        completionJobSuppliers.add(() -> new ProposalsComputationJobHolder(new NewProposalSearchJob(newAnalyzer)) {
+                            @Override
+                            public List<?> getProposals() {
+                                return newAnalyzer.getResult();
+                            }
+
+                            @Override
+                            public Integer getProposalsOriginOffset() {
+                                return newAnalyzer.getActualContextOffset();
+                            }
+                        });
+                    }
 
                     if (request.getWordPart() != null && mode.useOldAnalyzer || !useNewCompletionEngine) {
                         if (dataSource != null) {
@@ -210,22 +225,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         }
                     }
 
-                    if (useNewCompletionEngine) {
-                        // new analyzer is reusable
-                        SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(this.editor, request, completionRequestPosition);
-                        completionJobSuppliers.add(() -> new ProposalsComputationJobHolder(new NewProposalSearchJob(newAnalyzer)) {
-                            @Override
-                            public List<?> getProposals() {
-                                return newAnalyzer.getResult();
-                            }
-
-                            @Override
-                            public Integer getProposalsOriginOffset() {
-                                return newAnalyzer.getActualContextOffset();
-                            }
-                        });
-                    }
-
                     proposals = this.computeProposalsWithJobs(request, completionRequestPosition, completionJobSuppliers);
                     break;
                 default:
@@ -234,7 +233,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
 
             int actualCompletionOffset = completionRequestPosition.getOffset();
-            List<ICompletionProposal> result = new ArrayList<>(proposals.size());
+            LinkedHashSet<ICompletionProposal> result = new LinkedHashSet<>(proposals.size());
             if (actualCompletionOffset != request.getDocumentOffset()) {
                 for (Object cp : proposals) {
                     if (cp instanceof ICompletionProposal proposal && (
