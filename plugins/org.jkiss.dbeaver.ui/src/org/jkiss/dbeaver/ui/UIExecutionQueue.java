@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,11 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.ui;
+
+import org.eclipse.ui.internal.progress.ProgressManager;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +59,15 @@ public class UIExecutionQueue {
     private static void executeInUI() {
         Runnable nextJob;
         synchronized (execQueue) {
-            if (runCount > 0) {
-                UIUtils.asyncExec(UIExecutionQueue::executeInUI);
+            boolean workbenchStarted = DBWorkbench.getPlatform() instanceof DBPPlatformDesktop pd && pd.isWorkbenchStarted();
+            ProgressManager progressManager = ProgressManager.getInstance();
+            if (runCount > 0 || !workbenchStarted || !ArrayUtils.isEmpty(progressManager.getJobInfos(false))) {
+                // If workbench wasn't fully started or
+                // job is running or
+                // some Eclipse job is active in UI thread then retry later
+                if (!DBWorkbench.getPlatform().isShuttingDown()) {
+                    UIUtils.asyncExec(UIExecutionQueue::executeInUI);
+                }
                 return;
             }
             if (execQueue.isEmpty()) {

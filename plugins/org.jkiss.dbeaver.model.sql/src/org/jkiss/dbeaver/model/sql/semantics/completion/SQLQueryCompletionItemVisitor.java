@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,4 +42,16 @@ public interface SQLQueryCompletionItemVisitor<R> {
 
     @Nullable
     R visitJoinCondition(@NotNull SQLJoinConditionCompletionItem joinCondition);
+
+    /**
+     * Visit method for user-defned procedures
+     */
+    @Nullable
+    R visitProcedure(@NotNull SQLProcedureCompletionItem procedure);
+
+    /**
+     * Visit method for dialect specific builtin functions
+     */
+    @Nullable
+    R visitBuiltinFunction(@NotNull SQLBuiltinFunctionCompletionItem function);
 }
