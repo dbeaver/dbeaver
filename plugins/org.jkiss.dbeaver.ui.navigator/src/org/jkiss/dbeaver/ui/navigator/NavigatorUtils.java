@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
@@ -61,7 +60,6 @@ import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
@@ -537,24 +535,23 @@ public class NavigatorUtils {
 
     public static void openNavigatorNode(Object node, IWorkbenchWindow window, Map<?, ?> parameters) {
         try {
-            IResource resource = node instanceof IAdaptable ? ((IAdaptable) node).getAdapter(IResource.class) : null;
-            if (resource instanceof IFile file) {
-                if ("sql".equals(file.getFileExtension())) {
-                    UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-                    if (serviceSQL != null) {
-                        serviceSQL.openResource(resource);
-                    }
-                } else {
-                    if (node instanceof DBNPathBase dbnPath) {
-                        if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null)) {
-                            openResourceWithHandler(file, resource);
-                        }
+            if (node instanceof DBNResource resource) {
+                DBPResourceHandler resourceHandler = resource.getHandler();
+                resourceHandler.openResource(resource.getResource());
+            } else if (node instanceof DBNPathBase dbnPath) {
+                if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null)) {
+                    // Try resource handler
+                    IResource resource = dbnPath.getAdapter(IResource.class);
+                    if (resource instanceof IFile file) {
+                        openResourceWithHandler(file);
                     } else {
-                        openResourceWithHandler(file, resource);
+                        throw new DBException("Do not know how to open path '" + dbnPath.getNodeDisplayName() + "'");
                     }
                 }
-            } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
+            } else if (node instanceof DBNNode baseNode && baseNode.allowsOpen()) {
                 openEntityEditor(node, window, parameters);
+            } else {
+                throw new DBException("Do not know how to open node '" + node + "'");
             }
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
@@ -564,10 +561,12 @@ public class NavigatorUtils {
         }
     }
 
-    private static void openResourceWithHandler(IFile file, IResource resource) throws CoreException, DBException {
-        DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(resource);
+    private static void openResourceWithHandler(IFile file) throws CoreException, DBException {
+        DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(file);
         if (handler != null) {
             handler.openResource(file);
+        } else {
+            throw new DBException("Cannot find resource handler for " + file);
         }
     }
 

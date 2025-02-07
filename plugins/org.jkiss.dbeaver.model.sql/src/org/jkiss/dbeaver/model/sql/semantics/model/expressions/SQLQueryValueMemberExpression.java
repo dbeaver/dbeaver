@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
@@ -81,7 +82,17 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
         if (this.identifier == null) {
             this.type = SQLQueryExprType.UNKNOWN;
             if (this.memberAccessEntry != null) {
-                this.memberAccessEntry.setOrigin(memberOrigin);
+                if (this.owner instanceof SQLQueryValueColumnReferenceExpression c && c.getColumnName() != null
+                    && c.getColumnName().getDefinition() instanceof SQLQuerySymbolByDbObjectDefinition dbObj
+                ) {
+                    // TODO refactor column reference recognition to include this case
+                    this.memberAccessEntry.setOrigin(
+                        new SQLQuerySymbolOrigin.DbObjectFromDbObject(dbObj.getDbObject(),
+                            RelationalObjectType.TYPE_UNKNOWN)
+                    );
+                } else {
+                    this.memberAccessEntry.setOrigin(memberOrigin);
+                }
             }
         } else if (this.identifier.isNotClassified()) {
             SQLQueryExprType type = tryResolveMemberReference(statistics, this.owner.getValueType(), this.identifier, memberOrigin);
