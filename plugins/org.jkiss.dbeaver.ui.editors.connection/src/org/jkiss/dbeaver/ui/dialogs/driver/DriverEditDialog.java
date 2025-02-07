@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -892,20 +892,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
             provider.addDriver(driver);
         }
         provider.getRegistry().saveDrivers();
-
-        if (DBWorkbench.isDistributed()) {
-            try {
-                UIUtils.runInProgressDialog(monitor -> {
-                    try {
-                        driver.getDriverInstance(monitor);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
-            } catch (Exception e) {
-                DBWorkbench.getPlatformUI().showError("Error resolving driver files", "Driver cannot be instantiated", e);
-            }
-        }
 
         super.okPressed();
     }
