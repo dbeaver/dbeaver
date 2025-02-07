@@ -60,10 +60,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ((GridData)authModelSelector.getLayoutData()).horizontalSpan = hSpan;
 
-        if (DBWorkbench.getPlatform()
-            .getWorkspace()
-            .hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)
-        ) {
+        if (site.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
             // Additional auth controls
             serviceConnectionEditor = DBWorkbench.getService(UIServiceConnectionEditor.class);
             if (serviceConnectionEditor != null) {
