@@ -102,8 +102,8 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                             IFileTypeHandler handler = fthd.createHandler();
                             handler.openFiles(Collections.singletonList(path), Map.of(), null);
                             return;
-                        } catch (Exception e) {
-                            // ignore
+                        } catch (ReflectiveOperationException e) {
+                            throw new DBException("Cannot create file handler", e);
                         }
                     }
                 }
@@ -142,7 +142,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                         }
                         return tempFile;
                     } catch (IOException | CoreException e) {
-                        throw new DBException("", e);
+                        throw new DBException("Error copying file", e);
                     }
                 });
 
@@ -167,8 +167,10 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
             }
         } else if (resource instanceof IFile) {
             IDE.openEditor(UIUtils.getActiveWorkbenchWindow().getActivePage(), (IFile) resource);
-        } else if (resource instanceof IFolder) {
+        } else if (resource instanceof IFolder && location != null) {
             DBWorkbench.getPlatformUI().executeShellProgram(location.toOSString());
+        } else {
+            DBWorkbench.getPlatformUI().showError("Error opening resource", "Do not know how to open resource '" + resource + "'");
         }
     }
 

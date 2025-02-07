@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
+import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.browser.BrowsePeerMethods;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -92,7 +93,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
         preferences = new BundlePreferenceStore(bundle);
 
         DBRFeatureRegistry.getInstance().registerFeatures(CoreFeatures.class);
-
+        DBRFeatureRegistry.getInstance().registerFeatures(ConnectionFeatures.class);
         try {
             coreResourceBundle = ResourceBundle.getBundle(CoreMessages.BUNDLE_NAME);
             pluginResourceBundle = Platform.getResourceBundle(bundle);
