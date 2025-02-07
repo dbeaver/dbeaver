@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,6 +68,11 @@ public class TextWithOpenFile extends TextWithOpen {
         this(parent, title, filterExt, SWT.SINGLE | SWT.OPEN, binary, false, secured);
     }
 
+    @Override
+    protected int getPanelStyle() {
+        return style;
+    }
+
     public void setOpenFolder(boolean openFolder) {
         this.openFolder = openFolder;
     }
@@ -86,11 +91,11 @@ public class TextWithOpenFile extends TextWithOpen {
                 isBinaryContents(),
                 filterExt,
                 getText());
-            selected = selPath != null ? DBFUtils.getUriFromPath(selPath.getPath()).toString() : null;
+            selected = selPath != null ? DBFUtils.convertPathToString(selPath.getPath()) : null;
         } else {
             String directory = getDialogDirectory();
             if (openFolder) {
-                DirectoryDialog fd = new DirectoryDialog(getShell(), style);
+                DirectoryDialog fd = new DirectoryDialog(getPanel().getShell(), style);
                 if (directory != null) {
                     fd.setFilterPath(directory);
                 }
@@ -99,7 +104,7 @@ public class TextWithOpenFile extends TextWithOpen {
                 }
                 selected = fd.open();
             } else {
-                FileDialog fd = new FileDialog(getShell(), style);
+                FileDialog fd = new FileDialog(getPanel().getShell(), style);
                 fd.setText(title);
                 fd.setFilterExtensions(filterExt);
                 if (directory != null) {

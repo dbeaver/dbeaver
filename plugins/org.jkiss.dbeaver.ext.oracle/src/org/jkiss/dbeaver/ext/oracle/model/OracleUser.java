@@ -20,12 +20,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Association;
-import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
-import org.jkiss.dbeaver.model.meta.LazyProperty;
-import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
@@ -37,7 +37,7 @@ import java.util.Collection;
 /**
  * OracleUser
  */
-public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<OracleDataSource>
+public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<OracleDataSource>, DBPSaveableObject, DBPRefreshableObject
 {
     private static final Log log = Log.getLog(OracleUser.class);
 
@@ -52,33 +52,38 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     private Object tempTablespace;
     private Object profile;
     private String consumerGroup;
-    private transient String password;
+    protected transient String password;
+    protected transient String confirmPassword;
+    private boolean persisted;
 
-    public OracleUser(OracleDataSource dataSource)
-    {
+    public OracleUser(OracleDataSource dataSource) {
         super(dataSource);
     }
 
     public OracleUser(OracleDataSource dataSource, ResultSet resultSet) {
         super(dataSource);
-        this.id = JDBCUtils.safeGetLong(resultSet, "USER_ID");
-        this.name = JDBCUtils.safeGetString(resultSet, "USERNAME");
-        this.externalName = JDBCUtils.safeGetString(resultSet, "EXTERNAL_NAME");
-        this.status = JDBCUtils.safeGetString(resultSet, "ACCOUNT_STATUS");
+        if (resultSet != null) {
+            this.id = JDBCUtils.safeGetLong(resultSet, "USER_ID");
+            this.name = JDBCUtils.safeGetString(resultSet, "USERNAME");
+            this.externalName = JDBCUtils.safeGetString(resultSet, "EXTERNAL_NAME");
+            this.status = JDBCUtils.safeGetString(resultSet, "ACCOUNT_STATUS");
 
-        this.createDate = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
-        this.lockDate = JDBCUtils.safeGetTimestamp(resultSet, "LOCK_DATE");
-        this.expiryDate = JDBCUtils.safeGetTimestamp(resultSet, "EXPIRY_DATE");
-        this.defaultTablespace = JDBCUtils.safeGetString(resultSet, "DEFAULT_TABLESPACE");
-        this.tempTablespace = JDBCUtils.safeGetString(resultSet, "TEMPORARY_TABLESPACE");
+            this.createDate = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
+            this.lockDate = JDBCUtils.safeGetTimestamp(resultSet, "LOCK_DATE");
+            this.expiryDate = JDBCUtils.safeGetTimestamp(resultSet, "EXPIRY_DATE");
+            this.defaultTablespace = JDBCUtils.safeGetString(resultSet, "DEFAULT_TABLESPACE");
+            this.tempTablespace = JDBCUtils.safeGetString(resultSet, "TEMPORARY_TABLESPACE");
 
-        this.profile = JDBCUtils.safeGetString(resultSet, "PROFILE");
-        this.consumerGroup = JDBCUtils.safeGetString(resultSet, "INITIAL_RSRC_CONSUMER_GROUP");
+            this.profile = JDBCUtils.safeGetString(resultSet, "PROFILE");
+            this.consumerGroup = JDBCUtils.safeGetString(resultSet, "INITIAL_RSRC_CONSUMER_GROUP");
+            this.persisted = true;
+        } else {
+            this.persisted = false;
+        }
     }
 
     @Property(order = 1)
-    public long getId()
-    {
+    public long getId() {
         return id;
     }
 
@@ -89,8 +94,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -170,14 +174,22 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
      * Passwords are never read from database. It is used to create/alter schema/user
      * @return password or null
      */
-    public String getPassword()
-    {
+    @Property(visibleIf = OracleUserPasswordValueValidator.class, editable = true, updatable = true, order = 12, password = true)
+    public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password)
-    {
+    public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Property(visibleIf = OracleUserPasswordValueValidator.class, editable = true, updatable = true, order = 13, password = true)
+    public String getConfirmPassword() {
+        return confirmPassword;
+    }
+
+    public void setConfirmPassword(String confirmPassword) {
+        this.confirmPassword = confirmPassword;
     }
 
     @Override
@@ -193,6 +205,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         return super.refreshObject(monitor);
     }
 
+
     public static class ProfileReferenceValidator implements IPropertyCacheValidator<OracleUser> {
         @Override
         public boolean isPropertyCached(OracleUser object, Object propertyId)
@@ -201,6 +214,23 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
                 object.getLazyReference(propertyId) instanceof OracleUserProfile ||
                 object.getLazyReference(propertyId) == null ||
                 object.getDataSource().profileCache.isFullyCached();
+        }
+    }
+
+    @Override
+    public boolean isPersisted() {
+        return persisted;
+    }
+
+    @Override
+    public void setPersisted(boolean persisted) {
+        this.persisted = persisted;
+    }
+
+    public static class OracleUserPasswordValueValidator implements IPropertyValueValidator<OracleUser, Object> {
+        @Override
+        public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().supportsUserPasswordEdit();
         }
     }
 

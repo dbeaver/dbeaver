@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -339,14 +339,28 @@ public class SQLScriptParser {
                     if (curBlock != null) {
                         log.trace("Found leftover blocks in script after parsing");
                     }
-                    // make script line
-                    SQLQuery query = new SQLQuery(
-                        context.getDataSource(),
-                        queryText,
-                        statementStart,
-                        queryEndPos - statementStart);
-                    query.setEndsWithDelimiter(tokenType == SQLTokenType.T_DELIMITER);
-                    return query;
+
+                    SQLTokenPredicate lastMatchedPredicate = predicateEvaluator.getLastMatchedPredicate();
+                    if (lastMatchedPredicate != null && lastMatchedPredicate.getActionKind() == SQLParserActionKind.CAPTURE_COMMAND) {
+                        return new SQLControlCommand(
+                            context.getDataSource(),
+                            queryText,
+                            lastMatchedPredicate.getParameter(),
+                            statementStart,
+                            queryEndPos - statementStart,
+                            predicateEvaluator.obtainPrefixCaptures()
+                        );
+                    } else {
+                        // make script line
+                        SQLQuery query = new SQLQuery(
+                            context.getDataSource(),
+                            queryText,
+                            statementStart,
+                            queryEndPos - statementStart
+                        );
+                        query.setEndsWithDelimiter(tokenType == SQLTokenType.T_DELIMITER);
+                        return query;
+                    }
                 }
                 if (isDelimiter) {
                     statementStart = tokenOffset + tokenLength;
@@ -1107,15 +1121,16 @@ public class SQLScriptParser {
         
         public ScriptElementContinuationDetector(@NotNull SQLParserContext context) {
             this.context = context;
-            this.statementStartKeywords = getStatementStartKeywords(this.context.getDialect());
+            this.statementStartKeywords = getStatementStartKeywords(this.context);
             this.analyzerParameters = LSMAnalyzerParameters.forDialect(this.context.getDialect(), this.context.getSyntaxManager());
         }
 
-        private static Set<String> getStatementStartKeywords(SQLDialect dialect) {
-            return statementStartKeywordsByDialect.computeIfAbsent(dialect, d -> prepareStatementStartKeywordsSet(d));
+        private static Set<String> getStatementStartKeywords(SQLParserContext context) {
+            return statementStartKeywordsByDialect.computeIfAbsent(context.getDialect(), d -> prepareStatementStartKeywordsSet(context));
         }
 
-        private static Set<String> prepareStatementStartKeywordsSet(SQLDialect dialect) {
+        private static Set<String> prepareStatementStartKeywordsSet(SQLParserContext context) {
+            SQLDialect dialect = context.getDialect();
             Set<String> statementStartKeywords = new HashSet<>();
 
             if (dialect.getBlockHeaderStrings() != null) {
@@ -1137,8 +1152,11 @@ public class SQLScriptParser {
                 Arrays.stream(abstractSQLDialect.getNonTransactionKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
             }
             Arrays.stream(dialect.getExecuteKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
+            String commandPrefix = context.getSyntaxManager().getControlCommandPrefix();
+            String multilineCommandPrefix = commandPrefix.repeat(2);
             for (SQLCommandHandlerDescriptor controlCommand : SQLCommandsRegistry.getInstance().getCommandHandlers()) {
-                statementStartKeywords.add("@" + controlCommand.getId().toUpperCase());
+                statementStartKeywords.add(commandPrefix + controlCommand.getId().toUpperCase());
+                statementStartKeywords.add(multilineCommandPrefix + controlCommand.getId().toUpperCase());
             }
             Arrays.stream(dialect.getQueryKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
             Arrays.stream(dialect.getDMLKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);

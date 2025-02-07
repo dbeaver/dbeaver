@@ -375,6 +375,25 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     }
 
 
+    @Test
+    public void parseMultilineParametersFromSetCommand() throws DBException {
+        String commandText = """
+            @@set myVar=the first line
+            and the second line
+            works@@""";
+        SQLParserContext context = createParserContext(setDialect("snowflake"), commandText);
+        assert context.getDataSource() != null;
+        List<SQLScriptElement> elements = SQLScriptParser.parseScript(context.getDataSource(), commandText);
+        Assert.assertEquals(1, elements.size());
+        SQLScriptElement sqlScriptElement = elements.get(0);
+        Assert.assertTrue(sqlScriptElement instanceof SQLControlCommand);
+        SQLControlCommand cmd = (SQLControlCommand) sqlScriptElement;
+        Assert.assertEquals(commandText, cmd.getText());
+        int end = ScriptParameterRule.tryConsumeParameterName(context.getDialect(), cmd.getParameter(), 0);
+        Assert.assertEquals("myVar", cmd.getParameter().substring(0, end).trim());
+    }
+
+
     private void assertParse(String dialectName, String[] expected) throws DBException {
         String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());
         List<String> expectedParts = new ArrayList<>(expected.length);

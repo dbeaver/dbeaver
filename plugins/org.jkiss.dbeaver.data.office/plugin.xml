@@ -32,6 +32,7 @@
                         <property id="splitByColNum" label="%dataTransfer.processor.xlsx.property.splitByColNum.name" type="integer" description="%dataTransfer.processor.xlsx.property.splitByColNum.description" defaultValue="0" required="false"/>
                         <property id="dateFormat" label="%dataTransfer.processor.xlsx.property.dateFormat.name" type="string" description="%dataTransfer.processor.xlsx.property.dateFormat.description" defaultValue="m/d/yy" required="false" validValues="m/d/yy,d-mmm-yy,d-mmm,mmm-yy,h:mm AM/PM,h:mm:ss AM/PM,h:mm,h:mm:ss,m/d/yy h:mm"/>
                         <property id="appendStrategy" label="%dataTransfer.processor.xlsx.property.appendStrategy.name" type="string" description="%dataTransfer.processor.xlsx.property.appendStrategy.description" defaultValue="create new sheets" required="true" validValues="create new sheets,use existing sheets" allowCustomValues="false"/>
+                        <property id="useDefaultSpreadsheetNames" label="%dataTransfer.processor.xlsx.property.useDefaultSpreadsheetNames.name" type="boolean" description="%dataTransfer.processor.xlsx.property.useDefaultSpreadsheetNames.description" defaultValue="false" required="true"/>
                     </propertyGroup>
             </processor>
          </node>

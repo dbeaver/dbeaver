@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,9 @@ import java.util.*;
 
 /**
  * Trie also known as prefix-tree implementation.
- * Useful to optimize lookup operations over sets of lazily-discoverable paths in the key-space represented with internal tree data structure.
+ * Useful to optimize lookup operations over sets of lazily-discoverable paths
+ * in the key-space represented with internal tree data structure.
+ *
  * @param <T> type of the key term used as path item in the trie structure
  * @param <V> type of the value associated with the path in the trie
  */
@@ -33,7 +35,7 @@ public class Trie<T, V> {
 
     private final Comparator<T> strongComparer;
     private final TrieLookupComparator<T> lookupPartialComparer;
-    private TreeNode root = new TreeNode(null);
+    private final TreeNode root = new TreeNode(null);
 
     /**
      * Node of the tree data structure implementing trie data item
@@ -75,6 +77,11 @@ public class Trie<T, V> {
             // this.childNodesByKey = new HashMap<>();
         }
 
+        @Nullable
+        public T getTerm() {
+            return this.term;
+        }
+
         @NotNull
         public Set<V> getValues() {
             return this.values;
@@ -82,6 +89,7 @@ public class Trie<T, V> {
 
         /**
          * Builds up child node (or retrieves already existing one) strongly associated with the given term specification
+         *
          * @param term used as key to discover the node during further lookup operations
          * @return node in the trie data structure
          */
@@ -112,7 +120,7 @@ public class Trie<T, V> {
 
         @Override
         @Nullable
-        public ListNode<TrieNode<T, V>> accumulateSubnodesByTerm(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
+        public ListNode<TrieNode<T, V>> accumulateSubnodesByTerm(@NotNull T term, @Nullable ListNode<TrieNode<T, V>> results) {
             ListNode<TrieNode<T, V>> accumulatedResults;
             // use the best suitable strategy to lookup for children nodes by the given term
             if (this.isStronglyOrdered && lookupPartialComparer.isStronglyComparable(term)) {
@@ -140,7 +148,7 @@ public class Trie<T, V> {
 
 
         @Nullable
-        private ListNode<TrieNode<T, V>> accumulateNonComparableSubnodes(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
+        private ListNode<TrieNode<T, V>> accumulateNonComparableSubnodes(@NotNull T term, @Nullable ListNode<TrieNode<T, V>> results) {
             TrieLookupComparator<T> comparer = Trie.this.lookupPartialComparer;
             ListNode<TrieNode<T, V>> accumulatedResults = results;
             for (int i = 0; i < this.childKeys.size(); i++) {
@@ -151,8 +159,11 @@ public class Trie<T, V> {
             return accumulatedResults;
         }
 
-        @NotNull
-        private ListNode<TrieNode<T, V>> accumulatePartiallyComparableSubnodes(@NotNull T term, @NotNull ListNode<TrieNode<T, V>> results) {
+        @Nullable
+        private ListNode<TrieNode<T, V>> accumulatePartiallyComparableSubnodes(
+            @NotNull T term,
+            @Nullable ListNode<TrieNode<T, V>> results
+        ) {
             TrieLookupComparator<T> comparer = Trie.this.lookupPartialComparer;
             ListNode<TrieNode<T, V>> accumulatedResults = results;
             int index = Collections.binarySearch(this.childKeys, term, comparer);
@@ -210,15 +221,15 @@ public class Trie<T, V> {
 
         // walk down the tree while terms of the key path sequence match the corresponding keys of the nodes
         // till the end of the key sequence or boundary of the data structure, where no more child nodes could be matched
-        ListNode<TrieNode> activeNodes = ListNode.of(root); // - nodes to lookup down the tree by the current term from the key sequence
+        ListNode<TrieNode<T, V>> activeNodes = ListNode.of(root); // nodes to lookup down the tree by the current term from the key sequence
         ListNode<Set<V>> results = null; // - total accumulated values from all the nodes met along the key sequence path
 
         do {
             T term = key.next();
-            ListNode<TrieNode> nextNodes = null;
+            ListNode<TrieNode<T, V>> nextNodes = null;
             // inspect active nodes on the current level of the tree data structure
-            for (ListNode<TrieNode> currNode = activeNodes; currNode != null; currNode = currNode.next) {
-                TrieNode node = currNode.data;
+            for (ListNode<TrieNode<T, V>> currNode = activeNodes; currNode != null; currNode = currNode.next) {
+                TrieNode<T, V> node = currNode.data;
                 // accumulate values from the current node
                 Set<V> values = node.getValues();
                 if (values.size() > 0) {
@@ -232,7 +243,7 @@ public class Trie<T, V> {
         } while (activeNodes != null && key.hasNext());
 
         // accumulate values from the deepest level being reached
-        for (ListNode<TrieNode> currNode = activeNodes; currNode != null; currNode = currNode.next) {
+        for (ListNode<TrieNode<T, V>> currNode = activeNodes; currNode != null; currNode = currNode.next) {
             results = ListNode.push(results, currNode.data.getValues());
         }
 
@@ -241,6 +252,7 @@ public class Trie<T, V> {
 
     /**
      * Lookup the trie in search of value items associated with key terms along the given key path sequence
+     *
      * @param key path sequence of terms to look for
      * @return a set of values
      */

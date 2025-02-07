@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -69,7 +70,7 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         DBSDataType columnType = findBestDataType(table, DBConstants.DEFAULT_DATATYPE_NAMES);
         int columnSize = columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0;
 
-        CubridTableColumn column = new CubridTableColumn(table, null, null, false, null);
+        CubridTableColumn column = new CubridTableColumn(table, null, null, false, false, null);
         column.setName(getNewColumnName(monitor, context, table));
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
         column.setMaxLength(columnSize);
@@ -99,14 +100,14 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         for (ColumnModifier<GenericTableColumn> modifier : new ColumnModifier[]{CubridDataTypeModifier, NullNotNullModifierConditional}) {
             modifier.appendModifier(monitor, column, decl, command);
         }
-        if (!CommonUtils.isEmpty(column.getDefaultValue())) {
-            decl.append(" DEFAULT ").append(SQLUtils.quoteString(column, column.getDefaultValue()));
+        if (column.getDefaultValue() != null || ((DBECommandComposite) command).hasProperty("defaultValue")) {
+            decl.append(" DEFAULT ").append(SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDefaultValue())));
         }
         if (column.isAutoIncrement() && (column.getTypeName().equals("INTEGER") || column.getTypeName().equals("BIGINT"))) {
             decl.append(" AUTO_INCREMENT");
         }
-        if (!CommonUtils.isEmpty(column.getDescription())) {
-            decl.append(" COMMENT ").append(SQLUtils.quoteString(column, column.getDescription()));
+        if (column.getDescription() != null || ((DBECommandComposite) command).hasProperty("description")) {
+            decl.append(" COMMENT ").append(SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription())));
         }
         return decl;
     }
@@ -121,10 +122,17 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             throws DBException {
         final CubridTableColumn column = (CubridTableColumn) command.getObject();
         String table = column.getTable().getSchema().getName() + "." + column.getTable().getName();
-        actionList.add(
-                new SQLDatabasePersistAction(
-                        "Modify column",
-                        "ALTER TABLE " + table + " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options)));
+        String query;
+        if (column.isForeignKey()) {
+            if (command.hasProperty("description")) {
+                query = "ALTER TABLE " + table + " COMMENT ON COLUMN " + column.getName() + " = "
+                       + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()));
+                actionList.add(new SQLDatabasePersistAction("Modify column", query));
+            }
+        } else {
+            query = "ALTER TABLE " + table + " MODIFY " + getNestedDeclaration(monitor, column.getTable(), command, options);
+            actionList.add(new SQLDatabasePersistAction("Modify column", query));
+        }
     }
 
     @Override
