@@ -90,13 +90,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         private final String version;
         private final DBPDriverLibrary.FileType type;
         private final Path file;
+        private final String fileLocation;
         private long fileCRC;
 
-        public DriverFileInfo(String id, String version, DBPDriverLibrary.FileType type, Path file) {
+        public DriverFileInfo(String id, String version, DBPDriverLibrary.FileType type, Path file, String fileLocation) {
             this.id = id;
             this.version = version;
             this.file = file;
             this.type = type;
+            this.fileLocation = fileLocation;
         }
 
         DriverFileInfo(DBPDriverLibrary library) {
@@ -104,10 +106,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.version = library.getVersion();
             this.file = library.getLocalFile();
             this.type = library.getType();
+            this.fileLocation = library.getLocalFile() != null ? library.getLocalFile().toString() : library.getPath();
         }
 
         public Path getFile() {
             return file;
+        }
+
+        public String getFileLocation() {
+            return fileLocation;
         }
 
         public String getId() {
@@ -1967,7 +1974,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                             library.getId(),
                             library.getVersion(),
                             library.getType(),
-                            customFile);
+                            customFile,
+                            library.getPath()
+                        );
                         libraryFiles.add(fileInfo);
                         resolvedFiles.put(library, libraryFiles);
                         continue;
@@ -2026,7 +2035,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 List<DriverFileInfo> libraryFiles = new ArrayList<>();
                 for (DriverFileInfo fileInfo : libraryResolvedFiles) {
                     try {
-                        Path targetFile = targetFileLocation.resolve(fileInfo.getFile());
+                        Path targetFile = IOUtils.isFileFromDefaultFS(targetFileLocation)
+                            ? targetFileLocation.resolve(fileInfo.getFile())
+                            : targetFileLocation.resolve(fileInfo.getFileLocation());
 
                         if (Files.exists(targetFile)) {
                             libraryFiles.add(fileInfo);
@@ -2078,7 +2089,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     private DriverFileInfo resolveFile(Path targetFileLocation, DBPDriverLibrary library, Path srcLocalFile, Path trgLocalFile) {
         Path relPath = targetFileLocation.relativize(trgLocalFile);
-        DriverFileInfo info = new DriverFileInfo(trgLocalFile.getFileName().toString(), null, library.getType(), relPath);
+        DriverFileInfo info = new DriverFileInfo(trgLocalFile.getFileName().toString(), null, library.getType(),
+            relPath, trgLocalFile.toString());
         info.fileCRC = calculateFileCRC(srcLocalFile);
         return info;
     }
