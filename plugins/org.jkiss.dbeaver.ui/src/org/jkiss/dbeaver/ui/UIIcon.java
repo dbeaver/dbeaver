@@ -54,8 +54,8 @@ public class UIIcon {
     public static final DBIcon RS_REFRESH = new DBIcon("rs_refresh", "sql/resultset_refresh.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RS_GRID = new DBIcon("rs_mode_grid", "sql/grid.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RS_DETAILS = new DBIcon("rs_details", "sql/details.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon RS_FORWARD = new DBIcon("rs_forward", "sql/forward.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon RS_BACK = new DBIcon("rs_back", "sql/back.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RS_FORWARD = new DBIcon("rs_forward", "misc/forward.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon RS_BACK = new DBIcon("rs_back", "misc/back.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CLOCK_START = new DBIcon("clock_start", "misc/clock_play.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CLOCK_STOP = new DBIcon("clock_stop", "misc/clock_stop.png"); //$NON-NLS-1$ //$NON-NLS-2$
 

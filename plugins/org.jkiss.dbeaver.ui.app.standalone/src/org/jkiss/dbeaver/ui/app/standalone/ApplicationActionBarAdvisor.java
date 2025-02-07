@@ -261,7 +261,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             if (!DBWorkbench.isDistributed()) {
                 // Local FS operations are not needed
                 fileMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.ui.edit.text.openLocalFile"));
-                fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+                //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
                 //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
             }
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
