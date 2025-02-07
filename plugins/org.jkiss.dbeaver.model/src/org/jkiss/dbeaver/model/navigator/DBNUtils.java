@@ -335,6 +335,9 @@ public class DBNUtils {
                 objectToOpen = dataSource;
             }
         }
+        if (objectToOpen == null) {
+            throw new DBException("No entities found in file datasource");
+        }
         return DBNUtils.getNodeByObject(monitor, objectToOpen, true);
     }
 
