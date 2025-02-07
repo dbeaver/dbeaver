@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,12 @@ package org.jkiss.dbeaver.model.stm;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.IntervalSet;
-import org.antlr.v4.runtime.tree.*;
+import org.antlr.v4.runtime.tree.RuleNode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.*;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.Pair;
@@ -227,10 +228,14 @@ public class LSMInspections {
             stack = stack.next;
 
             if (node instanceof STMTreeTermNode term) {
-                allTerms.add(term);
-                allNonErrorTerms.add(term);
+                if (node.getRealInterval().a >= 0 && node.getRealInterval().b >= 0) {
+                    allTerms.add(term);
+                    allNonErrorTerms.add(term);
+                }
             } else if (node instanceof STMTreeTermErrorNode err) {
-                allTerms.add(err);
+                if (node.getRealInterval().a >= 0 && node.getRealInterval().b >= 0) {
+                    allTerms.add(err);
+                }
             } else {
                 for (int i = node.getChildCount() - 1; i >= 0; i--) {
                     stack = ListNode.push(stack, node.getChildNode(i));
