@@ -23,7 +23,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.fileTypeHandler">
-        <handler id="sql" class="org.jkiss.dbeaver.ui.editors.sql.scripts.SQLFileHandler" order="20" extensions="sql"/>
+        <handler id="sql" class="org.jkiss.dbeaver.ui.editors.sql.scripts.SQLFileHandler" remote="false" order="20" extensions="sql"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">

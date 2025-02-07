@@ -17,18 +17,32 @@
 package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 
 /**
- * Represents node of token predicate describing optional token subsequence
+ * Represents node of token predicate capable of capturing matching text parts
  */
-public class OptionalTokenPredicateNode extends UnaryTokenPredicateNode {
-    public OptionalTokenPredicateNode(@NotNull TokenPredicateNode child) {
-        super(child);
+public class CaptureTokenPredicateNode extends SQLTokenEntry {
+
+    @NotNull
+    public final String key;
+
+    public CaptureTokenPredicateNode(@Nullable String string, @Nullable SQLTokenType type, @NotNull String key) {
+        super(string, type, false);
+        this.key = key;
     }
 
-    @Override
     @NotNull
+    @Override
+    public StringBuilder format(@NotNull StringBuilder sb) {
+        sb.append("$");
+        return super.format(sb);
+    }
+
+    @NotNull
+    @Override
     protected <T, R> R applyImpl(@NotNull TokenPredicateNodeVisitor<T, R> visitor, @NotNull T arg) {
-        return visitor.visitOptional(this, arg);
+        return visitor.visitCapture(this, arg);
     }
 }

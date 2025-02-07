@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserActionKind;
 import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicate;
 import org.jkiss.dbeaver.model.sql.parser.TokenEntry;
@@ -48,19 +49,41 @@ public class TokenPredicatesCondition implements SQLTokenPredicate {
     public final int maxPrefixLength;
     public final int maxSuffixLength;
 
-    public TokenPredicatesCondition(@NotNull SQLParserActionKind actionKind, @NotNull TokenPredicateNode prefixPredicate, @NotNull TokenPredicateNode suffixPredicate) {
+    public final String parameter;
+
+    public TokenPredicatesCondition(
+        @NotNull SQLParserActionKind actionKind,
+        @NotNull TokenPredicateNode prefixPredicate,
+        @NotNull TokenPredicateNode suffixPredicate
+    ) {
+        this(actionKind, prefixPredicate, suffixPredicate, null);
+    }
+
+    public TokenPredicatesCondition(
+        @NotNull SQLParserActionKind actionKind,
+        @NotNull TokenPredicateNode prefixPredicate,
+        @NotNull TokenPredicateNode suffixPredicate,
+        @Nullable String parameter
+    ) {
         this.actionKind = actionKind;
         this.prefixPredicate = prefixPredicate;
         this.suffixPredicate = suffixPredicate;
         this.prefixes = Collections.unmodifiableList(prefixPredicate.expand());
         this.suffixes = Collections.unmodifiableList(suffixPredicate.expand());
-        this.maxPrefixLength = this.prefixes.stream().mapToInt(c -> c.size()).max().orElse(0);
-        this.maxSuffixLength = this.suffixes.stream().mapToInt(c -> c.size()).max().orElse(0);
+        this.maxPrefixLength = this.prefixes.stream().mapToInt(List::size).max().orElse(0);
+        this.maxSuffixLength = this.suffixes.stream().mapToInt(List::size).max().orElse(0);
+        this.parameter = parameter;
     }
 
     @Override
     public int getMaxSuffixLength() {
         return maxSuffixLength;
+    }
+
+    @Override
+    @Nullable
+    public String getParameter() {
+        return this.parameter;
     }
 
     @NotNull

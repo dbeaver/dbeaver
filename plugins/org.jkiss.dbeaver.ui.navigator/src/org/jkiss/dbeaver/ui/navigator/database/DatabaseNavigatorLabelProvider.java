@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,7 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.BaseThemeSettings;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIFonts;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
@@ -152,7 +149,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             if (dbnNode instanceof DBNDataSource dbnDataSource) {
                 DBPDataSourceContainer ds = dbnDataSource.getDataSourceContainer();
                 Color bgColor = UIUtils.getConnectionColor(ds.getConnectionConfiguration());
-                return bgColor == null ? null : UIUtils.getContrastColor(bgColor);
+                return bgColor == null ? null : UIStyles.getContrastColor(bgColor);
             }
             if (dbnNode.isLocked()) {
                 return lockedForeground;
