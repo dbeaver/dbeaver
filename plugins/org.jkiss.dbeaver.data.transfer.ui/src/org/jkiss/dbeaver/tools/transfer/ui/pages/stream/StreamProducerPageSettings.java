@@ -224,9 +224,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 extensions,
                 pipe.getConsumer().getObjectName());
             if (selected != null) {
-                initializer = monitor -> {
-                    updateSingleConsumer(monitor, pipe, selected.getPath());
-                };
+                initializer = monitor -> updateSingleConsumer(monitor, pipe, selected.getPath());
             }
         } else if (pipe.getConsumer() != null && pipe.getConsumer().getTargetObjectContainer() != null) {
             File[] files = DialogUtils.openFileList(
@@ -531,7 +529,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             lastChar = c;
             name.append(c);
         }
-        if (name.length() > 0 && name.charAt(name.length() - 1) == '_') {
+        if (!name.isEmpty() && name.charAt(name.length() - 1) == '_') {
             name.deleteCharAt(name.length() - 1);
         }
         return name.toString();
@@ -543,7 +541,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     }
 
     private class SelectInputFileAction extends Action {
-        private boolean remote;
+        private final boolean remote;
         public SelectInputFileAction(boolean remote) {
             super(remote ? UIMessages.text_with_open_dialog_browse_remote : UIMessages.text_with_open_dialog_browse);
             this.remote = remote;
