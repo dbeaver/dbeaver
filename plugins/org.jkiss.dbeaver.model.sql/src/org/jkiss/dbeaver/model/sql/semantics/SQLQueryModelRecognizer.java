@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableAlterModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableCreateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableDropModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryCallModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryInsertModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
@@ -144,7 +145,7 @@ public class SQLQueryModelRecognizer {
                     case SQLStandardParser.RULE_dropViewStatement ->
                         SQLQueryTableDropModel.recognize(this, stmtBodyNode, true);
                     case SQLStandardParser.RULE_dropProcedureStatement ->
-                        SQLQueryObjectDropModel.recognize(this, stmtBodyNode, RelationalObjectType.TYPE_PROCEDURE);
+                        SQLQueryObjectDropModel.recognize(this, stmtBodyNode, RelationalObjectType.TYPE_PROCEDURE, Collections.emptySet());
                     case SQLStandardParser.RULE_alterTableStatement ->
                         SQLQueryTableAlterModel.recognize(this, stmtBodyNode);
                     default -> null;
@@ -154,6 +155,7 @@ public class SQLQueryModelRecognizer {
                 STMTreeNode stmtBodyNode = queryNode.findFirstNonErrorChild();
                 yield stmtBodyNode == null ? null : this.collectQueryExpression(tree);
             }
+            case SQLStandardParser.RULE_callStatement -> SQLQueryCallModel.recognize(this, queryNode, RelationalObjectType.TYPE_PROCEDURE);
             default -> null;
         };
 
@@ -202,7 +204,9 @@ public class SQLQueryModelRecognizer {
             e -> {
                 DBSEntity table = null;
                 if (e.isNotClassified() || !tryFallbackForStringLiteral.test(e.entityName)) {
-                    SQLQuerySymbolOrigin objectNameOrigin = new SQLQuerySymbolOrigin.DbObjectFromContext(this.queryDataContext);
+                    var objectNameOrigin = new SQLQuerySymbolOrigin.DbObjectFromContext(
+                        this.queryDataContext, Set.of(RelationalObjectType.TYPE_UNKNOWN), true
+                    );
                     if (e.invalidPartsCount == 0) {
                         DBSObject object = this.queryDataContext.findRealObject(
                             recognitionContext.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, e.toListOfStrings()
@@ -218,7 +222,13 @@ public class SQLQueryModelRecognizer {
                             // TODO performPartialResolution here as well?
                         }
                     } else {
-                        SQLQueryQualifiedName.performPartialResolution(this.queryDataContext, this.recognitionContext, e, objectNameOrigin);
+                        SQLQueryQualifiedName.performPartialResolution(
+                            this.queryDataContext,
+                            this.recognitionContext,
+                            e,
+                            objectNameOrigin,
+                            Set.of(RelationalObjectType.TYPE_UNKNOWN)
+                        );
                     }
                 }
                 return table;
@@ -929,6 +939,9 @@ public class SQLQueryModelRecognizer {
     }
     
     private <T extends SQLQueryLexicalScopeItem> T registerScopeItem(T item) {
+        if (item instanceof SQLQueryQualifiedName) {
+            return item;
+        }
         SQLQueryLexicalScope scope = this.currentLexicalScopes.peekLast();
         if (scope != null) {
             scope.registerItem(item);

@@ -42,10 +42,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Database file handler
@@ -90,7 +87,7 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
         configuration.setDatabaseName(databaseName);
 
         DBPDataSourceRegistry registry = project.getDataSourceRegistry();
-        String connectionId = "file_database_" + CommonUtils.escapeIdentifier(databaseName);
+        String connectionId = "file_database_" + CommonUtils.truncateString(CommonUtils.escapeIdentifier(databaseName), 48) + "_" + UUID.randomUUID();
         DBPDataSourceContainer dsContainer = registry.getDataSource(connectionId);
         if (dsContainer == null) {
             dsContainer = registry.createDataSource(connectionId, driver, configuration);
@@ -142,10 +139,13 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
                                 objectToOpen = dataSource;
                             }
                         }
+                        if (objectToOpen == null) {
+                            throw new DBException("No entities found in file datasource");
+                        }
                         DBNDatabaseNode openNode = DBNUtils.getNodeByObject(monitor, objectToOpen, true);
 
                         if (openNode == null) {
-                            DBWorkbench.getPlatformUI().showError("No objects", "Cannot determine target node");
+                            throw new DBException("Cannot determine target node for '" + objectToOpen + "'");
                         } else {
                             UIUtils.syncExec(() -> {
                                 NavigatorHandlerObjectOpen.openEntityEditor(
