@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeMap;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -78,11 +77,12 @@ public class GBase8sUtils {
         }
         DBPDriver driver = container.getDriver();
         Map<String, Object> driverProps = driver.getConnectionProperties();
-        return driverProps.values().stream()
-                .filter(Objects::nonNull)
-                .map(Object::toString)
-                .map(String::trim)
-                .anyMatch(value -> "oracle".equalsIgnoreCase(value));
+        for (String key : driverProps.keySet()) {
+            if ("sqlmode".equalsIgnoreCase(key)) {
+                return "oracle".equalsIgnoreCase(Objects.toString(driverProps.get(key), "").trim());
+            }
+        }
+        return true;
     }
 
     public static String listToString(List<String> value, String delimiter) {
