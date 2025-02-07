@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,12 @@ package org.jkiss.dbeaver.model.stm;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.IntervalSet;
-import org.antlr.v4.runtime.tree.*;
+import org.antlr.v4.runtime.tree.RuleNode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.*;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.Pair;
@@ -169,7 +170,7 @@ public class LSMInspections {
             STMTreeTermNode node;
             ATNState initialState;
 
-            if (position > range.b) {
+            if (position > range.b + 1) {
                 if (this.allNonErrorTerms.size() > 0) {
                     index = this.allNonErrorTerms.size() - 1;
                     node = this.allNonErrorTerms.get(index);
@@ -185,12 +186,16 @@ public class LSMInspections {
 
                 // TODO consider when to take previous term to get correct inspected keywords
 
-                node = this.allNonErrorTerms.get(index);
-                Interval nodeRange = node.getRealInterval();
-                if (nodeRange.a <= position) {
-                    if (nodeRange.b >= position) {
+                node = index >= this.allNonErrorTerms.size() ? null : this.allNonErrorTerms.get(index);
+                Interval nodeRange = node == null ? null : node.getRealInterval();
+                if (nodeRange != null && nodeRange.a <= position) {
+                    if (nodeRange.b + 1 >= position) {
                         // containing term found
-                        if (KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType()) || (nodeRange.a == position && index > 0)) {
+                        STMTreeTermNode prevNode = index <= 0 ? null : this.allNonErrorTerms.get(index - 1);
+                        if (prevNode != null && isAnySomething(node) && !isAnySomething(prevNode)) {
+                            node = prevNode;
+                            initialState =  atn.states.get(node.getAtnState()).getTransitions()[0].target;
+                        } else if (KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType()) || (nodeRange.a == position && index > 0)) {
                             // we need target state of the previous term
                             node = this.allNonErrorTerms.get(index - 1);
                             initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
@@ -204,6 +209,9 @@ public class LSMInspections {
                     }
                 } else if (index > 0) {
                     // use previous node, its rule end state
+                    if (node == null) {
+                        index = this.allNonErrorTerms.size() - 1;
+                    }
                     node = this.allNonErrorTerms.get(index - 1);
                     initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
                 } else {
@@ -214,6 +222,25 @@ public class LSMInspections {
 
             return inspectAbstractSyntaxAtTreeState(node, initialState);
         }            
+    }
+
+    private static Set<Integer> KNOWN_ANY_RULES = Set.of(
+        SQLStandardParser.RULE_anyWord,
+        SQLStandardParser.RULE_anyValue,
+        SQLStandardParser.RULE_anyWordWithAnyValue,
+        SQLStandardParser.RULE_anyProperty,
+        SQLStandardParser.RULE_anyWordsWithProperty,
+        SQLStandardParser.RULE_anyWordsWithProperty2,
+        SQLStandardParser.RULE_anyUnexpected
+    );
+
+    private static boolean isAnySomething(STMTreeNode node) {
+        for (STMTreeNode n = node; n != null; n = n.getParentNode()) {
+            if (KNOWN_ANY_RULES.contains(n.getNodeKindId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @NotNull
