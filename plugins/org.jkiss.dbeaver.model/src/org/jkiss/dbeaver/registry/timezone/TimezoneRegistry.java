@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.timezone;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -32,7 +33,10 @@ import java.util.stream.Collectors;
 
 public class TimezoneRegistry {
 
+    private static final Log log = Log.getLog(TimezoneRegistry.class);
+
     public static final String PROP_USER_TIMEZONE = "user.timezone";
+    public static final String GMT_TIMEZONE = "GMT";
     private static String userDefaultTimezone = "";
 
     private TimezoneRegistry() {
@@ -65,7 +69,11 @@ public class TimezoneRegistry {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         final String timezone = preferenceStore.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (timezone != null && !timezone.equals(DBConstants.DEFAULT_TIMEZONE)) {
+            log.debug("Overriding system time zone to '" + timezone + "'");
             TimeZone timeZone = TimeZone.getTimeZone(timezone);
+            if (!GMT_TIMEZONE.equals(timezone) && GMT_TIMEZONE.equals(timeZone.getID())) {
+                log.debug("Time zone '" + timezone + "' no recognized, falling back to GMT");
+            }
             TimeZone.setDefault(timeZone);
             System.setProperty(PROP_USER_TIMEZONE, timezone);
         }
