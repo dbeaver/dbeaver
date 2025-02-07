@@ -26,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -143,7 +144,11 @@ public class BreadcrumbTrim {
 
     private static boolean tryExtractNode(@NotNull IEditorInput input, @NotNull Consumer<? super DBNNode> consumer) {
         if (input instanceof ILazyEditorInput lazyEditorInput && input instanceof DBPDataSourceContainerProvider provider) {
-            DBNModel navigatorModel = lazyEditorInput.getProject().getNavigatorModel();
+            DBPProject project = lazyEditorInput.getProject();
+            if (!project.isOpen() || !project.isRegistryLoaded()) {
+                return false;
+            }
+            DBNModel navigatorModel = project.getNavigatorModel();
             if (navigatorModel != null) {
                 DBNDatabaseNode node = navigatorModel.findNode(provider.getDataSourceContainer());
                 if (node != null) {
