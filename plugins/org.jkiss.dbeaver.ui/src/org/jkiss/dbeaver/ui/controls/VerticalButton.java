@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -296,7 +296,7 @@ public class VerticalButton extends Canvas {
         if (!CommonUtils.isEmpty(text)) {
             final Point bounds = e.gc.textExtent(text);
             e.gc.setAntialias(SWT.ON);
-            e.gc.setForeground(isDarkBG ? UIUtils.COLOR_WHITE : UIStyles.getDefaultTextForeground());
+            e.gc.setForeground(isDarkBG ? UIStyles.COLOR_WHITE : UIStyles.getDefaultTextForeground());
             e.gc.drawString(this.text, offset, (size.x - bounds.y) / 2);
         }
 

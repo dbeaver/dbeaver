@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -201,9 +201,9 @@ public class EntityFigure extends Figure {
                 descLabel.setForegroundColor(ERDThemeSettings.instance.entityNameForeground);
             }
         } else {
-            nameLabel.setForegroundColor(UIUtils.getContrastColor(bgColor));
+            nameLabel.setForegroundColor(UIStyles.getContrastColor(bgColor));
             if (descLabel != null) {
-                descLabel.setForegroundColor(UIUtils.getContrastColor(bgColor));
+                descLabel.setForegroundColor(UIStyles.getContrastColor(bgColor));
             }
         }
 

@@ -139,10 +139,13 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
                                 objectToOpen = dataSource;
                             }
                         }
+                        if (objectToOpen == null) {
+                            throw new DBException("No entities found in file datasource");
+                        }
                         DBNDatabaseNode openNode = DBNUtils.getNodeByObject(monitor, objectToOpen, true);
 
                         if (openNode == null) {
-                            DBWorkbench.getPlatformUI().showError("No objects", "Cannot determine target node");
+                            throw new DBException("Cannot determine target node for '" + objectToOpen + "'");
                         } else {
                             UIUtils.syncExec(() -> {
                                 NavigatorHandlerObjectOpen.openEntityEditor(
