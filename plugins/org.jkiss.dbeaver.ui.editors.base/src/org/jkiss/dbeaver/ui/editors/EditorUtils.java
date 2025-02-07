@@ -630,11 +630,16 @@ public class EditorUtils {
         for (Map.Entry<FileTypeHandlerDescriptor, List<Path>> entry : filesByHandler.entrySet()) {
             FileTypeHandlerDescriptor handler = entry.getKey();
             List<Path> pathList = entry.getValue();
-            if (handler == null) {
-                for (Path path : pathList) {
-                    if (!IOUtils.isLocalPath(path)) {
+
+            for (Path path : pathList) {
+                if (!IOUtils.isLocalPath(path)) {
+                    if (handler == null || !handler.supportsRemoteFiles()) {
                         return false;
                     }
+                }
+            }
+            if (handler == null) {
+                for (Path path : pathList) {
                     final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
                     EditorUtils.openExternalFileEditor(path.toFile(), window);
                 }

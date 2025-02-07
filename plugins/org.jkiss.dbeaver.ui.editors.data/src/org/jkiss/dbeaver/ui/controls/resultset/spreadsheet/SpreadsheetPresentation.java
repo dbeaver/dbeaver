@@ -2499,7 +2499,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     }
                 }
             }
-            return UIUtils.getContrastColor(background);
+            return UIStyles.getContrastColor(background);
         }
 
         private Color getCellBackground(

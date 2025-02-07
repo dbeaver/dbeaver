@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -339,14 +339,28 @@ public class SQLScriptParser {
                     if (curBlock != null) {
                         log.trace("Found leftover blocks in script after parsing");
                     }
-                    // make script line
-                    SQLQuery query = new SQLQuery(
-                        context.getDataSource(),
-                        queryText,
-                        statementStart,
-                        queryEndPos - statementStart);
-                    query.setEndsWithDelimiter(tokenType == SQLTokenType.T_DELIMITER);
-                    return query;
+
+                    SQLTokenPredicate lastMatchedPredicate = predicateEvaluator.getLastMatchedPredicate();
+                    if (lastMatchedPredicate != null && lastMatchedPredicate.getActionKind() == SQLParserActionKind.CAPTURE_COMMAND) {
+                        return new SQLControlCommand(
+                            context.getDataSource(),
+                            queryText,
+                            lastMatchedPredicate.getParameter(),
+                            statementStart,
+                            queryEndPos - statementStart,
+                            predicateEvaluator.obtainPrefixCaptures()
+                        );
+                    } else {
+                        // make script line
+                        SQLQuery query = new SQLQuery(
+                            context.getDataSource(),
+                            queryText,
+                            statementStart,
+                            queryEndPos - statementStart
+                        );
+                        query.setEndsWithDelimiter(tokenType == SQLTokenType.T_DELIMITER);
+                        return query;
+                    }
                 }
                 if (isDelimiter) {
                     statementStart = tokenOffset + tokenLength;
