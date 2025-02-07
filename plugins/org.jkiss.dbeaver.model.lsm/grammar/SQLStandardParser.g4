@@ -76,7 +76,7 @@ options {
 
 // root rule for script
 sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
-sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow;
+sqlQuery: directSqlDataStatement|callStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow;
 
 directSqlDataStatement: withClause? (deleteStatement|selectStatement|insertStatement|updateStatement);
 selectStatement: queryExpression;
@@ -433,6 +433,9 @@ setNamesStatement: SET NAMES (identifier|valueSpecification);
 setSessionAuthorizationIdentifierStatement: SET SESSION AUTHORIZATION valueSpecification;
 setLocalTimeZoneStatement: SET TIME ZONE setTimeZoneValue;
 setTimeZoneValue: (intervalValueExpression|LOCAL);
+
+callStatement: (CALL|EXEC|EXECUTE) qualifiedName? callStatementParams?;
+callStatementParams: LeftParen (anyValue (Comma anyValue)*)? RightParen?;
 
 // unknown keyword, data type or function name
 anyWord: actualIdentifier;
