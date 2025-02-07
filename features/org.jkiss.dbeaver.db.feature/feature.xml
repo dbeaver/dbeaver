@@ -40,7 +40,6 @@
    <plugin id="org.jkiss.dbeaver.ext.hive" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.hsqldb" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.informix" version="0.0.0" />
-   <plugin id="org.jkiss.dbeaver.ext.kognitio" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.netezza" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.oceanbase" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.tidb" version="0.0.0" />
