@@ -1,24 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?eclipse version="3.2"?>
 
-
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
-
 <plugin>
 
     <extension-point id="org.jkiss.dbeaver.commandLine" name="Command line extension" schema="schema/org.jkiss.dbeaver.commandLine.exsd"/>
@@ -56,7 +38,7 @@
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
-            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ext.ui.tipoftheday/$nl$/tips.xml"/>
+            <property name="tipsFile" value="tips.xml"/>
         </product>
     </extension>
 
@@ -78,7 +60,7 @@
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
-            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ext.ui.tipoftheday/$nl$/tips.xml"/>
+            <property name="tipsFile" value="tips.xml"/>
         </product>
     </extension>
 
@@ -109,6 +91,11 @@
                 id="org.jkiss.dbeaver.core.try.pro"
                 name="%command.org.jkiss.dbeaver.ui.try.pro.name"
                 description="%command.org.jkiss.dbeaver.ui.try.pro.description"
+                categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command
+                id="org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup"
+                name="%command.org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup.name"
+                description="%command.org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup.description"
                 categoryId="org.jkiss.dbeaver.core.navigator"/>
     </extension>
 
@@ -207,6 +194,7 @@
         />
         <handler commandId="org.jkiss.dbeaver.core.util.resetSettings" class="org.jkiss.dbeaver.ui.app.standalone.actions.ResetSettingsHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.util.clearHistory" class="org.jkiss.dbeaver.ui.app.standalone.actions.ClearHistoryHandler"/>
+        <handler commandId="org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup" class="org.jkiss.dbeaver.ui.app.standalone.tipoftheday.ShowTipOfTheDayHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.try.pro" class="org.jkiss.dbeaver.ui.app.standalone.actions.TryPROHandler"/>
     </extension>
 
@@ -341,6 +329,10 @@
                 </visibleWhen>
             </command>
         </menuContribution>
+        <!-- Edit menu -->
+        <menuContribution allPopups="false" locationURI="menu:help?after=additions">
+            <command commandId="org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup" label="%command.org.jkiss.dbeaver.ext.ui.tipoftheday.showPopup.name"/>
+        </menuContribution>
 
         <!-- Main toolbar -->
 
@@ -465,6 +457,7 @@
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
         <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.WorkbenchInitializerNewConnection" priority="2"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.tipoftheday.TipOfTheDayInitializer" priority="3"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">

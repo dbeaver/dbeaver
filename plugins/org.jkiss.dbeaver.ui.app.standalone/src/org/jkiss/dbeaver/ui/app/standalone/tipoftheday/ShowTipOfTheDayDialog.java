@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.ui.tipoftheday;
+package org.jkiss.dbeaver.ui.app.standalone.tipoftheday;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -26,7 +26,10 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
@@ -182,13 +185,11 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
                     Object element = null;
 
                     if (uri.getFragment() != null) {
-                        switch (uri.getFragment()) {
-                            case "project":
-                                element = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
-                                break;
-                            default:
-                                log.warn("Unknown element type: '" + uri.getFragment() + "'");
-                                break;
+                        if (uri.getFragment().equals("project")) {
+                            element = DBWorkbench.getPlatform().getNavigatorModel().getRoot()
+                                .getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
+                        } else {
+                            log.warn("Unknown element type: '" + uri.getFragment() + "'");
                         }
                     }
 
