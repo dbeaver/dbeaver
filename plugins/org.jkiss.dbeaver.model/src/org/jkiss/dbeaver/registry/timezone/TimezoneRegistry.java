@@ -28,6 +28,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
@@ -66,15 +67,17 @@ public class TimezoneRegistry {
         userDefaultTimezone = System.getProperty(PROP_USER_TIMEZONE);
         System.setProperty("user.old.timezone", userDefaultTimezone);
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        final String timezone = preferenceStore.getString(ModelPreferences.CLIENT_TIMEZONE);
-        if (timezone != null && !timezone.equals(DBConstants.DEFAULT_TIMEZONE)) {
-            log.debug("Overriding system time zone to '" + timezone + "'");
-            TimeZone timeZone = TimeZone.getTimeZone(timezone);
-            if (!GMT_TIMEZONE.equals(timezone) && GMT_TIMEZONE.equals(timeZone.getID())) {
-                log.debug("Time zone '" + timezone + "' no recognized, falling back to GMT");
+        final String customTimeZone = preferenceStore.getString(ModelPreferences.CLIENT_TIMEZONE);
+        if (customTimeZone != null && !customTimeZone.equals(DBConstants.DEFAULT_TIMEZONE)) {
+            log.debug("Overriding system time zone to '" + customTimeZone + "'");
+            TimeZone currentTimeZone = TimeZone.getTimeZone(customTimeZone);
+            if (!GMT_TIMEZONE.equals(customTimeZone) && GMT_TIMEZONE.equals(currentTimeZone.getID())) {
+                log.debug("Time zone '" + customTimeZone + "' no recognized, falling back to GMT");
+            } else if (Objects.equals(currentTimeZone.getID(), customTimeZone)) {
+                log.debug("Time zone '" + customTimeZone + "' differs from current '" + currentTimeZone.getID() + "'");
             }
-            TimeZone.setDefault(timeZone);
-            System.setProperty(PROP_USER_TIMEZONE, timezone);
+            TimeZone.setDefault(currentTimeZone);
+            System.setProperty(PROP_USER_TIMEZONE, customTimeZone);
         }
     }
 
