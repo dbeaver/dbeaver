@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.test.handlers;
+package org.jkiss.dbeaver.ui.app.devtools.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.app.devtools.ui.TestDialog;
 
-public class ShowNotificationHandler extends AbstractHandler {
-    private static String lastMessage = "This is a test message";
+public class HandlerDialog extends AbstractHandler {
 
     @Override
-    public Object execute(ExecutionEvent event) {
-        String message = DBWorkbench.getPlatformUI().promptProperty("Enter message", lastMessage);
-        if (message == null) {
-            return null;
-        }
-        DBWorkbench.getPlatformUI().showNotification("Test notification", message, false, null);
-        lastMessage = message;
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        TestDialog testDialog = new TestDialog(HandlerUtil.getActiveShell(event));
+        testDialog.open();
         return null;
     }
+
+
 }

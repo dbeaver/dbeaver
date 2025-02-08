@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.test.tools;
+package org.jkiss.dbeaver.ui.app.devtools.tools;
 
 import java.sql.*;
 import java.util.Properties;
@@ -23,60 +23,46 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-public class LockGenerator {
+public class LockGeneratorOracle {
 	
-	public static final int MAX_SESSIONS=79;
+	public static final int MAX_SESSIONS=89;
 	
-	public static final int MIN_CHAIN_SIZE = 2;
-	public static final int MAX_CHAIN_SIZE = 4;
+	public static final int MIN_CHAIN_SIZE = 5;
+	public static final int MAX_CHAIN_SIZE = 10;
 	
-	public static final int MAX_LEVEL_ITEMS = 2;
+	public static final int MAX_LEVEL_ITEMS = 3;
 	
 	private static int getPid(Connection conn) throws SQLException {
-		
-		
-		PreparedStatement stmt = null;
-		ResultSet res = null;
-		
-		try {
-			
-			stmt =  conn.prepareStatement("SELECT pg_backend_pid()");
-			res = stmt.executeQuery();
-			res.next();
-			return res.getInt(1);
-			
-		} finally {
-			
-			if (res != null) res.close();
-			if (stmt != null) stmt.close();
-			
-		}
 
-		
+		try (PreparedStatement stmt = conn.prepareStatement("select sid from v$session where audsid = userenv('sessionid')")) {
+			try (ResultSet res = stmt.executeQuery()) {
+				res.next();
+				return res.getInt(1);
+			}
+		}
 	}
 
 	public static void main(String[] args) {
-		
-		  final String url = "jdbc:postgresql://localhost/postgres";
+		  final String url = "jdbc:oracle:thin:@[SERVER]:1521/[SID]";
 		  final Properties props = new Properties();
-		  props.setProperty("user","");
-		  props.setProperty("password","");
+		  props.setProperty("user","user");
+		  props.setProperty("password","pwd");
 		  Connection conn = null;
 		  PreparedStatement stmt = null;
 		  ResultSet res = null;
-		
+
 		  
 		  try {
 		       conn = DriverManager.getConnection(url, props);
 	     	   conn.setAutoCommit(false);
-	     	   stmt =  conn.prepareStatement("SELECT EXISTS (SELECT 1 FROM   information_schema.tables  WHERE  table_schema = current_schema AND    table_name = 'usr')");
+	     	   stmt =  conn.prepareStatement("select count(*) c from dba_tables where table_name = 'USR' and owner = 'SCHEMA'");
 			   res = stmt.executeQuery();
 			   res.next();
-			   if (!res.getBoolean(1)){
+			   if (res.getInt(1) != 1){
 				   System.out.println("Table not found");
-				   stmt =  conn.prepareStatement("create table usr(field INTEGER,v INTEGER, s VARCHAR)");
+				   stmt =  conn.prepareStatement("create table usr(field NUMBER(11,0),v NUMBER(11,0), s VARCHAR2(1024))");
 				   stmt.execute();
-				   stmt =  conn.prepareStatement("insert into usr(field,s) SELECT b,(SELECT string_agg(x, '')FROM (SELECT chr(ascii('A') + (random() * 25)::integer) FROM generate_series(1, 1024 + b * 0)) AS y(x)) s FROM generate_series(1,10000) as a(b)");
+				   stmt =  conn.prepareStatement("insert into usr(field,s) select rownum r,DBMS_RANDOM.STRING('U',1024) from dual connect by rownum <= 10000");
 				   stmt.execute();
 				   stmt =  conn.prepareStatement("alter table usr add primary key (field)");
 				   stmt.execute();
