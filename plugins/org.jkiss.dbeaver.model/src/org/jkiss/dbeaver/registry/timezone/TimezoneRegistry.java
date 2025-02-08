@@ -45,12 +45,11 @@ public class TimezoneRegistry {
     public static void setDefaultZone(@Nullable ZoneId id, boolean updatePreferences) {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (id != null) {
-            if (!TimeZone.getDefault().getID().equals(id.getId())) {
-                TimeZone.setDefault(TimeZone.getTimeZone(id));
-                System.setProperty(PROP_USER_TIMEZONE, id.getId());
-                if (updatePreferences) {
-                    preferenceStore.setValue(ModelPreferences.CLIENT_TIMEZONE, id.getId());
-                }
+            TimeZone timeZone = TimeZone.getTimeZone(id);
+            TimeZone.setDefault(timeZone);
+            System.setProperty(PROP_USER_TIMEZONE, id.getId());
+            if (updatePreferences) {
+                preferenceStore.setValue(ModelPreferences.CLIENT_TIMEZONE, id.getId());
             }
         } else {
             if (!TimeZone.getDefault().getID().equals(userDefaultTimezone)) {
