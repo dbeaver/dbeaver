@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com) 
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.ui.locks.manage;
+package org.jkiss.dbeaver.ui.editors.locks.manage;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
@@ -33,10 +32,6 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ui.locks.LocksUIMessages;
-import org.jkiss.dbeaver.ext.ui.locks.graph.LockGraphicalView;
-import org.jkiss.dbeaver.ext.ui.locks.table.LockTable;
-import org.jkiss.dbeaver.ext.ui.locks.table.LockTableDetail;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockItem;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
@@ -45,6 +40,10 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
+import org.jkiss.dbeaver.ui.editors.locks.LocksUIMessages;
+import org.jkiss.dbeaver.ui.editors.locks.graph.LockGraphicalView;
+import org.jkiss.dbeaver.ui.editors.locks.table.LockTable;
+import org.jkiss.dbeaver.ui.editors.locks.table.LockTableDetail;
 
 import java.util.Collection;
 import java.util.Map;
