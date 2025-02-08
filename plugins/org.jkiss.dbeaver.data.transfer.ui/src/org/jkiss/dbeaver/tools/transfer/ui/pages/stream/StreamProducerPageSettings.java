@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
@@ -111,7 +110,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                         toolbar,
                         UIMessages.text_with_open_dialog_browse,
                         UIMessages.text_with_open_dialog_browse,
-                        DBIcon.TREE_FOLDER,
+                        UIIcon.OPEN,
                         SelectionListener.widgetSelectedAdapter(e -> new SelectInputFileAction(false).run())
                     );
                 }

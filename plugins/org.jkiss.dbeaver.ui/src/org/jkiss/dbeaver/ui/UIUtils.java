@@ -2519,4 +2519,23 @@ public class UIUtils {
         }
         return UIMessages.label_catalog_schema;
     }
+
+    /**
+     * Disables redraw for the control and returns a closeable object that will enable redraw when closed.
+     * <p>
+     * Example:
+     * <pre>{@code
+     *     try (DBPCloseableObject ignored = UIUtils.disableRedraw(control)) {
+     *         // do something
+     *     }
+     * }</pre>
+     *
+     * @param control control to disable redraw
+     * @return closeable object that will enable redraw when closed
+     */
+    @NotNull
+    public static DBPCloseableObject disableRedraw(@NotNull Control control) {
+        control.setRedraw(false);
+        return () -> control.setRedraw(true);
+    }
 }

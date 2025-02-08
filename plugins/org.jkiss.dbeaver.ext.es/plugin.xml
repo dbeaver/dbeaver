@@ -36,22 +36,6 @@
                     <parameter name="use-search-string-escape" value="true"/>
                 </driver>
 
-                <driver
-                        id="open_search_jdbc"
-                        label="OpenSearch"
-                        class="org.opensearch.jdbc.Driver"
-                        sampleURL="jdbc:opensearch://{host}[:{port}]"
-                        defaultPort="9200"
-                        description="OpenSearch (Elasticsearch) JDBC driver"
-                        webURL="https://github.com/opensearch-project/sql-jdbc"
-                        categories="fulltext">
-                    <file type="jar" path="maven:/org.opensearch.driver:opensearch-sql-jdbc:RELEASE[1.4.0.1]"/>
-                    <parameter name="supports-references" value="false"/>
-                    <parameter name="supports-indexes" value="false"/>
-                    <parameter name="omit-catalog" value="true"/>
-                    <parameter name="use-search-string-escape" value="true"/>
-                </driver>
-
             </drivers>
 
         </datasource>
