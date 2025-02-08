@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ui.config.migration.wizards.squirrel;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.config.migration.Activator;
+import org.jkiss.dbeaver.ui.config.migration.ImportConfigImages;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo;
@@ -47,7 +47,7 @@ public class ConfigImportWizardPageSquirrel extends ConfigImportWizardPage {
         super(ImportConfigMessages.config_import_wizard_squirrel_name);
         setTitle(ImportConfigMessages.config_import_wizard_squirrel_name);
         setDescription(ImportConfigMessages.config_import_wizard_squirrel_description);
-        setImageDescriptor(Activator.getImageDescriptor("icons/squirrel_big.png"));
+        setImageDescriptor(ImportConfigImages.getImageDescriptor("icons/squirrel_big.png"));
     }
 
     @Override

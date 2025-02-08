@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.config.migration.wizards.dbvis;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.config.migration.Activator;
+import org.jkiss.dbeaver.ui.config.migration.ImportConfigImages;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
 import org.jkiss.dbeaver.ui.config.migration.dbvis.DbvisConfigurationImporter;
 import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizardPage;
@@ -38,7 +38,7 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
         super(ImportConfigMessages.config_import_wizard_dbvis_name);
         setTitle(ImportConfigMessages.config_import_wizard_dbvis_name);
         setDescription(ImportConfigMessages.config_import_wizard_dbvis_description);
-        setImageDescriptor(Activator.getImageDescriptor("icons/dbvis_big.png"));
+        setImageDescriptor(ImportConfigImages.getImageDescriptor("icons/dbvis_big.png"));
     }
 
     @Override
