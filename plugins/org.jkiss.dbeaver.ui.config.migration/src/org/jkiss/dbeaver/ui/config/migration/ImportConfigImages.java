@@ -21,9 +21,9 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 public class ImportConfigImages {
 
-	public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.config.migration";
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.config.migration";
 
-	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, path);
-	}
+    public static ImageDescriptor getImageDescriptor(String path) {
+        return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, path);
+    }
 }
