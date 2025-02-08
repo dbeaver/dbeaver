@@ -511,6 +511,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 if (settingsFile.exists()) {
                     settingsFile.deleteOnExit();
                 }
+                File prefFile = new File(instanceDir, ".metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.ui.workbench.prefs");
+                if (prefFile.exists()) {
+                    prefFile.deleteOnExit();
+                }
                 //markFoldertoDelete(new File(instanceDir, ".metadata/.plugins/org.eclipse.core.resources/.root"));
                 //markFoldertoDelete(new File(instanceDir, ".metadata/.plugins/org.eclipse.core.resources/.safetable"));
             }
