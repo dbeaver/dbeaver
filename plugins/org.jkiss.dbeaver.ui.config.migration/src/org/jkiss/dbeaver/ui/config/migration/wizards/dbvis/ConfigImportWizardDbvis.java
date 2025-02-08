@@ -14,30 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.ui.tools.toad;
+package org.jkiss.dbeaver.ui.config.migration.wizards.dbvis;
 
 import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizard;
-import org.jkiss.dbeaver.ui.config.migration.wizards.ConfigImportWizardPage;
 
-import java.io.File;
-
-public class ConfigImportWizardToad extends ConfigImportWizard {
-
-    private ConfigImportWizardPageToadFile pageFile;
-
+public class ConfigImportWizardDbvis extends ConfigImportWizard {
+	
     @Override
-    protected ConfigImportWizardPage createMainPage() {
-        return new ConfigImportWizardPageToadConnections();
+    protected ConfigImportWizardPageDbvis createMainPage()
+    {
+        return new ConfigImportWizardPageDbvis();
     }
 
-    @Override
-    public void addPages() {
-        pageFile = new ConfigImportWizardPageToadFile();
-        addPage(pageFile);
-        super.addPages();
-    }
 
-    public File getInputFile() {
-        return pageFile.getInputFile();
-    }
 }

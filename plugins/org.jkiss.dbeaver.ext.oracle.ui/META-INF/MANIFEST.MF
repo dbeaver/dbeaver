@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.jkiss.dbeaver.ext.oracle.ui;singleton:=true
 Bundle-Version: 1.0.136.qualifier
 Bundle-Release-Date: 20250217
 Bundle-Activator: org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIActivator
-Require-Bundle: org.jkiss.dbeaver.ext.config.migration,
+Require-Bundle: org.jkiss.dbeaver.ui.config.migration,
  org.jkiss.dbeaver.ui.editors.locks,
  com.github.jsqlparser,
  com.google.gson,
