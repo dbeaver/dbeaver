@@ -70,19 +70,30 @@ public class GBase8sUtils {
     public static boolean isOracleSqlMode(DBPDataSourceContainer container) {
         DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
         Map<String, String> cprops = configuration.getProperties();
-        for (String key : cprops.keySet()) {
-            if ("sqlmode".equalsIgnoreCase(key)) {
-                return "oracle".equalsIgnoreCase(cprops.get(key).trim());
-            }
+        if (containsSqlModeKey(cprops)) {
+            return isOracleSqlModeFromProperties(cprops);
         }
         DBPDriver driver = container.getDriver();
         Map<String, Object> driverProps = driver.getConnectionProperties();
-        for (String key : driverProps.keySet()) {
-            if ("sqlmode".equalsIgnoreCase(key)) {
-                return "oracle".equalsIgnoreCase(Objects.toString(driverProps.get(key), "").trim());
-            }
+        // If driverProps does not have SQLMODE, return true. Default is Oracle mode.
+        if (!containsSqlModeKey(driverProps)) {
+            return true;
         }
-        return true;
+        return isOracleSqlModeFromProperties(driverProps);
+    }
+
+    private static boolean containsSqlModeKey(Map<String, ?> properties) {
+        return properties != null && !properties.isEmpty() && properties.keySet().stream()
+                .anyMatch(key -> key != null && GBase8sConstants.JDBC_SQL_MODE.equalsIgnoreCase(key));
+    }
+
+    private static boolean isOracleSqlModeFromProperties(Map<String, ?> properties) {
+        return properties != null && !properties.isEmpty()
+                && properties.entrySet().stream()
+                        .anyMatch(entry -> entry.getKey() != null
+                                && GBase8sConstants.JDBC_SQL_MODE.equalsIgnoreCase(entry.getKey().toString())
+                                && GBase8sConstants.JDBC_SQL_MODE_ORACLE
+                                        .equalsIgnoreCase(Objects.toString(entry.getValue(), "").trim()));
     }
 
     public static String listToString(List<String> value, String delimiter) {
