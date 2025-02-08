@@ -69,7 +69,6 @@
         <module>org.jkiss.dbeaver.ext.gbase8s</module>
         <module>org.jkiss.dbeaver.ext.greenplum</module>
         <module>org.jkiss.dbeaver.ext.h2</module>
-        <module>org.jkiss.dbeaver.ext.h2gis</module>
         <module>org.jkiss.dbeaver.ext.hana</module>
         <module>org.jkiss.dbeaver.ext.hive</module>
         <module>org.jkiss.dbeaver.ext.hsqldb</module>

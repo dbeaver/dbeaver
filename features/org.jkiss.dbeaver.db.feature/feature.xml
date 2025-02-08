@@ -35,7 +35,6 @@
    <plugin id="org.jkiss.dbeaver.ext.gbase8s" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.greenplum" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.h2" version="0.0.0" />
-   <plugin id="org.jkiss.dbeaver.ext.h2gis" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.hana" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.hive" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.hsqldb" version="0.0.0" />
