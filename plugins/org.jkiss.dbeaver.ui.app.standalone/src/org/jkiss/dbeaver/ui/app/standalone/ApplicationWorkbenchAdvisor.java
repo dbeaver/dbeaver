@@ -48,11 +48,11 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
+import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
@@ -276,7 +276,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             }
         }
 
-        if (DBWorkbench.getPlatform() instanceof DBPPlatformDesktop platformDesktop) {
+        if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
             platformDesktop.setWorkbenchStarted(true);
         }
     }
@@ -399,7 +399,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             // and we want to free them before application display will be disposed
             basePlatform.disposeNavigatorModel();
         }
-        if (DBWorkbench.getPlatform() instanceof DBPPlatformDesktop platformDesktop) {
+        if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
             platformDesktop.setWorkbenchStarted(false);
         }
     }

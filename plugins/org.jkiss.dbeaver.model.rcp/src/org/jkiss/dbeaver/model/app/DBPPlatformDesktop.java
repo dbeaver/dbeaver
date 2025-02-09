@@ -39,7 +39,11 @@ public interface DBPPlatformDesktop extends DBPPlatform, DBPPlatformEventManager
         return DBWorkbench.getPlatform(DBPPlatformDesktop.class);
     }
 
+    /**
+     * Workbench is started when main workbench window is fully initialized.
+     * This check was added because Eclipse plugins may trigger some UI actions
+     * like dialogs during plugins activation and may lead to UI deadlocks.
+     */
     boolean isWorkbenchStarted();
 
-    void setWorkbenchStarted(boolean started);
 }
