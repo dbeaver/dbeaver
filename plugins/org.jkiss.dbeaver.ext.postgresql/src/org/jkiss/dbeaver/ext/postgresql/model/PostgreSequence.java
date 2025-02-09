@@ -57,7 +57,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
         private long startValue;
-        private Long lastValue;
+        private long lastValue;
         private long minValue;
         private long maxValue;
         private long incrementBy;
@@ -65,7 +65,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         private boolean isCycled;
 
         @Property(viewable = true, editable = true, updatable = true, order = 10)
-        public Long getLastValue() {
+        public long getLastValue() {
             return lastValue;
         }
 
@@ -170,13 +170,25 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load sequence additional info")) {
             if (getDataSource().isServerVersionAtLeast(10, 0)) {
                 try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
-                    "SELECT * from pg_catalog.pg_sequences WHERE schemaname=? AND sequencename=?")) {
+                        """
+                        select
+                           pg_seq.start_value,
+                           coalesce(pg_seq.last_value, seq.last_value) as last_value,
+                           pg_seq.min_value,
+                           pg_seq.max_value,
+                           pg_seq.increment_by,
+                           pg_seq.cache_size,
+                           pg_seq.cycle
+                        from %s seq
+                        cross join pg_catalog.pg_sequences pg_seq WHERE schemaname=? AND sequencename=?
+                        """.formatted(getFullyQualifiedName(DBPEvaluationContext.DML)))
+                ) {
                     dbSeqStat.setString(1, getSchema().getName());
                     dbSeqStat.setString(2, getName());
                     try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
                         if (seqResults.next()) {
                             additionalInfo.startValue = JDBCUtils.safeGetLong(seqResults, "start_value");
-                            additionalInfo.lastValue = JDBCUtils.safeGetLongNullable(seqResults, "last_value");
+                            additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, "last_value");
                             additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
                             additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
                             additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, "increment_by");
@@ -191,7 +203,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
                     try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
                         if (seqResults.next()) {
                             additionalInfo.startValue = JDBCUtils.safeGetLong(seqResults, "start_value");
-                            additionalInfo.lastValue = JDBCUtils.safeGetLongNullable(seqResults, "last_value");
+                            additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, "last_value");
                             additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
                             additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
                             additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, "increment_by");
