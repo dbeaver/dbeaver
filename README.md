@@ -1,6 +1,7 @@
 [![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/dbeaver_news.svg?style=social&label=Follow%20%40dbeaver_news)](https://twitter.com/dbeaver_news)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fa0bb9cf5a904c7d87424f8f6351ba92)](https://app.codacy.com/gh/dbeaver/dbeaver/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Apache 2.0](https://img.shields.io/github/license/cronn-de/jira-sync.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+[![Tickets in review](https://img.shields.io/github/issues/dbeaver/dbeaver/wait%20for%20review?labelColor=red)](https://github.com/dbeaver/dbeaver/issues?q=is%3Aissue+is%3Aopen+label%3A"wait%20for%20review")
 
 <img src="https://github.com/dbeaver/dbeaver/wiki/images/dbeaver-icon-64x64.png" align="right"/>
 

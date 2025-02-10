@@ -51,5 +51,6 @@ Require-Bundle: org.osgi.service.event,
  org.jkiss.dbeaver.ui.editors.connection;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.sql;visibility:=reexport,
  org.jkiss.dbeaver.ui.navigator;visibility:=reexport
+Import-Package: jakarta.annotation
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.core

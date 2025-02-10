@@ -1246,4 +1246,8 @@
             handler="org.jkiss.dbeaver.ui.browser.handlers.BrowserClearCookiesHandler"/>
     </extension>
 
+    <extension id="org.jkiss.dbeaver.core.fragment" point="org.eclipse.e4.workbench.model">
+        <fragment apply="always" uri="fragment.e4xmi"/>
+    </extension>
+
 </plugin>
