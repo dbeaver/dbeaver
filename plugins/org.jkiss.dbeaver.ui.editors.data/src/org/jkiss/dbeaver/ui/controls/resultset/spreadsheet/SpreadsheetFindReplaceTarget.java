@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     private List<GridPos> originalSelection = new ArrayList<>();
     private final Set<DBDValueRow> updatedRows = new LinkedHashSet<>();
     private final Set<DBDAttributeBinding> updatedAttributes = new LinkedHashSet<>();
+    private final Set<GridPos> processedCells = new HashSet<>();
     private AbstractJob redrawJob = null;
     private String currentFindString = "";
     private boolean currentCaseSensitive;
@@ -154,6 +155,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             updatedRows.clear();
             updatedAttributes.clear();
         }
+        processedCells.clear();
 
         final SpreadsheetPresentation owner = getActiveSpreadsheet(false);
         if (owner == null) {
@@ -265,6 +267,10 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             return;
         }
 
+        if (replaceAll && processedCells.contains(selection)) {
+            return;
+        }
+
         GridCell cell = owner.getSpreadsheet().posToCell(selection);
         if (cell == null) {
             return;
@@ -274,7 +280,6 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         String oldValue = CommonUtils.toString(owner.getSpreadsheet().getContentProvider().getCellValue(
             cell.col, cell.row, true));
         String newValue = oldValue;
-
 
         if (searchPattern != null) {
             newValue = searchPattern.matcher(oldValue).replaceAll(text);
@@ -301,6 +306,10 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                     cellLocation.getRowIndexes(),
                     newValue,
                     !replaceAll);
+            }
+
+            if (replaceAll) {
+                processedCells.add(selection);
             }
         } catch (DBException e) {
             log.error("Error updating cell value", e);
@@ -421,13 +430,13 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
 
         while (checked <= totalCells) {
             if (isCellInScope(currentPos, firstRow, lastRow, minColumn, columnCount)) {
-                String cellText = getCellText(spreadsheet, currentPos, recordMode, minColumn);
-
-                // Match found handling
-                if (cellText != null && pattern.matcher(cellText).find()) {
-                    selectCell(spreadsheet, currentPos, minColumn);
-                    storeLastFoundPosition(currentPos);
-                    return currentPos.row;
+                if (!replaceAll || !processedCells.contains(currentPos)) {
+                    String cellText = getCellText(spreadsheet, currentPos, recordMode, minColumn);
+                    if (cellText != null && pattern.matcher(cellText).find()) {
+                        selectCell(spreadsheet, currentPos, minColumn);
+                        storeLastFoundPosition(currentPos);
+                        return currentPos.row;
+                    }
                 }
                 checked++;
             }
@@ -443,6 +452,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                 wrapped = true;
             }
         }
+        processedCells.clear();
         return -1; // No matches found
     }
 
