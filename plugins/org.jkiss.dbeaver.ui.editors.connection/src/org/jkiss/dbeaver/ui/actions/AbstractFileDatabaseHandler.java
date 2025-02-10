@@ -26,12 +26,10 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 
 import java.nio.file.Path;
@@ -43,8 +41,6 @@ import java.util.Map;
  * Database file handler
  */
 public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
-
-    private static final String FILE_DATABASES_FOLDER = "File databases";
 
     @Override
     public void openFiles(
@@ -95,7 +91,7 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
                         DBNDatabaseNode openNode = DBNUtils.getDefaultDatabaseNodeToOpen(monitor, dataSource);
 
                 if (openNode == null) {
-                    throw new DBException("Cannot determine target node for " + objectToOpen);
+                    throw new DBException("Cannot determine target node for " + dsContainer.getName());
                 } else {
                     UIUtils.syncExec(() -> NavigatorHandlerObjectOpen.openEntityEditor(
                         openNode,
