@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -79,7 +80,7 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
         DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
         configuration.setDatabaseName(databaseName);
 
-        DBPDataSourceContainer dsContainer = DBNUtils.createTemporaryDataSourceContainer(connectionName, project, driver, configuration);
+        DBPDataSourceContainer dsContainer = DBFUtils.createTemporaryDataSourceContainer(connectionName, project, driver, configuration);
         if (dsContainer == null) {
             return;
         }
