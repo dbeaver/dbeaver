@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
 
 <plugin>
     <extension-point id="org.jkiss.dbeaver.generic.meta" name="Generic meta model retrieval" schema="schema/org.jkiss.dbeaver.generic.meta.exsd"/>
@@ -222,10 +206,9 @@
                     sampleURL="jdbc:opensearch://[{scheme}://][{host}][:{port}]"
                     defaultPort="443"
                     webURL="https://www.opensearch.org/"
-                    description="OpenSearch open source search and analytics suite"
+                    description="OpenSearch open source search and analytics suite (ex ElasticSearch)"
                     categories="sql">
-                    <file type="jar" path="https://artifacts.opensearch.org/opensearch-clients/jdbc/opensearch-sql-jdbc-1.1.0.1.jar" bundle="!drivers.opensearch"/>
-                    <file type="jar" path="drivers/opensearch" bundle="drivers.opensearch"/>
+                    <file type="jar" path="maven:/org.opensearch.driver:opensearch-sql-jdbc:RELEASE[1.4.0.1]"/>
                     <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.opensearch"/>
                     <parameter name="read-only-data" value="true"/>
                     <parameter name="read-only-meta-data" value="true"/>
@@ -1483,6 +1466,76 @@
             </drivers>
 
         </datasource>
+
+        <!-- Elasticsearch data sources. Historically in another datasource provider but in fact generic -->
+        <datasource
+                class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
+                description="Elasticsearch datasource"
+                id="elasticsearch"
+                parent="generic"
+                label="Elasticsearch"
+                icon="icons/elasticsearch_icon.png"
+                dialect="generic">
+            <drivers managable="true">
+
+                <driver
+                        id="elastic_search_jdbc"
+                        label="Elasticsearch"
+                        class="org.elasticsearch.xpack.sql.jdbc.EsDriver"
+                        icon="icons/elasticsearch_icon.png"
+                        iconBig="icons/elasticsearch_icon_big.png"
+                        sampleURL="jdbc:es://{host}:{port}/"
+                        defaultPort="9200"
+                        description="Elasticsearch JDBC driver"
+                        webURL="https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-jdbc.html"
+                        categories="fulltext">
+                    <replace provider="generic" driver="es_generic"/>
+                    <file type="jar" path="maven:/org.elasticsearch.plugin:x-pack-sql-jdbc:8.17.1" bundle="!drivers.elasticsearch"/>
+                    <file type="license" path="https://raw.githubusercontent.com/elastic/elasticsearch/main/licenses/SSPL-1.0%2BELASTIC-LICENSE-2.0.txt" bundle="!drivers.elasticsearch"/>
+                    <file type="jar" path="drivers/elasticsearch" bundle="drivers.elasticsearch"/>
+                    <file type="license" path="drivers/elasticsearch/LICENSE.txt" bundle="drivers.elasticsearch"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="use-search-string-escape" value="true"/>
+                </driver>
+
+            </drivers>
+
+        </datasource>
+        <datasource
+                class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
+                description="Opendistro datasource"
+                id="open-distro-elasticsearch"
+                parent="generic"
+                label="Open Distro Elasticsearch"
+                icon="icons/opendistro_icon.png"
+                dialect="generic">
+            <drivers managable="true">
+
+                <driver
+                        id="open_distro_elastic_search_jdbc"
+                        label="Open Distro Elasticsearch"
+                        class="com.amazon.opendistroforelasticsearch.jdbc.Driver"
+                        icon="icons/opendistro_icon.png"
+                        iconBig="icons/opendistro_icon_big.png"
+                        sampleURL="jdbc:elasticsearch://https://{host}:{port}/"
+                        defaultPort="443"
+                        description="Opendistro Elasticsearch JDBC driver"
+                        webURL="https://opendistro.github.io/for-elasticsearch-docs/docs/sql/jdbc/"
+                        categories="fulltext">
+                    <replace provider="generic" driver="opendistro_generic"/>
+                    <file type="jar" path="maven:/com.amazon.opendistroforelasticsearch.client:opendistro-sql-jdbc:1.1.0.0"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="use-search-string-escape" value="true"/>
+                </driver>
+
+            </drivers>
+
+        </datasource>
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">

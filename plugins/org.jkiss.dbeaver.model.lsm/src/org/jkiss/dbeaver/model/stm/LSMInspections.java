@@ -254,10 +254,14 @@ public class LSMInspections {
             stack = stack.next;
 
             if (node instanceof STMTreeTermNode term) {
-                allTerms.add(term);
-                allNonErrorTerms.add(term);
+                if (node.getRealInterval().a >= 0 && node.getRealInterval().b >= 0) {
+                    allTerms.add(term);
+                    allNonErrorTerms.add(term);
+                }
             } else if (node instanceof STMTreeTermErrorNode err) {
-                allTerms.add(err);
+                if (node.getRealInterval().a >= 0 && node.getRealInterval().b >= 0) {
+                    allTerms.add(err);
+                }
             } else {
                 for (int i = node.getChildCount() - 1; i >= 0; i--) {
                     stack = ListNode.push(stack, node.getChildNode(i));
