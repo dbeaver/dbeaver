@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,14 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 
 public class StreamDataImporterColumnInfo extends AbstractAttribute implements DBSEntityAttribute {
 
-    private StreamEntityMapping entityMapping;
+    private final StreamEntityMapping entityMapping;
     private DBPDataKind dataKind;
 
     // Determines whether the mapping metadata,
     // such as the column name, is present or not.
     private boolean mappingMetadataPresent;
 
-    public StreamDataImporterColumnInfo(StreamEntityMapping entity, int columnIndex, String columnName, String typeName, int maxLength, DBPDataKind dataKind) {
+    public StreamDataImporterColumnInfo(StreamEntityMapping entity, int columnIndex, @NotNull String columnName, @NotNull String typeName, int maxLength, DBPDataKind dataKind) {
         super(columnName, typeName, -1, columnIndex, maxLength, null, null, false, false);
         this.entityMapping = entity;
         this.dataKind = dataKind;

@@ -328,10 +328,11 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     @Override
     public boolean isWorkbenchStarted() {
-        return workbenchStarted;
+        // In plugin mode it is always true
+        // We don't have any specific security providers which are activated during startup so it is safe
+        return workbenchStarted || !getApplication().isStandalone();
     }
 
-    @Override
     public void setWorkbenchStarted(boolean started) {
         this.workbenchStarted = started;
     }
