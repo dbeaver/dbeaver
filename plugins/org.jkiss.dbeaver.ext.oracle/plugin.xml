@@ -257,12 +257,12 @@
                             <items label="Java Class" path="class" property="javaClasses" icon="#javaClass"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJob" label="Jobs" icon="#scheduler_job_folder" description="Jobs">
-                            <items label="Job" path="job" property="jobs" icon="icons/scheduled_job.png"/>
+                            <items label="Job" path="job" property="jobs" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/job_schedule.png"/>
                         </folder>
                         <folder label="%tree.scheduler.node.name" icon="#scheduler_folder" id="schedulerFolder"
                                 description="Scheduler objects">
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob" label="%tree.scheduler.jobs.node.name" icon="#scheduler_job_folder" description="Scheduler jobs">
-                                <items label="%tree.scheduler.job.node.name" path="schedulerJob" property="schedulerJobs" icon="icons/scheduled_job.png">
+                                <items label="%tree.scheduler.job.node.name" path="schedulerJob" property="schedulerJobs" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/job_schedule.png">
                                     <items label="%tree.scheduler.job.arguments.node.name" itemLabel="%tree.scheduler.job.argument.node.name" path="argument" property="arguments" icon="#argument" navigable="false" inline="false"/>
                                 </items>
                             </folder>
