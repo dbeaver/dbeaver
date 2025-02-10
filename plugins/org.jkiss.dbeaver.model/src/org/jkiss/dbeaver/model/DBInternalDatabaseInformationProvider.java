@@ -29,6 +29,6 @@ public interface DBInternalDatabaseInformationProvider {
      * Internal database info.
      */
     @NotNull
-    String getInternalDatabaseInformation() throws DBException;
+    DBPConnectionInformation getInternalDatabaseInformation() throws DBException;
     
 }

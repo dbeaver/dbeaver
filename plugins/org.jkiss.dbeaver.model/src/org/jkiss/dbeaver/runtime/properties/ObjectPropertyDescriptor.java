@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     private final String propName;
     private final String propDescription;
     private final String propHint;
+    private final String category;
     private Method setter;
     private IPropertyValueTransformer valueTransformer;
     private IPropertyValueTransformer valueRenderer;
@@ -139,6 +140,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         this.propHint = CommonUtils.isEmpty(propInfo.hint()) ?
             null :
             getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, propName, false, locale);
+        this.category = CommonUtils.isEmpty(propInfo.category()) ?
+            parent == null ? null : CommonUtils.notEmpty(parent.getCategory()) :
+            propInfo.category();
     }
 
     @Override
@@ -355,9 +359,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     }
 
     @Override
-    public String getCategory()
-    {
-        return CommonUtils.isEmpty(propInfo.category()) ? null : propInfo.category();
+    public String getCategory() {
+        return category;
     }
 
     @Override
