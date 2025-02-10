@@ -186,7 +186,9 @@ public class LSMInspections {
 
                 // TODO consider when to take previous term to get correct inspected keywords
 
-                node = index >= this.allNonErrorTerms.size() ? null : this.allNonErrorTerms.get(index);
+                node = this.allNonErrorTerms.isEmpty() || index >= this.allNonErrorTerms.size()
+                    ? null
+                    : this.allNonErrorTerms.get(index);
                 Interval nodeRange = node == null ? null : node.getRealInterval();
                 if (nodeRange != null && nodeRange.a <= position) {
                     if (nodeRange.b + 1 >= position) {
@@ -215,8 +217,16 @@ public class LSMInspections {
                     node = this.allNonErrorTerms.get(index - 1);
                     initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
                 } else {
+                    if (node == null) {
+                        return SyntaxInspectionResult.EMPTY;
+                    }
                     // subroot itself contains given position, use its rule start state
-                    initialState = atn.states.get(node.getParentNode().getAtnState());
+                    STMTreeNode parent = node.getParentNode();
+                    if (parent != null) {
+                        initialState = atn.states.get(parent.getAtnState());
+                    } else {
+                        return SyntaxInspectionResult.EMPTY;
+                    }
                 }
             }
 
