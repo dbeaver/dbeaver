@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -307,7 +307,7 @@ public class CustomFormEditor {
                 Text editor = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | (readOnly ? SWT.READ_ONLY : SWT.NONE));
 
                 editor.setText(objectValueToString(value));
-                GridData gd = new GridData(GridData.FILL_BOTH);
+                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
                 // Make multiline editor at least two lines height
                 gd.heightHint = (UIUtils.getTextHeight(editor) + editor.getBorderWidth()) * 2;
                 editor.setLayoutData(gd);
