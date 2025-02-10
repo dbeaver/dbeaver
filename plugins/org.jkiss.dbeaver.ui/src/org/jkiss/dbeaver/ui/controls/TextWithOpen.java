@@ -26,7 +26,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ide.IDE;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -107,7 +106,7 @@ public class TextWithOpen {
                 // Local FS works only on local machine. Will not work for TE remote tasks.
                 // Do we need to do anything about it in UI?
                 final ToolItem toolItem = new ToolItem(toolbar, SWT.NONE);
-                toolItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
+                toolItem.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
                 toolItem.setToolTipText(UIMessages.text_with_open_dialog_browse);
                 toolItem.addSelectionListener(new SelectionAdapter() {
                     @Override
