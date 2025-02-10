@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,31 +26,36 @@ import java.util.Set;
  */
 public interface SQLTokenPredicateSet {
     /**
-     * @return maximum statement prefix length handled by predicates
+     * Returns maximum statement prefix length handled by predicates
      */
     int getMaxPrefixLength();
+
     /**
-     * @return maximum statement suffix length handled by predicates
+     * Returns maximum statement suffix length handled by predicates
      */
     int getMaxSuffixLength();
 
     /**
+     * Returns true if we need to try capturing text parts by the key of the predicate condition
+     */
+    boolean hasCaptures();
+
+    /**
      * Checks for a presence of predicates matching given prefix and suffix
-     * @param prefix
-     * @param suffix
+     *
      * @return true if there are any corresponding conditions
      */
     boolean anyMatches(Deque<TokenEntry> prefix, Deque<TokenEntry> suffix);
 
     /**
-     * @return root node of the tree containing all prefixes of all predicates
+     * Returns root node of the tree containing all prefixes of all predicates
      */
     @NotNull
     TrieNode<TokenEntry, SQLTokenPredicate> getPrefixTreeRoot();
 
     /**
      * Searches for all the predicates matching given suffix in the text
-     * @param suffix
+     *
      * @return set of successfully matched predicates
      */
     @NotNull

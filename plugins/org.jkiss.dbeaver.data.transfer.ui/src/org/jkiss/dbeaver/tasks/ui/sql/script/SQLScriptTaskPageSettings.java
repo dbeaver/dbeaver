@@ -148,7 +148,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                         try {
                             handler.openResource(resource);
                         } catch (Exception e) {
-                            log.error("Failed to open resource " + resource, e);
+                            DBWorkbench.getPlatformUI().showError("Error opening resource", "Failed to open resource " + resource, e);
                         }
                     }
                 }
