@@ -41,8 +41,6 @@
 
     <!-- Additional plugins for standalone version -->
 
-    <plugin id="org.jkiss.dbeaver.ext.ui.tipoftheday" version="0.0.0" />
-
     <plugin id="org.eclipse.ui.ide.application" version="0.0.0" />
     <plugin id="org.apache.commons.cli" version="0.0.0" />
     <!-- Launcher -->

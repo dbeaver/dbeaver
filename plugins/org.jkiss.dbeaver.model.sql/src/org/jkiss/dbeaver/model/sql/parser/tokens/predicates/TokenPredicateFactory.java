@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 
 /**
@@ -61,14 +60,16 @@ public abstract class TokenPredicateFactory {
 
     /**
      * Materialize token predicate node describing given token string with a dialect-specific token type classification
+     *
      * @param tokenString to classify
      * @return predicate node carrying information about the token entry
      */
-    @NotNull
-    protected abstract SQLTokenEntry classifyToken(@NotNull String tokenString);
+    @Nullable
+    protected abstract SQLTokenType classifyToken(@NotNull String tokenString);
 
     /**
      * Materialize token predicate node carrying information about token entry described in a certain way.
+     *
      * @param obj some information about the token entry (see {@link TokenPredicateFactory} for the details)
      * @return predicate node carrying information about the token entry
      */
@@ -77,9 +78,9 @@ public abstract class TokenPredicateFactory {
         if (obj == null) {
             return new SQLTokenEntry(null, null, false);
         } else if (obj instanceof TokenPredicateNode) {
-            return (TokenPredicateNode)obj;
-        } else if (obj instanceof String) {
-            return this.classifyToken((String)obj);
+            return (TokenPredicateNode) obj;
+        } else if (obj instanceof String string) {
+            return new SQLTokenEntry(string, this.classifyToken(string), false);
         } else if (obj instanceof SQLTokenType) {
             return new SQLTokenEntry(null, (SQLTokenType) obj, false);
         } else {
@@ -89,12 +90,36 @@ public abstract class TokenPredicateFactory {
 
     @NotNull
     private TokenPredicateNode[] makeGroup(@NotNull Object ... objs) {
-        return Arrays.stream(objs).map(o -> makeNode(o)).collect(Collectors.toList()).toArray(new TokenPredicateNode[0]);
+        return Arrays.stream(objs).map(this::makeNode).toArray(TokenPredicateNode[]::new);
     }
 
     @NotNull
     public TokenPredicateNode token(@NotNull Object obj) {
         return this.makeNode(obj);
+    }
+
+    /**
+     * Create predicate node able to capture parts of the text by the key
+     *
+     * @param type - the type of the token
+     * @param key - the key in the rule to capture token text
+     * @return new instance of CaptureTokenPredicateNode
+     */
+    @NotNull
+    public TokenPredicateNode captureToken(@NotNull SQLTokenType type, String key) {
+        return new CaptureTokenPredicateNode(null, type, key);
+    }
+
+    /**
+     * Create predicate node able to capture parts of the text by the key
+     *
+     * @param string - the exact value of the token
+     * @param key - the key in the rule to capture token text
+     * @return new instance of CaptureTokenPredicateNode
+     */
+    @NotNull
+    public TokenPredicateNode captureToken(@NotNull String string, String key) {
+        return new CaptureTokenPredicateNode(string, this.classifyToken(string), key);
     }
 
     @NotNull
@@ -129,8 +154,7 @@ public abstract class TokenPredicateFactory {
     
     @NotNull
     public TokenPredicateNode not(@NotNull String str) {
-        SQLTokenEntry entry = this.classifyToken(str);
-        return new SQLTokenEntry(entry.getString(), entry.getTokenType(), true);
+        return new SQLTokenEntry(str, this.classifyToken(str), true);
     }
 
     @NotNull

@@ -44,10 +44,7 @@ import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
-import org.jkiss.dbeaver.ui.BaseThemeSettings;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -81,7 +78,7 @@ public class DatabaseTasksTree {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
         dateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
         colorError = BaseThemeSettings.instance.colorError;
-        colorErrorForeground = UIUtils.getContrastColor(colorError);
+        colorErrorForeground = UIStyles.getContrastColor(colorError);
         
         taskViewer = DialogUtils.createFilteredTree(composite,
             SWT.MULTI | SWT.FULL_SELECTION | (selector ? SWT.BORDER | SWT.CHECK : SWT.NONE),

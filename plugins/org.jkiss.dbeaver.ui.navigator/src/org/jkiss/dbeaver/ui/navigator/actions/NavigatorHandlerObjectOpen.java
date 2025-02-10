@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
-import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UITextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -85,13 +84,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             }
             for (Object element : structSelection) {
                 DBNNode node = null;
-                if (element instanceof IResource resource && "sql".equals(resource.getFileExtension())) {
-                    UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-                    if (serviceSQL != null) {
-                        serviceSQL.openResource(resource);
-                    }
-                    continue;
-                } else if (element instanceof DBNNode n) {
+                if (element instanceof DBNNode n) {
                     node = n;
                 } else {
                     DBSObject object = RuntimeUtils.getObjectAdapter(element, DBSObject.class);
@@ -101,6 +94,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 }
                 if (node != null) {
                     NavigatorUtils.openNavigatorNode(node, HandlerUtil.getActiveWorkbenchWindow(event), event.getParameters());
+                } else {
+                    log.debug("Unsupported object type: " + element);
                 }
             }
         }

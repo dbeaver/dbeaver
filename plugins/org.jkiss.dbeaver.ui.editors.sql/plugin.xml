@@ -23,7 +23,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.fileTypeHandler">
-        <handler id="sql" class="org.jkiss.dbeaver.ui.editors.sql.scripts.SQLFileHandler" order="20" extensions="sql"/>
+        <handler id="sql" class="org.jkiss.dbeaver.ui.editors.sql.scripts.SQLFileHandler" remote="false" order="20" extensions="sql"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">
@@ -1675,6 +1675,20 @@
             <item commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" defaultVisibility="true"/>
             <item commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" defaultVisibility="true"/>
         </toolBar>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlFormatter">
+        <formatter
+                id="sqlworkbenchj"
+                class="org.jkiss.dbeaver.ui.editors.sql.format.sqlworkbenchj.SQLWorkbenchJFormatter"
+                label="SQL Workbench/J formatter"
+                description="Formatter from SQL Workbench/J"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ui.editors.sql.format.sqlworkbenchj.SQLWorkbenchJFormatter" class="org.jkiss.dbeaver.ui.editors.sql.format.sqlworkbenchj.SQLWorkbenchJAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.ui.editors.sql.preferences.format.SQLFormatterConfigurator"/>
+        </factory>
     </extension>
 
 </plugin>
