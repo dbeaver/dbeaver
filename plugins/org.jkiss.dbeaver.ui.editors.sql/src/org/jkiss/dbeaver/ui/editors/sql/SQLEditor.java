@@ -1745,9 +1745,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Nullable
     private ToolItem getViewToolItem(@NotNull String commandId) {
-        ToolItem viewItem = UIUtils.findToolItemByCommandId(topBarMan, commandId);
+        ToolItem viewItem = topBarMan == null ? null : UIUtils.findToolItemByCommandId(topBarMan, commandId);
         if (viewItem == null) {
-            viewItem = UIUtils.findToolItemByCommandId(bottomBarMan, commandId);
+            viewItem = bottomBarMan == null ? null : UIUtils.findToolItemByCommandId(bottomBarMan, commandId);
         }
         return viewItem;
     }

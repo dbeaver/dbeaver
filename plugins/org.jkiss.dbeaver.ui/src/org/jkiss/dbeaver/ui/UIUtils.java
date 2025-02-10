@@ -2431,15 +2431,19 @@ public class UIUtils {
 
     @Nullable
     public static ToolItem findToolItemByCommandId(@NotNull ToolBarManager toolbarManager, @NotNull String commandId) {
-        for (ToolItem item : toolbarManager.getControl().getItems()) {
+        ToolBar toolBar = toolbarManager.getControl();
+        if (toolBar == null || toolBar.isDisposed()) {
+            return null;
+        }
+        for (ToolItem item : toolBar.getItems()) {
             Object data = item.getData();
-            if (data instanceof CommandContributionItem) {
-                ParameterizedCommand cmd = ((CommandContributionItem) data).getCommand(); 
+            if (data instanceof CommandContributionItem cci) {
+                ParameterizedCommand cmd = cci.getCommand();
                 if (cmd != null && commandId.equals(cmd.getId())) {
                     return item;
                 }
-            } else if (data instanceof HandledContributionItem) {
-                MHandledItem model = ((HandledContributionItem) data).getModel();
+            } else if (data instanceof HandledContributionItem hci) {
+                MHandledItem model = hci.getModel();
                 if (model != null) {
                     ParameterizedCommand cmd = model.getWbCommand();
                     if (cmd != null && commandId.equals(cmd.getId())) {
@@ -2453,15 +2457,19 @@ public class UIUtils {
 
     public static void populateToolItemCommandIds(ToolBarManager toolbarManager) {
         // used for accessibility automation, see dbeaver-qa-auto
-        for (ToolItem item : toolbarManager.getControl().getItems()) {
+        ToolBar toolBar = toolbarManager.getControl();
+        if (toolBar == null || toolBar.isDisposed()) {
+            return;
+        }
+        for (ToolItem item : toolBar.getItems()) {
             Object data = item.getData();
-            if (data instanceof CommandContributionItem) {
-                ParameterizedCommand cmd = ((CommandContributionItem) data).getCommand(); 
+            if (data instanceof CommandContributionItem cci) {
+                ParameterizedCommand cmd = cci.getCommand();
                 if (cmd != null) {
                     item.setData("commandId", cmd.getId());
                 }
-            } else if (data instanceof HandledContributionItem) {
-                MHandledItem model = ((HandledContributionItem) data).getModel();
+            } else if (data instanceof HandledContributionItem hci) {
+                MHandledItem model = hci.getModel();
                 if (model != null) {
                     ParameterizedCommand cmd = model.getWbCommand();
                     if (cmd != null) {
