@@ -87,9 +87,9 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
 
         DBPDataSourceContainer finalDsContainer = dsContainer;
         UIUtils.runWithMonitor(monitor -> {
-                    if (finalDsContainer.isConnected() || finalDsContainer.connect(monitor, true, true)) {
-                        DBPDataSource dataSource = finalDsContainer.getDataSource();
-                        DBNDatabaseNode openNode = DBNUtils.getDefaultDatabaseNodeToOpen(monitor, dataSource);
+            if (finalDsContainer.isConnected() || finalDsContainer.connect(monitor, true, true)) {
+                DBPDataSource dataSource = finalDsContainer.getDataSource();
+                DBNDatabaseNode openNode = DBNUtils.getDefaultDatabaseNodeToOpen(monitor, dataSource);
 
                 if (openNode == null) {
                     throw new DBException("Cannot determine target node for " + dsContainer.getName());
