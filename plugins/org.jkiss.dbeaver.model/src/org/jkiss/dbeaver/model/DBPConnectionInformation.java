@@ -42,25 +42,25 @@ public final class DBPConnectionInformation {
     }
 
     @NotNull
-    @Property
+    @Property(order = 1)
     public String getUrl() {
         return url;
     }
 
     @NotNull
-    @Property
+    @Property(order = 2)
     public String getDriverName() {
         return driverName;
     }
 
     @NotNull
-    @Property
+    @Property(order = 3)
     public String getProductName() {
         return productName;
     }
 
     @NotNull
-    @Property
+    @Property(order = 4)
     public String getProductVersion() {
         return productVersion;
     }
