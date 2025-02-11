@@ -828,7 +828,7 @@ public class SQLQueryJob extends DataSourceJob
             default:
                 return false;
         }
-        
+
     }
 
     private void fetchExecutionResult(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull SQLQuery query) throws DBCException
@@ -857,19 +857,20 @@ public class SQLQueryJob extends DataSourceJob
                 new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()));
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_statistics);
         } else {
-            // Single statement
+            // Single statement - reorder fields to prioritize the important ones
+            // Important fields like "Updated Rows" and "Execute time" are now displayed before the query text for easier access.
             long updateCount = statistics.getRowsUpdated();
-            fakeResultSet.addColumn("Query", DBPDataKind.STRING);
             fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
+            fakeResultSet.addColumn("Query", DBPDataKind.STRING);
             fakeResultSet.addRow(
-                query.getText(),
-                updateCount,
-                RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
-                new Date(statistics.getStartTime()),
-                new Date());
+                    updateCount,
+                    RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
+                    new Date(statistics.getStartTime()),
+                    new Date(),
+                    query.getText());
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_data_grid);
         }
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);

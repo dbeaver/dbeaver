@@ -1351,7 +1351,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (isShowAsCheckbox(attr)) {
             // Switch boolean value
             Object cellValue = controller.getModel().getCellValue(cellLocation);
-            if (cellValue instanceof Boolean || cellValue instanceof Number) {
+            if (cellValue instanceof Boolean || cellValue instanceof Number || cellValue == null) {
                 toggleBooleanValue(cellLocation, cellValue);
             }
         }
