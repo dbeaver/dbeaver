@@ -13,8 +13,7 @@ Export-Package: org.jkiss.dbeaver.ui.app.standalone,
  org.jkiss.dbeaver.ui.app.standalone.update
 Bundle-ClassPath: .
 Import-Package: org.w3c.css.sac
-Require-Bundle: org.eclipse.equinox.app,
- org.eclipse.e4.ui.css.core,
+Require-Bundle: org.eclipse.e4.ui.css.core,
  org.eclipse.e4.ui.css.swt,
  org.eclipse.e4.ui.workbench,
  org.eclipse.e4.ui.workbench.renderers.swt,
