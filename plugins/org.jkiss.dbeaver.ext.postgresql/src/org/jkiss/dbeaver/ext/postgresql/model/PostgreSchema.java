@@ -1115,7 +1115,7 @@ public class PostgreSchema implements
                 sql.append(" c.relnamespace=?");
             }
             //sql.append(" AND NOT i.indisprimary");
-            sql.append(" ORDER BY c.relname");
+            sql.append(" ORDER BY tabrelname, c.relname");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             if (forTable != null) {
