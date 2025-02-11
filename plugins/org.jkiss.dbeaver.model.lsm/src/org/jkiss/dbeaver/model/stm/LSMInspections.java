@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -37,9 +38,18 @@ import java.util.stream.StreamSupport;
 public class LSMInspections {
 
     private static final Pattern anyWordPattern = Pattern.compile("^\\w+$");
+    private static final Pattern anyWordHeadPattern = Pattern.compile("^\\w+");
 
     public static boolean matchesAnyWord(String str) {
         return anyWordPattern.matcher(str).matches();
+    }
+
+    /**
+     * Returns the information about the location of the first found match of any word in the provided string
+     */
+    public static Interval matchAnyWordHead(String str) {
+        Matcher m = anyWordHeadPattern.matcher(str);
+        return m.find() ? new Interval(m.start(), m.end() - 1) : null;
     }
 
     private static final Set<Integer> KNOWN_IDENTIFIER_PART_TOKENS = Set.of(
