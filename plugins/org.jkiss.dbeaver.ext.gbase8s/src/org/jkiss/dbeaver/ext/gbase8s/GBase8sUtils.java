@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.gbase8s;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -31,7 +30,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -69,31 +67,24 @@ public class GBase8sUtils {
 
     public static boolean isOracleSqlMode(DBPDataSourceContainer container) {
         DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
-        Map<String, String> cprops = configuration.getProperties();
-        if (containsSqlModeKey(cprops)) {
-            return isOracleSqlModeFromProperties(cprops);
+        String sqlMode = getSqlModeValue(configuration.getProperties());
+        if (sqlMode != null) {
+            return GBase8sConstants.JDBC_SQL_MODE_ORACLE.equalsIgnoreCase(sqlMode);
         }
-        DBPDriver driver = container.getDriver();
-        Map<String, Object> driverProps = driver.getConnectionProperties();
-        // If driverProps does not have SQLMODE, return true. Default is Oracle mode.
-        if (!containsSqlModeKey(driverProps)) {
-            return true;
-        }
-        return isOracleSqlModeFromProperties(driverProps);
+        return GBase8sConstants.JDBC_SQL_MODE_ORACLE
+                .equalsIgnoreCase(getSqlModeValue(container.getDriver().getConnectionProperties()));
     }
 
-    private static boolean containsSqlModeKey(Map<String, ?> properties) {
-        return properties != null && !properties.isEmpty() && properties.keySet().stream()
-                .anyMatch(key -> key != null && GBase8sConstants.JDBC_SQL_MODE.equalsIgnoreCase(key));
-    }
-
-    private static boolean isOracleSqlModeFromProperties(Map<String, ?> properties) {
-        return properties != null && !properties.isEmpty()
-                && properties.entrySet().stream()
-                        .anyMatch(entry -> entry.getKey() != null
-                                && GBase8sConstants.JDBC_SQL_MODE.equalsIgnoreCase(entry.getKey().toString())
-                                && GBase8sConstants.JDBC_SQL_MODE_ORACLE
-                                        .equalsIgnoreCase(Objects.toString(entry.getValue(), "").trim()));
+    private static String getSqlModeValue(Map<String, ?> properties) {
+        if (properties == null || properties.isEmpty()) {
+            return null;
+        }
+        for (Map.Entry<String, ?> entry : properties.entrySet()) {
+            if (GBase8sConstants.JDBC_SQL_MODE.equalsIgnoreCase(entry.getKey())) {
+                return entry.getValue() != null ? entry.getValue().toString().trim() : null;
+            }
+        }
+        return null;
     }
 
     public static String listToString(List<String> value, String delimiter) {
