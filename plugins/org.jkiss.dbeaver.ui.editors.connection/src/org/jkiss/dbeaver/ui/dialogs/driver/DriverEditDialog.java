@@ -1015,7 +1015,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             throw new DBException("IO error while saving driver file", e);
         }
         DriverDescriptor.DriverFileInfo fileInfo = new DriverDescriptor.DriverFileInfo(
-            driverFilePath, null, library.getType(), Path.of(driverFilePath));
+            driverFilePath, null, library.getType(), Path.of(driverFilePath), driverFilePath);
         fileInfo.setFileCRC(DriverDescriptor.calculateFileCRC(localFilePath));
         driver.addLibraryFile(library, fileInfo);
     }

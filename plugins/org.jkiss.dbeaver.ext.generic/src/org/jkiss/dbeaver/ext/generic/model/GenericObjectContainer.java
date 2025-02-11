@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -36,10 +37,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * GenericEntityContainer
@@ -229,6 +227,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer, 
                         }
                     }
                 }
+                newIndexCache.sort(Comparator.comparing((GenericTableIndex o) -> o.getTable().getName())
+                    .thenComparing(JDBCTableIndex::getName));
                 indexCache.setCache(newIndexCache);
             }
         }
