@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLCommandModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -87,10 +88,10 @@ public class SQLCommandModelRecognizer {
             ));
         }
 
-        STMTreeNode fakeTree = makeNode(0, text.length());
+        STMTreeNode fakeTree = new STMTreeRuleNode();
         SQLCommandModel cmdModel = new SQLCommandModel(fakeTree, text);
 
-        ScriptVariablesResolver variablesResolver = new ScriptVariablesResolver(scriptContext);
+        ScriptVariablesResolver variablesResolver = scriptContext.getExecutionContext() == null ? null : new ScriptVariablesResolver(scriptContext);
         List<GeneralUtils.VariableEntryInfo> vars = GeneralUtils.findAllVariableEntries(cmdText);
         for (GeneralUtils.VariableEntryInfo varEntry : vars) {
             SQLQuerySymbolEntry symbolEntry = makeSymbol(
@@ -100,7 +101,7 @@ public class SQLCommandModelRecognizer {
             );
             symbolEntries.add(symbolEntry);
             scriptContext.getVariable(varEntry.name().toUpperCase(Locale.ENGLISH));
-            cmdModel.addVariable(symbolEntry, variablesResolver.get(varEntry.name()));
+            cmdModel.addVariable(symbolEntry, variablesResolver == null ? "?" : variablesResolver.get(varEntry.name()));
         }
 
         return new SQLQueryModel(fakeTree, cmdModel, symbolEntries, Collections.emptyList());
