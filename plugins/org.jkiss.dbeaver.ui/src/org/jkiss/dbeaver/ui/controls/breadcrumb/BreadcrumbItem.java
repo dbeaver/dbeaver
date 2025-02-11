@@ -41,7 +41,7 @@ import org.jkiss.utils.CommonUtils;
 final class BreadcrumbItem extends Item {
     private static final int DROP_DOWN_MIN_WIDTH = 250;
     private static final int DROP_DOWN_MAX_WIDTH = 500;
-    private static final int DROP_DOWN_MIN_HEIGHT = 200;
+    private static final int DROP_DOWN_MIN_HEIGHT = 10;
 
     private final BreadcrumbViewer viewer;
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.eclipse.ui.internal.commands.CommandImageManager;
 import org.eclipse.ui.internal.commands.CommandImageService;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -45,7 +46,6 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxAction;
-import org.jkiss.dbeaver.ui.app.standalone.actions.EmergentExitAction;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
@@ -206,16 +206,12 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 bindImage(cis, IWorkbenchCommandConstants.FILE_SAVE_AS, UIIcon.SAVE_AS);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_SAVE_ALL, UIIcon.SAVE_ALL);
 
-/*
-                bindImage(cis, IWorkbenchCommandConstants.EDIT_COPY, UIIcon.EDIT_COPY);
-                bindImage(cis, IWorkbenchCommandConstants.EDIT_COPY, UIIcon.EDIT_COPY);
-                bindImage(cis, IWorkbenchCommandConstants.EDIT_COPY, UIIcon.EDIT_COPY);
-                bindImage(cis, IWorkbenchCommandConstants.EDIT_COPY, UIIcon.EDIT_COPY);
-*/
-
                 bindImage(cis, IWorkbenchCommandConstants.FILE_IMPORT, UIIcon.IMPORT);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_EXPORT, UIIcon.EXPORT);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_REFRESH, UIIcon.REFRESH);
+
+                bindImage(cis, ITextEditorActionDefinitionIds.GOTO_LAST_EDIT_POSITION, UIIcon.RS_BACK);
+                bindImage(cis, ITextEditorActionDefinitionIds.GOTO_NEXT_EDIT_POSITION, UIIcon.RS_FORWARD);
             }
         }
     }
@@ -261,8 +257,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             if (!DBWorkbench.isDistributed()) {
                 // Local FS operations are not needed
                 fileMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.ui.edit.text.openLocalFile"));
-                fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
-                fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
+                //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+                //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
             }
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
@@ -270,10 +266,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 fileMenu.add(openWorkspaceAction);
             }
 
-            fileMenu.add(new Separator());
-            fileMenu.add(new EmergentExitAction(workbenchWindow));
+//            fileMenu.add(new Separator());
+//            fileMenu.add(new EmergentExitAction(workbenchWindow));
 
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
+            //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
         }
 
         if (false) {

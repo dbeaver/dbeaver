@@ -13,14 +13,13 @@
       %copyright
    </copyright>
 
-   <plugin id="org.jkiss.dbeaver.ext.ui.locks" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.tasks.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.tasks.ui.view" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.tasks.native.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.tasks.sql.ui" version="0.0.0" />
-   <plugin id="org.jkiss.dbeaver.ext.config.migration" version="0.0.0" />
-   <plugin id="org.jkiss.dbeaver.ext.format.sqlworkbenchj" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ui.config.migration" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.cmp.simple.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ui.dashboard" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ui.editors.locks" version="0.0.0" />
 
 </feature>
