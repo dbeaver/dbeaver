@@ -77,7 +77,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
     private Button useEmbeddedBrowserAuth;
-    
+
+    private Button statusBarShowBreadcrumbsCheck;
+    private Button statusBarShowStatusCheck;
+
 
     public PrefPageDatabaseUserInterface()
     {
@@ -222,6 +225,29 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 });
             }
         }
+
+        Group breadcrumbs = UIUtils.createControlGroup(
+            composite,
+            CoreMessages.pref_page_ui_status_bar,
+            1,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+            0
+        );
+        statusBarShowBreadcrumbsCheck = UIUtils.createCheckbox(
+            breadcrumbs,
+            CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_check_label,
+            CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_check_tip,
+            true,
+            1
+        );
+        statusBarShowStatusCheck = UIUtils.createCheckbox(
+            breadcrumbs,
+            CoreMessages.pref_page_ui_status_bar_show_status_line_check_label,
+            CoreMessages.pref_page_ui_status_bar_show_status_line_check_tip,
+            true,
+            1
+        );
+
         setSettings();
         return composite;
     }
@@ -247,6 +273,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 clientTimezone.setText(timezone);
             }
         }
+
+        statusBarShowBreadcrumbsCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS));
+        statusBarShowStatusCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
     }
 
     @Override
@@ -265,6 +294,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         if (clientTimezone != null) {
             UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
         }
+
+        statusBarShowBreadcrumbsCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS));
+        statusBarShowStatusCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
     }
 
     private boolean isWindowsDesktopClient() {
@@ -322,6 +354,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
             }
         }
+
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, statusBarShowBreadcrumbsCheck.getSelection());
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
+
         return true;
     }
 
