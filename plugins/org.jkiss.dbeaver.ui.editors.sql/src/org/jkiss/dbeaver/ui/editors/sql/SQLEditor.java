@@ -728,8 +728,8 @@ public class SQLEditor extends SQLEditorBase implements
     public void refreshActions() {
         // Redraw toolbar to refresh action sets
         this.updateMultipleResultsPerTabToolItem();
-        topBarMan.getControl().redraw();
-        bottomBarMan.getControl().redraw();
+        if (topBarMan != null) topBarMan.getControl().redraw();
+        if (bottomBarMan != null) bottomBarMan.getControl().redraw();
         MultipleResultsPerTabMenuContribution.syncWithEditor(this);
     }
 
