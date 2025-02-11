@@ -3081,9 +3081,7 @@ public class SQLEditor extends SQLEditorBase implements
         lastExecutionContext = executionContext;
         syntaxLoaded = true;
 
-        if (topBarMan != null) {
-            loadActivePreferenceSettings();
-        }
+        loadActivePreferenceSettings();
 
         if (dsContainer != null) {
             globalScriptContext.loadVariables(dsContainer.getDriver(), null);
