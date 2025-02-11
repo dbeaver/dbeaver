@@ -48,6 +48,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     private StringBuffer buffer;
     private FieldPosition position;
     private DateTimeFormatter dateTimeFormatter;
+    private boolean hasZone;
 
     @Override
     public void init(DBSTypedObject type, Locale locale, Map<String, Object> properties)
@@ -66,6 +67,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
         // DateTimeFormatter pattern for nanoseconds is "n" but old "f" (ExtendedDateFormat)
         String java8DatePattern = pattern.replaceAll("f+", "n");
         dateTimeFormatter = DateTimeFormatter.ofPattern(java8DatePattern);
+        hasZone = java8DatePattern.contains("Z");
     }
 
     @Nullable
@@ -130,7 +132,11 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
             }
         }
         try {
-            return OffsetDateTime.parse(value, dateTimeFormatter);
+            if (hasZone) {
+                return OffsetDateTime.parse(value, dateTimeFormatter);
+            } else {
+                return LocalDateTime.parse(value, dateTimeFormatter);
+            }
         } catch (Exception e) {
             return dateFormat.parse(value);
         }
