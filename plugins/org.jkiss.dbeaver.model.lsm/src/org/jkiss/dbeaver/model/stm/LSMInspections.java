@@ -170,7 +170,7 @@ public class LSMInspections {
             STMTreeTermNode node;
             ATNState initialState;
 
-            if (position > range.b) {
+            if (position > range.b + 1) {
                 if (this.allNonErrorTerms.size() > 0) {
                     index = this.allNonErrorTerms.size() - 1;
                     node = this.allNonErrorTerms.get(index);
@@ -186,12 +186,18 @@ public class LSMInspections {
 
                 // TODO consider when to take previous term to get correct inspected keywords
 
-                node = this.allNonErrorTerms.get(index);
-                Interval nodeRange = node.getRealInterval();
-                if (nodeRange.a <= position) {
-                    if (nodeRange.b >= position) {
+                node = this.allNonErrorTerms.isEmpty() || index >= this.allNonErrorTerms.size()
+                    ? null
+                    : this.allNonErrorTerms.get(index);
+                Interval nodeRange = node == null ? null : node.getRealInterval();
+                if (nodeRange != null && nodeRange.a <= position) {
+                    if (nodeRange.b + 1 >= position) {
                         // containing term found
-                        if (KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType()) || (nodeRange.a == position && index > 0)) {
+                        STMTreeTermNode prevNode = index <= 0 ? null : this.allNonErrorTerms.get(index - 1);
+                        if (prevNode != null && isAnySomething(node) && !isAnySomething(prevNode)) {
+                            node = prevNode;
+                            initialState =  atn.states.get(node.getAtnState()).getTransitions()[0].target;
+                        } else if (KNOWN_SEPARATOR_TOKENS.contains(node.symbol.getType()) || (nodeRange.a == position && index > 0)) {
                             // we need target state of the previous term
                             node = this.allNonErrorTerms.get(index - 1);
                             initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
@@ -205,16 +211,46 @@ public class LSMInspections {
                     }
                 } else if (index > 0) {
                     // use previous node, its rule end state
+                    if (node == null) {
+                        index = this.allNonErrorTerms.size() - 1;
+                    }
                     node = this.allNonErrorTerms.get(index - 1);
                     initialState = atn.states.get(node.getAtnState()).getTransitions()[0].target;
                 } else {
+                    if (node == null) {
+                        return SyntaxInspectionResult.EMPTY;
+                    }
                     // subroot itself contains given position, use its rule start state
-                    initialState = atn.states.get(node.getParentNode().getAtnState());
+                    STMTreeNode parent = node.getParentNode();
+                    if (parent != null) {
+                        initialState = atn.states.get(parent.getAtnState());
+                    } else {
+                        return SyntaxInspectionResult.EMPTY;
+                    }
                 }
             }
 
             return inspectAbstractSyntaxAtTreeState(node, initialState);
         }            
+    }
+
+    private static Set<Integer> KNOWN_ANY_RULES = Set.of(
+        SQLStandardParser.RULE_anyWord,
+        SQLStandardParser.RULE_anyValue,
+        SQLStandardParser.RULE_anyWordWithAnyValue,
+        SQLStandardParser.RULE_anyProperty,
+        SQLStandardParser.RULE_anyWordsWithProperty,
+        SQLStandardParser.RULE_anyWordsWithProperty2,
+        SQLStandardParser.RULE_anyUnexpected
+    );
+
+    private static boolean isAnySomething(STMTreeNode node) {
+        for (STMTreeNode n = node; n != null; n = n.getParentNode()) {
+            if (KNOWN_ANY_RULES.contains(n.getNodeKindId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @NotNull

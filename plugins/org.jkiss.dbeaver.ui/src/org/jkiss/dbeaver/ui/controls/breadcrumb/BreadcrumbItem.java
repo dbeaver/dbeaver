@@ -49,6 +49,9 @@ final class BreadcrumbItem extends Item {
     private final Label elementArrow;
     private final Label elementImage;
     private final Label elementText;
+    private final Composite detailComposite;
+    private final Composite imageComposite;
+    private final Composite textComposite;
 
     private ILabelProvider labelProvider;
     private ITreeContentProvider contentProvider;
@@ -56,28 +59,29 @@ final class BreadcrumbItem extends Item {
 
     private Shell menuShell;
     private TreeViewer menuViewer;
+    private boolean showText = true;
 
     public BreadcrumbItem(@NotNull BreadcrumbViewer viewer, @NotNull Composite parent) {
         super(parent, SWT.NONE);
         this.viewer = viewer;
 
         container = new Composite(parent, SWT.NONE);
-        container.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+        container.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, true));
         container.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).spacing(0, 0).create());
 
         elementArrow = new Label(container, SWT.NONE);
         elementArrow.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
         elementArrow.setImage(DBeaverIcons.getImage(UIIcon.TREE_EXPAND));
 
-        var detailComposite = new Composite(container, SWT.NONE);
+        detailComposite = new Composite(container, SWT.NONE);
         detailComposite.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         detailComposite.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).spacing(0, 0).create());
 
-        var imageComposite = new Composite(detailComposite, SWT.NONE);
+        imageComposite = new Composite(detailComposite, SWT.NONE);
         imageComposite.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         imageComposite.setLayout(GridLayoutFactory.fillDefaults().margins(2, 1).create());
 
-        var textComposite = new Composite(detailComposite, SWT.NONE);
+        textComposite = new Composite(detailComposite, SWT.NONE);
         textComposite.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         textComposite.setLayout(GridLayoutFactory.fillDefaults().margins(2, 2).create());
 
@@ -152,13 +156,34 @@ final class BreadcrumbItem extends Item {
     }
 
     public void setToolTipText(@Nullable String toolTipText) {
-        elementText.getParent().setToolTipText(toolTipText);
+        textComposite.setToolTipText(toolTipText);
         elementText.setToolTipText(toolTipText);
         elementImage.setToolTipText(toolTipText);
     }
 
     public void setTrailing(boolean trailing) {
         ((GridData) container.getLayoutData()).grabExcessHorizontalSpace = trailing;
+    }
+
+    public boolean isShowText() {
+        return showText;
+    }
+
+    public void setShowText(boolean showText) {
+        if (this.showText == showText) {
+            return;
+        }
+        this.showText = showText;
+        UIUtils.setControlVisible(textComposite, showText);
+        if (showText) {
+            detailComposite.setTabList(new Control[]{textComposite});
+        } else {
+            detailComposite.setTabList(new Control[]{imageComposite});
+        }
+    }
+
+    public int computeWidth() {
+        return container.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
     }
 
     private void setArrowVisible(boolean visible) {

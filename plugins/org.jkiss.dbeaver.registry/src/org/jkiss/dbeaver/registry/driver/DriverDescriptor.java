@@ -1103,6 +1103,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return null;
     }
 
+    /**
+     * Removes all resolved files associated with the given driver library.
+     * This effectively resets the library's file list to an empty state.
+     *
+     * @param library the driver library whose associated files should be removed
+     */
+    public void removeLibraryFiles(DBPDriverLibrary library) {
+        resolvedFiles.put(library, new ArrayList<>());
+    }
+
     public void addLibraryFile(DBPDriverLibrary library, DriverFileInfo fileInfo) {
         List<DriverFileInfo> files = resolvedFiles.computeIfAbsent(library, k -> new ArrayList<>());
         files.add(fileInfo);
