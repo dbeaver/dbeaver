@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,31 +105,38 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     private final Map<String, Boolean> availableViews = new HashMap<>();
 
-    public OracleDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
-        throws DBException {
+    public OracleDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         super(monitor, container, new OracleSQLDialect());
-        this.outputReader = new OracleOutputReader();
+        this.init();
+    }
 
-        OracleConfigurator configurator = GeneralUtils.adapt(this, OracleConfigurator.class);
-        if (configurator != null) {
-            resolveGeometryAsStruct = configurator.resolveGeometryAsStruct();
-        }
+    public OracleDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull OracleSQLDialect dialect
+    ) throws DBException {
+        super(monitor, container, dialect);
+        this.init();
     }
 
     // Constructor for tests
     @ForTest
-    public OracleDataSource(DBPDataSourceContainer container) {
+    public OracleDataSource(@NotNull DBPDataSourceContainer container) {
         super(container, new OracleSQLDialect());
+        this.init();
+        this.hasStatistics = false;
+
+        OracleSchema defSchema = new OracleSchema(this, -1, "TEST_SCHEMA");
+        schemaCache.setCache(Collections.singletonList(defSchema));
+    }
+
+    private void init() {
         this.outputReader = new OracleOutputReader();
 
         OracleConfigurator configurator = GeneralUtils.adapt(this, OracleConfigurator.class);
         if (configurator != null) {
             resolveGeometryAsStruct = configurator.resolveGeometryAsStruct();
         }
-        this.hasStatistics = false;
-
-        OracleSchema defSchema = new OracleSchema(this, -1, "TEST_SCHEMA");
-        schemaCache.setCache(Collections.singletonList(defSchema));
     }
 
     @NotNull

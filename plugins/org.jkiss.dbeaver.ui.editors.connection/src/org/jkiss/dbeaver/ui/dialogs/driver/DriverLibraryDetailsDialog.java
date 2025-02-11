@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,14 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
@@ -41,29 +46,25 @@ import java.util.Set;
 /**
  * DriverEditDialog
  */
-public class DriverLibraryDetailsDialog extends HelpEnabledDialog
-{
+public class DriverLibraryDetailsDialog extends HelpEnabledDialog {
     private static final String DIALOG_ID = "DBeaver.DriverLibraryDetailsDialog";//$NON-NLS-1$
 
     private final DBPDriver driver;
     private final DBPDriverLibrary library;
 
-    public DriverLibraryDetailsDialog(Shell shell, DBPDriver driver, DBPDriverLibrary library)
-    {
+    public DriverLibraryDetailsDialog(Shell shell, DBPDriver driver, DBPDriverLibrary library) {
         super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
         this.driver = driver;
         this.library = library;
     }
 
     @Override
-    protected IDialogSettings getDialogBoundsSettings()
-    {
+    protected IDialogSettings getDialogBoundsSettings() {
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override
-    protected Composite createDialogArea(Composite parent)
-    {
+    protected Composite createDialogArea(Composite parent) {
         getShell().setText(NLS.bind(UIConnectionMessages.dialog_edit_driver_text_driver_library, driver.getName(), library.getDisplayName())); //$NON-NLS-2$
         getShell().setImage(DBeaverIcons.getImage(library.getIcon()));
 
@@ -81,7 +82,7 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_version, library.getVersion(), SWT.BORDER | SWT.READ_ONLY);
         Text fileText = UIUtils.createLabelText(propsGroup, UIConnectionMessages.dialog_edit_driver_file, "", SWT.BORDER | SWT.READ_ONLY);
 
-        TabFolder tabs = new TabFolder(group, SWT.HORIZONTAL | SWT.FLAT);
+        CTabFolder tabs = new CTabFolder(group, SWT.HORIZONTAL | SWT.FLAT);
         tabs.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         createDependenciesTab(tabs);
@@ -96,7 +97,7 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         return group;
     }
 
-    private void createDependenciesTab(TabFolder tabs) {
+    private void createDependenciesTab(CTabFolder tabs) {
         Composite paramsGroup = new Composite(tabs, SWT.NONE);
         paramsGroup.setLayout(new GridLayout(1, false));
 
@@ -116,13 +117,13 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         }
         UIUtils.asyncExec(depsTree::resizeTree);
 
-        TabItem depsTab = new TabItem(tabs, SWT.NONE);
+        CTabItem depsTab = new CTabItem(tabs, SWT.NONE);
         depsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_depencencies);
         depsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_depencencies_tooltip);
         depsTab.setControl(paramsGroup);
     }
 
-    private void createDetailsTab(TabFolder tabs) {
+    private void createDetailsTab(CTabFolder tabs) {
         Composite detailsGroup = new Composite(tabs, SWT.NONE);
         detailsGroup.setLayout(new GridLayout(1, false));
 
@@ -133,14 +134,13 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         gd.heightHint = 40;
         descriptionText.setLayoutData(gd);
 
-        TabItem detailsTab = new TabItem(tabs, SWT.NONE);
+        CTabItem detailsTab = new CTabItem(tabs, SWT.NONE);
         detailsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_detail);
         detailsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_detail_tooltip);
         detailsTab.setControl(detailsGroup);
     }
 
-    private void createLicenseTab(TabFolder group)
-    {
+    private void createLicenseTab(CTabFolder group) {
         Composite paramsGroup = new Composite(group, SWT.NONE);
         paramsGroup.setLayout(new GridLayout(1, false));
 
@@ -153,7 +153,7 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         //gd.grabExcessVerticalSpace = true;
         licenseText.setLayoutData(gd);
 
-        TabItem paramsTab = new TabItem(group, SWT.NONE);
+        CTabItem paramsTab = new CTabItem(group, SWT.NONE);
         paramsTab.setText(UIConnectionMessages.dialog_edit_driver_tab_name_license);
         paramsTab.setToolTipText(UIConnectionMessages.dialog_edit_driver_tab_tooltip_license);
         paramsTab.setControl(paramsGroup);

@@ -65,7 +65,7 @@ public abstract class JDBCCompositeCache<
     private final Object parentColumnName;
     private final Object objectColumnName;
 
-    private final Map<PARENT, List<OBJECT>> objectCache = new IdentityHashMap<>();
+    private final Map<PARENT, List<OBJECT>> objectCache = new LinkedHashMap<>();
 
     protected JDBCCompositeCache(
         JDBCStructCache<OWNER,?,?> parentCache,

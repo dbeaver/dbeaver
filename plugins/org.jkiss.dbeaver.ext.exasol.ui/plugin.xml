@@ -32,6 +32,7 @@
         <editor
             name="%editor.org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor.name"
             class="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locked.png"
             id="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor">
         </editor>
 

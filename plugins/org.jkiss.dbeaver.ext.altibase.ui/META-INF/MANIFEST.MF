@@ -25,7 +25,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui.editors.session,
  org.jkiss.dbeaver.tasks.native.ui,
  org.jkiss.dbeaver.tasks.ui,
- org.jkiss.dbeaver.ext.ui.locks
+ org.jkiss.dbeaver.ui.editors.locks
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp
