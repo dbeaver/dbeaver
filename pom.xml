@@ -17,11 +17,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>24.3.5</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
-
-        <local-p2-repo.version>${dbeaver-version}</local-p2-repo.version>
-        <local-p2-repo.url>https://p2.dev.dbeaver.com/eclipse-repo/${local-p2-repo.version}</local-p2-repo.url>
 
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>

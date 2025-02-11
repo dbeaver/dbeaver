@@ -29,18 +29,15 @@
    <plugin id="org.jkiss.dbeaver.ext.derby" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.dameng" version="0.0.0"  />
    <plugin id="org.jkiss.dbeaver.ext.duckdb" version="0.0.0" />
-   <plugin id="org.jkiss.dbeaver.ext.es" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.exasol" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.firebird" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.gbase8s" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.greenplum" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.h2" version="0.0.0" />
-   <plugin id="org.jkiss.dbeaver.ext.h2gis" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.hana" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.hive" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.hsqldb" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.informix" version="0.0.0" />
-   <plugin id="org.jkiss.dbeaver.ext.kognitio" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.netezza" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.oceanbase" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.tidb" version="0.0.0" />
@@ -52,7 +49,6 @@
    <plugin id="org.jkiss.dbeaver.ext.trino" version="0.0.0"  />
    <plugin id="org.jkiss.dbeaver.ext.vertica" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.ocient" version="0.0.0" />
-   <plugin id="org.jkiss.dbeaver.ext.datavirtuality" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.denodo" version="0.0.0"  />
    <plugin id="org.jkiss.dbeaver.ext.databricks" version="0.0.0"  />
    <plugin id="org.jkiss.dbeaver.ext.altibase" version="0.0.0" />

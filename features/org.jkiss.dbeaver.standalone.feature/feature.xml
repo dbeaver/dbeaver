@@ -25,7 +25,7 @@
     <includes id="org.jkiss.dbeaver.app.base.feature" version="0.0.0"/>
 
     <!-- Additional plugins for standalone version -->
-    <plugin id="org.jkiss.dbeaver.ext.sample.database" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.ui.config.sample" version="0.0.0" />
 
     <!-- P2 for RCP -->
     <!-- Do not include p2.rcp as we don't need auto-update and scheduler -->

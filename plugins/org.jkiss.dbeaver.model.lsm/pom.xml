@@ -12,39 +12,32 @@
     <artifactId>org.jkiss.dbeaver.model.lsm</artifactId>
     <version>1.0.44-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
-    
-    <repositories>
-        <repository>
-            <id>local-contrib</id>
-            <url>${local-p2-repo.url}</url>
-            <layout>p2</layout>
-        </repository>
-    </repositories>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr4-maven-plugin</artifactId>
-        <version>4.13.0</version>
-        <configuration>
-            <visitor>false</visitor>
-            <listener>false</listener>
-        </configuration>
-        <executions>
-            <execution>
-                <phase>generate-sources</phase>
-                <goals>
-                    <goal>antlr4</goal>
-                </goals>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
                 <configuration>
-                    <sourceDirectory>grammar</sourceDirectory>
-                    <outputDirectory>target/generated-sources/antlr4/org/jkiss/dbeaver/model/lsm/sql/impl/syntax</outputDirectory>
+                    <visitor>false</visitor>
+                    <listener>false</listener>
                 </configuration>
-            </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>antlr4</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>grammar</sourceDirectory>
+                            <outputDirectory>
+                                target/generated-sources/antlr4/org/jkiss/dbeaver/model/lsm/sql/impl/syntax
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
