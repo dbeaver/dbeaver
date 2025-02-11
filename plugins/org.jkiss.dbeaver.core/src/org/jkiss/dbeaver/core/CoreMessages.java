@@ -367,6 +367,11 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_group_regional;
     public static String pref_page_ui_general_group_language;
     public static String pref_page_ui_general_group_editors;
+    public static String pref_page_ui_status_bar;
+    public static String pref_page_ui_status_bar_show_breadcrumbs_check_label;
+    public static String pref_page_ui_status_bar_show_breadcrumbs_check_tip;
+    public static String pref_page_ui_status_bar_show_status_line_check_label;
+    public static String pref_page_ui_status_bar_show_status_line_check_tip;
     public static String pref_page_eclipse_ui_general_group_general;
     public static String pref_page_eclipse_ui_general_group_label;
 

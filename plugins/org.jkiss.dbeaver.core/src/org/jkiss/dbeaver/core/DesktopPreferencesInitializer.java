@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,8 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
             !ApplicationPolicyService.getInstance().isInstallUpdateDisabled());
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_USE_EMBEDDED_AUTH, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_SHOW_HOLIDAY_DECORATIONS, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, true);
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT, true);
