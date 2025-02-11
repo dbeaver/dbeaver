@@ -156,5 +156,4 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
     public void contributeSettings(@NotNull IContributionManager manager, @NotNull HexEditControl control) throws DBCException {
 
     }
-
 }
