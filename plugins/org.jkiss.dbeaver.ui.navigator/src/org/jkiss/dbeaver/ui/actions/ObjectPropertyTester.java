@@ -29,8 +29,10 @@ import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPath;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
@@ -109,7 +111,7 @@ public class ObjectPropertyTester extends PropertyTester {
                     clipboard.dispose();
                 }
 */
-                if (node instanceof DBNResource) {
+                if (node instanceof DBNResource || node instanceof DBNPath) {
                     return property.equals(PROP_CAN_PASTE);
                 }
                 return canCreateObject(node, null);
@@ -286,14 +288,12 @@ public class ObjectPropertyTester extends PropertyTester {
     }
 
     public static boolean canCreateObject(DBNNode node, Boolean onlySingle) {
-        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
-            return false;
-        }
+        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         if (node instanceof DBNProject && DBWorkbench.isDistributed()) {
             return false;
         }
-        if (node instanceof DBNDatabaseNode dbNode) {
-            if (dbNode.isVirtual()) {
+        if (node instanceof DBNDatabaseNode dbNode){
+            if (dbNode.isVirtual() || !workspace.hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
                 // Can't create virtual objects
                 return false;
             }
@@ -301,7 +301,7 @@ public class ObjectPropertyTester extends PropertyTester {
             if (dataSource != null && dataSource.getInfo().isReadOnlyMetaData()) {
                 return false;
             }
-            if (!(node instanceof DBNDataSource) && isMetadataChangeDisabled(((DBNDatabaseNode)node))) {
+            if (!(node instanceof DBNDataSource) && isMetadataChangeDisabled(dbNode)) {
                 return false;
             }
         }
@@ -326,7 +326,7 @@ public class ObjectPropertyTester extends PropertyTester {
             } else {
                 return false;
             }
-            if (DBNUtils.isReadOnly(node)) {
+            if (DBNUtils.isReadOnly(node) || !workspace.hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
                 return false;
             }
 
