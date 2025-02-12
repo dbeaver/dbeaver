@@ -226,4 +226,16 @@ public interface SQLQueryNodeModelVisitor<T, R> {
      */
     @Nullable
     R visitCallStatement(@NotNull SQLQueryCallModel callStatement, T arg);
+
+    /**
+     * Visit DBeaver control command (like @echo, @set, @export and so on)
+     */
+    @Nullable
+    R visitCommand(@NotNull SQLCommandModel command, T arg);
+
+    /**
+     * Visit DBeaver variable used in the DBeaver control command
+     */
+    @Nullable
+    R visitCommandVariable(@NotNull SQLCommandModel.VariableNode variable, T arg);
 }

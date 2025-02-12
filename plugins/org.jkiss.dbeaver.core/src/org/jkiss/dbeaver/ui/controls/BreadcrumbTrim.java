@@ -17,13 +17,18 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import jakarta.annotation.PostConstruct;
+import org.eclipse.e4.ui.model.application.ui.MUIElement;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
+import org.eclipse.ui.internal.Workbench;
+import org.eclipse.ui.internal.WorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -45,6 +50,9 @@ import java.util.function.Consumer;
 public class BreadcrumbTrim {
     private static final Log log = Log.getLog(BreadcrumbTrim.class);
 
+    private static final String BREADCRUMBS_ID = "org.jkiss.dbeaver.core.ui.Breadcrumb"; //$NON-NLS-1$
+    private static final String BOTTOM_TRIM_ID = "org.eclipse.ui.trim.status"; //$NON-NLS-1$
+
     @PostConstruct
     public void createControls(Composite parent) {
         var breadcrumb = new BreadcrumbViewer(parent) {
@@ -60,6 +68,44 @@ public class BreadcrumbTrim {
         breadcrumb.addDoubleClickListener(e -> openEditor(e.getSelection()));
 
         installListeners(breadcrumb);
+        updateElementVisibility();
+    }
+
+    private static void updateElementVisibility() {
+        for (IWorkbenchWindow window : Workbench.getInstance().getWorkbenchWindows()) {
+            if (window instanceof WorkbenchWindow workbenchWindow) {
+                updateElementVisibility(workbenchWindow);
+            }
+        }
+    }
+
+    private static void updateElementVisibility(@NotNull WorkbenchWindow window) {
+        var store = DBWorkbench.getPlatform().getPreferenceStore();
+        var model = window.getModel();
+        var modelService = window.getService(EModelService.class);
+
+        boolean dirty = false;
+
+        var breadcrumbsElement = modelService.find(BREADCRUMBS_ID, model);
+        var breadcrumbsVisible = store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS);
+        if (breadcrumbsElement != null && breadcrumbsElement.isToBeRendered() != breadcrumbsVisible) {
+            breadcrumbsElement.setToBeRendered(breadcrumbsVisible);
+            dirty = true;
+        }
+
+        var statusLineElement = modelService.find(WorkbenchWindow.STATUS_LINE_ID, model);
+        var statusLineVisible = store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE);
+        if (statusLineElement != null && statusLineElement.isToBeRendered() != statusLineVisible) {
+            statusLineElement.setToBeRendered(statusLineVisible);
+            dirty = true;
+        }
+
+        if (dirty) {
+            MUIElement element = modelService.find(BOTTOM_TRIM_ID, model);
+            if (element != null && element.getWidget() instanceof Composite composite) {
+                composite.layout(true, true);
+            }
+        }
     }
 
     private static void openEditor(@NotNull ISelection selection) {
@@ -103,6 +149,9 @@ public class BreadcrumbTrim {
             }
 
             private void setLastEditorPart(@Nullable IEditorPart part) {
+                if (lastEditorPart == part || viewer.getControl() == null || viewer.getControl().isDisposed()) {
+                    return;
+                }
                 if (lastEditorPart != null) {
                     lastEditorPart.removePropertyListener(propertyListener);
                     lastEditorPart = null;
@@ -134,6 +183,17 @@ public class BreadcrumbTrim {
         for (IWorkbenchPage page : window.getPages()) {
             page.addPartListener(partListener);
         }
+
+        DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(event -> {
+            switch (event.getProperty()) {
+                case DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS:
+                case DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE:
+                    updateElementVisibility();
+                    break;
+                default:
+                    break;
+            }
+        });
     }
 
     private static void setInput(@NotNull BreadcrumbViewer viewer, @NotNull IEditorInput input) {

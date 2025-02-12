@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLCommandModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -1092,6 +1093,20 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             if (obj != null) {
                 obj.apply(this, node);
             }
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitCommand(@NotNull SQLCommandModel command, OutlineQueryNode arg) {
+            this.makeNode(arg, command, command.getCommandText(), UIIcon.SQL_CONSOLE, command.getVariables());
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitCommandVariable(@NotNull SQLCommandModel.VariableNode variable, OutlineQueryNode arg) {
+            this.makeNode(arg, variable, variable.name.getName() + " = " + variable.value, UIIcon.SQL_PARAMETER);
             return null;
         }
 

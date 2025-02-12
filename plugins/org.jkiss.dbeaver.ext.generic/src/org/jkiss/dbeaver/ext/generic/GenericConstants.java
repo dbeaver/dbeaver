@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,6 @@ public class GenericConstants {
     public static final String PARAM_SUPPORTS_MULTI_INSERT = "supports-multi-insert";
     public static final String PARAM_SUPPORTS_EMBEDDED_DATABASE_CREATION = "supports-embedded-database-creation";
     public static final String PARAM_IDENTIFIER_QUOTES = "identifier-quotes";
-    public static final String PARAM_DATABASE_FILE_EXTENSIONS = "database-file-extensions";
     public static final String PARAM_TERM_SERVER = "term-server";
     public static final String PARAM_TERM_DATABASE = "term-database";
 

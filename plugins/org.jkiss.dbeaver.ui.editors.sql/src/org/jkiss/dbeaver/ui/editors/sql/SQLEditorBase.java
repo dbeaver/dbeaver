@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -490,6 +490,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     protected void loadActivePreferenceSettings() {
+        if (sqlSymbolInserter == null) {
+            return;
+        }
         DBPPreferenceStore preferenceStore = getActivePreferenceStore();
         boolean closeSingleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         boolean closeDoubleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
