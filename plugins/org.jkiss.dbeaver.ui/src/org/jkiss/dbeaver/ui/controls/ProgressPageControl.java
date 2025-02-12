@@ -217,7 +217,10 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
         Composite infoGroup = new Composite(container, SWT.NONE);
         infoGroup.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-        infoGroup.setLayout(GridLayoutFactory.swtDefaults().margins(5, 0).numColumns(3).create());
+        infoGroup.setLayout(GridLayoutFactory.swtDefaults()
+            .spacing(0, 0)
+            .margins(5, 0)
+            .numColumns(3).create());
 
         customControlsComposite = new Composite(infoGroup, SWT.NONE);
         customControlsComposite.setLayoutData(GridDataFactory.swtDefaults().create());
@@ -291,6 +294,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 fillCustomActions(customToolbarManager);
                 if (!customToolbarManager.isEmpty()) {
                     ToolBar toolbar = customToolbarManager.createControl(customControlsComposite);
+                    toolbar.setFont(BaseThemeSettings.instance.baseFont);
                     toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
                     populateCustomActions(customToolbarManager);
                     UIUtils.populateToolItemCommandIds(customToolbarManager);

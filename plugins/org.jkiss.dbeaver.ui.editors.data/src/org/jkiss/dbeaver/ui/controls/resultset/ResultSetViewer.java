@@ -1788,10 +1788,10 @@ public class ResultSetViewer extends Viewer
     private void createStatusBar() {
         ActionUtils.addPropertyEvaluationRequestListener(propertyEvaluationRequestListener);
 
-        final IMenuService menuService = getSite().getService(IMenuService.class);
-
-        Composite statusComposite = UIUtils.createPlaceholder(viewerPanel, 3);
-        statusComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Composite statusComposite = UIUtils.createPlaceholder(mainPanel, 3);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = ((GridLayout)mainPanel.getLayout()).numColumns;
+        statusComposite.setLayoutData(gd);
 
         statusBar = new Composite(statusComposite, SWT.NONE);
         statusBar.setBackgroundMode(SWT.INHERIT_FORCE);
@@ -1823,6 +1823,8 @@ public class ResultSetViewer extends Viewer
             );
             getAutoRefresh().enableControls(false);
         }
+        final IMenuService menuService = getSite().getService(IMenuService.class);
+
         if (CommonUtils.isBitSet(decorator.getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT)) {
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             menuService.populateContributionManager(editToolBarManager, TOOLBAR_EDIT_CONTRIBUTION_ID);
