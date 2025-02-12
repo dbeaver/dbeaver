@@ -362,6 +362,13 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.storage = storage;
     }
 
+    public boolean hasDefaultStorage()
+    {
+        return getStorage() == null
+            || (getDataType().getStorage() == null && getStorage() == PostgreAttributeStorage.PLAIN)
+            || (getStorage().getCode().equals(getDataType().getStorage().name()));
+    }
+
     public long getTypeId() {
         return typeId;
     }

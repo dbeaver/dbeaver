@@ -76,10 +76,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     };
 
     protected final ColumnModifier<PostgreTableColumn> PostgreStorageModifier = (monitor, column, sql, command) -> {
-        PostgreAttributeStorage storage = column.getStorage();
-        if(storage != null) {
+        if(!column.hasDefaultStorage()) {
             sql.append(" STORAGE ");
-            sql.append(storage);
+            sql.append(column.getStorage());
         }
     };
 
