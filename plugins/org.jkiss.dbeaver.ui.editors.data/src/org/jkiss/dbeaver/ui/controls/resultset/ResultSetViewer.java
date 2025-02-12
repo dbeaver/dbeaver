@@ -1788,7 +1788,12 @@ public class ResultSetViewer extends Viewer
     private void createStatusBar() {
         ActionUtils.addPropertyEvaluationRequestListener(propertyEvaluationRequestListener);
 
-        Composite statusComposite = UIUtils.createPlaceholder(mainPanel, 3);
+        Composite statusComposite = new Composite(mainPanel, SWT.NONE);
+        GridLayout gl = new GridLayout(3, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        statusComposite.setLayout(gl);
+
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = ((GridLayout)mainPanel.getLayout()).numColumns;
         statusComposite.setLayoutData(gd);
@@ -1798,8 +1803,9 @@ public class ResultSetViewer extends Viewer
         statusBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         CSSUtils.setCSSClass(statusBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
         RowLayout toolbarsLayout = new RowLayout(SWT.HORIZONTAL);
-        toolbarsLayout.marginTop = 0;
-        toolbarsLayout.marginBottom = 0;
+        //toolbarsLayout.marginTop = 0;
+        //toolbarsLayout.marginBottom = 0;
+        toolbarsLayout.marginLeft = 0;
         toolbarsLayout.center = true;
         toolbarsLayout.wrap = true;
         toolbarsLayout.pack = true;
