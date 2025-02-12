@@ -21,7 +21,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -35,18 +42,16 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Virtual file system utils
  */
 public class DBFUtils {
 
-    public static final String PRODUCT_FEATURE_MULTI_FS = "multi-fs";
     private static final Log log = Log.getLog(DBFUtils.class);
+    public static final String PRODUCT_FEATURE_MULTI_FS = "multi-fs";
+    private static final String FILE_DATABASES_FOLDER = "File databases";
 
     private static volatile Boolean SUPPORT_MULTI_FS = null;
 
@@ -182,4 +187,48 @@ public class DBFUtils {
         }
     }
 
+    /**
+     * Create temporary connection. Useful in case of flat files.
+     */
+    @Nullable
+    public static DBPDataSourceContainer createTemporaryDataSourceContainer(
+        String connectionName,
+        DBPProject project,
+        DBPDriver driver,
+        DBPConnectionConfiguration configuration
+    ) {
+        DBPDataSourceRegistry registry = project.getDataSourceRegistry();
+        String connectionId = "file_database_" + CommonUtils.truncateString(CommonUtils.escapeIdentifier(configuration.getDatabaseName()),
+            48) + "_" + UUID.randomUUID();
+        DBPDataSourceContainer dsContainer = registry.getDataSource(connectionId);
+        if (dsContainer == null) {
+            dsContainer = registry.createDataSource(connectionId, driver, configuration);
+            int conNameSuffix = 1;
+            connectionName = "File - " + CommonUtils.truncateString(connectionName, 64);
+            String finalConnectionName = connectionName;
+            while (registry.findDataSourceByName(finalConnectionName) != null) {
+                conNameSuffix++;
+                finalConnectionName = connectionName + " " + conNameSuffix;
+            }
+            dsContainer.setName(finalConnectionName);
+            dsContainer.setTemporary(true);
+            DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
+            DBNModel navigatorModel = project.getNavigatorModel();
+            if (navigatorModel != null) {
+                DBNProject projectNode = navigatorModel.getRoot().getProjectNode(project);
+                if (projectNode != null) {
+                    projectNode.getDatabases().getFolderNode(folder);
+                }
+            }
+            dsContainer.setFolder(folder);
+
+            try {
+                registry.addDataSource(dsContainer);
+            } catch (DBException e) {
+                log.error(e);
+                return null;
+            }
+        }
+        return dsContainer;
+    }
 }

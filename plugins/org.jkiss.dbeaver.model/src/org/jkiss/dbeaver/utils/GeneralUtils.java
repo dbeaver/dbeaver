@@ -513,6 +513,36 @@ public class GeneralUtils {
         return name;
     }
 
+    public record VariableEntryInfo(
+        @NotNull String name,
+        int start,
+        int end
+    ) {
+    }
+
+    /**
+     * Returns information about all variable entries in the provided text
+     */
+    @NotNull
+    public static List<VariableEntryInfo> findAllVariableEntries(@NotNull String string) {
+        if (CommonUtils.isEmpty(string)) {
+            return Collections.emptyList();
+        }
+        List<VariableEntryInfo> variables = new LinkedList<>();
+        try {
+            Matcher matcher = GeneralUtils.VAR_PATTERN.matcher(string);
+            int pos = 0;
+            while (matcher.find(pos)) {
+                pos = matcher.end();
+                String varName = matcher.group(2);
+                variables.add(new VariableEntryInfo(varName, matcher.start(), matcher.end()));
+            }
+        } catch (Exception e) {
+            log.warn("Error matching regex", e);
+        }
+        return variables;
+    }
+
     @NotNull
     public static String replaceVariables(@NotNull String string, IVariableResolver resolver) {
         return replaceVariables(string, resolver, false);
