@@ -274,14 +274,12 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
                         if (project.exists()) {
                             continue;
                         }
-/*
                         try {
                             monitor.subTask("Adding project '" + projectName + "'");
                             project.create(monitor.getNestedMonitor());
                         } catch (CoreException e) {
                             log.error("Error adding project '" + projectName + "' to workspace");
                         }
-*/
                     }
                 }
             }
