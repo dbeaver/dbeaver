@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionDialog;
@@ -43,6 +44,13 @@ public class NewConnectionDriverSelectorContributor extends DataSourceMenuContri
         }
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
+        if (DBWorkbench.isDistributed()) {
+            for (int i = allDrivers.size() - 1; i > 0; i--) {
+                if (!allDrivers.get(i).isDriverInstalled()) {
+                    allDrivers.remove(i);
+                }
+            }
+        }
         List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 10);
         for (DBPDriver driver : recentDrivers) {
             menuItems.add(new ActionContributionItem(new NewConnectionAction(window, driver)));
