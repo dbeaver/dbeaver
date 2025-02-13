@@ -296,9 +296,7 @@ public class LSMInspections {
         ListNode<Integer> stack = ListNode.of(null);
         {
             var path = new LinkedList<RuleNode>();
-            for (STMTreeNode n = node.getParentNode();
-                 n instanceof RuleNode rn;
-                 n = n.getParentNode()) {
+            for (STMTreeNode n = node.getParentNode(); n instanceof RuleNode rn; n = n.getParentNode()) {
                 path.addFirst(rn);
             }
             for (RuleNode rn : path) {
