@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,7 +131,13 @@ public class SelectActiveDataSourceHandler extends AbstractDataSourceHandler imp
             connectionIcon = DBIcon.TREE_DATABASE;
         } else {
             connectionName = dataSource.getName();
-            connectionIcon = dataSource.getDriver().getIcon();
+            // We cannot use dynamic icons here. Eclipse needs real URI
+            DBNDatabaseNode dsNode = null;//dataSource.getProject().getNavigatorModel().getNodeByObject(dataSource);
+            if (dsNode != null) {
+                connectionIcon = dsNode.getNodeIcon();
+            } else {
+                connectionIcon = dataSource.getDriver().getIcon();
+            }
         }
         if (workbenchWindow != null) {
             GC gc = new GC(workbenchWindow.getShell());
