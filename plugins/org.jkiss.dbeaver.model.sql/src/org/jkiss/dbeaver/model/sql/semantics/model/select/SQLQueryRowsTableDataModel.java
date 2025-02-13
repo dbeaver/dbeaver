@@ -241,15 +241,19 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
         @NotNull SQLQuerySymbolOrigin rowsetRefOrigin,
         @Nullable SQLQuerySymbolClass entityNameClass
     ) {
-        context = context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList()).markHasUnresolvedSource();
-        SQLQueryQualifiedName.performPartialResolution(
-            context,
-            statistics,
-            this.name,
-            rowsetRefOrigin, Set.of(RelationalObjectType.TYPE_UNKNOWN),
-            entityNameClass
-        );
-        return context;
+        SQLQueryDataContext resolvedContext = context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList())
+            .markHasUnresolvedSource();
+        if (this.name != null && entityNameClass != null) {
+            SQLQueryQualifiedName.performPartialResolution(
+                resolvedContext,
+                statistics,
+                this.name,
+                rowsetRefOrigin,
+                Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                entityNameClass
+            );
+        }
+        return resolvedContext;
     }
 
     public static List<SQLQueryResultPseudoColumn> prepareResultPseudoColumnsList(
