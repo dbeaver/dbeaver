@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSo
 
 
     @Override
-    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) {
+    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) throws DBException {
         if (getProject().isInMemory()) {
             super.moveFolder(oldPath, newPath);
             return;

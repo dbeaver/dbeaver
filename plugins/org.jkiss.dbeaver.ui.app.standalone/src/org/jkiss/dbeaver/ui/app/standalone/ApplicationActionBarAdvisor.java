@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -31,6 +32,7 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.ide.IDEActionFactory;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.commands.CommandImageManager;
@@ -54,6 +56,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -368,15 +371,24 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             });
 
             tzItem.setDoubleClickListener(() -> {
-                UIUtils.showMessageBox(
+                PreferenceDialog preferenceDialog = PreferencesUtil.createPreferenceDialogOn(
+                    UIUtils.getActiveWorkbenchShell(),
+                    PrefPageDatabaseUserInterface.PAGE_ID,
                     null,
-                    CoreApplicationMessages.timezone_change_info_title,
-                    NLS.bind(
-                        CoreApplicationMessages.timezone_change_info_message,
-                        StandardConstants.ENV_USER_TIMEZONE,
-                        DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath()),
-                    SWT.ICON_INFORMATION
-                );
+                    null);
+                if (preferenceDialog != null) {
+                    preferenceDialog.open();
+                } else {
+                    UIUtils.showMessageBox(
+                        null,
+                        CoreApplicationMessages.timezone_change_info_title,
+                        NLS.bind(
+                            CoreApplicationMessages.timezone_change_info_message,
+                            StandardConstants.ENV_USER_TIMEZONE,
+                            DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath()),
+                        SWT.ICON_INFORMATION
+                    );
+                }
             });
             statusLine.add(tzItem);
         }
@@ -385,13 +397,22 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             localeItem.setText(Locale.getDefault().toString());
             localeItem.setToolTip(Locale.getDefault().getDisplayName());
             localeItem.setDoubleClickListener(() -> {
-                UIUtils.showMessageBox(
+                PreferenceDialog preferenceDialog = PreferencesUtil.createPreferenceDialogOn(
+                    UIUtils.getActiveWorkbenchShell(),
+                    PrefPageDatabaseUserInterface.PAGE_ID,
                     null,
-                    CoreApplicationMessages.locale_change_info_title,
-                    NLS.bind(
-                        CoreApplicationMessages.locale_change_info_message,
-                        DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath()),
-                    SWT.ICON_INFORMATION);
+                    null);
+                if (preferenceDialog != null) {
+                    preferenceDialog.open();
+                } else {
+                    UIUtils.showMessageBox(
+                        null,
+                        CoreApplicationMessages.locale_change_info_title,
+                        NLS.bind(
+                            CoreApplicationMessages.locale_change_info_message,
+                            DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath()),
+                        SWT.ICON_INFORMATION);
+                }
             });
             statusLine.add(localeItem);
         }
