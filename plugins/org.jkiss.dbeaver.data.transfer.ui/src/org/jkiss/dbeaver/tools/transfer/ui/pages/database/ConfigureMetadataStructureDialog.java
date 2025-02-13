@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.tools.transfer.ui.pages.database;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -60,15 +62,15 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /**
- *  Dialog with tabs to change target table properties and table columns mapping
+ * Dialog with tabs to change target table properties and table columns mapping
  */
 public class ConfigureMetadataStructureDialog extends BaseDialog {
 
-    private DataTransferWizard wizard;
-    private DatabaseConsumerSettings settings;
-    private DatabaseMappingContainer mapping;
+    private final DataTransferWizard wizard;
+    private final DatabaseConsumerSettings settings;
+    private final DatabaseMappingContainer mapping;
     private DBSObject tableObject;
-    private TabFolder configTabs;
+    private CTabFolder configTabs;
     private final DatabaseConsumerPageMapping pageMapping;
     private UIServiceSQL serviceSQL;
     private Object sqlPanel;
@@ -77,11 +79,12 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
 
     private PropertySourceEditable propertySource;
 
-    public ConfigureMetadataStructureDialog(@NotNull DataTransferWizard wizard,
-                                            @NotNull DatabaseConsumerSettings settings,
-                                            @NotNull DatabaseMappingContainer mapping,
-                                            @NotNull DatabaseConsumerPageMapping pageMapping)
-    {
+    public ConfigureMetadataStructureDialog(
+        @NotNull DataTransferWizard wizard,
+        @NotNull DatabaseConsumerSettings settings,
+        @NotNull DatabaseMappingContainer mapping,
+        @NotNull DatabaseConsumerPageMapping pageMapping
+    ) {
         super(wizard.getShell(), DTUIMessages.page_configure_metadata_title, null);
         this.wizard = wizard;
         this.settings = settings;
@@ -95,10 +98,10 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         composite.setLayoutData(gd);
 
-        configTabs = new TabFolder(composite, SWT.TOP | SWT.FLAT);
+        configTabs = new CTabFolder(composite, SWT.TOP | SWT.FLAT);
         configTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        TabItem columnsMappingTab = new TabItem(configTabs, SWT.NONE);
+        CTabItem columnsMappingTab = new CTabItem(configTabs, SWT.NONE);
         columnsMappingTab.setText(DTUIMessages.columns_mapping_dialog_shell_text);
         ColumnsMappingDialog columnsMappingDialog = new ColumnsMappingDialog(settings, mapping);
         columnsMappingDialog.createControl(configTabs);
@@ -111,7 +114,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         }
         final DBSObjectContainer container = settings.getContainer();
         if (container != null && mapping.hasNewTargetObject()) {
-            TabItem tablePropertiesTab = new TabItem(configTabs, SWT.NONE);
+            CTabItem tablePropertiesTab = new CTabItem(configTabs, SWT.NONE);
             tablePropertiesTab.setText(DTUIMessages.page_configure_table_properties_tab_title);
             DBPDataSource dataSource = container.getDataSource();
             DBCExecutionContext executionContext = DBUtils.getDefaultContext(dataSource, true);
@@ -144,8 +147,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                 propertySource.collectProperties();
 
                 for (DBPPropertyDescriptor prop : propertySource.getProperties()) {
-                    if (prop instanceof ObjectPropertyDescriptor) {
-                        final ObjectPropertyDescriptor obj = (ObjectPropertyDescriptor) prop;
+                    if (prop instanceof ObjectPropertyDescriptor obj) {
                         if (!obj.isEditPossible(tableObject) || obj.isNameProperty()) {
                             propertySource.removeProperty(prop);
                         }
@@ -198,7 +200,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
             }
         }
 
-        TabItem showDDLTab = new TabItem(configTabs, SWT.NONE);
+        CTabItem showDDLTab = new CTabItem(configTabs, SWT.NONE);
         showDDLTab.setText(DTMessages.data_transfer_wizard_page_ddl_name);
         showDDL(showDDLTab);
 
@@ -224,7 +226,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         return composite;
     }
 
-    private void createCompositeWithMessage(GridData gd, TabItem tablePropertiesTab, String message) {
+    private void createCompositeWithMessage(GridData gd, CTabItem tablePropertiesTab, String message) {
         Composite compositeEmpty = new Composite(configTabs, SWT.NONE);
         compositeEmpty.setLayout(new GridLayout(1, false));
         compositeEmpty.setLayoutData(gd);
@@ -236,7 +238,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         tablePropertiesTab.setControl(compositeEmpty);
     }
 
-    private void showDDL(@NotNull TabItem showDDLTab) {
+    private void showDDL(@NotNull CTabItem showDDLTab) {
         final DBSObjectContainer container = settings.getContainer();
         if (container == null) {
             return;
@@ -304,29 +306,29 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
                     null);
                 persistButton.setLayoutData(gridData);
                 persistButton.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            if (UIUtils.confirmAction(
-                                getShell(),
-                                DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_title,
-                                DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_question)) {
-                                // Create target objects
-                                if (applySchemaChanges(container, mapping)) {
-                                    pageMapping.autoAssignMappings();
-                                }
-                                close();
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (UIUtils.confirmAction(
+                            getShell(),
+                            DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_title,
+                            DTUIMessages.database_consumer_page_mapping_create_target_object_confirmation_question)) {
+                            // Create target objects
+                            if (applySchemaChanges(container, mapping)) {
+                                pageMapping.autoAssignMappings();
                             }
+                            close();
                         }
-                    });
+                    }
+                });
             }
             final Button copyButton = UIUtils.createPushButton(buttonsBar, DTUIMessages.page_configure_table_DDL_button_copy, null);
             copyButton.setLayoutData(gridData);
             copyButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), dialogText);
-                    }
-                });
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), dialogText);
+                }
+            });
             showDDLTab.setControl(viewerComposite);
         }
     }

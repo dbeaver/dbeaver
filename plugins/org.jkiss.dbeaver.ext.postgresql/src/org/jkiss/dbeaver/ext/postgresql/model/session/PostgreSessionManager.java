@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.utils.CommonUtils;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -41,6 +41,7 @@ import java.util.Map;
 public class PostgreSessionManager implements DBAServerSessionManager<PostgreSession>, DBAServerSessionManagerSQL {
 
     public static final String PROP_KILL_QUERY = "killQuery";
+    public static final String OPTION_SHOW_IDLE = "showIdle";
 
     private final PostgreDataSource dataSource;
 
@@ -102,6 +103,12 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
     @NotNull
     @Override
     public String generateSessionReadQuery(@NotNull Map<String, Object> options) {
-        return "SELECT sa.* FROM pg_catalog.pg_stat_activity sa";
+        StringBuilder sql =  new StringBuilder("SELECT sa.* FROM pg_catalog.pg_stat_activity sa");
+        
+        if (!CommonUtils.getOption(options, OPTION_SHOW_IDLE)) {
+            sql.append(" where sa.state is null or sa.state not like 'idle%'");
+        }
+        
+        return sql.toString();
     }
 }

@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.*;
@@ -281,6 +282,11 @@ public class DBeaverLauncher {
 
     public static final String DBEAVER_DATA_FOLDER = "DBeaverData";
     private static final String DBEAVER_INSTALL_FOLDER = "install-data";
+    private static final String DBEAVER_SECURE_DIR = "secure"; //$NON-NLS-1$
+    private static final String DBEAVER_SECURE_FILE = "secure_storage"; //$NON-NLS-1$
+    public static final String ARG_ECLIPSE_KEYRING = "-eclipse.keyring"; //$NON-NLS-1$
+
+    private static final String DEFAULT_SECURE_STORAGE_FILENAME = ".eclipse/org.eclipse.equinox.security/secure_storage"; //$NON-NLS-1$
     private static final String ENV_DATA_HOME_WIN = "APPDATA"; //$NON-NLS-1$
     private static final String LOCATION_DATA_HOME_UNIX = "~/.local/share"; //$NON-NLS-1$
     private static final String LOCATION_DATA_HOME_MAC = "~/Library"; //$NON-NLS-1$
@@ -575,6 +581,11 @@ public class DBeaverLauncher {
         setupVMProperties();
         processConfiguration();
         processGlobalConfiguration();
+        Path secretStoragePath = useCustomSecretStorage(getDataDirectory());
+        if (secretStoragePath != null) {
+            String[] keyringParams =  { ARG_ECLIPSE_KEYRING, secretStoragePath.toString() };
+            passThruArgs = Stream.concat(Arrays.stream(passThruArgs), Arrays.stream(keyringParams)).toArray(String[]::new);
+        }
 
         if (protectBase && (System.getProperty(PROP_SHARED_CONFIG_AREA) == null)) {
             System.err.println("This application is configured to run in a cascaded mode only."); //$NON-NLS-1$
@@ -608,6 +619,10 @@ public class DBeaverLauncher {
 
         beforeFwkInvocation();
         invokeFramework(passThruArgs, bootPath);
+    }
+
+    private static Path getDataDirectory() {
+        return Path.of(getWorkingDirectory(DBEAVER_DATA_FOLDER));
     }
 
     protected void beforeFwkInvocation() {
@@ -1811,6 +1826,41 @@ public class DBeaverLauncher {
             if (debug)
                 System.out.println("Can not read product properties. " + e.getMessage()); //$NON-NLS-1$
         }
+
+        return null;
+    }
+
+    public static Path getDefaultSecretStorageLocation() {
+        String userHome = System.getProperty("user.home");
+        if (userHome == null) {
+            return Path.of(DEFAULT_SECURE_STORAGE_FILENAME);
+        } else {
+            return Path.of(userHome, DEFAULT_SECURE_STORAGE_FILENAME);
+        }
+    }
+
+    private Path useCustomSecretStorage(Path localPath) {
+        try {
+            if (Files.exists(localPath)) {
+                Path storagePath =
+                    localPath
+                        .resolve(DBEAVER_SECURE_DIR)
+                        .resolve(DBEAVER_SECURE_FILE);
+
+                if (!Files.exists(storagePath)) {
+                    Files.createDirectories(storagePath.getParent());
+                    Path defaultLocation = getDefaultSecretStorageLocation();
+                    if (Files.exists(defaultLocation)) {
+                        Files.copy(defaultLocation, storagePath, StandardCopyOption.REPLACE_EXISTING);
+                    } else {
+                        Files.createFile(storagePath);
+                    }
+                }
+                return storagePath;
+            }
+        } catch (IOException e) {
+            log(e);
+        }
         return null;
     }
 
@@ -1896,7 +1946,7 @@ public class DBeaverLauncher {
     }
 
     private Properties readGlobalConfiguration() throws IOException {
-        final Path root = Path.of(getWorkingDirectory(DBEAVER_DATA_FOLDER));
+        final Path root = getDataDirectory();
         final Path file = root.resolve(DBEAVER_CONFIG_FOLDER).resolve(DBEAVER_CONFIG_FILE);
         final Properties properties = new Properties();
 

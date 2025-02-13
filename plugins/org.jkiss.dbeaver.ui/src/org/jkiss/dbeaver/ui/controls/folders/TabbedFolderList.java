@@ -1,17 +1,6 @@
 /*
- * Copyright (c) 2001, 2012 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Mariot Chauvin <mariot.chauvin@obeo.fr> - bug 259553
- *     Amit Joglekar <joglekar@us.ibm.com> - Support for dynamic images (bug 385795)
- *
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -727,7 +716,7 @@ public class TabbedFolderList extends Composite {
         } else {
             widgetBackground = getBackground();
         }
-        widgetForeground = UIStyles.isDarkHighContrastTheme() ? UIUtils.COLOR_WHITE : UIStyles.getDefaultTextForeground();
+        widgetForeground = UIStyles.isDarkHighContrastTheme() ? UIStyles.COLOR_WHITE : UIStyles.getDefaultTextForeground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 

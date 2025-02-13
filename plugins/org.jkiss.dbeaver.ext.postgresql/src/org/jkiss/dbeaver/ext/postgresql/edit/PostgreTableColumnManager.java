@@ -237,7 +237,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                 actionList.add(new SQLDatabasePersistActionAtomic("Set column default", prefix + "SET DEFAULT " + column.getDefaultValue(), isAtomic));
             }
         }
-        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+        if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
             addColumnCommentAction(actionList, column);
         }
     }

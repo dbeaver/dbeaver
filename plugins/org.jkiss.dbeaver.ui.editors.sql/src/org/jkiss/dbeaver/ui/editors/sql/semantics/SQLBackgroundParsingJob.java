@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,19 +40,18 @@ import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
-import org.jkiss.dbeaver.model.stm.*;
+import org.jkiss.dbeaver.model.stm.LSMInspections;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.ArrayDeque;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.*;
-import java.util.regex.Pattern;
 
 public class SQLBackgroundParsingJob {
 
@@ -639,7 +638,13 @@ public class SQLBackgroundParsingJob {
                 }
                 try {
                     recognitionContext.reset();
-                    SQLQueryModel queryModel = SQLQueryModelRecognizer.recognizeQuery(recognitionContext, element.getOriginalText());
+                    SQLQueryModel queryModel = element instanceof SQLControlCommand
+                        ? SQLCommandModelRecognizer.recognizeCommand(
+                            recognitionContext,
+                            element.getText(),
+                            this.editor instanceof SQLEditor e ? e.getGlobalScriptContext() : null
+                        )
+                        : SQLQueryModelRecognizer.recognizeQuery(recognitionContext, element.getOriginalText());
 
                     if (queryModel != null) {
                         if (DEBUG) {

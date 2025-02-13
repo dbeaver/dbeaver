@@ -180,12 +180,7 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
 
     @Override
     public boolean isWorkbenchStarted() {
-        return false;
-    }
-
-    @Override
-    public void setWorkbenchStarted(boolean started) {
-
+        return true;
     }
 
     @NotNull

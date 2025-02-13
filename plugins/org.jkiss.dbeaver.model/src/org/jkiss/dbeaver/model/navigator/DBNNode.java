@@ -189,9 +189,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return allowsChildren();
     }
 
-    /**
-     * @param monitor progress monitor. If null then only cached children may be returned.
-     */
     public abstract DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     void clearNode(boolean reflect) {

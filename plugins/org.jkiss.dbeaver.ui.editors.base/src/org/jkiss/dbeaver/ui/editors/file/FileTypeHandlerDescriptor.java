@@ -34,6 +34,7 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
     private final String[] extensions;
     private final ObjectType handlerType;
     private final int order;
+    private boolean supportsRemote;
 
     public FileTypeHandlerDescriptor(IConfigurationElement config) {
         super(config);
@@ -41,6 +42,7 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
         this.id = config.getAttribute("id");
         this.handlerType = new ObjectType(config.getAttribute("class"));
         this.extensions = CommonUtils.notEmpty(config.getAttribute("extensions")).split(",");
+        this.supportsRemote = CommonUtils.toBoolean(config.getAttribute("remote"), true);
         this.order = CommonUtils.toInt(config.getAttribute("order"));
     }
 
@@ -50,6 +52,10 @@ public class FileTypeHandlerDescriptor extends AbstractDescriptor {
 
     public String[] getExtensions() {
         return extensions;
+    }
+
+    public boolean supportsRemoteFiles() {
+        return supportsRemote;
     }
 
     public int getOrder() {

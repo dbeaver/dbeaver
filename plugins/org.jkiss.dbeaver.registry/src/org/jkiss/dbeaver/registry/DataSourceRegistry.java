@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -348,12 +348,15 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) {
+    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) throws DBException {
         DBPDataSourceFolder folder = getFolder(oldPath);
         var result = Path.of(newPath);
         var newName = result.getFileName().toString();
         var parent = result.getParent();
         var parentFolder = parent == null ? null : getFolder(parent.toString().replace("\\", "/"));
+        if (folder == parentFolder) {
+            throw new DBException("Cannot move folder inside itself");
+        }
         folder.setParent(parentFolder);
         if (!CommonUtils.equalObjects(folder.getName(), newName)) {
             folder.setName(newName);
