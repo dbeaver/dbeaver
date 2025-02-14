@@ -77,7 +77,7 @@ public class CubridTableColumn extends GenericTableColumn
     @Override
     @Property(viewable = true, editable = true, order = 10)
     public String getName() {
-        return super.getName().toLowerCase();
+        return super.getName() != null ? super.getName().toLowerCase() : null;
     }
 
     @NotNull

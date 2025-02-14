@@ -40,7 +40,7 @@ public class CubridTableIndex extends GenericTableIndex {
     @Override
     @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName() {
-        return super.getName().toLowerCase();
+        return super.getName() != null ? super.getName().toLowerCase() : null;
     }
 
 }
