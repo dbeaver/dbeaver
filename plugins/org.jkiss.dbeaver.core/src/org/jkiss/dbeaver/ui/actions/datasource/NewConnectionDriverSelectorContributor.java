@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionDialog;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 public class NewConnectionDriverSelectorContributor extends DataSourceMenuContributor
 {
@@ -45,11 +46,7 @@ public class NewConnectionDriverSelectorContributor extends DataSourceMenuContri
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
         if (DBWorkbench.isDistributed()) {
-            for (int i = allDrivers.size() - 1; i > 0; i--) {
-                if (!allDrivers.get(i).isDriverInstalled()) {
-                    allDrivers.remove(i);
-                }
-            }
+            allDrivers.removeIf(Predicate.not(DBPDriver::isDriverInstalled));
         }
         List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 10);
         for (DBPDriver driver : recentDrivers) {

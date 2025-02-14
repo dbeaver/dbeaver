@@ -107,11 +107,14 @@ public class DriverTabbedViewer extends StructuredViewer {
             if (category.isPromoted()) {
                 List<DBPDriver> drivers = getCategoryDrivers(category, allDrivers);
                 if (!drivers.isEmpty()) {
-                    extFolders.add(
-                        new TabbedFolderInfo(
-                            category.getId(), category.getName(), category.getIcon(), category.getDescription(), false,
-                            new DriverListFolder(category, drivers)
-                        ));
+                    extFolders.add(new TabbedFolderInfo(
+                        category.getId(),
+                        category.getName(),
+                        category.getIcon(),
+                        category.getDescription(),
+                        false,
+                        new DriverListFolder(category, drivers)
+                    ));
                 }
             }
         }
