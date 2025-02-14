@@ -123,7 +123,7 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     /**
      * Moves connection folder
      */
-    void moveFolder(@NotNull String oldPath, @NotNull String newPath);
+    void moveFolder(@NotNull String oldPath, @NotNull String newPath) throws DBException;
 
     @Nullable
     DBSObjectFilter getSavedFilter(String name);

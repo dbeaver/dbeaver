@@ -79,10 +79,10 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
 //            completionContext = this.editor.obtainCompletionContext(this.completionRequestPostion);
 //        }
 
-        this.proposalContext = new SQLQueryCompletionProposalContext(request, completionContext.getRequestOffset());
         Pair<Integer, List<SQLQueryCompletionProposal>> result;
         if (completionContext != null && this.request.getContext().getDataSource() != null) {
             // TODO don't we want to be able to accomplish subqueries and such even without the connection?
+            this.proposalContext = new SQLQueryCompletionProposalContext(request, completionContext.getRequestOffset());
             result = this.prepareProposals(monitor, completionContext);
         } else {
             result = Pair.of(this.completionRequestPosition.getOffset(), Collections.emptyList());
