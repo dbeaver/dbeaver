@@ -20,29 +20,20 @@ import org.jkiss.api.DriverReference;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
-import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -52,24 +43,19 @@ import java.util.Map;
  */
 public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
 
-    private static final Log log = Log.getLog(AbstractFileDatabaseHandler.class);
-    private static final String FILE_DATABASES_FOLDER = "File databases";
-
     @Override
     public void openFiles(
         @NotNull List<Path> fileList,
         @NotNull Map<String, String> parameters,
         @Nullable DBPDataSourceContainer providedDataSource
-    ) {
+    ) throws DBException {
         DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         if (project == null) {
-            log.error("No active project - cannot open file");
-            return;
+            throw new DBException("No active project - cannot open file");
         }
         DBPDriver driver = DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver(getDriverReference());
         if (driver == null) {
-            log.error("Driver '" + getDriverReference() + "' not found");
-            return;
+            throw new DBException("Driver '" + getDriverReference() + "' not found");
         }
 
         if (isSingleDatabaseConnection()) {
@@ -85,113 +71,43 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
         }
     }
 
-    private void createDatabaseConnection(String connectionName, @NotNull String databaseName, DBPProject project, DBPDriver driver) {
+    private void createDatabaseConnection(
+        @NotNull String connectionName,
+        @NotNull String databaseName,
+        @NotNull DBPProject project,
+        @NotNull DBPDriver driver
+    ) throws DBException {
         DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
         configuration.setDatabaseName(databaseName);
 
-        DBPDataSourceRegistry registry = project.getDataSourceRegistry();
-        String connectionId = "file_database_" + CommonUtils.escapeIdentifier(databaseName);
-        DBPDataSourceContainer dsContainer = registry.getDataSource(connectionId);
+        DBPDataSourceContainer dsContainer = DBFUtils.createTemporaryDataSourceContainer(connectionName, project, driver, configuration);
         if (dsContainer == null) {
-            dsContainer = registry.createDataSource(connectionId, driver, configuration);
-            int conNameSuffix = 1;
-            connectionName = "File - " + CommonUtils.truncateString(connectionName, 64);
-            String finalConnectionName = connectionName;
-            while (registry.findDataSourceByName(finalConnectionName) != null) {
-                conNameSuffix++;
-                finalConnectionName = connectionName + " " + conNameSuffix;
-            }
-            dsContainer.setName(finalConnectionName);
-            dsContainer.setTemporary(true);
-            DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
-            DBNModel navigatorModel = project.getNavigatorModel();
-            if (navigatorModel != null) {
-                DBNProject projectNode = navigatorModel.getRoot().getProjectNode(project);
-                if (projectNode != null) {
-                    projectNode.getDatabases().getFolderNode(folder);
+            return;
+        }
+
+        DBPDataSourceContainer finalDsContainer = dsContainer;
+        UIUtils.runWithMonitor(monitor -> {
+            if (finalDsContainer.isConnected() || finalDsContainer.connect(monitor, true, true)) {
+                DBPDataSource dataSource = finalDsContainer.getDataSource();
+                DBNDatabaseNode openNode = DBNUtils.getDefaultDatabaseNodeToOpen(monitor, dataSource);
+
+                if (openNode == null) {
+                    throw new DBException("Cannot determine target node for " + dsContainer.getName());
+                } else {
+                    UIUtils.syncExec(() -> NavigatorHandlerObjectOpen.openEntityEditor(
+                        openNode,
+                        null,
+                        null,
+                        null,
+                        UIUtils.getActiveWorkbenchWindow(),
+                        true,
+                        false));
                 }
             }
-            dsContainer.setFolder(folder);
-
-            try {
-                registry.addDataSource(dsContainer);
-            } catch (DBException e) {
-                log.error(e);
-                return;
-            }
-        }
-
-        try {
-            DBPDataSourceContainer finalDsContainer = dsContainer;
-            UIUtils.runInProgressService(monitor -> {
-                try {
-                    if (finalDsContainer.isConnected() || finalDsContainer.connect(monitor, true, true)) {
-                        DBPDataSource dataSource = finalDsContainer.getDataSource();
-                        List<DBSEntity> entities = new ArrayList<>();
-                        if (dataSource instanceof DBSObjectContainer container) {
-                            getConnectionEntities(monitor, container, entities);
-                        }
-
-                        DBSObject objectToOpen;
-                        if (entities.size() == 1) {
-                            objectToOpen = entities.get(0);
-                        } else {
-                            if (entities.size() > 1) {
-                                objectToOpen = entities.get(0).getParentObject();
-                            } else {
-                                objectToOpen = dataSource;
-                            }
-                        }
-                        DBNDatabaseNode openNode = DBNUtils.getNodeByObject(monitor, objectToOpen, true);
-
-                        if (openNode == null) {
-                            DBWorkbench.getPlatformUI().showError("No objects", "Cannot determine target node");
-                        } else {
-                            UIUtils.syncExec(() -> {
-                                NavigatorHandlerObjectOpen.openEntityEditor(
-                                    openNode,
-                                    null,
-                                    null,
-                                    null,
-                                    UIUtils.getActiveWorkbenchWindow(),
-                                    true,
-                                    false);
-                            });
-                        }
-                    }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(
-                "Connecting to " + getDatabaseTerm() + " datasource",
-                "Error connecting to " + getDatabaseTerm() + " datasource",
-                e.getTargetException());
-        } catch (InterruptedException ignore) {
-
-        }
-    }
-
-    private void getConnectionEntities(
-        DBRProgressMonitor monitor,
-        DBSObjectContainer container,
-        List<DBSEntity> entities
-    ) throws DBException {
-        for (DBSObject child : container.getChildren(monitor)) {
-            if (child instanceof DBSEntity entity) {
-                entities.add(entity);
-            } else if (child instanceof DBSObjectContainer oc) {
-                getConnectionEntities(monitor, oc, entities);
-            }
-        }
-    }
-
-    private static void openNodeEditor(DBNNode node) {
-        UIUtils.asyncExec(() -> {
-            NavigatorUtils.openNavigatorNode(node, UIUtils.getActiveWorkbenchWindow());
+            return null;
         });
     }
+
 
     protected abstract String getDatabaseTerm();
 

@@ -148,6 +148,7 @@ import org.jkiss.utils.Pair;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.List;
@@ -727,8 +728,8 @@ public class SQLEditor extends SQLEditorBase implements
     public void refreshActions() {
         // Redraw toolbar to refresh action sets
         this.updateMultipleResultsPerTabToolItem();
-        topBarMan.getControl().redraw();
-        bottomBarMan.getControl().redraw();
+        if (topBarMan != null) topBarMan.getControl().redraw();
+        if (bottomBarMan != null) bottomBarMan.getControl().redraw();
         MultipleResultsPerTabMenuContribution.syncWithEditor(this);
     }
 
@@ -1744,9 +1745,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Nullable
     private ToolItem getViewToolItem(@NotNull String commandId) {
-        ToolItem viewItem = UIUtils.findToolItemByCommandId(topBarMan, commandId);
+        ToolItem viewItem = topBarMan == null ? null : UIUtils.findToolItemByCommandId(topBarMan, commandId);
         if (viewItem == null) {
-            viewItem = UIUtils.findToolItemByCommandId(bottomBarMan, commandId);
+            viewItem = bottomBarMan == null ? null : UIUtils.findToolItemByCommandId(bottomBarMan, commandId);
         }
         return viewItem;
     }
@@ -2190,9 +2191,14 @@ public class SQLEditor extends SQLEditorBase implements
         this.globalScriptContext = new SQLScriptContext(
             parentContext,
             this,
-            EditorUtils.getPathFromInput(editorInput),
+            null,
             new OutputLogWriter(),
-            new SQLEditorParametersProvider(site));
+            new SQLEditorParametersProvider(site)) {
+            @Override
+            public Path getSourceFile() {
+                return EditorUtils.getPathFromInput(getEditorInput());
+            }
+        };
         DBCExecutionContext inputExecutionContext = this.globalScriptContext.getExecutionContext();
         if (inputExecutionContext != null) {
             dataSourceContainer = inputExecutionContext.getDataSource().getContainer();

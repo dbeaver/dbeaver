@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.sql.completion.CompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionHelper;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryWordEntry;
@@ -37,8 +39,8 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.SuggestionInformationControlCreator;
 import org.jkiss.utils.CommonUtils;
 
-public class SQLQueryCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2, ICompletionProposalExtension3,
-        ICompletionProposalExtension4, ICompletionProposalExtension5, ICompletionProposalExtension6 {
+public class SQLQueryCompletionProposal extends CompletionProposalBase implements ICompletionProposal, ICompletionProposalExtension2,
+    ICompletionProposalExtension3, ICompletionProposalExtension4, ICompletionProposalExtension5, ICompletionProposalExtension6 {
 
     private static final Log log = Log.getLog(SQLQueryCompletionProposal.class);
     private static final boolean DEBUG = false;
@@ -94,6 +96,16 @@ public class SQLQueryCompletionProposal implements ICompletionProposal, IComplet
 
         this.filterString = filterString;
         this.proposalScore = proposalScore;
+    }
+
+    @Override
+    protected int getReplacementOffset() {
+        return this.replacementOffset;
+    }
+
+    @Override
+    protected String getReplacementString() {
+        return this.displayString; // because actual replacement string includes extra whitespaces
     }
 
     public int getProposalScore() {

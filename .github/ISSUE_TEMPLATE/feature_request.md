@@ -2,7 +2,8 @@
 name: Feature request
 about: Do you have an idea? Please, share it.
 title: ''
-labels: feature request, wait for review
+labels: wait for review
+type: Feature
 assignees: ''
 
 ---

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,10 +79,10 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
 //            completionContext = this.editor.obtainCompletionContext(this.completionRequestPostion);
 //        }
 
-        this.proposalContext = new SQLQueryCompletionProposalContext(request, completionContext.getRequestOffset());
         Pair<Integer, List<SQLQueryCompletionProposal>> result;
         if (completionContext != null && this.request.getContext().getDataSource() != null) {
             // TODO don't we want to be able to accomplish subqueries and such even without the connection?
+            this.proposalContext = new SQLQueryCompletionProposalContext(request, completionContext.getRequestOffset());
             result = this.prepareProposals(monitor, completionContext);
         } else {
             result = Pair.of(this.completionRequestPosition.getOffset(), Collections.emptyList());
@@ -218,6 +218,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
             case COMPOSITE_FIELD_NAME -> DBIcon.TREE_DATA_TYPE;
             case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
+            case PROCEDURE -> item.getObject() == null ? DBIcon.TREE_FUNCTION : DBValueFormatting.getObjectImage(item.getObject());
             default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
         };
     }

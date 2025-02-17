@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,10 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
@@ -110,22 +113,13 @@ public class DesktopUI extends ConsoleUserInterface {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 if (PlatformUI.isWorkbenchRunning() && !PlatformUI.getWorkbench().isStarting()) {
-                    UIUtils.asyncExec(() -> {
-                        contextListener = WorkbenchContextListener.registerInWorkbench();
-                    });
+                    UIUtils.asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
                 } else {
                     schedule(50);
                 }
                 return Status.OK_STATUS;
             }
         }.schedule();
-    }
-
-    public void refreshPartContexts(IWorkbenchPart part) {
-        if (contextListener != null) {
-            contextListener.deactivatePartContexts(part);
-            contextListener.activatePartContexts(part);
-        }
     }
 
     @Override
@@ -644,18 +638,17 @@ public class DesktopUI extends ConsoleUserInterface {
         
         return job.getResult().isOK() ? runnable.getResult() : CompletableFuture.failedFuture(job.getResult().getException());
     }
-    
+
+    @Override
+    public <T> T runWithMonitor(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
+        return UIUtils.runWithMonitor(runnable);
+    }
+
+
     @NotNull
     @Override
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
         return LoadingJob.createService(loadingService, visualizer);
-    }
-
-    @Override
-    public void refreshPartState(Object part) {
-        if (part instanceof IWorkbenchPart) {
-            UIUtils.asyncExec(() -> DesktopUI.getInstance().refreshPartContexts((IWorkbenchPart)part));
-        }
     }
 
     @Override
@@ -704,17 +697,16 @@ public class DesktopUI extends ConsoleUserInterface {
             log.error("File system root node not found");
             return null;
         }
-        DBNNode[] selectedNode = new DBNNode[1];
+        DBNNode selectedNode = null;
         if (defaultValue != null) {
             try {
-                UIUtils.runInProgressService(monitor -> {
+                selectedNode = UIUtils.runWithMonitor(monitor -> {
+                    monitor.beginTask("Locate file", 1);
+                    monitor.subTask("Locate '" + defaultValue + "'");
                     try {
-                        monitor.beginTask("Locate file", 1);
-                        monitor.subTask("Locate '" + defaultValue + "'");
-                        selectedNode[0] = fileSystemsNode.findNodeByPath(new VoidProgressMonitor(), defaultValue);
+                        return fileSystemsNode.findNodeByPath(monitor, defaultValue);
+                    } finally {
                         monitor.done();
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
                     }
                 });
             } catch (Exception e) {
@@ -739,7 +731,7 @@ public class DesktopUI extends ConsoleUserInterface {
             UIUtils.getActiveWorkbenchShell(),
             title,
             fileSystemsNode,
-            selectedNode[0],
+            selectedNode,
             new Class[] { DBNPathBase.class },
             new Class[] { DBNPathBase.class },
             null,
@@ -770,7 +762,7 @@ public class DesktopUI extends ConsoleUserInterface {
             return false;
         }
     }
-    
+
     private static long getLongOperationTime() {
         try {
             return PlatformUI.getWorkbench().getProgressService().getLongOperationTime();

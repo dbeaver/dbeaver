@@ -35,6 +35,7 @@ public enum SQLQuerySymbolClass {
     SQL_BATCH_VARIABLE(SQLTokenType.T_SQL_VARIABLE),
     DBEAVER_VARIABLE(SQLTokenType.T_VARIABLE),
     DBEAVER_PARAMETER(SQLTokenType.T_PARAMETER),
+    DBEAVER_COMMAND(SQLTokenType.T_CONTROL),
     ERROR(SQLTokenType.T_SEMANTIC_ERROR);
     
     private final SQLTokenType tokenType;

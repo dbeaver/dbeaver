@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -107,7 +109,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
         Composite composite = super.createDialogArea(parent);
 
-        TabFolder tabFolder = new TabFolder(composite, SWT.NONE);
+        CTabFolder tabFolder = new CTabFolder(composite, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.minimumWidth = 200;
         gd.widthHint = 400;
@@ -327,7 +329,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 columnsViewer.addSelectionChangedListener(event -> updateButtons());
 
             }
-            TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
+            CTabItem libsTab = new CTabItem(tabFolder, SWT.NONE);
             libsTab.setText(ResultSetMessages.controls_resultset_filter_group_columns);
             libsTab.setToolTipText(ResultSetMessages.controls_resultset_filter_group_columns_tooltip_text);
             libsTab.setControl(columnsGroup);
@@ -423,7 +425,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         moveBottomButton.setEnabled(newIndex < getItemsCount() - 1);
     }
 
-    private void createCustomFilters(TabFolder tabFolder)
+    private void createCustomFilters(CTabFolder tabFolder)
     {
         Composite filterGroup = new Composite(tabFolder, SWT.NONE);
         filterGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -448,7 +450,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             ControlEnableState.disable(filterGroup);
         }
 
-        TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
+        CTabItem libsTab = new CTabItem(tabFolder, SWT.NONE);
         libsTab.setText(ResultSetMessages.controls_resultset_filter_group_custom);
         libsTab.setToolTipText(ResultSetMessages.controls_resultset_filter_group_custom_tooltip_text);
         libsTab.setControl(filterGroup);

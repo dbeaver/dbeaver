@@ -117,6 +117,7 @@
         </page>
         <page category="org.jkiss.dbeaver.preferences.eclipse.main" id="org.jkiss.dbeaver.preferences.main.common" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface" name="%pref.page.name.user.interface">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.user.interface"/>
         </page>
         <page category="org.eclipse.ui.net.NetPreferences" id="org.jkiss.dbeaver.preferences.network.expert" class="org.jkiss.dbeaver.ui.preferences.PrefPageNetworkExpert" name="%pref.page.name.network.expert">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.network.expert"/>
