@@ -161,18 +161,16 @@ public class SQLEditorHandlerOpenObjectConsole extends AbstractHandler {
                 protected IStatus run(DBRProgressMonitor monitor) {
                     // If we open new connection for each editor it may take some time
                     // So let's give it a chance and wait for 10 seconds
-                    for (int i = 0; i < 100; i++) {
-                        if (editor.getExecutionContext() != null) {
-                            if (doRun) {
-                                UIUtils.syncExec(() -> editor.processSQL(
-                                    false,
-                                    forceProcessAsScript || NavigatorUtils.getSelectedObjects(currentSelection).size() > 1
-                                ));
-                            }
-                            break;
+                    if (editor.getExecutionContext() != null) {
+                        if (doRun) {
+                            UIUtils.syncExec(() -> editor.processSQL(
+                                false,
+                                forceProcessAsScript || NavigatorUtils.getSelectedObjects(currentSelection).size() > 1
+                            ));
                         }
-                        schedule(100);
+                        return Status.OK_STATUS;
                     }
+                    schedule(100);
                     return Status.OK_STATUS;
                 }
             };
