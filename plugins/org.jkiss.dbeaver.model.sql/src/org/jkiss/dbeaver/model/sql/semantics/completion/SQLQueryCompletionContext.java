@@ -895,7 +895,7 @@ public abstract class SQLQueryCompletionContext {
                                                     int score = thisScore >= otherScore ? thisScore : otherScore;
                                                     SQLQueryWordEntry word = (thisScore >= otherScore ? thisColumnRef : otherColumnRef).getFilterInfo();
 
-                                                    result.addLast(SQLQueryCompletionItem.forJoinCondition(
+                                                    result.addFirst(SQLQueryCompletionItem.forJoinCondition(
                                                         score, word,
                                                         thisColumnRef,
                                                         otherColumnRef
@@ -954,7 +954,7 @@ public abstract class SQLQueryCompletionContext {
                 );
                 this.makeFilteredCompletionSet(
                     filterOrNull,
-                    Stream.of(subsetColumns, tableRefs, joinConditions, procedureItems).flatMap(Collection::stream).toList(),
+                    Stream.of(joinConditions, subsetColumns, tableRefs, procedureItems).flatMap(Collection::stream).toList(),
                     results
                 );
             }
