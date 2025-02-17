@@ -14,6 +14,7 @@
                 description="%handler.ssh_tunnel.description"
                 desktop="false"
                 secured="true"
+                pinned="true"
                 order="1"
                 handlerClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl">
             <propertyGroup label="SSH Settings">
