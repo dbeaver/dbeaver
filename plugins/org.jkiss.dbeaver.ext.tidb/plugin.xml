@@ -94,7 +94,7 @@
                     categories="sql">
 
                     <file type="jar" path="maven:/com/mysql:mysql-connector-j:RELEASE" bundle="!drivers.mysql"/>
-                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.0.txt" bundle="!drivers.mysql"/>
+                    <file type="license" path="licenses/external/gnu3.txt"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
 

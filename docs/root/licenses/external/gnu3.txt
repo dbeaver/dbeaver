@@ -1,13 +1,3 @@
-This license applies to 3rd party drivers which are not included in the product
-but which may be downloaded separately after program installation in order to
-connect to database servers.
-This license DOES NOT apply to any components of DBeaver or CloudBeaver
-products themselves.
-
-Text of the original GPL 3.0 license from https://www.gnu.org/licenses/gpl-3.0.txt
-
----------------------------------
-
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
