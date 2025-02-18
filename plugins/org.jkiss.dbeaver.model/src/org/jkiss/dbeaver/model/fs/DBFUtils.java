@@ -221,6 +221,7 @@ public class DBFUtils {
                 }
             }
             dsContainer.setFolder(folder);
+            dsContainer.setDescription("Temporary file datasource for " + configuration.getDatabaseName());
 
             try {
                 registry.addDataSource(dsContainer);
