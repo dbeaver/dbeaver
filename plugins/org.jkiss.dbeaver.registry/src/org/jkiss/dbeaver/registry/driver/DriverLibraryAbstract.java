@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.SecurityUtils;
 
 import java.io.IOException;
@@ -253,7 +254,12 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
                 Files.delete(tempFile);
             }
         } else {
-            Files.move(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
+            if(IOUtils.isFileFromDefaultFS(localFile)) {
+                Files.move(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
+            } else {
+                Files.copy(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
+                Files.delete(tempFile);
+            }
         }
     }
 

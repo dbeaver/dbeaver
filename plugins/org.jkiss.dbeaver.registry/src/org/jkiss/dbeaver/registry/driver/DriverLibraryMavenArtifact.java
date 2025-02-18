@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.*;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -225,16 +224,16 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     public Path getLocalFile()
     {
         // Try to get local file
-        File platformFile = detectLocalFile();
+        Path platformFile = detectLocalFile();
         if (platformFile != null) {
             // Relative file do not exists - use plain one
-            return platformFile.toPath();
+            return platformFile;
         }
         // Nothing fits - just return plain url
         return null;
     }
 
-    private File detectLocalFile()
+    private Path detectLocalFile()
     {
         if (localVersion != null) {
             return localVersion.getCacheFile();
