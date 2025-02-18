@@ -2116,12 +2116,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     // used to download drivers from external fs or distributed to a temp folder
     @NotNull
     public static Path getTempWorkspaceDriversStorageFolder() {
-        try {
-            return DBWorkbench.getPlatform().getTempFolder(new LoggingProgressMonitor(), DBFileController.DATA_FOLDER)
-                .resolve(DBFileController.TYPE_DATABASE_DRIVER);
-        } catch (IOException e) {
-            throw new RuntimeException("Error getting drivers temp folder", e);
+        DBPPlatform platform = DBWorkbench.getPlatform();
+        if(platform.getApplication().isMultiuser()) {
+            try {
+                return platform.getTempFolder(new LoggingProgressMonitor(), DBFileController.DATA_FOLDER)
+                    .resolve(DBFileController.TYPE_DATABASE_DRIVER);
+            } catch (IOException e) {
+                throw new RuntimeException("Error getting drivers temp folder", e);
+            }
         }
+
+        return Path.of(RuntimeUtils.getWorkingDirectory("DBeaverData"))
+            .resolve("drivers").resolve("team");
     }
 
     public static Path getWorkspaceDriversStorageFolder() {
