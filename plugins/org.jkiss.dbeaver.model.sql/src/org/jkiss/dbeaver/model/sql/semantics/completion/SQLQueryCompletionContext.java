@@ -26,7 +26,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -895,7 +896,7 @@ public abstract class SQLQueryCompletionContext {
                                                     int score = thisScore >= otherScore ? thisScore : otherScore;
                                                     SQLQueryWordEntry word = (thisScore >= otherScore ? thisColumnRef : otherColumnRef).getFilterInfo();
 
-                                                    result.addFirst(SQLQueryCompletionItem.forJoinCondition(
+                                                    result.addLast(SQLQueryCompletionItem.forJoinCondition(
                                                         score, word,
                                                         thisColumnRef,
                                                         otherColumnRef

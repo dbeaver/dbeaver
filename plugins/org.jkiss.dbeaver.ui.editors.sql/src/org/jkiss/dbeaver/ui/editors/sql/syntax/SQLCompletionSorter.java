@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,10 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalSorter;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionProposal;
-
-import java.util.Comparator;
 
 /**
  * Completion sorter
@@ -39,6 +38,11 @@ public class SQLCompletionSorter implements ICompletionProposalSorter {
 
     @Override
     public int compare(ICompletionProposal p1, ICompletionProposal p2) {
+        int krc = compareProposalKind(p1, p2);
+        if (krc != 0) {
+            return krc;
+        }
+
         int score1 = getScore(p1);
         int score2 = getScore(p2);
         if (score1 > 0 || score2 > 0) {
@@ -49,6 +53,19 @@ public class SQLCompletionSorter implements ICompletionProposalSorter {
         }
         if (sortAlphabetically) {
             return p1.getDisplayString().compareToIgnoreCase(p2.getDisplayString());
+        } else {
+            return 0;
+        }
+    }
+
+    private static int compareProposalKind(ICompletionProposal a, ICompletionProposal b) {
+        boolean aIsCond = a instanceof SQLQueryCompletionProposal x && x.getItemKind() == SQLQueryCompletionItemKind.JOIN_CONDITION;
+        boolean bIsCond = b instanceof SQLQueryCompletionProposal y && y.getItemKind() == SQLQueryCompletionItemKind.JOIN_CONDITION;
+
+        if (aIsCond && !bIsCond) {
+            return -1;
+        } else if (!aIsCond && bIsCond) {
+            return 1;
         } else {
             return 0;
         }

@@ -98,6 +98,10 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase implement
         this.proposalScore = proposalScore;
     }
 
+    public SQLQueryCompletionItemKind getItemKind() {
+        return this.itemKind;
+    }
+
     @Override
     protected int getReplacementOffset() {
         return this.replacementOffset;
