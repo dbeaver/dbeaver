@@ -171,7 +171,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
             return null;
         }
         TaskExecutor taskExecutor = new TaskExecutor(
-            settings, task, log, logStream, dataPipes, totalJobs);
+            settings, task, listener, log, logStream, dataPipes, totalJobs);
         try {
             runnableContext.run(true, true, taskExecutor);
         } catch (InvocationTargetException e) {
@@ -249,16 +249,26 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
     private class TaskExecutor implements DBRRunnableWithProgress {
         private final DataTransferSettings settings;
         private final DBTTask task;
+        private final DBTTaskExecutionListener listener;
         private final Log log;
         private final PrintStream logStream;
         private final List<DataTransferPipe> dataPipes;
         private final int totalJobs;
         private Throwable error;
 
-        public TaskExecutor(DataTransferSettings settings, DBTTask task, Log log, PrintStream logStream, List<DataTransferPipe> dataPipes, int totalJobs) {
+        public TaskExecutor(
+            DataTransferSettings settings,
+            DBTTask task,
+            DBTTaskExecutionListener listener,
+            Log log,
+            PrintStream logStream,
+            List<DataTransferPipe> dataPipes,
+            int totalJobs
+        ) {
             this.totalJobs = totalJobs;
             this.settings = settings;
             this.task = task;
+            this.listener = listener;
             this.log = log;
             this.logStream = logStream;
             this.dataPipes = dataPipes;
@@ -282,6 +292,9 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
             }
 
             monitor.beginTask("Performing data transfer in parallel", settings.getDataPipes().size());
+            if (listener != null) {
+                listener.taskStarted(task);
+            }
 
             if (group != null) {
                 try {
@@ -330,6 +343,10 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                         job.cancel();
                     }
                 }
+                if (listener != null) {
+                    listener.taskFinished(task, null, error, null);
+                }
+
                 monitor.done();
                 monitor.beginTask("Finalizing data transfer", 1);
 
