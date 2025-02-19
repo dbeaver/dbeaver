@@ -758,6 +758,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     };
 
     public static String[] POSTGRE_FUNCTIONS_FORMATTING = new String[]{
+        "format",
         "to_char",
         "to_date",
         "to_number",
@@ -890,6 +891,9 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         addExtraFunctions(POSTGRE_FUNCTIONS_XML);
 
         removeSQLKeyword("LENGTH");
+        removeSQLKeyword("JSON");
+        removeSQLKeyword("TEXT");
+        removeSQLKeyword("FORMAT");
         removeSQLKeyword("WORK");
 
         if (dataSource instanceof PostgreDataSource) {
