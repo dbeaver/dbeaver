@@ -50,7 +50,6 @@ public class DBConstants {
 
     public static final String VAR_CONTEXT_NAME = "context.name";
     public static final String VAR_CONTEXT_ID = "context.id";
-    public static final String VAR_DATABASE_FOLDER_TABLE_ID = "table";
 
     /////////////////////////////////
     // Object context parameters
