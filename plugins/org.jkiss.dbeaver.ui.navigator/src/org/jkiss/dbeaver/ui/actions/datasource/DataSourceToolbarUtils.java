@@ -73,17 +73,16 @@ public class DataSourceToolbarUtils {
             if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
                 // Show schema selector only for active connections which
                 // support schema read or write
-                boolean schemasSupported = true;
+                boolean schemasSupported = false;
                 DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSourceContainer, false);
                 if (defaultContext != null) {
-                    DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
+                    DBCExecutionContextDefaults<?,?> contextDefaults = defaultContext.getContextDefaults();
                     if (contextDefaults != null) {
-                        if (contextDefaults.getDefaultSchema() == null && contextDefaults.getDefaultCatalog() == null &&
-                            !contextDefaults.supportsSchemaChange() && !contextDefaults.supportsCatalogChange()) {
-                            schemasSupported = false;
+                        if (contextDefaults.getDefaultSchema() != null || contextDefaults.getDefaultCatalog() != null ||
+                            contextDefaults.supportsSchemaChange() || contextDefaults.supportsCatalogChange()
+                        ) {
+                            schemasSupported = true;
                         }
-                    } else {
-                        schemasSupported = false;
                     }
                 }
                 showSchemaSelector = schemasSupported;
@@ -109,7 +108,7 @@ public class DataSourceToolbarUtils {
                         }
 
                         for (MUIElement tbItem : container.getChildren()) {
-                            // Handle Eclipse bug. By default it doesn't update contents of main toolbar elements
+                            // Handle Eclipse bug. By default, it doesn't update contents of main toolbar elements
                             // So we need to hide/show it to force text update
                             if (showConnectionSelector) {
                                 tbItem.setVisible(false);
