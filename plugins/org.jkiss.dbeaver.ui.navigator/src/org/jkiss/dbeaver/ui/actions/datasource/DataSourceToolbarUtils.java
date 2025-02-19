@@ -82,6 +82,8 @@ public class DataSourceToolbarUtils {
                             !contextDefaults.supportsSchemaChange() && !contextDefaults.supportsCatalogChange()) {
                             schemasSupported = false;
                         }
+                    } else {
+                        schemasSupported = false;
                     }
                 }
                 showSchemaSelector = schemasSupported;
