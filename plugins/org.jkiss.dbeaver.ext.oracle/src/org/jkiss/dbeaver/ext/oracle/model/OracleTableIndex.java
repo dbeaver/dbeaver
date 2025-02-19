@@ -157,7 +157,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTableBa
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (indexDDL == null && isPersisted()) {
-            try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read index definition")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read index definition")) {
                 indexDDL = JDBCUtils.queryString(session, "SELECT DBMS_METADATA.GET_DDL('INDEX', ?, ?) TXT FROM DUAL",
                     getName(),
                     getTable().getSchema().getName()
