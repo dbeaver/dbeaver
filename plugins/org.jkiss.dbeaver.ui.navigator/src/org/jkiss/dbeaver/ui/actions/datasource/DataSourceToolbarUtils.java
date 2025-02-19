@@ -73,19 +73,7 @@ public class DataSourceToolbarUtils {
             if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
                 // Show schema selector only for active connections which
                 // support schema read or write
-                boolean schemasSupported = false;
-                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSourceContainer, false);
-                if (defaultContext != null) {
-                    DBCExecutionContextDefaults<?,?> contextDefaults = defaultContext.getContextDefaults();
-                    if (contextDefaults != null) {
-                        if (contextDefaults.getDefaultSchema() != null || contextDefaults.getDefaultCatalog() != null ||
-                            contextDefaults.supportsSchemaChange() || contextDefaults.supportsCatalogChange()
-                        ) {
-                            schemasSupported = true;
-                        }
-                    }
-                }
-                showSchemaSelector = schemasSupported;
+                showSchemaSelector = isSchemasSupported(dataSourceContainer);
             }
             DBPProject resourceProj = activeEditor == null ? null : EditorUtils.getFileProject(activeEditor.getEditorInput());
             boolean canChangeConn = resourceProj == null || resourceProj.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
@@ -129,6 +117,21 @@ public class DataSourceToolbarUtils {
         }
         // By some reason we can't locate the toolbar (#5712?). Let's just refresh elements then - its better than nothing
         updateCommandsUI();
+    }
+
+    public static boolean isSchemasSupported(DBPDataSourceContainer dataSourceContainer) {
+        DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSourceContainer, false);
+        if (defaultContext != null) {
+            DBCExecutionContextDefaults<?,?> contextDefaults = defaultContext.getContextDefaults();
+            if (contextDefaults != null) {
+                if (contextDefaults.getDefaultSchema() != null || contextDefaults.getDefaultCatalog() != null ||
+                    contextDefaults.supportsSchemaChange() || contextDefaults.supportsCatalogChange()
+                ) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static void updateCommandsUI() {
