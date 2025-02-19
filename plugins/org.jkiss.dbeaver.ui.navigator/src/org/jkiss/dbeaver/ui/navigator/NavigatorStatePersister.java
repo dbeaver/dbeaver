@@ -121,7 +121,8 @@ public class NavigatorStatePersister {
         UIUtils.syncExec(() -> {
             final DatabaseNavigatorTreeFilterObjectType type = CommonUtils.valueOf(
                 DatabaseNavigatorTreeFilterObjectType.class,
-                memento.getString(PROP_FILTER_TYPE)
+                memento.getString(PROP_FILTER_TYPE),
+                DatabaseNavigatorTreeFilterObjectType.connection
             );
             if (type != null && tree.getFilterObjectType() != type) {
                 tree.setFilterObjectType(type);
