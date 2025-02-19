@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1014,8 +1014,9 @@ public class MySQLCatalog implements
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTrigger object, @Nullable String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS\n" +
-                    "WHERE TRIGGER_SCHEMA = ?" +
-                    (object == null && objectName == null ? "" : " \nAND TRIGGER_NAME = ?")
+                "WHERE TRIGGER_SCHEMA = ?" +
+                ((object == null && objectName == null ? "" : " \nAND TRIGGER_NAME = ?\n") +
+                 " ORDER BY EVENT_OBJECT_SCHEMA, TRIGGER_NAME;")
             );
             dbStat.setString(1, owner.getName());
             if (object != null || objectName != null) {
@@ -1032,7 +1033,7 @@ public class MySQLCatalog implements
             throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM information_schema.EVENTS WHERE EVENT_SCHEMA=?");
+                "SELECT * FROM information_schema.EVENTS WHERE EVENT_SCHEMA=? ORDER BY EVENT_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
