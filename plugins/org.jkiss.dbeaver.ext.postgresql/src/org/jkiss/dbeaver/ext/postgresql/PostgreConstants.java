@@ -166,7 +166,9 @@ public class PostgreConstants {
     public static final String PG_PASS_HOSTNAME = "overriddenUsername";
     public static final Map<String, String> REPLACING_TIMEZONE = Map.of(
         "Europe/Kyiv", "Europe/Kiev",
-        "Asia/Calcutta", "Asia/Kolkata"
+        "Europe/Kiev", "Europe/Kyiv",
+        "Asia/Calcutta", "Asia/Kolkata",
+        "Asia/Kolkata", "Asia/Calcutta"
     );
 
     static {
