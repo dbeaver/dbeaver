@@ -279,7 +279,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         String pomURL = getRemotePOMLocation();
         try (InputStream is = WebUtils.openConnection(monitor, pomURL, artifact.getRepository().getAuthInfo(), null).getInputStream()) {
             Path folder = localPOM.getParent();
-            if(Files.notExists(folder)) {
+            if (Files.notExists(folder)) {
                 try {
                     Files.createDirectories(folder);
                 } catch (IOException e) {
@@ -300,7 +300,6 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         if (!Files.exists(localPOM)) {
             cachePOM(monitor, localPOM);
         }
-
 
         Document pomDocument;
         try (InputStream mdStream = Files.newInputStream(localPOM)) {

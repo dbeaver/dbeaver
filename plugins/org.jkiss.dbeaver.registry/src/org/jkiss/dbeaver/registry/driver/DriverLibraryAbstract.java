@@ -254,7 +254,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
                 Files.delete(tempFile);
             }
         } else {
-            if(IOUtils.isFileFromDefaultFS(localFile)) {
+            if (IOUtils.isFileFromDefaultFS(localFile)) {
                 Files.move(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
             } else {
                 Files.copy(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
