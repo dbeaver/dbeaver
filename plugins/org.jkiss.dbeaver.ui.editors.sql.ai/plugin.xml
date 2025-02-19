@@ -40,9 +40,7 @@
 			<command commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion">
 				<visibleWhen>
 				    <and>
-						<with variable="activePart">
-							<not><test property="org.jkiss.dbeaver.ui.editors.sql.ai.isDisabled" forcePluginActivation="true"/></not>
-						</with>
+						<reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled"/>
                         <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion"/>
 					</and>
 				</visibleWhen>
@@ -53,7 +51,10 @@
 	<extension point="org.eclipse.core.expressions.definitions">
 		<definition id="org.jkiss.dbeaver.core.ai.completion.enabled">
 			<not>
-				<test property="org.jkiss.dbeaver.ui.editors.sql.ai.isDisabled" forcePluginActivation="true" />
+				<or>
+					<test property="org.jkiss.dbeaver.ui.editors.sql.ai.isDisabled" forcePluginActivation="true"/>
+					<test property="org.jkiss.dbeaver.core.global.hasEnvVariable" value="DBEAVER_AI_DISABLED"/>
+				</or>
 			</not>
 		</definition>
 	</extension>
