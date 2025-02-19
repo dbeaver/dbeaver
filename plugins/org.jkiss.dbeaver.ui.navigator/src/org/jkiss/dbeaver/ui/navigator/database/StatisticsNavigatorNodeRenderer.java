@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -223,7 +223,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         // Bar
         int width = Math.max((int) Math.ceil((PERCENT_FILL_WIDTH - 3) * percentFull / 100.0), 1);
         gc.setBackground(NavigatorThemeSettings.instance.statisticsFrameColor);
-        gc.fillRectangle(bounds.x + bounds.width - PERCENT_FILL_WIDTH, bounds.y + 3, width, bounds.height - 6);
+        gc.fillRectangle(bounds.x + bounds.width - PERCENT_FILL_WIDTH + 2, bounds.y + 3, width, bounds.height - 6);
 
         // Text
         if (UIStyles.isDarkHighContrastTheme() && PERCENT_FILL_WIDTH - width < PERCENT_FILL_WIDTH / 2) {
