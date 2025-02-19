@@ -51,7 +51,7 @@ public class CubridView extends GenericView
     @Property(viewable = true, editable = true, order =1)
     @Override
     public String getName() {
-        return super.getName().toLowerCase();
+        return super.getName();
     }
 
     public void setSchema(@NotNull CubridUser owner) {
