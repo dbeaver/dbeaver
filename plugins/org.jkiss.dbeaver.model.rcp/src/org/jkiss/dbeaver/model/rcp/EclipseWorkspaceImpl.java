@@ -33,12 +33,13 @@ import org.jkiss.dbeaver.model.app.DBPWorkspaceEclipse;
 import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -194,7 +195,12 @@ public abstract class EclipseWorkspaceImpl extends BaseWorkspaceImpl implements 
         IProject[] allProjects = root.getProjects();
         if (ArrayUtils.isEmpty(allProjects)) {
             try {
-                reloadWorkspace(new LoggingProgressMonitor(log));
+                DBWorkbench.getPlatformUI().executeWithProgressBlocking("Reload", new DBRRunnableWithResult<>() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        reloadWorkspace(monitor);
+                    }
+                });
             } catch (Throwable e) {
                 log.error(e);
             }
