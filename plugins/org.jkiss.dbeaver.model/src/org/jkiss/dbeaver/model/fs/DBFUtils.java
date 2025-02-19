@@ -204,14 +204,15 @@ public class DBFUtils {
         Optional<? extends DBPDataSourceContainer> dataSourceContainerBox = registry.getDataSources().stream()
             .filter(dbpDataSourceContainer -> Objects.equals(
                 configuration.getDatabaseName(),
-                dbpDataSourceContainer.getExtension(DBConstants.PROP_CLOUD_ORIGIN_FILE_PATH)))
+                dbpDataSourceContainer.getExtension(DBConstants.PROP_ORIGINAL_FILE_PATH)
+            ))
             .findAny();
         if (dataSourceContainerBox.isPresent()) {
-            log.info("Datasource to :" + configuration.getDatabaseName() + " already exists");
+            log.debug("Datasource to :" + configuration.getDatabaseName() + " already exists");
             return dataSourceContainerBox.get();
         }
         DBPDataSourceContainer dsContainer = registry.createDataSource(connectionId, driver, configuration);
-        dsContainer.setExtension(DBConstants.PROP_CLOUD_ORIGIN_FILE_PATH, configuration.getDatabaseName());
+        dsContainer.setExtension(DBConstants.PROP_ORIGINAL_FILE_PATH, configuration.getDatabaseName());
         int conNameSuffix = 1;
         connectionName = "File - " + CommonUtils.truncateString(connectionName, 64);
         String finalConnectionName = connectionName;
