@@ -93,8 +93,7 @@ public class ConnectionNameResolver implements IVariableResolver {
         String newName = descriptor == null ? "" : getDataSourceContainer().getName(); //$NON-NLS-1$
         if (CommonUtils.isEmpty(newName)) {
             newName = getConfiguration().getDatabaseName();
-            if (CommonUtils.isEmpty(newName) || newName.isEmpty() || CommonUtils.isInt(newName)) {
-                // Database name is too short or not a string
+            if (CommonUtils.isEmpty(newName) || newName.isBlank()) {
                 newName = getConfiguration().getHostName();
             }
             if (CommonUtils.isEmpty(newName)) {
