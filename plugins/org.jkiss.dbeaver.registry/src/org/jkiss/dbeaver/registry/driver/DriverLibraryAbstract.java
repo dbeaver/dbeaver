@@ -24,19 +24,18 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.SecurityUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -254,12 +253,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
                 Files.delete(tempFile);
             }
         } else {
-            if (IOUtils.isFileFromDefaultFS(localFile)) {
-                Files.move(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
-            } else {
-                Files.copy(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
-                Files.delete(tempFile);
-            }
+            DBFUtils.move(tempFile, localFile);
         }
     }
 
