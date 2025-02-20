@@ -26,7 +26,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -425,7 +426,7 @@ public abstract class SQLQueryCompletionContext {
                         this.collectImmediateChildren(
                             monitor,
                             context,
-                            container,
+                            List.of(container),
                             o -> expectedTypes.stream().anyMatch(c -> c.isAssignableFrom(o.getClass())),
                             prefixInfo,
                             filterOrNull,
@@ -441,30 +442,28 @@ public abstract class SQLQueryCompletionContext {
             private void collectImmediateChildren(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLQueryDataContext context,
-                @NotNull DBSObjectContainer container,
+                @NotNull Collection<DBSObjectContainer> containers,
                 @Nullable Predicate<DBSObject> filter,
                 @Nullable SQLQueryCompletionItem.ContextObjectInfo contextObjext,
                 @Nullable SQLQueryWordEntry filterOrNull,
                 @NotNull LinkedList<SQLQueryCompletionItem> accumulator
             ) throws DBException {
-                Collection<? extends DBSObject> children = container.getChildren(monitor);
-                for (DBSObject child : children) {
-                    if (!DBUtils.isHiddenObject(child) && (filter == null || filter.test(child))) {
-                        SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, child.getName());
-                        int score = childName.matches(filterOrNull, this.searchInsideWords);
-                        if (score > 0) {
-                            if (child instanceof DBSEntity o && (child instanceof DBSTable || child instanceof DBSView)) {
-                                accumulator.addLast(SQLQueryCompletionItem.forRealTable(
-                                    score,
-                                    childName,
-                                    contextObjext,
-                                    o,
-                                    context.getKnownSources().getReferencedTables().contains(o)
-                                ));
-                            } else if (child instanceof DBSProcedure p) {
-                                accumulator.addLast(SQLQueryCompletionItem.forProcedureObject(score, childName, contextObjext, p));
-                            } else {
-                                accumulator.addLast(SQLQueryCompletionItem.forDbObject(score, childName, contextObjext, child));
+                for (DBSObjectContainer container : containers) {
+                    Collection<? extends DBSObject> children = container.getChildren(monitor);
+                    for (DBSObject child : children) {
+                        if (!DBUtils.isHiddenObject(child) && (filter == null || filter.test(child))) {
+                            SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, child.getName());
+                            int score = childName.matches(filterOrNull, this.searchInsideWords);
+                            if (score > 0) {
+                                if (child instanceof DBSEntity o && (child instanceof DBSTable || child instanceof DBSView)) {
+                                    accumulator.addLast(SQLQueryCompletionItem.forRealTable(score, childName, contextObjext, o,
+                                        context.getKnownSources().getReferencedTables().contains(o)
+                                    ));
+                                } else if (child instanceof DBSProcedure p) {
+                                    accumulator.addLast(SQLQueryCompletionItem.forProcedureObject(score, childName, contextObjext, p));
+                                } else {
+                                    accumulator.addLast(SQLQueryCompletionItem.forDbObject(score, childName, contextObjext, child));
+                                }
                             }
                         }
                     }
@@ -732,13 +731,13 @@ public abstract class SQLQueryCompletionContext {
                         if (origin.isIncludingRowsets()) {
                             prepareTableCompletions(monitor, request, origin.getDataContext(), filterOrNull, results);
                         } else {
-                            DBSObjectContainer container = obtainDefaultContext(request);
+                            Collection<DBSObjectContainer> container = obtainDefaultContext(monitor, request);
                             if (container != null) {
                                 prepareObjectCompletions(
                                     monitor,
                                     request,
                                     origin.getDataContext(),
-                                    List.of(container),
+                                    container,
                                     null,
                                     origin.getObjectTypes(),
                                     filterOrNull,
@@ -964,18 +963,16 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
                 @NotNull SQLQueryDataContext context,
-                @Nullable DBSObjectContainer container,
+                @Nullable List<DBSObjectContainer> container,
                 @Nullable SQLQueryWordEntry filterOrNull
             ) {
-                DBSObjectContainer objectContainer = container;
-                if (objectContainer == null) {
-                    objectContainer = this.obtainDefaultContext(request);
+                Collection<DBSObjectContainer> objectContainers = container;
+                if (objectContainers == null) {
+                    objectContainers = this.obtainDefaultContext(monitor, request);
                 }
                 LinkedList<SQLQueryCompletionItem> proceduresItems = new LinkedList<>();
                 try {
-                    if (objectContainer != null) {
-                        this.collectProcedures(monitor, request, objectContainer, null, filterOrNull, proceduresItems);
-                    }
+                    this.collectProcedures(monitor, request, objectContainers, null, filterOrNull, proceduresItems);
                     this.collectPackages(monitor, request, context, this.exposedContexts, null, filterOrNull, proceduresItems);
                 } catch (DBException ex) {
                     log.error(ex);
@@ -1021,11 +1018,9 @@ public abstract class SQLQueryCompletionContext {
 
                 if (dbcExecutionContext != null) {
                     try {
-                        DBSObjectContainer container = this.obtainDefaultContext(request);
-                        if (container != null) {
-                            this.collectTables(monitor, context, container, null, filterOrNull, completions);
-                            this.collectProcedures(monitor, request, container, null, filterOrNull, completions);
-                        }
+                        Collection<DBSObjectContainer> containers = this.obtainDefaultContext(monitor, request);
+                        this.collectTables(monitor, context, containers, null, filterOrNull, completions);
+                        this.collectProcedures(monitor, request, containers, null, filterOrNull, completions);
                         this.collectPackages(monitor, request, context, this.exposedContexts,  null, filterOrNull, completions);
                     } catch (DBException e) {
                         log.error(e);
@@ -1049,21 +1044,19 @@ public abstract class SQLQueryCompletionContext {
                 LinkedList<SQLQueryCompletionItem> completions = new LinkedList<>();
                 Set<DBSObject> objs = new HashSet<>();
                 try {
-                    for (DBSObjectContainer container : contexts) {
-                        this.collectImmediateChildren(
-                            monitor,
-                            context,
-                            container,
-                            o -> objectTypes.stream().anyMatch(t -> t.getTypeClass().isAssignableFrom(o.getClass())) && objs.add(o),
-                            contextObjext,
-                            filterOrNull,
-                            completions
-                        );
-                        if (request.getContext().isSearchProcedures()
-                            && objectTypes.stream().anyMatch(t -> DBSProcedure.class.isAssignableFrom(t.getTypeClass()))
-                        ) {
-                            this.collectProcedures(monitor, request, container, contextObjext, filterOrNull, completions);
-                        }
+                    this.collectImmediateChildren(
+                        monitor,
+                        context,
+                        contexts,
+                        o -> objectTypes.stream().anyMatch(t -> t.getTypeClass().isAssignableFrom(o.getClass())) && objs.add(o),
+                        contextObjext,
+                        filterOrNull,
+                        completions
+                    );
+                    if (request.getContext().isSearchProcedures()
+                        && objectTypes.stream().anyMatch(t -> DBSProcedure.class.isAssignableFrom(t.getTypeClass()))
+                    ) {
+                        this.collectProcedures(monitor, request, contexts, contextObjext, filterOrNull, completions);
                     }
                 } catch (DBException e) {
                     log.error(e);
@@ -1072,7 +1065,10 @@ public abstract class SQLQueryCompletionContext {
             }
 
             @Nullable
-            private DBSObjectContainer obtainDefaultContext(@NotNull SQLCompletionRequest request) {
+            private Collection<DBSObjectContainer> obtainDefaultContext(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request
+            ) {
                 DBCExecutionContextDefaults<?, ?> defaults = dbcExecutionContext.getContextDefaults();
                 if (defaults != null) {
                     DBSSchema defaultSchema = defaults.getDefaultSchema();
@@ -1080,14 +1076,37 @@ public abstract class SQLQueryCompletionContext {
                     if (defaultCatalog == null && defaultSchema == null
                         && dbcExecutionContext.getDataSource() instanceof DBSObjectContainer container
                     ) {
-                        return container;
-                    } else if ((request.getContext().isSearchGlobally() || defaultSchema == null) && defaultCatalog != null) {
-                        return defaultCatalog;
+                        return List.of(container);
+                    } else if (defaultCatalog != null && request.getContext().isSearchGlobally()) {
+                        Set<DBSObjectContainer> result = new HashSet<>();
+                        findAllSchemaContainers(monitor, defaultCatalog, result);
+                        return result;
+                    } else if (defaultCatalog != null && defaultSchema == null) {
+                        return List.of(defaultCatalog);
                     } else if (defaultSchema != null) {
-                        return defaultSchema;
+                        return List.of(defaultSchema);
                     }
                 }
-                return null;
+                return Collections.emptyList();
+            }
+
+            private void findAllSchemaContainers(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull DBSObjectContainer container,
+                @NotNull Set<DBSObjectContainer> result
+            ) {
+                try {
+                    if (result.add(container)) {
+                        Collection<? extends DBSObject> dbObjs = container.getChildren(monitor);
+                        for (DBSObject obj : dbObjs) {
+                            if (obj instanceof DBSObjectContainer child && (obj instanceof DBSCatalog || obj instanceof DBSSchema)) {
+                                findAllSchemaContainers(monitor, child, result);
+                            }
+                        }
+                    }
+                } catch (DBException ex) {
+                    log.error(ex);
+                }
             }
 
             private void prepareContextSchemasAndCatalogs(
@@ -1127,48 +1146,48 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull LinkedList<SQLQueryCompletionItem> accumulator
             ) throws DBException {
                 if (request.getContext().isSearchProcedures()) {
-                    for (DBSObjectContainer container : contexts) {
-                        this.collectImmediateChildren(
-                            monitor,
-                            context,
-                            container,
-                            o -> o instanceof DBSProcedureContainer,
-                            contextObjext,
-                            filterOrNull,
-                            accumulator
-                        );
-                    }
+                    this.collectImmediateChildren(
+                        monitor,
+                        context,
+                        contexts,
+                        o -> o instanceof DBSProcedureContainer,
+                        contextObjext,
+                        filterOrNull,
+                        accumulator
+                    );
                 }
             }
 
             private void collectProcedures(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
-                @NotNull DBSObjectContainer container,
+                @NotNull Collection<DBSObjectContainer> containers,
                 @Nullable SQLQueryCompletionItem.ContextObjectInfo contextObjext,
                 @Nullable SQLQueryWordEntry filterOrNull,
                 @NotNull LinkedList<SQLQueryCompletionItem> accumulator
             ) throws DBException {
-                if (request.getContext().isSearchProcedures() && container instanceof DBSProcedureContainer pc
-                    && request.getContext().getDataSource().getInfo().supportsStoredCode()
-                ) {
-                    Collection<? extends DBSProcedure> procedures = pc.getProcedures(monitor);
-                    if (procedures != null) {
-                        for (DBSProcedure p : procedures) {
-                            SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, p.getName());
-                            int score = childName.matches(filterOrNull, this.searchInsideWords);
-                            if (score > 0) {
-                                accumulator.addLast(SQLQueryCompletionItem.forProcedureObject(score, childName, contextObjext, p));
+                for (DBSObjectContainer container : containers) {
+                    if (request.getContext().isSearchProcedures() && container instanceof DBSProcedureContainer pc
+                        && request.getContext().getDataSource().getInfo().supportsStoredCode()
+                    ) {
+                        Collection<? extends DBSProcedure> procedures = pc.getProcedures(monitor);
+                        if (procedures != null) {
+                            for (DBSProcedure p : procedures) {
+                                SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, p.getName());
+                                int score = childName.matches(filterOrNull, this.searchInsideWords);
+                                if (score > 0) {
+                                    accumulator.addLast(SQLQueryCompletionItem.forProcedureObject(score, childName, contextObjext, p));
+                                }
                             }
                         }
                     }
-                }
-                if (filterOrNull != null && contextObjext == null) {
-                    for (String fname : request.getContext().getDataSource().getSQLDialect().getFunctions()) {
-                        SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, fname);
-                        int score = childName.matches(filterOrNull, this.searchInsideWords);
-                        if (score > 0) {
-                            accumulator.addLast(SQLQueryCompletionItem.forBuiltinFunction(score, childName, fname));
+                    if (filterOrNull != null && contextObjext == null) {
+                        for (String fname : request.getContext().getDataSource().getSQLDialect().getFunctions()) {
+                            SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, fname);
+                            int score = childName.matches(filterOrNull, this.searchInsideWords);
+                            if (score > 0) {
+                                accumulator.addLast(SQLQueryCompletionItem.forBuiltinFunction(score, childName, fname));
+                            }
                         }
                     }
                 }
@@ -1177,13 +1196,13 @@ public abstract class SQLQueryCompletionContext {
             private void collectTables(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLQueryDataContext context,
-                @NotNull DBSObjectContainer container,
+                @NotNull Collection<DBSObjectContainer> containers,
                 @Nullable SQLQueryCompletionItem.ContextObjectInfo contextObjext,
                 @Nullable SQLQueryWordEntry filterOrNull,
                 @NotNull LinkedList<SQLQueryCompletionItem> accumulator
             ) throws DBException {
                 this.collectImmediateChildren(
-                    monitor, context, container,
+                    monitor, context, containers,
                     o -> o instanceof DBSTable || o instanceof DBSView,
                     contextObjext, filterOrNull, accumulator
                 );
