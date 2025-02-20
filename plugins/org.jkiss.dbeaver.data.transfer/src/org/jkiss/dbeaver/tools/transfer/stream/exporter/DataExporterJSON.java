@@ -42,7 +42,6 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Locale;
 
@@ -153,11 +152,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
     }
 
     private void writeDocument(DBCSession session, DBDDocument document) throws DBException, IOException {
-        document.serializeDocument(
-            session.getProgressMonitor(),
-            getOutputStream(),
-            StandardCharsets.UTF_8
-        );
+        document.serializeDocument(session.getProgressMonitor(), getWriter());
     }
 
     @Override
