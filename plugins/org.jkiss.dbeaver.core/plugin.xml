@@ -29,7 +29,7 @@
             class="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
             namespace="org.jkiss.dbeaver.core.datasourceContainer"
-            properties="driverId,driverClass,connected,connecting"
+            properties="driverId,driverClass,connected,connecting,supportsSchemas"
             type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.FolderPropertyTester"
@@ -583,7 +583,15 @@
                     id="org.jkiss.dbeaver.core.menu.select.schema"
                     style="pulldown"
                     mode="FORCE_TEXT">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                    <visibleWhen>
+                        <and>
+                            <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/>
+                            <with variable="activeEditor">
+                                <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer">
+                                    <test property="org.jkiss.dbeaver.core.datasourceContainer.supportsSchemas"/>
+                                </adapt>
+                            </with>
+                        </and></visibleWhen>
                 </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
