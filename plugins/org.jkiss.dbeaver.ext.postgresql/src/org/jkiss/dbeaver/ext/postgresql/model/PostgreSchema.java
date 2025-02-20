@@ -300,15 +300,8 @@ public class PostgreSchema implements
         return null;
     }
 
-    public PostgreTableBase getTable(DBRProgressMonitor monitor, String tableName)
-    throws DBException {
-        for (PostgreClass table : getTableCache().getAllObjects(monitor, this)) {
-            if (Objects.equals(table.getName(), tableName)) {
-                return (PostgreTableBase) table;
-            }
-        }
-
-        return null;
+    public PostgreTableBase getTable(DBRProgressMonitor monitor, String tableName) throws DBException {
+        return (PostgreTableBase) getChild(monitor, tableName);
     }
 
     public TableCache getTableCache() {
