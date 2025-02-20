@@ -28,8 +28,6 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -223,13 +221,6 @@ public class DBFUtils {
         dsContainer.setName(finalConnectionName);
         dsContainer.setTemporary(true);
         DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
-        DBNModel navigatorModel = project.getNavigatorModel();
-        if (navigatorModel != null) {
-            DBNProject projectNode = navigatorModel.getRoot().getProjectNode(project);
-            if (projectNode != null) {
-                projectNode.getDatabases().getFolderNode(folder);
-            }
-        }
         dsContainer.setFolder(folder);
 
         try {
