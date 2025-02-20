@@ -81,6 +81,11 @@ public class TextWithOpenFile extends TextWithOpen {
         this.filterExt = filterExtensions;
     }
 
+    @Override
+    protected boolean isFolderContents() {
+        return openFolder;
+    }
+
     protected void openBrowser(boolean remoteFS) {
         String selected;
         if (remoteFS) {
