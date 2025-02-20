@@ -877,9 +877,8 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/neo4j-contrib/neo4j-jdbc"
                     categories="graph">
-                    <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE" bundle="!drivers.neo4j"/>
-                    <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt" bundle="!drivers.neo4j"/>
-                    <file type="jar" path="drivers/neo4j" bundle="drivers.neo4j"/>
+                    <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
+                    <file type="license" path="https://www.gnu.org/licenses/lgpl-3.0.txt"/>
                     <parameter name="supports-truncate" value="false"/>
                     <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
                 </driver>
