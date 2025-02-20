@@ -292,9 +292,6 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
             }
 
             monitor.beginTask("Performing data transfer in parallel", settings.getDataPipes().size());
-            if (listener != null) {
-                listener.taskStarted(task);
-            }
 
             if (group != null) {
                 try {
@@ -342,9 +339,6 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                     for (DataTransferJob job : jobs) {
                         job.cancel();
                     }
-                }
-                if (listener != null) {
-                    listener.taskFinished(task, null, error, null);
                 }
 
                 monitor.done();
