@@ -109,8 +109,10 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 }
 
                 // Column storage
-                boolean hasStorage = false;
-                if (!table.isPartition() && !monitor.isCanceled() && !table.getDataSource().isServerVersionAtLeast(16, 0)) {
+                if (!table.isPartition() && !monitor.isCanceled()
+                    && table.getDataSource().getServerType().supportsAlterStorageStrategy()
+                    && !table.getDataSource().getServerType().supportsStorageModifier()) {
+                    boolean hasStorage = false;
                     for (PostgreTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
                         if (!column.isHidden() && !column.hasDefaultStorage()) {
                             if (!hasStorage && addExtraActionComment) {

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -182,7 +183,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.isLocal =
             !serverType.supportsInheritance() ||
             JDBCUtils.safeGetBoolean(dbResult, "attislocal", true);
-        this.storage = PostgreAttributeStorage.getByCode(JDBCUtils.safeGetString(dbResult, "attstorage"));
+        if (serverType.supportsAlterStorageStrategy()) {
+            this.storage = PostgreAttributeStorage.getByCode(JDBCUtils.safeGetString(dbResult, "attstorage"));
+        }
 
         if (dataSource.isServerVersionAtLeast(10, 0)) {
             String identityStr = JDBCUtils.safeGetString(dbResult, "attidentity");
@@ -351,19 +354,16 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Nullable
-    @Property(order = 85, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", listProvider = StorageListProvider.class)
-    public PostgreAttributeStorage getStorage()
-    {
+    @Property(order = 85, visibleIf = AttributeStorageValueValidator.class, editableExpr = "object.dataSource.getServerType().supportsAlterStorageStrategy() && !object.table.view", updatableExpr = "object.dataSource.getServerType().supportsAlterStorageStrategy() && !object.table.view", listProvider = StorageListProvider.class)
+    public PostgreAttributeStorage getStorage() {
         return this.storage;
     }
 
-    public void setStorage(PostgreAttributeStorage storage)
-    {
+    public void setStorage(PostgreAttributeStorage storage) {
         this.storage = storage;
     }
 
-    public boolean hasDefaultStorage()
-    {
+    public boolean hasDefaultStorage() {
         return getStorage() == null
             || (getDataType().getStorage() == null && getStorage() == PostgreAttributeStorage.PLAIN)
             || (getStorage().getCode().equals(getDataType().getStorage().name()));
@@ -549,6 +549,14 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 log.error(e);
                 return new Object[0];
             }
+        }
+    }
+
+    public static class AttributeStorageValueValidator implements IPropertyValueValidator<PostgreAttribute, Object> {
+
+        @Override
+        public boolean isValidValue(PostgreAttribute object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().getServerType().supportsAlterStorageStrategy();
         }
     }
 

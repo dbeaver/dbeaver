@@ -76,7 +76,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     };
 
     protected final ColumnModifier<PostgreTableColumn> PostgreStorageModifier = (monitor, column, sql, command) -> {
-        if(!column.hasDefaultStorage()) {
+        if (!column.hasDefaultStorage()) {
             sql.append(" STORAGE ");
             sql.append(column.getStorage());
         }
@@ -166,7 +166,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
             modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, PostgreCommentModifier);
         }
-        if (column.getDataSource().isServerVersionAtLeast(16, 0)) {
+        if (column.getDataSource().getServerType().supportsStorageModifier()) {
             modifiers = ArrayUtils.insertArea(ColumnModifier.class, modifiers, 1, new ColumnModifier[]{PostgreStorageModifier});
         }
         return modifiers;
@@ -204,7 +204,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         String sql = "ALTER " + table.getTableTypeName() + " " + DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + " ADD " +
             getNestedDeclaration(monitor, table, command, options);
         actions.add(new SQLDatabasePersistAction("Create new table column", sql));
-        if (command.getObject().getStorage() != null && !table.getDataSource().isServerVersionAtLeast(16, 0)) {
+        if (command.getObject().getStorage() != null
+            && table.getDataSource().getServerType().supportsAlterStorageStrategy()
+            && !table.getDataSource().getServerType().supportsStorageModifier()) {
             addColumnStorageAction(actions, command.getObject());
         }
         if (!CommonUtils.isEmpty(command.getObject().getDescription())) {
