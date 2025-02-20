@@ -103,11 +103,6 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             proposals = this.prepareColumnsTupleSubstitution(monitor, completionContext);
         } else {
             proposals = this.prepareContextfulCompletion(monitor, completionContext);
-
-            if (this.request.getContext().isSortAlphabetically()) {
-                // TODO
-                proposals.sort(Comparator.comparing(ICompletionProposal::getDisplayString, String::compareToIgnoreCase));
-            }
         }
         result = Pair.of(completionContext.getRequestOffset(), proposals);
         return result;
@@ -211,7 +206,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     @NotNull
     private DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
         return switch (item.getKind()) {
-            case UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
+            case SCHEMA, CATALOG, UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
             case RESERVED -> UIIcon.SQL_TEXT;
             case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
             case DERIVED_COLUMN_NAME -> DBIcon.TREE_DERIVED_COLUMN;

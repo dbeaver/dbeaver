@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalSorter;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionProposal;
@@ -32,19 +32,30 @@ public class SQLCompletionSorter implements ICompletionProposalSorter {
 
     private boolean sortAlphabetically;
 
+    private boolean isSearchInsideNames;
+
     public SQLCompletionSorter(SQLEditorBase editor) {
         this.editor = editor;
     }
 
     @Override
     public int compare(ICompletionProposal p1, ICompletionProposal p2) {
-        int krc = compareProposalKind(p1, p2);
-        if (krc != 0) {
-            return krc;
+        if (this.isSearchInsideNames) {
+            return this.compareWhenFuzzySearch(p1, p2);
+        } else {
+            return this.compareWhenPrefixSearch(p1, p2);
         }
+    }
+
+    private int compareWhenFuzzySearch(ICompletionProposal p1, ICompletionProposal p2) {
+        // by match score, by text, by kind
 
         int score1 = getScore(p1);
         int score2 = getScore(p2);
+        if (score1 == Integer.MAX_VALUE && score2 == Integer.MAX_VALUE) {
+            return this.compareWhenPrefixSearch(p1, p2);
+        }
+
         if (score1 > 0 || score2 > 0) {
             int rc = -Integer.compare(score1, score2);
             if (rc != 0) {
@@ -52,23 +63,42 @@ public class SQLCompletionSorter implements ICompletionProposalSorter {
             }
         }
         if (sortAlphabetically) {
-            return p1.getDisplayString().compareToIgnoreCase(p2.getDisplayString());
+            int rc = p1.getDisplayString().compareToIgnoreCase(p2.getDisplayString());
+            if (rc != 0) {
+                return rc;
+            }
         } else {
             return 0;
         }
+
+        return compareProposalKind(p1, p2);
+    }
+
+    private int compareWhenPrefixSearch(ICompletionProposal p1, ICompletionProposal p2) {
+        // all the unmatched completely filtered out already, so
+        // by kind, by text
+
+        int krc = compareProposalKind(p1, p2);
+        if (krc != 0) {
+            return krc;
+        }
+
+        if (sortAlphabetically) {
+            int rc = p1.getDisplayString().compareToIgnoreCase(p2.getDisplayString());
+            if (rc != 0) {
+                return rc;
+            }
+        }
+
+        return 0;
     }
 
     private static int compareProposalKind(ICompletionProposal a, ICompletionProposal b) {
-        boolean aIsCond = a instanceof SQLQueryCompletionProposal x && x.getItemKind() == SQLQueryCompletionItemKind.JOIN_CONDITION;
-        boolean bIsCond = b instanceof SQLQueryCompletionProposal y && y.getItemKind() == SQLQueryCompletionItemKind.JOIN_CONDITION;
-
-        if (aIsCond && !bIsCond) {
-            return -1;
-        } else if (!aIsCond && bIsCond) {
-            return 1;
-        } else {
-            return 0;
-        }
+        int aOrd = a instanceof SQLQueryCompletionProposal x ? x.getItemKind().sortOrder :
+                   a instanceof SQLCompletionProposal x ? x.getProposalType().sortOrder : Integer.MAX_VALUE;
+        int bOrd = b instanceof SQLQueryCompletionProposal y ? y.getItemKind().sortOrder :
+                   b instanceof SQLCompletionProposal y ? y.getProposalType().sortOrder : Integer.MAX_VALUE;
+        return Integer.compare(aOrd, bOrd);
     }
 
     private static int getScore(ICompletionProposal p) {
@@ -81,6 +111,8 @@ public class SQLCompletionSorter implements ICompletionProposalSorter {
     }
 
     public void refreshSettings() {
-        this.sortAlphabetically = this.editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY);
+        DBPPreferenceStore prefStore = this.editor.getActivePreferenceStore();
+        this.sortAlphabetically = prefStore.getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY);
+        this.isSearchInsideNames = prefStore.getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
     }
 }
