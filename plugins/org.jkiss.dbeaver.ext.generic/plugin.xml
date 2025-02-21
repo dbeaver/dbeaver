@@ -568,9 +568,8 @@
 
                     <parameter name="identifier-quotes" value="[:]"/>
 
-                    <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
+                    <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE"/>
                     <file type="license" path="licenses/external/lgpl-2.1.txt"/>
-                    <file type="jar" path="drivers/ucanaccess" bundle="drivers.ucanaccess"/>
                 </driver>
                 <driver
                     id="netezza"
