@@ -41,9 +41,7 @@
                     <replace provider="generic" driver="sqlite_jdbc"/>
 
                     <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE" bundle="!drivers.sqlite.xerial"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"
-                          bundle="!drivers.sqlite.xerial"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.sqlite.xerial"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/sqlite/xerial" bundle="drivers.sqlite.xerial"/>
 
                     <parameter name="supports-references" value="true"/>

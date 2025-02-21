@@ -33,9 +33,8 @@
                     webURL="https://github.com/datafuselabs/databend-jdbc"
                     categories="sql,analytic,columns">
                     <file type="jar" path="maven:/com.databend:databend-jdbc:RELEASE[0.3.1]" load-optional-dependencies="true" bundle="!drivers.databend" />
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.databend"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/databend" bundle="drivers.databend"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.databend"/>
                     <!-- Disable server timezone as it confuses during timestamp edit -->
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <property name="use_server_time_zone" value="false"/>
