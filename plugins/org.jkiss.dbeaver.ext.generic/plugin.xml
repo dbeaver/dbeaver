@@ -623,6 +623,39 @@
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/apache_phoenix" bundle="drivers.apache_phoenix"/>
                 </driver>
+                <driver
+                    id="gemfire_xd"
+                    label="Gemfire XD"
+                    icon="icons/gemfire_icon.png"
+                    iconBig="icons/gemfire_icon_big.png"
+                    class="com.pivotal.gemfirexd.jdbc.ClientDriver"
+                    sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
+                    defaultPort="1527"
+                    description="Pivotal GemfireXD"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="http://blog.pivotal.io/tag/gemfire-xd"
+                    category="Hadoop"
+                    categories="hadoop"
+                    singleConnection="true">
+                    <file type="jar" path="maven:/io.snappydata:gemfirexd-client:RELEASE"/>
+                </driver>
+                <driver
+                    id="snappydata_store_client"
+                    label="SnappyData"
+                    icon="icons/snappy_icon.png"
+                    iconBig="icons/snappy_icon_big.png"
+                    class="io.snappydata.jdbc.ClientDriver"
+                    sampleURL="jdbc:snappydata://{host}[:{port}]/"
+                    defaultPort="1528"
+                    description="Pivotal GemfireXD"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://snappydatainc.github.io/snappydata/"
+                    category="Hadoop"
+                    categories="hadoop"
+                    singleConnection="true">
+                    <file type="jar" path="https://github.com/TIBCOSoftware/snappydata/releases/download/v1.3.0/snappydata-jdbc_2.11-1.3.0.jar"/>
+                    <!--<file type="jar" path="https://github.com/SnappyDataInc/snappydata/releases/download/v0.8/snappydata-client-1.5.4.jar"/>-->
+                </driver>
 
                 <driver
                     id="spark_hive"
@@ -1254,6 +1287,25 @@
                     <parameter name="active-entity-type" value="schema"/>
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="omit-single-catalog" value="true"/>
+                </driver>
+
+                <!-- Jennifer -->
+                <driver
+                        id="jennifer_jdbc"
+                        label="Jennifer"
+                        class="jennifer.jdbc.driver.JenniferDriver"
+                        icon="icons/jennifer_icon.png"
+                        iconBig="icons/jennifer_icon_big.png"
+                        sampleURL="jdbc:jennifer://{host}:{port}/"
+                        defaultPort="8001"
+                        description="Jennifer JDBC driver"
+                        webURL="https://www.jennifersoft.com"
+                        categories="sql">
+                    <file type="jar" path="https://github.com/jennifersoft/jennifer5-jdbc-driver/archive/refs/tags/v5.5.3.2.zip"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="use-search-string-escape" value="true"/>
                 </driver>
 
                 <!-- Salesforce Data Cloud (Legacy) -->
