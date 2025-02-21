@@ -511,11 +511,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         try {
             mysqlConnection = super.openConnection(monitor, context, purpose);
 
-            // Execute a dummy statement that will cause an exception to be thrown if the password is expired
-            try (Statement stmt = mysqlConnection.createStatement()) {
-                stmt.execute("SELECT 1");
-            } catch (SQLException e) {
-                throw new DBCException(e, context);
+            if (isMariaDB()) {
+                // Execute a dummy statement that will cause an exception to be thrown if the password is expired
+                try (Statement stmt = mysqlConnection.createStatement()) {
+                    stmt.execute("SELECT 1");
+                } catch (SQLException e) {
+                    throw new DBCException(e, context);
+                }
             }
         } catch (DBCException e) {
             if (e.getCause() instanceof SQLException &&
