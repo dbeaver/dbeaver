@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,8 @@ public class SQLQueryCompletionProposalContext {
         put(SQLQueryCompletionItemKind.NEW_TABLE_NAME, SQLConstants.CONFIG_COLOR_TABLE);
         put(SQLQueryCompletionItemKind.USED_TABLE_NAME, SQLConstants.CONFIG_COLOR_TABLE);
         put(SQLQueryCompletionItemKind.TABLE_COLUMN_NAME, SQLConstants.CONFIG_COLOR_COLUMN);
+        put(SQLQueryCompletionItemKind.PROCEDURE, SQLConstants.CONFIG_COLOR_FUNCTION);
+        put(SQLQueryCompletionItemKind.COMPOSITE_FIELD_NAME, SQLConstants.CONFIG_COLOR_COMPOSITE_FIELD);
     }};
 
     // per completion request initialized to be in sync with actual preferences, consider listening for preference event
