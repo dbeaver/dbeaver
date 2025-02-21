@@ -353,8 +353,12 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return null;
     }
 
+    public boolean supportsAlterStorageStrategy() {
+        return getDataSource().getServerType().supportsAlterStorageStrategy();
+    }
+
     @Nullable
-    @Property(order = 85, visibleIf = AttributeStorageValueValidator.class, editableExpr = "object.dataSource.getServerType().supportsAlterStorageStrategy() && !object.table.view", updatableExpr = "object.dataSource.getServerType().supportsAlterStorageStrategy() && !object.table.view", listProvider = StorageListProvider.class)
+    @Property(order = 85, visibleIf = AttributeStorageValueValidator.class, editableExpr = "object.supportsAlterStorageStrategy()", updatableExpr = "object.supportsAlterStorageStrategy()", listProvider = StorageListProvider.class)
     public PostgreAttributeStorage getStorage() {
         return this.storage;
     }
@@ -556,7 +560,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
         @Override
         public boolean isValidValue(PostgreAttribute object, Object value) throws IllegalArgumentException {
-            return object.getDataSource().getServerType().supportsAlterStorageStrategy();
+            return object.getTable() instanceof PostgreTable && object.getDataSource().getServerType().supportsAlterStorageStrategy();
         }
     }
 
