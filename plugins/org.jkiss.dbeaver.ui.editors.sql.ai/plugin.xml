@@ -40,9 +40,8 @@
 			<command commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion">
 				<visibleWhen>
 				    <and>
-						<with variable="activePart">
-							<not><test property="org.jkiss.dbeaver.ui.editors.sql.ai.isDisabled" forcePluginActivation="true"/></not>
-						</with>
+						<reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.user"/>
+						<reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy"/>
                         <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion"/>
 					</and>
 				</visibleWhen>
@@ -51,9 +50,19 @@
 	</extension>
 
 	<extension point="org.eclipse.core.expressions.definitions">
-		<definition id="org.jkiss.dbeaver.core.ai.completion.enabled">
+		<!-- Enabled by the user -->
+		<definition id="org.jkiss.dbeaver.core.ai.completion.enabled.by.user">
 			<not>
 				<test property="org.jkiss.dbeaver.ui.editors.sql.ai.isDisabled" forcePluginActivation="true" />
+			</not>
+		</definition>
+		<!-- Enabled by the policy, has precedence over the user's preference -->
+		<definition id="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy">
+			<not>
+				<or>
+					<test property="org.jkiss.dbeaver.core.global.hasPreference" value="ai.disabled"/>
+					<test property="org.jkiss.dbeaver.core.global.hasEnvVariable" value="DBEAVER_AI_DISABLED"/>
+				</or>
 			</not>
 		</definition>
 	</extension>
