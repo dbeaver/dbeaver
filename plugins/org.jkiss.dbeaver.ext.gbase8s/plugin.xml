@@ -45,7 +45,7 @@
 					<property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH.mm.ss.ffffff" />
 
 					<file type="jar" path="maven:/com.gbasedbt:jdbc:RELEASE[3.5.1]" bundle="!drivers.gbase8s" />
-					<file type="license" path="http://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.gbase8s" />
+					<file type="license" path="licenses/external/asl-2.0.txt"/>
 					<file type="jar" path="drivers/gbase" bundle="drivers.gbase8s" />
 
 					<parameter name="query-get-active-db" value="SELECT odb_dbname FROM sysmaster?sysopendb WHERE odb_iscurrent = 'Y' AND odb_sessionid = DBINFO('sessionid')" />
