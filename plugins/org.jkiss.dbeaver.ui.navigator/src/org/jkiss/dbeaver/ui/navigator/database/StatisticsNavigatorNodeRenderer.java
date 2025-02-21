@@ -342,24 +342,11 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 }
             }
 
-            if (node instanceof DBNDataSource dataSource) {
+            if (node instanceof DBNDataSource) {
                 INavigatorNodeActionHandler overActionButton = getActionButton(node, tree, event);
                 if (overActionButton != null) {
                     return overActionButton.getNodeActionToolTip(view, node);
                 }
-                String toolTip = null;
-                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
-                    toolTip = DataSourceUtils.getDataSourceAddressText(dataSource.getDataSourceContainer());
-                }
-                String description = dataSource.getDescription();
-                if (!CommonUtils.isEmpty(description)) {
-                    if (CommonUtils.isEmptyTrimmed(toolTip)) {
-                        return description;
-                    } else {
-                        toolTip += "\n" + description;
-                    }
-                }
-                return toolTip;
             }
         }
 
