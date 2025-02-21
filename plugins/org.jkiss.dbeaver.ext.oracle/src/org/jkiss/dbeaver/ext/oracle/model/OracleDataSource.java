@@ -232,7 +232,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             throw e;
         }
     }
-    
+
     private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {
         if (warning != null && warning.getErrorCode() == OracleConstants.EC_PASSWORD_WILL_EXPIRE) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
@@ -338,7 +338,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 setNLSParameter(session, connectionInfo, "NLS_TIMESTAMP_FORMAT", OracleConstants.PROP_SESSION_NLS_TIMESTAMP_FORMAT);
                 setNLSParameter(session, connectionInfo, "NLS_LENGTH_SEMANTICS", OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT);
                 setNLSParameter(session, connectionInfo, "NLS_CURRENCY", OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT);
-                
+
                 SeparateConnectionBehavior behavior = SeparateConnectionBehavior.parse(
                     getContainer().getPreferenceStore().getString(ModelPreferences.META_SEPARATE_CONNECTION)
                 );
@@ -369,10 +369,22 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                             JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_push_pred_cost_based\" = FALSE");
                             JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_squ_bottomup\" = FALSE");
                             JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_cost_based_transformation\" = 'OFF'");
-                            if (isServerVersionAtLeast(10, 2)) {
-                                JDBCUtils.executeSQL(session, "ALTER SESSION SET OPTIMIZER_FEATURES_ENABLE='10.2.0.5'");
+                            String optimiserVersion = null;
+                            if (isServerVersionAtLeast(23, 1)) {
+                                optimiserVersion = "23.1.0";
+                            } else if (isServerVersionAtLeast(19, 1)) {
+                                optimiserVersion = "19.1.0";
+                            } else if (isServerVersionAtLeast(18, 1)) {
+                                optimiserVersion = "18.1.0";
+                            } else if (isServerVersionAtLeast(12, 1)) {
+                                optimiserVersion = "12.1.0.1";
+                            } else if (isServerVersionAtLeast(10, 2)) {
+                                optimiserVersion = "10.2.0.1";
                             }
-                        } catch (Throwable e) {
+                            if (optimiserVersion != null) {
+                                JDBCUtils.executeSQL(session, "ALTER SESSION SET OPTIMIZER_FEATURES_ENABLE='%s'".formatted(optimiserVersion));
+                            }
+                        } catch (SQLException e) {
                             log.warn("Can't set session optimizer parameters", e);
                         }
                     }
@@ -998,7 +1010,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 //                    schemasQuery.append(
 //                        "WHERE (U.USER_ID IN (SELECT DISTINCT OWNER# FROM SYS.OBJ$) ");
 //                } else {
-            
+
             schemasQuery.append(
                 "WHERE (");
             if (showOnlyOneSchema) {
