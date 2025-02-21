@@ -1057,8 +1057,8 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePanel" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="CTRL+ALT+F6">
             <parameter id="panelId" value="column-aggregate"/>
         </key>
-        <key commandId="org.jkiss.dbeaver.core.resultset.zoomIn" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+ALT+0"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.zoomOut" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+ALT+9"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.zoomIn" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+0"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.zoomOut" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+9"/>
 
         <key commandId="org.jkiss.dbeaver.core.generate.uuid" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ALT+U"/>
     </extension>

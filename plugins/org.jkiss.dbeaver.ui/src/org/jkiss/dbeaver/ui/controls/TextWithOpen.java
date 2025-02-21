@@ -129,7 +129,7 @@ public class TextWithOpen {
             }
         }
 
-        if (!useTextEditor && !isBinaryContents()) {
+        if (!useTextEditor && !isBinaryContents() && !isFolderContents()) {
             // Open file text in embedded editor
             final ToolItem editItem = new ToolItem(toolbar, SWT.NONE);
             editItem.setImage(DBeaverIcons.getImage(UIIcon.EDIT));
@@ -186,6 +186,10 @@ public class TextWithOpen {
     }
 
     protected boolean isShowFileContentEditor() {
+        return false;
+    }
+
+    protected boolean isFolderContents() {
         return false;
     }
 

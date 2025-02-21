@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,8 +121,8 @@ public class ItemListControl extends NodeListControl
     public void fillCustomActions(IContributionManager contributionManager) {
         IWorkbenchSite workbenchSite = getWorkbenchSite();
         // Save/revert
-        if (workbenchSite instanceof MultiPageEditorSite) {
-            final MultiPageEditorPart editor = ((MultiPageEditorSite) workbenchSite).getMultiPageEditor();
+        if (workbenchSite instanceof MultiPageEditorSite mes) {
+            final MultiPageEditorPart editor = mes.getMultiPageEditor();
             if (editor instanceof EntityEditor) {
                 DatabaseEditorUtils.contributeStandardEditorActions(workbenchSite, contributionManager);
                 contributionManager.add(new Separator());
