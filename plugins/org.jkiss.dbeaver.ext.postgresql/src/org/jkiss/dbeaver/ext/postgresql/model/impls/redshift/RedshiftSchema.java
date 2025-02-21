@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,15 +56,15 @@ public class RedshiftSchema extends PostgreSchema {
         }
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read relation statistics")) {
             try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
-                "SELECT table_id, size, tbl_rows FROM SVV_TABLE_INFO WHERE \"schema\"=?"))
+                "SELECT \"table\",size,tbl_rows FROM SVV_TABLE_INFO WHERE \"schema\"=?"))
             {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        long tableId = dbResult.getLong(1);
-                        PostgreTableBase table = getTable(monitor, tableId);
-                        if (table instanceof RedshiftTable) {
-                            ((RedshiftTable) table).fetchStatistics(dbResult);
+                        String tableName = dbResult.getString(1);
+                        PostgreTableBase table = getTable(monitor, tableName);
+                        if (table instanceof RedshiftTable rsTable) {
+                            rsTable.fetchStatistics(dbResult);
                         }
                     }
                 }

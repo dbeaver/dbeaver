@@ -252,6 +252,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Write version info
         writeWorkspaceInfo();
 
+        // Initialize display early
+        // It sets main windows name and images
+        getDisplay();
+
         // https://github.com/eclipse-platform/eclipse.platform.swt/issues/772
         if (!RuntimeUtils.isMacOS() || !RuntimeUtils.isOSVersionAtLeast(14, 0, 0)) {
             // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
@@ -475,8 +479,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             return;
         }
         try {
-            getDisplay();
-
             // look and see if there's a splash shell we can parent off of
             Shell shell = WorkbenchPlugin.getSplashShell(display);
             if (shell != null) {

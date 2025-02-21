@@ -95,6 +95,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
     protected String serverVersion;
+    private boolean shouldShowStatistics;
     private volatile boolean hasStatistics;
     private boolean supportsEnumTable;
     private boolean supportsReltypeColumn = true;
@@ -105,8 +106,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     {
         super(monitor, container, new PostgreDialect());
 
-        // Statistics was disabled then mark it as already read
-        this.hasStatistics = !CommonUtils.getBoolean(container.getConnectionConfiguration().getProviderProperty(
+        this.shouldShowStatistics = CommonUtils.getBoolean(container.getConnectionConfiguration().getProviderProperty(
             PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
     }
 
@@ -115,8 +115,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                              @NotNull SQLDialect dialect) throws DBException {
         super(monitor, container, dialect);
 
-        // Statistics was disabled then mark it as already read
-        this.hasStatistics = !CommonUtils.getBoolean(container.getConnectionConfiguration()
+        this.shouldShowStatistics = CommonUtils.getBoolean(container.getConnectionConfiguration()
                     .getProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
     }
 
@@ -478,6 +477,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             this.isConnectionRefreshing = true;
             this.databaseCache.clearCache();
             this.activeDatabaseName = null;
+            this.hasStatistics = false;
             this.initializeRemoteInstance(monitor);
         } finally {
             this.isConnectionRefreshing = false;
@@ -752,11 +752,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public boolean isStatisticsCollected() {
-        return hasStatistics;
+        return !shouldShowStatistics || hasStatistics;
     }
 
     @Override
     public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (!shouldShowStatistics) {
+            return;
+        }
+        
         if (hasStatistics && !forceRefresh) {
             return;
         }
