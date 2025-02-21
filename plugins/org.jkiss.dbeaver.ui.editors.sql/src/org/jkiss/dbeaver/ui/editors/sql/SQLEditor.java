@@ -3451,6 +3451,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    public boolean supportsRename() {
+        return true;
+    }
+
     @Override
     public void saveToExternalFile() {
         saveToExternalFile(getScriptDirectory());
