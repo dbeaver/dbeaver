@@ -21,7 +21,10 @@ import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -100,10 +103,6 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             proposals = this.prepareColumnsTupleSubstitution(monitor, completionContext);
         } else {
             proposals = this.prepareContextfulCompletion(monitor, completionContext);
-
-            if (this.request.getContext().isSortAlphabetically()) {
-                proposals.sort(Comparator.comparing(ICompletionProposal::getDisplayString, String::compareToIgnoreCase));
-            }
         }
         result = Pair.of(completionContext.getRequestOffset(), proposals);
         return result;
@@ -207,7 +206,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     @NotNull
     private DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
         return switch (item.getKind()) {
-            case UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
+            case SCHEMA, CATALOG, UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
             case RESERVED -> UIIcon.SQL_TEXT;
             case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
             case DERIVED_COLUMN_NAME -> DBIcon.TREE_DERIVED_COLUMN;
