@@ -263,7 +263,7 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase implement
                         this.proposalScore = this.filterString.matches(filterKey, this.proposalContext.getCompletionContext().isSearchInsideNames());
                         return this.proposalScore > 0;
                     } else {
-                        this.proposalScore = 0;
+                        this.proposalScore = Integer.MAX_VALUE;
                         return true;
                     }
                 }
