@@ -568,9 +568,8 @@
 
                     <parameter name="identifier-quotes" value="[:]"/>
 
-                    <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE" bundle="!drivers.ucanaccess"/>
+                    <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE"/>
                     <file type="license" path="licenses/external/lgpl-2.1.txt"/>
-                    <file type="jar" path="drivers/ucanaccess" bundle="drivers.ucanaccess"/>
                 </driver>
                 <driver
                     id="netezza"
@@ -1047,7 +1046,7 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://apacheignite-sql.readme.io/docs/jdbc-driver"
                         categories="hadoop">
-                    <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE" bundle="!drivers.apache_ignite"/>
+                    <file type="jar" path="maven:/org.apache.ignite:ignite-core:RELEASE[2.16.0]" bundle="!drivers.apache_ignite"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/apache_ignite" bundle="drivers.apache_ignite"/>
                 </driver>
