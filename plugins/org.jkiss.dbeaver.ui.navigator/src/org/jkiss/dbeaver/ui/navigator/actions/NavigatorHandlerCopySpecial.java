@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.ui.CopyMode;
@@ -42,7 +43,7 @@ public class NavigatorHandlerCopySpecial extends NavigatorHandlerCopyAbstract {
         if (adapted != null) {
             return adapted.getFullyQualifiedName(DBPEvaluationContext.UI);
         } else if (object instanceof DBNPathBase pathBase) {
-            return pathBase.getPath().toUri().toString();
+            return DBFUtils.convertPathToString(pathBase.getPath());
         } else if (object instanceof DBNNode nwr) {
             IResource resource = nwr.getAdapter(IResource.class);
             if (resource != null) {

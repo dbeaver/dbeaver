@@ -46,9 +46,9 @@ import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -102,8 +102,8 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                             IFileTypeHandler handler = fthd.createHandler();
                             handler.openFiles(Collections.singletonList(path), Map.of(), null);
                             return;
-                        } catch (Exception e) {
-                            // ignore
+                        } catch (ReflectiveOperationException e) {
+                            throw new DBException("Cannot create file handler", e);
                         }
                     }
                 }
@@ -126,24 +126,23 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
             }
 
             try {
-                final Path[] target = new Path[1];
-
-                UIUtils.runInProgressService(monitor -> {
+                final Path target = UIUtils.runWithMonitor(monitor -> {
                     try {
-                        target[0] = Files.createTempFile(
+                        Path tempFile = Files.createTempFile(
                             DBWorkbench.getPlatform().getTempFolder(monitor, "external-files"),
                             null,
                             fileStore.getName()
                         );
 
                         try (InputStream is = fileStore.openInputStream(EFS.NONE, null)) {
-                            try (OutputStream os = Files.newOutputStream(target[0])) {
+                            try (OutputStream os = Files.newOutputStream(tempFile)) {
                                 final IFileInfo info = fileStore.fetchInfo(EFS.NONE, null);
                                 ContentUtils.copyStreams(is, info.getLength(), os, monitor);
                             }
                         }
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
+                        return tempFile;
+                    } catch (IOException | CoreException e) {
+                        throw new DBException("Error copying file", e);
                     }
                 });
 
@@ -154,23 +153,24 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
                     //  2. Detect changes made by an external editor
                     // But for now it's okay, I assume.
 
-                    Program.launch(target[0].toString());
+                    Program.launch(target.toString());
                 } else {
                     IDE.openEditor(
                         UIUtils.getActiveWorkbenchWindow().getActivePage(),
-                        DBFUtils.getUriFromPath(target[0]),
+                        DBFUtils.getUriFromPath(target),
                         editorDesc.getId(),
                         true
                     );
                 }
-            } catch (InvocationTargetException e) {
-                DBWorkbench.getPlatformUI().showError("Error opening resource", "Can't open resource using external editor", e.getTargetException());
-            } catch (InterruptedException ignored) {
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Error opening resource", "Can't open resource using external editor", e);
             }
         } else if (resource instanceof IFile) {
             IDE.openEditor(UIUtils.getActiveWorkbenchWindow().getActivePage(), (IFile) resource);
-        } else if (resource instanceof IFolder) {
+        } else if (resource instanceof IFolder && location != null) {
             DBWorkbench.getPlatformUI().executeShellProgram(location.toOSString());
+        } else {
+            DBWorkbench.getPlatformUI().showError("Error opening resource", "Do not know how to open resource '" + resource + "'");
         }
     }
 

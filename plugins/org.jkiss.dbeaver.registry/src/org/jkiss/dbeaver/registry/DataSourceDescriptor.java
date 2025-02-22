@@ -1166,7 +1166,6 @@ public class DataSourceDescriptor
         }
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
-        patchConnectionProperties(monitor, resolvedConnectionInfo);
         // Update auth properties if possible
         lastConnectionError = null;
         try {
@@ -1209,6 +1208,7 @@ public class DataSourceDescriptor
             }
 
             resolvePropertiesFromProfile();
+            patchConnectionProperties(monitor, resolvedConnectionInfo);
 
             // Handle tunnelHandler
             // Open tunnelHandler and replace connection info with new one

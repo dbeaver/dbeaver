@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,6 +173,7 @@ public class DriverSelectViewer extends Viewer {
         });
 
         refreshJob = createRefreshJob();
+        refreshJob.schedule();
     }
 
     public static OrderBy getDefaultOrderBy() {
@@ -402,16 +402,17 @@ public class DriverSelectViewer extends Viewer {
 
                 selectorViewer.getControl().setRedraw(false);
                 try {
+                    List<ViewerFilter> filters = new ArrayList<>();
                     String text = getFilterString();
-                    if (CommonUtils.isEmpty(text)) {
-                        selectorViewer.setFilters();
-                        return Status.OK_STATUS;
+                    if (CommonUtils.isNotEmpty(text)) {
+                        DriverFilter driverFilter = new DriverFilter();
+                        driverFilter.setPattern(text);
+                        filters.add(driverFilter);
                     }
-
-                    DriverFilter driverFilter = new DriverFilter();
-                    driverFilter.setPattern(text);
-
-                    selectorViewer.setFilters(driverFilter);
+                    if (DBWorkbench.isDistributed()) {
+                        filters.add(new DriverInstalledFilter());
+                    }
+                    selectorViewer.setFilters(filters.toArray(new ViewerFilter[0]));
                     if (selectorViewer instanceof AbstractTreeViewer) {
                         ((AbstractTreeViewer) selectorViewer).expandAll();
                     }
@@ -493,6 +494,16 @@ public class DriverSelectViewer extends Viewer {
             return super.isLeafMatch(viewer, element);
         }
 
+    }
+
+    private static class DriverInstalledFilter extends ViewerFilter {
+        @Override
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
+            if (element instanceof DBPDriver driver) {
+                return driver.isDriverInstalled();
+            }
+            return true;
+        }
     }
 
 }

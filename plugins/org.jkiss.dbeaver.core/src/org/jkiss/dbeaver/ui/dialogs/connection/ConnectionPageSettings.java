@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,7 +120,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             this.substitutedViewDescriptor = null;
         }
 
-        setTitle(wizard.isNew() ? viewDescriptor.getLabel() : CoreMessages.dialog_setting_connection_wizard_title);
+        String pageTitle = wizard.isNew() ? viewDescriptor.getLabel() : CoreMessages.dialog_setting_connection_wizard_title;
+        if (isTemporaryConnection()) {
+            pageTitle += " / TEMPORARY";
+        }
+        setTitle(pageTitle);
         setDescription(CoreMessages.dialog_connection_description);
     }
 
@@ -486,6 +490,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public boolean isPageComplete() {
+//        if (isTemporaryConnection()) {
+//            return false;
+//        }
         if (subPages != null) {
             for (IDialogPage page : subPages) {
                 if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
@@ -503,6 +510,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public String getErrorMessage() {
+        if (isTemporaryConnection()) {
+            return "Temporary data source (changes won't be saved)";
+        }
         final IDialogPage subPage = getCurrentSubPage();
         if (subPage != null && subPage.getErrorMessage() != null) {
             return subPage.getErrorMessage();
@@ -511,6 +521,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             return connectionEditor.getErrorMessage();
         }
         return super.getErrorMessage();
+    }
+
+    private boolean isTemporaryConnection() {
+        DataSourceDescriptor originalDataSource = wizard.getOriginalDataSource();
+        return originalDataSource != null && originalDataSource.isTemporary();
     }
 
     @Override
