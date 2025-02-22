@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -930,15 +930,27 @@ public class DBExecUtils {
         return tableColumn.getDataKind().isComplex() == resultSetAttributeMeta.getDataKind().isComplex();
     }
 
+    /**
+     * Returns read-only status for an attribute.
+     */
     public static boolean isAttributeReadOnly(@Nullable DBDAttributeBinding attribute) {
+        return isAttributeReadOnly(attribute, false);
+    }
+
+    /**
+     * Returns read-only status for an attribute (also can check that row identifier is incomplete by checking a valid key).
+     */
+    public static boolean isAttributeReadOnly(@Nullable DBDAttributeBinding attribute, boolean checkValidKey) {
         if (attribute == null || attribute.getMetaAttribute() == null || attribute.getMetaAttribute().isReadOnly()) {
             return true;
         }
         DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
+        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator dataContainer)) {
             return true;
         }
-        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
+        if (checkValidKey && rowIdentifier.isIncomplete()) {
+            return true;
+        }
         return !dataContainer.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE);
     }
 
