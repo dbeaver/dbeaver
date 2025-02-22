@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -841,27 +841,20 @@ public class MySQLCatalog implements
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner, MySQLTable forTable) throws SQLException {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
-                    "SELECT cc.CONSTRAINT_NAME, cc.CHECK_CLAUSE, tc.TABLE_NAME\n" +
-                        "FROM (SELECT CONSTRAINT_NAME, CHECK_CLAUSE\n" +
-                        "FROM INFORMATION_SCHEMA.CHECK_CONSTRAINTS\n" +
-                        "WHERE CONSTRAINT_SCHEMA = ?\n" +
-                        "ORDER BY CONSTRAINT_NAME) cc,\n" +
-                        "(SELECT TABLE_NAME, CONSTRAINT_NAME\n" +
-                        "FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS\n" +
-                        "WHERE TABLE_SCHEMA = ?");
+                "SELECT tc.TABLE_NAME, cc.CONSTRAINT_NAME, cc.CHECK_CLAUSE\n" +
+                "FROM INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc, INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc\n" +
+                "WHERE tc.CONSTRAINT_SCHEMA = ?\n" +
+                "AND tc.CONSTRAINT_SCHEMA=cc.CONSTRAINT_SCHEMA AND tc.CONSTRAINT_NAME=cc.CONSTRAINT_NAME\n");
             if (forTable != null) {
-                sql.append(" AND TABLE_NAME=?");
+                sql.append(" AND tc.TABLE_NAME=?\n");
             }
-            sql.append(") tc\n" +
-                "WHERE cc.CONSTRAINT_NAME = tc.CONSTRAINT_NAME" +
-                "\nORDER BY cc.CONSTRAINT_NAME");
+            sql.append("ORDER BY tc.TABLE_NAME,cc.CONSTRAINT_NAME");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             String ownerName = owner.getName();
             dbStat.setString(1, ownerName);
-            dbStat.setString(2, ownerName);
             if (forTable != null) {
-                dbStat.setString(3, forTable.getName());
+                dbStat.setString(2, forTable.getName());
             }
             return dbStat;
         }
@@ -1014,8 +1007,9 @@ public class MySQLCatalog implements
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTrigger object, @Nullable String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS\n" +
-                    "WHERE TRIGGER_SCHEMA = ?" +
-                    (object == null && objectName == null ? "" : " \nAND TRIGGER_NAME = ?")
+                "WHERE TRIGGER_SCHEMA = ?" +
+                ((object == null && objectName == null ? "" : " \nAND TRIGGER_NAME = ?\n") +
+                 " ORDER BY EVENT_OBJECT_SCHEMA, TRIGGER_NAME;")
             );
             dbStat.setString(1, owner.getName());
             if (object != null || objectName != null) {
@@ -1032,7 +1026,7 @@ public class MySQLCatalog implements
             throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM information_schema.EVENTS WHERE EVENT_SCHEMA=?");
+                "SELECT * FROM information_schema.EVENTS WHERE EVENT_SCHEMA=? ORDER BY EVENT_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }

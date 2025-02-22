@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
-import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -106,7 +105,7 @@ public class DBeaverCommandLine
         boolean hasArg;
         boolean exitAfterExecute;
         boolean exclusiveMode;
-        CommandLineParameterHandler handler;
+        ICommandLineParameterHandler handler;
 
         public ParameterDescriptor(IConfigurationElement config) throws Exception {
             this.name = config.getAttribute("name");
@@ -117,7 +116,7 @@ public class DBeaverCommandLine
             this.exclusiveMode = CommonUtils.toBoolean(config.getAttribute("exclusiveMode"));
             Bundle cBundle = Platform.getBundle(config.getContributor().getName());
             Class<?> implClass = cBundle.loadClass(config.getAttribute("handler"));
-            handler = (CommandLineParameterHandler) implClass.getConstructor().newInstance();
+            handler = (ICommandLineParameterHandler) implClass.getConstructor().newInstance();
         }
     }
 
@@ -236,8 +235,10 @@ public class DBeaverCommandLine
 
     static CommandLine getCommandLine() {
         try {
+            // Remove keyring parameter because its name contains special characters
+            // Actual valuation of keyring happens in app launcher
             List<String> applicationArgs = Arrays.stream(Platform.getApplicationArgs()).collect(Collectors.toList());
-            int index = applicationArgs.indexOf(CoreApplicationActivator.ARG_ECLIPSE_KEYRING);
+            int index = applicationArgs.indexOf("-eclipse.keyring");
             if (index >= 0) {
                 applicationArgs.remove(index);
                 if (applicationArgs.size() > index) {
@@ -287,7 +288,8 @@ public class DBeaverCommandLine
         }
 
         try {
-            return executeCommandLineCommands(commandLine, DBeaverInstanceServer.createClient(instanceLoc), false);
+            IInstanceController client = DBeaverInstanceServer.createClient(instanceLoc);
+            return executeCommandLineCommands(commandLine, client, false);
         } catch (Throwable e) {
             log.error("Error while calling remote server", e);
         }

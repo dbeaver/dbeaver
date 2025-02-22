@@ -86,6 +86,7 @@
     <features>
         <feature id="org.jkiss.dbeaver.runtime.feature"/>
         <feature id="org.jkiss.dbeaver.db.feature"/>
+        <feature id="org.jkiss.dbeaver.test.base.feature"/>
         <feature id="org.jkiss.dbeaver.test.feature"/>
     </features>
 

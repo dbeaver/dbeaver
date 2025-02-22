@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -354,7 +354,7 @@ public abstract class NLS {
                 final String msg = "NLS unused message: " + key + " in: " + bundleName;//$NON-NLS-1$ //$NON-NLS-2$
                 // keys with '.' are ignored by design (bug 433424)
                 if (key instanceof String && ((String) key).indexOf('.') < 0) {
-                    log.warn(msg);
+                    log.debug(msg);
                 }
                 return null;
             }

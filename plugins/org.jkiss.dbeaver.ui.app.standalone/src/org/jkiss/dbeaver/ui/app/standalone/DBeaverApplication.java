@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -252,6 +252,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Write version info
         writeWorkspaceInfo();
 
+        // Initialize display early
+        // It sets main windows name and images
+        getDisplay();
+
         // https://github.com/eclipse-platform/eclipse.platform.swt/issues/772
         if (!RuntimeUtils.isMacOS() || !RuntimeUtils.isOSVersionAtLeast(14, 0, 0)) {
             // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
@@ -475,8 +479,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             return;
         }
         try {
-            getDisplay();
-
             // look and see if there's a splash shell we can parent off of
             Shell shell = WorkbenchPlugin.getSplashShell(display);
             if (shell != null) {
@@ -494,6 +496,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 shell.addDisposeListener(e -> {
                     Log.removeListener(splashListener);
                 });
+                DBeaverSplashHandler.showMessage("Starting " + Platform.getProduct().getName());
             }
         } catch (Throwable e) {
             e.printStackTrace(System.err);

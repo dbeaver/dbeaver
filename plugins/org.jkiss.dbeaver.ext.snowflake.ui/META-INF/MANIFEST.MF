@@ -2,11 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Snowflake UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.snowflake.ui;singleton:=true
-Bundle-Version: 1.0.168.qualifier
-Bundle-Release-Date: 20250203
+Bundle-Version: 1.0.170.qualifier
+Bundle-Release-Date: 20250303
 Bundle-Activator: org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeUIActivator
 Require-Bundle: org.jkiss.dbeaver.ext.generic.ui,
- org.jkiss.dbeaver.ext.snowflake.core
+ org.jkiss.dbeaver.ext.snowflake
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-Vendor: DBeaver Corp

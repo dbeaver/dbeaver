@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -29,12 +28,16 @@ import org.jkiss.dbeaver.model.sql.SQLTableAliasInsertMode;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemVisitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -75,7 +78,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     @NotNull
     @Override
     public String visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem subqueryAlias) {
-        return subqueryAlias.symbol.getName();
+        return this.prepareDefiningEntryName(subqueryAlias.symbol);
     }
 
     @NotNull
@@ -102,7 +105,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
         String prefix;
         if (columnName.sourceInfo != null && this.queryCompletionContext.getInspectionResult().expectingColumnReference() && columnName.absolute) {
             if (columnName.sourceInfo.aliasOrNull != null) {
-                prefix = columnName.sourceInfo.aliasOrNull.getName() + this.structSeparator;
+                prefix = this.prepareDefiningEntryName(columnName.sourceInfo.aliasOrNull) + this.structSeparator;
             } else if (columnName.sourceInfo.tableOrNull != null) {
                 prefix = this.prepareObjectName(columnName.sourceInfo.tableOrNull) + this.structSeparator;
             } else {
@@ -229,5 +232,49 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
         }
         return result;
     }
+
+    @NotNull
+    private String prepareDefiningEntryName(@NotNull SQLQuerySymbol symbol) {
+        return symbol.getDefinition() instanceof SQLQuerySymbolEntry entry ? entry.getRawName() : symbol.getName();
+    }
+
+    @NotNull
+    @Override
+    public String visitProcedure(@NotNull SQLProcedureCompletionItem procedure) {
+        String name = this.prepareObjectName(procedure);
+
+        try {
+            String text;
+            Collection<? extends DBSProcedureParameter> parameters = procedure.getObject().getParameters(monitor);
+            if (!CommonUtils.isEmpty(parameters)) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(name).append("(");
+                int index = 0;
+                for (DBSProcedureParameter param : parameters) {
+                    if (param.getParameterKind().isInput()) {
+                        if (index++ > 0) {
+                            sb.append(", ");
+                        }
+                        sb.append(":").append(param.getName());
+                    }
+                }
+                sb.append(")");
+                text = sb.toString();
+            } else {
+                text = name + "()";
+            }
+            return text;
+        } catch (DBException e) {
+            log.error("Failed to obtain procedure parameters info", e);
+            return name;
+        }
+    }
+
+    @Nullable
+    @Override
+    public String visitBuiltinFunction(@NotNull SQLBuiltinFunctionCompletionItem function) {
+        return function.name + "()";
+    }
+
 
 }

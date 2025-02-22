@@ -390,32 +390,30 @@
 
                     <file type="license" path="drivers/oracle/LICENSE.txt" bundle="drivers.oracle"/>
                     <file type="jar" path="drivers/oracle" bundle="drivers.oracle"/>
-
-                    <provider-properties>
-                        <propertyGroup label="Misc">
-                            <property id="@dbeaver-sid-service@" label="Service type" type="string" description="Database type" defaultValue="SID" validValues="SID,SERVICE"/>
-                            <property id="oracle.logon-as" label="Role" type="string" description="Connect as role" defaultValue="Normal" validValues="Normal,SYSDBA,SYSOPER"/>
-                        </propertyGroup>
-                        <propertyGroup label="Performance">
-                            <property id="@dbeaver-use-meta-optimizer@" label="Use metadata queries optimizer" type="boolean" description="Use metadata queries optimizer"/>
-                            <property id="@dbeaver-use-rule-hint@" label="Use RULE hint for system catalog queries" type="boolean" description="Adds RULE hint for some system catalog queries (like columns and constraints reading).\nIt significantly increases performance on some Oracle databases (and decreases on others)."/>
-                            <property id="@dbeaver-meta-use-simple-constraints@" label="Simple constraint reading query" type="boolean" description="Use simple metadata queries. May work slower but it is more stable for all Oracle versions."/>
-                            <property id="@dbeaver-meta-use-alternative-table-query@" label="Use UNION for table metadata reading" type="boolean" description="Use legacy table metadata query. With UNION instead JOIN. It helps in some cases speed up reading of table data.r"/>
-                            <property id="oracle.meta-search-in-synonyms" label="Search metadata in synonyms" type="boolean" description="Use metadata queries optimizer"/>
-                        </propertyGroup>
-                        <propertyGroup label="Content">
-                            <property id="show-only-one-schema@" label="Show only connected user schema" type="boolean" description="Show only a scheme of a connected user in the Database Navigator"/>
-                            <property id="@dbeaver-check-schema-content@" label="Hide empty schemas" type="boolean" description="Check existence of objects within schema and do not show empty schemas in tree.\nEnabled by default but it may cause performance problems on databases with very big number of objects."/>
-                            <property id="@dbeaver-always-show-dba@" label="Always show DBA objects" type="boolean" description="Always shows DBA-related metadata objects in tree even if user do not has DBA role."/>
-                            <property id="@dbeaver-always-use-dba-views@" label="Always use DBA_* views" type="boolean" description="Use DBA_* views instead of ALL_* views wherever it is possible"/>
-                            <property id="@dbeaver-meta-use-sys-schema@" label="Use SYS schema prefix" type="boolean" description="Use SYS schema prefix in all metadata queries. Otherwise use view names without explicit schema."/>
-                        </propertyGroup>
-                        <propertyGroup label="Data">
-                            <property id="oracle.show-date-as-date" label="Show DATE values specifically as DATE" type="boolean" description="Show DATE data type values specifically as DATE, not as a TIMESTAMP.\nThis setting will not work with disabled date/time formatting."/>
-                        </propertyGroup>
-                    </provider-properties>
-
                 </driver>
+                <provider-properties>
+                    <propertyGroup label="Misc">
+                        <property id="@dbeaver-sid-service@" label="Service type" type="string" supportedConfigurationTypes="MANUAL" description="Database type" defaultValue="SID" validValues="SID,SERVICE"/>
+                        <property id="oracle.logon-as" label="Role" type="string" description="Connect as role" defaultValue="Normal" validValues="Normal,SYSDBA,SYSOPER"/>
+                    </propertyGroup>
+                    <propertyGroup label="Performance">
+                        <property id="@dbeaver-use-meta-optimizer@" label="Use metadata queries optimizer" type="boolean" description="Use metadata queries optimizer"/>
+                        <property id="@dbeaver-use-rule-hint@" label="Use RULE hint for system catalog queries" type="boolean" description="Adds RULE hint for some system catalog queries (like columns and constraints reading).\nIt significantly increases performance on some Oracle databases (and decreases on others)."/>
+                        <property id="@dbeaver-meta-use-simple-constraints@" label="Simple constraint reading query" type="boolean" description="Use simple metadata queries. May work slower but it is more stable for all Oracle versions."/>
+                        <property id="@dbeaver-meta-use-alternative-table-query@" label="Use UNION for table metadata reading" type="boolean" description="Use legacy table metadata query. With UNION instead JOIN. It helps in some cases speed up reading of table data.r"/>
+                        <property id="oracle.meta-search-in-synonyms" label="Search metadata in synonyms" type="boolean" description="Use metadata queries optimizer"/>
+                    </propertyGroup>
+                    <propertyGroup label="Content">
+                        <property id="show-only-one-schema@" label="Show only connected user schema" type="boolean" description="Show only a scheme of a connected user in the Database Navigator"/>
+                        <property id="@dbeaver-check-schema-content@" label="Hide empty schemas" type="boolean" description="Check existence of objects within schema and do not show empty schemas in tree.\nEnabled by default but it may cause performance problems on databases with very big number of objects."/>
+                        <property id="@dbeaver-always-show-dba@" label="Always show DBA objects" type="boolean" description="Always shows DBA-related metadata objects in tree even if user do not has DBA role."/>
+                        <property id="@dbeaver-always-use-dba-views@" label="Always use DBA_* views" type="boolean" description="Use DBA_* views instead of ALL_* views wherever it is possible"/>
+                        <property id="@dbeaver-meta-use-sys-schema@" label="Use SYS schema prefix" type="boolean" description="Use SYS schema prefix in all metadata queries. Otherwise use view names without explicit schema."/>
+                    </propertyGroup>
+                    <propertyGroup label="Data">
+                        <property id="oracle.show-date-as-date" label="Show DATE values specifically as DATE" type="boolean" description="Show DATE data type values specifically as DATE, not as a TIMESTAMP.\nThis setting will not work with disabled date/time formatting."/>
+                    </propertyGroup>
+                </provider-properties>
             </drivers>
             <templates>
                 <resolver type="orauser" class="org.jkiss.dbeaver.ext.oracle.model.resolvers.OracleUserResolver" description="Current Oracle user"/>

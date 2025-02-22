@@ -183,6 +183,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
             if (CommonUtils.isNotEmpty(password)) {
                 secrets.setPrivateSecretValue(ModelPreferences.UI_PROXY_PASSWORD, password);
             }
+            secrets.flushChanges();
         }
     }
 

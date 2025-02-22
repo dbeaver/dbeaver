@@ -16,93 +16,175 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
+
+import java.util.Set;
 
 /**
  * The origin providing symbols occurring as identifiers in a query text (actually faced with or potential)
  */
-public interface SQLQuerySymbolOrigin {
+public abstract class SQLQuerySymbolOrigin {
 
-    interface Visitor<T> {
-        T visitDbObjectFromDbObject(DbObjectFromDbObject origin);
+    public interface Visitor {
+        void visitDbObjectFromDbObject(DbObjectFromDbObject origin);
 
-        T visitDbObjectFromContext(DbObjectFromContext origin);
+        void visitDbObjectFromContext(DbObjectFromContext origin);
 
-        T visitRowsetRefFromContext(RowsetRefFromContext origin);
+        void visitRowsetRefFromContext(RowsetRefFromContext origin);
 
-        T visitValueRefFromContext(ValueRefFromContext origin);
+        void visitValueRefFromContext(ValueRefFromContext origin);
 
-        T visitColumnRefFromReferencedContext(ColumnRefFromReferencedContext origin);
+        void visitColumnRefFromReferencedContext(ColumnRefFromReferencedContext origin);
 
-        T visitColumnNameFromContext(ColumnNameFromContext origin);
+        void visitColumnNameFromContext(ColumnNameFromContext origin);
 
-        T visitMemberOfType(MemberOfType origin);
+        void visitMemberOfType(MemberOfType origin);
+
+        void visitDataContextSymbol(DataContextSymbolOrigin origin);
     }
 
-    boolean isChained();
+    public abstract boolean isChained();
 
-    <T> T apply(Visitor<T> visitor);
+    public abstract void apply(Visitor visitor);
+
+    public static class DataContextSymbolOrigin extends SQLQuerySymbolOrigin {
+
+        private final SQLQueryDataContext dataContext;
+
+        public DataContextSymbolOrigin(SQLQueryDataContext dataContext) {
+            this.dataContext = dataContext;
+        }
+
+        @Override
+        public boolean isChained() {
+            return false;
+        }
+
+        public SQLQueryDataContext getDataContext() {
+            return this.dataContext;
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitDataContextSymbol(this);
+        }
+    }
 
     /**
      * DB object is a scope for its child name
      */
-    record DbObjectFromDbObject(DBSObject object) implements SQLQuerySymbolOrigin {
+    public static class DbObjectFromDbObject extends SQLQuerySymbolOrigin {
+
+        @NotNull
+        private final DBSObject object;
+
+        @NotNull
+        private final Set<DBSObjectType> objectTypes;
+
+        public DbObjectFromDbObject(@NotNull DBSObject object, @NotNull DBSObjectType memberType) {
+            this(object, Set.of(memberType));
+        }
+
+        public DbObjectFromDbObject(@NotNull DBSObject object, @NotNull Set<DBSObjectType> objectTypes) {
+            this.object = object;
+            this.objectTypes = objectTypes;
+        }
+
+        @NotNull
+        public DBSObject getObject() {
+            return this.object;
+        }
+
+        @NotNull
+        public Set<DBSObjectType> getMemberTypes() {
+            return this.objectTypes;
+        }
+
         @Override
         public boolean isChained() {
             return true;
         }
 
         @Override
-        public <T> T apply(Visitor<T> visitor) {
-            return visitor.visitDbObjectFromDbObject(this);
+        public void apply(Visitor visitor) {
+            visitor.visitDbObjectFromDbObject(this);
         }
     }
 
     /**
      * Context is a scope for DB object name
      */
-    record DbObjectFromContext(SQLQueryDataContext context) implements SQLQuerySymbolOrigin {
-        @Override
-        public boolean isChained() {
-            return false;
+    public static class DbObjectFromContext extends DataContextSymbolOrigin {
+
+        @NotNull
+        private final Set<DBSObjectType> objectTypes;
+
+        private final boolean includingRowsets;
+
+        public DbObjectFromContext(
+            @NotNull SQLQueryDataContext dataContext,
+            @NotNull DBSObjectType objectType
+        ) {
+            this(dataContext, Set.of(objectType), false);
+        }
+
+        public DbObjectFromContext(
+            @NotNull SQLQueryDataContext dataContext,
+            @NotNull Set<DBSObjectType> objectTypes,
+            boolean includingRowsets
+        ) {
+            super(dataContext);
+            this.objectTypes = objectTypes;
+            this.includingRowsets = includingRowsets;
+        }
+
+        @NotNull
+        public Set<DBSObjectType> getObjectTypes() {
+            return this.objectTypes;
+        }
+        
+        public boolean isIncludingRowsets() {
+            return this.includingRowsets;
         }
 
         @Override
-        public <T> T apply(Visitor<T> visitor) {
-            return visitor.visitDbObjectFromContext(this);
+        public void apply(Visitor visitor) {
+            visitor.visitDbObjectFromContext(this);
         }
     }
 
     /**
      * Context is a scope for rowset reference (rowset alias or table name)
      */
-    record RowsetRefFromContext(SQLQueryDataContext context) implements SQLQuerySymbolOrigin {
-        @Override
-        public boolean isChained() {
-            return false;
+    public static class RowsetRefFromContext extends DataContextSymbolOrigin {
+
+        public RowsetRefFromContext(SQLQueryDataContext dataContext) {
+            super(dataContext);
         }
 
         @Override
-        public <T> T apply(Visitor<T> visitor) {
-            return visitor.visitRowsetRefFromContext(this);
+        public void apply(Visitor visitor) {
+            visitor.visitRowsetRefFromContext(this);
         }
     }
 
     /**
      * Context is a scope for value reference (column name of any kind: simple or fully-qualified, single or tuple)
      */
-    record ValueRefFromContext(SQLQueryDataContext context) implements SQLQuerySymbolOrigin {
-        @Override
-        public boolean isChained() {
-            return false;
+    public static class ValueRefFromContext extends DataContextSymbolOrigin {
+
+        public ValueRefFromContext(SQLQueryDataContext dataContext) {
+            super(dataContext);
         }
 
         @Override
-        public <T> T apply(Visitor<T> visitor) {
-            return visitor.visitValueRefFromContext(this);
+        public void apply(Visitor visitor) {
+            visitor.visitValueRefFromContext(this);
         }
     }
 
@@ -110,45 +192,66 @@ public interface SQLQuerySymbolOrigin {
      * Explicitly referenced source is a scope for column name provided by the underlying rowset query node
      * (like a column provided by the table or subquery through the corresponding alias, or through the fully-qualified table name)
      */
-    record ColumnRefFromReferencedContext(SourceResolutionResult rowsSource) implements SQLQuerySymbolOrigin {
+    public static class ColumnRefFromReferencedContext extends SQLQuerySymbolOrigin {
+
+        private final SourceResolutionResult referencedSource;
+
+        public ColumnRefFromReferencedContext(SourceResolutionResult referencedSource) {
+            this.referencedSource = referencedSource;
+        }
+
         @Override
         public boolean isChained() {
             return true;
         }
 
+        public SourceResolutionResult getRowsSource() {
+            return this.referencedSource;
+        }
+
         @Override
-        public <T> T apply(Visitor<T> visitor) {
-            return visitor.visitColumnRefFromReferencedContext(this);
+        public void apply(Visitor visitor) {
+            visitor.visitColumnRefFromReferencedContext(this);
         }
     }
 
     /**
      * Context is a scope for strictly simple separate column name
      */
-    record ColumnNameFromContext(SQLQueryDataContext context) implements SQLQuerySymbolOrigin {
-        @Override
-        public boolean isChained() {
-            return false;
+    public static class ColumnNameFromContext extends DataContextSymbolOrigin {
+        public ColumnNameFromContext(SQLQueryDataContext dataContext) {
+            super(dataContext);
         }
 
         @Override
-        public <T> T apply(Visitor<T> visitor) {
-            return visitor.visitColumnNameFromContext(this);
+        public void apply(Visitor visitor) {
+            visitor.visitColumnNameFromContext(this);
         }
     }
 
     /**
      * Type is a scope for its member name
      */
-    record MemberOfType(SQLQueryExprType type) implements SQLQuerySymbolOrigin {
+    public static class MemberOfType extends SQLQuerySymbolOrigin {
+        @NotNull
+        private final SQLQueryExprType type;
+
+        public MemberOfType(@NotNull SQLQueryExprType type) {
+            this.type = type;
+        }
+
+        public final SQLQueryExprType getType() {
+            return this.type;
+        }
+
         @Override
         public boolean isChained() {
             return true;
         }
 
         @Override
-        public <T> T apply(Visitor<T> visitor) {
-            return visitor.visitMemberOfType(this);
+        public void apply(Visitor visitor) {
+            visitor.visitMemberOfType(this);
         }
     }
 }

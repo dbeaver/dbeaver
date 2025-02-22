@@ -34,6 +34,7 @@
 
         <module>org.jkiss.dbeaver.ext.generic</module>
 
+
         <module>org.jkiss.dbeaver.ext.athena</module>
         <module>org.jkiss.dbeaver.ext.bigquery</module>
         <module>org.jkiss.dbeaver.ext.clickhouse</module>
@@ -46,13 +47,11 @@
         <module>org.jkiss.dbeaver.ext.derby</module>
         <module>org.jkiss.dbeaver.ext.dameng</module>
         <module>org.jkiss.dbeaver.ext.duckdb</module>
-        <module>org.jkiss.dbeaver.ext.es</module>
         <module>org.jkiss.dbeaver.ext.exasol</module>
         <module>org.jkiss.dbeaver.ext.firebird</module>
         <module>org.jkiss.dbeaver.ext.gbase8s</module>
         <module>org.jkiss.dbeaver.ext.greenplum</module>
         <module>org.jkiss.dbeaver.ext.h2</module>
-        <module>org.jkiss.dbeaver.ext.h2gis</module>
         <module>org.jkiss.dbeaver.ext.hana</module>
         <module>org.jkiss.dbeaver.ext.hive</module>
         <module>org.jkiss.dbeaver.ext.hsqldb</module>
@@ -67,15 +66,13 @@
 
         <module>org.jkiss.dbeaver.ext.postgresql</module>
 
-        <module>org.jkiss.dbeaver.ext.snowflake.core</module>
+        <module>org.jkiss.dbeaver.ext.snowflake</module>
         <module>org.jkiss.dbeaver.ext.spanner</module>
         <module>org.jkiss.dbeaver.ext.sqlite</module>
         <module>org.jkiss.dbeaver.ext.vertica</module>
         <module>org.jkiss.dbeaver.ext.teradata</module>
         <module>org.jkiss.dbeaver.ext.tidb</module>
         <module>org.jkiss.dbeaver.ext.trino</module>
-        <module>org.jkiss.dbeaver.ext.kognitio</module>
-        <module>org.jkiss.dbeaver.ext.datavirtuality</module>
         <module>org.jkiss.dbeaver.ext.denodo</module>
         <module>org.jkiss.dbeaver.ext.altibase</module>
         <module>org.jkiss.dbeaver.ext.gaussdb</module>
@@ -94,7 +91,7 @@
         <module>org.jkiss.dbeaver.slf4j</module>
 
         <module>org.jkiss.dbeaver.headless</module>
-
+        <module>org.jkiss.dbeaver.osgi.test.runner</module>
     </modules>
 
     <profiles>
@@ -146,6 +143,7 @@
                 <module>org.jkiss.dbeaver.ui.editors.hex</module>
                 <module>org.jkiss.dbeaver.ui.editors.image</module>
                 <module>org.jkiss.dbeaver.ui.editors.json</module>
+                <module>org.jkiss.dbeaver.ui.editors.locks</module>
                 <module>org.jkiss.dbeaver.ui.editors.sql</module>
                 <module>org.jkiss.dbeaver.ui.editors.sql.ai</module>
                 <module>org.jkiss.dbeaver.ui.editors.sql.terminal</module>
@@ -168,11 +166,8 @@
                 <module>org.jkiss.dbeaver.tasks.sql.ui</module>
 
                 <module>org.jkiss.dbeaver.data.office.ui</module>
-                <module>org.jkiss.dbeaver.ext.sample.database</module>
-                <module>org.jkiss.dbeaver.ext.ui.locks</module>
-                <module>org.jkiss.dbeaver.ext.ui.tipoftheday</module>
-                <module>org.jkiss.dbeaver.ext.config.migration</module>
-                <module>org.jkiss.dbeaver.ext.format.sqlworkbenchj</module>
+                <module>org.jkiss.dbeaver.ui.config.sample</module>
+                <module>org.jkiss.dbeaver.ui.config.migration</module>
                 <module>org.jkiss.dbeaver.cmp.simple.ui</module>
 
                 <module>org.jkiss.dbeaver.debug.ui</module>
@@ -185,7 +180,7 @@
 
                 <module>org.jkiss.dbeaver.team.git.ui</module>
 
-                <module>org.jkiss.dbeaver.ext.test</module>
+                <module>org.jkiss.dbeaver.ui.app.devtools</module>
             </modules>
         </profile>
     </profiles>

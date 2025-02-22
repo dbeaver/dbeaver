@@ -177,7 +177,7 @@ public abstract class SQLQueryExprType {
         }
         
         if (typedObj instanceof DBSTypedObjectEx2 typedEx2) {
-            SQLQueryExprType type = forDescribedIfPresented(monitor, typedObj, typedEx2.getTypeDescriptor(), declaratorDefinition);
+            SQLQueryExprType type = forDescribedIfPresented(monitor, typedObj, typedEx2.getTypeDescriptor(monitor), declaratorDefinition);
             if (type != null) {
                 return type;
             }
@@ -446,6 +446,12 @@ public abstract class SQLQueryExprType {
                 this.typeDesc.getIndexableItemType(depth, slicingSpec),
                 this.getDeclaratorDefinition()
             );
+        }
+
+        @NotNull
+        @Override
+        public String toString() {
+            return "DescribedIndexableType[" + this.typeDesc.getTypeName() + "]";
         }
     }
     

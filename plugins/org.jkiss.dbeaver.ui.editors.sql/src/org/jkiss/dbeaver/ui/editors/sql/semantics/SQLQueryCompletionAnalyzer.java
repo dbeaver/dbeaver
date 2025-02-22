@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,10 @@ import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -57,8 +60,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     private final Position completionRequestPosition;
     @NotNull
     private final AtomicReference<Pair<Integer, List<SQLQueryCompletionProposal>>> result = new AtomicReference<>(Pair.of(null, Collections.emptyList()));
-
-    private final SQLQueryCompletionProposalContext proposalContext;
+    private SQLQueryCompletionProposalContext proposalContext;
 
     public SQLQueryCompletionAnalyzer(
         @NotNull SQLEditorBase editor,
@@ -68,7 +70,6 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         this.editor = editor;
         this.request = request;
         this.completionRequestPosition = completionRequestPosition;
-        this.proposalContext = new SQLQueryCompletionProposalContext(request);
     }
 
     @Override
@@ -84,6 +85,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         Pair<Integer, List<SQLQueryCompletionProposal>> result;
         if (completionContext != null && this.request.getContext().getDataSource() != null) {
             // TODO don't we want to be able to accomplish subqueries and such even without the connection?
+            this.proposalContext = new SQLQueryCompletionProposalContext(request, completionContext.getRequestOffset());
             result = this.prepareProposals(monitor, completionContext);
         } else {
             result = Pair.of(this.completionRequestPosition.getOffset(), Collections.emptyList());
@@ -101,10 +103,6 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             proposals = this.prepareColumnsTupleSubstitution(monitor, completionContext);
         } else {
             proposals = this.prepareContextfulCompletion(monitor, completionContext);
-
-            if (this.request.getContext().isSortAlphabetically()) {
-                proposals.sort(Comparator.comparing(ICompletionProposal::getDisplayString, String::compareToIgnoreCase));
-            }
         }
         result = Pair.of(completionContext.getRequestOffset(), proposals);
         return result;
@@ -207,11 +205,11 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
 
     @NotNull
     private DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
-        DBPImage image = switch (item.getKind()) {
-            case UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
+        return switch (item.getKind()) {
+            case SCHEMA, CATALOG, UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
             case RESERVED -> UIIcon.SQL_TEXT;
             case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
-            case DERIVED_COLUMN_NAME -> DBIcon.TREE_FOREIGN_KEY_COLUMN;
+            case DERIVED_COLUMN_NAME -> DBIcon.TREE_DERIVED_COLUMN;
             case NEW_TABLE_NAME, USED_TABLE_NAME -> {
                 DBPObject object = item.getObject();
                 yield object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
@@ -219,8 +217,8 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
             case COMPOSITE_FIELD_NAME -> DBIcon.TREE_DATA_TYPE;
             case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
+            case PROCEDURE -> item.getObject() == null ? DBIcon.TREE_FUNCTION : DBValueFormatting.getObjectImage(item.getObject());
             default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
         };
-        return image;
     }
 }
