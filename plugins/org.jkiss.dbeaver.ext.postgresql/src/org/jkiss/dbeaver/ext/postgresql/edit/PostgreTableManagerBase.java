@@ -108,6 +108,22 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
+                // Column storage
+                if (!table.isPartition() && !monitor.isCanceled()
+                    && table.getDataSource().getServerType().supportsAlterStorageStrategy()
+                    && !table.getDataSource().getServerType().supportsStorageModifier()) {
+                    boolean hasStorage = false;
+                    for (PostgreTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+                        if (!column.isHidden() && !column.hasDefaultStorage()) {
+                            if (!hasStorage && addExtraActionComment) {
+                                actions.add(new SQLDatabasePersistActionComment(dataSource, "Column storage"));
+                            }
+                            PostgreTableColumnManager.addColumnStorageAction(actions, column);
+                            hasStorage = true;
+                        }
+                    }
+                }
+
                 // Triggers
                 if (table instanceof PostgreTableReal && !table.isPartition() && !monitor.isCanceled()) {
                     Collection<PostgreTrigger> triggers = ((PostgreTableReal) table).getTriggers(monitor);

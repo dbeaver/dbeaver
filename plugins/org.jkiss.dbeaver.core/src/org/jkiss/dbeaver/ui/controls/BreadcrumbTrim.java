@@ -205,7 +205,7 @@ public class BreadcrumbTrim {
     private static boolean tryExtractNode(@NotNull IEditorInput input, @NotNull Consumer<? super DBNNode> consumer) {
         if (input instanceof ILazyEditorInput lazyEditorInput && input instanceof DBPDataSourceContainerProvider provider) {
             DBPProject project = lazyEditorInput.getProject();
-            if (!project.isOpen() || !project.isRegistryLoaded()) {
+            if (project == null || !project.isOpen() || !project.isRegistryLoaded()) {
                 return false;
             }
             DBNModel navigatorModel = project.getNavigatorModel();
