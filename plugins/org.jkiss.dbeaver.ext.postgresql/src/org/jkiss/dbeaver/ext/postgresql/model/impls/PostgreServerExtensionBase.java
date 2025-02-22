@@ -570,6 +570,16 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsAlterStorageStrategy() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsStorageModifier() {
+        return false;
+    }
+
+    @Override
     public boolean supportsAlterUserChangePassword() {
         return false;
     }

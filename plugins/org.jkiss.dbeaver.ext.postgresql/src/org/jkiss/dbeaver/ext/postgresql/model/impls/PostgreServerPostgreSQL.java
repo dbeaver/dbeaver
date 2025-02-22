@@ -95,4 +95,14 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     public boolean supportsEventTriggers() {
         return dataSource.isServerVersionAtLeast(9, 3);
     }
+
+    @Override
+    public boolean supportsAlterStorageStrategy() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsStorageModifier() {
+        return dataSource.isServerVersionAtLeast(16, 0);
+    }
 }

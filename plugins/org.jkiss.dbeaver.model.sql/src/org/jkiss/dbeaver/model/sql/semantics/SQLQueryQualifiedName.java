@@ -217,7 +217,8 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
         @NotNull SQLQueryRecognitionContext statistics,
         @NotNull SQLQueryQualifiedName name,
         @NotNull SQLQuerySymbolOrigin origin,
-        @NotNull Set<DBSObjectType> objectTypes
+        @NotNull Set<DBSObjectType> objectTypes,
+        @NotNull SQLQuerySymbolClass entityNameClass
     ) {
         if (!statistics.useRealMetadata() || context instanceof SQLQueryDummyDataSourceContext) {
             return;
@@ -244,6 +245,10 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
             }
         } else if (!nameFragment.isEmpty()) {
             nameFragment.get(0).setOrigin(origin);
+        }
+
+        if (name.entityName.isNotClassified()) {
+            name.entityName.getSymbol().setSymbolClass(entityNameClass);
         }
     }
 

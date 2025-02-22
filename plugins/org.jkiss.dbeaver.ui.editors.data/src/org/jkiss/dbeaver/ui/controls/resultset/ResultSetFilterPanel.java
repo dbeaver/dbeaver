@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -898,7 +898,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         private void showFilterHistoryPopup() {
             if (popup != null) {
-                popup.dispose();
+                closeHistoryPopup();
+                return;
             }
             popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
             popup.setLayout(new FillLayout());
@@ -927,9 +928,18 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             editControl.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusLost(FocusEvent e) {
+                    // Do not nullify it to avoid double-opening of popup
+                    // when user click on button and popup is already visible
                     popup.dispose();
                 }
             });
+        }
+
+        private void closeHistoryPopup() {
+            if (popup != null) {
+                popup.dispose();
+                popup = null;
+            }
         }
 
         @NotNull
@@ -943,6 +953,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             if (filtersHistory.isEmpty()) {
                 // nothing
+                new TableItem(historyTable, SWT.NONE).setText("");
             } else {
                 String curFilterValue = filtersText.getText();
                 for (int i = filtersHistory.size(); i > 0; i--) {
@@ -1001,13 +1012,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                             case SWT.CR:
                             case SWT.SPACE:
                                 final String newFilter = item.getText();
-                                popup.dispose();
+                                closeHistoryPopup();
                                 setFilterValue(newFilter);
                                 setCustomDataFilter();
                                 break;
                             case SWT.ARROW_UP:
                                 if (historyTable.getSelectionIndex() <= 0) {
-                                    popup.dispose();
+                                    closeHistoryPopup();
                                 }
                                 break;
                         }
@@ -1020,7 +1031,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 public void mouseDown(MouseEvent e) {
                     if (hoverItem != null) {
                         final String newFilter = hoverItem.getText();
-                        popup.dispose();
+                        closeHistoryPopup();
                         setFilterValue(newFilter);
                         setCustomDataFilter();
                     }

@@ -36,9 +36,8 @@
                         singleConnection="true">
                     <replace provider="generic" driver="snowflake_generic"/>
                     <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE" bundle="!drivers.snowflake"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.snowflake"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/snowflake" bundle="drivers.snowflake"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.snowflake"/>
 
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_DATABASE()"/>

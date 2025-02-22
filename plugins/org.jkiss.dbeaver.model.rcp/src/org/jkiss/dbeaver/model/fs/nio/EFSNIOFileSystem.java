@@ -19,13 +19,14 @@ package org.jkiss.dbeaver.model.fs.nio;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.filesystem.provider.FileSystem;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystem;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystemRoot;
 import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -51,6 +52,19 @@ public class EFSNIOFileSystem extends FileSystem {
 
     @Override
     public IFileStore getStore(URI uri) {
+        try {
+            return DBWorkbench.getPlatformUI().runWithMonitor(
+                monitor -> getFileStoreFromUri(monitor, uri));
+        } catch (Exception e) {
+            if (e instanceof RuntimeException re) {
+                throw re;
+            }
+            throw new IllegalArgumentException("Error while getting file store", e);
+        }
+    }
+
+    @NotNull
+    private static EFSNIOFileStore getFileStoreFromUri(@NotNull DBRProgressMonitor monitor, @NotNull URI uri) {
         Path path = null;
 
         String projectName = CommonUtils.toString(uri.getHost(), uri.getAuthority());
@@ -69,10 +83,10 @@ public class EFSNIOFileSystem extends FileSystem {
                     DBNFileSystems fileSystemsNode = projectNode.getExtraNode(DBNFileSystems.class);
                     if (fileSystemsNode != null) {
                         try {
-                            fileSystemsNode.getChildren(new VoidProgressMonitor());
+                            fileSystemsNode.getChildren(monitor);
                             DBNFileSystem fsNode = fileSystemsNode.getFileSystem(fsType, fsId);
                             if (fsNode != null) {
-                                fsNode.getChildren(new VoidProgressMonitor());
+                                fsNode.getChildren(monitor);
                                 DBNFileSystemRoot fsNodeRoot = fsNode.getRoot(fsRootPath);
                                 if (fsNodeRoot != null) {
                                     try {

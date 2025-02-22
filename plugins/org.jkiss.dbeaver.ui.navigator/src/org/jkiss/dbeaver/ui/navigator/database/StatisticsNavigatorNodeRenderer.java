@@ -323,20 +323,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     @Nullable
     @Override
     public String getToolTipText(@NotNull DBNNode node, @NotNull Tree tree, @NotNull Event event) {
-        if (node instanceof DBNDatabaseNode node1) {
-            if (node instanceof DBNDataSource dataSource) {
-                INavigatorNodeActionHandler overActionButton = getActionButton(node, tree, event);
-                if (overActionButton != null) {
-                    return overActionButton.getNodeActionToolTip(view, node);
-                }
-                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
-                    return DataSourceUtils.getDataSourceAddressText(dataSource.getDataSourceContainer());
-                }
-                return null;
-            }
-
-            if (isOverObjectStatistics(node1, tree, event)) {
-                DBSObject object = node1.getObject();
+        if (node instanceof DBNDatabaseNode dbNode) {
+            if (isOverObjectStatistics(dbNode, tree, event)) {
+                DBSObject object = dbNode.getObject();
                 if (object instanceof DBPObjectStatistics statistics && statistics.hasStatistics()) {
                     long statObjectSize = statistics.getStatObjectSize();
                     if (statObjectSize > 0) {
@@ -350,6 +339,13 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                         }
                         return NLS.bind("Object size on disk: {0} bytes", formattedSize);
                     }
+                }
+            }
+
+            if (node instanceof DBNDataSource) {
+                INavigatorNodeActionHandler overActionButton = getActionButton(node, tree, event);
+                if (overActionButton != null) {
+                    return overActionButton.getNodeActionToolTip(view, node);
                 }
             }
         }
@@ -546,13 +542,13 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private static class StatReadJob extends AbstractJob {
 
         private final DBNNode parentNode;
-        private final DBSObject collector;
+        private final DBSObject object;
         private final TreeItem treeItem;
 
-        StatReadJob(DBNNode parentNode, DBSObject collector, TreeItem treeItem) {
-            super("Read statistics for " + DBUtils.getObjectFullName(collector, DBPEvaluationContext.UI));
+        StatReadJob(DBNNode parentNode, DBSObject object, TreeItem treeItem) {
+            super("Read statistics for " + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
             this.parentNode = parentNode;
-            this.collector = collector;
+            this.object = object;
             this.treeItem = treeItem;
         }
 
@@ -560,10 +556,10 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
                 monitor.beginTask("Collect database statistics", 1);
-                if (collector instanceof DBPObjectStatisticsCollector) {
+                if (object instanceof DBPObjectStatisticsCollector) {
                     // Parent object is not necessary is stats collector.
                     // E.g. table partition parent is table while stats collector is schema
-                    ((DBPObjectStatisticsCollector) collector).collectObjectStatistics(monitor, false, false);
+                    ((DBPObjectStatisticsCollector) object).collectObjectStatistics(monitor, false, false);
                 }
                 long maxStatSize = 0;
 
@@ -592,17 +588,22 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                             }
                         }
                     } finally {
-                        synchronized (statReaders) {
-                            statReaders.remove(collector);
-                        }
+                        removeStatReader();
                     }
                 });
             } catch (DBException e) {
+                removeStatReader();
                 log.debug(e);
             } finally {
                 monitor.done();
             }
             return Status.OK_STATUS;
+        }
+
+        private void removeStatReader() {
+            synchronized (statReaders) {
+                statReaders.remove(object);
+            }
         }
     }
 }
