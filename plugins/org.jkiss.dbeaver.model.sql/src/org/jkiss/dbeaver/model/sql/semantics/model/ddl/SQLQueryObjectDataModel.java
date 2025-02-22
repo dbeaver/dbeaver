@@ -120,7 +120,14 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
                     );
                 }
             } else {
-                SQLQueryQualifiedName.performPartialResolution(context, statistics, this.name, this.objectNameOrigin, scopeMemberTypes);
+                SQLQueryQualifiedName.performPartialResolution(
+                    context,
+                    statistics,
+                    this.name,
+                    this.objectNameOrigin,
+                    scopeMemberTypes,
+                    SQLQuerySymbolClass.ERROR
+                );
                 statistics.appendError(this.getSyntaxNode(), "Object " + this.name.toIdentifierString() + " not found in the database");
             }
         }

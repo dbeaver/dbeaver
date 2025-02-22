@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableAlterModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableCreateModel;
@@ -227,7 +226,8 @@ public class SQLQueryModelRecognizer {
                             this.recognitionContext,
                             e,
                             objectNameOrigin,
-                            Set.of(RelationalObjectType.TYPE_UNKNOWN)
+                            Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                            SQLQuerySymbolClass.ERROR
                         );
                     }
                 }
