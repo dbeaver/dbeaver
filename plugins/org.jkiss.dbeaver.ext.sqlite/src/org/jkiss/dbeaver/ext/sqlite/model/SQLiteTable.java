@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -75,7 +76,8 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
 
     public SQLiteTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
-        hasStrictTyping = dbResult != null && JDBCUtils.safeGetBoolean(dbResult, "STRICT"); //$NON-NLS-1$
+        SQLiteDataSource dataSource =  (SQLiteDataSource) this.getDataSource();
+        hasStrictTyping = dbResult != null && dataSource.supportsStrictTyping() && JDBCUtils.safeGetBoolean(dbResult, "STRICT"); //$NON-NLS-1$
     }
 
     @Override
@@ -173,7 +175,7 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
         return false;
     }
 
-    @Property(viewable = true, editable = true, order = 40)
+    @Property(visibleIf = TableStrictTypingValidator.class, viewable = true, editable = true, order = 40)
     public boolean isHasStrictTyping() {
         return hasStrictTyping;
     }
@@ -198,5 +200,14 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
     @Override
     public SQLiteTableForeignKey getAssociation(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
         return (SQLiteTableForeignKey) super.getAssociation(monitor, name);
+    }
+
+    public static class TableStrictTypingValidator implements IPropertyValueValidator<SQLiteTable, Object> {
+
+        @Override
+        public boolean isValidValue(SQLiteTable object, Object value) throws IllegalArgumentException {
+            SQLiteDataSource dataSource =  (SQLiteDataSource) object.getDataSource();
+            return dataSource.supportsStrictTyping();
+        }
     }
 }

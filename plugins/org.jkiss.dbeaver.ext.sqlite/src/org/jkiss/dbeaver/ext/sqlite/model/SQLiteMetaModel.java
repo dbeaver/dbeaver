@@ -82,6 +82,11 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Override
     public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase object, @Nullable String objectName) throws SQLException {
+        SQLiteDataSource dataSource = (SQLiteDataSource) session.getDataSource();
+        if(! dataSource.supportsStrictTyping()) {
+            return super.prepareTableLoadStatement(session, owner, object, objectName);
+        }
+
         String sql = """
             SELECT
                 NULL AS TABLE_CAT,

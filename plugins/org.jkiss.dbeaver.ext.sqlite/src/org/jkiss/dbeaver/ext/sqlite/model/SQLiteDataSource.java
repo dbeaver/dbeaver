@@ -136,4 +136,8 @@ public class SQLiteDataSource extends GenericDataSource {
         }
         return super.discoverErrorType(error);
     }
+
+    public boolean supportsStrictTyping() {
+        return isServerVersionAtLeast(3, 37);
+    }
 }
