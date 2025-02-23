@@ -138,8 +138,8 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
             log.debug("Can't find specific schemas/tables for the backup");
             return;
         }
-        if (settings.isCompleteBackup()) {
-            // dont add any restrictions
+        if (settings.isFullSchemaBackup()) {
+            return;
         } else if (!CommonUtils.isEmpty(arg.getTables())) {
             for (PostgreTableBase table : arg.getTables()) {
                 cmd.add("-t");

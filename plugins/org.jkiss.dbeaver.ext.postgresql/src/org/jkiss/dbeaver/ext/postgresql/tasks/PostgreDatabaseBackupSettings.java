@@ -46,7 +46,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
     private String compression;
     private String encoding;
     private boolean showViews;
-    private boolean completeBackup;
+    private boolean fullSchemaBackup;
     private boolean useInserts;
     private boolean noPrivileges;
     private boolean noOwner;
@@ -93,12 +93,14 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         this.showViews = showViews;
     }
 
-    public boolean isCompleteBackup() {
-        return completeBackup;
+
+
+    public boolean isFullSchemaBackup() {
+        return fullSchemaBackup;
     }
 
-    public void setCompleteBackup(boolean completeBackup) {
-        this.completeBackup = completeBackup;
+    public void setFullSchemaBackup(boolean fullSchemaBackup) {
+        this.fullSchemaBackup = fullSchemaBackup;
     }
 
     public boolean isUseInserts() {
@@ -188,7 +190,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         compression = store.getString("pg.export.compression");
         encoding = store.getString("pg.export.encoding");
         showViews = store.getBoolean("pg.export.showViews");
-        completeBackup = store.getBoolean("pg.export.completeBackup");
+        fullSchemaBackup = store.getBoolean("pg.export.fullSchemaBackup");
         useInserts = store.getBoolean("pg.export.useInserts");
         noPrivileges = store.getBoolean("pg.export.noPrivileges");
         noOwner = store.getBoolean("pg.export.noOwner");
@@ -268,7 +270,7 @@ public class PostgreDatabaseBackupSettings extends PostgreBackupRestoreSettings 
         store.setValue("pg.export.compression", compression);
         store.setValue("pg.export.encoding", encoding);
         store.setValue("pg.export.showViews", showViews);
-        store.setValue("pg.export.completeBackup", completeBackup);
+        store.setValue("pg.export.fullSchemaBackup", fullSchemaBackup);
         store.setValue("pg.export.useInserts", useInserts);
         store.setValue("pg.export.noPrivileges", noPrivileges);
         store.setValue("pg.export.noOwner", noOwner);
