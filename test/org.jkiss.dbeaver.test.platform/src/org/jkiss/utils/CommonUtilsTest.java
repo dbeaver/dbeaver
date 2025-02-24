@@ -101,6 +101,14 @@ public class CommonUtilsTest {
     }
 
     @Test
+    public void testCamelCaseToUnderscore() {
+        Assert.assertNull(CommonUtils.camelCaseToUnderScore(null));
+        Assert.assertEquals("", CommonUtils.camelCaseToUnderScore(""));
+        Assert.assertEquals("test_test", CommonUtils.camelCaseToUnderScore("testTest"));
+        Assert.assertEquals("test_test|test1_test", CommonUtils.camelCaseToUnderScore("testTest|test1Test"));
+    }
+
+    @Test
     public void testNotNull() {
         final Object value = "value";
         final Object defaultValue = "defaultValue";
