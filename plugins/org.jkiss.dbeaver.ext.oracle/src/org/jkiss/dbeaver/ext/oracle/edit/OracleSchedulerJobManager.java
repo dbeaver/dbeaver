@@ -124,7 +124,7 @@ public class OracleSchedulerJobManager extends SQLObjectEditor<OracleSchedulerJo
             return;
         }
         String formattedValue = getFormattedValue(valueObj, attribute, schedulerJob);
-        String attributeUnderScore = SQLUtils.quoteString(schedulerJob, CommonUtils.toUnderScore(attribute));
+        String attributeUnderScore = SQLUtils.quoteString(schedulerJob, CommonUtils.camelCasetoUnderScore(attribute));
         setAttrPlsql.append(String.format(
             """
                 DBMS_SCHEDULER.SET_ATTRIBUTE(
