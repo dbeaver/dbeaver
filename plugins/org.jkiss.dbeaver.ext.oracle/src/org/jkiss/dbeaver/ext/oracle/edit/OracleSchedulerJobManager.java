@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Locale;
@@ -124,7 +123,7 @@ public class OracleSchedulerJobManager extends SQLObjectEditor<OracleSchedulerJo
             return;
         }
         String formattedValue = getFormattedValue(valueObj, attribute, schedulerJob);
-        String attributeUnderScore = SQLUtils.quoteString(schedulerJob, CommonUtils.camelCasetoUnderScore(attribute));
+        String attributeUnderScore = SQLUtils.quoteString(schedulerJob, camelCaseToUnderScore(attribute));
         setAttrPlsql.append(String.format(
             """
                 DBMS_SCHEDULER.SET_ATTRIBUTE(
@@ -159,6 +158,9 @@ public class OracleSchedulerJobManager extends SQLObjectEditor<OracleSchedulerJo
 
         for (var entry : properties.entrySet()) {
             String attribute = "description".equals(entry.getKey().toString()) ? "comments" : entry.getKey().toString();
+            if (attribute.equals("enabled")) {
+                continue;
+            }
             setDbmsSchedulerJobAttribute(schedulerJob, jobFullNameQuoted, plsql, entry, attribute);
         }
         enableOrDisableIfPresent(properties, plsql, jobFullNameQuoted);
@@ -181,6 +183,7 @@ public class OracleSchedulerJobManager extends SQLObjectEditor<OracleSchedulerJo
             if ("instanceStickiness".equals(attribute)
                 || "loggingLevel".equals(attribute)
                 || "autoDrop".equals(attribute)
+                || "restartable".equals(attribute)
                 || "instanceId".equals(attribute)) {
                 formattedValue = stringVal;
             } else {
@@ -214,7 +217,7 @@ public class OracleSchedulerJobManager extends SQLObjectEditor<OracleSchedulerJo
         actions.add(new SQLDatabasePersistAction("Delete Scheduled Job", sql)); //$NON-NLS-1$
     }
 
-    private static String getJobFullNameQuoted(OracleSchedulerJob schedulerJob, String owner) {
+    private String getJobFullNameQuoted(OracleSchedulerJob schedulerJob, String owner) {
         return SQLUtils.quoteString(schedulerJob, owner + "." + schedulerJob.getName());
     }
 
@@ -235,7 +238,7 @@ public class OracleSchedulerJobManager extends SQLObjectEditor<OracleSchedulerJo
             : timestamp;
     }
 
-    private static void enableOrDisableIfPresent(
+    private void enableOrDisableIfPresent(
         Map<Object, Object> properties,
         StringBuilder setAttrPlsql,
         String jobFullNameQuoted
@@ -258,5 +261,27 @@ public class OracleSchedulerJobManager extends SQLObjectEditor<OracleSchedulerJo
     private SQLDatabasePersistAction modifyNlsEnv(@NotNull Object nlsEnv) {
         String sql = String.format("ALTER SESSION SET %s", nlsEnv);
         return new SQLDatabasePersistAction("Edit NLS ENV", sql);
+    }
+
+    private static String camelCaseToUnderScore(@Nullable String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            if (Character.isUpperCase(ch)) {
+                if (i > 0) {
+                    result.append('_');
+                }
+                result.append(Character.toLowerCase(ch));
+            } else {
+                result.append(ch);
+            }
+        }
+
+        return result.toString();
     }
 }

@@ -511,6 +511,10 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return raiseEvents;
     }
 
+    public void setRaiseEvents(String raiseEvents) {
+        this.raiseEvents = raiseEvents;
+    }
+
     @Property(category = CAT_SETTINGS, viewable = false, order = 53)
     public String getSystem() {
         return system;
@@ -554,6 +558,10 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return destination;
     }
 
+    public void setDestination(String destination) {
+        this.destination = destination;
+    }
+
     @Property(category = CAT_ADVANCED, viewable = false, order = 60)
     public String getCredentialOwner() {
         return credentialOwner;
@@ -562,6 +570,10 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
     @Property(category = CAT_ADVANCED, viewable = false, order = 61, editable = true, updatable = true)
     public String getCredentialName() {
         return credentialName;
+    }
+
+    public void setCredentialName(String credentialName) {
+        this.credentialName = credentialName;
     }
 
     @Property(category = CAT_ADVANCED, viewable = false, order = 62, editable = true, updatable = true)
