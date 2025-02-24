@@ -10,7 +10,7 @@ Require-Bundle: org.eclipse.core.runtime,
  com.google.guava;visibility:=reexport,
  com.google.gson;visibility:=reexport,
  org.apache.commons.commons-codec;visibility:=reexport,
- org.apache.commons.logging;visibility:=reexport,
+ org.apache.commons.commons-logging;visibility:=reexport,
  slf4j.api;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-17

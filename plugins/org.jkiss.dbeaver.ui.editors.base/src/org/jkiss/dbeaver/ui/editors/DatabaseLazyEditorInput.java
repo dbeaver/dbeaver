@@ -244,12 +244,15 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
 
     public IDatabaseEditorInput initializeRealInput(@NotNull DBRProgressMonitor monitor) throws DBException
     {
+        if (dataSourceId == null) {
+            return null;
+        }
         // Get the node path.
         if (project != null) {
             dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceId);
         }
         if (dataSourceContainer == null) {
-            log.error("Can't find data source '" + dataSourceId + "'"); //$NON-NLS-2$
+            log.error("Can not find data source '" + dataSourceId + "'"); //$NON-NLS-2$
             return null;
         }
         if (project == null) {
