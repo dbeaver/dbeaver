@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -875,6 +875,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         @Override
         protected MySQLCatalog fetchObject(@NotNull JDBCSession session, @NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return createCatalogInstance(owner, resultSet);
+        }
+
+        @Override
+        protected boolean handleCacheReadError(Exception error) {
+            String sqlState = SQLState.getStateFromException(error);
+            return SQLState.SQL_42000.getCode().equals(sqlState);
         }
 
     }
