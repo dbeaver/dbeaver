@@ -885,7 +885,7 @@ public class ResultSetViewer extends Viewer
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             if (e.widget != null && e.widget.getData() != null) {
-                                switchPresentation((ResultSetPresentationDescriptor) e.widget.getData());
+                                e.doit = switchPresentation((ResultSetPresentationDescriptor) e.widget.getData());
                             }
                         }
                     });
@@ -1093,12 +1093,16 @@ public class ResultSetViewer extends Viewer
         switchPresentation(availablePresentations.get(index));
     }
 
-    public void switchPresentation(ResultSetPresentationDescriptor selectedPresentation) {
+    public boolean switchPresentation(ResultSetPresentationDescriptor selectedPresentation) {
         if (selectedPresentation == activePresentationDescriptor) {
-            return;
+            return false;
         }
         try {
             IResultSetPresentation instance = selectedPresentation.createInstance();
+            if (!instance.canShowPresentation(this)) {
+                return false;
+            }
+
             activePresentationDescriptor = selectedPresentation;
             setActivePresentation(instance);
             instance.refreshData(true, false, false);
@@ -1119,11 +1123,13 @@ public class ResultSetViewer extends Viewer
                     ResultSetPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
             }
             savePresentationSettings();
+            return true;
         } catch (Throwable e1) {
             DBWorkbench.getPlatformUI().showError(
                     "Presentation switch",
                 "Can't switch presentation",
                 e1);
+            return false;
         }
     }
 
