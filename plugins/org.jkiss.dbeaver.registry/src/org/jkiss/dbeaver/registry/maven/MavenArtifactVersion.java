@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
@@ -32,9 +31,12 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -211,20 +213,20 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         return dependencies;
     }
 
-    public File getCacheFile() {
+    public Path getCacheFile() {
         String fileExt = getPackagingFileExtension();
         if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
             String externalURL = getExternalURL(fileExt);
             try {
-                return RuntimeUtils.getLocalFileFromURL(new URL(externalURL));
-//                return new File(new URL(externalURL).toURI());
+                return Path.of(GeneralUtils.makeURIFromFilePath(externalURL));
+                //                return new File(new URL(externalURL).toURI());
             } catch (Exception e) {
                 log.warn("Bad repository URL", e);
-                return new File(externalURL);
+                return Path.of(externalURL);
             }
         }
         return artifact.getRepository().getLocalCacheDir().resolve(
-            artifact.getGroupId() + "/" + artifact.getVersionFileName(version, fileExt)).toFile();
+            artifact.getGroupId() + "/" + artifact.getVersionFileName(version, fileExt));
     }
 
     public String getExternalURL() {
@@ -254,34 +256,38 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         return getPath();
     }
 
-    private File getLocalPOM() {
+    private Path getLocalPOM() {
         if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
             try {
-                return new File(GeneralUtils.makeURIFromFilePath(getRemotePOMLocation()));
+                return Path.of(GeneralUtils.makeURIFromFilePath(getRemotePOMLocation()));
             } catch (URISyntaxException e) {
                 log.warn(e);
             }
         }
         return artifact.getRepository().getLocalCacheDir().resolve(
-            artifact.getGroupId() + "/" + artifact.getVersionFileName(version, MavenArtifact.FILE_POM)).toFile();
+            artifact.getGroupId() + "/" + artifact.getVersionFileName(version, MavenArtifact.FILE_POM));
     }
 
     private String getRemotePOMLocation() {
         return artifact.getFileURL(version, MavenArtifact.FILE_POM, snapshotVersion);
     }
 
-    private void cachePOM(DBRProgressMonitor monitor, File localPOM) throws IOException {
+    private void cachePOM(DBRProgressMonitor monitor, Path localPOM) throws IOException {
         if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
             return;
         }
         String pomURL = getRemotePOMLocation();
         try (InputStream is = WebUtils.openConnection(monitor, pomURL, artifact.getRepository().getAuthInfo(), null).getInputStream()) {
-            File folder = localPOM.getParentFile();
-            if (!folder.exists() && !folder.mkdirs()) {
-                throw new IOException("Can't create cache folder '" + folder.getAbsolutePath() + "'");
+            Path folder = localPOM.getParent();
+            if (Files.notExists(folder)) {
+                try {
+                    Files.createDirectories(folder);
+                } catch (IOException e) {
+                    throw new IOException("Can't create cache folder '" + folder.toAbsolutePath() + "'", e);
+                }
             }
 
-            try (OutputStream os = new FileOutputStream(localPOM)) {
+            try (OutputStream os = Files.newOutputStream(localPOM)) {
                 IOUtils.fastCopy(is, os);
             }
         }
@@ -290,14 +296,13 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private void loadPOM(DBRProgressMonitor monitor, boolean resolveOptionalDependencies) throws IOException {
         monitor.subTask("Load POM " + this);
 
-        File localPOM = getLocalPOM();
-        if (!localPOM.exists()) {
+        Path localPOM = getLocalPOM();
+        if (!Files.exists(localPOM)) {
             cachePOM(monitor, localPOM);
         }
 
-
         Document pomDocument;
-        try (InputStream mdStream = new FileInputStream(localPOM)) {
+        try (InputStream mdStream = Files.newInputStream(localPOM)) {
             pomDocument = XMLUtils.parseDocument(mdStream);
         } catch (XMLException e) {
             throw new IOException("Error parsing POM", e);
