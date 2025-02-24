@@ -323,20 +323,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     @Nullable
     @Override
     public String getToolTipText(@NotNull DBNNode node, @NotNull Tree tree, @NotNull Event event) {
-        if (node instanceof DBNDatabaseNode node1) {
-            if (node instanceof DBNDataSource dataSource) {
-                INavigatorNodeActionHandler overActionButton = getActionButton(node, tree, event);
-                if (overActionButton != null) {
-                    return overActionButton.getNodeActionToolTip(view, node);
-                }
-                if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME)) {
-                    return DataSourceUtils.getDataSourceAddressText(dataSource.getDataSourceContainer());
-                }
-                return null;
-            }
-
-            if (isOverObjectStatistics(node1, tree, event)) {
-                DBSObject object = node1.getObject();
+        if (node instanceof DBNDatabaseNode dbNode) {
+            if (isOverObjectStatistics(dbNode, tree, event)) {
+                DBSObject object = dbNode.getObject();
                 if (object instanceof DBPObjectStatistics statistics && statistics.hasStatistics()) {
                     long statObjectSize = statistics.getStatObjectSize();
                     if (statObjectSize > 0) {
@@ -350,6 +339,13 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                         }
                         return NLS.bind("Object size on disk: {0} bytes", formattedSize);
                     }
+                }
+            }
+
+            if (node instanceof DBNDataSource) {
+                INavigatorNodeActionHandler overActionButton = getActionButton(node, tree, event);
+                if (overActionButton != null) {
+                    return overActionButton.getNodeActionToolTip(view, node);
                 }
             }
         }

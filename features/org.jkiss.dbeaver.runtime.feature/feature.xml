@@ -30,7 +30,7 @@
     <plugin id="org.apache.commons.jexl" version="0.0.0" />
     <plugin id="com.google.gson" version="0.0.0"/>
     <plugin id="com.jcraft.jsch" version="0.0.0" />
-    <plugin id="org.apache.commons.logging" version="0.0.0" />
+    <plugin id="org.apache.commons.commons-logging" version="0.0.0" />
 
     <!-- Explicit deps because they are required by OSGI services -->
     <plugin id="org.objectweb.asm" version="0.0.0" />
