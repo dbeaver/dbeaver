@@ -296,13 +296,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             getDisplay();
             int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor());
 
-            if (resetUserPreferencesOnRestart || resetWorkspaceConfigurationOnRestart) {
-                resetUISettings(instanceLoc);
-            }
-            if (resetWorkspaceConfigurationOnRestart) {
-                // FIXME: ???
-            }
-
             // Copy-pasted from IDEApplication
             // Magic with exit codes to let Eclipse starter switcg workspace
 
@@ -503,40 +496,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             System.err.println("Error updating splash shell");
         }
 
-    }
-
-    private void resetUISettings(Location instanceLoc) {
-        try {
-            File instanceDir = new File(instanceLoc.getURL().toURI());
-            if (instanceDir.exists()) {
-                File settingsFile = new File(instanceDir, ".metadata/.plugins/org.eclipse.e4.workbench/workbench.xmi");
-                if (settingsFile.exists()) {
-                    settingsFile.deleteOnExit();
-                }
-                //markFoldertoDelete(new File(instanceDir, ".metadata/.plugins/org.eclipse.core.resources/.root"));
-                //markFoldertoDelete(new File(instanceDir, ".metadata/.plugins/org.eclipse.core.resources/.safetable"));
-            }
-        } catch (Throwable e) {
-            log.error("Error resetting UI settings", e);
-        }
-    }
-
-    private void markFoldertoDelete(File folder) {
-        if (!folder.exists()) {
-            return;
-        }
-        File[] files = folder.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    markFoldertoDelete(file);
-                } else {
-                    log.debug("Delete resource file " + file.getAbsolutePath());
-                    file.deleteOnExit();
-                }
-            }
-        }
-        folder.deleteOnExit();
     }
 
     // Called
