@@ -209,31 +209,32 @@ public class DBeaverActivator extends AbstractUIPlugin {
     }
 
     private void resetSettingsStartupActions(@NotNull Location instanceLoc) {
-        Path path;
+        Path instancePath;
+        Path actionsPath;
+
         try {
-            path = RuntimeUtils.getLocalPathFromURL(Platform.getInstanceLocation().getURL())
-                .resolve(DBPWorkspace.METADATA_FOLDER)
-                .resolve(STARTUP_ACTIONS_FILE);
+            instancePath = RuntimeUtils.getLocalPathFromURL(instanceLoc.getURL()).resolve(DBPWorkspace.METADATA_FOLDER);
+            actionsPath = instancePath.resolve(STARTUP_ACTIONS_FILE);
         } catch (Exception e) {
             return;
         }
 
-        if (Files.notExists(path)) {
+        if (Files.notExists(actionsPath)) {
             return;
         }
 
-        try (Reader reader = Files.newBufferedReader(path)) {
+        try (Reader reader = Files.newBufferedReader(actionsPath)) {
             final Properties properties = new Properties();
             properties.load(reader);
 
             if (!properties.isEmpty()) {
-                processResetSettings(instanceLoc, path, properties.stringPropertyNames());
+                processResetSettings(instancePath, properties.stringPropertyNames());
             }
         } catch (Exception e) {
             log.error("Unable to read startup actions", e);
         } finally {
             try {
-                Files.delete(path);
+                Files.delete(actionsPath);
             } catch (IOException e) {
                 log.error("Unable to delete startup actions file: " + e.getMessage());
             }
@@ -241,14 +242,13 @@ public class DBeaverActivator extends AbstractUIPlugin {
     }
 
     private void processResetSettings(
-        @NotNull Location instanceLoc,
         @NotNull Path instancePath,
         @NotNull Set<String> actions
     ) throws Exception {
         final boolean resetUserPreferences = actions.contains(RESET_USER_PREFERENCES);
         final boolean resetWorkspaceConfiguration = actions.contains(RESET_WORKSPACE_CONFIGURATION);
 
-        if (!resetUserPreferences && !resetWorkspaceConfiguration || !instanceLoc.isSet()) {
+        if (!resetUserPreferences && !resetWorkspaceConfiguration) {
             return;
         }
         Path path = instancePath.resolve(PLUGINS_FOLDER);
