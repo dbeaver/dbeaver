@@ -25,7 +25,7 @@
                     categories="timeseries">
 <!--               <library name="iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar" path="lib/iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar"/>-->
 <!--               <file type="jar" path="lib/iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar"/>-->
-               <file type="jar" path="maven:/org.apache.iotdb:iotdb-jdbc:2.0.1-beta"/>
+               <file type="jar" path="maven:/org.apache.iotdb:iotdb-jdbc:2.0.2-SNAPSHOT"/>
             </driver>
             <driver id="timechoDB"
                     label="TimechoDB"
@@ -42,7 +42,7 @@
                     categories="timeseries">
 <!--               <library name="iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar" path="lib/iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar"/>-->
 <!--               <file type="jar" path="lib/iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar"/>-->
-                <file type="jar" path="maven:/org.apache.iotdb:iotdb-jdbc:2.0.1-beta"/>
+                <file type="jar" path="maven:/org.apache.iotdb:iotdb-jdbc:2.0.2-SNAPSHOT"/>
             </driver>
          </drivers>
       </datasource>
