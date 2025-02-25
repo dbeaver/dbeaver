@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
 import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
@@ -72,10 +73,8 @@ import org.osgi.framework.Version;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -104,6 +103,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
 
+    private static final String PLUGINS_FOLDER = ".plugins";
+    private static final String CORE_RESOURCES_PLUGIN_FOLDER = "org.eclipse.core.resources";
     private static final String STARTUP_ACTIONS_FILE = "dbeaver-startup-actions.properties";
     private static final String RESET_USER_PREFERENCES = "reset_user_preferences";
     private static final String RESET_WORKSPACE_CONFIGURATION = "reset_workspace_configuration";
@@ -217,6 +218,9 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 e.printStackTrace();
             }
         }
+
+        loadStartupActions(instanceLoc);
+
         // Register core components
         initializeApplicationServices();
 
@@ -819,6 +823,102 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 log.error("Unable to save startup actions", e);
             }
         }
+    }
+
+    private void loadStartupActions(@NotNull Location instanceLoc) {
+        Path instancePath;
+        Path actionsPath;
+
+        try {
+            instancePath = RuntimeUtils.getLocalPathFromURL(instanceLoc.getURL()).resolve(DBPWorkspace.METADATA_FOLDER);
+            actionsPath = instancePath.resolve(STARTUP_ACTIONS_FILE);
+        } catch (Exception e) {
+            return;
+        }
+
+        if (Files.notExists(actionsPath)) {
+            return;
+        }
+
+        try (Reader reader = Files.newBufferedReader(actionsPath)) {
+            final Properties properties = new Properties();
+            properties.load(reader);
+
+            if (!properties.isEmpty()) {
+                processStartupActions(instancePath, properties.stringPropertyNames());
+            }
+        } catch (Exception e) {
+            log.error("Unable to read startup actions", e);
+        } finally {
+            try {
+                Files.delete(actionsPath);
+            } catch (IOException e) {
+                log.error("Unable to delete startup actions file: " + e.getMessage());
+            }
+        }
+    }
+
+    private void processStartupActions(
+        @NotNull Path instancePath,
+        @NotNull Set<String> actions
+    ) throws Exception {
+        final boolean resetUserPreferences = actions.contains(RESET_USER_PREFERENCES);
+        final boolean resetWorkspaceConfiguration = actions.contains(RESET_WORKSPACE_CONFIGURATION);
+
+        if (!resetUserPreferences && !resetWorkspaceConfiguration) {
+            return;
+        }
+        Path path = instancePath.resolve(PLUGINS_FOLDER);
+        if (Files.notExists(path) || !Files.isDirectory(path)) {
+            return;
+        }
+
+        Files.walkFileTree(path, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                log.trace("Deleting " + file);
+
+                try {
+                    Files.delete(file);
+                } catch (IOException e) {
+                    log.trace("Unable to delete " + file + ":" + e.getMessage());
+                }
+
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                if (dir.endsWith(PLUGINS_FOLDER)) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                final Path relative = path.relativize(dir);
+
+                if (resetUserPreferences && !relative.startsWith(CORE_RESOURCES_PLUGIN_FOLDER)) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                if (resetWorkspaceConfiguration && relative.startsWith(CORE_RESOURCES_PLUGIN_FOLDER)) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                return FileVisitResult.SKIP_SUBTREE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+                log.trace("Deleting " + dir);
+
+                try {
+                    Files.delete(dir);
+                } catch (IOException e) {
+                    log.trace("Unable to delete " + dir + ":" + e.getMessage());
+                }
+
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
     private class ProxyPrintStream extends OutputStream {
