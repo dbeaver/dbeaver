@@ -1037,7 +1037,8 @@ public abstract class SQLQueryCompletionContext {
                     try {
                         Collection<DBSObjectContainer> containers = this.obtainDefaultContext(monitor, request);
                         this.collectTables(monitor, context, containers, null, filterOrNull, completions);
-                        this.collectProcedures(monitor, request, containers, null, filterOrNull, completions);
+                        // usually we don't want procedures in FROM
+                        //this.collectProcedures(monitor, request, containers, null, filterOrNull, completions);
                         this.collectPackages(monitor, request, context, this.exposedContexts,  null, filterOrNull, completions);
                     } catch (DBException e) {
                         log.error(e);
