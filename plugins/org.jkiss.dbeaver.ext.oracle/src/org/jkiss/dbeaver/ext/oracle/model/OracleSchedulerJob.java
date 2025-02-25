@@ -726,7 +726,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        if (jobAction.isEmpty() && name.equals("NEW_SCHEDULER_JOB")) {
+        if (CommonUtils.isEmpty(jobAction) && name.equals("NEW_SCHEDULER_JOB")) {
             return "";
         }
         if (monitor != null) {
@@ -757,7 +757,9 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
                             if (action == null) {
                                 action = new StringBuilder(4000);
                             }
-                            action.append(line);
+                            if (!"null".equals(line)) {
+                                action.append(line);
+                            }
                             lineCount++;
                             monitor.subTask("Line " + lineCount);
                         }
@@ -775,8 +777,12 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 
         final StringJoiner args = new StringJoiner(",\n\t");
         args.add("job_name => " + SQLUtils.quoteString(this, name));
-        args.add("job_type => " + SQLUtils.quoteString(this, jobType));
-        args.add("job_action => " + SQLUtils.quoteString(this, CommonUtils.escapeDisplayString(jobAction)));
+        if (jobType != null) {
+            args.add("job_type => " + SQLUtils.quoteString(this, jobType));
+        }
+        if (jobAction != null) {
+            args.add("job_action => " + SQLUtils.quoteString(this, CommonUtils.escapeDisplayString(jobAction)));
+        }
 
         if (!DEFAULT_JOB_CLASS.equals(jobClass)) {
             args.add("job_class => " + SQLUtils.quoteString(this, jobClass));
