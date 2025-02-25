@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension point="org.jkiss.dbeaver.dataSourceProvider">
+      <datasource class="org.jkiss.dbeaver.ext.iotdb.IoTDBDataSourceProvider"
+                  id="iotdb"
+                  description="Generic IoTDB JDBC connector"
+                  icon="#database_icon_default"
+                  parent="generic"
+                  dialect="generic"
+                  label="Generic">
+         <drivers managable="true">
+            <driver id="iotdb"
+                    label="IoTDB"
+                    class="org.apache.iotdb.jdbc.IoTDBDriver"
+                    sampleURL="jdbc:iotdb://{host}:{port}/"
+                    defaultPort="6667"
+                    icon="icons/iotdb_icon.png"
+                    iconBig="icons/iotdb_icon_big.png"
+                    logoImage="icons/iotdb_logo.png"
+                    description="Apache IoTDB JDBC Driver"
+                    defaultUser="root"
+                    webURL="https://iotdb.apache.org/UserGuide/latest/QuickStart/QuickStart_apache.html"
+                    supportedPageFields="host,port"
+                    categories="timeseries">
+<!--               <library name="iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar" path="lib/iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar"/>-->
+<!--               <file type="jar" path="lib/iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar"/>-->
+               <file type="jar" path="maven:/org.apache.iotdb:iotdb-jdbc:2.0.1-beta"/>
+            </driver>
+            <driver id="timechoDB"
+                    label="TimechoDB"
+                    class="org.apache.iotdb.jdbc.IoTDBDriver"
+                    sampleURL="jdbc:iotdb://{host}:{port}/"
+                    defaultPort="6667"
+                    icon="icons/timechoDB_icon.png"
+                    iconBig="icons/timechoDB_icon_big.png"
+                    logoImage="icons/timechoDB_logo.png"
+                    description="TimechoDB JDBC Driver"
+                    defaultUser="root"
+                    webURL="https://www.timecho.com/docs/zh/UserGuide/latest/QuickStart/QuickStart_timecho.html"
+                    supportedPageFields="host,port"
+                    categories="timeseries">
+<!--               <library name="iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar" path="lib/iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar"/>-->
+<!--               <file type="jar" path="lib/iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar"/>-->
+                <file type="jar" path="maven:/org.apache.iotdb:iotdb-jdbc:2.0.1-beta"/>
+            </driver>
+         </drivers>
+      </datasource>
+   </extension>
+</plugin>
