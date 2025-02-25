@@ -433,9 +433,8 @@
                         webURL="https://downloads.exasol.com/clients-and-drivers"
                         categories="sql,analytic,columns">
                     <file path="maven:/com.exasol:exasol-jdbc:RELEASE[7.1.16]" type="jar" bundle="!drivers.exasol"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.exasol"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/exasol" bundle="drivers.exasol"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.exasol"/>
 
                     <replace provider="generic" driver="exasol"/>
                     <property name="querytimeout" value="3600"/>

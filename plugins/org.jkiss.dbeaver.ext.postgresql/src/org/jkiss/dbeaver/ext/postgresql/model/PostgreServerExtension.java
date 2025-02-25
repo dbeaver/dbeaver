@@ -213,6 +213,10 @@ public interface PostgreServerExtension {
 
     boolean supportsKeyAndIndexRename();
 
+    /** True if supports altered storage strategies (TOAST) */
+    boolean supportsAlterStorageStrategy();
+    boolean supportsStorageModifier();
+
     /** Makes it possible to change the name of the user of the current user via UI */
     boolean supportsAlterUserChangePassword();
 

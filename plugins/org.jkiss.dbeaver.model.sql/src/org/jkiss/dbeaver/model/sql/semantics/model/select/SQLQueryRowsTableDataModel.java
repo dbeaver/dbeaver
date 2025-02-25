@@ -216,20 +216,14 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                                 SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
                                     ? SQLQuerySymbolClass.TABLE
                                     : SQLQuerySymbolClass.ERROR;
-                                this.name.setSymbolClass(tableSymbolClass);
+                                context = performPartialResolution(context, statistics, rowsetRefOrigin, tableSymbolClass);
                                 statistics.appendError(this.name.entityName, "Table " + this.name.toIdentifierString() + " not found");
                             }
                         }
                     }
                 }
             } else {
-                context = context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList()).markHasUnresolvedSource();
-                SQLQueryQualifiedName.performPartialResolution(
-                    context,
-                    statistics,
-                    this.name,
-                    rowsetRefOrigin, Set.of(RelationalObjectType.TYPE_UNKNOWN)
-                );
+                context = performPartialResolution(context, statistics, rowsetRefOrigin, null);
                 statistics.appendError(this.getSyntaxNode(), "Invalid table reference");
             }
         } else {
@@ -238,6 +232,28 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
         }
 
         return context;
+    }
+
+    @NotNull
+    private SQLQueryDataContext performPartialResolution(
+        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull SQLQuerySymbolOrigin rowsetRefOrigin,
+        @Nullable SQLQuerySymbolClass entityNameClass
+    ) {
+        SQLQueryDataContext resolvedContext = context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList())
+            .markHasUnresolvedSource();
+        if (this.name != null && entityNameClass != null) {
+            SQLQueryQualifiedName.performPartialResolution(
+                resolvedContext,
+                statistics,
+                this.name,
+                rowsetRefOrigin,
+                Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                entityNameClass
+            );
+        }
+        return resolvedContext;
     }
 
     public static List<SQLQueryResultPseudoColumn> prepareResultPseudoColumnsList(

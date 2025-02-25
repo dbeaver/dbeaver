@@ -372,6 +372,9 @@ public class ObjectPropertyTester extends PropertyTester {
     }
 
     private static boolean supportsCreatingColumnObject(@Nullable DBNNode node, @NotNull Class<?> supertype) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_METADATA_EDITOR)) {
+            return false;
+        }
         if (!(node instanceof DBNDatabaseItem databaseItem)) {
             return false;
         }

@@ -21,27 +21,29 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 /**
@@ -200,35 +202,47 @@ public class DBFUtils {
         DBPDataSourceRegistry registry = project.getDataSourceRegistry();
         String connectionId = "file_database_" + CommonUtils.truncateString(CommonUtils.escapeIdentifier(configuration.getDatabaseName()),
             48) + "_" + UUID.randomUUID();
-        DBPDataSourceContainer dsContainer = registry.getDataSource(connectionId);
-        if (dsContainer == null) {
-            dsContainer = registry.createDataSource(connectionId, driver, configuration);
-            int conNameSuffix = 1;
-            connectionName = "File - " + CommonUtils.truncateString(connectionName, 64);
-            String finalConnectionName = connectionName;
-            while (registry.findDataSourceByName(finalConnectionName) != null) {
-                conNameSuffix++;
-                finalConnectionName = connectionName + " " + conNameSuffix;
-            }
-            dsContainer.setName(finalConnectionName);
-            dsContainer.setTemporary(true);
-            DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
-            DBNModel navigatorModel = project.getNavigatorModel();
-            if (navigatorModel != null) {
-                DBNProject projectNode = navigatorModel.getRoot().getProjectNode(project);
-                if (projectNode != null) {
-                    projectNode.getDatabases().getFolderNode(folder);
-                }
-            }
-            dsContainer.setFolder(folder);
+        Optional<? extends DBPDataSourceContainer> dataSourceContainerBox = registry.getDataSources().stream()
+            .filter(dbpDataSourceContainer -> Objects.equals(
+                configuration.getDatabaseName(),
+                dbpDataSourceContainer.getExtension(DBConstants.PROP_ORIGINAL_FILE_PATH)
+            ))
+            .findAny();
+        if (dataSourceContainerBox.isPresent()) {
+            log.debug("Datasource to :" + configuration.getDatabaseName() + " already exists");
+            return dataSourceContainerBox.get();
+        }
+        DBPDataSourceContainer dsContainer = registry.createDataSource(connectionId, driver, configuration);
+        dsContainer.setExtension(DBConstants.PROP_ORIGINAL_FILE_PATH, configuration.getDatabaseName());
+        int conNameSuffix = 1;
+        connectionName = "File - " + CommonUtils.truncateString(connectionName, 64);
+        String finalConnectionName = connectionName;
+        while (registry.findDataSourceByName(finalConnectionName) != null) {
+            conNameSuffix++;
+            finalConnectionName = connectionName + " " + conNameSuffix;
+        }
+        dsContainer.setName(finalConnectionName);
+        dsContainer.setTemporary(true);
+        DBPDataSourceFolder folder = registry.getFolder(FILE_DATABASES_FOLDER);
+        dsContainer.setFolder(folder);
+        dsContainer.setDescription("Temporary file datasource for " + configuration.getDatabaseName());
 
-            try {
-                registry.addDataSource(dsContainer);
-            } catch (DBException e) {
-                log.error(e);
-                return null;
-            }
+        try {
+            registry.addDataSource(dsContainer);
+        } catch (DBException e) {
+            log.error(e);
+            return null;
         }
         return dsContainer;
+    }
+
+    public static void move(@NotNull Path from, @NotNull Path to) throws IOException {
+        if (IOUtils.isFileFromDefaultFS(to)) {
+            Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
+        } else {
+            // external fs may not support move
+            Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
+            Files.delete(from);
+        }
     }
 }

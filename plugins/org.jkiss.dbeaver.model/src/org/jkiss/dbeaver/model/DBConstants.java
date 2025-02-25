@@ -154,6 +154,7 @@ public class DBConstants {
     public static final String DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS = "disableNetworkParameters";
     public static final String DRIVER_PARAM_ENABLE_NETWORK_PARAMETERS = "enableNetworkParameters";
     public static final String PARAM_DATABASE_FILE_EXTENSIONS = "database-file-extensions";
+    public static final String PARAM_SAFE_EMBEDDED_DRIVER = "safe-embedded-driver";
     public static final String PROP_HOST = "host"; //$NON-NLS-1$
     public static final String PROP_PORT = "port"; //$NON-NLS-1$
     public static final String PROP_DATABASE = "database"; //$NON-NLS-1$
@@ -162,6 +163,7 @@ public class DBConstants {
     public static final String PROP_FILE = "file"; //$NON-NLS-1$
     public static final String PROP_USER = "user"; //$NON-NLS-1$
     public static final String PROP_PASSWORD = "password"; //$NON-NLS-1$
+    public static final String PROP_ORIGINAL_FILE_PATH = "originalFilePath";
 
     public static final String CERTIFICATE_STORAGE_FOLDER = "security";
 }
