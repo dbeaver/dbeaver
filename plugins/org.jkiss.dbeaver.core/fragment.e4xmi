@@ -3,7 +3,7 @@
   <imports xsi:type="basic:TrimBar" xmi:id="_prgbsNNREe-gL-jF7DiACA" elementId="org.eclipse.ui.trim.status"/>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_q-H6INNREe-gL-jF7DiACA" featurename="children" parentElementId="org.eclipse.ui.trim.status" positionInList="before:org.eclipse.ui.StatusLine">
     <elements xsi:type="menu:ToolControl" xmi:id="_trXjgNNREe-gL-jF7DiACA" elementId="org.jkiss.dbeaver.core.ui.Breadcrumb" contributionURI="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.controls.BreadcrumbTrim">
-      <tags>stretch</tags>
+      <tags>wrap</tags>
     </elements>
   </fragments>
 </fragment:ModelFragments>
