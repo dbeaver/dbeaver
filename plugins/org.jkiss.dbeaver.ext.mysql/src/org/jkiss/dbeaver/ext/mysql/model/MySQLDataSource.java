@@ -510,6 +510,15 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         Connection mysqlConnection;
         try {
             mysqlConnection = super.openConnection(monitor, context, purpose);
+
+            if (isMariaDB()) {
+                // Execute a dummy statement that will cause an exception to be thrown if the password is expired
+                try (Statement stmt = mysqlConnection.createStatement()) {
+                    stmt.execute("SELECT 1");
+                } catch (SQLException e) {
+                    throw new DBCException(e, context);
+                }
+            }
         } catch (DBCException e) {
             if (e.getCause() instanceof SQLException &&
                 SQLState.SQL_01S00.getCode().equals (((SQLException) e.getCause()).getSQLState()) &&
@@ -525,7 +534,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     throw e2;
                 }
             } else if (
-                SQLState.getCodeFromException(e) == MySQLConstants.ER_MUST_CHANGE_PASSWORD_LOGIN &&
+                isPasswordExpired(e) &&
                 DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, container, this::changeUserPassword)
             ) {
                 return openConnection(monitor, context, purpose);
@@ -1121,6 +1130,15 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
+    private boolean isPasswordExpired(@NotNull DBCException e) {
+        int code = SQLState.getCodeFromException(e);
+        if (isMariaDB()) {
+            return code == MySQLConstants.MARIA_ER_MUST_CHANGE_PASSWORD_LOGIN;
+        } else {
+            return code == MySQLConstants.ER_MUST_CHANGE_PASSWORD_LOGIN;
+        }
+    }
+
     private void changeUserPassword(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String userName,
@@ -1130,10 +1148,17 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         container.getActualConnectionConfiguration().setProperty("disconnectOnExpiredPasswords", "false");
         try (Connection connection = super.openConnection(monitor, null, "Change expired password")) {
             try (Statement stmt = connection.createStatement()) {
-                stmt.execute("SET PASSWORD = %s REPLACE %s".formatted(
-                    SQLUtils.quoteString(this, newPassword),
-                    SQLUtils.quoteString(this, oldPassword)
-                ));
+                if (isMariaDB()) {
+                    stmt.execute("SET PASSWORD FOR %s = PASSWORD(%s)".formatted(
+                        SQLUtils.quoteString(this, userName),
+                        SQLUtils.quoteString(this, newPassword)
+                    ));
+                } else {
+                    stmt.execute("SET PASSWORD = %s REPLACE %s".formatted(
+                        SQLUtils.quoteString(this, newPassword),
+                        SQLUtils.quoteString(this, oldPassword)
+                    ));
+                }
             }
         } catch (SQLException e) {
             throw new DBDatabaseException("Unable to change expired password", e);

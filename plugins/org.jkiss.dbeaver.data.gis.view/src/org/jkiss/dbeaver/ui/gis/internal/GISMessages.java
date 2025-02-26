@@ -91,6 +91,9 @@ public class GISMessages extends NLS {
 	public static String panel_show_labels_action_label;
 	public static String panel_hide_labels_action_label;
 
+	public static String presentation_no_spatial_columns_title;
+	public static String presentation_no_spatial_columns_message;
+
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, GISMessages.class);
 	}
