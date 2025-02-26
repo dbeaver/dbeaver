@@ -543,6 +543,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             IInstanceController controller = DBeaverApplication.getInstance().getInstanceServer();
             if (controller != null) {
                 controller.openExternalFiles(filesToOpen.toArray(String[]::new));
+                filesToOpen.clear();
             }
         }
     }
