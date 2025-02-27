@@ -270,7 +270,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             if (DBConstants.DEFAULT_TIMEZONE.equals(timezone)) {
                 clientTimezone.setText(DBConstants.DEFAULT_TIMEZONE);
             } else {
-                clientTimezone.setText(timezone);
+                clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
             }
         }
 
