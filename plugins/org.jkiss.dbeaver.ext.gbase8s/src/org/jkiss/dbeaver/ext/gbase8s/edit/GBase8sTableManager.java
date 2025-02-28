@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -110,8 +111,9 @@ public class GBase8sTableManager extends GenericTableManager implements DBEObjec
     private DBEPersistAction buildTableCommentAction(GenericTableBase table) {
         String description = table.getDescription();
         if (CommonUtils.isNotEmpty(description)) {
-            String tableName = table.getFullyQualifiedName(DBPEvaluationContext.DDL);
-            String commentSQL = String.format(GBase8sConstants.SQL_TABLE_COMMENT, tableName, description);
+            String tableName = DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL);
+            String commentSQL = String.format(GBase8sConstants.SQL_TABLE_COMMENT, tableName,
+                    SQLUtils.quoteString(table, description));
             return new SQLDatabasePersistAction("Comment on Table", commentSQL);
         }
         return null;
@@ -120,9 +122,10 @@ public class GBase8sTableManager extends GenericTableManager implements DBEObjec
     private DBEPersistAction buildColumnCommentAction(GenericTableColumn column) {
         String description = column.getDescription();
         if (CommonUtils.isNotEmpty(description)) {
-            String tableName = column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
-            String columnName = column.getName();
-            String commentSQL = String.format(GBase8sConstants.SQL_COLUMN_COMMENT, tableName, columnName, description);
+            String tableName = DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL);
+            String columnName = DBUtils.getQuotedIdentifier(column);
+            String commentSQL = String.format(GBase8sConstants.SQL_COLUMN_COMMENT, tableName, columnName,
+                    SQLUtils.quoteString(column, description));
             return new SQLDatabasePersistAction("Comment on Column", commentSQL);
         }
         return null;
