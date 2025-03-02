@@ -30,14 +30,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class IoTDBDataSourceProvider extends GenericDataSourceProvider {
 
-    Log log = Log.getLog(IoTDBDataSourceProvider.class);
-
     @NotNull
     @Override
     public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
             throws DBException {
         String url = container.getConnectionConfiguration().getUrl();
-        log.info("IoTDBDataSourceProvider: openDataSource: url = " + url);
         if (url.endsWith("?sql_dialect=table")) {
             return new IoTDBDataSource(monitor, container, new IoTDBTableMetaModel());
         }

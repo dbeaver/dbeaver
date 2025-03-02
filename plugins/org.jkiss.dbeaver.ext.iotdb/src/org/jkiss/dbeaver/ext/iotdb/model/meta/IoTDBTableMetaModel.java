@@ -19,96 +19,88 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
     private static final Log log = Log.getLog(IoTDBTableMetaModel.class);
 
     private static final String[] allIotdbTableSQLKeywords = {
-            "ALTER",
-            "AND",
-            "AS",
-            "BETWEEN",
-            "BY",
-            "CASE",
-            "CAST",
-            "CONSTRAINT",
-            "CREATE",
-            "CROSS",
-            "CUBE",
-            "CURRENT_CATALOG",
-            "CURRENT_DATE",
-            "CURRENT_ROLE",
-            "CURRENT_SCHEMA",
-            "CURRENT_TIME",
-            "CURRENT_TIMESTAMP",
-            "CURRENT_USER",
-            "DEALLOCATE",
-            "DELETE",
-            "DESCRIBE",
-            "DISTINCT",
-            "DROP",
-            "ELSE",
-            "END",
-            "ESCAPE",
-            "EXCEPT",
-            "EXISTS",
-            "EXTRACT",
-            "FALSE",
-            "FOR",
-            "FROM",
-            "FULL",
-            "GROUP",
-            "GROUPING",
-            "HAVING",
-            "IN",
-            "INNER",
-            "INSERT",
-            "INTERSECT",
-            "INTO",
-            "IS",
-            "JOIN",
-            "JSON_ARRAY",
-            "JSON_EXISTS",
-            "JSON_OBJECT",
-            "JSON_QUERY",
-            "JSON_TABLE",
-            "JSON_VALUE",
-            "LEFT",
-            "LIKE",
-            "LISTAGG",
-            "LOCALTIME",
-            "LOCALTIMESTAMP",
-            "NATURAL",
-            "NORMALIZE",
-            "NOT",
-            "NULL",
-            "ON",
-            "OR",
-            "ORDER",
-            "OUTER",
-            "PREPARE",
-            "RECURSIVE",
-            "RIGHT",
-            "ROLLUP",
-            "SELECT",
-            "SKIP",
-            "TABLE",
-            "THEN",
-            "TRIM",
-            "TRUE",
-            "UESCAPE",
-            "UNION",
-            "UNNEST",
-            "USING",
-            "VALUES",
-            "WHEN",
-            "WHERE",
-            "WITH",
-            "FILL"
+        "ALTER",
+        "AND",
+        "AS",
+        "BETWEEN",
+        "BY",
+        "CASE",
+        "CAST",
+        "CONSTRAINT",
+        "CREATE",
+        "CROSS",
+        "CUBE",
+        "CURRENT_CATALOG",
+        "CURRENT_DATE",
+        "CURRENT_ROLE",
+        "CURRENT_SCHEMA",
+        "CURRENT_TIME",
+        "CURRENT_TIMESTAMP",
+        "CURRENT_USER",
+        "DEALLOCATE",
+        "DELETE",
+        "DESCRIBE",
+        "DISTINCT",
+        "DROP",
+        "ELSE",
+        "END",
+        "ESCAPE",
+        "EXCEPT",
+        "EXISTS",
+        "EXTRACT",
+        "FALSE",
+        "FOR",
+        "FROM",
+        "FULL",
+        "GROUP",
+        "GROUPING",
+        "HAVING",
+        "IN",
+        "INNER",
+        "INSERT",
+        "INTERSECT",
+        "INTO",
+        "IS",
+        "JOIN",
+        "JSON_ARRAY",
+        "JSON_EXISTS",
+        "JSON_OBJECT",
+        "JSON_QUERY",
+        "JSON_TABLE",
+        "JSON_VALUE",
+        "LEFT",
+        "LIKE",
+        "LISTAGG",
+        "LOCALTIME",
+        "LOCALTIMESTAMP",
+        "NATURAL",
+        "NORMALIZE",
+        "NOT",
+        "NULL",
+        "ON",
+        "OR",
+        "ORDER",
+        "OUTER",
+        "PREPARE",
+        "RECURSIVE",
+        "RIGHT",
+        "ROLLUP",
+        "SELECT",
+        "SKIP",
+        "TABLE",
+        "THEN",
+        "TRIM",
+        "TRUE",
+        "UESCAPE",
+        "UNION",
+        "UNNEST",
+        "USING",
+        "VALUES",
+        "WHEN",
+        "WHERE",
+        "WITH",
+        "FILL"
     };
-
-    public IoTDBTableMetaModel() {
-        super();
-    }
-
-    public String getIdentifierQuoteString() {
-        return "\"";
-    }
 
     /**
      * @param monitor to create session or to read metadata
@@ -117,7 +109,8 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
      * @return "test" for temporary
      */
     @Override
-    public String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase sourceObject,
+    public String getTableDDL(@NotNull DBRProgressMonitor monitor,
+                              @NotNull GenericTableBase sourceObject,
                               @NotNull Map<String, Object> options) {
 
         DBSEntity table = (DBSEntity) sourceObject;
@@ -126,12 +119,13 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
         String insertTableName = tableName;
         for (String keyword : allIotdbTableSQLKeywords) {
             if (tableName.equalsIgnoreCase(keyword)) {
-                insertTableName = getIdentifierQuoteString() + tableName + getIdentifierQuoteString();
+                insertTableName = "\"" + tableName + "\"";
                 break;
             }
         }
 
         StringBuilder ddl = new StringBuilder(200);
+        ddl.append("DROP TABLE IF EXISTS ").append(insertTableName).append(";\n\n");
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table column details")) {
             String sql = String.format("select * from information_schema.columns where database like '%s' and table_name like '%s'", databaseName, tableName);

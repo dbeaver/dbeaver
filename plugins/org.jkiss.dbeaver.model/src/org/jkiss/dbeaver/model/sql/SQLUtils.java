@@ -815,7 +815,6 @@ public final class SQLUtils {
         if (persistActions != null) {
             for (DBEPersistAction action : persistActions) {
                 String scriptLine = action.getScript();
-                log.info("Action: " + action.getType() + ", ScriptLine: " + scriptLine);
                 if (CommonUtils.isEmpty(scriptLine)) {
                     continue;
                 }
