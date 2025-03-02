@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -118,17 +119,23 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 
     private final ArgumentsCache argumentsCache = new ArgumentsCache();
 
-    enum JobState {
-    	DISABLED,
-    	RETRYSCHEDULED,
-    	SCHEDULED,
-    	RUNNING,
-    	COMPLETED,
-    	BROKEN,
-    	FAILED,
-    	REMOTE,
-    	SUCCEEDED,
-    	CHAIN_STALLED;
+    public enum JobState {
+        DISABLED,
+        RETRYSCHEDULED,
+        SCHEDULED,
+        RUNNING,
+        COMPLETED,
+        BROKEN,
+        FAILED,
+        REMOTE,
+        SUCCEEDED,
+        CHAIN_STALLED;
+    }
+
+    public OracleSchedulerJob(OracleSchema schema, String name, String state, String jobAction) {
+        super(schema, name, false);
+        this.state = state;
+        this.jobAction = jobAction;
     }
 
     protected OracleSchedulerJob(OracleSchema schema, ResultSet dbResult) {
@@ -203,9 +210,13 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return jobSubName;
     }
 
-    @Property(viewable = true, order = 11)
+    @Property(viewable = true, order = 11, editable = true)
     public String getJobStyle() {
         return jobStyle;
+    }
+
+    public void setJobStyle(String jobStyle) {
+        this.jobStyle = jobStyle;
     }
 
     @Property(category = CAT_ADVANCED, viewable = false, order = 12)
@@ -228,24 +239,47 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return programOwner;
     }
 
-    @Property(viewable = false, order = 16)
+    @Property(viewable = false, order = 16, editable = true, updatable = true)
     public String getProgramName() {
         return programName;
     }
 
-    @Property(viewable = true, order = 17)
+    public void setProgramName(String programName) {
+        this.programName = programName;
+    }
+
+    @Property(viewable = true, order = 17, required = true, editable = true, updatable = true)
     public String getJobType() {
         return jobType;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = false, order = 18)
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
+    }
+
+    @Property(
+        category = CAT_SETTINGS,
+        viewable = false, required = true,
+        order = 18, editable = true,
+        updatable = true,
+        length = PropertyLength.MULTILINE
+    )
     public String getJobAction() {
         return jobAction;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = false, order = 19)
+    public void setJobAction(String jobAction) {
+        this.jobAction = jobAction;
+    }
+
+
+    @Property(category = CAT_SETTINGS, viewable = false, order = 19, editable = true, updatable = true)
     public long getNumberOfArguments() {
         return numberOfArguments;
+    }
+
+    public void setNumberOfArguments(long numberOfArguments) {
+        this.numberOfArguments = numberOfArguments;
     }
 
     @Property(category = CAT_ADVANCED, viewable = false, order = 20)
@@ -253,9 +287,13 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return scheduleOwner;
     }
 
-    @Property(viewable = false, order = 21)
+    @Property(viewable = false, order = 21, editable = true, updatable = true)
     public String getScheduleName() {
         return scheduleName;
+    }
+
+    public void setScheduleName(String scheduleName) {
+        this.scheduleName = scheduleName;
     }
 
     @Property(viewable = true, order = 22)
@@ -263,19 +301,31 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return scheduleType;
     }
 
-    @Property(viewable = true, order = 23)
+    @Property(viewable = true, order = 10, updatable = true, editable = true)
     public String getStartDate() {
         return startDate;
     }
 
-    @Property(viewable = true, order = 24)
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    @Property(viewable = true, order = 24, updatable = true, editable = true)
     public String getRepeatInterval() {
         return repeatInterval;
     }
 
-    @Property(viewable = true, order = 32)
+    public void setRepeatInterval(String repeatInterval) {
+        this.repeatInterval = repeatInterval;
+    }
+
+    @Property(viewable = true, order = 32, editable = true, updatable = true)
     public String getEndDate() {
         return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
     @Property(category = CAT_EVENTS, viewable = false, order = 25)
@@ -293,9 +343,13 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return eventQueueAgent;
     }
 
-    @Property(category = CAT_EVENTS, viewable = false, order = 28)
+    @Property(category = CAT_EVENTS, viewable = false, order = 28, editable = true)
     public String getEventCondition() {
         return eventCondition;
+    }
+
+    public void setEventCondition(String eventCondition) {
+        this.eventCondition = eventCondition;
     }
 
     @Property(category = CAT_EVENTS, viewable = false, order = 29)
@@ -313,24 +367,40 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return fileWatcherName;
     }
 
-    @Property(viewable = false, order = 33)
+    @Property(viewable = false, order = 33, editable = true, updatable = true)
     public String getJobClass() {
         return jobClass;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = false, order = 34)
+    public void setJobClass(String jobClass) {
+        this.jobClass = jobClass;
+    }
+
+    @Property(category = CAT_SETTINGS, viewable = false, order = 34, updatable = true, editable = true)
     public boolean getEnabled() {
         return enabled;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = false, order = 35)
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    @Property(category = CAT_SETTINGS, viewable = false, order = 35, editable = true, updatable = true)
     public String getAutoDrop() {
         return autoDrop;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = false, order = 36)
+    public void setAutoDrop(String autoDrop) {
+        this.autoDrop = autoDrop;
+    }
+
+    @Property(category = CAT_SETTINGS, viewable = false, order = 36, updatable = true)
     public String getRestartable() {
         return restartable;
+    }
+
+    public void setRestartable(String restartable) {
+        this.restartable = restartable;
     }
 
     @Property(viewable = false, order = 37)
@@ -338,9 +408,13 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return state;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = false, order = 38)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 38, editable = true, updatable = true)
     public int getJobPriority() {
         return jobPriority;
+    }
+
+    public void setJobPriority(int jobPriority) {
+        this.jobPriority = jobPriority;
     }
 
     @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 39)
@@ -348,9 +422,13 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return runCount;
     }
 
-    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 40)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 40, editable = true, updatable = true)
     public long getMaxRuns() {
         return maxRuns;
+    }
+
+    public void setMaxRuns(long maxRuns) {
+        this.maxRuns = maxRuns;
     }
 
     @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 41)
@@ -358,9 +436,13 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return failureCount;
     }
 
-    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 42)
+    @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 42, editable = true, updatable = true)
     public long getMaxFailures() {
         return maxFailures;
+    }
+
+    public void setMaxFailures(long maxFailures) {
+        this.maxFailures = maxFailures;
     }
 
     @Property(category = DBConstants.CAT_STATISTICS, viewable = false, order = 43)
@@ -383,9 +465,13 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return nextRunDate;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = false, order = 47)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 47, updatable = true)
     public String getScheduleLimit() {
         return scheduleLimit;
+    }
+
+    public void setScheduleLimit(String scheduleLimit) {
+        this.scheduleLimit = scheduleLimit;
     }
 
     //@Property(viewable = false, order = 48)
@@ -393,24 +479,40 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return maxRunDuration;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = false, order = 49)
+    @Property(category = CAT_SETTINGS, viewable = false, order = 49, editable = true, updatable = true)
     public String getLoggingLevel() {
         return loggingLevel;
     }
 
-    @Property(category = CAT_SETTINGS, viewable = false, order = 50)
+    public void setLoggingLevel(String loggingLevel) {
+        this.loggingLevel = loggingLevel;
+    }
+
+    @Property(category = CAT_SETTINGS, viewable = false, order = 50, editable = true)
     public String getStopOnWindowClose() {
         return stopOnWindowClose;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = false, order = 51)
+    public void setStopOnWindowClose(String stopOnWindowClose) {
+        this.stopOnWindowClose = stopOnWindowClose;
+    }
+
+    @Property(category = CAT_ADVANCED, viewable = false, order = 51, updatable = true)
     public String getInstanceStickiness() {
         return instanceStickiness;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = false, order = 52)
+    public void setInstanceStickiness(String instanceStickiness) {
+        this.instanceStickiness = instanceStickiness;
+    }
+
+    @Property(category = CAT_ADVANCED, viewable = false, order = 52, editable = true, updatable = true)
     public String getRaiseEvents() {
         return raiseEvents;
+    }
+
+    public void setRaiseEvents(String raiseEvents) {
+        this.raiseEvents = raiseEvents;
     }
 
     @Property(category = CAT_SETTINGS, viewable = false, order = 53)
@@ -418,14 +520,22 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return system;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = false, order = 54)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 54, editable = true, updatable = true)
     public String getJobWeight() {
         return jobWeight;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = false, order = 55)
+    public void setJobWeight(String jobWeight) {
+        this.jobWeight = jobWeight;
+    }
+
+    @Property(category = CAT_ADVANCED, viewable = false, order = 55, editable = true)
     public String getNlsEnv() {
         return nlsEnv;
+    }
+
+    public void setNlsEnv(String nlsEnv) {
+        this.nlsEnv = nlsEnv;
     }
 
     @Property(category = CAT_ADVANCED, viewable = false, order = 56)
@@ -443,9 +553,13 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return destinationOwner;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = false, order = 59)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 59, updatable = true)
     public String getDestination() {
         return destination;
+    }
+
+    public void setDestination(String destination) {
+        this.destination = destination;
     }
 
     @Property(category = CAT_ADVANCED, viewable = false, order = 60)
@@ -453,14 +567,22 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return credentialOwner;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = false, order = 61)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 61, editable = true, updatable = true)
     public String getCredentialName() {
         return credentialName;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = false, order = 62)
+    public void setCredentialName(String credentialName) {
+        this.credentialName = credentialName;
+    }
+
+    @Property(category = CAT_ADVANCED, viewable = false, order = 62, editable = true, updatable = true)
     public String getInstanceId() {
         return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 
     @Property(category = CAT_ADVANCED, viewable = false, order = 63)
@@ -468,21 +590,28 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         return deferredDrop;
     }
 
-    @Property(category = CAT_ADVANCED, viewable = false, order = 64)
+    @Property(category = CAT_ADVANCED, viewable = false, order = 64, editable = true)
     public String getAllowRunsInRestrictedMode() {
         return allowRunsInRestrictedMode;
     }
 
-    @Property(viewable = false, order = 200)
+    public void setAllowRunsInRestrictedMode(String allowRunsInRestrictedMode) {
+        this.allowRunsInRestrictedMode = allowRunsInRestrictedMode;
+    }
+
+    @Property(viewable = false, order = 200, editable = true, updatable = true)
     @Nullable
     @Override
     public String getDescription() {
         return comments;
     }
 
+    public void setDescription(String comments) {
+        this.comments = comments;
+    }
+
     @Association
-    public Collection<OracleSchedulerJobArgument> getArguments(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<OracleSchedulerJobArgument> getArguments(DBRProgressMonitor monitor) throws DBException {
         return argumentsCache.getAllObjects(monitor, this);
     }
 
@@ -490,55 +619,65 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchedulerJob job) throws SQLException
-        {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchedulerJob job) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM "+ OracleUtils.getSysSchemaPrefix(job.getDataSource()) + "ALL_SCHEDULER_JOB_ARGS " +
-                            "WHERE OWNER=? AND JOB_NAME=? " +
-                            "ORDER BY ARGUMENT_POSITION");
+                "SELECT * FROM " + OracleUtils.getSysSchemaPrefix(job.getDataSource()) + "ALL_SCHEDULER_JOB_ARGS " +
+                    "WHERE OWNER=? AND JOB_NAME=? " +
+                    "ORDER BY ARGUMENT_POSITION");
             dbStat.setString(1, job.getSchema().getName());
             dbStat.setString(2, job.getName());
             return dbStat;
         }
 
         @Override
-        protected OracleSchedulerJobArgument fetchObject(@NotNull JDBCSession session, @NotNull OracleSchedulerJob job, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-        {
+        protected OracleSchedulerJobArgument fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull OracleSchedulerJob job,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new OracleSchedulerJobArgument(job, resultSet);
         }
 
     }
 
-	public DBSObjectState getObjectState() {
-		DBSObjectState objectState = null;
-		
-		try {
-			if ( JobState.valueOf(state).equals(JobState.RUNNING) ) {
-				objectState = DBSObjectState.ACTIVE;
-			} else if ( JobState.valueOf(state).equals(JobState.BROKEN) ) {
-				objectState = DBSObjectState.INVALID;
-			} else if ( JobState.valueOf(state).equals(JobState.CHAIN_STALLED) ) {
-				objectState = DBSObjectState.INVALID;
-			} else if ( JobState.valueOf(state).equals(JobState.FAILED) ) {
-				objectState = DBSObjectState.INVALID;
-			} else {
-				objectState = DBSObjectState.NORMAL;
-			}
-		} catch (IllegalArgumentException e) {
-			objectState = DBSObjectState.UNKNOWN;
-		}
-		
-		return objectState;
-	}
+    public DBSObjectState getObjectState() {
+        DBSObjectState objectState = null;
 
-	public void refreshObjectState(DBRProgressMonitor monitor) {
+        try {
+            if (JobState.valueOf(state).equals(JobState.RUNNING)) {
+                objectState = DBSObjectState.ACTIVE;
+            } else if (JobState.valueOf(state).equals(JobState.BROKEN)) {
+                objectState = DBSObjectState.INVALID;
+            } else if (JobState.valueOf(state).equals(JobState.CHAIN_STALLED)) {
+                objectState = DBSObjectState.INVALID;
+            } else if (JobState.valueOf(state).equals(JobState.FAILED)) {
+                objectState = DBSObjectState.INVALID;
+            } else {
+                objectState = DBSObjectState.NORMAL;
+            }
+        } catch (IllegalArgumentException e) {
+            objectState = DBSObjectState.UNKNOWN;
+        }
+
+        return objectState;
+    }
+
+    public void refreshObjectState(DBRProgressMonitor monitor) {
         if (monitor != null) {
-        	monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
-        	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
-        		try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
+            try (
+                final JDBCSession session = DBUtils.openMetaSession(
+                    monitor,
+                    this,
+                    "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'"
+                )
+            ) {
+                try (
+                    JDBCPreparedStatement dbStat = session.prepareStatement(
                         "SELECT STATE FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_SCHEDULER_JOBS " +
-                            "WHERE OWNER=? AND JOB_NAME=? ")) {
-                    dbStat.setString(1, getOwner() );
+                            "WHERE OWNER=? AND JOB_NAME=? ")
+                ) {
+                    dbStat.setString(1, getOwner());
                     dbStat.setString(2, getName());
                     dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -557,17 +696,17 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
                             monitor.subTask("Line " + lineCount);
                         }
                         if (jobState != null) {
-                        	state = jobState.toString();
+                            state = jobState.toString();
                         }
                     }
-        		}
+                }
             } catch (Exception e) {
-            	monitor.subTask("Error refreshing job state " + e.getMessage());
+                monitor.subTask("Error refreshing job state " + e.getMessage());
             } finally {
                 monitor.done();
             }
         }
-	}
+    }
 
     public DBEPersistAction[] getRunActions() {
         StringBuffer runScript = new StringBuffer();
@@ -576,23 +715,35 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         runScript.append(getFullyQualifiedName(DBPEvaluationContext.DDL));
         runScript.append("', USE_CURRENT_SESSION => FALSE);");
         runScript.append("END;");
-    	return new DBEPersistAction[] {
+        return new DBEPersistAction[] {
             new OracleObjectPersistAction(
                 OracleObjectType.JOB,
                 "Run Job",
                 runScript.toString()
-            )};
+            )
+        };
     }
 
-	@Override
-	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        if (jobAction == null && monitor != null) {
-        	monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
-        	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
-        		try (JDBCPreparedStatement dbStat = session.prepareStatement(
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (CommonUtils.isEmpty(jobAction) && name.equals("NEW_SCHEDULER_JOB")) {
+            return "";
+        }
+        if (monitor != null) {
+            monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
+            try (
+                final JDBCSession session = DBUtils.openMetaSession(
+                    monitor,
+                    this,
+                    "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'"
+                )
+            ) {
+                try (
+                    JDBCPreparedStatement dbStat = session.prepareStatement(
                         "SELECT JOB_ACTION FROM " + OracleUtils.getSysSchemaPrefix(getDataSource()) + "ALL_SCHEDULER_JOBS " +
-                            "WHERE OWNER=? AND JOB_NAME=? ")) {
-                    dbStat.setString(1, getOwner() );
+                            "WHERE OWNER=? AND JOB_NAME=? ")
+                ) {
+                    dbStat.setString(1, getOwner());
                     dbStat.setString(2, getName());
                     dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -606,17 +757,19 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
                             if (action == null) {
                                 action = new StringBuilder(4000);
                             }
-                            action.append(line);
+                            if (!"null".equals(line)) {
+                                action.append(line);
+                            }
                             lineCount++;
                             monitor.subTask("Line " + lineCount);
                         }
                         if (action != null) {
-                        	jobAction = action.toString();
+                            jobAction = action.toString();
                         }
                     }
                 } catch (SQLException e) {
                     throw new DBCException(e, session.getExecutionContext());
-        		}
+                }
             } finally {
                 monitor.done();
             }
@@ -624,8 +777,12 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 
         final StringJoiner args = new StringJoiner(",\n\t");
         args.add("job_name => " + SQLUtils.quoteString(this, name));
-        args.add("job_type => " + SQLUtils.quoteString(this, jobType));
-        args.add("job_action => " + SQLUtils.quoteString(this, CommonUtils.escapeDisplayString(jobAction)));
+        if (jobType != null) {
+            args.add("job_type => " + SQLUtils.quoteString(this, jobType));
+        }
+        if (jobAction != null) {
+            args.add("job_action => " + SQLUtils.quoteString(this, CommonUtils.escapeDisplayString(jobAction)));
+        }
 
         if (!DEFAULT_JOB_CLASS.equals(jobClass)) {
             args.add("job_class => " + SQLUtils.quoteString(this, jobClass));
@@ -651,6 +808,6 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
             args.add("enabled => TRUE");
         }
 
-        return "DBMS_SCHEDULER.CREATE_JOB(\n\t" + args + "\n)";
+        return "BEGIN\n  DBMS_SCHEDULER.CREATE_JOB(\n\t" + args + "\n);\nEND;";
     }
 }
