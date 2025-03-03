@@ -34,7 +34,6 @@ import org.osgi.framework.Bundle;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Command line processing.
@@ -237,17 +236,7 @@ public class DBeaverCommandLine
 
     static CommandLine getCommandLine() {
         try {
-            // Remove keyring parameter because its name contains special characters
-            // Actual valuation of keyring happens in app launcher
-            List<String> applicationArgs = Arrays.stream(Platform.getApplicationArgs()).collect(Collectors.toList());
-            int index = applicationArgs.indexOf("-eclipse.keyring");
-            if (index >= 0) {
-                applicationArgs.remove(index);
-                if (applicationArgs.size() > index) {
-                    applicationArgs.remove(index);
-                }
-            }
-            return new DefaultParser().parse(ALL_OPTIONS, applicationArgs.toArray(new String[0]), false);
+            return new DefaultParser().parse(ALL_OPTIONS, GeneralUtils.getRealApplicationArgs(), false);
         } catch (Exception e) {
             log.warn("Error parsing command line: " + e.getMessage());
             return null;

@@ -28,8 +28,10 @@ import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -75,6 +77,7 @@ public class GeneralUtils {
     public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
     public static final String DEFAULT_TIME_PATTERN = "HHmmss";
     public static final String RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX = "(?U)[^/:'\"\\\\<>|?*]+";
+    public static final String ARG_ECLIPSE_KEYRING = "-eclipse.keyring"; //$NON-NLS-1$
 
     public static final String[] byteToHex = new String[256];
     public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
@@ -988,5 +991,39 @@ public class GeneralUtils {
     @NotNull
     public static String normalizeLineEndings(@NotNull String text) {
         return text.replaceAll("(\r\n)|\r", "\n");
+    }
+
+    /**
+     * Returns application arguments in the form ready to be consumed by CLI argument processors.
+     *
+     * @return application arguments in the form ready to be consumed by CLI argument processors
+     */
+    @NotNull
+    public static String[] getRealApplicationArgs() {
+        return patchApplicationArgs(Platform.getApplicationArgs());
+    }
+
+    /**
+     * Transforms supplied cli arguments to the form ready to be consumed by CLI argument processors.
+     *
+     * @param rawApplicationArgs args to transform
+     * @return cli arguments transformed to the form ready to be consumed by CLI argument processors
+     *
+     * @implNote this method exists and made public for testing purposes
+     */
+    @NotNull
+    @ForTest
+    public static String[] patchApplicationArgs(String[] rawApplicationArgs) {
+        // Remove keyring parameter because its name contains special characters
+        // Actual valuation of keyring happens in app launcher
+        int idx = ArrayUtils.indexOf(rawApplicationArgs, ARG_ECLIPSE_KEYRING);
+        if (idx == -1) {
+            return rawApplicationArgs;
+        }
+        int toIdx = idx;
+        if (idx + 1 != rawApplicationArgs.length) {
+            toIdx++;
+        }
+        return ArrayUtils.deleteArea(String.class, rawApplicationArgs, idx, toIdx);
     }
 }

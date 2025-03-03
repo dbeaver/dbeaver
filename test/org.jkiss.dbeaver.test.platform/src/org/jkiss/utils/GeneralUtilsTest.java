@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 public class GeneralUtilsTest extends DBeaverUnitTest {
@@ -74,5 +75,38 @@ public class GeneralUtilsTest extends DBeaverUnitTest {
             default:
                 return name;
         }
-    }   
+    }
+
+    @Test
+    public void testPatchApplicationArgs() {
+        String bla = "bla"; // NON-NLS
+        String blabla = bla + bla;
+        String blablabla = blabla + bla;
+        String[] arrayOfBla = {bla};
+        String[] emptyArray = new String[0];
+
+        assertArrayEquals(emptyArray, GeneralUtils.patchApplicationArgs(emptyArray));
+        assertArrayEquals(arrayOfBla, GeneralUtils.patchApplicationArgs(arrayOfBla));
+        assertArrayEquals(arrayOfBla, GeneralUtils.patchApplicationArgs(new String[] {bla, GeneralUtils.ARG_ECLIPSE_KEYRING}));
+        assertArrayEquals(
+            arrayOfBla,
+            GeneralUtils.patchApplicationArgs(new String[] {bla, GeneralUtils.ARG_ECLIPSE_KEYRING, blabla})
+        );
+        assertArrayEquals(
+            new String[] {bla, blablabla},
+            GeneralUtils.patchApplicationArgs(new String[] {bla, GeneralUtils.ARG_ECLIPSE_KEYRING, blabla, blablabla})
+        );
+        assertArrayEquals(
+            emptyArray,
+            GeneralUtils.patchApplicationArgs(new String[] {GeneralUtils.ARG_ECLIPSE_KEYRING})
+        );
+        assertArrayEquals(
+            emptyArray,
+            GeneralUtils.patchApplicationArgs(new String[] {GeneralUtils.ARG_ECLIPSE_KEYRING, blabla})
+        );
+        assertArrayEquals(
+            arrayOfBla,
+            GeneralUtils.patchApplicationArgs(new String[] {GeneralUtils.ARG_ECLIPSE_KEYRING, blabla, bla})
+        );
+    }
 }
