@@ -447,11 +447,13 @@ public class SQLEditor extends SQLEditorBase implements
                 // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
                 // FIXME: To update main toolbar and other controls we hade and show this editor
                 IWorkbenchPage page = getSite().getPage();
-                for (IEditorReference er : page.getEditorReferences()) {
-                    if (er.getEditor(false) == this) {
-                        page.hideEditor(er);
-                        page.showEditor(er);
-                        break;
+                if (page != null) {
+                    for (IEditorReference er : page.getEditorReferences()) {
+                        if (er.getEditor(false) == this) {
+                            page.hideEditor(er);
+                            page.showEditor(er);
+                            break;
+                        }
                     }
                 }
                 //page.activate(this);
@@ -2184,8 +2186,12 @@ public class SQLEditor extends SQLEditorBase implements
         SQLScriptContext parentContext = null;
         {
             DatabaseEditorContext parentEditorContext = EditorUtils.getEditorContext(editorInput);
-            if (parentEditorContext instanceof SQLNavigatorContext) {
-                parentContext = ((SQLNavigatorContext) parentEditorContext).getScriptContext();
+            if (parentEditorContext instanceof SQLNavigatorContext nc) {
+                parentContext = nc.getScriptContext();
+                if (nc.isReuseExecutionContext()) {
+                    DBCExecutionContext iec = nc.getExecutionContext();
+                    this.executionContextProvider = () -> iec;
+                }
             }
         }
         this.globalScriptContext = new SQLScriptContext(
