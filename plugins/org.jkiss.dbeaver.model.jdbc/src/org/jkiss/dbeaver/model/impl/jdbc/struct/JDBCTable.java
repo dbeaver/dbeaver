@@ -933,7 +933,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     @Override
     public DBCStatistics truncateData(@NotNull DBCSession session, @NotNull DBCExecutionSource source) throws DBCException {
         if (!isTruncateSupported()) {
-            try (ExecuteBatch batch = deleteData(session, new DBSAttributeBase[0], source)) {
+            try (ExecuteBatch batch = deleteData(session, DBSAttributeBase.ZERO_SIZE_ARRAY, source)) {
                 batch.add(ZeroSizedArrays.OF_OBJECT);
                 return batch.execute(session, Collections.emptyMap());
             }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -279,7 +279,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
             targetAttributes.add(targetAttr);
         }
-        DBSAttributeBase[] attributes = targetAttributes.toArray(new DBSAttributeBase[0]);
+        DBSAttributeBase[] attributes = targetAttributes.toArray(DBSAttributeBase.ZERO_SIZE_ARRAY);
 
         Map<String, Object> options = new HashMap<>();
         options.put(DBSDataManipulator.OPTION_USE_MULTI_INSERT, settings.isUseMultiRowInsert());
@@ -527,7 +527,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 ((DBSDataManipulatorExt) targetObject).afterDataChange(
                     targetSession,
                     DBSManipulationType.INSERT,
-                    targetAttributes.toArray(new DBSAttributeBase[0]),
+                    targetAttributes.toArray(DBSAttributeBase.ZERO_SIZE_ARRAY),
                     new AbstractExecutionSource(getSourceObject(), targetContext, this));
             }
         }
