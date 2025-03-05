@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -222,7 +223,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
             // Copy single file
             final IFile targetFile = targetFolder.getFile(new Path(targetName));
             if (!targetFile.exists()) {
-                targetFile.create(new ByteArrayInputStream(new byte[0]), true, nestedMonitor);
+                targetFile.create(new ByteArrayInputStream(ZeroSizedArrays.OF_BYTE), true, nestedMonitor);
             }
             final Map<QualifiedName, String> props = resource.getPersistentProperties();
             if (props != null && !props.isEmpty()) {

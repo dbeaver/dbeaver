@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.ByteArrayInputStream;
 
@@ -65,7 +66,7 @@ public class SQLEditorInputFactory implements IElementFactory
         if (file != null) {
             if (!file.exists()) {
                 try {
-                    file.create(new ByteArrayInputStream(new byte[0]), true, new NullProgressMonitor());
+                    file.create(new ByteArrayInputStream(ZeroSizedArrays.OF_BYTE), true, new NullProgressMonitor());
                 } catch (CoreException e) {
                     log.error("Can't create new file", e);
                     return null;

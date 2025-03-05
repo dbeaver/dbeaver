@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.*;
 import java.sql.SQLException;
@@ -74,7 +75,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         throws IOException
     {
         if (data == null) {
-            return new ByteArrayInputStream(new byte[0]);
+            return new ByteArrayInputStream(ZeroSizedArrays.OF_BYTE);
         } else {
             return new ByteArrayInputStream(data);
         }

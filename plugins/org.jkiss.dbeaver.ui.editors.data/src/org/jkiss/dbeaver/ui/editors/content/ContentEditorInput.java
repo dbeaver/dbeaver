@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.*;
 
@@ -350,7 +351,7 @@ public class ContentEditorInput implements IPathEditorInput, IStatefulEditorInpu
 
         try (OutputStream os = new FileOutputStream(contentFile)) {
             if (contents.isNull()) {
-                ContentUtils.copyStreams(new ByteArrayInputStream(new byte[0]), 0, os, monitor);
+                ContentUtils.copyStreams(new ByteArrayInputStream(ZeroSizedArrays.OF_BYTE), 0, os, monitor);
             } else {
                 if (storage == null) {
                     log.warn("Can't get data from null storage");
