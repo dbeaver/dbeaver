@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -656,7 +656,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
                 operators.add(DBCLogicalOperator.IS_NOT_NULL);
             }
             operators.add(DBCLogicalOperator.EQUALS);
-            return operators.toArray(new DBCLogicalOperator[0]);
+            return operators.toArray(DBCLogicalOperator.ZERO_SIZE_ARRAY);
         }
         return super.getSupportedOperators(attribute);
     }

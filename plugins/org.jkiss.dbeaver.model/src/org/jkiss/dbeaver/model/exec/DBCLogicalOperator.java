@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,6 +148,10 @@ public enum DBCLogicalOperator {
         }
     };
 
+    /**
+     * A constant zero-sized array for sharing.
+     */
+    public static final DBCLogicalOperator[] ZERO_SIZE_ARRAY = new DBCLogicalOperator[0];
 
     private final String stringValue;
     private final int argumentCount;
