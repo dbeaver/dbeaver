@@ -179,7 +179,7 @@ public class OracleJob extends OracleSchemaObject implements OracleSourceObject 
 
     @Override
     public DBEPersistAction[] getCompileActions(DBRProgressMonitor monitor) {
-        return new DBEPersistAction[0];
+        return DBEPersistAction.ZERO_SIZE_ARRAY;
     }
 
     @Override

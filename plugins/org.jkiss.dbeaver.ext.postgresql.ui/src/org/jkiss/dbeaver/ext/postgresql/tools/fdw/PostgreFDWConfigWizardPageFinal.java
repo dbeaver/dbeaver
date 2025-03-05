@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,7 +142,7 @@ class PostgreFDWConfigWizardPageFinal extends ActiveWizardPage<PostgreFDWConfigW
                             script.append(
                                 SQLUtils.generateScript(
                                     dataSource,
-                                    actions.toArray(new DBEPersistAction[0]),
+                                    actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY),
                                     false));
                             monitor.done();
                         } catch (DBException e) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
         objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
         objectManager.createNewObject(monitor, commandContext, newObject, null, Collections.emptyMap());
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "CREATE TABLE TEST_SCHEMA.NEWTABLE (" + lineBreak +
                 "\tCOLUMN1 INTEGER NULL," + lineBreak +
@@ -132,7 +132,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
             null);
         String script = SQLUtils.generateScript(
             testDataSource,
-            actions.toArray(new DBEPersistAction[0]),
+            actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY),
             false);
 
         String expectedDDL = "CREATE TABLE TEST_SCHEMA.NEWTABLE (" + lineBreak +
@@ -159,7 +159,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
         constraint.setAttributeReferences(Collections.singletonList(constraintColumn));
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "CREATE TABLE TEST_SCHEMA.NEWTABLE (" + lineBreak +
                 "\tCOLUMN1 INTEGER NULL," + lineBreak +
@@ -182,7 +182,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
         column2.setComment("Test comment 2");
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "CREATE TABLE TEST_SCHEMA.NEWTABLE (" + lineBreak +
                 "\tCOLUMN1 INTEGER NULL," + lineBreak +
@@ -204,7 +204,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE RENAME TO NEW_TEST_TABLE;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
@@ -220,7 +220,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "COMMENT ON TABLE TEST_SCHEMA.TEST_TABLE IS 'Test comment';" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
@@ -233,7 +233,7 @@ public class OracleBaseTableTest extends DBeaverUnitTest {
         objectMaker.deleteObject(commandContext, oracleTable, Collections.emptyMap());
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "DROP TABLE TEST_SCHEMA.TEST_TABLE;" + lineBreak;
 

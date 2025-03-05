@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             executionContext, 
             Collections.emptyMap(), 
             null);
-        String script = SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(dataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "CREATE TABLE CATALOG_GENERIC.SCHEMA_GENERIC.NewTable (" + lineBreak +
             "\tColumn1 INTEGER," + lineBreak +
@@ -140,7 +140,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             null);
         String script = SQLUtils.generateScript(
             dataSource,
-            actions.toArray(new DBEPersistAction[0]),
+            actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY),
             false);
 
         String expectedDDL = "CREATE TABLE CATALOG_GENERIC.SCHEMA_GENERIC.NewTable (" + lineBreak +
@@ -187,7 +187,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             executionContext,
             Collections.emptyMap(),
             null);
-        String script = SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(dataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "CREATE TABLE CATALOG_GENERIC.SCHEMA_GENERIC.NewTable (" + lineBreak +
             "\tColumn1 INTEGER," + lineBreak +
@@ -230,7 +230,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             executionContext,
             Collections.emptyMap(),
             null);
-        String script = SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(dataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "CREATE TABLE CATALOG_GENERIC.SCHEMA_GENERIC.NewTable (" + lineBreak +
             "\tColumn1 INTEGER," + lineBreak +
@@ -254,7 +254,7 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
             executionContext,
             Collections.emptyMap(),
             null);
-        String script = SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(dataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "DROP TABLE CATALOG_GENERIC.TABLE_GENERIC;" + lineBreak;
 

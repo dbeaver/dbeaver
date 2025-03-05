@@ -279,7 +279,7 @@ public class DBExecUtils {
 
     public static void executeScript(DBRProgressMonitor monitor, DBCExecutionContext executionContext, String jobName, List<DBEPersistAction> persistActions) {
         try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, jobName)) {
-            executeScript(session, persistActions.toArray(new DBEPersistAction[0]));
+            executeScript(session, persistActions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY));
         }
     }
 

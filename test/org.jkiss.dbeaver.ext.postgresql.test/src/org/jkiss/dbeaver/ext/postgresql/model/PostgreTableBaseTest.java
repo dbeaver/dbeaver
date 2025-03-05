@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -165,7 +165,7 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, postgreExecutionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "COMMENT ON TABLE test_schema.test_table_regular IS 'Test comment';" + lineBreak;
         Assert.assertEquals(expectedDDL, script);
@@ -185,7 +185,7 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, postgreExecutionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "COMMENT ON FOREIGN TABLE test_schema.\"testForeignTable\" IS 'Test comment';" + lineBreak;
         Assert.assertEquals(expectedDDL, script);
@@ -201,7 +201,7 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, postgreExecutionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "COMMENT ON VIEW test_schema.\"testView\" IS 'Test comment';" + lineBreak;
         Assert.assertEquals(expectedDDL, script);
@@ -221,7 +221,7 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, postgreExecutionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "COMMENT ON MATERIALIZED VIEW test_schema.\"testMView\" IS 'Test comment';" + lineBreak;
         Assert.assertEquals(expectedDDL, script);

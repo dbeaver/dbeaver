@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,7 +153,7 @@ public class DatabaseTransferUtils {
         @Nullable Map<DBPPropertyDescriptor, Object> changedProperties) throws DBException
     {
         if (containerMapping.getMappingType() == DatabaseMappingType.skip) {
-            return new DBEPersistAction[0];
+            return DBEPersistAction.ZERO_SIZE_ARRAY;
         }
         // Check whether we have any changes in mappings
         if (containerMapping.getMappingType() == DatabaseMappingType.existing) {
@@ -166,7 +166,7 @@ public class DatabaseTransferUtils {
                 }
             }
             if (!hasChanges) {
-                return new DBEPersistAction[0];
+                return DBEPersistAction.ZERO_SIZE_ARRAY;
             }
         }
         monitor.subTask("Validate table structure table '" + containerMapping.getTargetName() + "'");
@@ -201,7 +201,7 @@ public class DatabaseTransferUtils {
         containerMapping.setTargetName(tableName);
 
         if (CommonUtils.isEmpty(tableName)) {
-            return new DBEPersistAction[0];
+            return DBEPersistAction.ZERO_SIZE_ARRAY;
         }
 
         List<DBEPersistAction> actions = new ArrayList<>();
@@ -259,7 +259,7 @@ public class DatabaseTransferUtils {
                 }
             }
         }
-        return actions.toArray(new DBEPersistAction[0]);
+        return actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY);
     }
 
     /**

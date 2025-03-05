@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ public class CubridCommandHandler extends DBECommandComposite<CubridPrivilage, C
         }
         buildBody(builder);
         actions.add(new SQLDatabasePersistAction("Update User", builder.toString()));
-        return actions.toArray(new DBEPersistAction[0]);
+        return actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY);
 
     }
 

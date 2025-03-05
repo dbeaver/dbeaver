@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,11 +167,10 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             List<DBEPersistAction> actions = new ArrayList<>();
             addStructObjectCreateActions(monitor, executionContext, actions, this, options);
             addObjectExtraActions(monitor, executionContext, actions, this, options);
-            return actions.toArray(new DBEPersistAction[0]);
+            return actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY);
         }
     }
 
 
 
 }
-

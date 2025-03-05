@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -402,7 +402,7 @@ public class PostgreScheduleEditor extends AbstractDatabaseObjectEditor<PostgreJ
             }
 
             if (changes.length() == 0) {
-                return new DBEPersistAction[0];
+                return DBEPersistAction.ZERO_SIZE_ARRAY;
             }
 
             return new DBEPersistAction[]{

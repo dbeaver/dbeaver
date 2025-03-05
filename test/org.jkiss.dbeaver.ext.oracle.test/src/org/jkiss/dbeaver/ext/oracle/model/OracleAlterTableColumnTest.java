@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         objectMaker.createNewObject(monitor, commandContext, oracleTableBase, null, Collections.emptyMap());
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE ADD COLUMN4 INTEGER NULL;" + lineBreak;
 
@@ -116,7 +116,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "COMMENT ON COLUMN TEST_SCHEMA.TEST_TABLE.COLUMN1 IS 'Test comment';" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
@@ -132,7 +132,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) NOT NULL;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
@@ -148,7 +148,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL =
             "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) DEFAULT 'Test value';" + lineBreak;
@@ -165,7 +165,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL =
             "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,0) DEFAULT 42;" + lineBreak;
@@ -183,7 +183,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL =
             "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(50) DEFAULT 'Test value';" + lineBreak;
@@ -200,7 +200,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN3 CHAR(33);" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
@@ -216,7 +216,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(22,0);" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
@@ -233,7 +233,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL =
             "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN2 NUMBER(38,17) DEFAULT 42;" + lineBreak;
@@ -256,7 +256,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
             Collections.emptyMap(),
             null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE MODIFY COLUMN1 VARCHAR(100) NULL;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
@@ -272,7 +272,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
 
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE RENAME COLUMN COLUMN3 TO COLUMN33;" + lineBreak;
         Assert.assertEquals(script, expectedDDL);
@@ -285,7 +285,7 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
         objectMaker.deleteObject(commandContext, testColumnVarchar, Collections.emptyMap());
 
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
-        String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(testDataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "ALTER TABLE TEST_SCHEMA.TEST_TABLE DROP COLUMN COLUMN1;" + lineBreak;
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,7 +152,7 @@ public abstract class PostgreViewBase extends PostgreTableReal implements DBSVie
         StringBuilder ddl = new StringBuilder(source);
         if (!actions.isEmpty()) {
             ddl.append("\n\n").append(SQLUtils.generateScript(
-                getDataSource(), actions.toArray(new DBEPersistAction[0]), false));
+                getDataSource(), actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false));
         }
 
         return ddl.toString();

@@ -112,7 +112,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
                 actions.add(new SQLDatabasePersistAction(MySQLUIMessages.edit_command_change_user_action_update_user_record, updateSQL));
             }
         }
-        return actions.toArray(new DBEPersistAction[0]);
+        return actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY);
     }
 
     private String generateUpdateScript() {

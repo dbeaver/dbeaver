@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -370,7 +370,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectModifyActions(monitor, executionContext, actions, this, options);
             addObjectExtraActions(monitor, executionContext, actions, this, options);
-            return actions.toArray(new DBEPersistAction[0]);
+            return actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY);
         }
 
         @Override
@@ -437,7 +437,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectCreateActions(monitor, executionContext, actions, this, options);
             addObjectExtraActions(monitor, executionContext, actions, this, options);
-            return actions.toArray(new DBEPersistAction[0]);
+            return actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY);
         }
 
         @Override
@@ -477,7 +477,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectDeleteActions(monitor, executionContext, actions, this, options);
-            return actions.toArray(new DBEPersistAction[0]);
+            return actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY);
         }
 
         @Override
@@ -523,11 +523,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         @Override
         public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) {
             if (CommonUtils.equalObjects(oldName, newName)) {
-                return new DBEPersistAction[0];
+                return DBEPersistAction.ZERO_SIZE_ARRAY;
             }
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectRenameActions(monitor, executionContext, actions, this, options);
-            return actions.toArray(new DBEPersistAction[0]);
+            return actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY);
         }
 
         @NotNull
@@ -718,4 +718,3 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
 }
-

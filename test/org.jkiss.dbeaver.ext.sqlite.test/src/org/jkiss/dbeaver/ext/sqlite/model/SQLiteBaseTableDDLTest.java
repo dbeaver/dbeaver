@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
             executionContext,
             Collections.emptyMap(),
             null);
-        String script = SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(dataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "CREATE TABLE NewTable (" + lineBreak +
             "\tColumn1 INTEGER," + lineBreak +
@@ -134,7 +134,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
             executionContext,
             Collections.emptyMap(),
             null);
-        String script = SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(dataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "CREATE TABLE NewTable (" + lineBreak +
                 "\tColumn2 INTEGER" + lineBreak +
@@ -166,7 +166,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
             null);
         String script = SQLUtils.generateScript(
             dataSource,
-            actions.toArray(new DBEPersistAction[0]),
+            actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY),
             false);
 
         String expectedDDL = "CREATE TABLE NewTable (" + lineBreak +
@@ -214,7 +214,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
             executionContext,
             Collections.emptyMap(),
             null);
-        String script = SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(dataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "CREATE TABLE NewTable (" + lineBreak +
             "\tColumn1 INTEGER NOT NULL," + lineBreak +
@@ -258,7 +258,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
             executionContext,
             Collections.emptyMap(),
             null);
-        String script = SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(dataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "CREATE TABLE NewTable (" + lineBreak +
             "\tColumn1 TEXT DEFAULT ('Default Value')," + lineBreak +
@@ -294,7 +294,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
             null);
         String script = SQLUtils.generateScript(
             dataSource,
-            actions.toArray(new DBEPersistAction[0]),
+            actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY),
             false);
 
         String expectedDDL = "CREATE TABLE \"Table_SQLite_&#@*_bad_symbols\" (" + lineBreak +
@@ -317,7 +317,7 @@ public class SQLiteBaseTableDDLTest extends DBeaverUnitTest {
             executionContext,
             Collections.emptyMap(),
             null);
-        String script = SQLUtils.generateScript(dataSource, actions.toArray(new DBEPersistAction[0]), false);
+        String script = SQLUtils.generateScript(dataSource, actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false);
 
         String expectedDDL = "DROP TABLE Table_SQLite;" + lineBreak;
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -227,7 +227,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                     log.debug(e);
                 }
             }
-            return actions.toArray(new DBEPersistAction[0]);
+            return actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY);
         }
 
         if (table.isPersisted() && isIncludeDropInDDL(table) &&
@@ -317,7 +317,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         addExtraDDLCommands(monitor, table, options, command);
         Collections.addAll(actions, command.getPersistActions(monitor, executionContext, options));
 
-        return actions.toArray(new DBEPersistAction[0]);
+        return actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY);
     }
 
     private boolean skipObject(Object object) {
@@ -341,4 +341,3 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
 
 }
-

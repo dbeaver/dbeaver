@@ -643,7 +643,7 @@ public class PostgreSchema implements
         PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
         if (!actions.isEmpty()) {
             sql.append("\n\n");
-            sql.append(SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[0]), false));
+            sql.append(SQLUtils.generateScript(getDataSource(), actions.toArray(DBEPersistAction.ZERO_SIZE_ARRAY), false));
         }
 
 
