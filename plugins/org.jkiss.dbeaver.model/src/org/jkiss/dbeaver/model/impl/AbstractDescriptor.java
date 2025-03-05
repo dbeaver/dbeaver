@@ -175,7 +175,7 @@ public abstract class AbstractDescriptor {
 
     public class ObjectType {
         /**
-         * A constant zero-sized array of DBSAttributeBase
+         * A constant zero-sized array of ObjectType
          */
         public static final ObjectType[] ZERO_SIZE_ARRAY = new ObjectType[0];
 
