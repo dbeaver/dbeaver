@@ -41,7 +41,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     static final Log log = Log.getLog(DBNNode.class);
 
     /**
-     * A constant zero-sized array of DBEPersistAction
+     * A constant zero-sized array for sharing.
      */
     public static final DBNNode[] ZERO_SIZE_ARRAY = new DBNNode[0];
 
