@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.ext.iotdb.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.access.DBAPrivilegeGrant;
@@ -12,18 +13,21 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
 
-public class IoTDBGrant implements DBSObject, DBAPrivilegeGrant {
+public class IoTDBGrant implements DBSObject, DBAPrivilegeGrant{
 
+    private final Log log = Log.getLog(IoTDBGrant.class);
     private final IoTDBUser user;
-    private List<IoTDBPrivilege> privileges;
+    private final List<IoTDBPrivilege> privileges;
     private String role;
     private String scope;
+    private boolean grantOption;
 
-    public IoTDBGrant(IoTDBUser user, List<IoTDBPrivilege> privileges, String role, String scope) {
+    public IoTDBGrant(IoTDBUser user, List<IoTDBPrivilege> privileges, String role, String scope, boolean grantOption) {
         this.user = user;
         this.privileges = privileges;
         this.role = role;
         this.scope = scope;
+        this.grantOption = grantOption;
     }
 
     @Override
@@ -81,9 +85,26 @@ public class IoTDBGrant implements DBSObject, DBAPrivilegeGrant {
         return role;
     }
 
+    public void setRole(String role) {
+        this.role = role;
+    }
+
     @Nullable
     @Property(viewable = true, order = 3)
     public String getScope() {
         return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
+    @Property(viewable = true, editable = true, order = 4, id = "grantOption")
+    public boolean getGrantOption() {
+        return grantOption;
+    }
+
+    public void setGrantOption(boolean grantOption) {
+        this.grantOption = grantOption;
     }
 }

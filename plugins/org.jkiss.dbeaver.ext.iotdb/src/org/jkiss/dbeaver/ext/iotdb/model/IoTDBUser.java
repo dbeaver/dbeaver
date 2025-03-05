@@ -47,6 +47,13 @@ public class IoTDBUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
         }
     }
 
+    public IoTDBUser(IoTDBDataSource dataSource, String userName) {
+        this.dataSource = dataSource;
+        this.persisted = true;
+        this.userName = userName;
+        this.host = "localhost";
+    }
+
     public String getUserName() {
         return userName;
     }
@@ -74,17 +81,17 @@ public class IoTDBUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Grants")) {
             String sql = String.format("list privileges of user %s", userName);
+            log.info("Executing SQL: " + sql);
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
                     List<IoTDBGrant> grants = new ArrayList<>();
                     while (rs.next()) {
                         List<IoTDBPrivilege> privileges = new ArrayList<>();
-                        if (rs.getBoolean("GrantOption")) {
-                            privileges.add(new IoTDBPrivilege(dataSource, rs.getString("Privileges")));
-                            String role = rs.getString("Role");
-                            String scope = rs.getString("Scope");
-                            grants.add(new IoTDBGrant(this, privileges, role, scope));
-                        }
+                        privileges.add(new IoTDBPrivilege(dataSource, rs.getString("Privileges")));
+                        String role = rs.getString("Role");
+                        String scope = rs.getString("Scope");
+                        boolean grantOption = rs.getBoolean("GrantOption");
+                        grants.add(new IoTDBGrant(this, privileges, role, scope, grantOption));
                     }
                     this.grants = grants;
                     return this.grants;
@@ -104,7 +111,8 @@ public class IoTDBUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
     @Override
     public DBSObject refreshObject(DBRProgressMonitor dbrProgressMonitor) throws DBException {
         grants = null;
-        return null;
+        getGrants(dbrProgressMonitor);
+        return this;
     }
 
     @Override

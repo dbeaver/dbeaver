@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,13 +49,53 @@ public class IoTDBDataSource extends GenericDataSource {
      * @throws DBException if an error occurs
      */
     private List<IoTDBUser> loadUsers(DBRProgressMonitor monitor) throws DBException {
+
+        List<IoTDBUser> userList = new ArrayList<>();
+        String currentUserName = null;
+        boolean hasManageUserPrivilege = false;
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Show Current User & Check Privileges")) {
+            String sql = "show current_user";
+            try (JDBCStatement stmt = session.createStatement()) {
+                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
+                    while (rs.next()) {
+                        currentUserName = rs.getString("CurrentUser");
+                        IoTDBUser user = new IoTDBUser(this, currentUserName);
+                        userList.add(user);
+                    }
+
+                    sql = "list privileges of user " + currentUserName;
+                    try (JDBCStatement stmt2 = session.createStatement()) {
+                        try (JDBCResultSet rs2 = stmt2.executeQuery(sql)) {
+                            while (rs2.next()) {
+                                if (rs2.getString("Privileges").equals("MANAGE_USER")) {
+                                    hasManageUserPrivilege = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error showing current user or checking privileges", e);
+            throw new DBDatabaseException(e, this);
+        }
+
+        if (!hasManageUserPrivilege) {
+            return userList;
+        }
+
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Users")) {
             String sql = "list user";
             try (JDBCStatement stmt = session.createStatement()) {
                 try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    List<IoTDBUser> userList = new ArrayList<>();
                     while (rs.next()) {
-                        IoTDBUser user = new IoTDBUser(this, rs);
+                        String tmpUserName = rs.getString("User");
+                        if (tmpUserName.equals(currentUserName)) {
+                            continue;
+                        }
+                        IoTDBUser user = new IoTDBUser(this, tmpUserName);
                         userList.add(user);
                     }
                     return userList;
@@ -64,5 +105,14 @@ public class IoTDBDataSource extends GenericDataSource {
             log.error("Error loading users", e);
             throw new DBDatabaseException(e, this);
         }
+    }
+
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
+            throws DBException {
+        super.refreshObject(monitor);
+
+        this.users = loadUsers(monitor);
+        return this;
     }
 }

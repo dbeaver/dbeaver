@@ -12,7 +12,7 @@
          <tree icon="icons/iotdb_icon.png" label="IoTDB data source" path="iotdb">
             <folder label="Databases" icon="#folder_schema" description="IoTDB databases">
                <items label="#catalog" path="catalog" property="catalogList" icon="#database" optional="true">
-                  <items label="#schema" path="schema" property="schemaList" icon="#database" optional="true">
+                  <items label="#schema" path="schema" property="schemaList" icon="#database">
                      <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="%tree.tables.node.tip">
                         <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
                            <icon if="object.externalTable" icon="#table_external"/>
@@ -105,7 +105,7 @@
             </folder>
             <folder type="org.jkiss.dbeaver.ext.iotdb.model.IoTDBUser" label="Users" icon="#folder_user" description="IoTDB users">
                <items label="User" path="users" property="users" icon="#user">
-                  <folder type="org.jkiss.dbeaver.ext.iotdb.model.IoTDBGrant" label="Grants" description="IoTDB user grants">
+                  <folder type="org.jkiss.dbeaver.ext.iotdb.model.IoTDBGrant" label="Privileges" description="IoTDB user privileges">
                      <items label="Grant" path="grants" property="grants"/>
                   </folder>
                </items>
