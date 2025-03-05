@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,12 +44,12 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor {
         for (IConfigurationElement typeCfg : config.getChildren(OBJECT_TYPE)) {
             objectTypes.add(new ObjectType(typeCfg));
         }
-        this.objectTypes = objectTypes.toArray(new ObjectType[0]);
+        this.objectTypes = objectTypes.toArray(ObjectType.ZERO_SIZE_ARRAY);
     }
 
     public AbstractContextDescriptor(String pluginId) {
         super(pluginId);
-        this.objectTypes = new ObjectType[0];
+        this.objectTypes = ObjectType.ZERO_SIZE_ARRAY;
     }
 
     public boolean hasObjectTypes() {

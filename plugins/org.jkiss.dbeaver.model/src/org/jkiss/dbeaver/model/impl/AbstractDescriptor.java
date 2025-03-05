@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
@@ -173,6 +174,11 @@ public abstract class AbstractDescriptor {
     }
 
     public class ObjectType {
+        /**
+         * A constant zero-sized array of DBSAttributeBase
+         */
+        public static final ObjectType[] ZERO_SIZE_ARRAY = new ObjectType[0];
+
         private static final String ATTR_NAME = "name";
         private static final String ATTR_IF = "if";
         private static final String ATTR_FORCE_CHECK = "forceCheck";
