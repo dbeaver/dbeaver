@@ -51,7 +51,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     private static final Log log = Log.getLog(DBNPath.class);
 
-    private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
+    private static final DBNNode[] EMPTY_NODES = DBNNode.ZERO_SIZE_ARRAY;
 
     private static final ByteNumberFormat numberFormat = new ByteNumberFormat();
 
@@ -137,7 +137,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             return EMPTY_NODES;
         } else {
             filterChildren(result);
-            final DBNNode[] childNodes = result.toArray(new DBNNode[0]);
+            final DBNNode[] childNodes = result.toArray(DBNNode.ZERO_SIZE_ARRAY);
             sortChildren(childNodes);
             return childNodes;
         }

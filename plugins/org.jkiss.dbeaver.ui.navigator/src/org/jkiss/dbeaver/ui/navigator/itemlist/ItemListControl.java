@@ -298,7 +298,7 @@ public class ItemListControl extends NodeListControl
                             }
                         }
                     }
-                    children = filteredChildrenList.toArray(new DBNNode[0]);
+                    children = filteredChildrenList.toArray(DBNNode.ZERO_SIZE_ARRAY);
                 }
 
                 // Cache statistics

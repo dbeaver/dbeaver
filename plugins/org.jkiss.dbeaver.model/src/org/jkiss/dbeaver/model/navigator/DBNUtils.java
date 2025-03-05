@@ -113,7 +113,7 @@ public class DBNUtils {
                 }
                 filtered.add(node);
             }
-            result = filtered.toArray(new DBNNode[0]);
+            result = filtered.toArray(DBNNode.ZERO_SIZE_ARRAY);
         } else {
             result = children;
         }

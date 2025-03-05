@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -146,7 +146,7 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
         for (int index = 1, length = nodes.size(); index <= length; index++) {
             range.add(nodes.get(index - 1));
             if (index == length || getNodePosition(nodes.get(index - 1)) != getNodePosition(nodes.get(index)) - 1) {
-                ranges.add(range.toArray(new DBNNode[0]));
+                ranges.add(range.toArray(DBNNode.ZERO_SIZE_ARRAY));
                 range.clear();
             }
         }

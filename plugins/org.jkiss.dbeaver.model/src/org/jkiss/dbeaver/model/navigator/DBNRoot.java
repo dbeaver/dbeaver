@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBNNodeExtendable,
         if (extraNodes.isEmpty()) {
             return projects;
         } else if (projects.length == 0) {
-            return extraNodes.toArray(new DBNNode[0]);
+            return extraNodes.toArray(DBNNode.ZERO_SIZE_ARRAY);
         } else {
             DBNNode[] children = new DBNNode[extraNodes.size() + projects.length];
             System.arraycopy(projects, 0, children, 0, projects.length);
