@@ -53,6 +53,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
     protected boolean custom;
     protected boolean embedded;
     protected boolean disabled;
+    protected long fileCRC;
 
     public static DriverLibraryAbstract createFromPath(DriverDescriptor driver, FileType type, String path, String preferredVersion) {
         if (path.startsWith(DriverLibraryRepository.PATH_PREFIX)) {
@@ -210,6 +211,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
     }
 
     @Override
+    public long getFileCRC() {
+        return fileCRC;
+    }
+
+    @Override
     public boolean matchesCurrentPlatform() {
         return system == null || system.matches(DBWorkbench.getPlatform().getLocalSystem());
     }
@@ -239,6 +245,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         final Path tempFile = tempFolder.resolve(SecurityUtils.makeDigest(localFile.toString()));
 
         WebUtils.downloadRemoteFile(monitor, taskName, externalURL, tempFile, getAuthInfo(monitor));
+        this.fileCRC = DriverDescriptor.calculateFileCRC(tempFile);
         if (DBWorkbench.isDistributed()) {
             // save driver library file using file controller
             try {
@@ -246,7 +253,8 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
                 DBWorkbench.getPlatform().getFileController().saveFileData(
                     DBFileController.TYPE_DATABASE_DRIVER,
                     DriverUtils.getDistributedLibraryPath(localFile),
-                    fileData);
+                    fileData
+                );
             } catch (DBException e) {
                 throw new IOException(e.getMessage());
             } finally {
