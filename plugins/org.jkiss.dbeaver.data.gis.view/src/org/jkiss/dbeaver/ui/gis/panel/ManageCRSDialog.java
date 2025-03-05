@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.internal.UIActivator;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -125,12 +126,12 @@ public class ManageCRSDialog extends BaseDialog {
             @Override
             public Object[] getChildren(Object parentElement) {
                 if (parentElement == crsLoader) {
-                    return crsLoader.crsMap.keySet().toArray(new Object[0]);
+                    return crsLoader.crsMap.keySet().toArray(ZeroSizedArrays.OF_OBJECT);
                 } else if (parentElement instanceof String) {
                     List<CRSInfo> crsInfos = crsLoader.crsMap.get(parentElement);
-                    return crsInfos == null ? null : crsInfos.toArray(new Object[0]);
+                    return crsInfos == null ? null : crsInfos.toArray(ZeroSizedArrays.OF_OBJECT);
                 } else {
-                    return new Object[0];
+                    return ZeroSizedArrays.OF_OBJECT;
                 }
             }
 

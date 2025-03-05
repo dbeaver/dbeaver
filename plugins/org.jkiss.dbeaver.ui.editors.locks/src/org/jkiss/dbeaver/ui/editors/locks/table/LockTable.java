@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -99,7 +100,7 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock> {
 
         @Override
         public Object[] getChildren(Object parentElement) {
-            return new Object[0];
+            return ZeroSizedArrays.OF_OBJECT;
         }
 
         @Override

@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -448,8 +449,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         public Object[] toArray()
         {
             return curSelection == null ?
-                new Object[0] :
-                new Object[] { curSelection };
+                   ZeroSizedArrays.OF_OBJECT :
+                   new Object[] { curSelection };
         }
 
         @Override

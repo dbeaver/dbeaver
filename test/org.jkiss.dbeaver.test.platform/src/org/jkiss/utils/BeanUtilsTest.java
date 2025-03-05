@@ -306,29 +306,29 @@ public class BeanUtilsTest {
         Assert.assertEquals(123, BeanUtils.invokeObjectDeclaredMethod(
             child,
             "getValueA",
-            new Class[0],
-            new Object[0]
+            ZeroSizedArrays.OF_CLASS,
+            ZeroSizedArrays.OF_OBJECT
         ));
 
         Assert.assertEquals(456, BeanUtils.invokeObjectDeclaredMethod(
             child,
             "getValueB",
-            new Class[0],
-            new Object[0]
+            ZeroSizedArrays.OF_CLASS,
+            ZeroSizedArrays.OF_OBJECT
         ));
 
         Assert.assertEquals(0, BeanUtils.invokeObjectDeclaredMethod(
             child,
             "getValueC",
-            new Class[0],
-            new Object[0]
+            ZeroSizedArrays.OF_CLASS,
+            ZeroSizedArrays.OF_OBJECT
         ));
 
         Assert.assertThrows(NoSuchMethodException.class, () -> BeanUtils.invokeObjectDeclaredMethod(
             child,
             "getValueD",
-            new Class[0],
-            new Object[0]
+            ZeroSizedArrays.OF_CLASS,
+            ZeroSizedArrays.OF_OBJECT
         ));
     }
 

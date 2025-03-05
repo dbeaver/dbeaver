@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -442,7 +443,7 @@ public class MySQLTableColumn
         public Object[] getPossibleValues(MySQLTableColumn object)
         {
             if (object.getCharset() == null) {
-                return new Object[0];
+                return ZeroSizedArrays.OF_OBJECT;
             } else {
                 return object.getCharset().getCollations().toArray();
             }

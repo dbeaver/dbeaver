@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -360,7 +361,7 @@ public class DriverSelectViewer extends Viewer {
         drivers.sort((o1, o2) -> {
             return o1.getName().compareToIgnoreCase(o2.getName());
         });
-        return drivers.toArray(new Object[0]);
+        return drivers.toArray(ZeroSizedArrays.OF_OBJECT);
     }
 
     private void switchSelectorControl() {

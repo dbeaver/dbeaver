@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.DefaultViewerToolTipSupport;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.*;
 
@@ -282,7 +283,7 @@ public class DriverTreeViewer extends TreeViewer {
             } else if (parent instanceof DriverCategory) {
                 return ((DriverCategory) parent).getDrivers().toArray();
             } else {
-                return new Object[0];
+                return ZeroSizedArrays.OF_OBJECT;
             }
         }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -47,7 +48,7 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
     {
         try {
             DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, parentNode, true);
-            return children == null ? new Object[0] : children;
+            return children == null ? ZeroSizedArrays.OF_OBJECT : children;
         } catch (Throwable ex) {
             throw new InvocationTargetException(ex);
         }

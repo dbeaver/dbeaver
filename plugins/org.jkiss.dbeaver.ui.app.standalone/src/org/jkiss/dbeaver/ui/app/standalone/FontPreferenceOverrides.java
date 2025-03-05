@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.ui.DBIconBinary;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.*;
 
@@ -114,7 +115,7 @@ public class FontPreferenceOverrides {
 
         private Object[] getCategoryChildren(String categoryId) {
             if (isIdToHide(categoryId)) {
-                return new Object[0];
+                return ZeroSizedArrays.OF_OBJECT;
             }
             
             ArrayList<IThemeElementDefinition> list = new ArrayList<>();

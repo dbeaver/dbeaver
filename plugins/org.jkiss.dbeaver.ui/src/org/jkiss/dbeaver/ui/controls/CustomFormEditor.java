@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.List;
 import java.util.*;
@@ -242,7 +243,7 @@ public class CustomFormEditor {
             Object[] items = listProvider.getPossibleValues(object);
             if (items == null && property instanceof ObjectPropertyDescriptor opd && opd.hasListValueProvider()) {
                 // It is a list provider but it seems to be lazy and not yet initialized
-                items = new Object[0];
+                items = ZeroSizedArrays.OF_OBJECT;
             }
             if (items != null) {
                 List<String> strings = new ArrayList<>(items.length);

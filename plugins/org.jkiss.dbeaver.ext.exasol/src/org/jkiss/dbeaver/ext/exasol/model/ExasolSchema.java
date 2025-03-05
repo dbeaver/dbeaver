@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.ByteNumberFormat;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -409,7 +409,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
             List<ExasolGrantee> allGrantee = new ArrayList<>();
             allGrantee.addAll(dataSource.getUserCache().getCachedObjects());
             allGrantee.addAll(dataSource.getRoleCache().getCachedObjects());
-            return allGrantee.toArray(new Object[0]);
+            return allGrantee.toArray(ZeroSizedArrays.OF_OBJECT);
 		}
 		
 	}

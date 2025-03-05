@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -1613,7 +1614,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (groupingColumn != null && parentElement instanceof ObjectsGroupingWrapper) {
                 return ((ObjectsGroupingWrapper) parentElement).groupedElements.toArray();
             }
-            return new Object[0];
+            return ZeroSizedArrays.OF_OBJECT;
         }
 
         @Override

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,12 +39,12 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.debug.ui.internal.DebugUIInternals;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.*;
 
 public class DatabaseLaunchContributionItem extends ContributionItem {
-
-    private static final Object[] NO_OBJECTS = new Object[0];
+    private static final Object[] NO_OBJECTS = ZeroSizedArrays.OF_OBJECT;
 
     private final String mode;
 

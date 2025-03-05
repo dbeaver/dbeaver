@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -229,7 +230,7 @@ public class PostgreTablePolicy implements DBSObject, DBPNamedObject2, DBPSaveab
                 return roles.toArray();
             } catch (DBException e) {
                 log.error("Error reading roles", e);
-                return new Object[0];
+                return ZeroSizedArrays.OF_OBJECT;
             }
         }
     }

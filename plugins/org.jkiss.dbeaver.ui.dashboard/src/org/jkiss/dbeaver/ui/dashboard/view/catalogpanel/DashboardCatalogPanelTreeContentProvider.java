@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -107,7 +108,7 @@ public class DashboardCatalogPanelTreeContentProvider extends TreeContentProvide
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Error reading dashboard info", null, e);
         }
-        return new Object[0];
+        return ZeroSizedArrays.OF_OBJECT;
     }
 
     @Override

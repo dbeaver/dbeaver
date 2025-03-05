@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -1464,10 +1465,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
         {
             try {
                 Collection<PostgreTablespace> tablespaces = object.getTablespaces(new VoidProgressMonitor());
-                return tablespaces.toArray(new Object[0]);
+                return tablespaces.toArray(ZeroSizedArrays.OF_OBJECT);
             } catch (DBException e) {
                 log.error(e);
-                return new Object[0];
+                return ZeroSizedArrays.OF_OBJECT;
             }
         }
     }
@@ -1484,10 +1485,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
         {
             try {
                 Collection<? extends PostgreRole> roles = object.getAuthIds(new VoidProgressMonitor());
-                return roles.toArray(new Object[0]);
+                return roles.toArray(ZeroSizedArrays.OF_OBJECT);
             } catch (DBException e) {
                 log.error(e);
-                return new Object[0];
+                return ZeroSizedArrays.OF_OBJECT;
             }
         }
     }
@@ -1504,10 +1505,10 @@ public class PostgreDatabase extends JDBCRemoteInstance
         {
             try {
                 Collection<PostgreCharset> tablespaces = object.getEncodings(new VoidProgressMonitor());
-                return tablespaces.toArray(new Object[0]);
+                return tablespaces.toArray(ZeroSizedArrays.OF_OBJECT);
             } catch (DBException e) {
                 log.error(e);
-                return new Object[0];
+                return ZeroSizedArrays.OF_OBJECT;
             }
         }
     }

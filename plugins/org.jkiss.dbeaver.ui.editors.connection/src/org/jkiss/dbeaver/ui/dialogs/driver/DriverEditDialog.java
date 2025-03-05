@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.File;
 import java.io.IOException;
@@ -1037,9 +1038,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 if (CommonUtils.isEmpty(files)) {
                     return null;
                 }
-                return files.toArray(new Object[0]);
+                return files.toArray(ZeroSizedArrays.OF_OBJECT);
             }
-            return new Object[0];
+            return ZeroSizedArrays.OF_OBJECT;
         }
 
         @Override

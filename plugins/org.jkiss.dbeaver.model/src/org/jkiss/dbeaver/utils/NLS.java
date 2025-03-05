@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.utils;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +35,6 @@ public abstract class NLS {
 
     private static final Log log = Log.getLog(NLS.class);
 
-    private static final Object[] EMPTY_ARGS = new Object[0];
     private static final String EXTENSION = ".properties"; //$NON-NLS-1$
     private static String[] nlSuffixes;
 
@@ -119,7 +119,7 @@ public abstract class NLS {
         if (message == null)
             return "No message available."; //$NON-NLS-1$
         if (args == null || args.length == 0)
-            args = EMPTY_ARGS;
+            args = ZeroSizedArrays.OF_OBJECT;
 
         int length = message.length();
         // estimate correct size of string buffer to avoid growth

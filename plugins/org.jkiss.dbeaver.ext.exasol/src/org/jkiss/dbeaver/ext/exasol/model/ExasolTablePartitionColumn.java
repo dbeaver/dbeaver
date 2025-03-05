@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2019 Karl Griesser (fullref@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +23,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.utils.ZeroSizedArrays;
 
 public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
 
@@ -119,7 +119,7 @@ public class ExasolTablePartitionColumn extends AbstractTableIndexColumn {
 				return object.getTable().getAvailableColumns(new VoidProgressMonitor()).toArray();
 			} catch (DBException e) {
 				log.error("Failed to get list of available columns",e);
-				return new Object[0];
+				return ZeroSizedArrays.OF_OBJECT;
 			}
 		}
 		

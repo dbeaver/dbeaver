@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDataContainerOptions;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.IOException;
 import java.util.*;
@@ -118,7 +119,7 @@ class CopyAsConfigurationDialog extends BaseDialog {
                 if (inputElement instanceof Collection) {
                     return ((Collection<?>) inputElement).toArray();
                 }
-                return new Object[0];
+                return ZeroSizedArrays.OF_OBJECT;
             }
         });
 

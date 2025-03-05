@@ -65,6 +65,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -451,7 +452,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         @Override
         public Object[] getChildren(Object parentElement) {
-            return new Object[0];
+            return ZeroSizedArrays.OF_OBJECT;
         }
 
         @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -112,14 +113,14 @@ public class ExecuteBatchWithMultipleInsert extends ExecuteInsertBatchImpl {
                     // We can reuse statement, but not for the last values (their amount can be different from previous batches)
                     if (i == rowsCount - 1) {
                         Collections.addAll(multiRowInsertBatchValuesList, objects);
-                        Object[] allMultiInsertValues = multiRowInsertBatchValuesList.toArray(new Object[0]);
+                        Object[] allMultiInsertValues = multiRowInsertBatchValuesList.toArray(ZeroSizedArrays.OF_OBJECT);
                         try (DBCStatement statement = prepareStatement(session, handlers, allMultiInsertValues, options)) {
                             bindAndFlushStatement(handlers, statistics, statement, allMultiInsertValues, skipBindValues);
                             multiRowInsertBatchValuesList.clear();
                             break;
                         }
                     }
-                    Object[] allMultiInsertValuesBatch = multiRowInsertBatchValuesList.toArray(new Object[0]);
+                    Object[] allMultiInsertValuesBatch = multiRowInsertBatchValuesList.toArray(ZeroSizedArrays.OF_OBJECT);
                     batchStatement = prepareStatement(session, handlers, allMultiInsertValuesBatch, options);
                     bindAndFlushStatement(handlers, statistics, batchStatement, allMultiInsertValuesBatch, skipBindValues);
                     multiRowInsertBatchValuesList.clear();

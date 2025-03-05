@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectWithType;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -333,9 +334,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         public Object[] getPossibleValues(PostgreTableBase object)
         {
             if (!object.getDataSource().getServerType().supportsTablespaces()) {
-                return new Object[0];
+                return ZeroSizedArrays.OF_OBJECT;
             }
-            return object.getDatabase().getTablespaceCache().getCachedObjects().toArray(new Object[0]);
+            return object.getDatabase().getTablespaceCache().getCachedObjects().toArray(ZeroSizedArrays.OF_OBJECT);
         }
     }
 

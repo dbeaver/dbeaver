@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 /**
  * TreeLoadVisualizer
  */
 public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
-
-    public static final Object[] EMPTY_ELEMENT_ARRAY = new Object[0];
-
     private final DBNNode parent;
     private final TreeNodeSpecial placeHolder;
     private final AbstractTreeViewer viewer;
@@ -112,7 +110,7 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
             LoadingJob.createService(service, visualizer).schedule();
             return new Object[]{placeHolder};
         }
-        return EMPTY_ELEMENT_ARRAY;
+        return ZeroSizedArrays.OF_OBJECT;
     }
 
 }

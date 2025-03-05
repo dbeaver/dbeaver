@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
     @NotNull
     @Override
     public Class<? extends DBSObject>[] getChildTypes() {
-        return new Class[0];
+        return ZeroSizedArrays.OF_CLASS;
     }
 
     @Override
@@ -126,4 +127,3 @@ public class SQLServerViewManager extends SQLServerBaseTableManager<SQLServerVie
 
 
 }
-

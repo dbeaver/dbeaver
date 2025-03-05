@@ -57,10 +57,7 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
-import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.BeanUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.StandardConstants;
+import org.jkiss.utils.*;
 import org.osgi.framework.Bundle;
 
 import java.lang.reflect.Field;
@@ -136,7 +133,12 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     private void patchActionSetIcon(IConfigurationElement searchActionItem, String iconPath) {
         try {
-            Object cfgElement = BeanUtils.invokeObjectDeclaredMethod(searchActionItem, "getConfigurationElement", new Class[0], new Object[0]);
+            Object cfgElement = BeanUtils.invokeObjectDeclaredMethod(
+                searchActionItem,
+                "getConfigurationElement",
+                ZeroSizedArrays.OF_CLASS,
+                ZeroSizedArrays.OF_OBJECT
+            );
             if (cfgElement  != null) {
                 Field pavField = cfgElement.getClass().getDeclaredField("propertiesAndValue");
                 pavField.setAccessible(true);

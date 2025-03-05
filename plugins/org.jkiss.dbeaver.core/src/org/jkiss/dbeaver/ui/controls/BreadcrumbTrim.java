@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.controls.breadcrumb.BreadcrumbViewer;
 import org.jkiss.dbeaver.ui.editors.ILazyEditorInput;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.function.Consumer;
 
@@ -247,7 +248,7 @@ public class BreadcrumbTrim {
             if (parent != null) {
                 return getChildren(parent);
             }
-            return new Object[0];
+            return ZeroSizedArrays.OF_OBJECT;
         }
 
         @Override
@@ -271,7 +272,7 @@ public class BreadcrumbTrim {
             if (children != null) {
                 return children;
             }
-            return new Object[0];
+            return ZeroSizedArrays.OF_OBJECT;
         }
 
         @Override

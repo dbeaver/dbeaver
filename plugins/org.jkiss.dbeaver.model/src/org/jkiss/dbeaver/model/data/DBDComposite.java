@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.utils.ZeroSizedArrays;
 
 /**
  * Structured data record.
@@ -30,7 +31,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 public interface DBDComposite extends DBDComplexValue {
 
     DBSEntityAttribute[] EMPTY_ATTRIBUTE = new DBSEntityAttribute[0];
-    Object[] EMPTY_VALUES = new Object[0];
 
     DBSDataType getDataType();
 
