@@ -114,6 +114,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -210,7 +211,7 @@ public class ResultSetViewer extends Viewer
     private ResultSetRow curRow;
     // Mode
     private boolean recordMode;
-    private int[] selectedRecords = new int[0];
+    private int[] selectedRecords = ZeroSizedArrays.OF_INT;
 
     private Integer segmentFetchSize;
 
@@ -1660,7 +1661,7 @@ public class ResultSetViewer extends Viewer
             int rowCount = model.getRowCount();
             if (curRow == null || curRow.getVisualNumber() >= rowCount) {
                 curRow = rowCount == 0 ? null : model.getRow(rowCount - 1);
-                selectedRecords = curRow == null ? new int[0] : new int[] { curRow.getVisualNumber() };
+                selectedRecords = curRow == null ? ZeroSizedArrays.OF_INT : new int[] { curRow.getVisualNumber() };
             }
 
             // Set cursor on new row
@@ -2209,7 +2210,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         } else {
-            selectedRecords = new int[0];
+            selectedRecords = ZeroSizedArrays.OF_INT;
         }
     }
 
@@ -2506,10 +2507,10 @@ public class ResultSetViewer extends Viewer
         if (this.selectedRecords.length > 1) {
             this.selectedRecords = Arrays.stream(this.selectedRecords).filter(value -> value < rows.size()).toArray();
             if (this.selectedRecords.length == 0) {
-                this.selectedRecords = this.curRow == null ? new int[0] : new int[]{curRow.getVisualNumber()};
+                this.selectedRecords = this.curRow == null ? ZeroSizedArrays.OF_INT : new int[]{curRow.getVisualNumber()};
             }
         } else {
-            this.selectedRecords = this.curRow == null ? new int[0] : new int[]{curRow.getVisualNumber()};
+            this.selectedRecords = this.curRow == null ? ZeroSizedArrays.OF_INT : new int[]{curRow.getVisualNumber()};
         }
 
         {
@@ -4379,7 +4380,7 @@ public class ResultSetViewer extends Viewer
         this.model.releaseAllData();
         this.model.clearData();
         this.curRow = null;
-        this.selectedRecords = new int[0];
+        this.selectedRecords = ZeroSizedArrays.OF_INT;
         this.activePresentation.clearMetaData();
         if (clearMetaData) {
             this.model.resetMetaData();
@@ -4468,7 +4469,7 @@ public class ResultSetViewer extends Viewer
             createDataPersister(true).rejectChanges();
             if (model.getAllRows().isEmpty()) {
                 curRow = null;
-                selectedRecords = new int[0];
+                selectedRecords = ZeroSizedArrays.OF_INT;
             }
         } catch (DBException e) {
             log.debug(e);

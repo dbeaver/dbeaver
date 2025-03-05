@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -610,7 +611,7 @@ public class JDBCVoidStatementImpl implements PreparedStatement {
     public int[] executeBatch()
         throws SQLException
     {
-        return new int[0];
+        return ZeroSizedArrays.OF_INT;
     }
 
     @Nullable
