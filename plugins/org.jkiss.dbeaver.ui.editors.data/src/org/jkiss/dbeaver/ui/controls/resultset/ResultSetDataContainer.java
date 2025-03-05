@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -180,7 +180,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         List<DBDAttributeBinding> filtered = new ArrayList<>();
         DBDAttributeBinding[] preFiltered;
         if (filterAttributes && !options.getSelectedColumns().isEmpty()) {
-            preFiltered = options.getSelectedColumns().toArray(new DBDAttributeBinding[0]);
+            preFiltered = options.getSelectedColumns().toArray(DBDAttributeBinding.ZERO_SIZE_ARRAY);
             // Replace pre-filtered attributes with originally passed attributes
             // This is important because they may be wrappers
             for (int i = 0; i < preFiltered.length; i++) {
@@ -212,7 +212,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
             }
             return c1.getVisualPosition() - c2.getVisualPosition();
         });
-        return filtered.toArray(new DBDAttributeBinding[0]);
+        return filtered.toArray(DBDAttributeBinding.ZERO_SIZE_ARRAY);
     }
 
     private class ModelResultSet implements DBCResultSet, DBCResultFiltered {

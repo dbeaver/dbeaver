@@ -50,7 +50,7 @@ public class ResultSetModel implements DBDResultSetModel {
     private static final Log log = Log.getLog(ResultSetModel.class);
 
     // Attributes
-    private DBDAttributeBinding[] attributes = new DBDAttributeBinding[0];
+    private DBDAttributeBinding[] attributes = DBDAttributeBinding.ZERO_SIZE_ARRAY;
     private List<DBDAttributeBinding> visibleAttributes = new ArrayList<>();
     private DBDAttributeBinding documentAttribute = null;
     private DBDDataFilter dataFilter;
@@ -249,7 +249,7 @@ public class ResultSetModel implements DBDResultSetModel {
                 result.add(attr);
             }
         }
-        return result.toArray(new DBDAttributeBinding[0]);
+        return result.toArray(DBDAttributeBinding.ZERO_SIZE_ARRAY);
     }
 
     @NotNull
@@ -691,7 +691,7 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     void resetMetaData() {
-        this.attributes = new DBDAttributeBinding[0];
+        this.attributes = DBDAttributeBinding.ZERO_SIZE_ARRAY;
         this.visibleAttributes.clear();
         this.documentAttribute = null;
         this.singleSourceEntity = null;
@@ -723,7 +723,7 @@ public class ResultSetModel implements DBDResultSetModel {
                     isDocumentBased = true;
                     List<DBDAttributeBinding> nested = topAttr.getNestedBindings();
                     if (nested != null && !nested.isEmpty()) {
-                        attributes = nested.toArray(new DBDAttributeBinding[0]);
+                        attributes = nested.toArray(DBDAttributeBinding.ZERO_SIZE_ARRAY);
                         fillVisibleAttributes();
                     }
                 }
@@ -742,7 +742,7 @@ public class ResultSetModel implements DBDResultSetModel {
 
         if (singleSourceEntity == null) {
             singleSourceEntity = DBExecUtils.detectSingleSourceTable(
-                visibleAttributes.toArray(new DBDAttributeBinding[0]));
+                visibleAttributes.toArray(DBDAttributeBinding.ZERO_SIZE_ARRAY));
         }
 
         updateColorMapping(false);

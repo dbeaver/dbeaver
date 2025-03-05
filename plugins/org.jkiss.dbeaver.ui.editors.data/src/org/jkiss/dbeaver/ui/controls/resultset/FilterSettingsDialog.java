@@ -251,7 +251,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     if (nestedBindings == null || nestedBindings.isEmpty()) {
                         return null;
                     }
-                    final DBDAttributeBinding[] res = nestedBindings.toArray(new DBDAttributeBinding[0]);
+                    final DBDAttributeBinding[] res = nestedBindings.toArray(DBDAttributeBinding.ZERO_SIZE_ARRAY);
                     Arrays.sort(res, activeSorter);
                     return res;
                 }
