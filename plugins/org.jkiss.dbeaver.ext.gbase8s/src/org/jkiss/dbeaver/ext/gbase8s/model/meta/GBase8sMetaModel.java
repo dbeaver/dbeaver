@@ -295,17 +295,17 @@ public class GBase8sMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session,
-            @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
+    public JDBCStatement prepareTableColumnLoadStatement(
+            @NotNull JDBCSession session,
+            @NotNull GenericStructContainer owner,
+            @Nullable GenericTableBase forTable) throws SQLException {
         String tableName = forTable == null ? owner.getDataSource().getAllObjectsPattern()
                 : JDBCUtils.escapeWildCards(session, forTable.getName());
         String catalog = owner.getCatalog() == null ? null : owner.getCatalog().getName();
         String schema = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
                 : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
         boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
-        String ownerPattern = """
-                %s%s
-                """.formatted(isOracleMode ? schema : catalog, isOracleMode ? "." : ":");
+        String ownerPattern = "%s%s".formatted(isOracleMode ? schema : catalog, isOracleMode ? "." : ":");
         String sql = """
                 SELECT
                     t.tabname::VARCHAR(128) AS TABLE_NAME,
@@ -397,9 +397,7 @@ public class GBase8sMetaModel extends GenericMetaModel {
         String schema = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
                 : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
         boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
-        String ownerPattern = """
-                %s%s
-                """.formatted(isOracleMode ? schema : catalog, isOracleMode ? "." : ":");
+        String ownerPattern = "%s%s".formatted(isOracleMode ? schema : catalog, isOracleMode ? "." : ":");
         String sql = """
                 SELECT t.tabid, t.tabname AS TABLE_NAME, t.owner AS
                     %s,
