@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,17 @@ import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.dpi.DPIObject;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 
 /**
  * Meta object
  */
 @DPIObject
 public interface DBSObject extends DBPNamedObject, DBPObjectWithDescription, DBPPersistedObject {
+    /**
+     * A constant zero-sized array for sharing.
+     */
+    DBSObject[] ZERO_SIZE_ARRAY = new DBSObject[0];
 
     /**
      * Parent object
