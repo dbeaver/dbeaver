@@ -50,6 +50,11 @@ public interface DBPDataSourceContainer extends
     DBSObject, DBDFormatSettings, DBPNamedObject2, DBPDataSourcePermissionOwner, DBPSecretHolder
 {
     /**
+     * A constant zero-sized array for sharing.
+     */
+    DBPDataSourceContainer[] ZERO_SIZE_ARRAY = new DBPDataSourceContainer[0];
+
+    /**
      * Container unique ID
      * @return id
      */

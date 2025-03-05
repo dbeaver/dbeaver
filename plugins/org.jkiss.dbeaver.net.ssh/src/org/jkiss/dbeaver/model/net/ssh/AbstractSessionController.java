@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -488,7 +488,7 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
         @NotNull
         @Override
         protected DBPDataSourceContainer[] getDataSources() {
-            return dataSources.keySet().toArray(new DBPDataSourceContainer[0]);
+            return dataSources.keySet().toArray(DBPDataSourceContainer.ZERO_SIZE_ARRAY);
         }
     }
 
