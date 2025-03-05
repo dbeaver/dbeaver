@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.DBSQLException;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -630,7 +631,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
                     log.debug("Internal error during clearWarnings", e);
                 }
             }
-            return warnings == null ? null : warnings.toArray(new Throwable[0]);
+            return warnings == null ? null : warnings.toArray(ZeroSizedArrays.OF_THROWABLE);
         } catch (SQLException e) {
             throw new DBCException(e, connection.getExecutionContext());
         }
