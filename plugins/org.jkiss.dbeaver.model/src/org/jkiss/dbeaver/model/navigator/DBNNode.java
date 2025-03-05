@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -37,7 +36,7 @@ import java.util.List;
 /**
  * DBNNode
  */
-public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized, DBPObjectWithDescription, DBPPersistedObject, DBPAdaptable {
+public abstract class DBNNode implements DBPNamedObjectLocalized, DBPObjectWithDescription, DBPPersistedObject, DBPAdaptable {
     static final Log log = Log.getLog(DBNNode.class);
 
     /**
