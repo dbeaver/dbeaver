@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import javax.net.ssl.*;
 import java.io.IOException;
@@ -85,7 +86,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
                 final String password = sslConfig.getPassword() == null ?
                     sslConfig.getSecureProperty(PROP_SSL_KEYSTORE_PASSWORD) :
                     sslConfig.getPassword();
-                char[] keyStorePasswordData = CommonUtils.isEmpty(password) ? new char[0] : password.toCharArray();
+                char[] keyStorePasswordData = CommonUtils.isEmpty(password) ? ZeroSizedArrays.OF_CHAR : password.toCharArray();
                 if (keyStore != null) {
                     securityManager.addCertificate(dataSource.getContainer(), SSLConstants.SSL_CERT_TYPE, keyStore, keyStorePasswordData);
                 } else if (keyStoreData != null) {
