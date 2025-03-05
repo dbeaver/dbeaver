@@ -1156,7 +1156,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @NotNull
     @Override
     public DBPPropertyDescriptor[] getMainPropertyDescriptors() {
-        return mainPropertyDescriptors.toArray(new DBPPropertyDescriptor[0]);
+        return mainPropertyDescriptors.toArray(DBPPropertyDescriptor.ZERO_SIZE_ARRAY);
     }
 
     public void addMainPropertyDescriptors(Collection<ProviderPropertyDescriptor> props) {

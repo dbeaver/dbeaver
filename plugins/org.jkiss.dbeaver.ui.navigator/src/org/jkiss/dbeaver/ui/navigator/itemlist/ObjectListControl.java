@@ -1069,7 +1069,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Override
         public DBPPropertyDescriptor[] getProperties() {
-            return getAllProperties().toArray(new DBPPropertyDescriptor[0]);
+            return getAllProperties().toArray(DBPPropertyDescriptor.ZERO_SIZE_ARRAY);
         }
 
         @Override

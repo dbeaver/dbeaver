@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,10 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
  * Property descriptor.
  */
 public interface DBPPropertyDescriptor {
+    /**
+     * A zero-sized array for sharing.
+     */
+    DBPPropertyDescriptor[] ZERO_SIZE_ARRAY = new DBPPropertyDescriptor[0];
 
     /**
      * Returns the id for this property. This object is used internally to distinguish one property descriptor from another.

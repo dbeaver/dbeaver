@@ -389,7 +389,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
         // Initialize property editor
         DataTransferProcessorDescriptor processor = getProducerProcessor();
-        DBPPropertyDescriptor[] properties = processor == null ? new DBPPropertyDescriptor[0] : processor.getProperties();
+        DBPPropertyDescriptor[] properties = processor == null ? DBPPropertyDescriptor.ZERO_SIZE_ARRAY : processor.getProperties();
         propertySource = new PropertySourceCustom(
             properties,
             getWizard().getSettings().getProcessorProperties());
