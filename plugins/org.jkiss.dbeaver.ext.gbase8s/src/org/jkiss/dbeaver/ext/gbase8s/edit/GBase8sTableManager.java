@@ -21,14 +21,18 @@ import java.util.List;
 import java.util.Map;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.gbase8s.GBase8sConstants;
+import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -61,8 +65,11 @@ public class GBase8sTableManager extends GenericTableManager implements DBEObjec
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, GenericTableBase object, Map<String, Object> options,
-            String newName) throws DBException {
+    public void renameObject(
+            @NotNull DBECommandContext commandContext,
+            @NotNull GenericTableBase object,
+            @NotNull Map<String, Object> options,
+            @Nullable String newName) throws DBException {
         if (object.isView()) {
             throw new DBException("View rename is not supported");
         }
@@ -70,30 +77,35 @@ public class GBase8sTableManager extends GenericTableManager implements DBEObjec
     }
 
     @Override
-    protected void addStructObjectCreateActions(
-            DBRProgressMonitor monitor,
-            DBCExecutionContext executionContext,
-            List<DBEPersistAction> actions,
-            StructCreateCommand command,
-            Map<String, Object> options) throws DBException {
-        super.addStructObjectCreateActions(monitor, executionContext, actions, command, options);
-        // Add a table comment
-        DBEPersistAction commentAction = buildTableCommentAction(command.getObject());
-        if (commentAction != null) {
-            actions.add(commentAction);
+    protected void addObjectExtraActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actions,
+            @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
+            @NotNull Map<String, Object> options) throws DBException {
+        GenericTableBase tableBase = command.getObject();
+        boolean objectSave = CommonUtils.getOption(options, DBPScriptObject.OPTION_OBJECT_SAVE);
+        boolean includeComments = CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS);
+        boolean hasDescription = !CommonUtils.isEmpty(tableBase.getDescription());
+        // Add table comment if needed
+        if ((objectSave && command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) || hasDescription) {
+            addTableCommentAction(actions, tableBase);
         }
-        for (GenericTableColumn column : command.getObject().getAttributes(monitor)) {
-            // Add a column comment
-            DBEPersistAction action = buildColumnCommentAction(column);
-            if (action != null) {
-                actions.add(action);
+        // Add column comments if needed
+        if (objectSave || includeComments) {
+            for (GenericTableColumn column : CommonUtils.safeCollection(tableBase.getAttributes(monitor))) {
+                if (!CommonUtils.isEmpty(column.getDescription())) {
+                    GenericTableColumnManager.addColumnCommentAction(actions, column, column.getTable());
+                }
             }
         }
     }
 
     @Override
-    protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions,
+    protected void addObjectRenameActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actions,
             @NotNull SQLObjectEditor<GenericTableBase, GenericStructContainer>.ObjectRenameCommand command,
             @NotNull Map<String, Object> options) {
         final GenericDataSource dataSource = command.getObject().getDataSource();
@@ -108,26 +120,12 @@ public class GBase8sTableManager extends GenericTableManager implements DBEObjec
                                 + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())));
     }
 
-    private DBEPersistAction buildTableCommentAction(GenericTableBase table) {
-        String description = table.getDescription();
-        if (CommonUtils.isNotEmpty(description)) {
-            String tableName = DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL);
-            String commentSQL = String.format(GBase8sConstants.SQL_TABLE_COMMENT, tableName,
-                    SQLUtils.quoteString(table, description));
-            return new SQLDatabasePersistAction("Comment on Table", commentSQL);
-        }
-        return null;
-    }
-
-    private DBEPersistAction buildColumnCommentAction(GenericTableColumn column) {
-        String description = column.getDescription();
-        if (CommonUtils.isNotEmpty(description)) {
-            String tableName = DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL);
-            String columnName = DBUtils.getQuotedIdentifier(column);
-            String commentSQL = String.format(GBase8sConstants.SQL_COLUMN_COMMENT, tableName, columnName,
-                    SQLUtils.quoteString(column, description));
-            return new SQLDatabasePersistAction("Comment on Column", commentSQL);
-        }
-        return null;
+    private void addTableCommentAction(
+            @NotNull List<DBEPersistAction> actionList,
+            @NotNull GenericTableBase table) {
+        String tableName = DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL);
+        String commentSQL = String.format(GBase8sConstants.SQL_TABLE_COMMENT, tableName,
+                SQLUtils.quoteString(table, CommonUtils.notEmpty(table.getDescription())));
+        actionList.add(new SQLDatabasePersistAction("Comment on Table", commentSQL));
     }
 }

@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
@@ -64,14 +63,23 @@ public class GBase8sTableColumnManager extends GenericTableColumnManager
             @NotNull List<DBEPersistAction> actionList,
             @NotNull SQLObjectEditor<GenericTableColumn, GenericTableBase>.ObjectChangeCommand command,
             @NotNull Map<String, Object> options) throws DBException {
-        final GBase8sTableColumn column = (GBase8sTableColumn) command.getObject();
-        // Modify column
+        GenericTableColumn column = command.getObject();
         actionList.add(new SQLDatabasePersistAction("Modify column",
                 "ALTER TABLE " + column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " MODIFY "
                         + getNestedDeclaration(monitor, column.getTable(), command, options)));
-        // Modify remark
+    }
+
+    @Override
+    protected void addObjectExtraActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actions,
+            @NotNull NestedObjectCommand<GenericTableColumn, PropertyHandler> command,
+            @NotNull Map<String, Object> options) throws DBException {
+        // Add column comment action if column description is specified
         if (command.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
-            addColumnCommentAction(actionList, column, column.getTable());
+            GenericTableColumn column = command.getObject();
+            addColumnCommentAction(actions, column, column.getTable());
         }
     }
 
