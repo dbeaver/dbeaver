@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -109,7 +110,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             generateObjectCommand(lines, object);
         }
 
-        return lines.toArray(new String[0]);
+        return lines.toArray(ZeroSizedArrays.OF_STRING);
     }
 
     public List<T> getCheckedObjects() {

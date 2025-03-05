@@ -2188,7 +2188,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public static String[] getDriversSources() {
         String sourcesString = DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES);
         List<String> pathList = CommonUtils.splitString(sourcesString, '|');
-        return pathList.toArray(new String[0]);
+        return pathList.toArray(ZeroSizedArrays.OF_STRING);
     }
 
     @NotNull
@@ -2209,7 +2209,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 log.error(e);
             }
         }
-        return libraries.toArray(new String[0]);
+        return libraries.toArray(ZeroSizedArrays.OF_STRING);
     }
 
     @Override

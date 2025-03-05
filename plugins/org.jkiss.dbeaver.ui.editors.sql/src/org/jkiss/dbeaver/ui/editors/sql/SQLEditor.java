@@ -141,10 +141,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
-import org.jkiss.utils.Pair;
+import org.jkiss.utils.*;
 
 import java.io.*;
 import java.net.URI;
@@ -4267,7 +4264,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (getQueryResultCounts() <= 1 && lastGoodQuery instanceof SQLQuery) {
                 features.add(FEATURE_DATA_FILTER);
             }
-            return features.toArray(new String[0]);
+            return features.toArray(ZeroSizedArrays.OF_STRING);
         }
 
         @NotNull

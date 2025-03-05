@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 /**
  * DBeaver application descriptor.
@@ -53,7 +54,7 @@ public class ApplicationDescriptor extends AbstractDescriptor {
         if (!CommonUtils.isEmptyTrimmed(umbrella)) {
             this.umbrellaProductIds = umbrella.split(",");
         } else {
-            this.umbrellaProductIds = new String[0];
+            this.umbrellaProductIds = ZeroSizedArrays.OF_STRING;
         }
         this.serverApplication = CommonUtils.toBoolean(config.getAttribute("server"));
         this.hidden = CommonUtils.toBoolean(config.getAttribute("hidden"));

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.security.user;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class SMUser extends SMSubject {
         boolean enabled,
         @Nullable String authRole
     ) {
-        this(userId, null, new String[0], enabled, authRole, true);
+        this(userId, null, ZeroSizedArrays.OF_STRING, enabled, authRole, true);
     }
 
     public SMUser(
@@ -42,7 +43,7 @@ public class SMUser extends SMSubject {
         @Nullable String authRole,
         boolean secretStorage
     ) {
-        this(userId, null, new String[0], enabled, authRole, secretStorage);
+        this(userId, null, ZeroSizedArrays.OF_STRING, enabled, authRole, secretStorage);
     }
 
 

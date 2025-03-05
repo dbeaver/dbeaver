@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -2336,7 +2337,7 @@ public final class DBUtils {
             throw new DBException("Type '" + type + "' has malformed modifiers");
         }
         if (modStartIndex < 0) {
-            return new Pair<>(type, new String[0]);
+            return new Pair<>(type, ZeroSizedArrays.OF_STRING);
         }
         final String name = (type.substring(0, modStartIndex) + type.substring(modEndIndex + 1)).trim();
         if (name.isEmpty()) {

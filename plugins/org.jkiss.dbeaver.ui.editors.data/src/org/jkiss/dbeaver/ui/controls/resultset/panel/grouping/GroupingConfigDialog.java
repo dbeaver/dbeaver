@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.StringEditorTable;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,12 +67,12 @@ class GroupingConfigDialog extends BaseDialog {
         for (DBDAttributeBinding attr : resultsContainer.getOwnerPresentation().getController().getModel().getAttributes()) {
             proposals.add(attr.getName());
         }
-        StringContentProposalProvider proposalProvider = new StringContentProposalProvider(new String[0]);
-        proposalProvider.setProposals(proposals.toArray(new String[0]));
+        StringContentProposalProvider proposalProvider = new StringContentProposalProvider(ZeroSizedArrays.OF_STRING);
+        proposalProvider.setProposals(proposals.toArray(ZeroSizedArrays.OF_STRING));
         columnsTable = StringEditorTable.createCustomEditableList(composite, "Columns", resultsContainer.getGroupAttributes(), new GroupingAttributeValueManager(), proposalProvider, true);
 
         Collections.addAll(proposals, "COUNT", "AVG", "MAX", "MIN", "SUM");
-        proposalProvider.setProposals(proposals.toArray(new String[0]));
+        proposalProvider.setProposals(proposals.toArray(ZeroSizedArrays.OF_STRING));
         functionsTable = StringEditorTable.createEditableList(composite, "Functions", resultsContainer.getGroupFunctions(), DBIcon.TREE_FUNCTION, proposalProvider);
 
         return composite;

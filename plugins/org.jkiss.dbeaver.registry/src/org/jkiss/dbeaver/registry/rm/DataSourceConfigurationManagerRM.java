@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.registry.DataSourceConfigurationManager;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -78,7 +79,7 @@ public class DataSourceConfigurationManagerRM implements DataSourceConfiguration
         try {
             String dsContent = rmController.getProjectsDataSources(
                 projectId,
-                dataSourceIds == null ? null : dataSourceIds.toArray(new String[0]));
+                dataSourceIds == null ? null : dataSourceIds.toArray(ZeroSizedArrays.OF_STRING));
             if (dsContent == null) {
                 return null;
             }

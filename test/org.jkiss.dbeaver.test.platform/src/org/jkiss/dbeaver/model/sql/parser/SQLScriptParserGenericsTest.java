@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.util.SQLEditorTestUtil;
+import org.jkiss.utils.ZeroSizedArrays;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -411,7 +412,7 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
                 expectedParts.add(expected[i]);
             }
         }
-        assertParse(dialectName, source, expectedParts.toArray(new String[0]));
+        assertParse(dialectName, source, expectedParts.toArray(ZeroSizedArrays.OF_STRING));
     }
 
     private void assertParse(String dialectName, String query, String[] expected) throws DBException {

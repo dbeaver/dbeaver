@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
@@ -276,7 +277,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (this.isPassword()) features.add(DBConstants.PROP_FEATURE_PASSWORD);
         if (this.isNonSecuredProperty()) features.add(DBConstants.PROP_FEATURE_NON_SECURED);
 
-        return features.toArray(new String[0]);
+        return features.toArray(ZeroSizedArrays.OF_STRING);
     }
 
     @Override

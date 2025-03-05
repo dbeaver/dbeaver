@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -664,7 +665,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         return new CustomComboBoxCellEditor(
                             mappingViewer,
                             mappingViewer.getTree(),
-                            tsfNames.toArray(new String[0]),
+                            tsfNames.toArray(ZeroSizedArrays.OF_STRING),
                             SWT.DROP_DOWN | SWT.READ_ONLY);
                     } else {
                         return null;
@@ -770,7 +771,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         return new CustomComboBoxCellEditor(
             mappingViewer,
             mappingViewer.getTree(),
-            mappingTypes.toArray(new String[0]),
+            mappingTypes.toArray(ZeroSizedArrays.OF_STRING),
             SWT.DROP_DOWN | SWT.READ_ONLY);
     }
 
@@ -819,7 +820,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
             mappingViewer,
             mappingViewer.getTree(),
-            items.toArray(new String[0]),
+            items.toArray(ZeroSizedArrays.OF_STRING),
             SWT.DROP_DOWN | (allowsCreate ? SWT.NONE : SWT.READ_ONLY));
         return editor;
     }

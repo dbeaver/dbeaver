@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerDescriptor;
 import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerRegistry;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -68,7 +69,7 @@ public class OpenLocalFileActionExt extends AbstractHandler {
         FileDialog dialog = new FileDialog(activeShell, SWT.OPEN | SWT.MULTI | SWT.SHEET);
         dialog.setText(IDEWorkbenchMessages.OpenLocalFileAction_title);
         dialog.setFilterPath(filterPath);
-        String[] dialogExtensions = extensions.toArray(new String[0]);
+        String[] dialogExtensions = extensions.toArray(ZeroSizedArrays.OF_STRING);
         dialog.setFilterExtensions(dialogExtensions);
         if (filterExtension != null) {
             int extIndex = ArrayUtils.indexOf(dialogExtensions, filterExtension);

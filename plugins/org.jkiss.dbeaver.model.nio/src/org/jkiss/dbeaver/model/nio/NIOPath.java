@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.nio;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +51,7 @@ public abstract class NIOPath implements Path {
     }
 
     protected String[] pathParts() {
-        return CommonUtils.isEmpty(path) ? new String[0] : Arrays.stream(path.split(getFileSystem().getSeparator()))
+        return CommonUtils.isEmpty(path) ? ZeroSizedArrays.OF_STRING : Arrays.stream(path.split(getFileSystem().getSeparator()))
             .filter(CommonUtils::isNotEmpty)
             .toArray(String[]::new);
     }

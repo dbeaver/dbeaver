@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -151,7 +152,7 @@ public class EditVirtualAttributePage extends BaseObjectEditPage implements IHel
         ContentAssistUtils.installContentProposal(
             expressionText,
             new SmartTextContentAdapter(),
-            new StringContentProposalProvider(expressionProposals.toArray(new String[0])));
+            new StringContentProposalProvider(expressionProposals.toArray(ZeroSizedArrays.OF_STRING)));
 
         previewText = UIUtils.createLabelText(panel, ResultSetMessages.virtual_edit_attribute_label_text_preview, "", SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
         previewText.setLayoutData(new GridData(GridData.FILL_BOTH));

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -53,16 +54,16 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     private static final String[] DEFAULT_LINE_COMMENTS = { "//"};
     private static final String[] QUERY_KEYWORDS = new String[] { SQLConstants.KEYWORD_SELECT };
-    private static final String[] EXEC_KEYWORDS = new String[0];
-    private static final String[] DDL_KEYWORDS = new String[0];
+    private static final String[] EXEC_KEYWORDS = ZeroSizedArrays.OF_STRING;
+    private static final String[] DDL_KEYWORDS = ZeroSizedArrays.OF_STRING;
     private static final Collection<String> TRANSACTION_NON_MODIFYING_KEYWORDS =
         Set.of(SQLConstants.KEYWORD_SELECT, "SHOW", "USE", "SET", SQLConstants.KEYWORD_EXPLAIN);
 
     public static final String[][] DEFAULT_IDENTIFIER_QUOTES = {{"\"", "\""}};
     public static final String[][] DEFAULT_STRING_QUOTES = {{"'", "'"}};
     private static final String[][] DEFAULT_BEGIN_END_BLOCK = new String[0][];
-    private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = new String[0];
-    public static final String[] DML_KEYWORDS = new String[0];
+    private static final String[] CORE_NON_TRANSACTIONAL_KEYWORDS = ZeroSizedArrays.OF_STRING;
+    public static final String[] DML_KEYWORDS = ZeroSizedArrays.OF_STRING;
     public static final Pair<String, String> IN_CLAUSE_PARENTHESES = new Pair<>("(", ")");
 
     public static final Locale DEF_LOCALE = Locale.ENGLISH;
@@ -316,7 +317,7 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @NotNull
     @Override
     public String[] getParametersPrefixes() {
-        return new String[0];//{String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX)};
+        return ZeroSizedArrays.OF_STRING;//{String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX)};
     }
 
     @Override
@@ -1023,5 +1024,3 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
 }
-
-

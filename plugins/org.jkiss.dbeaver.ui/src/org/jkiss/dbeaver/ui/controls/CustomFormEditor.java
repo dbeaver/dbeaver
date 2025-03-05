@@ -265,7 +265,7 @@ public class CustomFormEditor {
                         (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY) |
                         (readOnly ? SWT.READ_ONLY : SWT.NONE));
 
-                String[] stringsArray = strings.toArray(new String[0]);
+                String[] stringsArray = strings.toArray(ZeroSizedArrays.OF_STRING);
                 combo.setItems(stringsArray);
                 combo.setText(curValue);
                 combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));

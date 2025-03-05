@@ -64,10 +64,7 @@ import org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
-import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
-import org.jkiss.utils.StandardConstants;
+import org.jkiss.utils.*;
 import org.osgi.framework.Version;
 
 import java.io.*;
@@ -403,7 +400,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 workspaces.set(recentWorkspaces.size() - 1, WORKSPACE_DIR_CURRENT);
             }
         }
-        launchData.setRecentWorkspaces(Arrays.copyOf(workspaces.toArray(new String[0]), maxSize));
+        launchData.setRecentWorkspaces(Arrays.copyOf(workspaces.toArray(ZeroSizedArrays.OF_STRING), maxSize));
         launchData.writePersistedData();
         saveWorkspacesToBackup(workspaces);
         return workspaces;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -255,7 +256,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             if (!result.contains("")) { //$NON-NLS-1$
                 result.add(0, ""); //$NON-NLS-1$
             }
-            combo.setItems(result.toArray(new String[0]));
+            combo.setItems(result.toArray(ZeroSizedArrays.OF_STRING));
             combo.setText(oldText);
         });
     }

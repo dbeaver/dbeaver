@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.notifications.NotificationSettings;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.ui.registry.NotificationDescriptor;
 import org.jkiss.dbeaver.ui.registry.NotificationRegistry;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -170,7 +171,7 @@ public class PrefPageNotifications extends AbstractPrefPage implements IWorkbenc
                         return new CustomComboBoxCellEditor(
                             viewer,
                             viewer.getTable(),
-                            choices.toArray(new String[0]),
+                            choices.toArray(ZeroSizedArrays.OF_STRING),
                             SWT.DROP_DOWN | SWT.READ_ONLY
                         );
                     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.ZeroSizedArrays;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -145,7 +146,7 @@ public class DBUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void testExtractTypeModifiers() throws DBException {
-        Assert.assertEquals(new Pair<>("NUMBER", new String[0]), DBUtils.getTypeModifiers("NUMBER"));
+        Assert.assertEquals(new Pair<>("NUMBER", ZeroSizedArrays.OF_STRING), DBUtils.getTypeModifiers("NUMBER"));
         Assert.assertEquals(new Pair<>("NUMBER", new String[]{"5"}), DBUtils.getTypeModifiers("NUMBER(5)"));
         Assert.assertEquals(new Pair<>("NUMBER", new String[]{"10", "5"}), DBUtils.getTypeModifiers("NUMBER(10,   5)"));
         Assert.assertEquals(new Pair<>("NUMBER", new String[]{"10", "5", "TEST"}), DBUtils.getTypeModifiers("NUMBER (10, 5, TEST)"));

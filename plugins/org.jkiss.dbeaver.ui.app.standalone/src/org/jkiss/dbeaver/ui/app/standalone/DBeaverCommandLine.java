@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 import org.osgi.framework.Bundle;
 
 import java.io.FileInputStream;
@@ -204,7 +205,7 @@ public class DBeaverCommandLine
                 if (!ArrayUtils.isEmpty(fileArgs)) {
                     Collections.addAll(fileNames, fileArgs);
                 }
-                controller.openExternalFiles(fileNames.toArray(new String[0]));
+                controller.openExternalFiles(fileNames.toArray(ZeroSizedArrays.OF_STRING));
                 exitAfterExecute = true;
             }
         }
@@ -247,7 +248,7 @@ public class DBeaverCommandLine
                     applicationArgs.remove(index);
                 }
             }
-            return new DefaultParser().parse(ALL_OPTIONS, applicationArgs.toArray(new String[0]), false);
+            return new DefaultParser().parse(ALL_OPTIONS, applicationArgs.toArray(ZeroSizedArrays.OF_STRING), false);
         } catch (Exception e) {
             log.warn("Error parsing command line: " + e.getMessage());
             return null;

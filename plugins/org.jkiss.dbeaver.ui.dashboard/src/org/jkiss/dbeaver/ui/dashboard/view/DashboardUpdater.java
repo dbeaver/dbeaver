@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.dashboard.model.DashboardGroupContainer;
 import org.jkiss.dbeaver.ui.dashboard.model.DashboardItemContainer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -330,7 +331,7 @@ public class DashboardUpdater {
                 colNames.add(colName);
             }
         }
-        DashboardDataset dataset = new DashboardDataset(colNames.toArray(new String[0]));
+        DashboardDataset dataset = new DashboardDataset(colNames.toArray(ZeroSizedArrays.OF_STRING));
 
         while (dbResults.nextRow()) {
             Object[] values = new Object[colNames.size()];
@@ -383,7 +384,7 @@ public class DashboardUpdater {
             }
         }
 
-        DashboardDataset newDataset = new DashboardDataset(colNamesFromRows.toArray(new String[0]));
+        DashboardDataset newDataset = new DashboardDataset(colNamesFromRows.toArray(ZeroSizedArrays.OF_STRING));
         for (DashboardDatasetRow newRow : newRows) {
             newDataset.addRow(newRow);
         }

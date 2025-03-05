@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -57,7 +58,7 @@ public class SQLSyntaxManager {
     @NotNull
     private String catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
     @NotNull
-    private String[] statementDelimiters = new String[0];
+    private String[] statementDelimiters = ZeroSizedArrays.OF_STRING;
 
     private char escapeChar;
     private SQLScriptStatementDelimiterMode statementDelimiterMode;
@@ -141,7 +142,7 @@ public class SQLSyntaxManager {
 
     public void init(@NotNull SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore)
     {
-        this.statementDelimiters = new String[0];
+        this.statementDelimiters = ZeroSizedArrays.OF_STRING;
         this.sqlDialect = dialect;
         this.preferenceStore = preferenceStore;
         this.identifierQuoteStrings = sqlDialect.getIdentifierQuoteStrings();
@@ -182,7 +183,7 @@ public class SQLSyntaxManager {
             paramsPrefixes.add(paramPrefixString);
         }
         Collections.addAll(paramsPrefixes, dialect.getParametersPrefixes());
-        namedParameterPrefixes = paramsPrefixes.toArray(new String[0]);
+        namedParameterPrefixes = paramsPrefixes.toArray(ZeroSizedArrays.OF_STRING);
 
         this.controlCommandPrefix = preferenceStore.getString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX);
         if (CommonUtils.isEmpty(this.controlCommandPrefix)) {

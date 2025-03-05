@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.editors.sql.ai.controls.ScopeSelectorControl;
 import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.List;
 
@@ -212,7 +213,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         inputText = inputField.getText().trim();
 
         settings.setScope(scopeSelectorControl.getScope());
-        settings.setCustomObjectIds(scopeSelectorControl.getCheckedObjectIds().toArray(new String[0]));
+        settings.setCustomObjectIds(scopeSelectorControl.getCheckedObjectIds().toArray(ZeroSizedArrays.OF_STRING));
         settings.saveSettings();
 
         super.okPressed();

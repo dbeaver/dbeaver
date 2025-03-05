@@ -480,7 +480,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
                     if (classListCombo != null && !classListCombo.isDisposed()) {
                         List<String> classNames = classFinder.getDriverClassNames();
-                        classListCombo.setItems(classNames.toArray(new String[0]));
+                        classListCombo.setItems(classNames.toArray(ZeroSizedArrays.OF_STRING));
                         if (!RuntimeUtils.isMacOS()) {
                             classListCombo.setListVisible(true);
                         } else if (!classNames.isEmpty()) {

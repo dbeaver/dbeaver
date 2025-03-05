@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.*;
 
@@ -39,7 +40,7 @@ public class BasicSQLDialect extends AbstractSQLDialect implements SQLDialectRel
     public static final BasicSQLDialect INSTANCE = new BasicSQLDialect();
 
     private static final String[] DEFAULT_LINE_COMMENTS = {SQLConstants.SL_COMMENT};
-    private static final String[] EXEC_KEYWORDS = new String[0];
+    private static final String[] EXEC_KEYWORDS = ZeroSizedArrays.OF_STRING;
     private static final String[] DDL_KEYWORDS = new String[]{
         "CREATE", "ALTER", "DROP"
     };
@@ -314,7 +315,7 @@ public class BasicSQLDialect extends AbstractSQLDialect implements SQLDialectRel
 
     @NotNull
     public String[] getDMLKeywords() {
-        return isStandardSQL() ? DML_KEYWORDS : new String[0];
+        return isStandardSQL() ? DML_KEYWORDS : ZeroSizedArrays.OF_STRING;
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -185,7 +186,7 @@ public class DPIApplication extends BaseApplicationImpl implements DBPApplicatio
     @NotNull
     @Override
     public synchronized List<Path> getDriverLibsLocation(@NotNull String driverId) {
-        return Arrays.stream(driverLibsLocation.getOrDefault(driverId, new String[0]))
+        return Arrays.stream(driverLibsLocation.getOrDefault(driverId, ZeroSizedArrays.OF_STRING))
             .map(Path::of)
             .collect(Collectors.toList());
     }

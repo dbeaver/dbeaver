@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.text.parser.TPWordDetector;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,7 @@ import java.util.List;
  */
 public final class HippieProposalProcessor {
 
-    private static final String[] NO_PROPOSALS = new String[0];
+    private static final String[] NO_PROPOSALS = ZeroSizedArrays.OF_STRING;
     private final HippieCompletionEngine fEngine = new HippieCompletionEngine();
     private TPWordDetector wordDetector;
 
@@ -69,7 +70,7 @@ public final class HippieProposalProcessor {
                 }
             }
 
-            return result.toArray(new String[0]);
+            return result.toArray(ZeroSizedArrays.OF_STRING);
 
         } catch (BadLocationException x) {
             // ignore and return no proposals

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.parser;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.Trie;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TrieLookupComparator;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.jkiss.utils.ZeroSizedArrays;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -162,7 +163,7 @@ public class TrieTest extends DBeaverUnitTest {
                 List.of("5", "1", "2", "4"),
                 Arrays.asList("5", "", "2", "4"),
                 List.of("5", "1y", "2"),
-                Arrays.asList(new String[0]),
+                Arrays.asList(ZeroSizedArrays.OF_STRING),
                 List.of("6"),
                 List.of("5", "2", "3", "10", "11")
         );

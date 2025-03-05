@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -205,7 +206,7 @@ public class NavigatorDragSourceListener implements DragSourceListener {
         } else if (EditorInputTransfer.getInstance().isSupportedType(event.dataType)) {
             event.data = new EditorInputTransfer.EditorInputData[0];
         } else if (FileTransfer.getInstance().isSupportedType(event.dataType)) {
-            event.data = new String[0];
+            event.data = ZeroSizedArrays.OF_STRING;
         }
     }
 

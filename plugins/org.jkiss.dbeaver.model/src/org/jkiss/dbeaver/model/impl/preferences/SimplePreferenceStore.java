@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.preferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -212,7 +213,7 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
 
     public String[] preferenceNames()
     {
-        return properties.keySet().toArray(new String[0]);
+        return properties.keySet().toArray(ZeroSizedArrays.OF_STRING);
     }
 
     @Override

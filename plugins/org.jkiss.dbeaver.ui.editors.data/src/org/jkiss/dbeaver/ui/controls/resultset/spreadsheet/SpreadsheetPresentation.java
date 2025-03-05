@@ -93,6 +93,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.ZeroSizedArrays;
 import org.jkiss.utils.xml.XMLUtils;
 
 import java.net.MalformedURLException;
@@ -826,7 +827,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                         curLine.add(cellValue.toString());
                         cellValue.setLength(0);
                         if (c == rowDelimiter && splitRows) {
-                            lines.add(curLine.toArray(new String[0]));
+                            lines.add(curLine.toArray(ZeroSizedArrays.OF_STRING));
                             curLine.clear();
                         }
                         break;
@@ -872,7 +873,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             curLine.add(cellValue.toString());
         }
         if (!curLine.isEmpty()) {
-            lines.add(curLine.toArray(new String[0]));
+            lines.add(curLine.toArray(ZeroSizedArrays.OF_STRING));
         }
 
         return lines.toArray(new String[lines.size()][]);

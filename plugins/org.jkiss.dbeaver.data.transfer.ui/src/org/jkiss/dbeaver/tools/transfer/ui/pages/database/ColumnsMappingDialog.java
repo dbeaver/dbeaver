@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.*;
 
@@ -173,7 +174,7 @@ class ColumnsMappingDialog extends DialogPage {
                     return new CustomComboBoxCellEditor(
                         mappingViewer,
                         mappingViewer.getTable(),
-                        items.toArray(new String[0]),
+                        items.toArray(ZeroSizedArrays.OF_STRING),
                         SWT.DROP_DOWN);
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError("Bad value", "Wrong target column", e);
@@ -262,7 +263,7 @@ class ColumnsMappingDialog extends DialogPage {
                 return new CustomComboBoxCellEditor(
                     mappingViewer,
                     mappingViewer.getTable(),
-                    types.values().toArray(new String[0]),
+                    types.values().toArray(ZeroSizedArrays.OF_STRING),
                     SWT.BORDER);
             }
 

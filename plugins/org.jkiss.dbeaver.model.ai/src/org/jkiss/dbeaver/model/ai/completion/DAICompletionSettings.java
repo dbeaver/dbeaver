@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.io.IOException;
 
@@ -97,7 +98,7 @@ public class DAICompletionSettings {
             preferenceStore.getString(prefix + AICompletionConstants.AI_META_SCOPE),
             DAICompletionScope.CURRENT_SCHEMA);
         String csString = preferenceStore.getString(prefix + AICompletionConstants.AI_META_CUSTOM);
-        customObjectIds = csString == null ? new String[0] : csString.split(",");
+        customObjectIds = csString == null ? ZeroSizedArrays.OF_STRING : csString.split(",");
     }
 
     public void saveSettings() {

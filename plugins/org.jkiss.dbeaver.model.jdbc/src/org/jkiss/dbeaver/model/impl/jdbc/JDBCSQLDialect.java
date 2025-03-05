@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -254,7 +255,7 @@ public class JDBCSQLDialect extends BasicSQLDialect implements SQLDataTypeConver
     @NotNull
     @Override
     public String[] getExecuteKeywords() {
-        return new String[0];
+        return ZeroSizedArrays.OF_STRING;
     }
 
     @NotNull

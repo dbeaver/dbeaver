@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.editors.SimpleCommandContext;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -322,7 +323,7 @@ class PostgreFDWConfigWizard extends BaseWizard implements DBPContextProvider {
                 }
                 pgTable.setName(entity.getName());
                 pgTable.setForeignServerName(serverId);
-                pgTable.setForeignOptions(new String[0]);
+                pgTable.setForeignOptions(ZeroSizedArrays.OF_STRING);
 
                 for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
                     // Cache data types

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ZeroSizedArrays;
 
 import java.util.*;
 
@@ -76,7 +77,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         for (IConfigurationElement dsConfig : config.getChildren("replace")) {
             String replModel = dsConfig.getAttribute("model");
             String forAttr = dsConfig.getAttribute("for");
-            String[] replFor = CommonUtils.isEmpty(forAttr) ? new String[0] : forAttr.split(",");
+            String[] replFor = CommonUtils.isEmpty(forAttr) ? ZeroSizedArrays.OF_STRING : forAttr.split(",");
             this.replaces.put(replModel, replFor);
             this.hasCondReplaces = hasCondReplaces || !ArrayUtils.isEmpty(replFor);
         }
