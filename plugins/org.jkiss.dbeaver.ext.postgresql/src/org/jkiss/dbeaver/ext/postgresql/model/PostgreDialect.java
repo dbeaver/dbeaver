@@ -1109,7 +1109,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
                 new PostgreEscapeStringRule()
             };
         }
-        return new TPRule[0];
+        return TPRule.ZERO_SIZE_ARRAY;
     }
 
     @Override

@@ -346,7 +346,7 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
                 new SQLMultiWordRule(new String[]{"IF", "NOT", "EXISTS"}, keywordToken)
             };
         }
-        return new TPRule[0];
+        return TPRule.ZERO_SIZE_ARRAY;
     }
 
     @Override

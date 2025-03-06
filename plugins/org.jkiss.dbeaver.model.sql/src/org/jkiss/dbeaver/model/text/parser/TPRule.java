@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,10 @@ package org.jkiss.dbeaver.model.text.parser;
  * Simple rule
  */
 public interface TPRule {
+	/**
+	 * A constant zero-sized array for sharing.
+	 */
+	TPRule[] ZERO_SIZE_ARRAY = new TPRule[0];
 
 	/**
 	 * Evaluates the rule by examining the characters available from the provided character scanner.

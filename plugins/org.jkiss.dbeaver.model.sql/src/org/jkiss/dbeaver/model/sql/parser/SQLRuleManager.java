@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class SQLRuleManager {
     private static final Log log = Log.getLog(SQLRuleManager.class);
 
     @NotNull
-    private TPRule[] allRules = new TPRule[0];
+    private TPRule[] allRules = TPRule.ZERO_SIZE_ARRAY;
     @NotNull
     private SQLSyntaxManager syntaxManager;
     @Nullable
@@ -85,7 +85,7 @@ public class SQLRuleManager {
                 }
             }
         }
-        return rules.toArray(new TPRule[0]);
+        return rules.toArray(TPRule.ZERO_SIZE_ARRAY);
     }
 
     public void loadRules() {
@@ -282,7 +282,7 @@ public class SQLRuleManager {
             Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.FINAL));
         }
 
-        allRules = rules.toArray(new TPRule[0]);
+        allRules = rules.toArray(TPRule.ZERO_SIZE_ARRAY);
     }
 
 }
