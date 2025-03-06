@@ -447,11 +447,13 @@ public class SQLEditor extends SQLEditorBase implements
                 // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
                 // FIXME: To update main toolbar and other controls we hade and show this editor
                 IWorkbenchPage page = getSite().getPage();
-                for (IEditorReference er : page.getEditorReferences()) {
-                    if (er.getEditor(false) == this) {
-                        page.hideEditor(er);
-                        page.showEditor(er);
-                        break;
+                if (page != null) {
+                    for (IEditorReference er : page.getEditorReferences()) {
+                        if (er.getEditor(false) == this) {
+                            page.hideEditor(er);
+                            page.showEditor(er);
+                            break;
+                        }
                     }
                 }
                 //page.activate(this);
@@ -728,8 +730,8 @@ public class SQLEditor extends SQLEditorBase implements
     public void refreshActions() {
         // Redraw toolbar to refresh action sets
         this.updateMultipleResultsPerTabToolItem();
-        topBarMan.getControl().redraw();
-        bottomBarMan.getControl().redraw();
+        if (topBarMan != null) topBarMan.getControl().redraw();
+        if (bottomBarMan != null) bottomBarMan.getControl().redraw();
         MultipleResultsPerTabMenuContribution.syncWithEditor(this);
     }
 
@@ -1745,9 +1747,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Nullable
     private ToolItem getViewToolItem(@NotNull String commandId) {
-        ToolItem viewItem = UIUtils.findToolItemByCommandId(topBarMan, commandId);
+        ToolItem viewItem = topBarMan == null ? null : UIUtils.findToolItemByCommandId(topBarMan, commandId);
         if (viewItem == null) {
-            viewItem = UIUtils.findToolItemByCommandId(bottomBarMan, commandId);
+            viewItem = bottomBarMan == null ? null : UIUtils.findToolItemByCommandId(bottomBarMan, commandId);
         }
         return viewItem;
     }
@@ -2184,8 +2186,12 @@ public class SQLEditor extends SQLEditorBase implements
         SQLScriptContext parentContext = null;
         {
             DatabaseEditorContext parentEditorContext = EditorUtils.getEditorContext(editorInput);
-            if (parentEditorContext instanceof SQLNavigatorContext) {
-                parentContext = ((SQLNavigatorContext) parentEditorContext).getScriptContext();
+            if (parentEditorContext instanceof SQLNavigatorContext nc) {
+                parentContext = nc.getScriptContext();
+                if (nc.isReuseExecutionContext()) {
+                    DBCExecutionContext iec = nc.getExecutionContext();
+                    this.executionContextProvider = () -> iec;
+                }
             }
         }
         this.globalScriptContext = new SQLScriptContext(
@@ -3449,6 +3455,10 @@ public class SQLEditor extends SQLEditorBase implements
         } catch (CoreException e) {
             DBWorkbench.getPlatformUI().showError("File save", "Can't open SQL editor from external file", e);
         }
+    }
+
+    public boolean supportsRename() {
+        return true;
     }
 
     @Override

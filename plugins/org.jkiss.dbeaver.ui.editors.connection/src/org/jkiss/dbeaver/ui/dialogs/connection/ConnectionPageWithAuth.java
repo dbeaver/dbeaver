@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -59,10 +60,14 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ((GridData)authModelSelector.getLayoutData()).horizontalSpan = hSpan;
 
-        // Additional auth controls
-        serviceConnectionEditor = DBWorkbench.getService(UIServiceConnectionEditor.class);
-        if (serviceConnectionEditor != null) {
-            serviceConnectionEditor.createControl(parent, getSite().getActiveDataSource(), () -> site.updateButtons());
+        if (site.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
+            // Additional auth controls
+            serviceConnectionEditor = DBWorkbench.getService(UIServiceConnectionEditor.class);
+            if (serviceConnectionEditor != null) {
+                serviceConnectionEditor.createControl(parent,
+                    getSite().getActiveDataSource(),
+                    () -> site.updateButtons());
+            }
         }
     }
 

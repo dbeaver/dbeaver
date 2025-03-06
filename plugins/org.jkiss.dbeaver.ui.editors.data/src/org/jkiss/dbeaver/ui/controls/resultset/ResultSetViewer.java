@@ -263,7 +263,7 @@ public class ResultSetViewer extends Viewer
         loadPresentationSettings();
         isDarkHighContrast = UIStyles.isDarkHighContrastTheme();
         this.defaultBackground = isDarkHighContrast ? UIStyles.getDefaultWidgetBackground() : UIStyles.getDefaultTextBackground();
-        this.defaultForeground = isDarkHighContrast ? UIUtils.COLOR_WHITE : UIStyles.getDefaultTextForeground();
+        this.defaultForeground = isDarkHighContrast ? UIStyles.COLOR_WHITE : UIStyles.getDefaultTextForeground();
 
         long decoratorFeatures = decorator.getDecoratorFeatures();
 
@@ -885,7 +885,7 @@ public class ResultSetViewer extends Viewer
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             if (e.widget != null && e.widget.getData() != null) {
-                                switchPresentation((ResultSetPresentationDescriptor) e.widget.getData());
+                                e.doit = switchPresentation((ResultSetPresentationDescriptor) e.widget.getData());
                             }
                         }
                     });
@@ -893,10 +893,6 @@ public class ResultSetViewer extends Viewer
                 UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
                 recordModeButton = new VerticalButton(presentationSwitchFolder, SWT.LEFT | SWT.CHECK);
                 recordModeButton.setAction(new ToggleModeAction(this), true);
-
-                if (statusBar != null) {
-                    ((GridLayout) presentationSwitchFolder.getLayout()).marginBottom = statusBar.getSize().y;
-                }
             }
             mainPanel.layout(true, true);
         } catch (Exception e) {
@@ -1097,12 +1093,16 @@ public class ResultSetViewer extends Viewer
         switchPresentation(availablePresentations.get(index));
     }
 
-    public void switchPresentation(ResultSetPresentationDescriptor selectedPresentation) {
+    public boolean switchPresentation(ResultSetPresentationDescriptor selectedPresentation) {
         if (selectedPresentation == activePresentationDescriptor) {
-            return;
+            return false;
         }
         try {
             IResultSetPresentation instance = selectedPresentation.createInstance();
+            if (!instance.canShowPresentation(this)) {
+                return false;
+            }
+
             activePresentationDescriptor = selectedPresentation;
             setActivePresentation(instance);
             instance.refreshData(true, false, false);
@@ -1123,11 +1123,13 @@ public class ResultSetViewer extends Viewer
                     ResultSetPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
             }
             savePresentationSettings();
+            return true;
         } catch (Throwable e1) {
             DBWorkbench.getPlatformUI().showError(
                     "Presentation switch",
                 "Can't switch presentation",
                 e1);
+            return false;
         }
     }
 
@@ -1788,18 +1790,24 @@ public class ResultSetViewer extends Viewer
     private void createStatusBar() {
         ActionUtils.addPropertyEvaluationRequestListener(propertyEvaluationRequestListener);
 
-        final IMenuService menuService = getSite().getService(IMenuService.class);
+        Composite statusComposite = new Composite(mainPanel, SWT.NONE);
+        GridLayout gl = new GridLayout(3, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        statusComposite.setLayout(gl);
 
-        Composite statusComposite = UIUtils.createPlaceholder(viewerPanel, 3);
-        statusComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = ((GridLayout)mainPanel.getLayout()).numColumns;
+        statusComposite.setLayoutData(gd);
 
         statusBar = new Composite(statusComposite, SWT.NONE);
         statusBar.setBackgroundMode(SWT.INHERIT_FORCE);
         statusBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         CSSUtils.setCSSClass(statusBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
         RowLayout toolbarsLayout = new RowLayout(SWT.HORIZONTAL);
-        toolbarsLayout.marginTop = 0;
-        toolbarsLayout.marginBottom = 0;
+        //toolbarsLayout.marginTop = 0;
+        //toolbarsLayout.marginBottom = 0;
+        toolbarsLayout.marginLeft = 0;
         toolbarsLayout.center = true;
         toolbarsLayout.wrap = true;
         toolbarsLayout.pack = true;
@@ -1823,6 +1831,8 @@ public class ResultSetViewer extends Viewer
             );
             getAutoRefresh().enableControls(false);
         }
+        final IMenuService menuService = getSite().getService(IMenuService.class);
+
         if (CommonUtils.isBitSet(decorator.getDecoratorFeatures(), IResultSetDecorator.FEATURE_EDIT)) {
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             menuService.populateContributionManager(editToolBarManager, TOOLBAR_EDIT_CONTRIBUTION_ID);

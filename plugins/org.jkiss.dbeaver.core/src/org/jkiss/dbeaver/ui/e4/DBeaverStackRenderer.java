@@ -242,12 +242,11 @@ public class DBeaverStackRenderer extends StackRenderer {
                 addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
             }
 
-            {
+            if (workbenchPart instanceof SQLEditor editor && editor.supportsRename()) {
                 MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
                 String renameText = CoreMessages.editor_file_rename;
-                if (workbenchPart instanceof SQLEditor) {
-                    renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true); //$NON-NLS-1$
-                }
+                renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true); //$NON-NLS-1$
+
                 menuItemOthers.setText(renameText);
                 menuItemOthers.addSelectionListener(new SelectionAdapter() {
                     @Override

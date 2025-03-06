@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -368,6 +368,11 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_group_regional;
     public static String pref_page_ui_general_group_language;
     public static String pref_page_ui_general_group_editors;
+    public static String pref_page_ui_status_bar;
+    public static String pref_page_ui_status_bar_show_breadcrumbs_check_label;
+    public static String pref_page_ui_status_bar_show_breadcrumbs_check_tip;
+    public static String pref_page_ui_status_bar_show_status_line_check_label;
+    public static String pref_page_ui_status_bar_show_status_line_check_tip;
     public static String pref_page_eclipse_ui_general_group_general;
     public static String pref_page_eclipse_ui_general_group_label;
 
@@ -397,6 +402,7 @@ public class CoreMessages extends NLS {
     public static String dialog_setting_connection_general;
 
     public static String dialog_connection_network_title;
+    public static String dialog_connection_network_add_tunnel_label;
     public static String dialog_connection_wizard_final_label_connection_type;
     public static String dialog_connection_wizard_final_label_connection_types_edit;
     public static String dialog_connection_wizard_final_label_navigator_settings;

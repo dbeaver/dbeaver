@@ -76,7 +76,7 @@ options {
 
 // root rule for script
 sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
-sqlQuery: directSqlDataStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow;
+sqlQuery: (directSqlDataStatement|callStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow) anyWordsWithProperty??;
 
 directSqlDataStatement: withClause? (deleteStatement|selectStatement|insertStatement|updateStatement);
 selectStatement: queryExpression;
@@ -223,8 +223,8 @@ queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
 // from
 fromClause: FROM tableReference (Comma tableReference)*;
-nonjoinedTableReference: ((tableName (PARTITION anyProperty)?)|derivedTable) correlationSpecification?;
-tableReference: ((nonjoinedTableReference|joinedTable) tableReferenceHints??)|anyUnexpected??;
+nonjoinedTableReference: ((tableName (PARTITION anyProperty)?)|derivedTable) correlationSpecification? tableReferenceHints??;
+tableReference: (nonjoinedTableReference|joinedTable)|anyUnexpected??;
 tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
 joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
 correlationSpecification: { validCorrelationNameFollows() }? (AS)? correlationName (LeftParen derivedColumnList RightParen)?;
@@ -433,6 +433,9 @@ setNamesStatement: SET NAMES (identifier|valueSpecification);
 setSessionAuthorizationIdentifierStatement: SET SESSION AUTHORIZATION valueSpecification;
 setLocalTimeZoneStatement: SET TIME ZONE setTimeZoneValue;
 setTimeZoneValue: (intervalValueExpression|LOCAL);
+
+callStatement: (CALL|EXEC|EXECUTE) qualifiedName? callStatementParams?;
+callStatementParams: LeftParen (anyValue (Comma anyValue)*)? RightParen?;
 
 // unknown keyword, data type or function name
 anyWord: actualIdentifier;

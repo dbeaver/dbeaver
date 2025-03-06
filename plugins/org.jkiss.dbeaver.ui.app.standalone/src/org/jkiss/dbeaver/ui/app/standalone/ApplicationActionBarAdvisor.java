@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -31,12 +32,14 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.ide.IDEActionFactory;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.commands.CommandImageManager;
 import org.eclipse.ui.internal.commands.CommandImageService;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -45,7 +48,6 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxAction;
-import org.jkiss.dbeaver.ui.app.standalone.actions.EmergentExitAction;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
@@ -54,6 +56,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -206,16 +209,12 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 bindImage(cis, IWorkbenchCommandConstants.FILE_SAVE_AS, UIIcon.SAVE_AS);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_SAVE_ALL, UIIcon.SAVE_ALL);
 
-/*
-                bindImage(cis, IWorkbenchCommandConstants.EDIT_COPY, UIIcon.EDIT_COPY);
-                bindImage(cis, IWorkbenchCommandConstants.EDIT_COPY, UIIcon.EDIT_COPY);
-                bindImage(cis, IWorkbenchCommandConstants.EDIT_COPY, UIIcon.EDIT_COPY);
-                bindImage(cis, IWorkbenchCommandConstants.EDIT_COPY, UIIcon.EDIT_COPY);
-*/
-
                 bindImage(cis, IWorkbenchCommandConstants.FILE_IMPORT, UIIcon.IMPORT);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_EXPORT, UIIcon.EXPORT);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_REFRESH, UIIcon.REFRESH);
+
+                bindImage(cis, ITextEditorActionDefinitionIds.GOTO_LAST_EDIT_POSITION, UIIcon.RS_BACK);
+                bindImage(cis, ITextEditorActionDefinitionIds.GOTO_NEXT_EDIT_POSITION, UIIcon.RS_FORWARD);
             }
         }
     }
@@ -261,8 +260,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             if (!DBWorkbench.isDistributed()) {
                 // Local FS operations are not needed
                 fileMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.ui.edit.text.openLocalFile"));
-                fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
-                fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
+                //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+                //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
             }
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
@@ -270,10 +269,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 fileMenu.add(openWorkspaceAction);
             }
 
-            fileMenu.add(new Separator());
-            fileMenu.add(new EmergentExitAction(workbenchWindow));
+//            fileMenu.add(new Separator());
+//            fileMenu.add(new EmergentExitAction(workbenchWindow));
 
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
+            //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
         }
 
         if (false) {
@@ -372,15 +371,24 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             });
 
             tzItem.setDoubleClickListener(() -> {
-                UIUtils.showMessageBox(
+                PreferenceDialog preferenceDialog = PreferencesUtil.createPreferenceDialogOn(
+                    UIUtils.getActiveWorkbenchShell(),
+                    PrefPageDatabaseUserInterface.PAGE_ID,
                     null,
-                    CoreApplicationMessages.timezone_change_info_title,
-                    NLS.bind(
-                        CoreApplicationMessages.timezone_change_info_message,
-                        StandardConstants.ENV_USER_TIMEZONE,
-                        DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath()),
-                    SWT.ICON_INFORMATION
-                );
+                    null);
+                if (preferenceDialog != null) {
+                    preferenceDialog.open();
+                } else {
+                    UIUtils.showMessageBox(
+                        null,
+                        CoreApplicationMessages.timezone_change_info_title,
+                        NLS.bind(
+                            CoreApplicationMessages.timezone_change_info_message,
+                            StandardConstants.ENV_USER_TIMEZONE,
+                            DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath()),
+                        SWT.ICON_INFORMATION
+                    );
+                }
             });
             statusLine.add(tzItem);
         }
@@ -389,13 +397,22 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             localeItem.setText(Locale.getDefault().toString());
             localeItem.setToolTip(Locale.getDefault().getDisplayName());
             localeItem.setDoubleClickListener(() -> {
-                UIUtils.showMessageBox(
+                PreferenceDialog preferenceDialog = PreferencesUtil.createPreferenceDialogOn(
+                    UIUtils.getActiveWorkbenchShell(),
+                    PrefPageDatabaseUserInterface.PAGE_ID,
                     null,
-                    CoreApplicationMessages.locale_change_info_title,
-                    NLS.bind(
-                        CoreApplicationMessages.locale_change_info_message,
-                        DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath()),
-                    SWT.ICON_INFORMATION);
+                    null);
+                if (preferenceDialog != null) {
+                    preferenceDialog.open();
+                } else {
+                    UIUtils.showMessageBox(
+                        null,
+                        CoreApplicationMessages.locale_change_info_title,
+                        NLS.bind(
+                            CoreApplicationMessages.locale_change_info_message,
+                            DBWorkbench.getPlatform().getApplicationConfiguration().toAbsolutePath()),
+                        SWT.ICON_INFORMATION);
+                }
             });
             statusLine.add(localeItem);
         }

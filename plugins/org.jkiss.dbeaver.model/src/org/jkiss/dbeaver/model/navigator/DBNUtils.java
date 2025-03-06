@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataSourcePermission;
-import org.jkiss.dbeaver.model.DBPHiddenObject;
-import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -36,6 +33,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
@@ -313,4 +311,43 @@ public class DBNUtils {
         node.dispose(reflect);
     }
 
+    /**
+     * Get default node to open. Useful in case of open flat files with one table.
+     */
+    @Nullable
+    public static DBNDatabaseNode getDefaultDatabaseNodeToOpen(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBException {
+        List<DBSEntity> entities = new ArrayList<>();
+        if (dataSource instanceof DBSObjectContainer container) {
+            getConnectionEntities(monitor, container, entities);
+        }
+
+        DBSObject objectToOpen;
+        if (entities.size() == 1) {
+            objectToOpen = entities.get(0);
+        } else {
+            if (entities.size() > 1) {
+                objectToOpen = entities.get(0).getParentObject();
+            } else {
+                objectToOpen = dataSource;
+            }
+        }
+        if (objectToOpen == null) {
+            throw new DBException("No entities found in file datasource");
+        }
+        return DBNUtils.getNodeByObject(monitor, objectToOpen, true);
+    }
+
+    private static void getConnectionEntities(
+        DBRProgressMonitor monitor,
+        DBSObjectContainer container,
+        List<DBSEntity> entities
+    ) throws DBException {
+        for (DBSObject child : container.getChildren(monitor)) {
+            if (child instanceof DBSEntity entity) {
+                entities.add(entity);
+            } else if (child instanceof DBSObjectContainer oc) {
+                getConnectionEntities(monitor, oc, entities);
+            }
+        }
+    }
 }

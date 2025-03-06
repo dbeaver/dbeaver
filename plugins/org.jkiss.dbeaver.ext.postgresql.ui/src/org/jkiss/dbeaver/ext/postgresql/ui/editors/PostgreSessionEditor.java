@@ -19,19 +19,27 @@ package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSession;
+import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSessionManager;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.views.session.AbstractSessionEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreSessionEditor
@@ -39,6 +47,7 @@ import java.util.List;
 public class PostgreSessionEditor extends AbstractSessionEditor
 {
     private KillSessionAction terminateQueryAction;
+    private boolean showIdle = true;
 
     @Override
     public void createEditorControl(Composite parent) {
@@ -53,19 +62,57 @@ public class PostgreSessionEditor extends AbstractSessionEditor
             @Override
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
             {
+                contributionManager.add(new ShowIdleAction());
+                contributionManager.add(new Separator());
                 contributionManager.add(terminateQueryAction);
                 contributionManager.add(new Separator());
             }
 
             @Override
-            protected void onSessionSelect(DBAServerSession session)
-            {
+            protected void onSessionSelect(DBAServerSession session) {
                 super.onSessionSelect(session);
                 terminateQueryAction.setEnabled(session != null);
             }
+            
+            @Override
+            protected void loadSettings(IDialogSettings settings) {
+                showIdle = CommonUtils.getBoolean(settings.get(PostgreSessionManager.OPTION_SHOW_IDLE), true);
+                super.loadSettings(settings);
+            }
+            
+            @Override
+            protected void saveSettings(IDialogSettings settings) {
+                super.saveSettings(settings);
+                settings.put(PostgreSessionManager.OPTION_SHOW_IDLE, showIdle);
+            }
+            
+            @Override
+            public Map<String, Object> getSessionOptions() {
+                Map<String, Object> options = new HashMap<>();
+                options.put(PostgreSessionManager.OPTION_SHOW_IDLE, showIdle);
+                
+                return options;
+            }
+            
         };
     }
-
+    
+    private class ShowIdleAction extends Action {
+        
+        ShowIdleAction() {
+            super(
+                "Show idle connections",
+                DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
+            setToolTipText("Show idle connections");
+            setChecked(showIdle);
+        }
+        
+        @Override
+        public void run() {
+            showIdle = isChecked();
+            refreshPart(PostgreSessionEditor.this, true);
+        }
+    }
 
     private class KillSessionAction extends Action {
         KillSessionAction()

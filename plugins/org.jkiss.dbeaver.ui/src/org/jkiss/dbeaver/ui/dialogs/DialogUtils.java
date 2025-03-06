@@ -193,6 +193,11 @@ public class DialogUtils {
         UIUtils.createControlLabel(parent, message).setToolTipText(tooltip);
         final TextWithOpen directoryText = new TextWithOpen(parent, multiFS) {
             @Override
+            protected boolean isFolderContents() {
+                return true;
+            }
+
+            @Override
             protected void openBrowser(boolean remoteFS) {
                 String fileName;
                 if (remoteFS && project != null) {

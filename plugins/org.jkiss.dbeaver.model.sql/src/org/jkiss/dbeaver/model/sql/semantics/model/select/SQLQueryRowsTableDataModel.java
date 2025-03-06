@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,10 +36,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.Pair;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -219,15 +216,14 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
                                 SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
                                     ? SQLQuerySymbolClass.TABLE
                                     : SQLQuerySymbolClass.ERROR;
-                                this.name.setSymbolClass(tableSymbolClass);
+                                context = performPartialResolution(context, statistics, rowsetRefOrigin, tableSymbolClass);
                                 statistics.appendError(this.name.entityName, "Table " + this.name.toIdentifierString() + " not found");
                             }
                         }
                     }
                 }
             } else {
-                context = context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList()).markHasUnresolvedSource();
-                SQLQueryQualifiedName.performPartialResolution(context, statistics, this.name, rowsetRefOrigin);
+                context = performPartialResolution(context, statistics, rowsetRefOrigin, null);
                 statistics.appendError(this.getSyntaxNode(), "Invalid table reference");
             }
         } else {
@@ -236,6 +232,28 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel implemen
         }
 
         return context;
+    }
+
+    @NotNull
+    private SQLQueryDataContext performPartialResolution(
+        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull SQLQuerySymbolOrigin rowsetRefOrigin,
+        @Nullable SQLQuerySymbolClass entityNameClass
+    ) {
+        SQLQueryDataContext resolvedContext = context.overrideResultTuple(this, Collections.emptyList(), Collections.emptyList())
+            .markHasUnresolvedSource();
+        if (this.name != null && entityNameClass != null) {
+            SQLQueryQualifiedName.performPartialResolution(
+                resolvedContext,
+                statistics,
+                this.name,
+                rowsetRefOrigin,
+                Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                entityNameClass
+            );
+        }
+        return resolvedContext;
     }
 
     public static List<SQLQueryResultPseudoColumn> prepareResultPseudoColumnsList(

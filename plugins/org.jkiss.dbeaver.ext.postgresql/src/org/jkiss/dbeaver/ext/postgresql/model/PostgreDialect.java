@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -758,6 +758,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     };
 
     public static String[] POSTGRE_FUNCTIONS_FORMATTING = new String[]{
+        "format",
         "to_char",
         "to_date",
         "to_number",
@@ -890,6 +891,9 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         addExtraFunctions(POSTGRE_FUNCTIONS_XML);
 
         removeSQLKeyword("LENGTH");
+        removeSQLKeyword("JSON");
+        removeSQLKeyword("TEXT");
+        removeSQLKeyword("FORMAT");
         removeSQLKeyword("WORK");
 
         if (dataSource instanceof PostgreDataSource) {
@@ -1115,7 +1119,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @Override
     public String convertExternalDataType(@NotNull SQLDialect sourceDialect, @NotNull DBSTypedObject sourceTypedObject, @Nullable DBPDataTypeProvider targetTypeProvider) {
-        String externalTypeName = sourceTypedObject.getTypeName().toLowerCase(Locale.ENGLISH);
+        String typeName = sourceTypedObject.getTypeName();
+        if (typeName == null) {
+            return null;
+        }
+        String externalTypeName = typeName.toLowerCase(Locale.ENGLISH);
         String localDataType = null, dataTypeModifies = null;
 
         switch (externalTypeName) {
