@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,6 +124,14 @@ public class GeneralUtils {
 
     public static String getDefaultLineSeparator() {
         return System.getProperty(StandardConstants.ENV_LINE_SEPARATOR, "\n");
+    }
+
+    /**
+     * Replaces all line separators with system line separators
+     */
+    @NotNull
+    public static String normalizeLineSeparators(@NotNull String str) {
+        return str.replaceAll("\r\n|\r|\n", getDefaultLineSeparator());
     }
 
     public static void writeBytesAsHex(Writer out, byte[] buf, int off, int len) throws IOException {
@@ -505,6 +513,36 @@ public class GeneralUtils {
         return name;
     }
 
+    public record VariableEntryInfo(
+        @NotNull String name,
+        int start,
+        int end
+    ) {
+    }
+
+    /**
+     * Returns information about all variable entries in the provided text
+     */
+    @NotNull
+    public static List<VariableEntryInfo> findAllVariableEntries(@NotNull String string) {
+        if (CommonUtils.isEmpty(string)) {
+            return Collections.emptyList();
+        }
+        List<VariableEntryInfo> variables = new LinkedList<>();
+        try {
+            Matcher matcher = GeneralUtils.VAR_PATTERN.matcher(string);
+            int pos = 0;
+            while (matcher.find(pos)) {
+                pos = matcher.end();
+                String varName = matcher.group(2);
+                variables.add(new VariableEntryInfo(varName, matcher.start(), matcher.end()));
+            }
+        } catch (Exception e) {
+            log.warn("Error matching regex", e);
+        }
+        return variables;
+    }
+
     @NotNull
     public static String replaceVariables(@NotNull String string, IVariableResolver resolver) {
         return replaceVariables(string, resolver, false);
@@ -770,7 +808,7 @@ public class GeneralUtils {
         } else {
             DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
             if (workspace == null) {
-                log.warn("Metadata is read before workspace initialization");
+                log.debug("Metadata is read before workspace initialization");
                 try {
                     workspacePath = RuntimeUtils.getLocalPathFromURL(Platform.getInstanceLocation().getURL());
                 } catch (IOException e) {

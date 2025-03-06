@@ -72,7 +72,13 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataHintProvider">
-        <hintProvider id="references" for="cell" class="org.jkiss.dbeaver.ui.data.hints.ReferenceCellHintProvider" label="%hints.references.label" description="%hints.references.description"/>
+        <hintProvider
+            id="references"
+            for="cell"
+            class="org.jkiss.dbeaver.ui.data.hints.ReferenceCellHintProvider"
+            label="%hints.references.label"
+            description="%hints.references.description"
+            association="true"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.aggregateFunction">
@@ -1051,8 +1057,8 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePanel" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="CTRL+ALT+F6">
             <parameter id="panelId" value="column-aggregate"/>
         </key>
-        <key commandId="org.jkiss.dbeaver.core.resultset.zoomIn" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+ALT+0"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.zoomOut" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="M1+ALT+9"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.zoomIn" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+0"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.zoomOut" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+9"/>
 
         <key commandId="org.jkiss.dbeaver.core.generate.uuid" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ALT+U"/>
     </extension>
@@ -1093,14 +1099,14 @@
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.selection.background"
-            value="COLOR_LIST_SELECTION">
+            value="175, 215, 255">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.description</description>
         </colorDefinition>
         <colorDefinition
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.foreground.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.selection.foreground"
-            value="COLOR_LIST_SELECTION_TEXT">
+            value="0, 0, 0">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.foreground.description</description>
         </colorDefinition>
         <colorDefinition

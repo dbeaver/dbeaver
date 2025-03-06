@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -612,6 +609,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
     @Override
     public void pasteFromClipboard(@Nullable ResultSetPasteSettings settings) {
         try {
+            List<DBDValueRow> updatedRows = new ArrayList<>();
+            Set<DBDAttributeBinding> updatedAttrs = new HashSet<>();
             if (settings != null) {
                 String strValue;
                 Clipboard clipboard = new Clipboard(Display.getCurrent());
@@ -673,6 +672,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             ) {
                                 continue;
                             }
+                            updatedAttrs.add(attr);
+                            updatedRows.add(row);
                             final Object newValue;
                             if (settings.isInsertNulls() && settings.getNullValueMark().equalsIgnoreCase(value)) {
                                 newValue = null;
@@ -756,6 +757,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             controller.redrawData(false, true);
             controller.updateEditControls();
             controller.updatePanelsContent(false);
+            controller.refreshHintCache(updatedAttrs, updatedRows, null);
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("Cannot replace cell value", null, e);
         }
@@ -988,11 +990,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable IGridRow rowObject)
     {
         boolean recordMode = controller.isRecordMode();
-        final DBDAttributeBinding attr = getAttributeFromGrid(colObject, rowObject);
-        final ResultSetRow row = getResultRowFromGrid(colObject, rowObject);
+        final DBDAttributeBinding attr = colObject == null ? getFocusAttribute() : getAttributeFromGrid(colObject, rowObject);
+        final ResultSetRow row = rowObject == null ? getFocusRow() : getResultRowFromGrid(colObject, rowObject);
         controller.fillContextMenu(manager, attr, row, getRowNestedIndexes(rowObject));
 
-        if (attr != null && row == null) {
+        if (colObject != null && rowObject == null) {
             final List<IGridColumn> selectedColumns = spreadsheet.getColumnSelection();
             if (selectedColumns.size() == 1) {
                 IGridColumn attrCol = spreadsheet.getColumnByElement(attr);
@@ -1101,7 +1103,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 }
             }
         }
-        if (row == null) {
+        if (rowObject == null) {
             if (!controller.getModel().getVisibleAttributes().isEmpty()) {
                 manager.insertAfter(
                     IResultSetController.MENU_GROUP_ADDITIONS,
@@ -1237,6 +1239,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (activeInlineEditor.getControl() != null) {
                 activeInlineEditor.getControl().setFocus();
                 activeInlineEditor.getControl().setData(DATA_VALUE_CONTROLLER, valueController);
+                activeInlineEditor.getControl().addKeyListener(KeyListener.keyPressedAdapter(
+                    e -> scrollToRow(RowPosition.CURRENT)
+                ));
+                activeInlineEditor.getControl().addTraverseListener(e -> {
+                    if (e.keyCode == SWT.ESC || e.keyCode == SWT.CR) {
+                        scrollToRow(RowPosition.CURRENT);
+                    }
+                });
+                scrollToRow(RowPosition.CURRENT);
             }
         }
         if (activeInlineEditor instanceof IValueEditorStandalone editorStandalone) {
@@ -1346,7 +1357,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (isShowAsCheckbox(attr)) {
             // Switch boolean value
             Object cellValue = controller.getModel().getCellValue(cellLocation);
-            if (cellValue instanceof Boolean || cellValue instanceof Number) {
+            if (cellValue instanceof Boolean || cellValue instanceof Number || cellValue == null) {
                 toggleBooleanValue(cellLocation, cellValue);
             }
         }
@@ -2438,7 +2449,19 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @Nullable
         private Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row, Object cellValue, Color background, boolean selected) {
             if (selected) {
-                return ResultSetThemeSettings.instance.foregroundSelected;
+                Color fg = ResultSetThemeSettings.instance.foregroundSelected;
+                if (colorizeDataTypes && isSimpleAttribute(attribute) && !DBUtils.isNullValue(cellValue)) {
+                    Color color = dataTypesForegrounds.get(attribute.getDataKind());
+                    if (color != null) {
+                        RGB mixRGB = UIUtils.blend(
+                            fg.getRGB(),
+                            color.getRGB(),
+                            15
+                        );
+                        return UIUtils.getSharedTextColors().getColor(mixRGB);
+                    }
+                }
+                return fg;
             }
             if (isShowAsCheckbox(attribute) && booleanStyles.getMode() == BooleanMode.TEXT) {
                 if (cellValue instanceof Number number) {
@@ -2482,7 +2505,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     }
                 }
             }
-            return UIUtils.getContrastColor(background);
+            return UIStyles.getContrastColor(background);
         }
 
         private Color getCellBackground(
@@ -2521,7 +2544,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 RGB mixRGB = UIUtils.blend(
                     normalColor.getRGB(),
                     ResultSetThemeSettings.instance.backgroundSelected.getRGB(),
-                    50
+                    15
                 );
                 return UIUtils.getSharedTextColors().getColor(mixRGB);
             }
@@ -3025,6 +3048,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 StringBuilder tip = new StringBuilder();
                 tip.append("Column: ");
                 tip.append(name).append(" ").append(typeName);
+                if (attributeBinding.isRequired()) {
+                    tip.append(" NOT NULL");
+                }
                 if (!CommonUtils.isEmpty(description)) {
                     tip.append("\nDescription: ").append(description);
                 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,12 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
     public String visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem rowsSourceAlias) {
         String prefix = rowsSourceAlias.sourceInfo.tableOrNull != null ? "Table alias for \n" : "Subquery alias for \n";
         return prefix + rowsSourceAlias.sourceInfo.source.getSyntaxNode().getTextContent();
+    }
+
+    @NotNull
+    public String visitCompositeField(@NotNull SQLCompositeFieldCompletionItem compositeField) {
+        String ownerTypeName = SQLQueryCompletionExtraTextProvider.prepareTypeNameString(compositeField.memberInfo.declaratorType());
+        return "Attribute " + compositeField.memberInfo.name() + " of the " + ownerTypeName + " composite type ";
     }
 
     @Nullable
@@ -91,5 +97,17 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
     public String visitJoinCondition(@NotNull SQLJoinConditionCompletionItem joinCondition) {
         return "Join condition on the foreign key known from the database schema: " +
             joinCondition.left.apply(this) + " vs " + joinCondition.right.apply(this);
+    }
+
+    @Nullable
+    @Override
+    public String visitProcedure(@NotNull SQLProcedureCompletionItem procedure) {
+        return procedure.getObject().getDescription();
+    }
+
+    @Nullable
+    @Override
+    public String visitBuiltinFunction(@NotNull SQLBuiltinFunctionCompletionItem function) {
+        return "Builtin function of the database.";
     }
 }

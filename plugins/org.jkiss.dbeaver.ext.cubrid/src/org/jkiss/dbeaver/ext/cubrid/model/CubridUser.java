@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
@@ -106,6 +107,11 @@ public class CubridUser extends GenericSchema
     @Override
     public TableCache createTableCache(@NotNull GenericDataSource datasource) {
         return new CubridTableCache(datasource);
+    }
+
+    @Override
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
+        return getTable(monitor, childName.toLowerCase());
     }
 
     @NotNull
@@ -186,6 +192,7 @@ public class CubridUser extends GenericSchema
                 throws SQLException, DBException {
             String columnName = JDBCUtils.safeGetString(dbResult, "attr_name");
             String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
+            boolean isForeignKey = "YES".equals(JDBCUtils.safeGetString(dbResult, "is_foreign_key"));
             String showDataType = null;
             boolean autoIncrement = false;
             String tableName = table.isSystem() ? table.getName() : ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table);
@@ -199,7 +206,7 @@ public class CubridUser extends GenericSchema
                     }
                 }
             }
-            return new CubridTableColumn(table, columnName, showDataType == null ? dataType : showDataType, autoIncrement, dbResult);
+            return new CubridTableColumn(table, columnName, showDataType == null ? dataType : showDataType, autoIncrement, isForeignKey, dbResult);
         }
     }
 

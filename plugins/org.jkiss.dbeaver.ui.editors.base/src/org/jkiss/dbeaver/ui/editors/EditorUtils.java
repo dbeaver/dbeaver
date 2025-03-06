@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,19 +46,28 @@ import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.LocalFileStorage;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
+import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.file.FileTypeHandlerRegistry;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 import org.jkiss.dbeaver.utils.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.*;
 
 /**
  * EditorUtils
@@ -583,5 +592,105 @@ public class EditorUtils {
             tip.append('\n');
         }
         tip.append(EditorsMessages.database_editor_project).append(": ").append(project.getName());
+    }
+
+    public static List<Path> openExternalFiles(@NotNull String[] fileNames, @Nullable DBPDataSourceContainer currentContainer) {
+        log.debug("Open external file(s) [" + Arrays.toString(fileNames) + "]");
+        List<Path> openedFiles = new ArrayList<>();
+        Path[] filePaths = Arrays.stream(fileNames).map(Path::of).toArray(Path[]::new);
+        openFileEditors(filePaths, currentContainer, openedFiles);
+
+        return openedFiles;
+    }
+
+    public static boolean openExternalFiles(@NotNull Path[] filePaths, @Nullable DBPDataSourceContainer currentContainer) {
+        log.debug("Open external file(s) [" + Arrays.toString(filePaths) + "]");
+        List<Path> openedFiles = new ArrayList<>();
+        return openFileEditors(filePaths, currentContainer, openedFiles);
+    }
+
+    public static boolean openFileEditors(
+        @NotNull Path[] fileNames,
+        @Nullable DBPDataSourceContainer currentContainer,
+        @NotNull List<Path> openedFiles
+    ) {
+        Map<FileTypeHandlerDescriptor, List<Path>> filesByHandler = new LinkedHashMap<>();
+        for (Path path : fileNames) {
+            if (Files.exists(path)) {
+                String fileExtension = IOUtils.getFileExtension(path);
+                FileTypeHandlerDescriptor handler = CommonUtils.isEmpty(fileExtension) ?
+                    null : FileTypeHandlerRegistry.getInstance().findHandler(fileExtension);
+                filesByHandler.computeIfAbsent(handler, d -> new ArrayList<>()).add(path);
+                openedFiles.add(path);
+            } else {
+                DBWorkbench.getPlatformUI().showError("Open file", "Can't open '" + path + "': file doesn't exist");
+            }
+        }
+
+        for (Map.Entry<FileTypeHandlerDescriptor, List<Path>> entry : filesByHandler.entrySet()) {
+            FileTypeHandlerDescriptor handler = entry.getKey();
+            List<Path> pathList = entry.getValue();
+
+            for (Path path : pathList) {
+                if (!IOUtils.isLocalPath(path)) {
+                    if (handler == null || !handler.supportsRemoteFiles()) {
+                        return false;
+                    }
+                }
+            }
+            if (handler == null) {
+                for (Path path : pathList) {
+                    final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
+                    EditorUtils.openExternalFileEditor(path.toFile(), window);
+                }
+            } else {
+                try {
+                    handler.createHandler().openFiles(pathList, Map.of(), currentContainer);
+                } catch (Exception e) {
+                    DBWorkbench.getPlatformUI().showError("Open file error", "Can't open file '" + pathList + "'", e);
+                }
+            }
+        }
+        return true;
+    }
+
+    public static void activatePartContexts(IWorkbenchPart part) {
+        IContextService contextService = PlatformUI.getWorkbench().getService(IContextService.class);
+        if (contextService == null) {
+            return;
+        }
+        try {
+            contextService.deferUpdates(true);
+//            if (part instanceof INavigatorModelView) {
+            // We check for instanceof (do not use adapter) because otherwise it become active
+            // for all entity editor and clashes with SQL editor and other complex stuff.
+//                if (activationNavigator != null) {
+//                    //log.debug("Double activation of navigator context");
+//                    contextService.deactivateContext(activationNavigator);
+//                }
+//                activationNavigator = contextService.activateContext(INavigatorModelView.NAVIGATOR_CONTEXT_ID);
+//            }
+
+            // What the point of setting SQL editor context here? It is set by editor itself
+//            if (part instanceof SQLEditorBase || part.getAdapter(SQLEditorBase.class) != null) {
+//                if (activationSQL != null) {
+//                    //log.debug("Double activation of SQL context");
+//                    contextService.deactivateContext(activationSQL);
+//                }
+//                activationSQL = contextService.activateContext(SQLEditorContributions.SQL_EDITOR_CONTEXT);
+//            }
+            // Refresh auto-commit element state (#3315)
+            ActionUtils.fireCommandRefresh(ConnectionCommands.CMD_TOGGLE_AUTOCOMMIT);
+        } finally {
+            contextService.deferUpdates(false);
+        }
+    }
+
+    public static void deactivatePartContexts(IWorkbenchPart part) {
+    }
+
+    public static void refreshPartContexts(IWorkbenchPart part) {
+        deactivatePartContexts(part);
+        activatePartContexts(part);
     }
 }

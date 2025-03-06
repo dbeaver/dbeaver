@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,11 +40,21 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
         return rowsSourceAlias.sourceInfo.tableOrNull != null ? " - Table alias" : " - Subquery alias";
     }
 
+    @Nullable
+    public static String prepareTypeNameString(@NotNull SQLQueryExprType type) {
+        return type == null || type == SQLQueryExprType.UNKNOWN ? null : type.getDisplayName();
+    }
+
+    @NotNull
+    public String visitCompositeField(@NotNull SQLCompositeFieldCompletionItem compositeField) {
+        String typeName = this.prepareTypeNameString(compositeField.memberInfo.type());
+        return typeName == null ? " - Composite attribute" : (" : " + typeName);
+    }
+
     @NotNull
     @Override
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
-        SQLQueryExprType type = columnName.columnInfo.type;
-        String typeName = type == null || type == SQLQueryExprType.UNKNOWN ? null : type.getDisplayName();
+        String typeName = this.prepareTypeNameString(columnName.columnInfo.type);
         return typeName == null ? " - Column" : (" : " + typeName);
     }
 
@@ -77,9 +87,25 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
         return CommonUtils.isEmpty(typeName) ? null : (" - " + typeName);
     }
 
-    @Nullable
+    @NotNull
     @Override
     public String visitJoinCondition(@NotNull SQLJoinConditionCompletionItem joinCondition) {
         return " - Known foreign key relation";
+    }
+
+    @NotNull
+    @Override
+    public String visitProcedure(@NotNull SQLProcedureCompletionItem procedure) {
+        return switch (procedure.getObject().getProcedureType()) {
+            case FUNCTION -> " - Function";
+            case PROCEDURE -> " - Procedure";
+            default -> " - Stored routine";
+        };
+    }
+
+    @Nullable
+    @Override
+    public String visitBuiltinFunction(@NotNull SQLBuiltinFunctionCompletionItem function) {
+        return " - Builtin function";
     }
 }

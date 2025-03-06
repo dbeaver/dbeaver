@@ -1207,7 +1207,7 @@ public class OracleSchema extends OracleGlobalObject implements
             } else {
                 sql.append("i.TABLE_OWNER=? AND i.TABLE_NAME=?");
             }
-            sql.append("\nORDER BY i.INDEX_NAME,ic.COLUMN_POSITION");
+            sql.append("\nORDER BY i.TABLE_NAME,i.INDEX_NAME,ic.COLUMN_POSITION");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             if (forTable == null) {

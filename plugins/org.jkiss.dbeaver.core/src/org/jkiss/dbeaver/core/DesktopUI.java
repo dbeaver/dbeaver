@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,10 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
@@ -44,6 +47,7 @@ import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
@@ -67,6 +71,7 @@ import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -74,6 +79,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 
 /**
  * DBeaver UI core
@@ -108,22 +114,13 @@ public class DesktopUI extends ConsoleUserInterface {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 if (PlatformUI.isWorkbenchRunning() && !PlatformUI.getWorkbench().isStarting()) {
-                    UIUtils.asyncExec(() -> {
-                        contextListener = WorkbenchContextListener.registerInWorkbench();
-                    });
+                    UIUtils.asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
                 } else {
                     schedule(50);
                 }
                 return Status.OK_STATUS;
             }
         }.schedule();
-    }
-
-    public void refreshPartContexts(IWorkbenchPart part) {
-        if (contextListener != null) {
-            contextListener.deactivatePartContexts(part);
-            contextListener.activatePartContexts(part);
-        }
     }
 
     @Override
@@ -642,18 +639,17 @@ public class DesktopUI extends ConsoleUserInterface {
         
         return job.getResult().isOK() ? runnable.getResult() : CompletableFuture.failedFuture(job.getResult().getException());
     }
-    
+
+    @Override
+    public <T> T runWithMonitor(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
+        return UIUtils.runWithMonitor(runnable);
+    }
+
+
     @NotNull
     @Override
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
         return LoadingJob.createService(loadingService, visualizer);
-    }
-
-    @Override
-    public void refreshPartState(Object part) {
-        if (part instanceof IWorkbenchPart) {
-            UIUtils.asyncExec(() -> DesktopUI.getInstance().refreshPartContexts((IWorkbenchPart)part));
-        }
     }
 
     @Override
@@ -697,14 +693,60 @@ public class DesktopUI extends ConsoleUserInterface {
         String[] filterExt,
         String defaultValue
     ) {
+        DBNFileSystems fileSystemsNode = FileSystemExplorerView.getFileSystemsNode();
+        if (fileSystemsNode == null) {
+            log.error("File system root node not found");
+            return null;
+        }
+        DBNNode selectedNode = null;
+        if (defaultValue != null) {
+            try {
+                selectedNode = UIUtils.runWithMonitor(monitor -> {
+                    monitor.beginTask("Locate file", 1);
+                    monitor.subTask("Locate '" + defaultValue + "'");
+                    try {
+                        return fileSystemsNode.findNodeByPath(monitor, defaultValue);
+                    } finally {
+                        monitor.done();
+                    }
+                });
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        List<String> allExtensions = new ArrayList<>();
+        if (filterExt != null && filterExt.length > 0) {
+            for (String maskList : filterExt) {
+                for (String mask : maskList.split(";")) {
+                    String ext = IOUtils.getFileExtension(mask);
+                    if (ext != null) {
+                        allExtensions.add(ext);
+                    }
+                }
+            }
+        }
+
+        Predicate<String> extFilter = s -> {
+            if (allExtensions.contains("*")) {
+                return true;
+            }
+            if (!allExtensions.isEmpty()) {
+                int i = s.lastIndexOf('.');
+                if (i < 0) return false;
+                return allExtensions.contains(s.substring(i + 1).toLowerCase());
+            }
+            return true;
+        };
         DBNNode object = ObjectBrowserDialog.selectObject(
             UIUtils.getActiveWorkbenchShell(),
             title,
-            FileSystemExplorerView.getFileSystemsNode(),
-            null,
-            null,
+            fileSystemsNode,
+            selectedNode,
             new Class[] { DBNPathBase.class },
-            null);
+            new Class[] { DBNPathBase.class },
+            null,
+            extFilter);
         if (object instanceof DBNPathBase path) {
             return path;
         }
@@ -731,7 +773,7 @@ public class DesktopUI extends ConsoleUserInterface {
             return false;
         }
     }
-    
+
     private static long getLongOperationTime() {
         try {
             return PlatformUI.getWorkbench().getProgressService().getLongOperationTime();
