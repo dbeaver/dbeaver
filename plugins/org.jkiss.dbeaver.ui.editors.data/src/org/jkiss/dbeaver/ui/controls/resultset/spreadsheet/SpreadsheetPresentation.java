@@ -31,10 +31,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -1242,6 +1239,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (activeInlineEditor.getControl() != null) {
                 activeInlineEditor.getControl().setFocus();
                 activeInlineEditor.getControl().setData(DATA_VALUE_CONTROLLER, valueController);
+                activeInlineEditor.getControl().addKeyListener(KeyListener.keyPressedAdapter(
+                    e -> scrollToRow(RowPosition.CURRENT)
+                ));
+                activeInlineEditor.getControl().addTraverseListener(e -> {
+                    if (e.keyCode == SWT.ESC || e.keyCode == SWT.CR) {
+                        scrollToRow(RowPosition.CURRENT);
+                    }
+                });
+                scrollToRow(RowPosition.CURRENT);
             }
         }
         if (activeInlineEditor instanceof IValueEditorStandalone editorStandalone) {
