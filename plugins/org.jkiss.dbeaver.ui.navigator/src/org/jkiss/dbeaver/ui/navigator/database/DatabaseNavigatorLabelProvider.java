@@ -22,8 +22,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -48,10 +51,14 @@ import java.util.StringJoiner;
 */
 public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implements IFontProvider, IColorProvider {
 
+
+    @NotNull
+    private final DatabaseNavigatorTree tree;
     protected Color lockedForeground;
     private ILabelDecorator labelDecorator;
 
     public DatabaseNavigatorLabelProvider(@NotNull DatabaseNavigatorTree tree) {
+        this.tree = tree;
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
 
         BaseThemeSettings.instance.addPropertyListener(
@@ -185,6 +192,20 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             return null;
         }
         if (element instanceof DBNDataSource dbnDataSource) {
+            {
+                Tree treeControl = tree.getViewer().getTree();
+                Point cursorLocation = Display.getCurrent().getCursorLocation();
+                Point treeLocation = treeControl.toControl(cursorLocation);
+                    //treeControl.getShell().toDisplay(cursorLocation.x, cursorLocation.y);
+                Event event = new Event();
+                event.x = treeLocation.x;
+                event.y = treeLocation.y;
+                String tipText = tree.getItemRenderer().getToolTipText(dbnDataSource, treeControl, event);
+                if (tipText != null) {
+                    return tipText;
+                }
+            }
+
             final DBPDataSourceContainer ds = dbnDataSource.getDataSourceContainer();
             if (ds != null) {
                 StringJoiner tooltip = new StringJoiner("\n");
@@ -227,17 +248,17 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
                 return tooltip.toString();
 
             }
-        } else if (element instanceof DBNNode) {
+        } else if (element instanceof DBNNode node) {
             if (element instanceof DBNResource &&
                 !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP)
             ) {
                 return null;
             }
-            final String description = ((DBNNode) element).getNodeDescription();
+            final String description = node.getNodeDescription();
             if (!CommonUtils.isEmptyTrimmed(description)) {
                 return description;
             }
-            return ((DBNNode) element).getNodeDisplayName();
+            return node.getNodeDisplayName();
         } else if (element instanceof IToolTipProvider provider) {
             return provider.getToolTipText(element);
         }

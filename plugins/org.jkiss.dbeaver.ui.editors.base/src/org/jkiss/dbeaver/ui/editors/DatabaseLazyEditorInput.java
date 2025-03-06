@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,6 +72,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
     private final boolean canLoadImmediately;
 
     // Initialized on demand
+    @Nullable
     private DBPProject project;
     private DBPDataSourceContainer dataSourceContainer;
 
@@ -235,7 +236,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         return Objects.hash(nodePath, activePageId, activeFolderId, dataSourceId);
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPProject getProject() {
         return project;
@@ -243,12 +244,15 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
 
     public IDatabaseEditorInput initializeRealInput(@NotNull DBRProgressMonitor monitor) throws DBException
     {
+        if (dataSourceId == null) {
+            return null;
+        }
         // Get the node path.
         if (project != null) {
             dataSourceContainer = project.getDataSourceRegistry().getDataSource(dataSourceId);
         }
         if (dataSourceContainer == null) {
-            log.error("Can't find data source '" + dataSourceId + "'"); //$NON-NLS-2$
+            log.error("Can not find data source '" + dataSourceId + "'"); //$NON-NLS-2$
             return null;
         }
         if (project == null) {

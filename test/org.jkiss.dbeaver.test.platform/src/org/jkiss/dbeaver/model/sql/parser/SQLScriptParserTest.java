@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,19 +35,24 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.Assert;
+import org.jkiss.util.SQLEditorTestUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
 public class SQLScriptParserTest extends DBeaverUnitTest {
+
+    public static final String POSTGRESQL_DIALECT_NAME = "postgresql";
+    public static final String ORACLE_DIALECT_NAME = "oracle";
+    public static final String SQLSERVER_DIALECT_NAME = "sqlserver";
+
     @Mock
     private JDBCDataSource dataSource;
     @Mock
@@ -75,22 +80,23 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
 
     @Test
     public void parsePostgresDoubleDollar() throws DBException {
-        assertParse("postgresql",
-                "CREATE OR REPLACE FUNCTION fn_TestDelimiter()\n" +
-                "RETURNS BOOLEAN AS\n" +
-                "$$\n" +
-                "BEGIN  \n" +
-                "\tINSERT INTO tbl_Students VALUES (1,'Anvesh');\n" +
-                "\tRETURN TRUE; \n" +
-                "END;\n" +
-                "$$\n" +
-                "LANGUAGE plpgsql; \n\n" +
-                "CREATE FUNCTION sales_tax(subtotal real) RETURNS real AS $$\n" +
-                "BEGIN\n" +
-                "    RETURN subtotal * 0.06;\n" +
-                "END;\n" +
-                "$$ LANGUAGE plpgsql;",
-            new String[]{
+        assertParse(
+            POSTGRESQL_DIALECT_NAME,
+            "CREATE OR REPLACE FUNCTION fn_TestDelimiter()\n" +
+            "RETURNS BOOLEAN AS\n" +
+            "$$\n" +
+            "BEGIN  \n" +
+            "\tINSERT INTO tbl_Students VALUES (1,'Anvesh');\n" +
+            "\tRETURN TRUE; \n" +
+            "END;\n" +
+            "$$\n" +
+            "LANGUAGE plpgsql; \n\n" +
+            "CREATE FUNCTION sales_tax(subtotal real) RETURNS real AS $$\n" +
+            "BEGIN\n" +
+            "    RETURN subtotal * 0.06;\n" +
+            "END;\n" +
+            "$$ LANGUAGE plpgsql;",
+            new String[] {
                 "CREATE OR REPLACE FUNCTION fn_TestDelimiter()\n" +
                 "RETURNS BOOLEAN AS\n" +
                 "$$\n" +
@@ -105,12 +111,14 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
                 "    RETURN subtotal * 0.06;\n" +
                 "END;\n" +
                 "$$ LANGUAGE plpgsql",
-            });
+            }
+        );
     }
 
     @Test
     public void parseOracleDeclareBlock() throws DBException {
-        assertParse("oracle",
+        assertParse(
+            ORACLE_DIALECT_NAME,
             "DECLARE\n" +
             "BEGIN\n" +
             "    NULL;\n" +
@@ -191,7 +199,7 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             "    dbms_output.put_line(test_v||chr(9)||test_f(test_v));\n" +
             "    dbms_output.put_line('End');\n" +
             "END;\n" +
-            
+
             "DECLARE\n" +
             "    i int;\n" +
             "BEGIN\n" +
@@ -229,7 +237,7 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             "    no_comm EXCEPTION; \n" +
             "    no_sal EXCEPTION; \n" +
             "END emp_mgmt;",
-        new String[]{
+            new String[] {
                 "DECLARE\n" +
                 "BEGIN\n" +
                 "    NULL;\n" +
@@ -310,7 +318,7 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
                 "    dbms_output.put_line(test_v||chr(9)||test_f(test_v));\n" +
                 "    dbms_output.put_line('End');\n" +
                 "END;",
-                
+
                 "DECLARE\n" +
                 "    i int;\n" +
                 "BEGIN\n" +
@@ -348,198 +356,218 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
                 "    no_comm EXCEPTION; \n" +
                 "    no_sal EXCEPTION; \n" +
                 "END emp_mgmt;"
-            });
+            }
+        );
     }
 
     @Test
     public void parseOracleWithBlock() throws DBException {
         String[] withStatements = new String[] {
-                "WITH dept_count AS (\n" +
-                "  SELECT deptno, COUNT(*) AS dept_count\n" +
-                "    FROM emp\n" +
-                "   GROUP BY deptno)\n" +
-                "SELECT e.ename AS employee_name,\n" +
-                "       dc.dept_count AS emp_dept_count\n" +
-                "  FROM emp e\n" +
-                "  JOIN dept_count dc ON e.deptno = dc.deptno;",
-                null,
-                "WITH\n" +
-                "  dept_costs AS (\n" +
-                "    SELECT dname, SUM(sal) dept_total\n" +
-                "      FROM   emp e, dept d\n" +
-                "     WHERE  e.deptno = d.deptno\n" +
-                "     GROUP BY dname\n" +
-                "\t ),\n" +
-                "  avg_cost AS (\n" +
-                "    SELECT SUM(dept_total)/COUNT(*) avg\n" +
-                "      FROM dept_costs\n" +
-                "\t  )\n" +
-                "SELECT *\n" +
-                "  FROM dept_costs\n" +
-                " WHERE  dept_total > (SELECT avg FROM avg_cost)\n" +
-                " ORDER BY dname;",
-                null,
-                "WITH\n" +
-                "  FUNCTION with_function(p_id IN NUMBER) RETURN NUMBER IS\n" +
-                "  BEGIN\n" +
-                "    RETURN p_id;\n" +
-                "  END;\n" +
-                "  FUNCTION with_function2(p_id IN NUMBER) RETURN NUMBER IS\n" +
-                "  BEGIN\n" +
-                "    RETURN p_id;\n" +
-                "  END;\n" +
-                "SELECT with_function(id)\n" +
-                "  FROM   t1\n" +
-                " WHERE  rownum = 1;",
-                null,
-                "WITH\n" +
-                "  PROCEDURE with_procedure(p_id IN NUMBER) IS\n" +
-                "  BEGIN\n" +
-                "    DBMS_OUTPUT.put_line('p_id=' || p_id);\n" +
-                "  END;\n" +
-                "SELECT id\n" +
-                "  FROM   t1\n" +
-                " WHERE  rownum = 1;",
-                null,
+            "WITH dept_count AS (\n" +
+            "  SELECT deptno, COUNT(*) AS dept_count\n" +
+            "    FROM emp\n" +
+            "   GROUP BY deptno)\n" +
+            "SELECT e.ename AS employee_name,\n" +
+            "       dc.dept_count AS emp_dept_count\n" +
+            "  FROM emp e\n" +
+            "  JOIN dept_count dc ON e.deptno = dc.deptno;",
+            null,
+            "WITH\n" +
+            "  dept_costs AS (\n" +
+            "    SELECT dname, SUM(sal) dept_total\n" +
+            "      FROM   emp e, dept d\n" +
+            "     WHERE  e.deptno = d.deptno\n" +
+            "     GROUP BY dname\n" +
+            "\t ),\n" +
+            "  avg_cost AS (\n" +
+            "    SELECT SUM(dept_total)/COUNT(*) avg\n" +
+            "      FROM dept_costs\n" +
+            "\t  )\n" +
+            "SELECT *\n" +
+            "  FROM dept_costs\n" +
+            " WHERE  dept_total > (SELECT avg FROM avg_cost)\n" +
+            " ORDER BY dname;",
+            null,
+            "WITH\n" +
+            "  FUNCTION with_function(p_id IN NUMBER) RETURN NUMBER IS\n" +
+            "  BEGIN\n" +
+            "    RETURN p_id;\n" +
+            "  END;\n" +
+            "  FUNCTION with_function2(p_id IN NUMBER) RETURN NUMBER IS\n" +
+            "  BEGIN\n" +
+            "    RETURN p_id;\n" +
+            "  END;\n" +
+            "SELECT with_function(id)\n" +
+            "  FROM   t1\n" +
+            " WHERE  rownum = 1;",
+            null,
+            "WITH\n" +
+            "  PROCEDURE with_procedure(p_id IN NUMBER) IS\n" +
+            "  BEGIN\n" +
+            "    DBMS_OUTPUT.put_line('p_id=' || p_id);\n" +
+            "  END;\n" +
+            "SELECT id\n" +
+            "  FROM   t1\n" +
+            " WHERE  rownum = 1;",
+            null,
         };
-        assertParse("oracle", withStatements);
+        assertParse(ORACLE_DIALECT_NAME, withStatements);
     }
 
     @Test
     public void parseOraclePackageBodyBlock() throws DBException {
         String[] packageBodyStatements = new String[] {
-                "CREATE OR REPLACE NONEDITIONABLE PACKAGE BODY order_mgmt\n" +
-                "AS\n" +
-                "  -- get net value of a order\n" +
-                "  FUNCTION get_net_value(\n" +
-                "      p_order_id NUMBER)\n" +
-                "    RETURN NUMBER\n" +
-                "  IS\n" +
-                "    ln_net_value NUMBER \n" +
-                "  BEGIN\n" +
-                "    SELECT\n" +
-                "      SUM(unit_price * quantity)\n" +
-                "    INTO\n" +
-                "      ln_net_value\n" +
-                "    FROM\n" +
-                "      order_items\n" +
-                "    WHERE\n" +
-                "      order_id = p_order_id;\n" +
-                "\n" +
-                "    RETURN p_order_id;\n" +
-                "\n" +
-                "  EXCEPTION\n" +
-                "  WHEN no_data_found THEN\n" +
-                "    DBMS_OUTPUT.PUT_LINE( SQLERRM );\n" +
-                "  END get_net_value;\n" +
-                "\n" +
-                "-- Get net value by customer\n" +
-                "  FUNCTION get_net_value_by_customer(\n" +
-                "      p_customer_id NUMBER,\n" +
-                "      p_year        NUMBER)\n" +
-                "    RETURN NUMBER\n" +
-                "  IS\n" +
-                "    ln_net_value NUMBER \n" +
-                "  BEGIN\n" +
-                "    SELECT\n" +
-                "      SUM(quantity * unit_price)\n" +
-                "    INTO\n" +
-                "      ln_net_value\n" +
-                "    FROM\n" +
-                "      order_items\n" +
-                "    INNER JOIN orders USING (order_id)\n" +
-                "    WHERE\n" +
-                "      extract(YEAR FROM order_date) = p_year\n" +
-                "    AND customer_id                 = p_customer_id\n" +
-                "    AND status                      = gc_shipped_status;\n" +
-                "    RETURN ln_net_value;\n" +
-                "  EXCEPTION\n" +
-                "  WHEN no_data_found THEN\n" +
-                "    DBMS_OUTPUT.PUT_LINE( SQLERRM );\n" +
-                "  END get_net_value_by_customer;\n" +
-                "\n" +
-                "END order_mgmt;",
+            "CREATE OR REPLACE NONEDITIONABLE PACKAGE BODY order_mgmt\n" +
+            "AS\n" +
+            "  -- get net value of a order\n" +
+            "  FUNCTION get_net_value(\n" +
+            "      p_order_id NUMBER)\n" +
+            "    RETURN NUMBER\n" +
+            "  IS\n" +
+            "    ln_net_value NUMBER \n" +
+            "  BEGIN\n" +
+            "    SELECT\n" +
+            "      SUM(unit_price * quantity)\n" +
+            "    INTO\n" +
+            "      ln_net_value\n" +
+            "    FROM\n" +
+            "      order_items\n" +
+            "    WHERE\n" +
+            "      order_id = p_order_id;\n" +
+            "\n" +
+            "    RETURN p_order_id;\n" +
+            "\n" +
+            "  EXCEPTION\n" +
+            "  WHEN no_data_found THEN\n" +
+            "    DBMS_OUTPUT.PUT_LINE( SQLERRM );\n" +
+            "  END get_net_value;\n" +
+            "\n" +
+            "-- Get net value by customer\n" +
+            "  FUNCTION get_net_value_by_customer(\n" +
+            "      p_customer_id NUMBER,\n" +
+            "      p_year        NUMBER)\n" +
+            "    RETURN NUMBER\n" +
+            "  IS\n" +
+            "    ln_net_value NUMBER \n" +
+            "  BEGIN\n" +
+            "    SELECT\n" +
+            "      SUM(quantity * unit_price)\n" +
+            "    INTO\n" +
+            "      ln_net_value\n" +
+            "    FROM\n" +
+            "      order_items\n" +
+            "    INNER JOIN orders USING (order_id)\n" +
+            "    WHERE\n" +
+            "      extract(YEAR FROM order_date) = p_year\n" +
+            "    AND customer_id                 = p_customer_id\n" +
+            "    AND status                      = gc_shipped_status;\n" +
+            "    RETURN ln_net_value;\n" +
+            "  EXCEPTION\n" +
+            "  WHEN no_data_found THEN\n" +
+            "    DBMS_OUTPUT.PUT_LINE( SQLERRM );\n" +
+            "  END get_net_value_by_customer;\n" +
+            "\n" +
+            "END order_mgmt;",
 
-                "CREATE OR REPLACE EDITIONABLE PACKAGE BODY synchronize_my_data \n" +
-                "IS\n" +
-                "  PROCEDURE synchronize_data(p_run_date IN date) IS\n" +
-                "      PROCEDURE process_deletes(p_run_date IN date) IS\n" +
-                "      BEGIN\n" +
-                "          dbms_output.put_line('Run Date: ' || to_char(p_run_date, 'MM/DD/YYYY'));      \n" +
-                "      END;\n" +
-                "  BEGIN\n" +
-                "    process_deletes(p_run_date);\n" +
-                "  END;\n" +
-                "\n" +
-                "END;",
+            "CREATE OR REPLACE EDITIONABLE PACKAGE BODY synchronize_my_data \n" +
+            "IS\n" +
+            "  PROCEDURE synchronize_data(p_run_date IN date) IS\n" +
+            "      PROCEDURE process_deletes(p_run_date IN date) IS\n" +
+            "      BEGIN\n" +
+            "          dbms_output.put_line('Run Date: ' || to_char(p_run_date, 'MM/DD/YYYY'));      \n" +
+            "      END;\n" +
+            "  BEGIN\n" +
+            "    process_deletes(p_run_date);\n" +
+            "  END;\n" +
+            "\n" +
+            "END;",
 
-                "CREATE OR REPLACE PACKAGE BODY synchronize_my_data \n" +
-                "IS\n" +
-                "  PROCEDURE process_deletes(p_run_date IN date) \n" +
-                "  IS\n" +
-                "  BEGIN\n" +
-                "      dbms_output.put_line('Run Date: ' || to_char(p_run_date, 'MM/DD/YYYY'));      \n" +
-                "  END process_deletes;\n" +
-                "\n" +
-                "  PROCEDURE synchronize_data(p_run_date IN date) \n" +
-                "  IS\n" +
-                "  BEGIN\n" +
-                "    process_deletes(p_run_date);\n" +
-                "  END synchronize_data;\n" +
-                "\n" +
-                "END synchronize_my_data;"
+            "CREATE OR REPLACE PACKAGE BODY synchronize_my_data \n" +
+            "IS\n" +
+            "  PROCEDURE process_deletes(p_run_date IN date) \n" +
+            "  IS\n" +
+            "  BEGIN\n" +
+            "      dbms_output.put_line('Run Date: ' || to_char(p_run_date, 'MM/DD/YYYY'));      \n" +
+            "  END process_deletes;\n" +
+            "\n" +
+            "  PROCEDURE synchronize_data(p_run_date IN date) \n" +
+            "  IS\n" +
+            "  BEGIN\n" +
+            "    process_deletes(p_run_date);\n" +
+            "  END synchronize_data;\n" +
+            "\n" +
+            "END synchronize_my_data;"
 
         };
-        assertParse("oracle", packageBodyStatements);
+        assertParse(ORACLE_DIALECT_NAME, packageBodyStatements);
     }
-    
+
     @Test
     public void parseCurrentControlCommandsCursorHead() throws DBException {
-        String query = "@set col1 = '1'\n"
-            + "@set col2 = '2'\n"
-            + "@set col3 = '3'\n"
-            + "@set col4 = '4'\n"
-            + "@set col5 = '5'\n"
-            + "\n"
-            + "SELECT 'test1' FROM daul;\n"
-            + "\n"
-            + "SELECT 'test2' FROM dual;";
-        SQLParserContext context = createParserContext(setDialect("oracle"), query);
-        SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 64, false, false);
-        Assert.assertEquals("@set col5 = '5'", element.getText());
+        String query = """
+            @set col1 = '1'
+            @set col2 = '2'
+            @set col3 = '3'
+            @set col4 = '4'
+            @set col5 = '5'<-|
+            
+            SELECT 'test1' FROM dual;
+            
+            SELECT 'test2' FROM dual;
+            """;
+        var modifiedQueryAndPositions = SQLEditorTestUtil.getCursorPositions(query);
+        String modifiedQuery = modifiedQueryAndPositions.keySet().iterator().next();
+        int[] positions = modifiedQueryAndPositions.get(modifiedQuery);
+
+        SQLParserContext context = createParserContext(setDialect(ORACLE_DIALECT_NAME), modifiedQuery);
+        SQLScriptElement element = SQLScriptParser.parseQuery(
+            context, 0, modifiedQuery.length(), positions[0], false, false
+        );
+        assertEquals("@set col5 = '5'", element.getText());
     }
-    
+
     @Test
     public void parseCurrentControlCommandsCursorTail() throws DBException {
-        String query = "@set col1 = '1'\n"
-            + "@set col2 = '2'\n"
-            + "@set col3 = '3'\n"
-            + "@set col4 = '4'\n"
-            + "@set col5 = '5'\n"
-            + "\n"
-            + "SELECT 'test1' FROM daul;\n"
-            + "\n"
-            + "SELECT 'test2' FROM dual;";
-        SQLParserContext context = createParserContext(setDialect("oracle"), query);
-        SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 15, false, false);
-        Assert.assertEquals("@set col1 = '1'", element.getText());
+        String query = """
+            @set col1 = '1'<-|
+            @set col2 = '2'
+            @set col3 = '3'
+            @set col4 = '4'
+            @set col5 = '5'
+            
+            SELECT 'test1' FROM dual;
+            
+            SELECT 'test2' FROM dual;
+            """;
+        var modifiedQueryAndPositions = SQLEditorTestUtil.getCursorPositions(query);
+        String modifiedQuery = modifiedQueryAndPositions.keySet().iterator().next();
+        int[] positions = modifiedQueryAndPositions.get(modifiedQuery);
+        SQLParserContext context = createParserContext(setDialect(ORACLE_DIALECT_NAME), modifiedQuery);
+        SQLScriptElement element = SQLScriptParser.parseQuery(
+            context, 0, modifiedQuery.length(), positions[0], false, false
+        );
+        assertEquals("@set col1 = '1'", element.getText());
     }
 
     @Test
     public void parseMultilineCommandFromCursorPosition() throws DBException {
         String query = """
-            @@set var1 = 'I have a long text for
-            multiple lines'@@
+            <-|@@set<-| var1<-| = 'I have a<-| long text for
+            mul<-|tiple<-| lines'@@
             
-            SELECT var1 FROM dual;""";
+            SELEC<-|T var1 FROM dual;""";
         String expected = """
             @@set var1 = 'I have a long text for
             multiple lines'@@""";
-        SQLParserContext context = createParserContext(setDialect("oracle"), query);
-        var positions = List.of(0, 1, 2, 5, 12, 25, 36, 52, 53, 54);
+        var modifiedQueryAndPositions = SQLEditorTestUtil.getCursorPositions(query);
+        String modifiedQuery = modifiedQueryAndPositions.keySet().iterator().next();
+        int[] positions = modifiedQueryAndPositions.get(modifiedQuery);
+        SQLParserContext context = createParserContext(setDialect(ORACLE_DIALECT_NAME), modifiedQuery);
         for (var pos : positions) {
-            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
-            Assert.assertEquals(expected, element.getText());
+            SQLScriptElement element = SQLScriptParser.parseQuery(
+                context, 0, modifiedQuery.length(), pos, false, false
+            );
+            assertEquals(expected, element.getText());
         }
     }
 
@@ -555,15 +583,15 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             "q'['Hello,' said the child, who didn't like goodbyes.]';",
             "q'{'Hello,' said the child, who didn't like goodbyes.}';",
             "Q'('Hello,' said the child, who didn't like goodbyes.)';",
-            "q'<'Hello,' said the child, who didn't like goodbyes.>';" 
+            "q'<'Hello,' said the child, who didn't like goodbyes.>';"
         );
-        
+
         for (String qstring : qstrings) {
-            SQLParserContext context = createParserContext(setDialect("oracle"), qstring);
+            SQLParserContext context = createParserContext(setDialect(ORACLE_DIALECT_NAME), qstring);
             TPRuleBasedScanner scanner = context.getScanner();
             scanner.setRange(context.getDocument(), 0, qstring.length());
-            Assert.assertEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
-            Assert.assertEquals(qstring.length() - 1, scanner.getTokenLength());
+            assertEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
+            assertEquals(qstring.length() - 1, scanner.getTokenLength());
             scanner.nextToken();
         }
         final List<String> badQstrings = List.of(
@@ -575,16 +603,16 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             "q'<All the king's horses>;'",
             "q'abcd'"
         );
-        
+
         for (String badQstring : badQstrings) {
-            SQLParserContext context = createParserContext(setDialect("oracle"), badQstring);
+            SQLParserContext context = createParserContext(setDialect(ORACLE_DIALECT_NAME), badQstring);
             TPRuleBasedScanner scanner = context.getScanner();
             scanner.setRange(context.getDocument(), 0, badQstring.length());
-            Assert.assertNotEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
-            Assert.assertNotEquals(badQstring.length() - 1, scanner.getTokenLength());
+            assertNotEquals(SQLTokenType.T_STRING, scanner.nextToken().getData());
+            assertNotEquals(badQstring.length() - 1, scanner.getTokenLength());
         }
     }
-    
+
     /**
      * Check that QStringRule doesn't interfere in this case
      * See #19319
@@ -592,39 +620,53 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
     @Test
     public void parseOracleNamedByQTable() throws DBException {
         String query = "select * from q;";
-        SQLParserContext context = createParserContext(setDialect("oracle"), query);
+        SQLParserContext context = createParserContext(setDialect(ORACLE_DIALECT_NAME), query);
         TPRuleBasedScanner scanner = context.getScanner();
         scanner.setRange(context.getDocument(), 14, query.length());
-        Assert.assertEquals(SQLTokenType.T_OTHER, scanner.nextToken().getData());
-        Assert.assertEquals(1, scanner.getTokenLength());;
-        Assert.assertEquals(SQLTokenType.T_DELIMITER, scanner.nextToken().getData());
-        Assert.assertEquals(1, scanner.getTokenLength());
+        assertEquals(SQLTokenType.T_OTHER, scanner.nextToken().getData());
+        assertEquals(1, scanner.getTokenLength());
+
+        assertEquals(SQLTokenType.T_DELIMITER, scanner.nextToken().getData());
+        assertEquals(1, scanner.getTokenLength());
     }
-    
-    
+
+
     @Test
     public void parseBeginTransaction() throws DBException {
-        String[] dialects = new String[] {"postgresql", "sqlserver"};
+        String[] dialects = new String[] {POSTGRESQL_DIALECT_NAME, SQLSERVER_DIALECT_NAME};
         for (String dialect : dialects) {
-            assertParse(dialect,
+            assertParse(
+                dialect,
                 "begin transaction;\nselect 1 from dual;",
-                new String[]{"begin transaction", "select 1 from dual"}
+                new String[] {"begin transaction", "select 1 from dual"}
             );
         }
     }
-    
+
     @Test
     public void parseFromCursorPositionBeginTransaction() throws DBException {
-        String[] dialects = new String[] {"postgresql", "sqlserver"};
-        String query = "begin transaction;\nselect 1 from dual;";
+        String[] dialects = new String[] {POSTGRESQL_DIALECT_NAME, SQLSERVER_DIALECT_NAME};
+        String query = """
+            begi<-|n transaction;<-|
+            select 1 from dual;
+            """;
         SQLScriptElement element;
         SQLParserContext context;
-        for (String dialect : dialects) {
-            context = createParserContext(setDialect(dialect), query);
-            int[] positions = new int[]{4, 18};
-            for (int pos : positions) {
-                element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
-                Assert.assertEquals("begin transaction", element.getText());
+
+        var modifiedQueryAndPositions = SQLEditorTestUtil.getCursorPositions(query);
+
+        for (var entry : modifiedQueryAndPositions.entrySet()) {
+            String modifiedQuery = entry.getKey();
+            int[] positions = entry.getValue();
+
+            for (String dialect : dialects) {
+                context = createParserContext(setDialect(dialect), modifiedQuery);
+                for (int pos : positions) {
+                    element = SQLScriptParser.parseQuery(
+                        context, 0, modifiedQuery.length(), pos, false, false
+                    );
+                    assertEquals("begin transaction", element.getText());
+                }
             }
         }
     }
@@ -634,59 +676,74 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
      */
     @Test
     public void parseFromCursorPositionSmartModeNoDelimiterAndSpaceInside() throws DBException {
-        String[] dialects = new String[] {"postgresql"};
+        String[] dialects = new String[] {POSTGRESQL_DIALECT_NAME};
         String query = """
             select *\s
-            from (values(random())
+            from (values(<-|random())
                    \s
                 ) as s(v)
-            where s.v is not null
+            wh<-|ere s.v is not null
             """;
+
+        var modifiedQueryAndPositions = SQLEditorTestUtil.getCursorPositions(query);
+        String modifiedQuery = modifiedQueryAndPositions.keySet().iterator().next();
+        int[] positions = modifiedQueryAndPositions.get(modifiedQuery);
+
         SQLScriptElement element;
         SQLParserContext context;
         for (String dialect : dialects) {
-            context = createParserContext(setDialect(dialect), query);
-            int[] positions = new int[]{23, 58, 81};
+            context = createParserContext(setDialect(dialect), modifiedQuery);
             for (int pos : positions) {
-                element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
-                Assert.assertEquals(query, element.getText());
+                element = SQLScriptParser.parseQuery(context, 0, modifiedQuery.length(), pos, false, false);
+                assertEquals(modifiedQuery, element.getText());
             }
         }
     }
+
 
     /**
      * Issue 34815
      */
     @Test
     public void parseFromCursorPositionSmartModeShowStatement() throws DBException {
-        String[] queries = {"""
-            select *
-            from film_actor
-                        
-            show search_path;
-            """,
+        String[] queriesWithMarkers = {
             """
-            select *
-            from film_actor;
-            show search_path;
+                sel<-|ect *
+                fro<-|m film_actor<-|
+
+                sho<-|w search_path;<-|
+                """,
             """
+                sel<-|ect *
+                fro<-|m film_actor;<-|
+                sho<-|w search_path;<-|
+                """
         };
+
         SQLScriptElement element;
         SQLParserContext context;
-        for (String query : queries) {
-            context = createParserContext(setDialect("postgresql"), query);
-            int[] positions = new int[]{3, 17, 33, 45, 51, 59};
+
+        for (String queryWithMarkers : queriesWithMarkers) {
+            Map<String, int[]> modifiedQueryAndPositions = SQLEditorTestUtil.getCursorPositions(queryWithMarkers);
+            String modifiedQuery = modifiedQueryAndPositions.keySet().iterator().next();
+            int[] positions = modifiedQueryAndPositions.get(modifiedQuery);
+
+            context = createParserContext(setDialect(POSTGRESQL_DIALECT_NAME), modifiedQuery);
+
             for (int pos : positions) {
-                if (pos >= query.length()) {
+                if (pos >= modifiedQuery.length()) {
                     continue;
                 }
-                element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
-                if (pos < 24) {
-                    Assert.assertEquals("""
-                        select *
-                        from film_actor""", element.getText());
+                element = SQLScriptParser.parseQuery(context, 0, modifiedQuery.length(), pos, false, false);
+
+                if (pos < modifiedQuery.indexOf("show search_path")) {
+                    assertEquals(
+                        """
+                            select *
+                            from film_actor""", element.getText()
+                    );
                 } else {
-                    Assert.assertEquals("show search_path", element.getText());
+                    assertEquals("show search_path", element.getText());
                 }
             }
         }
@@ -698,14 +755,20 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
     @Test
     public void parseFromCursorPositionDelimitersAndMultilineComments() throws DBException {
         String query = """
-            select 10 ; -- Comments
-            select 10 ; /* Comments */
+            sel<-|ect 10 ; -- Comments
+            selec<-|t 10 ; /* Comments */
             """;
-        SQLParserContext context = createParserContext(setDialect("postgresql"), query);
-        SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 3, false, false);
-        Assert.assertEquals("select 10 ", element.getText());
-        element = SQLScriptParser.parseQuery(context, 0, query.length(), 29, false, false);
-        Assert.assertEquals("-- Comments\nselect 10 ", element.getText());
+
+        var modifiedQueryAndPositions = SQLEditorTestUtil.getCursorPositions(query);
+        String modifiedQuery = modifiedQueryAndPositions.keySet().iterator().next();
+        int[] positions = modifiedQueryAndPositions.get(modifiedQuery);
+
+        SQLParserContext context = createParserContext(setDialect(POSTGRESQL_DIALECT_NAME), modifiedQuery);
+        SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, modifiedQuery.length(), positions[0], false, false);
+        assertEquals("select 10 ", element.getText());
+
+        element = SQLScriptParser.parseQuery(context, 0, modifiedQuery.length(), positions[1], false, false);
+        assertEquals("-- Comments\nselect 10 ", element.getText());
     }
 
     /**
@@ -714,26 +777,27 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
     @Test
     public void parseFromCursorPositionUpdateWithWhereAndBlankLineInBetween() throws DBException {
         String query = """
-            UPDATE orders
-            SET is_deleted = true
+            UPDATE o<-|rders
+            SET is_<-|deleted = true
             
             WHERE id in (1,23)
             """;
+        var modifiedQueryAndPositions = SQLEditorTestUtil.getCursorPositions(query);
+        String modifiedQuery = modifiedQueryAndPositions.keySet().iterator().next();
+        int[] positions = modifiedQueryAndPositions.get(modifiedQuery);
         SQLScriptElement element;
-        SQLParserContext context = createParserContext(setDialect("postgresql"), query);
-        if (context.getSyntaxManager().getStatementDelimiterMode().useSmart) {
-            int[] positions = new int[]{8, 21, 36, 58};
+        SQLParserContext context = createParserContext(setDialect(POSTGRESQL_DIALECT_NAME), modifiedQuery);
+        if (!context.getSyntaxManager().getStatementDelimiterMode().useSmart) {
+
             for (int pos : positions) {
-                element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
-                Assert.assertEquals(query, element.getText());
-            }
-        } else {
-            int[] positions = new int[]{8, 21};
-            for (int pos : positions) {
-                element = SQLScriptParser.parseQuery(context, 0, query.length(), pos, false, false);
-                Assert.assertEquals("""
-                    UPDATE orders
-                    SET is_deleted = true""", element.getText());
+                element = SQLScriptParser.parseQuery(
+                    context, 0, modifiedQuery.length(), pos, false, false
+                );
+                assertEquals(
+                    """
+                        UPDATE orders
+                        SET is_deleted = true""", element.getText()
+                );
             }
         }
     }
@@ -747,38 +811,54 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             SELECT *
             FROM foo
             WHERE 1=1;
-                        
+            
             AND bar=1
             """;
-        SQLParserContext context = createParserContext(setDialect("postgresql"), query);
+        SQLParserContext context = createParserContext(setDialect(POSTGRESQL_DIALECT_NAME), query);
         SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 8, false, false);
-        Assert.assertEquals("""
-            SELECT *
-            FROM foo
-            WHERE 1=1""", element.getText());
+        assertEquals(
+            """
+                SELECT *
+                FROM foo
+                WHERE 1=1""", element.getText()
+        );
     }
 
 
     private void assertParse(String dialectName, String[] expected) throws DBException {
-        String source = Arrays.stream(expected).filter(Objects::nonNull).collect(Collectors.joining());
-        List<String> expectedParts = new ArrayList<>(expected.length);
-        for (int i = 0; i < expected.length; i++) {
+        String source = Arrays.stream(expected)
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining());
+
+        List<String> expectedParts = new ArrayList<>();
+        for (int i = 0; i < expected.length; ) {
+            String segment = expected[i];
             if (i + 1 < expected.length && expected[i + 1] == null) {
-                expectedParts.add(expected[i].replaceAll("[\\;]+$", ""));
-                i++;
+                expectedParts.add(segment.replaceAll(";+$", ""));
+                i += 2;
             } else {
-                expectedParts.add(expected[i]);
+                expectedParts.add(segment);
+                i++;
             }
         }
-        assertParse(dialectName, source, expectedParts.toArray(new String[0]));
+
+        assertParse(dialectName, source, expectedParts.toArray(String[]::new));
     }
+
 
     private void assertParse(String dialectName, String query, String[] expected) throws DBException {
         SQLParserContext context = createParserContext(setDialect(dialectName), query);
-        List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(context, 0, context.getDocument().getLength(), false, false, false);
-        Assert.assertEquals(expected.length, elements.size());
+        List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
+            context,
+            0,
+            context.getDocument().getLength(),
+            false,
+            false,
+            false
+        );
+        assertEquals(expected.length, elements.size());
         for (int index = 0; index < expected.length; index++) {
-            Assert.assertEquals(expected[index], elements.get(index).getText());
+            assertEquals(expected[index], elements.get(index).getText());
         }
     }
 
@@ -793,10 +873,10 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
 
     private SQLDialect setDialect(String name) throws DBException {
         SQLDialectMetadataRegistry registry = DBWorkbench.getPlatform().getSQLDialectRegistry();
-        if (name.equals("oracle")) {
+        if (name.equals(ORACLE_DIALECT_NAME)) {
             Mockito.when(dataSource.isServerVersionAtLeast(12, 1)).thenReturn(true);
         }
-        if (name.equals("sqlserver")) {
+        if (name.equals(SQLSERVER_DIALECT_NAME)) {
             Mockito.when(driver.getSampleURL()).thenReturn("jdbc:sqlserver://localhost;user=MyUserName;password=*****;");
         }
         SQLDialect dialect = registry.getDialect(name).createInstance();
@@ -804,4 +884,6 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
         return dialect;
     }
+
+
 }

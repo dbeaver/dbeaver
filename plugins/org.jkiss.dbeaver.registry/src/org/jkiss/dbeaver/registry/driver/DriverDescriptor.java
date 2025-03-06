@@ -107,6 +107,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.file = library.getLocalFile();
             this.type = library.getType();
             this.fileLocation = library.getLocalFile() != null ? library.getLocalFile().toString() : library.getPath();
+            this.fileCRC = library.getFileCRC();
         }
 
         public Path getFile() {
@@ -1498,7 +1499,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         result.add(localFile);
                     }
                 } else {
-                    Path tempDriversDir = getTempWorkspaceDriversStorageFolder();
+                    Path tempDriversDir = getExternalDriversStorageFolder();
                     Path driverLibsFolder = Files.isDirectory(localFile) ? Path.of(library.getPath()) :
                         Path.of(library.getPath()).getParent();
                     Path realDriverLibsFolder = tempDriversDir.resolve(driverLibsFolder);
@@ -1707,7 +1708,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         List<Path> localFilePaths = new ArrayList<>();
 
         final Map<DBPDriverLibrary, List<DriverFileInfo>> downloadCandidates = new LinkedHashMap<>();
-        Path driverFolder = getTempWorkspaceDriversStorageFolder();
+        Path driverFolder = getExternalDriversStorageFolder();
         for (DBPDriverLibrary library : libraries) {
             if (monitor.isCanceled()) {
                 break;
@@ -2115,13 +2116,23 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     // used to download drivers from external fs or distributed to a temp folder
     @NotNull
-    public static Path getTempWorkspaceDriversStorageFolder() {
-        try {
-            return DBWorkbench.getPlatform().getTempFolder(new LoggingProgressMonitor(), DBFileController.DATA_FOLDER)
-                .resolve(DBFileController.TYPE_DATABASE_DRIVER);
-        } catch (IOException e) {
-            throw new RuntimeException("Error getting drivers temp folder", e);
+    public static Path getExternalDriversStorageFolder() {
+        DBPPlatform platform = DBWorkbench.getPlatform();
+        if (platform.getApplication().isMultiuser()) {
+            try {
+                return platform.getTempFolder(new LoggingProgressMonitor(), DBFileController.DATA_FOLDER)
+                    .resolve(DBFileController.TYPE_DATABASE_DRIVER);
+            } catch (IOException e) {
+                throw new RuntimeException("Error getting drivers temp folder", e);
+            }
         }
+
+        Path customFolder = getCustomDriversHome();
+        String distributedFolderName = platform.getApplication().defaultDistributedDriversFolderName();
+        if (distributedFolderName != null) {
+            customFolder = customFolder.resolve(distributedFolderName);
+        }
+        return customFolder;
     }
 
     public static Path getWorkspaceDriversStorageFolder() {

@@ -25,7 +25,6 @@ import org.eclipse.jface.action.ContributionManager;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.KeyAdapter;
@@ -216,12 +215,18 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         }
 
         Composite infoGroup = new Composite(container, SWT.NONE);
-        infoGroup.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-        infoGroup.setLayout(GridLayoutFactory.swtDefaults().margins(5, 0).numColumns(3).create());
+        infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridLayout gl = new GridLayout(3, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        infoGroup.setLayout(gl);
 
         customControlsComposite = new Composite(infoGroup, SWT.NONE);
-        customControlsComposite.setLayoutData(GridDataFactory.swtDefaults().create());
-        customControlsComposite.setLayout(GridLayoutFactory.fillDefaults().create());
+        customControlsComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        gl = new GridLayout(1, false);
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        customControlsComposite.setLayout(gl);
 
         listInfoLabel = new CLabel(infoGroup, SWT.NONE);
         listInfoLabel.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
@@ -291,6 +296,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 fillCustomActions(customToolbarManager);
                 if (!customToolbarManager.isEmpty()) {
                     ToolBar toolbar = customToolbarManager.createControl(customControlsComposite);
+                    toolbar.setFont(BaseThemeSettings.instance.baseFont);
                     toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
                     populateCustomActions(customToolbarManager);
                     UIUtils.populateToolItemCommandIds(customToolbarManager);

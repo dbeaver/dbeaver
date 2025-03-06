@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.slf4j;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.utils.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.helpers.MessageFormatter;
@@ -346,7 +345,7 @@ public class SLFLogger implements Logger {
     }
 
     private Object formatMessage(String message, Object... params) {
-        return getName() + ": " + (ArrayUtils.isEmpty(params) ?
+        return getName() + ": " + (params == null || params.length == 0 ?
             message : MessageFormatter.arrayFormat(message, params).getMessage());
     }
 }
