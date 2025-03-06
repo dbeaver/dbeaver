@@ -368,7 +368,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
             // Open output streams
             boolean outputClipboard = settings.isOutputClipboard();
-            if (!parameters.writeDirectToStream && (parameters.isBinary || !outputClipboard)) {
+            if (parameters.exportToStream == null && (parameters.isBinary || !outputClipboard)) {
                 outputFile = makeOutputFile(session.getProgressMonitor());
                 outputFiles.add(outputFile);
             } else {
@@ -478,8 +478,8 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private void openOutputStreams(DBRProgressMonitor monitor) throws IOException {
         final boolean truncate;
         OutputStream stream;
-        if (parameters.writeDirectToStream) {
-            stream = parameters.streamForDirectWriting;
+        if (parameters.exportToStream != null) {
+            stream = parameters.exportToStream;
         } else {
             boolean fileExists = Files.exists(outputFile);
             if (fileExists && !Files.isDirectory(outputFile)) {

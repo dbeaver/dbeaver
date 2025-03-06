@@ -41,8 +41,7 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
         public boolean isBinary;
         public boolean isHTML;
         public Date startTimestamp;
-        public boolean writeDirectToStream;
-        public OutputStream streamForDirectWriting;
+        public OutputStream exportToStream;
 
         public TransferParameters() {
         }
@@ -51,11 +50,10 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
             this(isBinary, isHTML, null);
         }
 
-        public TransferParameters(boolean isBinary, boolean isHTML, OutputStream streamForDirectWriting) {
+        public TransferParameters(boolean isBinary, boolean isHTML, OutputStream exportToStream) {
             this.isBinary = isBinary;
             this.isHTML = isHTML;
-            this.writeDirectToStream = streamForDirectWriting != null;
-            this.streamForDirectWriting = streamForDirectWriting;
+            this.exportToStream = exportToStream;
         }
     }
 
