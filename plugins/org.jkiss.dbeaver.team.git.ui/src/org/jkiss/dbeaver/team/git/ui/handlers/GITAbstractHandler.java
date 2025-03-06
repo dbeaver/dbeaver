@@ -53,7 +53,11 @@ public abstract class GITAbstractHandler extends AbstractHandler {
     /**
      * A constant zero-sized array for sharing.
      */
-    private static final Repository[] ZERO_SIZE_ARRAY = new Repository[0];
+    private static final Repository[] ZERO_REPOSITORIES = new Repository[0];
+    /**
+     * A constant zero-sized array for sharing.
+     */
+    private static final IProject[] ZERO_PROJECTS = new IProject[0];
 
     protected IResource[] getResourcesInScope(ExecutionEvent event)
         throws ExecutionException {
@@ -146,7 +150,7 @@ public abstract class GITAbstractHandler extends AbstractHandler {
             return getRepositoriesFor(selectedProjects);
 
         if (selection.isEmpty()) {
-            return ZERO_SIZE_ARRAY;
+            return ZERO_REPOSITORIES;
         }
 
         Set<Repository> repos = new LinkedHashSet<>();
@@ -156,10 +160,10 @@ public abstract class GITAbstractHandler extends AbstractHandler {
                 repos.add(repo);
             } else {
                 // no repository found for one of the objects!
-                return ZERO_SIZE_ARRAY;
+                return ZERO_REPOSITORIES;
             }
         }
-        return repos.toArray(ZERO_SIZE_ARRAY);
+        return repos.toArray(ZERO_REPOSITORIES);
     }
 
     private static IProject[] getSelectedProjects(
@@ -170,11 +174,11 @@ public abstract class GITAbstractHandler extends AbstractHandler {
             if (mapping != null && (mapping.getContainer() instanceof IProject))
                 ret.add((IProject) mapping.getContainer());
             else
-                return new IProject[0];
+                return ZERO_PROJECTS;
         }
         ret.addAll(extractProjectsFromMappings(selection));
 
-        return ret.toArray(new IProject[0]);
+        return ret.toArray(ZERO_PROJECTS);
     }
 
     private static <T> List<T> getSelectedAdaptables(ISelection selection,
@@ -219,11 +223,11 @@ public abstract class GITAbstractHandler extends AbstractHandler {
             RepositoryMapping repositoryMapping = RepositoryMapping
                 .getMapping(project);
             if (repositoryMapping == null) {
-                return ZERO_SIZE_ARRAY;
+                return ZERO_REPOSITORIES;
             }
             ret.add(repositoryMapping.getRepository());
         }
-        return ret.toArray(ZERO_SIZE_ARRAY);
+        return ret.toArray(ZERO_REPOSITORIES);
     }
 
 }
