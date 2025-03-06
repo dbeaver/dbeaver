@@ -30,6 +30,10 @@ import java.io.IOException;
  * Network handler
  */
 public interface DBWNetworkHandler {
+    /**
+     * A constant zero-sized array for sharing.
+     */
+    DBWNetworkHandler[] ZERO_SIZE_ARRAY = new DBWNetworkHandler[0];
 
     @NotNull
     DBPConnectionConfiguration initializeHandler(

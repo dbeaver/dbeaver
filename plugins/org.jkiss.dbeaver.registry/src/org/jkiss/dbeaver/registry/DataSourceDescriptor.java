@@ -718,7 +718,7 @@ public class DataSourceDescriptor
     @Override
     public DBWNetworkHandler[] getActiveNetworkHandlers() {
         if (proxyHandler == null && tunnelHandler == null) {
-            return new DBWNetworkHandler[0];
+            return DBWNetworkHandler.ZERO_SIZE_ARRAY;
         }
         return proxyHandler == null ?
             new DBWNetworkHandler[]{tunnelHandler} :
