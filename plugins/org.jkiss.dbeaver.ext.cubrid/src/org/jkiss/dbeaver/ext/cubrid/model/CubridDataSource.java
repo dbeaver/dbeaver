@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class CubridDataSource extends GenericDataSource
@@ -298,6 +299,12 @@ public class CubridDataSource extends GenericDataSource
     @Override
     public boolean splitProceduresAndFunctions() {
         return true;
+    }
+
+    @Nullable    
+    @Override
+    public GenericSchema getSchema(String name) {
+        return super.getSchema(name == null ? null : name.toUpperCase(Locale.ENGLISH));
     }
 
 }
