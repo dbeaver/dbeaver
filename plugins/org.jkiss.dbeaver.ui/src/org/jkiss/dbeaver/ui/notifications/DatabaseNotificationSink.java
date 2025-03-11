@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -67,7 +65,7 @@ public class DatabaseNotificationSink {
                             && cancelledTokens.containsKey(notification.getToken()));
 
                         synchronized (DatabaseNotificationSink.class) {
-                            if (currentlyNotifying.size() > 0) {
+                            if (!currentlyNotifying.isEmpty()) {
 //										popup.close();
                                 showPopup();
                             }
@@ -75,7 +73,7 @@ public class DatabaseNotificationSink {
                     });
                 }
             } finally {
-                if (popup != null) {
+                if (popup != null && !DBWorkbench.getPlatform().isShuttingDown()) {
                     schedule(popup.getDelayClose() / 2);
                 }
             }
@@ -112,11 +110,6 @@ public class DatabaseNotificationSink {
         }
     }
 
-    private boolean isAnimationsEnabled() {
-        IPreferenceStore store = PlatformUI.getPreferenceStore();
-        return store.getBoolean(IWorkbenchPreferenceConstants.ENABLE_ANIMATIONS);
-    }
-
     public void notify(NotificationSinkEvent event) {
         currentlyNotifying.addAll(event.getNotifications());
 
@@ -137,7 +130,7 @@ public class DatabaseNotificationSink {
 
         Shell shell = new Shell(PlatformUI.getWorkbench().getDisplay());
         popup = new DatabaseNotificationPopup(shell);
-        popup.setFadingEnabled(isAnimationsEnabled());
+        popup.setFadingEnabled(false);
 
         popup.setDelayClose(DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
 

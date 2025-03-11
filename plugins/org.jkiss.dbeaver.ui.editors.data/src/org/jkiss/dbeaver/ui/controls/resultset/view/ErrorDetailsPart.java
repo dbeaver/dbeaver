@@ -125,6 +125,9 @@ class ErrorDetailsPart {
         buttonsLayout.horizontalSpacing = 0;
         buttonParent.setLayout(buttonsLayout);
 
+        createGoToErrorButton(buttonParent);
+        createShowLogButton(buttonParent);
+
         Button detailsButton = new Button(buttonParent, SWT.PUSH);
         detailsButton.setText(IDialogConstants.SHOW_DETAILS_LABEL);
         detailsButton.addSelectionListener(widgetSelectedAdapter(e -> showDetails()));
@@ -133,8 +136,6 @@ class ErrorDetailsPart {
             SWT.BEGINNING, SWT.FILL, false, false));
         detailsButton.setVisible(reason.getException() != null);
 
-        createShowLogButton(buttonParent);
-        createGoToErrorButton(buttonParent);
     }
 
     /**
@@ -195,6 +196,7 @@ class ErrorDetailsPart {
         button.setImage(image);
         button.setToolTipText(WorkbenchMessages.ErrorLogUtil_ShowErrorLogTooltip);
         button.addDisposeListener(e -> image.dispose());
+        button.setText("Show log");
     }
 
     private void createGoToErrorButton(@NotNull Composite parent) {
@@ -208,5 +210,6 @@ class ErrorDetailsPart {
         button.setImage(DBeaverIcons.getImage(UIIcon.BUTTON_GO_TO_ERROR));
         button.setToolTipText(ResultSetMessages.error_part_button_go_to_error);
         button.setVisible(reason.getException() != null && resultSetContainer != null);
+        button.setText("Go to Error");
     }
 }

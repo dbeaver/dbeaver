@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -66,6 +65,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private static final Pattern LINE_BREAK_REGEX = Pattern.compile("\\r\\n|\\n");
 
     private static final String DEF_QUOTE_CHAR = "\"";
+    private static final String DEFAULT_ARRAY_BRACKETS = "{ }";
     private boolean formatNumbers;
 
     enum HeaderPosition {
@@ -137,7 +137,8 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             case "lower" -> DBPIdentifierCase.LOWER;
             default -> DBPIdentifierCase.UPPER;
         };
-        dataExporterArrayFormat = DataExporterArrayFormat.getArrayFormat(CommonUtils.toString(properties.get(PROP_FORMAT_ARRAY)));
+        dataExporterArrayFormat = DataExporterArrayFormat.getArrayFormat(
+            CommonUtils.toString(properties.get(PROP_FORMAT_ARRAY), DEFAULT_ARRAY_BRACKETS));
     }
 
     @Override

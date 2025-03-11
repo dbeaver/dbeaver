@@ -545,7 +545,7 @@ public class NavigatorUtils {
                     if (resource instanceof IFile file) {
                         openResourceWithHandler(file);
                     } else {
-                        throw new DBException("Do not know how to open path '" + dbnPath.getNodeDisplayName() + "'");
+                        openEntityEditor(node, window, parameters);
                     }
                 }
             } else if (node instanceof DBNNode baseNode && baseNode.allowsOpen()) {
