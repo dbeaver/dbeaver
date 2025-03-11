@@ -32,12 +32,15 @@ import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermErrorNode;
@@ -204,11 +207,6 @@ public abstract class SQLQueryCompletionContext {
         return Collections.emptySet();
     }
 
-    @NotNull
-    public List<? extends SQLQueryCompletionItem> prepareCurrentTupleColumns() {
-        return Collections.emptyList();
-    }
-
     /**
      * Prepare a set of completion proposal items for a given position in the text of the script item
      */
@@ -348,6 +346,8 @@ public abstract class SQLQueryCompletionContext {
                         // TODO Consider identifiers containing escape-sequences
                         String qp = Stream.of(quoteStrs).flatMap(ss -> Stream.of(ss)).map(Pattern::quote).distinct().collect(Collectors.joining("|"));
                         tail = new SQLQueryWordEntry(tail.offset, tail.string.replaceAll(qp, ""));
+
+                        // TODO Consider force identifier quotation (see testQuotedNamesCompletion)
                     }
                 }
 
@@ -588,7 +588,7 @@ public abstract class SQLQueryCompletionContext {
                             SQLQueryWordEntry filter = makeFilterInfo(componentNamePart, o.getName());
                             int score = filter.matches(componentNamePart, this.searchInsideWords);
                             if (score > 0) {
-                                items.addLast(makeDbObjectCompletionItem(score, filter, null, o));
+                                items.addLast(this.makeDbObjectCompletionItem(score, filter, null, o));
                             }
                         }
                     }
@@ -644,11 +644,20 @@ public abstract class SQLQueryCompletionContext {
                     SQLQuerySymbolEntry catalogName = qname.scopeName.size() <= 1 ? null : qname.scopeName.get(qname.scopeName.size() - 2);
 
                     if ((nameRange = qname.entityName.getSyntaxNode().getRealInterval()).properlyContains(pos)) {
-                        SQLQueryWordEntry part = new SQLQueryWordEntry(qname.entityName.getInterval().a, qname.entityName.getRawName().substring(0, position - nameRange.a));
+                        SQLQueryWordEntry part = new SQLQueryWordEntry(
+                            qname.entityName.getInterval().a,
+                            qname.entityName.getRawName().substring(0, position - nameRange.a)
+                        );
                         if (schemaName != null) {
                             SQLQuerySymbolDefinition scopeDef = this.unrollSymbolDefinition(schemaName.getDefinition());
                             if (scopeDef instanceof SQLQuerySymbolByDbObjectDefinition byObjDef) {
-                                this.prepareObjectComponentCompletions(monitor, byObjDef.getDbObject(), part, List.of(DBSEntity.class), results);
+                                this.prepareObjectComponentCompletions(
+                                    monitor,
+                                    byObjDef.getDbObject(),
+                                    part,
+                                    List.of(DBSEntity.class),
+                                    results
+                                );
                             } else {
                                 // schema was not resolved, so cannot accomplish its subitems
                             }
@@ -656,23 +665,50 @@ public abstract class SQLQueryCompletionContext {
                             this.prepareInspectedIdentifierCompletions(monitor, request, List.of(part), results);
                         }
                     } else if (schemaName != null && (schemaRange = schemaName.getSyntaxNode().getRealInterval()).properlyContains(pos)) {
-                        SQLQueryWordEntry part = new SQLQueryWordEntry(schemaName.getInterval().a, schemaName.getRawName().substring(0, position - schemaRange.a));
+                        SQLQueryWordEntry part = new SQLQueryWordEntry(
+                            schemaName.getInterval().a,
+                            schemaName.getRawName().substring(0, position - schemaRange.a)
+                        );
                         if (catalogName != null) {
                             SQLQuerySymbolDefinition scopeDef = this.unrollSymbolDefinition(schemaName.getDefinition());
                             if (scopeDef instanceof SQLQuerySymbolByDbObjectDefinition byObjDef) {
-                                this.prepareObjectComponentCompletions(monitor, byObjDef.getDbObject(), part, List.of(DBSSchema.class), results);
+                                this.prepareObjectComponentCompletions(
+                                    monitor,
+                                    byObjDef.getDbObject(),
+                                    part,
+                                    List.of(DBSSchema.class),
+                                    results
+                                );
                             } else {
                                 // catalog was not resolved, so cannot accomplish schema
                             }
                         } else {
-                            this.prepareObjectComponentCompletions(monitor, dbcExecutionContext.getDataSource(), part, List.of(DBSSchema.class), results);
+                            this.prepareObjectComponentCompletions(
+                                monitor,
+                                dbcExecutionContext.getDataSource(),
+                                part,
+                                List.of(DBSSchema.class),
+                                results
+                            );
                         }
-                    } else if (dbcExecutionContext != null && catalogName != null && (catalogRange = catalogName.getSyntaxNode().getRealInterval()).properlyContains(pos)) {
-                        SQLQueryWordEntry part = new SQLQueryWordEntry(catalogName.getInterval().a, catalogName.getRawName().substring(0, position - catalogRange.a));
-                        this.prepareObjectComponentCompletions(monitor, dbcExecutionContext.getDataSource(), part, List.of(DBSCatalog.class), results);
+                    } else if (dbcExecutionContext != null && catalogName != null && (catalogRange = catalogName.getSyntaxNode()
+                        .getRealInterval()).properlyContains(pos)) {
+                        SQLQueryWordEntry part = new SQLQueryWordEntry(
+                            catalogName.getInterval().a,
+                            catalogName.getRawName().substring(0, position - catalogRange.a)
+                        );
+                        this.prepareObjectComponentCompletions(
+                            monitor,
+                            dbcExecutionContext.getDataSource(),
+                            part,
+                            List.of(DBSCatalog.class),
+                            results
+                        );
                     } else {
                         throw new UnsupportedOperationException("Illegal SQLQueryQualifiedName");
                     }
+                } else if (lexicalItem instanceof SQLQueryTupleRefEntry tupleRef) {
+                    this.accomplishFromKnownOriginOrFallback(monitor, request, tupleRef.getOrigin(), null, parts, results);
                 } else if (lexicalItem instanceof SQLQueryMemberAccessEntry entry) {
                     this.accomplishFromKnownOriginOrFallback(monitor, request, entry.getOrigin(), null, parts, results);
                 } else if (lexicalItem instanceof SQLQuerySymbolEntry entry) {
@@ -708,6 +744,7 @@ public abstract class SQLQueryCompletionContext {
                 @Nullable SQLQueryWordEntry filterOrNull,
                 @NotNull List<SQLQueryCompletionSet> results
             ) {
+                SQLQueryCompletionContext completionContext = this;
                 origin.apply(new SQLQuerySymbolOrigin.Visitor() {
                     @Override
                     public void visitDbObjectFromDbObject(SQLQuerySymbolOrigin.DbObjectFromDbObject origin) {
@@ -794,6 +831,41 @@ public abstract class SQLQueryCompletionContext {
                     @Override
                     public void visitDataContextSymbol(SQLQuerySymbolOrigin.DataContextSymbolOrigin origin) {
                         prepareInspectedFreeCompletions(monitor, request, results);
+                    }
+
+                    @Override
+                    public void visitExpandableTupleRef(SQLQuerySymbolOrigin.ExpandableTupleRef origin) {
+                        SQLQueryDataContext tupleSource = origin.getRowsSource() != null
+                              ? origin.getRowsSource().source.getResultDataContext()
+                              : origin.getDataContext();
+
+                        STMTreeNode placeholder = origin.getPlaceholder();
+                        Interval placeholderInterval = placeholder.getRealInterval();
+                        if (getRequestOffset() - getOffset() == placeholderInterval.b + 1) {
+                            SQLQueryWordEntry placeholderEntry = new SQLQueryWordEntry(
+                                placeholderInterval.a,
+                                placeholder.getTextContent()
+                            );
+                            String columnPrefix = placeholderEntry.string.endsWith("*")
+                                ? placeholderEntry.string.substring(0, placeholderEntry.string.length() - 1)
+                                : "";
+
+                            SQLQueryCompletionTextProvider formatter = new SQLQueryCompletionTextProvider(
+                                request,
+                                completionContext,
+                                monitor
+                            );
+                            String columnListString = prepareTupleColumns(tupleSource, null, false).stream()
+                                .map(c -> columnPrefix + c.apply(formatter))
+                                .collect(Collectors.joining(", "));
+                            request.setWordPart(SQLConstants.ASTERISK);
+
+                            makeFilteredCompletionSet(placeholderEntry, List.of(
+                                SQLQueryCompletionItem.forSpecialText(
+                                    1, makeFilterInfo(placeholderEntry, ""), columnListString, "Tuple columns expansion"
+                                )
+                            ), results);
+                        }
                     }
                 });
             }
@@ -998,18 +1070,22 @@ public abstract class SQLQueryCompletionContext {
             }
 
             @NotNull
-            @Override
-            public List<? extends SQLQueryCompletionItem> prepareCurrentTupleColumns() {
-                return this.prepareTupleColumns(context.deepestContext(), null, true);
-            }
-
-            @NotNull
-            private List<? extends SQLQueryCompletionItem> prepareTupleColumns(@NotNull SQLQueryDataContext context, @Nullable SQLQueryWordEntry filterOrNull, boolean absolute) {
+            private List<? extends SQLQueryCompletionItem> prepareTupleColumns(
+                @NotNull SQLQueryDataContext context,
+                @Nullable SQLQueryWordEntry filterOrNull,
+                boolean absolute
+            ) {
+                boolean useAbsoluteName = absolute & (
+                    context.getKnownSources().getResolutionResults().size() > 1 ||
+                    context.getKnownSources().getAliasesInUse().size() > 0
+                );
                 Stream<? extends SQLQueryCompletionItem> subsetColumns = context.getColumnsList().stream()
                     .map(rc -> {
                         SQLQueryWordEntry filterKey = makeFilterInfo(filterOrNull, rc.symbol.getName());
                         int score = filterKey.matches(filterOrNull, this.searchInsideWords);
-                        return score <= 0 ? null : SQLQueryCompletionItem.forSubsetColumn(score, filterKey, rc, context.getKnownSources().getResolutionResults().get(rc.source), absolute);
+                        return score <= 0 ? null : SQLQueryCompletionItem.forSubsetColumn(
+                            score, filterKey, rc, context.getKnownSources().getResolutionResults().get(rc.source), useAbsoluteName
+                        );
                     }).filter(Objects::nonNull);
 
                 return subsetColumns.toList();
@@ -1104,6 +1180,8 @@ public abstract class SQLQueryCompletionContext {
                     } else if (defaultSchema != null) {
                         return List.of(defaultSchema);
                     }
+                } else if (dbcExecutionContext.getDataSource() instanceof DBSObjectContainer container) {
+                    return List.of(container);
                 }
                 return Collections.emptyList();
             }
@@ -1143,7 +1221,7 @@ public abstract class SQLQueryCompletionContext {
                                 SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, child.getName());
                                 int score = childName.matches(filterOrNull, this.searchInsideWords);
                                 if (score > 0) {
-                                    completions.addLast(makeDbObjectCompletionItem(score, childName, contextObject, child));
+                                    completions.addLast(this.makeDbObjectCompletionItem(score, childName, contextObject, child));
                                 }
                             }
                         }
@@ -1255,7 +1333,10 @@ public abstract class SQLQueryCompletionContext {
         this.makeFilteredCompletionSet(filterOrNull, items, results);
     }
 
-    protected void makeFilteredCompletionSet(@Nullable SQLQueryWordEntry filterOrNull, List<? extends SQLQueryCompletionItem> items, @NotNull List<SQLQueryCompletionSet> results
+    protected void makeFilteredCompletionSet(
+        @Nullable SQLQueryWordEntry filterOrNull,
+        List<? extends SQLQueryCompletionItem> items,
+        @NotNull List<SQLQueryCompletionSet> results
     ) {
         int replacementPosition = filterOrNull == null ? this.getRequestOffset() : this.getOffset() + filterOrNull.offset;
         int replacementLength = this.getRequestOffset() - replacementPosition;
@@ -1287,5 +1368,77 @@ public abstract class SQLQueryCompletionContext {
     @FunctionalInterface
     private interface CompletionItemProducer<T> {
         SQLQueryCompletionItem produce(int score, SQLQueryWordEntry key, T object);
+    }
+
+    /**
+     * Gather and prepare the information of the completion request
+     */
+    @NotNull
+    public static SQLQueryCompletionContext prepareCompletionContext(
+        @NotNull SQLScriptItemAtOffset scriptItem,
+        int offset,
+        @Nullable DBCExecutionContext executionContext,
+        @NotNull SQLDialect dialect
+    ) {
+        int position = offset - scriptItem.offset;
+
+        SQLQueryModel model = scriptItem.item.getQueryModel();
+        if (model != null) {
+            if (scriptItem.item.hasContextBoundaryAtLength() && position >= scriptItem.item.length()) {
+                return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
+            } else {
+                STMTreeNode syntaxNode = model.getSyntaxNode();
+                if (scriptItem.item.getOriginalText().length() <= SQLQueryCompletionContext.getMaxKeywordLength()
+                    && LSMInspections.matchesAnyWord(scriptItem.item.getOriginalText())
+                    && position <= scriptItem.item.getOriginalText().length()
+                ) {
+                    return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
+                }
+
+                LSMInspections inspections = new LSMInspections(dialect, syntaxNode);
+                LSMInspections.SyntaxInspectionResult syntaxInspectionResult = inspections.prepareAbstractSyntaxInspection(position);
+                SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(
+                    Math.min(position, model.getSyntaxNode().getRealInterval().b + 1)
+                );
+                if (context.deepestContext() == null) {
+                    return SQLQueryCompletionContext.prepareEmpty(0, offset);
+                }
+
+                LSMInspections.NameInspectionResult nameInspectionResult = inspections.collectNameNodes(position);
+                if (nameInspectionResult.positionToInspect() != position) {
+                    syntaxInspectionResult = inspections.prepareAbstractSyntaxInspection(nameInspectionResult.positionToInspect());
+                }
+                ArrayDeque<STMTreeNode> nameNodes = nameInspectionResult.nameNodes();
+
+                SQLQueryLexicalScopeItem lexicalItem = context.lexicalItem();
+                // if (nameNodes.isEmpty()
+                //     || (lexicalItem != null&& nameNodes.getLast().getRealInterval().b != lexicalItem.getSyntaxNode().getRealInterval().b)
+                // ) {
+                // no name nodes OR
+                if ((lexicalItem instanceof SQLQuerySymbolEntry && (
+                        nameNodes.isEmpty() || (
+                            nameNodes.getFirst().getRealInterval().a > lexicalItem.getSyntaxNode().getRealInterval().a ||
+                            nameNodes.getLast().getRealInterval().b < lexicalItem.getSyntaxNode().getRealInterval().b
+                        )
+                    )) || (lexicalItem instanceof SQLQueryTupleRefEntry e &&  e.getSyntaxNode().getRealInterval().b + 1 != position)
+                ) {
+                    // lexicalItem is identifier (not an isolated Period character) outside nameNodes (actually, WTF?!)
+                    lexicalItem = null;
+                }
+                return SQLQueryCompletionContext.prepare(
+                    scriptItem,
+                    offset,
+                    executionContext,
+                    syntaxInspectionResult,
+                    context,
+                    lexicalItem,
+                    nameNodes.toArray(STMTreeNode[]::new),
+                    nameInspectionResult.hasPeriod(),
+                    nameInspectionResult.currentTerm()
+                );
+            }
+        } else {
+            return SQLQueryCompletionContext.prepareEmpty(0, offset);
+        }
     }
 }

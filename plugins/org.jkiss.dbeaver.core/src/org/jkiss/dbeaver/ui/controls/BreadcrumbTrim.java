@@ -118,7 +118,10 @@ public class BreadcrumbTrim {
         var propertyListener = new IPropertyListener() {
             @Override
             public void propertyChanged(Object source, int propId) {
-                if (propId == IEditorPart.PROP_INPUT && source instanceof IEditorPart editorPart) {
+                if (propId != IEditorPart.PROP_INPUT && propId != IEditorPart.PROP_DIRTY) {
+                    return;
+                }
+                if (source instanceof IEditorPart editorPart) {
                     setInput(viewer, editorPart.getEditorInput());
                 }
             }

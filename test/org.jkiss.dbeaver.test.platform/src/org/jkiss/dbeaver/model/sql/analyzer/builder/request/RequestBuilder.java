@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.List;
@@ -99,7 +102,23 @@ public class RequestBuilder {
 
     @NotNull
     private static DataSource createDataSource() {
-        return mock(DataSource.class);
+        DBPDataSourceInfo dsInfo = mock(DBPDataSourceInfo.class);
+        when(dsInfo.getSupportedObjectTypes()).then(x -> new DBSObjectType[] {
+            RelationalObjectType.TYPE_TABLE,
+            RelationalObjectType.TYPE_VIEW,
+            RelationalObjectType.TYPE_TABLE_COLUMN,
+            RelationalObjectType.TYPE_VIEW_COLUMN,
+            RelationalObjectType.TYPE_INDEX,
+            RelationalObjectType.TYPE_CONSTRAINT,
+            RelationalObjectType.TYPE_PROCEDURE,
+            RelationalObjectType.TYPE_SEQUENCE,
+            RelationalObjectType.TYPE_TRIGGER,
+            RelationalObjectType.TYPE_DATA_TYPE
+        });
+
+        DataSource ds = mock(DataSource.class);
+        when(ds.getInfo()).then(x -> dsInfo);
+        return ds;
     }
 
     public interface DataSource extends DBPDataSource, DBSObjectContainer {
