@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.semantics;
+package org.jkiss.dbeaver.model.sql.semantics.completion;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.text.*;
-import org.eclipse.jface.text.contentassist.*;
-import org.eclipse.jface.viewers.StyledString;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DocumentEvent;
+import org.eclipse.jface.text.IDocument;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -31,42 +29,36 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.CompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionHelper;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryWordEntry;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.editors.sql.dialogs.SuggestionInformationControlCreator;
 import org.jkiss.utils.CommonUtils;
 
-public class SQLQueryCompletionProposal extends CompletionProposalBase implements ICompletionProposal, ICompletionProposalExtension2,
-    ICompletionProposalExtension3, ICompletionProposalExtension4, ICompletionProposalExtension5, ICompletionProposalExtension6 {
+public class SQLQueryCompletionProposal extends CompletionProposalBase {
 
     private static final Log log = Log.getLog(SQLQueryCompletionProposal.class);
-    private static final boolean DEBUG = false;
+    protected static final boolean DEBUG = false;
 
     private final SQLQueryCompletionProposalContext proposalContext;
 
-    private final SQLQueryCompletionItemKind itemKind;
+    protected final SQLQueryCompletionItemKind itemKind;
 
-    private final DBSObject object;
-    private final DBPImage image;
+    protected final DBSObject object;
+    protected final DBPImage image;
 
-    private final String displayString;
-    private final String decorationString;
-    private final String description;
+    protected final String displayString;
+    protected final String decorationString;
+    protected final String description;
 
-    private final String replacementString;
-    private final int replacementOffset;
-    private final int replacementLength;
+    protected final String replacementString;
+    protected final int replacementOffset;
+    protected final int replacementLength;
 
-    private final SQLQueryWordEntry filterString;
+    protected final SQLQueryWordEntry filterString;
 
-    private int proposalScore;
+    protected int proposalScore;
 
-    private boolean cachedProposalInfoComputed = false;
-    private Object cachedProposalInfo = null;
-    private Image cachedSwtImage = null;
+    protected boolean cachedProposalInfoComputed = false;
+    protected Object cachedProposalInfo = null;
 
     public SQLQueryCompletionProposal(
         @NotNull SQLQueryCompletionProposalContext proposalContext,
@@ -103,12 +95,16 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase implement
     }
 
     @Override
-    protected int getReplacementOffset() {
+    public int getReplacementOffset() {
         return this.replacementOffset;
     }
 
+    public int getReplacementLength() {
+        return this.replacementLength;
+    }
+
     @Override
-    protected String getReplacementString() {
+    public String getReplacementString() {
         return this.displayString; // because actual replacement string includes extra whitespaces
     }
 
@@ -121,42 +117,14 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase implement
         return this.proposalContext;
     }
 
-    @Override
-    public IContextInformation getContextInformation() {
-        return null;
-    }
-
-    @Override
-    public Image getImage() {
-        return this.image == null
-            ? null
-            : this.cachedSwtImage != null
-                ? this.cachedSwtImage
-                : (this.cachedSwtImage = DBeaverIcons.getImage(this.image));
-    }
-
-    @Override
     public String getDisplayString() {
         return CommonUtils.isNotEmpty(this.displayString) ? this.displayString : this.replacementString.replaceAll("[\r\n]", "");
     }
 
-    @Override
     public String getAdditionalProposalInfo() {
         return this.description;
     }
 
-    @Override
-    public StyledString getStyledDisplayString() {
-        StyledString result = new StyledString(this.getDisplayString(), this.proposalContext.getStyler(this.itemKind));
-
-        if (CommonUtils.isNotEmpty(this.decorationString)) {
-            result.append(this.decorationString, StyledString.DECORATIONS_STYLER);
-        }
-
-        return result;
-    }
-
-    @Override
     public Object getAdditionalProposalInfo(IProgressMonitor progressMonitor) {
         if (!this.getProposalContext().getActivityTracker().isAdditionalInfoExpected()) {
             return this.description;
@@ -186,42 +154,18 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase implement
         return this.cachedProposalInfo;
     }
 
-    @Override
     public boolean isAutoInsertable() {
         return true;
     }
 
-    @Override
-    public IInformationControlCreator getInformationControlCreator() {
-        return this.object == null || !this.getProposalContext().getActivityTracker().isAdditionalInfoExpected() ? null : SuggestionInformationControlCreator.INSTANCE;
-    }
-
-    @Override
     public CharSequence getPrefixCompletionText(IDocument document, int completionOffset) {
         return this.replacementString;
     }
 
-    @Override
     public int getPrefixCompletionStart(IDocument document, int completionOffset) {
         return this.replacementOffset;
     }
 
-    @Override
-    public void selected(ITextViewer viewer, boolean smartToggle) {
-        // do nothing
-    }
-
-    @Override
-    public void unselected(ITextViewer viewer) {
-        // do nothing
-    }
-
-    @Override
-    public Point getSelection(IDocument document) {
-        return new Point(Math.min(this.replacementOffset + this.replacementString.length(), document.getLength()), 0);
-    }
-
-    @Override
     public void apply(IDocument document) {
         try {
             document.replace(this.replacementOffset, this.replacementLength, this.replacementString);
@@ -230,19 +174,6 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase implement
         }
     }
 
-    @Override
-    public void apply(ITextViewer viewer, char trigger, int stateMask, int offset) {
-        IDocument document = viewer.getDocument();
-        if (this.validate(document, offset, null)) {
-            try {
-                document.replace(this.replacementOffset, offset - this.replacementOffset, this.replacementString);
-            } catch (BadLocationException ex) {
-                log.error("Error applying completion proposal", ex);
-            }
-        }
-    }
-
-    @Override
     public boolean validate(IDocument document, int offset, DocumentEvent event) {
         if (DEBUG) {
             log.debug("validate @" + offset);

@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.semantics;
+package org.jkiss.dbeaver.model.sql.semantics.completion;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -107,5 +106,11 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     @Override
     public String visitBuiltinFunction(@NotNull SQLBuiltinFunctionCompletionItem function) {
         return " - Builtin function";
+    }
+
+    @Nullable
+    @Override
+    public String  visitSpecialText(@NotNull SQLSpecialTextCompletionItem specialText) {
+        return " - Special substitution";
     }
 }
