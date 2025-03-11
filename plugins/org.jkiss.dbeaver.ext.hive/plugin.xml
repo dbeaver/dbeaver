@@ -33,7 +33,7 @@
                         class="org.apache.hive.jdbc.HiveDriver"
                         sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                         defaultPort="10000"
-                        description="Apache Hive JDBC"
+                        description="Apache Hive JDBC (Legacy)"
                         webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                         databaseDocumentationSuffixURL="Apache-Hive"
                         supportedConfigurationTypes="MANUAL,URL"
