@@ -17,63 +17,62 @@
 package org.jkiss.dbeaver.model.sql.semantics.completion;
 
 public enum SQLQueryCompletionItemKind {
-    UNKNOWN,
+    UNKNOWN(false, false, Integer.MAX_VALUE),
     /**
      * Keywords and alike
      */
-    RESERVED,
+    RESERVED(false, false, 400),
     /**
      * Subquery correlation alias when its underlying source is not a simple table reference 
      * <p> (simple identifier)
      */
-    SUBQUERY_ALIAS(true, false),
+    SUBQUERY_ALIAS(true, false, 200),
     /**
      * Column name when defined by the correlation or by the column alias
      * <p> (simple identifier or prefixed with subquery alias)
      */
-    DERIVED_COLUMN_NAME(false, true),
+    DERIVED_COLUMN_NAME(false, true, 100),
     /**
      * Table name never referenced in the underlying contexts
      * <p> (simple identifier or fullname)
      */
-    NEW_TABLE_NAME(true, false),
+    NEW_TABLE_NAME(true, false, 200),
     /**
      * Table name already used in the underlying contexts
      * <p> (simple identifier or fullname)
      */
-    USED_TABLE_NAME(true, false),
+    USED_TABLE_NAME(true, false, 200),
     /**
      * Table column name when derived from the real table 
      * <p> (simple identifier, fullname, alias-prefixed)
      * */
-    TABLE_COLUMN_NAME(false, true),
+    TABLE_COLUMN_NAME(false, true, 100),
     /**
      * Composite field name
      * <p> (simple identifier)
      * */
-    COMPOSITE_FIELD_NAME(false, true),
+    COMPOSITE_FIELD_NAME(false, true, 100),
     /**
      * Join condition based on the foreign key
      * <p> (expression, consisting of two column references)
      */
-    JOIN_CONDITION(false, false),
+    JOIN_CONDITION(false, false, 0),
     /**
      * Procedure or function
      */
-    PROCEDURE(false, false);
+    PROCEDURE(false, false, 300),
+    CATALOG(false, false, 275),
+    SCHEMA(false, false, 250);
 
 
     public final boolean isTableName;
     public final boolean isColumnName;
+    public final int sortOrder;
 
-
-    SQLQueryCompletionItemKind() {
-        this(false, false);
-    }
-
-    SQLQueryCompletionItemKind(boolean isTableName, boolean isColumnName) {
+    SQLQueryCompletionItemKind(boolean isTableName, boolean isColumnName, int sortOrder) {
         this.isTableName = isTableName;
         this.isColumnName = isColumnName;
+        this.sortOrder = sortOrder;
     }
 }
     

@@ -393,7 +393,7 @@
                     <parameter name="script-delimiter-after-query" value="true"/>
 
                     <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
-                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" bundle="!drivers.jtds"/>
+                    <file type="license" path="licenses/external/lgpl-2.1.txt"/>
                     <file type="lib" os="win32" arch="x86" path="repo:/drivers/jtds/SSO/x86/ntlmauth.dll" bundle="!drivers.jtds"/>
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll" bundle="!drivers.jtds"/>
 
@@ -432,8 +432,7 @@
                     <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
 
                     <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
-                    <file type="license" path="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt" bundle="!drivers.jtds"/>
-                    <file type="license" path="drivers/jtds/LICENSE.txt" bundle="drivers.jtds"/>
+                    <file type="license" path="licenses/external/lgpl-2.1.txt"/>
                     <file type="jar" path="drivers/jtds" bundle="drivers.jtds"/>
                 </driver>
 

@@ -110,7 +110,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
                 final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
                 SQLEditor sqlEditor = SQLEditorHandlerOpenEditor.openSQLConsole(
                         workbenchWindow,
-                        new SQLNavigatorContext(scriptContext),
+                        new SQLNavigatorContext(scriptContext, true),
                         input);
                 sqlEditor.reloadSyntaxRules();
                 final IncludeScriptListener scriptListener = new IncludeScriptListener(

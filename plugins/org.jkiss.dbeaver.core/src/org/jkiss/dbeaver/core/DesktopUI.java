@@ -71,6 +71,7 @@ import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -714,16 +715,26 @@ public class DesktopUI extends ConsoleUserInterface {
             }
         }
 
-        Predicate<String> extFilter = s -> {
-            if (filterExt != null && filterExt.length > 0) {
-                for (String mask : filterExt) {
-                    int i = mask.lastIndexOf('.');
-                    String ext = i == -1 ? mask : mask.substring(i);
-                    if (s.endsWith(ext)) {
-                        return true;
+        List<String> allExtensions = new ArrayList<>();
+        if (filterExt != null && filterExt.length > 0) {
+            for (String maskList : filterExt) {
+                for (String mask : maskList.split(";")) {
+                    String ext = IOUtils.getFileExtension(mask);
+                    if (ext != null) {
+                        allExtensions.add(ext);
                     }
                 }
-                return false;
+            }
+        }
+
+        Predicate<String> extFilter = s -> {
+            if (allExtensions.contains("*")) {
+                return true;
+            }
+            if (!allExtensions.isEmpty()) {
+                int i = s.lastIndexOf('.');
+                if (i < 0) return false;
+                return allExtensions.contains(s.substring(i + 1).toLowerCase());
             }
             return true;
         };

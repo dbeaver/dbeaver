@@ -30,7 +30,7 @@
                         webURL=""
                         categories="sql,analytic">
                     <file type="jar" path="maven:/com.ocient:ocient-jdbc4:RELEASE"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                 </driver>
              </drivers>
         </datasource>

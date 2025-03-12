@@ -118,7 +118,10 @@ public class BreadcrumbTrim {
         var propertyListener = new IPropertyListener() {
             @Override
             public void propertyChanged(Object source, int propId) {
-                if (propId == IEditorPart.PROP_INPUT && source instanceof IEditorPart editorPart) {
+                if (propId != IEditorPart.PROP_INPUT && propId != IEditorPart.PROP_DIRTY) {
+                    return;
+                }
+                if (source instanceof IEditorPart editorPart) {
                     setInput(viewer, editorPart.getEditorInput());
                 }
             }
@@ -205,7 +208,7 @@ public class BreadcrumbTrim {
     private static boolean tryExtractNode(@NotNull IEditorInput input, @NotNull Consumer<? super DBNNode> consumer) {
         if (input instanceof ILazyEditorInput lazyEditorInput && input instanceof DBPDataSourceContainerProvider provider) {
             DBPProject project = lazyEditorInput.getProject();
-            if (!project.isOpen() || !project.isRegistryLoaded()) {
+            if (project == null || !project.isOpen() || !project.isRegistryLoaded()) {
                 return false;
             }
             DBNModel navigatorModel = project.getNavigatorModel();

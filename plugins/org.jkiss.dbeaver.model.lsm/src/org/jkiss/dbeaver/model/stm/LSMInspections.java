@@ -168,7 +168,10 @@ public class LSMInspections {
         return inspectAbstractSyntaxAtState(null, emptyStack, initialState);
     }
 
-    @Nullable
+    /**
+     * Returns information about the syntax tree state in the specified position, providing info about expected tokens
+     */
+    @NotNull
     public SyntaxInspectionResult prepareAbstractSyntaxInspection(int position) {
         ATN atn = SQLStandardParser._ATN;
 
@@ -291,14 +294,12 @@ public class LSMInspections {
         return Pair.of(allTerms, allNonErrorTerms);
     }
 
-    @Nullable
+    @NotNull
     private static SyntaxInspectionResult inspectAbstractSyntaxAtTreeState(@NotNull STMTreeNode node, @NotNull ATNState initialState) {
         ListNode<Integer> stack = ListNode.of(null);
         {
             var path = new LinkedList<RuleNode>();
-            for (STMTreeNode n = node.getParentNode();
-                 n instanceof RuleNode rn;
-                 n = n.getParentNode()) {
+            for (STMTreeNode n = node.getParentNode(); n instanceof RuleNode rn; n = n.getParentNode()) {
                 path.addFirst(rn);
             }
             for (RuleNode rn : path) {
@@ -307,8 +308,8 @@ public class LSMInspections {
         }
 
         int atnStateIndex = node.getAtnState();
-        if (atnStateIndex < 0) { 
-            return null;  // TODO error node met, consider using previous valid node 
+        if (atnStateIndex < 0) {
+            return SyntaxInspectionResult.EMPTY; // TODO error node met, consider using previous valid node
         } else {
             return inspectAbstractSyntaxAtState(node, stack, initialState);
         }
