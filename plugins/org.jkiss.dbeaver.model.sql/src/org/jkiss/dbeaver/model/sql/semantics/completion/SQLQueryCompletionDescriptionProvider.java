@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.semantics;
+package org.jkiss.dbeaver.model.sql.semantics.completion;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
 import org.jkiss.utils.CommonUtils;
 
@@ -109,5 +108,11 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
     @Override
     public String visitBuiltinFunction(@NotNull SQLBuiltinFunctionCompletionItem function) {
         return "Builtin function of the database.";
+    }
+
+    @Nullable
+    @Override
+    public String  visitSpecialText(@NotNull SQLSpecialTextCompletionItem specialText) {
+        return specialText.description;
     }
 }

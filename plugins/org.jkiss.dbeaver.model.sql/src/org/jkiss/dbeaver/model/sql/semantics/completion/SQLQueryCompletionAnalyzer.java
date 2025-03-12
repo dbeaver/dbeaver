@@ -14,38 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.semantics;
+package org.jkiss.dbeaver.model.sql.semantics.completion;
 
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Position;
-import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionSet;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 
 public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonitor> {
@@ -53,28 +42,28 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     private static final Log log = Log.getLog(SQLCompletionAnalyzer.class);
 
     @NotNull
-    private final SQLEditorBase editor;
+    private final Function<DBRProgressMonitor, SQLQueryCompletionContext> completionContextSupplier;
     @NotNull
-    private final SQLCompletionRequest request;
+    protected final SQLCompletionRequest request;
     @NotNull
-    private final Position completionRequestPosition;
+    private final Supplier<Integer> currentCompletionOffsetSupplier;
     @NotNull
     private final AtomicReference<Pair<Integer, List<SQLQueryCompletionProposal>>> result = new AtomicReference<>(Pair.of(null, Collections.emptyList()));
     private SQLQueryCompletionProposalContext proposalContext;
 
     public SQLQueryCompletionAnalyzer(
-        @NotNull SQLEditorBase editor,
+        @NotNull Function<DBRProgressMonitor, SQLQueryCompletionContext> completionContextSupplier,
         @NotNull SQLCompletionRequest request,
-        @NotNull Position completionRequestPosition
+        @NotNull Supplier<Integer> currentCompletionOffsetSupplier
     ) {
-        this.editor = editor;
+        this.completionContextSupplier = completionContextSupplier;
         this.request = request;
-        this.completionRequestPosition = completionRequestPosition;
+        this.currentCompletionOffsetSupplier = currentCompletionOffsetSupplier;
     }
 
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        SQLQueryCompletionContext completionContext = this.editor.obtainCompletionContext(monitor, this.completionRequestPosition);
+        SQLQueryCompletionContext completionContext = this.completionContextSupplier.apply(monitor);
 //        while (completionContext.getRequestOffset() != this.completionRequestPostion.getOffset()) {
 //            // Context preparation was initiated after the parsing when the user stopped typing,
 //            // but then he started typing again, before the context preparation was finished.
@@ -85,27 +74,22 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         Pair<Integer, List<SQLQueryCompletionProposal>> result;
         if (completionContext != null && this.request.getContext().getDataSource() != null) {
             // TODO don't we want to be able to accomplish subqueries and such even without the connection?
-            this.proposalContext = new SQLQueryCompletionProposalContext(request, completionContext.getRequestOffset());
-            result = this.prepareProposals(monitor, completionContext);
+            this.proposalContext = this.createProposalContext(completionContext);
+            List<SQLQueryCompletionProposal> proposals = this.prepareContextfulCompletion(monitor, completionContext);
+            result = Pair.of(completionContext.getRequestOffset(), proposals);
         } else {
-            result = Pair.of(this.completionRequestPosition.getOffset(), Collections.emptyList());
+            int completionRequestPosition = completionContext != null
+                ? completionContext.getRequestOffset()
+                : this.currentCompletionOffsetSupplier.get();
+            result = Pair.of(completionRequestPosition, Collections.emptyList());
         }
 
         this.result.set(result);
     }
 
     @NotNull
-    private Pair<Integer, List<SQLQueryCompletionProposal>> prepareProposals(DBRProgressMonitor monitor, SQLQueryCompletionContext completionContext) {
-        Pair<Integer, List<SQLQueryCompletionProposal>> result;
-        String fragment = getTextFragmentAt(completionContext.getRequestOffset() - 2, 2);
-        List<SQLQueryCompletionProposal> proposals;
-        if (fragment != null && Pattern.matches("^[\\s\\,]\\*$", fragment)) {
-            proposals = this.prepareColumnsTupleSubstitution(monitor, completionContext);
-        } else {
-            proposals = this.prepareContextfulCompletion(monitor, completionContext);
-        }
-        result = Pair.of(completionContext.getRequestOffset(), proposals);
-        return result;
+    protected SQLQueryCompletionProposalContext createProposalContext(@NotNull SQLQueryCompletionContext completionContext) {
+        return new SQLQueryCompletionProposalContext(this.request, completionContext.getRequestOffset());
     }
 
     private String getTextFragmentAt(int offset, int length) {
@@ -118,31 +102,6 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         } else {
             return null;
         }
-    }
-
-    private List<SQLQueryCompletionProposal> prepareColumnsTupleSubstitution(DBRProgressMonitor monitor, SQLQueryCompletionContext completionContext) {
-        SQLQueryCompletionTextProvider formatter = new SQLQueryCompletionTextProvider(this.request, completionContext, monitor);
-        String columnListString = completionContext.prepareCurrentTupleColumns().stream()
-            .map(c -> c.apply(formatter))
-            .collect(Collectors.joining(", "));
-        request.setWordPart(SQLConstants.ASTERISK);
-
-        var proposal = new SQLQueryCompletionProposal(
-            this.proposalContext,
-            SQLQueryCompletionItemKind.UNKNOWN,
-            null,
-            null,
-            columnListString,
-            null,
-            "Complete columns tuple",
-            columnListString,
-            completionContext.getRequestOffset() - 1,
-            1,
-            null,
-            Integer.MAX_VALUE
-        );
-
-        return List.of(proposal);
     }
 
     private List<SQLQueryCompletionProposal> prepareContextfulCompletion(DBRProgressMonitor monitor, SQLQueryCompletionContext completionContext) {
@@ -162,8 +121,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
                     String decoration = item.apply(SQLQueryCompletionExtraTextProvider.INSTANCE);
                     String description = item.apply(SQLQueryCompletionDescriptionProvider.INSTANCE);
                     String replacementString = this.prepareReplacementString(item, text, completionContext);
-                    proposals.add(new SQLQueryCompletionProposal(
-                        this.proposalContext,
+                    proposals.add(this.createProposal(
                         item.getKind(),
                         object,
                         this.prepareProposalImage(item),
@@ -183,6 +141,35 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         return proposals;
     }
 
+    protected SQLQueryCompletionProposal createProposal(
+        @NotNull SQLQueryCompletionItemKind itemKind,
+        @Nullable DBSObject object,
+        @Nullable DBPImage image,
+        @Nullable String displayString,
+        @Nullable String decorationString,
+        @NotNull String description,
+        @NotNull String replacementString,
+        int replacementOffset,
+        int replacementLength,
+        @Nullable SQLQueryWordEntry filterString,
+        int proposalScore
+    ) {
+        return new SQLQueryCompletionProposal(
+            this.proposalContext,
+            itemKind,
+            object,
+            image,
+            displayString,
+            decorationString,
+            description,
+            replacementString,
+            replacementOffset,
+            replacementLength,
+            filterString,
+            proposalScore
+        );
+    }
+
     @NotNull
     private String prepareReplacementString(@NotNull SQLQueryCompletionItem item, @NotNull String text, @NotNull SQLQueryCompletionContext completionContext) {
         LSMInspections.SyntaxInspectionResult inspectionResult = completionContext.getInspectionResult();
@@ -195,7 +182,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     }
 
     @NotNull
-    public List<? extends ICompletionProposal> getResult() {
+    public List<? extends SQLQueryCompletionProposal> getResult() {
         return this.result.get().getSecond();
     }
 
@@ -203,22 +190,8 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         return this.result.get().getFirst();
     }
 
-    @NotNull
-    private DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
-        return switch (item.getKind()) {
-            case SCHEMA, CATALOG, UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
-            case RESERVED -> UIIcon.SQL_TEXT;
-            case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
-            case DERIVED_COLUMN_NAME -> DBIcon.TREE_DERIVED_COLUMN;
-            case NEW_TABLE_NAME, USED_TABLE_NAME -> {
-                DBPObject object = item.getObject();
-                yield object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
-            }
-            case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
-            case COMPOSITE_FIELD_NAME -> DBIcon.TREE_DATA_TYPE;
-            case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
-            case PROCEDURE -> item.getObject() == null ? DBIcon.TREE_FUNCTION : DBValueFormatting.getObjectImage(item.getObject());
-            default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
-        };
+    @Nullable
+    protected DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
+        return null;
     }
 }
