@@ -130,6 +130,9 @@ public class VerticalButton extends Canvas {
 
     private void runAction(Event event) {
         notifyListeners(SWT.Selection, event);
+        if (!event.doit) {
+            return;
+        }
         if ((getStyle() & SWT.RADIO) == SWT.RADIO) {
             getFolder().setSelection(this);
         }
@@ -312,7 +315,11 @@ public class VerticalButton extends Canvas {
     }
 
     public void addSelectionListener(SelectionListener listener) {
-        addListener(SWT.Selection, event -> listener.widgetSelected(new SelectionEvent(event)));
+        addListener(SWT.Selection, event -> {
+            SelectionEvent selectionEvent = new SelectionEvent(event);
+            listener.widgetSelected(selectionEvent);
+            event.doit = selectionEvent.doit;
+        });
     }
 
     public IAction getAction() {

@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.scripts;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.WizardPage;
@@ -35,6 +34,8 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
+import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -60,8 +62,7 @@ class ScriptsImportWizardPage extends WizardPage {
     private Button overwriteCheck;
     private DBNNode importRoot = null;
 
-    protected ScriptsImportWizardPage()
-    {
+    protected ScriptsImportWizardPage() {
         super(CoreMessages.dialog_scripts_import_wizard_name);
 
         setTitle(CoreMessages.dialog_scripts_import_wizard_title);
@@ -69,8 +70,7 @@ class ScriptsImportWizardPage extends WizardPage {
     }
 
     @Override
-    public boolean isPageComplete()
-    {
+    public boolean isPageComplete() {
         return
             !CommonUtils.isEmpty(directoryText.getText()) &&
             !CommonUtils.isEmpty(extensionsText.getText()) &&
@@ -78,8 +78,7 @@ class ScriptsImportWizardPage extends WizardPage {
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         String externalDir = DBWorkbench.getPlatform().getPreferenceStore().getString(ScriptsExportWizardPage.PREF_SCRIPTS_EXPORT_OUT_DIR);
         if (CommonUtils.isEmpty(externalDir)) {
             externalDir = RuntimeUtils.getUserHomeDir().getAbsolutePath();
@@ -98,8 +97,7 @@ class ScriptsImportWizardPage extends WizardPage {
             directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             directoryText.addModifyListener(new ModifyListener() {
                 @Override
-                public void modifyText(ModifyEvent e)
-                {
+                public void modifyText(ModifyEvent e) {
                     updateState();
                 }
             });
@@ -108,8 +106,7 @@ class ScriptsImportWizardPage extends WizardPage {
             openFolder.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
             openFolder.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
                     dialog.setMessage(CoreMessages.dialog_scripts_import_wizard_dialog_choose_dir_message);
                     dialog.setText(CoreMessages.dialog_scripts_import_wizard_dialog_choose_dir_text);
@@ -123,14 +120,21 @@ class ScriptsImportWizardPage extends WizardPage {
                     }
                 }
             });
-
-            extensionsText = UIUtils.createLabelText(generalSettings, CoreMessages.dialog_scripts_import_wizard_label_file_mask, "*.sql,*.txt"); //$NON-NLS-2$
+            extensionsText = UIUtils.createLabelText(
+                generalSettings,
+                CoreMessages.dialog_scripts_import_wizard_label_file_mask,
+                "*.sql,*.txt"
+            ); //$NON-NLS-2$
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             extensionsText.setLayoutData(gd);
 
             UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_scripts_import_wizard_label_default_connection);
-            scriptsDataSources = new CSmartCombo<>(generalSettings, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionLabelProvider());
+            scriptsDataSources = new CSmartCombo<>(
+                generalSettings,
+                SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY,
+                new ConnectionLabelProvider()
+            );
             for (DBPDataSourceContainer dataSourceDescriptor : DataSourceRegistry.getAllDataSources()) {
                 scriptsDataSources.addItem(dataSourceDescriptor);
             }
@@ -146,14 +150,19 @@ class ScriptsImportWizardPage extends WizardPage {
         }
 
         UIUtils.createControlLabel(placeholder, CoreMessages.dialog_scripts_import_wizard_label_root_folder);
-        importRoot = DBWorkbench.getPlatform().getNavigatorModel().getRoot();
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (activeProject == null || activeProject.getNavigatorModel() == null) {
+            return;
+        }
+
+        importRoot = activeProject.getNavigatorModel().getRoot().getProjectNode(activeProject);
+
         final DatabaseNavigatorTree scriptsNavigator = new DatabaseNavigatorTree(placeholder, importRoot, SWT.BORDER | SWT.SINGLE, false);
         scriptsNavigator.setLayoutData(new GridData(GridData.FILL_BOTH));
         scriptsNavigator.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
-            public void selectionChanged(SelectionChangedEvent event)
-            {
-                IStructuredSelection sel = (IStructuredSelection)event.getSelection();
+            public void selectionChanged(SelectionChangedEvent event) {
+                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
                 if (sel == null || sel.isEmpty()) {
                     importRoot = null;
                 } else {
@@ -162,16 +171,23 @@ class ScriptsImportWizardPage extends WizardPage {
                 updateState();
             }
         });
+        IFolder scriptFolder = DBPPlatformDesktop.getInstance().getWorkspace()
+            .getResourceDefaultRoot(activeProject, ScriptsHandlerImpl.class, false);
         scriptsNavigator.getViewer().addFilter(new ViewerFilter() {
             @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element)
-            {
-                return element instanceof DBNResource && ((DBNResource) element).getResource() instanceof IContainer;
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
+                return (element instanceof DBNResource dbnResource && dbnResource.getResource().equals(scriptFolder)) ||
+                    (parentElement instanceof DBNResource parentDbnResource && parentDbnResource.getResource().equals(scriptFolder));
             }
         });
+
         scriptsNavigator.getViewer().expandToLevel(2);
 
-        overwriteCheck = UIUtils.createCheckbox(placeholder, CoreMessages.dialog_project_export_wizard_page_checkbox_overwrite_files, false);
+        overwriteCheck = UIUtils.createCheckbox(
+            placeholder,
+            CoreMessages.dialog_project_export_wizard_page_checkbox_overwrite_files,
+            false
+        );
         GridData gd = new GridData(GridData.BEGINNING);
         gd.horizontalSpan = 3;
         overwriteCheck.setLayoutData(gd);
@@ -181,13 +197,11 @@ class ScriptsImportWizardPage extends WizardPage {
         updateState();
     }
 
-    private void updateState()
-    {
+    private void updateState() {
         getContainer().updateButtons();
     }
 
-    public ScriptsImportData getImportData()
-    {
+    public ScriptsImportData getImportData() {
         DBPDataSourceContainer dataSourceContainer = null;
         final int dsIndex = scriptsDataSources.getSelectionIndex();
         if (dsIndex >= 0) {

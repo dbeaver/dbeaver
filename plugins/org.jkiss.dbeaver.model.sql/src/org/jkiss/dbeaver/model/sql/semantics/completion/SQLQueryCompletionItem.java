@@ -76,6 +76,19 @@ public abstract class SQLQueryCompletionItem {
         return new SQLReservedWordCompletionItem(score, filterKey, text);
     }
 
+    /**
+     * Build completion item for columns expansion
+     */
+    @NotNull
+    public static SQLQueryCompletionItem forSpecialText(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @NotNull String text,
+        @Nullable String description
+    ) {
+        return new SQLSpecialTextCompletionItem(score, filterKey, text, description);
+    }
+
     @NotNull
     public static SQLQueryCompletionItem forRowsSourceAlias(
         int score,
@@ -321,6 +334,33 @@ public abstract class SQLQueryCompletionItem {
         @Override
         protected <R> R applyImpl(@NotNull SQLQueryCompletionItemVisitor<R> visitor) {
             return visitor.visitReservedWord(this);
+        }
+    }
+
+    public static class SQLSpecialTextCompletionItem extends SQLQueryCompletionItem {
+        public final String text;
+        public final String description;
+
+        SQLSpecialTextCompletionItem(
+            int score,
+            @NotNull SQLQueryWordEntry filterKey,
+            @NotNull String text,
+            @Nullable String description
+        ) {
+            super(score, filterKey);
+            this.text = text;
+            this.description = description;
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return SQLQueryCompletionItemKind.UNKNOWN;
+        }
+
+        @Override
+        protected <R> R applyImpl(@NotNull SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitSpecialText(this);
         }
     }
 

@@ -107,6 +107,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.file = library.getLocalFile();
             this.type = library.getType();
             this.fileLocation = library.getLocalFile() != null ? library.getLocalFile().toString() : library.getPath();
+            this.fileCRC = library.getFileCRC();
         }
 
         public Path getFile() {

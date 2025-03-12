@@ -105,6 +105,7 @@ public class DBeaverCommandLine
         boolean hasArg;
         boolean exitAfterExecute;
         boolean exclusiveMode;
+        boolean forceNewInstance;
         ICommandLineParameterHandler handler;
 
         public ParameterDescriptor(IConfigurationElement config) throws Exception {
@@ -114,6 +115,7 @@ public class DBeaverCommandLine
             this.hasArg = CommonUtils.toBoolean(config.getAttribute("hasArg"));
             this.exitAfterExecute = CommonUtils.toBoolean(config.getAttribute("exitAfterExecute"));
             this.exclusiveMode = CommonUtils.toBoolean(config.getAttribute("exclusiveMode"));
+            this.forceNewInstance = CommonUtils.toBoolean(config.getAttribute("forceNewInstance"));
             Bundle cBundle = Platform.getBundle(config.getContributor().getName());
             Class<?> implClass = cBundle.loadClass(config.getAttribute("handler"));
             handler = (ICommandLineParameterHandler) implClass.getConstructor().newInstance();
@@ -277,6 +279,9 @@ public class DBeaverCommandLine
             if (param.exclusiveMode && (commandLine.hasOption(param.name) || commandLine.hasOption(param.longName))) {
                 if (DBeaverApplication.instance != null) {
                     DBeaverApplication.instance.setExclusiveMode(true);
+                }
+                if (param.forceNewInstance) {
+                    return false;
                 }
                 break;
             }
