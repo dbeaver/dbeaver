@@ -38,7 +38,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     @Nullable
     private final List<SQLQuerySymbolEntry> columsToJoin;
 
-    @Nullable
+    @NotNull
     private final SQLQueryLexicalScope conditionScope;
 
     public SQLQueryRowsNaturalJoinModel(
@@ -95,7 +95,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         SQLQueryDataContext combinedContext = left.combineForJoin(right);
 
         if (this.columsToJoin != null) {
-            SQLQuerySymbolOrigin columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(combinedContext);
+            var columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(combinedContext);
             for (SQLQuerySymbolEntry column : columsToJoin) {
                 if (column.isNotClassified()) {
                     SQLQuerySymbol symbol = column.getSymbol();
@@ -115,12 +115,17 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
                     column.setOrigin(columnNameOrigin);
                 }
             }
+            this.conditionScope.setSymbolsOrigin(columnNameOrigin);
+        } else {
+            var conditionOrigin = new SQLQuerySymbolOrigin.ValueRefFromContext(combinedContext);
+            this.setTailOrigin(conditionOrigin);
+
+            if (this.condition != null) {
+                this.condition.propagateContext(combinedContext, statistics);
+                this.conditionScope.setSymbolsOrigin(conditionOrigin);
+            }
         }
 
-        if (this.condition != null) {
-            this.condition.propagateContext(combinedContext, statistics);
-        }
-        this.conditionScope.setContext(combinedContext);
         return combinedContext;
     }
 

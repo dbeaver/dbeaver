@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ import java.util.Map;
 public class PlainTextPresentation extends AbstractPresentation implements IResultSetDisplayFormatProvider, DBPAdaptable {
 
     public static final int FIRST_ROW_LINE = 2;
+    public static final Color COLOR_GREEN_CONTRAST = new Color(null, 23, 135, 58);
 
     private StyledText text;
     private DBDAttributeBinding curAttribute;
@@ -130,8 +131,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         text.setFont(BaseThemeSettings.instance.monospaceFont);
         if (UIStyles.isDarkHighContrastTheme()) {
             text.setBackground(UIStyles.getDefaultWidgetBackground());
-            text.setForeground(UIUtils.COLOR_WHITE);
-            curLineColor = UIUtils.COLOR_GREEN_CONTRAST;
+            text.setForeground(UIStyles.COLOR_WHITE);
+            curLineColor = COLOR_GREEN_CONTRAST;
         } else {
             curLineColor = ResultSetThemeSettings.instance.backgroundOdd;
         }

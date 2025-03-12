@@ -31,10 +31,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -990,12 +987,19 @@ public class SpreadsheetPresentation extends AbstractPresentation
     void fillContextMenu(
         @NotNull IMenuManager manager,
         @Nullable IGridColumn colObject,
-        @Nullable IGridRow rowObject)
+        @Nullable IGridRow rowObject,
+        boolean columnHeaderMenu,
+        boolean rowHeaderMenu
+    )
     {
         boolean recordMode = controller.isRecordMode();
         final DBDAttributeBinding attr = colObject == null ? getFocusAttribute() : getAttributeFromGrid(colObject, rowObject);
         final ResultSetRow row = rowObject == null ? getFocusRow() : getResultRowFromGrid(colObject, rowObject);
-        controller.fillContextMenu(manager, attr, row, getRowNestedIndexes(rowObject));
+        IResultSetController.ContextMenuLocation menuLocation = columnHeaderMenu ?
+            IResultSetController.ContextMenuLocation.COLUMN_HEADER :
+                rowHeaderMenu ? IResultSetController.ContextMenuLocation.ROW_HEADER :
+                    IResultSetController.ContextMenuLocation.DATA;
+        controller.fillContextMenu(manager, attr, row, getRowNestedIndexes(rowObject), menuLocation);
 
         if (colObject != null && rowObject == null) {
             final List<IGridColumn> selectedColumns = spreadsheet.getColumnSelection();
@@ -1242,6 +1246,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (activeInlineEditor.getControl() != null) {
                 activeInlineEditor.getControl().setFocus();
                 activeInlineEditor.getControl().setData(DATA_VALUE_CONTROLLER, valueController);
+                activeInlineEditor.getControl().addKeyListener(KeyListener.keyPressedAdapter(
+                    e -> scrollToRow(RowPosition.CURRENT)
+                ));
+                activeInlineEditor.getControl().addTraverseListener(e -> {
+                    if (e.keyCode == SWT.ESC || e.keyCode == SWT.CR) {
+                        scrollToRow(RowPosition.CURRENT);
+                    }
+                });
+                scrollToRow(RowPosition.CURRENT);
             }
         }
         if (activeInlineEditor instanceof IValueEditorStandalone editorStandalone) {
@@ -1351,7 +1364,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (isShowAsCheckbox(attr)) {
             // Switch boolean value
             Object cellValue = controller.getModel().getCellValue(cellLocation);
-            if (cellValue instanceof Boolean || cellValue instanceof Number) {
+            if (cellValue instanceof Boolean || cellValue instanceof Number || cellValue == null) {
                 toggleBooleanValue(cellLocation, cellValue);
             }
         }
@@ -2499,7 +2512,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     }
                 }
             }
-            return UIUtils.getContrastColor(background);
+            return UIStyles.getContrastColor(background);
         }
 
         private Color getCellBackground(

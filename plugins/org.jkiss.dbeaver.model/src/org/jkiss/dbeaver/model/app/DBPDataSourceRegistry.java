@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,7 +112,7 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     @NotNull
     List<? extends DBPDataSourceFolder> getRootFolders();
 
-    @Nullable
+    @NotNull
     DBPDataSourceFolder getFolder(@NotNull String path);
 
     @NotNull
@@ -123,7 +123,7 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     /**
      * Moves connection folder
      */
-    void moveFolder(@NotNull String oldPath, @NotNull String newPath);
+    void moveFolder(@NotNull String oldPath, @NotNull String newPath) throws DBException;
 
     @Nullable
     DBSObjectFilter getSavedFilter(String name);

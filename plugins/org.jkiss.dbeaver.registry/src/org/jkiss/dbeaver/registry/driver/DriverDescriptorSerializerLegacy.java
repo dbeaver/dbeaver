@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,6 +155,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     xml.addAttribute(RegistryConstants.ATTR_TYPE, lib.getType().name());
                     xml.addAttribute(RegistryConstants.ATTR_PATH, substitutePathVariables(pathSubstitutions, lib.getPath()));
                     xml.addAttribute(RegistryConstants.ATTR_CUSTOM, lib.isCustom());
+                    if (lib.isEmbedded()) {
+                        xml.addAttribute(RegistryConstants.ATTR_EMBEDDED, true);
+                    }
                     if (lib.isDisabled()) {
                         xml.addAttribute(RegistryConstants.ATTR_DISABLED, true);
                     }
@@ -390,10 +393,13 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             lib.resetVersion();
                             isLibraryUpgraded = true;
                         }
+                    } else if (lib.isDisabled()) {
+                        // library was enabled in config file
+                        lib.setDisabled(false);
                     }
-                    if (lib instanceof DriverLibraryMavenArtifact) {
-                        ((DriverLibraryMavenArtifact) lib).setIgnoreDependencies(CommonUtils.toBoolean(atts.getValue("ignore-dependencies")));
-                        ((DriverLibraryMavenArtifact) lib).setLoadOptionalDependencies(CommonUtils.toBoolean(atts.getValue("load-optional-dependencies")));
+                    if (lib instanceof DriverLibraryMavenArtifact mvnLibrary) {
+                        mvnLibrary.setIgnoreDependencies(CommonUtils.toBoolean(atts.getValue("ignore-dependencies")));
+                        mvnLibrary.setLoadOptionalDependencies(CommonUtils.toBoolean(atts.getValue("load-optional-dependencies")));
                     }
                     curLibrary = lib;
                     break;
@@ -410,7 +416,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                         atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_ID)),
                                         atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_VERSION)),
                                         curLibrary.getType(),
-                                        Path.of(path));
+                                        Path.of(path), path);
                                 String crcString = atts.getValue("crc");
                                 if (!CommonUtils.isEmpty(crcString)) {
                                     long crc = Long.parseLong(crcString, 16);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,18 +64,6 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.parent = parent;
         this.source = source;
         this.mappingType = DatabaseMappingType.unspecified;
-    }
-
-    DatabaseMappingAttribute(
-        @NotNull DatabaseMappingContainer parent,
-        @Nullable DBSAttributeBase source,
-        @Nullable DBSEntityAttribute target,
-        @NotNull DatabaseMappingType mappingType)
-    {
-        this.parent = parent;
-        this.source = source;
-        this.target = target;
-        this.mappingType = mappingType;
     }
 
     DatabaseMappingAttribute(@NotNull DatabaseMappingAttribute attribute, @NotNull DatabaseMappingContainer parent) {
@@ -165,11 +153,10 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
 
         mappingType = DatabaseMappingType.unspecified;
-        if (parent.getTarget() instanceof DBSEntity) {
+        if (parent.getTarget() instanceof DBSEntity targetEntity) {
             if (forceRefresh || CommonUtils.isEmpty(targetName)) {
                 targetName = getSourceLabelOrName(source, false, updateAttributesNames);
             }
-            DBSEntity targetEntity = (DBSEntity) parent.getTarget();
             List<? extends DBSEntityAttribute> targetAttributes = targetEntity.getAttributes(monitor);
             if (CommonUtils.isEmpty(targetAttributes) && targetEntity instanceof DBPRefreshableObject) {
                 // Reload table attributes cache. It can be empty after table deleting
@@ -298,8 +285,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         if (source instanceof DBSObject) {
             DBPDataSource sourceDataSource = ((DBSObject) source).getDataSource();
             String sourceAttributeName = getSourceAttributeName(source);
-            if (sourceDataSource != null && sourceDataSource.getSQLDialect() != null
-                && CommonUtils.isNotEmpty(sourceAttributeName)) {
+            if (sourceDataSource != null && CommonUtils.isNotEmpty(sourceAttributeName)) {
                 isSkipNameTransformation = sourceDataSource.getSQLDialect().mustBeQuoted(sourceAttributeName, true);
             }
         }
@@ -400,8 +386,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
                 if (!CommonUtils.isEmpty(targetName)) {
                     DBSDataManipulator targetEntity = parent.getTarget();
-                    if (targetEntity instanceof DBSEntity) {
-                        DBSEntity dbsEntity = (DBSEntity) targetEntity;
+                    if (targetEntity instanceof DBSEntity dbsEntity) {
                         if (dbsEntity.getDataSource() != null) {
                             this.target = CommonUtils.findBestCaseAwareMatch(
                                 CommonUtils.safeCollection(dbsEntity.getAttributes(new VoidProgressMonitor())),

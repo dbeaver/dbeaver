@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.timezone;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -26,12 +27,17 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.List;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 public class TimezoneRegistry {
 
+    private static final Log log = Log.getLog(TimezoneRegistry.class);
+
+    public static final String PROP_USER_TIMEZONE = "user.timezone";
+    public static final String GMT_TIMEZONE = "GMT";
     private static String userDefaultTimezone = "";
 
     private TimezoneRegistry() {
@@ -40,17 +46,16 @@ public class TimezoneRegistry {
     public static void setDefaultZone(@Nullable ZoneId id, boolean updatePreferences) {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         if (id != null) {
-            if (!TimeZone.getDefault().getID().equals(id.getId())) {
-                TimeZone.setDefault(TimeZone.getTimeZone(id));
-                System.setProperty("user.timezone", id.getId());
-                if (updatePreferences) {
-                    preferenceStore.setValue(ModelPreferences.CLIENT_TIMEZONE, id.getId());
-                }
+            TimeZone timeZone = TimeZone.getTimeZone(id);
+            TimeZone.setDefault(timeZone);
+            System.setProperty(PROP_USER_TIMEZONE, id.getId());
+            if (updatePreferences) {
+                preferenceStore.setValue(ModelPreferences.CLIENT_TIMEZONE, id.getId());
             }
         } else {
             if (!TimeZone.getDefault().getID().equals(userDefaultTimezone)) {
                 TimeZone.setDefault(TimeZone.getTimeZone(userDefaultTimezone));
-                System.setProperty("user.timezone", userDefaultTimezone);
+                System.setProperty(PROP_USER_TIMEZONE, userDefaultTimezone);
                 if (updatePreferences) {
                     preferenceStore.setToDefault(ModelPreferences.CLIENT_TIMEZONE);
                 }
@@ -59,19 +64,27 @@ public class TimezoneRegistry {
     }
 
     public static void overrideTimezone() {
-        userDefaultTimezone = System.getProperty("user.timezone");
+        userDefaultTimezone = System.getProperty(PROP_USER_TIMEZONE);
         System.setProperty("user.old.timezone", userDefaultTimezone);
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        final String timezone = preferenceStore.getString(ModelPreferences.CLIENT_TIMEZONE);
-        if (timezone != null && !timezone.equals(DBConstants.DEFAULT_TIMEZONE)) {
-            TimeZone.setDefault(TimeZone.getTimeZone(timezone));
-            System.setProperty("user.timezone", timezone);
+        final String customTimeZone = preferenceStore.getString(ModelPreferences.CLIENT_TIMEZONE);
+        if (customTimeZone != null && !customTimeZone.equals(DBConstants.DEFAULT_TIMEZONE)) {
+            log.debug("Overriding system time zone to '" + customTimeZone + "'");
+            TimeZone currentTimeZone = TimeZone.getTimeZone(customTimeZone);
+            if (!GMT_TIMEZONE.equals(customTimeZone) && GMT_TIMEZONE.equals(currentTimeZone.getID())) {
+                log.debug("Time zone '" + customTimeZone + "' no recognized, falling back to GMT");
+            } else if (Objects.equals(currentTimeZone.getID(), customTimeZone)) {
+                log.debug("Time zone '" + customTimeZone + "' differs from current '" + currentTimeZone.getID() + "'");
+            }
+            TimeZone.setDefault(currentTimeZone);
+            System.setProperty(PROP_USER_TIMEZONE, customTimeZone);
         }
     }
 
     @NotNull
-    public static List<String> getTimezoneNames() {
-        return ZoneId.getAvailableZoneIds().stream().map(TimezoneRegistry::getGMTString).sorted(String::compareTo).collect(Collectors.toList());
+    public static Collection<String> getTimezoneNames() {
+        return ZoneId.getAvailableZoneIds().stream()
+            .map(TimezoneRegistry::getGMTString).sorted(String::compareTo).collect(Collectors.toList());
     }
 
     @NotNull

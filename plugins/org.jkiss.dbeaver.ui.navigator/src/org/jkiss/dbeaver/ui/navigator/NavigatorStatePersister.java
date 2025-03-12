@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2019 Lorant Oroszlany (github.com/loro2)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,8 @@ public class NavigatorStatePersister {
         UIUtils.syncExec(() -> {
             final DatabaseNavigatorTreeFilterObjectType type = CommonUtils.valueOf(
                 DatabaseNavigatorTreeFilterObjectType.class,
-                memento.getString(PROP_FILTER_TYPE)
+                memento.getString(PROP_FILTER_TYPE),
+                DatabaseNavigatorTreeFilterObjectType.connection
             );
             if (type != null && tree.getFilterObjectType() != type) {
                 tree.setFilterObjectType(type);

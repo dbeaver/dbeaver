@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBFileController;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -35,7 +36,6 @@ import org.jkiss.utils.SecurityUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -51,7 +51,9 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
     protected String path;
     private boolean optional;
     protected boolean custom;
+    protected boolean embedded;
     protected boolean disabled;
+    protected long fileCRC;
 
     public static DriverLibraryAbstract createFromPath(DriverDescriptor driver, FileType type, String path, String preferredVersion) {
         if (path.startsWith(DriverLibraryRepository.PATH_PREFIX)) {
@@ -97,6 +99,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         this.type = copyFrom.type;
         this.system = copyFrom.system;
         this.path = copyFrom.path;
+        this.embedded = copyFrom.embedded;
         this.optional = copyFrom.optional;
         this.custom = copyFrom.custom;
         this.disabled = copyFrom.disabled;
@@ -123,6 +126,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
             osName,
             config.getAttribute(RegistryConstants.ATTR_ARCH));
         this.path = config.getAttribute(RegistryConstants.ATTR_PATH);
+        this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED), false);
         this.optional = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL), false);
         this.custom = false;
     }
@@ -184,6 +188,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
     }
 
     @Override
+    public boolean isEmbedded() {
+        return embedded;
+    }
+
+    @Override
     public boolean isCustom() {
         return custom;
     }
@@ -199,6 +208,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
 
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
+    }
+
+    @Override
+    public long getFileCRC() {
+        return fileCRC;
     }
 
     @Override
@@ -231,6 +245,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         final Path tempFile = tempFolder.resolve(SecurityUtils.makeDigest(localFile.toString()));
 
         WebUtils.downloadRemoteFile(monitor, taskName, externalURL, tempFile, getAuthInfo(monitor));
+        this.fileCRC = DriverDescriptor.calculateFileCRC(tempFile);
         if (DBWorkbench.isDistributed()) {
             // save driver library file using file controller
             try {
@@ -238,14 +253,15 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
                 DBWorkbench.getPlatform().getFileController().saveFileData(
                     DBFileController.TYPE_DATABASE_DRIVER,
                     DriverUtils.getDistributedLibraryPath(localFile),
-                    fileData);
+                    fileData
+                );
             } catch (DBException e) {
                 throw new IOException(e.getMessage());
             } finally {
                 Files.delete(tempFile);
             }
         } else {
-            Files.move(tempFile, localFile, StandardCopyOption.REPLACE_EXISTING);
+            DBFUtils.move(tempFile, localFile);
         }
     }
 
