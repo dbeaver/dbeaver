@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="com.dbeaver.ai.engine">
+        <completionEngine id="copilot" label="Github Copilot" class="org.jkiss.dbeaver.model.ai.copilot.CopilotCompletionEngine">
+            <propertyGroup label="Engine settings">
+                <property id="copilot.access.token" label="Copilot Access Token" type="string" hint="OAuth token for Copilot(Acquired manually for now)" features="password"/>
+                <property id="gpt.model.temperature" label="Temperature" type="integer" hint="Lower temperatures give more precise results"/>
+                <property id="gpt.model" label="Model" type="string" validValues="gpt-3.5-turbo,gpt-4" defaultValue="gpt-3.5-turbo" hint="gpt-3.5-turbo model suits the best for SQL code completion"/>
+                <property id="gpt.log.query" label="Write AI queries to debug log" type="boolean" hint="Write GPT queries with metadata info in debug logs"/>
+            </propertyGroup>
+        </completionEngine>
+    </extension>
+
+</plugin>
