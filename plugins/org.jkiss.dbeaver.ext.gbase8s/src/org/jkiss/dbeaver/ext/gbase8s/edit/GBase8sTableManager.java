@@ -92,7 +92,7 @@ public class GBase8sTableManager extends GenericTableManager implements DBEObjec
             addTableCommentAction(actions, tableBase);
         }
         // Add column comments if needed
-        if (objectSave || includeComments) {
+        if (!tableBase.isPersisted() ? (objectSave || includeComments) : (!objectSave && includeComments)) {
             for (GenericTableColumn column : CommonUtils.safeCollection(tableBase.getAttributes(monitor))) {
                 if (!CommonUtils.isEmpty(column.getDescription())) {
                     GenericTableColumnManager.addColumnCommentAction(actions, column, column.getTable());
