@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,14 +60,15 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     public void createPartControl(Composite parent) {
         itemControl = new FolderListControl(parent);
         itemControl.createProgressPanel();
+        getSite().setSelectionProvider(itemControl.getSelectionProvider());
 
         UIExecutionQueue.queueExec(() -> {
             final DBNNode navigatorNode = getEditorInput().getNavigatorNode();
             setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIcon()));
             setPartName(navigatorNode.getNodeDisplayName());
 
+            itemControl.setRootNode(navigatorNode);
             itemControl.loadData();
-            getSite().setSelectionProvider(itemControl.getSelectionProvider());
 
             DBNNode rootNode = getRootNode();
             history.add(rootNode.getNodeUri());
@@ -186,7 +187,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
     private class FolderListControl extends ItemListControl {
         public FolderListControl(Composite parent) {
-            super(parent, SWT.SHEET, FolderEditor.this.getSite(), FolderEditor.this.getEditorInput().getNavigatorNode(), null);
+            super(parent, SWT.SHEET, FolderEditor.this.getSite(), DBWorkbench.getPlatform().getNavigatorModel().getRoot(), null);
         }
 
         @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -220,8 +220,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     @Nullable
-    public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPostion) {
-        return backgroundParsingJob == null ? null : backgroundParsingJob.obtainCompletionContext(monitor, completionRequestPostion);
+    public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPosition) {
+        return backgroundParsingJob == null ? null : backgroundParsingJob.obtainCompletionContext(monitor, completionRequestPosition);
     }
 
     @Override
@@ -490,6 +490,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     protected void loadActivePreferenceSettings() {
+        if (sqlSymbolInserter == null) {
+            return;
+        }
         DBPPreferenceStore preferenceStore = getActivePreferenceStore();
         boolean closeSingleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         boolean closeDoubleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
@@ -568,7 +571,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
     @Override
     public void doSave(IProgressMonitor progressMonitor) {
-        super.doSave(progressMonitor);
+        try {
+            super.doSave(progressMonitor);
+        } catch (Exception e) {
+            log.error("Error saving SQL editor");
+        }
 
         handleInputChange(getEditorInput());
     }
@@ -1219,10 +1226,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             if (field != null) {
                 StringBuilder txt = new StringBuilder("Sel: ");
                 ISelection selection = getSelectionProvider().getSelection();
-                if (selection instanceof ITextSelection) {
-                    ITextSelection textSelection = (ITextSelection) selection;
+                if (selection instanceof ITextSelection textSelection) {
                     txt.append(textSelection.getLength()).append(" | ");
-                    if (((ITextSelection) selection).getLength() <= 0) {
+                    if (textSelection.getLength() <= 0) {
                         txt.append(0);
                     } else {
                         txt.append(textSelection.getEndLine() - textSelection.getStartLine() + 1);

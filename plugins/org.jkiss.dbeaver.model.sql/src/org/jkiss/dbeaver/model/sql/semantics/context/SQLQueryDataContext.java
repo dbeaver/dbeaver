@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsCorrelatedSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
-import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -31,12 +30,13 @@ import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * Semantic context query information about entities involved in the semantics model
  */
 public abstract class SQLQueryDataContext {
+
+    private KnownSourcesInfo knownSources = null;
 
     /**
      * Get columns of the query result tuple
@@ -47,7 +47,7 @@ public abstract class SQLQueryDataContext {
     /**
      * Returns flag demonstrating whether all the rows' sources were correctly resolved or not
      */
-    public abstract boolean hasUndresolvedSource();
+    public abstract boolean hasUnresolvedSource();
 
     /**
      * Get pseudo columns of the query result tuple
@@ -144,7 +144,15 @@ public abstract class SQLQueryDataContext {
      */
     @NotNull
     public final SQLQueryDataContext combine(@NotNull SQLQueryDataContext other) {
-        return new SQLQueryCombinedContext(this, other);
+        return new SQLQueryCombinedContext(this, other, false);
+    }
+
+    /**
+     * Prepare new semantic context by combining this context with the other given context
+     */
+    @NotNull
+    public final SQLQueryDataContext combineForJoin(@NotNull SQLQueryDataContext other) {
+        return new SQLQueryCombinedContext(this, other, true);
     }
 
     /**
@@ -189,9 +197,9 @@ public abstract class SQLQueryDataContext {
      */
     public static class KnownSourcesInfo {
         @NotNull
-        private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> sources = new HashMap<>();
+        private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> sources = new LinkedHashMap<>();
         @NotNull
-        private final Set<DBSObject> referencedTables = new HashSet<>();
+        private final Set<DBSObject> referencedTables = new LinkedHashSet<>();
         @NotNull
         private final Set<String> aliasesInUse = new HashSet<>();
 
@@ -234,10 +242,13 @@ public abstract class SQLQueryDataContext {
     /**
      * Aggregate information about all the rows sources involved in this semantic context
      */
-    public KnownSourcesInfo collectKnownSources() {
-        KnownSourcesInfo result = new KnownSourcesInfo();
-        this.collectKnownSourcesImpl(result);
-        return result;
+    public KnownSourcesInfo getKnownSources() {
+        if (this.knownSources == null) {
+            KnownSourcesInfo result = new KnownSourcesInfo();
+            this.collectKnownSourcesImpl(result);
+            this.knownSources = result;
+        }
+        return this.knownSources;
     }
     
     protected abstract void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result);

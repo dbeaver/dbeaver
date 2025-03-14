@@ -70,7 +70,7 @@ public class DefaultValueViewDialog extends ValueViewDialog {
             log.error(e);
             return dialogGroup;
         }
-        ReferenceValueEditor referenceValueEditor = new ReferenceValueEditor(getValueController(), this);
+        ReferenceValueEditor referenceValueEditor = new ReferenceValueEditor(null, getValueController(), this);
         if (referenceValueEditor.isReferenceValue()) {
             referenceValueEditor.createEditorSelector(dialogGroup);
         }

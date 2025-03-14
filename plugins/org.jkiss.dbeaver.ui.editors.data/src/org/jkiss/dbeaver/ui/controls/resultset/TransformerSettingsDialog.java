@@ -52,7 +52,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.*;
 
-class TransformerSettingsDialog extends BaseDialog {
+public class TransformerSettingsDialog extends BaseDialog {
     private static final Log log = Log.getLog(TransformerSettingsDialog.class);
 
     private static final String PROP_FOR_TRANSFORMER = "propertiesForTransformerWithId=";
@@ -75,7 +75,7 @@ class TransformerSettingsDialog extends BaseDialog {
     private Combo transformerCombo;
     private Table attributeTable;
 
-    TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding currentAttribute, boolean selector) {
+    public TransformerSettingsDialog(ResultSetViewer viewer, DBDAttributeBinding currentAttribute, boolean selector) {
         super(viewer.getControl().getShell(), DBUtils.getObjectFullName(viewer.getDataContainer(), DBPEvaluationContext.UI) + " transforms", null);
         this.viewer = viewer;
         this.currentAttribute = currentAttribute;

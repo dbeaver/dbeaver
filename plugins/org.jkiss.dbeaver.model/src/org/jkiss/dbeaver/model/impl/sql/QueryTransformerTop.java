@@ -20,7 +20,6 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.Top;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -53,19 +52,15 @@ public class QueryTransformerTop implements DBCQueryTransformer, DBCQueryTransfo
         if (query.isPlainSelect()) {
             try {
                 Statement statement = query.getStatement();
-                if (statement instanceof Select) {
-                    Select select = (Select) statement;
-                    if (select.getSelectBody() instanceof PlainSelect) {
-                        PlainSelect selectBody = (PlainSelect) select.getSelectBody();
-                        if (selectBody.getTop() == null && CommonUtils.isEmpty(selectBody.getIntoTables())) {
-                            Top top = new Top();
-                            top.setPercentage(false);
-                            top.setExpression(new LongValue(offset.longValue() + length.longValue()));
-                            selectBody.setTop(top);
+                if (statement instanceof PlainSelect selectBody) {
+                    if (selectBody.getTop() == null && CommonUtils.isEmpty(selectBody.getIntoTables())) {
+                        Top top = new Top();
+                        top.setPercentage(false);
+                        top.setExpression(new LongValue(offset.longValue() + length.longValue()));
+                        selectBody.setTop(top);
 
-                            limitSet = true;
-                            return statement.toString();
-                        }
+                        limitSet = true;
+                        return statement.toString();
                     }
                 }
             } catch (Throwable e) {
@@ -89,13 +84,9 @@ public class QueryTransformerTop implements DBCQueryTransformer, DBCQueryTransfo
         // and for queries without FROM (See #16526)
         if (query.isPlainSelect()) {
             final Statement statement = query.getStatement();
-            if (statement instanceof Select) {
-                final SelectBody selectBody = ((Select) statement).getSelectBody();
-                if (selectBody instanceof PlainSelect) {
-                    PlainSelect body = (PlainSelect) selectBody;
-                    return ((PlainSelect) body).getOffset() == null && body.getLimit() == null && body.getTop() == null
-                        && body.getFromItem() != null && CommonUtils.isEmpty(body.getIntoTables()) && !body.isForUpdate();
-                }
+            if (statement instanceof PlainSelect select) {
+                return select.getOffset() == null && select.getLimit() == null && select.getTop() == null
+                    && select.getFromItem() != null && CommonUtils.isEmpty(select.getIntoTables()) && select.getForUpdateTable() == null;
             }
         }
         return false;

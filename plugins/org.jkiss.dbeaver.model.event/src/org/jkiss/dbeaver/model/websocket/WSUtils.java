@@ -21,11 +21,21 @@ import com.google.gson.GsonBuilder;
 import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
 import org.jkiss.dbeaver.model.websocket.event.WSEvent;
 import org.jkiss.dbeaver.model.websocket.gson.WSClientEventDeserializer;
+import org.jkiss.dbeaver.model.websocket.gson.WSClientSideExclusionStrategy;
 import org.jkiss.dbeaver.model.websocket.gson.WSEventDeserializer;
 
 public class WSUtils {
-    public static final Gson gson = new GsonBuilder()
-        .registerTypeAdapter(WSEvent.class, new WSEventDeserializer())
-        .registerTypeAdapter(WSClientEvent.class, new WSClientEventDeserializer())
+    public static final Gson gson = baseGsonBuilder()
         .create();
+
+    public static final Gson clientGson = baseGsonBuilder()
+        .setExclusionStrategies(new WSClientSideExclusionStrategy())
+        .create();
+
+
+    private static GsonBuilder baseGsonBuilder() {
+        return new GsonBuilder()
+            .registerTypeAdapter(WSEvent.class, new WSEventDeserializer())
+            .registerTypeAdapter(WSClientEvent.class, new WSClientEventDeserializer());
+    }
 }

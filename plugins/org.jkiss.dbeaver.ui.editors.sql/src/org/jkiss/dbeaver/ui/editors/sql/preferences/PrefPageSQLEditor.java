@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,14 +103,19 @@ public class PrefPageSQLEditor extends TargetPrefPage {
             editorSeparateConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(connectionsGroup, 3),
                 SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor,
+                NLS.bind(SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor_tip, PrefUtils.collectSingleConnectionDrivers()),
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
+            if (this.getDataSourceContainer() != null && this.getDataSourceContainer().getDriver().isEmbedded()) {
+                editorSeparateConnectionCombo.setEnabled(false);
+            } else {
+                editorSeparateConnectionCombo.setItems(editorUseSeparateConnectionValues.stream()
+                    .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
+            }
             editorSeparateConnectionCombo.setToolTipText(
                 NLS.bind(SQLEditorMessages.pref_page_sql_editor_label_separate_connection_each_editor_tip, PrefUtils.collectSingleConnectionDrivers())
             );
             ((GridData) editorSeparateConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
-            editorSeparateConnectionCombo.setItems(editorUseSeparateConnectionValues.stream()
-                .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             connectOnActivationCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_editor_activation, false);
             connectOnExecuteCheck = UIUtils.createCheckbox(connectionsGroup, SQLEditorMessages.pref_page_sql_editor_label_connect_on_query_execute, false);
         }

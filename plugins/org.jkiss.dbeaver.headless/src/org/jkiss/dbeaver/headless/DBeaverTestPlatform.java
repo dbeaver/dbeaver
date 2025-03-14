@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -178,6 +178,11 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         return workspace;
     }
 
+    @Override
+    public boolean isWorkbenchStarted() {
+        return true;
+    }
+
     @NotNull
     public Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
         if (tempFolder == null) {
@@ -219,4 +224,8 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         return isClosing();
     }
 
+    @Override
+    public boolean isUnitTestMode() {
+        return true;
+    }
 }

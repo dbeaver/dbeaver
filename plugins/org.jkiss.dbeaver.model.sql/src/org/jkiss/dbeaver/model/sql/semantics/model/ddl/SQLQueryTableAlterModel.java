@@ -124,7 +124,7 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
                                 .map(n -> SQLQueryColumnSpec.recognize(recognizer, n)).orElse(null);
                         case ALTER_COLUMN, RENAME_COLUMN, DROP_COLUMN ->
                             columnName = Optional.ofNullable(actionNode.findFirstChildOfName(STMKnownRuleNames.columnName))
-                                .map(recognizer::collectIdentifier).orElse(null);
+                                .map(n -> recognizer.collectIdentifier(n, null)).orElse(null);
                         case ADD_TABLE_CONSTRAINT -> tableConstraintSpec =
                             Optional.ofNullable(actionNode.findFirstChildOfName(STMKnownRuleNames.tableConstraintDefinition))
                                 .map(n -> SQLQueryTableConstraintSpec.recognize(recognizer, n)).orElse(null);

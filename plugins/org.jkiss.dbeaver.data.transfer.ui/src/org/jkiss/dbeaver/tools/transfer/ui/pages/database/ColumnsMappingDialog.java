@@ -21,7 +21,6 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -44,6 +43,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingType;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -63,7 +63,6 @@ class ColumnsMappingDialog extends DialogPage {
     private final DatabaseMappingContainer mapping;
     private final Collection<DatabaseMappingAttribute> attributeMappings;
     private TableViewer mappingViewer;
-    private Font boldFont;
 
     ColumnsMappingDialog(DatabaseConsumerSettings settings, DatabaseMappingContainer mapping) {
         this.settings = settings;
@@ -74,8 +73,6 @@ class ColumnsMappingDialog extends DialogPage {
     @Override
     public void createControl(Composite parent) {
         DBPDataSource targetDataSource = settings.getTargetDataSource(mapping);
-
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(2, false));
@@ -155,7 +152,7 @@ class ColumnsMappingDialog extends DialogPage {
                 } else {
                     cell.setBackground(null);
                 }
-                cell.setFont(boldFont);
+                cell.setFont(BaseThemeSettings.instance.baseFontBold);
             }
         }, new EditingSupport(mappingViewer) {
             @Override
@@ -232,7 +229,7 @@ class ColumnsMappingDialog extends DialogPage {
                 DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) cell.getElement();
                 DBPDataSource dataSource = settings.getTargetDataSource(attrMapping);
                 cell.setText(attrMapping.getTargetType(dataSource, true));
-                cell.setFont(boldFont);
+                cell.setFont(BaseThemeSettings.instance.baseFontBold);
             }
         }, new EditingSupport(mappingViewer) {
             @Override
@@ -271,7 +268,8 @@ class ColumnsMappingDialog extends DialogPage {
 
             @Override
             protected boolean canEdit(Object element) {
-                return true;
+                DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
+                return attrMapping.getMappingType() == DatabaseMappingType.create;
             }
 
             @Override

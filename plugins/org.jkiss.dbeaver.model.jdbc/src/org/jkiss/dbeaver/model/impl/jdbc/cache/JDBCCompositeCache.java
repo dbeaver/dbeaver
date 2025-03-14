@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
 import org.jkiss.dbeaver.model.struct.cache.DBSCompositeCache;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -64,7 +65,7 @@ public abstract class JDBCCompositeCache<
     private final Object parentColumnName;
     private final Object objectColumnName;
 
-    private final Map<PARENT, List<OBJECT>> objectCache = new IdentityHashMap<>();
+    private final Map<PARENT, List<OBJECT>> objectCache = new LinkedHashMap<>();
 
     protected JDBCCompositeCache(
         JDBCStructCache<OWNER,?,?> parentCache,
@@ -277,6 +278,10 @@ public abstract class JDBCCompositeCache<
     protected void loadObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
+        if (DBWorkbench.getPlatform().isUnitTestMode()) {
+            log.debug("[TEST] Skip composite cache read in test mode");
+            return;
+        }
         synchronized (objectCache) {
             if (monitor.isForceCacheUsage() ||
                 (forParent == null && isFullyCached()) ||

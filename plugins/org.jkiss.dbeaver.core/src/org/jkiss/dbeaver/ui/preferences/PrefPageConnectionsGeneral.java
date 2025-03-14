@@ -213,7 +213,11 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         conConfig.setHostPort("42");
         conConfig.setServerName("server1");
         conConfig.setUrl("sample//url");
-        DataSourceDescriptor fakeDataSource = new DataSourceDescriptor(dataSourceRegistry, DataSourceDescriptor.generateNewId(driver), driver, conConfig);
+        DataSourceDescriptor fakeDataSource = (DataSourceDescriptor) dataSourceRegistry.createDataSource(
+            DataSourceDescriptor.generateNewId(driver),
+            driver,
+            conConfig
+        );
         dataSourceRegistry.dispose();
         return new ConnectionNameResolver(fakeDataSource, conConfig, null);
     }

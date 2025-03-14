@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public class CustomFormEditor {
     private static final String LIST_VALUE_KEY = "form.data.list.value";
 
     private final Map<DBPPropertyDescriptor, Control> editorMap = new HashMap<>();
-    @NotNull
+    @Nullable
     private final DBSObject databaseObject;
     @Nullable
     private final DBECommandContext commandContext;
@@ -76,6 +76,12 @@ public class CustomFormEditor {
     public CustomFormEditor(@NotNull DBSObject databaseObject, @Nullable DBECommandContext commandContext, @NotNull DBPPropertySource propertySource) {
         this.databaseObject = databaseObject;
         this.commandContext = commandContext;
+        this.propertySource = propertySource;
+    }
+
+    public CustomFormEditor(@NotNull DBPPropertySource propertySource) {
+        this.databaseObject = null;
+        this.commandContext = null;
         this.propertySource = propertySource;
     }
 
@@ -197,7 +203,7 @@ public class CustomFormEditor {
 
     private void updatePropertyValue(DBPPropertyDescriptor prop, Object value) {
         if (!isLoading) {
-            if (prop.getId().equals(DBConstants.PROP_ID_NAME) && databaseObject.isPersisted()) {
+            if (prop.getId().equals(DBConstants.PROP_ID_NAME) && databaseObject != null && databaseObject.isPersisted()) {
                 DBEObjectRenamer renamer = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(propertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
                 if (commandContext != null && renamer != null) {
                     try {
@@ -301,7 +307,7 @@ public class CustomFormEditor {
                 Text editor = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | (readOnly ? SWT.READ_ONLY : SWT.NONE));
 
                 editor.setText(objectValueToString(value));
-                GridData gd = new GridData(GridData.FILL_BOTH);
+                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
                 // Make multiline editor at least two lines height
                 gd.heightHint = (UIUtils.getTextHeight(editor) + editor.getBorderWidth()) * 2;
                 editor.setLayoutData(gd);
@@ -467,4 +473,5 @@ public class CustomFormEditor {
             curButtonsContainer = null;
         }
     }
+
 }

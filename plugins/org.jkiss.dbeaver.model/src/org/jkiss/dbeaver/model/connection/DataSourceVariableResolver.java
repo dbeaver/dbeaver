@@ -62,7 +62,7 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                 case DBPConnectionConfiguration.VARIABLE_HOST:
                     return configuration.getHostName();
                 case DBPConnectionConfiguration.VARIABLE_HOST_TUNNEL:
-                    return DBWUtils.getTargetTunnelHostName(configuration);
+                    return DBWUtils.getTargetTunnelHostName(dataSourceContainer, configuration);
                 case DBPConnectionConfiguration.VARIABLE_PORT:
                     return configuration.getHostPort();
                 case DBPConnectionConfiguration.VARIABLE_SERVER:
@@ -104,6 +104,8 @@ public class DataSourceVariableResolver extends SystemVariablesResolver {
                     return dataSourceContainer.getProject().getName();
                 case DBPConnectionConfiguration.VARIABLE_DATE:
                     return RuntimeUtils.getCurrentDate();
+                case DBPConnectionConfiguration.VARIABLE_TIME:
+                    return RuntimeUtils.getCurrentTime();
             }
 
             if (name.startsWith(DBPConnectionConfiguration.VARIABLE_PREFIX_ORIGIN)) {

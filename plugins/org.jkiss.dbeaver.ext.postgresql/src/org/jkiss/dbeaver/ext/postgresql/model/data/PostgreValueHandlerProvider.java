@@ -47,6 +47,11 @@ public class PostgreValueHandlerProvider extends JDBCStandardValueHandlerProvide
 //        }
         int typeID = typedObject.getTypeID();
         String typeName = typedObject.getTypeName();
+        if (typeName == null) {
+            // Some databases that claim to be PostgreSQL-compliant, in fact, aren't compliant with its protocol.
+            // This results in scenarios where some JDBC APIs return nulls in unexpected places. For example, here.
+            return PostgreUnknownValueHandler.INSTANCE;
+        }
         switch (typeID) {
             case Types.ARRAY:
                 return PostgreArrayValueHandler.INSTANCE;

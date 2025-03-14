@@ -19,4 +19,7 @@ package org.jkiss.dbeaver.model.exec.output;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 public interface DBCOutputSeverity extends DBPNamedObject {
+    default boolean isForced() {
+        return false;
+    }
 }

@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -173,6 +174,44 @@ public class UITextUtils {
         }
         maxLength = Math.max(maxLength, lineLength);
         return new Point(maxLength, lineCount);
+    }
+
+    // Originally taken from https://stackoverflow.com/questions/5662094/can-i-wrap-text-to-a-given-width-with-guava
+    public static String wrap(String str, int wrapLength) {
+        int offset = 0;
+        StringBuilder resultBuilder = new StringBuilder();
+
+        while ((str.length() - offset) > wrapLength) {
+            if (str.charAt(offset) == ' ') {
+                offset++;
+                continue;
+            }
+
+            int spaceToWrapAt = str.lastIndexOf(' ', wrapLength + offset);
+            // if the next string with length maxLength doesn't contain ' '
+            if (spaceToWrapAt < offset) {
+                spaceToWrapAt = str.indexOf(' ', wrapLength + offset);
+                // if no more ' '
+                if (spaceToWrapAt < 0) {
+                    break;
+                }
+            }
+
+            resultBuilder.append(str, offset, spaceToWrapAt);
+            resultBuilder.append("\n");
+            offset = spaceToWrapAt + 1;
+        }
+
+        resultBuilder.append(str.substring(offset));
+        return resultBuilder.toString();
+    }
+
+
+    public static String truncateText(@Nullable String str, int maxLength) {
+        if (str != null && str.length() > maxLength) {
+            return str.substring(0, maxLength) + "...";
+        }
+        return str;
     }
 
 }

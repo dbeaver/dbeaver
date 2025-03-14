@@ -185,7 +185,7 @@ public class AITranslateHandler extends AbstractHandler {
         }
 
         DAICompletionResponse response = completionResult.get(0);
-        MessageChunk[] messageChunks = AITextUtils.splitIntoChunks(CommonUtils.notEmpty(response.getResultCompletion()));
+        MessageChunk[] messageChunks = AITextUtils.splitIntoChunks(editor.getSQLDialect(), CommonUtils.notEmpty(response.getResultCompletion()));
 
         if (messageChunks.length == 0) {
             return;

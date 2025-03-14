@@ -5,7 +5,7 @@
     <extension-point id="org.jkiss.dbeaver.sqlBackup" name="Backup" schema="schema/org.jkiss.dbeaver.sqlBackup.exsd"/>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
-        <provider class="org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider" id="org.jkiss.dbeaver.core.standardDataTypeProvider">
+        <provider class="org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider" id="JDBCDataTypeProvider">
             <type standard="BIT"/>
             <type standard="TINYINT"/>
             <type standard="SMALLINT"/>

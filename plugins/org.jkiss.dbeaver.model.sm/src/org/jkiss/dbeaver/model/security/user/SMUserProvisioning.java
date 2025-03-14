@@ -32,7 +32,7 @@ public class SMUserProvisioning {
     private final String authRole;
 
     public SMUserProvisioning(@NotNull String userId, @NotNull Map<String, String> metaParameters, @Nullable String authRole) {
-        this.userId = userId.toLowerCase();
+        this.userId = userId;
         this.metaParameters = metaParameters;
         this.authRole = authRole;
     }

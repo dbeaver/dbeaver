@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
@@ -70,9 +71,9 @@ public class AdvancedList extends Canvas {
         this.hoverBackgroundColor = UIUtils.getSharedTextColors().getColor(
             UIUtils.blend(this.selectionBackgroundColor.getRGB(), new RGB(255, 255, 255), 70));
 
-        Font normalFont = getFont();
+        Font normalFont = BaseThemeSettings.instance.baseFont;
         FontData[] fontData = normalFont.getFontData();
-        fontData[0].height -= 1.3;
+        fontData[0].height -= 1.3F;
         Font smallFont = new Font(normalFont.getDevice(), fontData[0]);
         setFont(smallFont);
         addDisposeListener(e -> {

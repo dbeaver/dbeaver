@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class SQLiteMessages {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.sqlite.internal.SQLiteMessages"; //$NON-NLS-1$

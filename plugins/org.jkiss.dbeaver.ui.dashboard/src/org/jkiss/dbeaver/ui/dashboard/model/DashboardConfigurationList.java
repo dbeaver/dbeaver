@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
@@ -211,7 +212,7 @@ public class DashboardConfigurationList {
     }
 
     private Path getConfigFile(boolean forceCreate) {
-        Path pluginFolder = UIDashboardActivator.getDefault().getStateLocation().toPath();
+        Path pluginFolder = RuntimeUtils.getPluginStateLocation(UIDashboardActivator.getDefault());
         Path viewConfigFolder = pluginFolder.resolve("views");
         if (!Files.exists(viewConfigFolder)) {
             if (forceCreate) {

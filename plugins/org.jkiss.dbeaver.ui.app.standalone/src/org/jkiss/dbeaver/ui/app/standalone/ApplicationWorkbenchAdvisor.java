@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,11 @@ import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -38,7 +42,6 @@ import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.dialogs.WorkbenchWizardElement;
 import org.eclipse.ui.internal.ide.IDEInternalWorkbenchImages;
-import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor;
 import org.eclipse.ui.internal.wizards.AbstractExtensionWizardRegistry;
 import org.eclipse.ui.wizards.IWizardCategory;
@@ -48,6 +51,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
+import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -61,9 +65,11 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
+import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -78,8 +84,8 @@ import java.awt.*;
 import java.awt.desktop.SystemEventListener;
 import java.awt.desktop.SystemSleepEvent;
 import java.awt.desktop.SystemSleepListener;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -178,7 +184,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     
     //processor must be created before we start event loop
     protected final DBPApplication application;
-    private final DelayedEventsProcessor processor;
+    private final OpenEventProcessor processor;
 
     private final SystemEventListener systemSleepListener = new SystemSleepListener() {
         @Override
@@ -194,7 +200,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     protected ApplicationWorkbenchAdvisor(DBPApplication application) {
         this.application = application;
-        this.processor = new DelayedEventsProcessor(Display.getCurrent());
+        this.processor = new OpenEventProcessor(Display.getCurrent());
     }
 
     @Override
@@ -273,6 +279,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
                 desktop.addAppEventListener(systemSleepListener);
             }
+        }
+
+        if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
+            platformDesktop.setWorkbenchStarted(true);
         }
     }
 
@@ -358,8 +368,14 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     }
 
     private void startVersionChecker() {
-        DBeaverVersionChecker checker = new DBeaverVersionChecker(false);
-        checker.schedule(3000);
+        Shell mainShell = UIUtils.getActiveWorkbenchShell();
+        if (mainShell != null) {
+            UIUtils.scheduleDelayedPopup(
+                mainShell,
+                () -> new DBeaverVersionChecker(false).schedule(),
+                "Version Checker Wrapper"
+            );
+        }
     }
 
     ///////////////////////
@@ -393,6 +409,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             // Dispose navigator model earlier because it may lock some UI resources
             // and we want to free them before application display will be disposed
             basePlatform.disposeNavigatorModel();
+        }
+        if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
+            platformDesktop.setWorkbenchStarted(false);
         }
     }
 
@@ -503,8 +522,37 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     @Override
     public void eventLoopIdle(Display display) {
-        processor.catchUp(display);
+        processor.catchUp();
         super.eventLoopIdle(display);
     }
 
+    /**
+     * Designed after {@link org.eclipse.ui.internal.ide.application.DelayedEventsProcessor}
+     */
+    private static class OpenEventProcessor implements Listener {
+        private final List<String> filesToOpen = new ArrayList<>(1);
+
+        OpenEventProcessor(@NotNull Display display) {
+            display.addListener(SWT.OpenDocument, this);
+        }
+
+        @Override
+        public void handleEvent(@NotNull Event event) {
+            final String path = event.text;
+            if (path != null) {
+                filesToOpen.add(path);
+            }
+        }
+
+        void catchUp() {
+            if (filesToOpen.isEmpty()) {
+                return;
+            }
+            IInstanceController controller = DBeaverApplication.getInstance().getInstanceServer();
+            if (controller != null) {
+                controller.openExternalFiles(filesToOpen.toArray(String[]::new));
+                filesToOpen.clear();
+            }
+        }
+    }
 }
