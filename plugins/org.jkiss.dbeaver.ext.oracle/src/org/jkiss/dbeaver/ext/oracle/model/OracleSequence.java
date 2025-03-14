@@ -155,6 +155,9 @@ public class OracleSequence extends OracleSchemaObject implements DBSSequence, D
         }
         sb.append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" ");
 
+        if (getLastValue() != null) {
+            sb.append("START WITH ").append(getLastValue()).append(" ");
+        }
         if (getIncrementBy() != null) {
             sb.append("INCREMENT BY ").append(getIncrementBy()).append(" ");
         }
