@@ -20,16 +20,16 @@ import org.eclipse.jface.viewers.StyledString;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionActivityTracker;
-import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionProposalContext;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 
 import java.util.EnumMap;
 
-public class SQLQueryCompletionProposalContext {
+public class SQLEditorQueryCompletionProposalContext extends SQLQueryCompletionProposalContext {
 
     // static one-time initialized
     private static final EnumMap<SQLQueryCompletionItemKind, String> registryStyleByItemKind = new EnumMap<>(SQLQueryCompletionItemKind.class) {{
@@ -48,16 +48,15 @@ public class SQLQueryCompletionProposalContext {
         registryStyleByItemKind.forEach((k , v) -> put(k, StyledString.createColorRegistryStyler(v, null)));
     }};
 
-    private final SQLCompletionRequest completionRequest;
     private final boolean insertSpaceAfterProposal;
-    private final int requestOffset;
 
-    public SQLQueryCompletionProposalContext(@NotNull SQLCompletionRequest completionRequest, int requestOffset) {
-        this.completionRequest = completionRequest;
-        this.requestOffset = requestOffset;
+    public SQLEditorQueryCompletionProposalContext(@NotNull SQLCompletionRequest completionRequest, int requestOffset) {
+        super(completionRequest, requestOffset);
 
         DBCExecutionContext executionContext = completionRequest.getContext().getExecutionContext();
-        this.insertSpaceAfterProposal = executionContext == null || executionContext.getDataSource().getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
+        DBPPreferenceStore prefStore = executionContext.getDataSource().getContainer().getPreferenceStore();
+        this.insertSpaceAfterProposal = executionContext == null
+            || prefStore.getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
     }
 
     @Nullable
@@ -65,20 +64,8 @@ public class SQLQueryCompletionProposalContext {
         return this.stylerByItemKind.get(itemKind);
     }
 
-    @NotNull
-    public SQLCompletionContext getCompletionContext() {
-        return this.completionRequest.getContext();
-    }
-
-    public int getRequestOffset() {
-        return this.requestOffset;
-    }
-
+    @Override
     public boolean isInsertSpaceAfterProposal() {
         return this.insertSpaceAfterProposal;
-    }
-
-    public SQLCompletionActivityTracker getActivityTracker() {
-        return this.completionRequest.getActivityTracker();
     }
 }

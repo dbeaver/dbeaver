@@ -383,7 +383,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         if (dataSourceContainer != null) {
             return dataSourceContainer;
         }
-        if (project != null) {
+        if (project != null && project.isRegistryLoaded()) {
             return project.getDataSourceRegistry().getDataSource(dataSourceId);
         }
         return null;

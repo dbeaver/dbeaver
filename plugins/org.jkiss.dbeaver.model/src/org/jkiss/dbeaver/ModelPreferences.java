@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -166,6 +166,7 @@ public final class ModelPreferences
     public static final String PROP_USE_WIN_TRUST_STORE_TYPE = "connections.useWinTrustStoreType"; //$NON-NLS-1$
     public static final String PROP_PREFERRED_IP_STACK = "connections.preferredIPType"; //$NON-NLS-1$
     public static final String PROP_PREFERRED_IP_ADDRESSES = "connections.preferredIPAddresses"; //$NON-NLS-1$
+    public static final String PROP_DEBUG_NETWORK_CONNECTIONS = "connections.debugNetworkConnections"; //$NON-NLS-1$
 
     public static final String NOTIFICATIONS_ENABLED = "notifications.enabled"; //$NON-NLS-1$
     public static final String NOTIFICATIONS_CLOSE_DELAY_TIMEOUT = "notifications.closeDelay"; //$NON-NLS-1$

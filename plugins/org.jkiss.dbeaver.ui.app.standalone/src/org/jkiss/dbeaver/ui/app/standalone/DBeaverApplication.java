@@ -502,7 +502,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     }
 
-    // Called
     protected void initializeConfiguration() {
         ModelPreferences.IPType stack = ModelPreferences.IPType.getPreferredStack();
         if (stack != ModelPreferences.IPType.AUTO) {
@@ -511,6 +510,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         ModelPreferences.IPType address = ModelPreferences.IPType.getPreferredAddresses();
         if (address != ModelPreferences.IPType.AUTO) {
             System.setProperty("java.net.preferIPv6Addresses", String.valueOf(address == ModelPreferences.IPType.IPV6));
+        }
+        boolean debugNetworkConnections = ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_DEBUG_NETWORK_CONNECTIONS);
+        if (debugNetworkConnections) {
+            System.setProperty("javax.net.debug", "all");
         }
     }
 

@@ -442,7 +442,7 @@
 
     <extension point="org.eclipse.ui.keywords">
         <keyword id="org.jkiss.dbeaver.keyword.pref.ui.misc" label="checkbox bool boolean holiday decoration christmas snow"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.network.expert" label="ip ipv4 ipv6 protocol"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.network.expert" label="ip ipv4 ipv6 protocol ssl tls net debug"/>
     </extension>
 
     <extension point="org.eclipse.ui.splashHandlers">

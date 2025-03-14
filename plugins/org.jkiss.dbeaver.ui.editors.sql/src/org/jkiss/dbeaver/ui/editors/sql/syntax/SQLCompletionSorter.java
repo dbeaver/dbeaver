@@ -19,9 +19,10 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalSorter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionProposal;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLEditorQueryCompletionProposal;
 
 /**
  * Completion sorter
@@ -104,7 +105,7 @@ public class SQLCompletionSorter implements ICompletionProposalSorter {
     private static int getScore(ICompletionProposal p) {
         if (p instanceof SQLCompletionProposal cp) {
             return cp.getProposalScore();
-        } else if (p instanceof SQLQueryCompletionProposal qcp) {
+        } else if (p instanceof SQLEditorQueryCompletionProposal qcp) {
             return qcp.getProposalScore();
         }
         return 0;
