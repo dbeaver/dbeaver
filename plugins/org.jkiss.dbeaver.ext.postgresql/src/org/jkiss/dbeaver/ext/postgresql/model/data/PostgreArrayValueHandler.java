@@ -66,11 +66,6 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
             }
 
             PostgreDataType itemType = arrayType.getElementType(session.getProgressMonitor());
-            if (itemType == null && arrayType.getTypeType() == PostgreTypeType.d) {
-                // Domains store component type information in another field
-                PostgreDataType domainBaseType = arrayType.getBaseType(session.getProgressMonitor());
-                itemType = domainBaseType.getElementType(session.getProgressMonitor());
-            }
             if (itemType == null) {
                 throw new DBCException("Array type " + arrayType.getFullTypeName() + " doesn't have a component type");
             }
