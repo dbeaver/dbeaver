@@ -8,7 +8,8 @@ Bundle-Release-Date: 20250325
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.sql.schema,
- org.jkiss.dbeaver.model.sql.task
+ org.jkiss.dbeaver.model.sql.task,
+ org.jkiss.dbeaver.model.sql.db
 Bundle-ClassPath: .
 Require-Bundle: org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.model.sql
