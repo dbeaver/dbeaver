@@ -121,8 +121,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -239,6 +239,10 @@ public class ResultSetViewer extends Viewer
     private volatile long lastThemeUpdateTime;
 
     private volatile boolean nextSegmentReadingBlocked;
+
+    private volatile boolean isWindowVisible = true;
+    private volatile boolean needToRetryTaskOnWindowDeiconified = false;
+    private Runnable onSuccess;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container) {
         super();
@@ -451,6 +455,20 @@ public class ResultSetViewer extends Viewer
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(dataPropertyListener);
         DBWorkbench.getPlatform().getDataSourceProviderRegistry().getGlobalDataSourcePreferenceStore().addPropertyChangeListener(dataPropertyListener);
+        mainPanel.getShell().addShellListener(new ShellAdapter() {
+            @Override
+            public void shellIconified(ShellEvent e) {
+                isWindowVisible = false;
+            }
+
+            @Override
+            public void shellDeiconified(ShellEvent e) {
+                isWindowVisible = true;
+                if (needToRetryTaskOnWindowDeiconified) {
+                    refreshData(onSuccess);
+                }
+            }
+        });
     }
 
     private void applyCurrentPresentationThemeSettings() {
@@ -2815,7 +2833,13 @@ public class ResultSetViewer extends Viewer
     // Context menus
 
     @Override
-    public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row, int[] rowIndexes) {
+    public void fillContextMenu(
+        @NotNull IMenuManager manager,
+        @Nullable final DBDAttributeBinding attr,
+        @Nullable final ResultSetRow row,
+        int[] rowIndexes,
+        @NotNull ContextMenuLocation menuLocation
+    ) {
         // Custom oldValue items
         final ResultSetValueController valueController;
         if (attr != null && row != null) {
@@ -2831,25 +2855,28 @@ public class ResultSetViewer extends Viewer
         long decoratorFeatures = getDecorator().getDecoratorFeatures();
         {
             {
-                // Standard items
-                if (attr != null && row != null) {
-                    manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
+                if (menuLocation == ContextMenuLocation.DATA) {
+                    // Standard items
+                    if (attr != null && row != null) {
+                        manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
+                    }
+
+                    if (row != null) {
+                        MenuManager extCopyMenu
+                            = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
+                        extCopyMenu.setRemoveAllWhenShown(true);
+                        extCopyMenu.addMenuListener(manager1 -> ResultSetHandlerCopyAs.fillCopyAsMenu(ResultSetViewer.this, manager1));
+
+                        manager.add(extCopyMenu);
+                    }
+
+                    if (row != null) {
+                        manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
+                        manager.add(ActionUtils.makeCommandContribution(site, IActionConstants.CMD_PASTE_SPECIAL));
+                    }
                 }
 
-                if (row != null) {
-                    MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerCopySpecial.CMD_COPY_SPECIAL));
-                    extCopyMenu.setRemoveAllWhenShown(true);
-                    extCopyMenu.addMenuListener(manager1 -> ResultSetHandlerCopyAs.fillCopyAsMenu(ResultSetViewer.this, manager1));
-
-                    manager.add(extCopyMenu);
-                }
-
-                if (row != null) {
-                    manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
-                    manager.add(ActionUtils.makeCommandContribution(site, IActionConstants.CMD_PASTE_SPECIAL));
-                }
-
-                if (attr != null) {
+                if (attr != null && menuLocation == ContextMenuLocation.COLUMN_HEADER) {
                     manager.add(ActionUtils.makeCommandContribution(
                         site,
                         ResultSetHandlerMain.CMD_COPY_COLUMN_NAMES,
@@ -2860,7 +2887,7 @@ public class ResultSetViewer extends Viewer
                         false,
                         Collections.singletonMap("columns", attr.getName())));
                 }
-                if (row != null) {
+                if (row != null && menuLocation == ContextMenuLocation.ROW_HEADER) {
                     manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_COPY_ROW_NAMES));
                 }
 
@@ -4038,7 +4065,9 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public boolean refreshData(@Nullable Runnable onSuccess) {
-        if (!verifyQuerySafety() || !checkForChanges()) {
+        if (!verifyQuerySafety() || !checkForChanges() || !isVisible() || !isWindowVisible) {
+            needToRetryTaskOnWindowDeiconified = !isWindowVisible;
+            this.onSuccess = onSuccess;
             autoRefreshControl.scheduleAutoRefresh(false);
             return false;
         }
@@ -4056,6 +4085,12 @@ public class ResultSetViewer extends Viewer
         } else {
             return false;
         }
+    }
+
+    private boolean isVisible() {
+        boolean[] panelVisible = new boolean[1];
+        UIUtils.syncExec(() -> panelVisible[0] = !mainPanel.isDisposed() && mainPanel.isVisible());
+        return panelVisible[0];
     }
 
     // Refreshes model metadata (virtual objects + colors and other)

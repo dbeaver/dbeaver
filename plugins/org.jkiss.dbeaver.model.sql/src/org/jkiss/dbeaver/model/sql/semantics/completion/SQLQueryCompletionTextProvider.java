@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.semantics;
+package org.jkiss.dbeaver.model.sql.semantics.completion;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -30,16 +30,16 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemVisitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVisitor<String> {
@@ -104,10 +104,15 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
 
         String prefix;
         if (columnName.sourceInfo != null && this.queryCompletionContext.getInspectionResult().expectingColumnReference() && columnName.absolute) {
-            if (columnName.sourceInfo.aliasOrNull != null) {
-                prefix = this.prepareDefiningEntryName(columnName.sourceInfo.aliasOrNull) + this.structSeparator;
-            } else if (columnName.sourceInfo.tableOrNull != null) {
-                prefix = this.prepareObjectName(columnName.sourceInfo.tableOrNull) + this.structSeparator;
+            boolean forceFullName = this.queryCompletionContext.isColumnNameConflicting(columnName.columnInfo.symbol.getName());
+            if (this.request.getContext().isUseFQNames() || forceFullName) {
+                if (columnName.sourceInfo.aliasOrNull != null) {
+                    prefix = this.prepareDefiningEntryName(columnName.sourceInfo.aliasOrNull) + this.structSeparator;
+                } else if (columnName.sourceInfo.tableOrNull != null) {
+                    prefix = this.prepareObjectName(columnName.sourceInfo.tableOrNull) + this.structSeparator;
+                } else {
+                    prefix = "";
+                }
             } else {
                 prefix = "";
             }
@@ -276,5 +281,9 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
         return function.name + "()";
     }
 
-
+    @Nullable
+    @Override
+    public String visitSpecialText(@NotNull SQLSpecialTextCompletionItem specialText) {
+        return specialText.text;
+    }
 }
