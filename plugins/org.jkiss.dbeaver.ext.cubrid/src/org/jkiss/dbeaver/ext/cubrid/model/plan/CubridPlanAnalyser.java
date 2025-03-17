@@ -29,8 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CubridPlanAnalyser extends AbstractExecutionPlan
-{
+public class CubridPlanAnalyser extends AbstractExecutionPlan {
 
     private List<CubridPlanNode> rootNodes = new ArrayList<>();
     private String query;
