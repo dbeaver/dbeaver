@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -375,7 +375,7 @@ public class OracleSQLDialect extends JDBCSQLDialect
         addKeywords(Arrays.asList(OTHER_TYPES_FUNCTIONS), DBPKeywordType.OTHER);
         turnFunctionIntoKeyword("TRUNCATE");
 
-        cachedDialectSkipTokenPredicates = makeDialectSkipTokenPredicates(dataSource);
+        cachedDialectSkipTokenPredicates = this.makeDialectSkipTokenPredicates(dataSource);
     }
 
     @Override
@@ -637,53 +637,57 @@ public class OracleSQLDialect extends JDBCSQLDialect
     }
 
     @NotNull
-    private SQLTokenPredicateSet makeDialectSkipTokenPredicates(JDBCDataSource dataSource) {
+    protected TokenPredicateSet makeDialectSkipTokenPredicates(JDBCDataSource dataSource) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(this, dataSource.getContainer().getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
         ruleManager.loadRules(dataSource, false);
         TokenPredicateFactory tt = TokenPredicateFactory.makeDialectSpecificFactory(ruleManager);
+        return this.makeDialectSkipTokenPredicatesImpl(dataSource, tt);
+    }
+
+    protected TokenPredicateSet makeDialectSkipTokenPredicatesImpl(JDBCDataSource dataSource, TokenPredicateFactory tt) {
 
         // Oracle SQL references could be found from https://docs.oracle.com/en/database/oracle/oracle-database/
         // by following through Get Started links till the SQL Language Reference link presented
 
         TokenPredicateSet conditions = TokenPredicateSet.of(
-                // https://docs.oracle.com/en/database/oracle/oracle-database/12.2/lnpls/CREATE-PACKAGE-BODY-statement.html#GUID-68526FF2-96A1-4F14-A10B-4DD3E1CD80BE
-                // also presented in the earliest found reference on 7.3, so considered as always supported https://docs.oracle.com/pdf/A32538_1.pdf
-                new TokenPredicatesCondition(
-                        SQLParserActionKind.BEGIN_BLOCK,
-                        tt.sequence(
-                                "CREATE",
-                                tt.optional("OR", "REPLACE"),
-                                tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
-                                "PACKAGE", "BODY"
-                        ),
-                        tt.sequence()
+            // https://docs.oracle.com/en/database/oracle/oracle-database/12.2/lnpls/CREATE-PACKAGE-BODY-statement.html#GUID-68526FF2-96A1-4F14-A10B-4DD3E1CD80BE
+            // also presented in the earliest found reference on 7.3, so considered as always supported https://docs.oracle.com/pdf/A32538_1.pdf
+            new TokenPredicatesCondition(
+                SQLParserActionKind.BEGIN_BLOCK,
+                tt.sequence(
+                    "CREATE",
+                    tt.optional("OR", "REPLACE"),
+                    tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
+                    "PACKAGE", "BODY"
                 ),
-                // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/CREATE-FUNCTION.html#GUID-156AEDAC-ADD0-4E46-AA56-6D1F7CA63306
-                // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/CREATE-PROCEDURE.html#GUID-771879D8-BBFD-4D87-8A6C-290102142DA3
-                // not fully described, only some cases partially discovered
-                new TokenPredicatesCondition(
-                        SQLParserActionKind.SKIP_SUFFIX_TERM,
-                        tt.sequence(
-                                "CREATE",
-                                tt.optional("OR", "REPLACE"),
-                                tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
-                                tt.alternative("FUNCTION", "PROCEDURE")
-                        ),
-                        tt.sequence(tt.alternative(
-                                tt.sequence("RETURN", SQLTokenType.T_TYPE),
-                                "deterministor", "pipelined", "parallel_enable", "result_cache",
-                                ")",
-                                tt.sequence("procedure", SQLTokenType.T_OTHER),
-                                tt.sequence(SQLTokenType.T_OTHER, SQLTokenType.T_TYPE)
-                        ), ";")
+                tt.sequence()
+            ),
+            // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/CREATE-FUNCTION.html#GUID-156AEDAC-ADD0-4E46-AA56-6D1F7CA63306
+            // https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/CREATE-PROCEDURE.html#GUID-771879D8-BBFD-4D87-8A6C-290102142DA3
+            // not fully described, only some cases partially discovered
+            new TokenPredicatesCondition(
+                SQLParserActionKind.SKIP_SUFFIX_TERM,
+                tt.sequence(
+                    "CREATE",
+                    tt.optional("OR", "REPLACE"),
+                    tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
+                    tt.alternative("FUNCTION", "PROCEDURE")
                 ),
-                new TokenPredicatesCondition(
-                    SQLParserActionKind.BEGIN_BLOCK,
-                    tt.sequence(),
-                    tt.sequence(tt.not("END"), "IF", tt.not("EXISTS"))
-                )
+                tt.sequence(tt.alternative(
+                    tt.sequence("RETURN", SQLTokenType.T_TYPE),
+                    "deterministor", "pipelined", "parallel_enable", "result_cache",
+                    ")",
+                    tt.sequence("procedure", SQLTokenType.T_OTHER),
+                    tt.sequence(SQLTokenType.T_OTHER, SQLTokenType.T_TYPE)
+                ), ";")
+            ),
+            new TokenPredicatesCondition(
+                SQLParserActionKind.BEGIN_BLOCK,
+                tt.sequence(),
+                tt.sequence(tt.not("END"), "IF", tt.not("EXISTS"))
+            )
         );
 
 
@@ -694,9 +698,9 @@ public class OracleSQLDialect extends JDBCSQLDialect
             // notation presented in https://docs.oracle.com/en/database/oracle/oracle-database/18/sqlrf/SELECT.html
             // but missing in https://docs.oracle.com/cd/E11882_01/server.112/e41084/statements_10002.htm
             conditions.add(new TokenPredicatesCondition(
-                    SQLParserActionKind.SKIP_SUFFIX_TERM,
-                    tt.token("WITH"),
-                    tt.sequence("END", ";")
+                SQLParserActionKind.SKIP_SUFFIX_TERM,
+                tt.token("WITH"),
+                tt.sequence("END", ";")
             ));
         }
 

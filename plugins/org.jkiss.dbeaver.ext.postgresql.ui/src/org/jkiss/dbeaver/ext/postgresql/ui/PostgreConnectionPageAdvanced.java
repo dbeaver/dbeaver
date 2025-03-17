@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +17,6 @@
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -50,6 +47,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
     private Button showDatabaseStatistics;
     private Button readAllDataTypes;
     private Button readKeysWithColumns;
+    private Button replaceLegacyTimezone;
     private Button usePreparedStatements;
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
@@ -90,6 +88,12 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
                 secureGroup,
                 PostgreMessages.dialog_setting_connection_read_keys_with_columns,
                 PostgreMessages.dialog_setting_connection_read_keys_with_columns_tip,
+                false,
+                2);
+            replaceLegacyTimezone = UIUtils.createCheckbox(
+                secureGroup,
+                PostgreMessages.dialog_setting_connection_replace_legacy_timezone,
+                PostgreMessages.dialog_setting_connection_replace_legacy_timezone_tip,
                 false,
                 2);
         }
@@ -162,6 +166,9 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         readKeysWithColumns.setSelection(
             CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS),
                 globalPrefs.getBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS)));
+        replaceLegacyTimezone.setSelection(
+            CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE),
+                globalPrefs.getBoolean(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE)));
         if (usePreparedStatements != null) {
             usePreparedStatements.setSelection(
                     CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS), false));
@@ -185,6 +192,10 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS, String.valueOf(showDatabaseStatistics.getSelection()));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES, String.valueOf(readAllDataTypes.getSelection()));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS, String.valueOf(readKeysWithColumns.getSelection()));
+        connectionCfg.setProviderProperty(
+            PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE,
+            String.valueOf(replaceLegacyTimezone.getSelection())
+        );
         if (usePreparedStatements != null) {
             connectionCfg.setProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS, String.valueOf(usePreparedStatements.getSelection()));
         }

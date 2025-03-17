@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
@@ -27,8 +28,11 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+
+import java.util.Set;
 
 /**
  * Describes several columns from the table
@@ -41,21 +45,31 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
     private final SQLQueryMemberAccessEntry memberAccessEntry;
 
     @Nullable
+    private final SQLQueryTupleRefEntry tupleRefEntry;
+
+    @Nullable
     private SQLQueryRowsSourceModel tupleSource = null;
 
     public SQLQueryValueTupleReferenceExpression(
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryQualifiedName tableName,
-        @Nullable SQLQueryMemberAccessEntry memberAccessEntry
+        @Nullable SQLQueryMemberAccessEntry memberAccessEntry,
+        @Nullable SQLQueryTupleRefEntry tupleRefEntry
     ) {
         super(syntaxNode);
         this.tableName = tableName;
         this.memberAccessEntry = memberAccessEntry;
+        this.tupleRefEntry = tupleRefEntry;
     }
 
     @NotNull 
     public SQLQueryQualifiedName getTableName() {
         return this.tableName;
+    }
+
+    @Nullable
+    public SQLQueryTupleRefEntry getTupleRefEntry() {
+        return this.tupleRefEntry;
     }
     
     @Nullable
@@ -75,13 +89,23 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
                     if (this.memberAccessEntry != null) {
                         this.memberAccessEntry.setOrigin(new SQLQuerySymbolOrigin.ColumnRefFromReferencedContext(rr));
                     }
+                    if (this.tupleRefEntry != null) {
+                        this.tupleRefEntry.setOrigin(new SQLQuerySymbolOrigin.ExpandableTupleRef(this.getSyntaxNode(), context, rr));
+                    }
                 } else {
                     this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
                     statistics.appendError(this.tableName.entityName,
                         "Table or subquery " + this.tableName.toIdentifierString() + " not found");
                 }
             } else {
-                SQLQueryQualifiedName.performPartialResolution(context, statistics, this.tableName, tableNameOrigin);
+                SQLQueryQualifiedName.performPartialResolution(
+                    context,
+                    statistics,
+                    this.tableName,
+                    tableNameOrigin,
+                    Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                    SQLQuerySymbolClass.ERROR
+                );
                 statistics.appendError(this.getSyntaxNode(), "Invalid tuple reference");
             }
             type = SQLQueryExprType.UNKNOWN;

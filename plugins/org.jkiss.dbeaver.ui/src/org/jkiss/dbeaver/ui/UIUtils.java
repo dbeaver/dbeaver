@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,12 +111,7 @@ public class UIUtils {
     private static final Log log = Log.getLog(UIUtils.class);
 
     private static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";
-    private static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
-    public static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
-    public static final Color COLOR_GREEN_CONTRAST = new Color(null, 23, 135, 58);
-    public static final Color COLOR_VALIDATION_ERROR = new Color(255, 220, 220);
-    
-    private static final Color COLOR_WHITE_DARK = new Color(null, 192, 192, 192);
+
     private static final SharedTextColors SHARED_TEXT_COLORS = new SharedTextColors();
     private static final SharedFonts SHARED_FONTS = new SharedFonts();
     private static final String MAX_LONG_STRING = String.valueOf(Long.MAX_VALUE);
@@ -1066,8 +1061,8 @@ public class UIUtils {
             public void controlResized(ControlEvent e) {
                 Rectangle area = scrolledComposite.getClientArea();
                 Point size = content.computeSize(
-                    (scrolledComposite.getStyle() & SWT.HORIZONTAL) != 0 ? SWT.DEFAULT : area.width,
-                    (scrolledComposite.getStyle() & SWT.VERTICAL) != 0 ? SWT.DEFAULT : area.height
+                    (scrolledComposite.getStyle() & SWT.H_SCROLL) != 0 ? SWT.DEFAULT : area.width,
+                    (scrolledComposite.getStyle() & SWT.V_SCROLL) != 0 ? SWT.DEFAULT : area.height
                 );
 
                 content.setSize(size);
@@ -2245,27 +2240,6 @@ public class UIUtils {
     public static boolean isDark(RGB rgb) {
         return greyLevel(rgb) < 128;
     }
-    
-    /**
-     * Calculate the Contrast color based on Luma(brightness)
-     * https://en.wikipedia.org/wiki/Luma_(video)
-     *
-     * Do not dispose returned color.
-     */
-    public static Color getContrastColor(Color color) {
-        if (color == null) {
-            return COLOR_BLACK;
-        }
-        double luminance = 1 - (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
-        if (luminance > 0.5) {
-            return UIStyles.isDarkTheme() ? COLOR_WHITE_DARK : COLOR_WHITE;
-        }
-        return COLOR_BLACK;
-    }
-
-    public static Color getInvertedColor(Color color) {
-        return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
-    }
 
     public static void openWebBrowser(String url) {
         url = url.trim();
@@ -2457,15 +2431,19 @@ public class UIUtils {
 
     @Nullable
     public static ToolItem findToolItemByCommandId(@NotNull ToolBarManager toolbarManager, @NotNull String commandId) {
-        for (ToolItem item : toolbarManager.getControl().getItems()) {
+        ToolBar toolBar = toolbarManager.getControl();
+        if (toolBar == null || toolBar.isDisposed()) {
+            return null;
+        }
+        for (ToolItem item : toolBar.getItems()) {
             Object data = item.getData();
-            if (data instanceof CommandContributionItem) {
-                ParameterizedCommand cmd = ((CommandContributionItem) data).getCommand(); 
+            if (data instanceof CommandContributionItem cci) {
+                ParameterizedCommand cmd = cci.getCommand();
                 if (cmd != null && commandId.equals(cmd.getId())) {
                     return item;
                 }
-            } else if (data instanceof HandledContributionItem) {
-                MHandledItem model = ((HandledContributionItem) data).getModel();
+            } else if (data instanceof HandledContributionItem hci) {
+                MHandledItem model = hci.getModel();
                 if (model != null) {
                     ParameterizedCommand cmd = model.getWbCommand();
                     if (cmd != null && commandId.equals(cmd.getId())) {
@@ -2479,15 +2457,19 @@ public class UIUtils {
 
     public static void populateToolItemCommandIds(ToolBarManager toolbarManager) {
         // used for accessibility automation, see dbeaver-qa-auto
-        for (ToolItem item : toolbarManager.getControl().getItems()) {
+        ToolBar toolBar = toolbarManager.getControl();
+        if (toolBar == null || toolBar.isDisposed()) {
+            return;
+        }
+        for (ToolItem item : toolBar.getItems()) {
             Object data = item.getData();
-            if (data instanceof CommandContributionItem) {
-                ParameterizedCommand cmd = ((CommandContributionItem) data).getCommand(); 
+            if (data instanceof CommandContributionItem cci) {
+                ParameterizedCommand cmd = cci.getCommand();
                 if (cmd != null) {
                     item.setData("commandId", cmd.getId());
                 }
-            } else if (data instanceof HandledContributionItem) {
-                MHandledItem model = ((HandledContributionItem) data).getModel();
+            } else if (data instanceof HandledContributionItem hci) {
+                MHandledItem model = hci.getModel();
                 if (model != null) {
                     ParameterizedCommand cmd = model.getWbCommand();
                     if (cmd != null) {
@@ -2522,10 +2504,12 @@ public class UIUtils {
             boolean showSchema = true;
             if (checkChangePossibility) {
                 DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
-                DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
-                if (contextDefaults != null) {
-                    showCatalog = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
-                    showSchema = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
+                if (defaultContext != null) {
+                    DBCExecutionContextDefaults<?, ?> contextDefaults = defaultContext.getContextDefaults();
+                    if (contextDefaults != null) {
+                        showCatalog = contextDefaults.getDefaultCatalog() != null || contextDefaults.supportsCatalogChange();
+                        showSchema = contextDefaults.getDefaultSchema() != null || contextDefaults.supportsSchemaChange();
+                    }
                 }
             }
 
@@ -2542,5 +2526,24 @@ public class UIUtils {
             }
         }
         return UIMessages.label_catalog_schema;
+    }
+
+    /**
+     * Disables redraw for the control and returns a closeable object that will enable redraw when closed.
+     * <p>
+     * Example:
+     * <pre>{@code
+     *     try (DBPCloseableObject ignored = UIUtils.disableRedraw(control)) {
+     *         // do something
+     *     }
+     * }</pre>
+     *
+     * @param control control to disable redraw
+     * @return closeable object that will enable redraw when closed
+     */
+    @NotNull
+    public static DBPCloseableObject disableRedraw(@NotNull Control control) {
+        control.setRedraw(false);
+        return () -> control.setRedraw(true);
     }
 }

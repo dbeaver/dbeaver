@@ -178,18 +178,39 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
                                 Optional<STMTreeNode> joinConditionNode = joinSpecificationNode.map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.joinCondition));
                                 try (SQLQueryModelRecognizer.LexicalScopeHolder condScope = r.openScope()) {
                                     if (joinSpecificationNode.isPresent()) {
-                                        condScope.lexicalScope.registerSyntaxNode(joinSpecificationNode.get());
-                                    }
-                                    if (joinConditionNode.isPresent()) {
-                                        yield joinConditionNode.map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.searchCondition))
-                                            .map(r::collectValueExpression)
-                                            .map(e -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, e,
-                                                condScope.lexicalScope))
-                                            .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource,
-                                                Collections.emptyList(), condScope.lexicalScope));
+                                        if (joinConditionNode.isPresent()) {
+                                            joinSpecificationNode.map(cn -> cn.findFirstNonErrorChild())
+                                                .map(cn -> cn.findFirstNonErrorChild()) // condition scope starts after the ON keyword when present
+                                                .filter(cn -> cn instanceof STMTreeTermNode) // after the whitespace following the inclusive end position
+                                                .ifPresent(kw -> condScope.lexicalScope.setInterval(Interval.of(kw.getRealInterval().b + 2, Integer.MAX_VALUE)));
+                                            yield joinConditionNode.map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.searchCondition))
+                                                .map(r::collectValueExpression)
+                                                .map(e -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource, e,
+                                                        condScope.lexicalScope))
+                                                .orElseGet(() -> new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource,
+                                                        Collections.emptyList(), condScope.lexicalScope));
+                                        } else {
+                                            Optional<STMTreeNode> columnsSpecNode = joinSpecificationNode
+                                                .map(cn -> cn.findFirstNonErrorChild());
+                                            int condScopeEnd = columnsSpecNode
+                                                .map(cn -> cn.findLastChildOfName(STMKnownRuleNames.RIGHT_PAREN_TERM))
+                                                .map(cn -> cn.getRealInterval().a)
+                                                .orElse(Integer.MAX_VALUE);
+                                            columnsSpecNode
+                                                .map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.LEFT_PAREN_TERM))
+                                                .ifPresent(cn -> condScope.lexicalScope.setInterval(Interval.of(cn.getRealInterval().b + 1, condScopeEnd)));
+                                            yield new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource,
+                                                    r.collectColumnNameList(childNode), condScope.lexicalScope);
+                                        }
                                     } else {
-                                        yield new SQLQueryRowsNaturalJoinModel(range, childNode, currSource, nextSource,
-                                            r.collectColumnNameList(childNode), condScope.lexicalScope);
+                                        yield new SQLQueryRowsNaturalJoinModel(
+                                            range,
+                                            childNode,
+                                            currSource,
+                                            nextSource,
+                                            (List<SQLQuerySymbolEntry>) null,
+                                            condScope.lexicalScope
+                                        );
                                     }
                                 }
                             }

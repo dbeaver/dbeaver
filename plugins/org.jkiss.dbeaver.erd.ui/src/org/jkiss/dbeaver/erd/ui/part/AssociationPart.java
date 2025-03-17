@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.CommonUtils;
@@ -72,7 +73,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     public AssociationPart() {
         Color foreground = ERDThemeSettings.instance.attrForeground;
-        final Color contrastColor = UIUtils.getContrastColor(foreground);
+        final Color contrastColor = UIStyles.getContrastColor(foreground);
         final RGB labelForeground = UIUtils.blend(foreground.getRGB(), contrastColor.getRGB(), 60);
         labelForegroundColor = UIUtils.getSharedColor(labelForeground);
     }

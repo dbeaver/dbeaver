@@ -29,7 +29,7 @@
             class="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
             namespace="org.jkiss.dbeaver.core.datasourceContainer"
-            properties="driverId,driverClass,connected,connecting"
+            properties="driverId,driverClass,connected,connecting,supportsSchemas"
             type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.actions.FolderPropertyTester"
@@ -407,7 +407,6 @@
         </handler>
 
         <!-- Query log view handlers -->
-        <handler commandId="org.jkiss.dbeaver.core.qm.filter" class="org.jkiss.dbeaver.ui.views.qm.QueryManagerFilterHandler"/>
         <handler commandId="org.jkiss.dbeaver.core.qm.clear" class="org.jkiss.dbeaver.ui.views.qm.QueryManagerClearHandler"/>
 
         <!-- Process view handlers -->
@@ -584,7 +583,15 @@
                     id="org.jkiss.dbeaver.core.menu.select.schema"
                     style="pulldown"
                     mode="FORCE_TEXT">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
+                    <visibleWhen>
+                        <and>
+                            <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/>
+                            <with variable="activeEditor">
+                                <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer">
+                                    <test property="org.jkiss.dbeaver.core.datasourceContainer.supportsSchemas"/>
+                                </adapt>
+                            </with>
+                        </and></visibleWhen>
                 </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
@@ -770,7 +777,7 @@
         <!-- QM menu & toolbar -->
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.queryManager">
-            <command commandId="org.jkiss.dbeaver.core.qm.filter"/>
+            <separator name="refresh" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
             <command commandId="org.eclipse.ui.file.refresh" label="%command.org.jkiss.dbeaver.core.qm.refresh.name" tooltip="%command.org.jkiss.dbeaver.core.qm.refresh.description"/>
             <separator name="additions" visible="true"/>
@@ -778,7 +785,6 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.queryManager">
-            <command commandId="org.jkiss.dbeaver.core.qm.filter"/>
             <separator name="refresh" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.qm.clear"/>
             <command commandId="org.eclipse.ui.file.refresh" label="%command.org.jkiss.dbeaver.core.qm.refresh.name" tooltip="%command.org.jkiss.dbeaver.core.qm.refresh.description"/>
@@ -1246,6 +1252,10 @@
             name="%handler.clearBrowserCookies.name"
             description="%handler.clearBrowserCookies.description"
             handler="org.jkiss.dbeaver.ui.browser.handlers.BrowserClearCookiesHandler"/>
+    </extension>
+
+    <extension id="org.jkiss.dbeaver.core.fragment" point="org.eclipse.e4.workbench.model">
+        <fragment apply="always" uri="fragment.e4xmi"/>
     </extension>
 
 </plugin>

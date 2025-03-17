@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,9 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
-import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.graphics.Font;
@@ -41,6 +39,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLCommandModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -56,7 +55,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleOutlineView;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -1085,6 +1083,30 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             @NotNull OutlineQueryNode arg
         ) {
             targetsList.getTargetNodes().forEach(t -> t.apply(this, arg));
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitCallStatement(@NotNull SQLQueryCallModel callStatement, OutlineQueryNode node) {
+            SQLQueryObjectDataModel obj = callStatement.getObject();
+            if (obj != null) {
+                obj.apply(this, node);
+            }
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitCommand(@NotNull SQLCommandModel command, OutlineQueryNode arg) {
+            this.makeNode(arg, command, command.getCommandText(), UIIcon.SQL_CONSOLE, command.getVariables());
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitCommandVariable(@NotNull SQLCommandModel.VariableNode variable, OutlineQueryNode arg) {
+            this.makeNode(arg, variable, variable.name.getName() + " = " + variable.value, UIIcon.SQL_PARAMETER);
             return null;
         }
 

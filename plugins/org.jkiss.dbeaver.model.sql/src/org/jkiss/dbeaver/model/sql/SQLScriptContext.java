@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class SQLScriptContext implements DBCScriptContext {
 
     private final SQLParametersProvider parametersProvider;
     private boolean ignoreParameters;
-    private IVariableResolver contextVarResolver;
+    private final IVariableResolver contextVarResolver;
 
     public SQLScriptContext(
         @Nullable SQLScriptContext parentContext,
@@ -108,9 +108,11 @@ public class SQLScriptContext implements DBCScriptContext {
         return parentContext;
     }
 
-    @NotNull
+    @Nullable
     public DBCExecutionContext getExecutionContext() {
-        return contextProvider.getExecutionContext();
+        DBCExecutionContext executionContext = contextProvider.getExecutionContext();
+        return executionContext == null ?
+            (parentContext == null ? null : parentContext.getExecutionContext()) : executionContext;
     }
 
     @Nullable
@@ -433,7 +435,7 @@ public class SQLScriptContext implements DBCScriptContext {
     }
 
     private String getNormalizedVarName(String name) {
-        String unquoted = null;
+        String unquoted;
         if (contextProvider.getExecutionContext() != null) {
             unquoted = DBUtils.getUnQuotedIdentifier(contextProvider.getExecutionContext().getDataSource(), name);
         } else {

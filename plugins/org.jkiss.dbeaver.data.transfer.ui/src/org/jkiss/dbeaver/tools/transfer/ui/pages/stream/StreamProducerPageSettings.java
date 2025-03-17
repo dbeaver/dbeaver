@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
@@ -111,7 +110,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                         toolbar,
                         UIMessages.text_with_open_dialog_browse,
                         UIMessages.text_with_open_dialog_browse,
-                        DBIcon.TREE_FOLDER,
+                        UIIcon.OPEN,
                         SelectionListener.widgetSelectedAdapter(e -> new SelectInputFileAction(false).run())
                     );
                 }
@@ -224,9 +223,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 extensions,
                 pipe.getConsumer().getObjectName());
             if (selected != null) {
-                initializer = monitor -> {
-                    updateSingleConsumer(monitor, pipe, selected.getPath());
-                };
+                initializer = monitor -> updateSingleConsumer(monitor, pipe, selected.getPath());
             }
         } else if (pipe.getConsumer() != null && pipe.getConsumer().getTargetObjectContainer() != null) {
             File[] files = DialogUtils.openFileList(
@@ -364,8 +361,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             item.setText(0, DTUIMessages.stream_consumer_page_settings_item_text_none);
         } else {
             item.setImage(0, DBeaverIcons.getImage(getProducerProcessor().getIcon()));
-            item.setText(0, producer instanceof StreamTransferProducer stp ?
-                stp.getInputFile().toString() : String.valueOf(producer.getObjectName()));
+            if (producer instanceof StreamTransferProducer stp) {
+                Path inputFile = stp.getInputFile();
+                item.setText(0, DBFUtils.convertPathToString(inputFile));
+            } else {
+                item.setText(0, String.valueOf(producer.getObjectName()));
+            }
         }
 
         IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
@@ -527,7 +528,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             lastChar = c;
             name.append(c);
         }
-        if (name.length() > 0 && name.charAt(name.length() - 1) == '_') {
+        if (!name.isEmpty() && name.charAt(name.length() - 1) == '_') {
             name.deleteCharAt(name.length() - 1);
         }
         return name.toString();
@@ -539,7 +540,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     }
 
     private class SelectInputFileAction extends Action {
-        private boolean remote;
+        private final boolean remote;
         public SelectInputFileAction(boolean remote) {
             super(remote ? UIMessages.text_with_open_dialog_browse_remote : UIMessages.text_with_open_dialog_browse);
             this.remote = remote;

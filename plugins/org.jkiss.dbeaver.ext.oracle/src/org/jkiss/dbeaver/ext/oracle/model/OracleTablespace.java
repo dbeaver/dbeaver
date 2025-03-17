@@ -20,9 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -50,6 +51,8 @@ import java.util.Map;
  */
 public class OracleTablespace extends OracleGlobalObject implements DBPRefreshableObject, DBPObjectStatistics, DBPScriptObject
 {
+
+    private static final Log log = Log.getLog(OracleTablespace.class);
 
     public enum Status {
         ONLINE,
@@ -112,8 +115,9 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     private volatile Long availableSize;
     private volatile Long usedSize;
 
-    final FileCache fileCache = new FileCache();
-    final SegmentCache segmentCache = new SegmentCache();
+    private final FileCache fileCache = new FileCache();
+    private final SegmentCache segmentCache = new SegmentCache();
+    private String ddlStringHolder = null;
 
     protected OracleTablespace(OracleDataSource dataSource, ResultSet dbResult)
     {
@@ -306,6 +310,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     {
         availableSize = null;
         usedSize = null;
+        ddlStringHolder = null;
         fileCache.clearCache();
         segmentCache.clearCache();
         getDataSource().resetStatistics();
@@ -419,67 +424,33 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
 
-        StringBuilder ddl = new StringBuilder("CREATE ");
-
-        if (isBigFile()) {
-            ddl.append("BIGFILE ");
+        if (ddlStringHolder != null) {
+            return ddlStringHolder;
         }
-
-        appendEnumField(ddl, " CONTENTS ", contents);
-
-        ddl.append(" TABLESPACE ").append(name);
-
-        appendField(ddl, " BLOCKSIZE ", blockSize, true);
-        appendField(ddl, " INITIAL ", initialExtent, "K");
-        appendField(ddl, " NEXT ", nextExtent, "K");
-        appendField(ddl, " MINEXTENTS ", minExtents);
-        appendField(ddl, " MAXEXTENTS ", maxExtents);
-        appendField(ddl, " PCTINCREASE ", pctIncrease);
-        appendField(ddl, " MINEXTLEN ", minExtLen, "K");
-
-        appendEnumField(ddl, " STATUS ", status);
-        appendEnumField(ddl, " LOGGING ", logging);
-
-        appendBooleanField(ddl, " FORCE LOGGING ", forceLogging);
-        appendEnumField(ddl, " EXTENT MANAGEMENT ", extentManagement);
-        appendEnumField(ddl, " ALLOCATION TYPE ", allocationType);
-        appendBooleanField(ddl, " PLUGGED IN ", pluggedIn);
-        appendEnumField(ddl, " SEGMENT SPACE MANAGEMENT ", segmentSpaceManagement);
-
-        ddl.append(" DEFAULT TABLE COMPRESSION ").append(defTableCompression ? "ENABLED" : "DISABLED");
-
-        appendEnumField(ddl, " RETENTION ", retention);
-
-        return ddl.toString();
-
-    }
-
-    private void appendField(StringBuilder ddl, String label, long value, boolean condition) {
-        if (condition && value > 0) {
-            ddl.append(label).append(value);
+        String objectType = "TABLESPACE";
+        String objectName = getName();
+        String ddl = null;
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load source code for " + objectType + " '" + objectName + "'")) {
+            if (this.getDataSource().isAtLeastV9()) {
+                try {
+                    JDBCUtils.executeProcedure(
+                        session,
+                        "begin\n" +
+                            "DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true);\n" +
+                            "end;");
+                } catch (SQLException e) {
+                    log.error("Can't apply DDL transform parameters", e);
+                }
+            }
+            ddl = OracleUtils.fetchDDL(session, objectType, objectName);
+        } catch (SQLException e) {
+            log.error("Can't fetch DDL for " + objectType + ":" + objectName, e);
         }
-    }
-
-    private void appendField(StringBuilder ddl, String label, long value, String suffix) {
-        if (value > 0) {
-            ddl.append(label).append(value).append(suffix);
+        if (ddl == null) {
+            ddl = "-- EMPTY DDL";
         }
-    }
-
-    private void appendField(StringBuilder ddl, String label, long value) {
-        if (value > 0) {
-            ddl.append(label).append(value);
-        }
-    }
-
-    private void appendEnumField(StringBuilder ddl, String label, Enum<?> enumValue) {
-        if (enumValue != null) {
-            ddl.append(label).append(enumValue.name());
-        }
-    }
-
-    private void appendBooleanField(StringBuilder ddl, String label, boolean condition) {
-        ddl.append(label).append(condition ? "YES" : "NO");
+        ddlStringHolder = ddl.trim();
+        return ddlStringHolder;
     }
 
 }

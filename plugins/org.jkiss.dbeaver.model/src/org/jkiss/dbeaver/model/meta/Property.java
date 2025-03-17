@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 
 package org.jkiss.dbeaver.model.meta;
+
+import org.jkiss.code.NotNull;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -81,7 +83,10 @@ public @interface Property
      */
     boolean editable() default false;
 
-    String editableExpr() default "";
+    /**
+     * Expression to verify editable status
+     */
+    @NotNull String editableExpr() default "";
 
     /**
      * Updatable flag. If set to true then property can be changed on any object
@@ -89,7 +94,10 @@ public @interface Property
      */
     boolean updatable() default false;
 
-    String updatableExpr() default "";
+    /**
+     * Expression to verify updatable status
+     */
+    @NotNull String updatableExpr() default "";
 
     /**
      * Viewable flag. Viewable properties are displayed in lists.

@@ -313,6 +313,7 @@ public class MavenRegistry {
                             if (!CommonUtils.isEmpty(authInfo.getUserPassword())) {
                                 secrets.setPrivateSecretValue("maven/" + repository.getId() + "/auth-password", authInfo.getUserPassword());
                             }
+                            secrets.flushChanges();
                         }
                     }
                 }
