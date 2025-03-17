@@ -86,7 +86,7 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
         CubridPrivilage user = (CubridPrivilage) command.getObject();
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE USER ");
-        builder.append(this.getUserName(user, command.getProperties()));
+        builder.append(DBUtils.getQuotedIdentifier(user.getDataSource(), this.getUserName(user, command.getProperties())));
         buildBody(user, builder, command.getProperties());
         actions.add(new SQLDatabasePersistAction("Create User", builder.toString()));
     }
@@ -127,7 +127,7 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
     private String getUserName(CubridPrivilage user, Map<Object, Object> properties) {
         Object name = properties.get(CubridPrivilageHandler.NAME.getId());
         if (name != null) {
-            user.setName(name.toString());
+            user.setName(name.toString().toUpperCase());
         }
         return user.getName();
 
