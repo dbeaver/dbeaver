@@ -69,11 +69,19 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             // Already exist
             return;
         }
-        if (!showCreateSampleDatabasePrompt(window.getShell())) {
-            DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
-            return;
-        }
-        createSampleDatabase(registry);
+
+        Shell mainShell = window.getShell();
+        UIUtils.scheduleDelayedPopup(
+            mainShell,
+            () -> {
+                if (!showCreateSampleDatabasePrompt(mainShell)) {
+                    DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
+                } else {
+                    createSampleDatabase(registry);
+                }
+            },
+            "Sample Database Prompt Wrapper"
+        );
     }
 
     static boolean isSampleDatabaseExists(DBPDataSourceRegistry registry) {
