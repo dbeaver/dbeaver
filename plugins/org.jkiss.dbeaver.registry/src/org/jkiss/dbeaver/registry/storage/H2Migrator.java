@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -60,21 +58,17 @@ public class H2Migrator {
     @NotNull
     private final InternalDatabaseConfig databaseConfiguration;
     @NotNull
-    private final String resolvedDbUrl;
-    @NotNull
     private final Properties dbProperties;
 
     public H2Migrator(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DataSourceProviderRegistry dataSourceProviderRegistry,
         @NotNull InternalDatabaseConfig databaseConfiguration,
-        @NotNull String resolvedDbUrl,
         @NotNull Properties dbProperties
     ) {
         this.monitor = monitor;
         this.dataSourceProviderRegistry = dataSourceProviderRegistry;
         this.databaseConfiguration = databaseConfiguration;
-        this.resolvedDbUrl = resolvedDbUrl;
         this.dbProperties = dbProperties;
     }
 
@@ -88,6 +82,7 @@ public class H2Migrator {
      * </p>
      */
     public void migrateDatabaseIfNeeded(@NotNull String dbNameV1, @NotNull String dbNameV2) {
+        String resolvedDbUrl = databaseConfiguration.getResolvedUrl();
         if (!resolvedDbUrl.endsWith(dbNameV1) ||
             !V1_DRIVER_NAME.equals(databaseConfiguration.getDriver()) ||
             resolvedDbUrl.startsWith("jdbc:h2:mem:")
@@ -129,9 +124,9 @@ public class H2Migrator {
 
             monitor.subTask("Exporting v1 database");
             if (dbProperties.getProperty(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD) == null) {
-                executeScript(v1Driver, resolvedDbUrl, EXPORT_SCRIPT, exportFilePath);
+                executeScript(v1Driver, EXPORT_SCRIPT, exportFilePath);
             } else {
-                executeScript(v1Driver, resolvedDbUrl, EXPORT_SCRIPT_USING_PASSWORD, exportFilePath);
+                executeScript(v1Driver, EXPORT_SCRIPT_USING_PASSWORD, exportFilePath);
             }
             monitor.worked(1);
             monitor.subTask("Creating v1 database backup '" + workspacePaths.v1DataBackupPath + "'");
@@ -143,11 +138,10 @@ public class H2Migrator {
             updateConfig(workspacePaths);
             monitor.worked(1);
             monitor.subTask("Importing data to new v2 database");
-            var updatedResolvedDbUrl = GeneralUtils.replaceVariables(databaseConfiguration.getUrl(), SystemVariablesResolver.INSTANCE);
             if (dbProperties.getProperty(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD) == null) {
-                executeScript(v2Driver, updatedResolvedDbUrl, IMPORT_SCRIPT, exportFilePath);
+                executeScript(v2Driver, IMPORT_SCRIPT, exportFilePath);
             } else {
-                executeScript(v2Driver, updatedResolvedDbUrl, IMPORT_SCRIPT_USING_PASSWORD, exportFilePath);
+                executeScript(v2Driver, IMPORT_SCRIPT_USING_PASSWORD, exportFilePath);
             }
 
             removeExportFile(workspacePaths);
@@ -169,11 +163,10 @@ public class H2Migrator {
 
     private void executeScript(
         @NotNull Driver driver,
-        @NotNull String dbUrl,
         @NotNull String script,
         @NotNull String filePath
     ) throws SQLException {
-        try (var connection = driver.connect(dbUrl, dbProperties);
+        try (var connection = driver.connect(databaseConfiguration.getResolvedUrl(), dbProperties);
              var statement = connection.prepareStatement(script)
         ) {
             statement.setString(1, filePath);

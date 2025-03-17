@@ -268,7 +268,18 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
             }
         });
-        
+
+        boolean validFolder = false;
+        for (TabbedFolderInfo folder : folders) {
+            if (folder.getId().equals(curFolderId)) {
+                validFolder = true;
+                break;
+            }
+        }
+        if (!validFolder && folders.length > 0) {
+            curFolderId = folders[0].getId();
+        }
+
         UIUtils.syncExec(() -> folderComposite.switchFolder(curFolderId));
         
         return foldersPlaceholder;
