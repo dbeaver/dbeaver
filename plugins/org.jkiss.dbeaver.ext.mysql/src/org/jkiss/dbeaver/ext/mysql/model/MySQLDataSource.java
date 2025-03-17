@@ -241,10 +241,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         if (retrievePublicKey) {
             props.put("allowPublicKeyRetrieval", "true");
         }
-
-        if (sslConfig.getBooleanProperty(MySQLConstants.PROP_SSL_DEBUG)) {
-            System.setProperty("javax.net.debug", "all");
-        }
     }
 
     private String makeKeyStorePath(Path keyStorePath) throws MalformedURLException {

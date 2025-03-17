@@ -104,10 +104,15 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
 
         String prefix;
         if (columnName.sourceInfo != null && this.queryCompletionContext.getInspectionResult().expectingColumnReference() && columnName.absolute) {
-            if (columnName.sourceInfo.aliasOrNull != null) {
-                prefix = this.prepareDefiningEntryName(columnName.sourceInfo.aliasOrNull) + this.structSeparator;
-            } else if (columnName.sourceInfo.tableOrNull != null) {
-                prefix = this.prepareObjectName(columnName.sourceInfo.tableOrNull) + this.structSeparator;
+            boolean forceFullName = this.queryCompletionContext.isColumnNameConflicting(columnName.columnInfo.symbol.getName());
+            if (this.request.getContext().isUseFQNames() || forceFullName) {
+                if (columnName.sourceInfo.aliasOrNull != null) {
+                    prefix = this.prepareDefiningEntryName(columnName.sourceInfo.aliasOrNull) + this.structSeparator;
+                } else if (columnName.sourceInfo.tableOrNull != null) {
+                    prefix = this.prepareObjectName(columnName.sourceInfo.tableOrNull) + this.structSeparator;
+                } else {
+                    prefix = "";
+                }
             } else {
                 prefix = "";
             }
