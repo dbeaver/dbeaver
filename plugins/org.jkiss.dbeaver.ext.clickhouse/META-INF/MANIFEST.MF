@@ -7,6 +7,7 @@ Bundle-Release-Date: 20250325
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic;visibility:=reexport,
+ org.jkiss.dbeaver.data.gis,
  com.google.guava;resolution:=optional,
  com.google.gson,
  org.jkiss.bundle.antlr4

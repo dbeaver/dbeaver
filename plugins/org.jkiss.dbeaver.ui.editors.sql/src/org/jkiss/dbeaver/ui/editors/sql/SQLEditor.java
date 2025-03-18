@@ -312,6 +312,7 @@ public class SQLEditor extends SQLEditorBase implements
             IResultSetController.RESULTS_CONTEXT_ID};
     }
 
+    @Nullable
     @Override
     public DBPDataSource getDataSource() {
         DBPDataSourceContainer container = getDataSourceContainer();
