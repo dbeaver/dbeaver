@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.ext.kingbase;
 
-import java.lang.reflect.Array;
-import java.sql.SQLException;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -30,6 +27,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+
+import java.lang.reflect.Array;
+import java.sql.SQLException;
 
 /**
  * KingbaseUtils
@@ -179,9 +179,9 @@ public class KingbaseUtils {
     }
 
     public static String getQueryForSystemColumnChecking(@NotNull String tableName, @NotNull String columnName) {
-    	if(tableName.contains("pg_")) {
-    		tableName.replaceAll("pg_", "sys_");
-    	}
+        if (tableName.contains("pg_")) {
+            tableName.replaceAll("pg_", "sys_");
+        }
         return "SELECT " + columnName + " FROM sys_catalog." + tableName + " WHERE 1<>1 LIMIT 1";
     }
 

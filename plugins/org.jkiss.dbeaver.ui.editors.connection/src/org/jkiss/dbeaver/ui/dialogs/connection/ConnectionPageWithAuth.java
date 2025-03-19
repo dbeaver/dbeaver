@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIServiceConnectionEditor;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -39,6 +42,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     private static final Log log = Log.getLog(DataSourceProviderRegistry.class);
 
     private AuthModelSelector authModelSelector;
+    private UIServiceConnectionEditor serviceConnectionEditor;
 
     protected void createAuthPanel(Composite parent, int hSpan) {
         createAuthPanel(parent, hSpan, null);
@@ -55,6 +59,16 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         }, () -> getSite().updateButtons(), true, this.getIntention());
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ((GridData)authModelSelector.getLayoutData()).horizontalSpan = hSpan;
+
+        if (site.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
+            // Additional auth controls
+            serviceConnectionEditor = DBWorkbench.getService(UIServiceConnectionEditor.class);
+            if (serviceConnectionEditor != null) {
+                serviceConnectionEditor.createControl(parent,
+                    getSite().getActiveDataSource(),
+                    () -> site.updateButtons());
+            }
+        }
     }
 
     protected Composite getAuthPanelComposite() {
@@ -70,19 +84,19 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
             return;
         }
 
-        DBPDataSourceContainer activeDataSource = getSite().getActiveDataSource();
+        DBPDataSourceContainer dataSource = getSite().getActiveDataSource();
 
-        DBPConnectionConfiguration configuration = activeDataSource.getConnectionConfiguration();
+        DBPConnectionConfiguration configuration = dataSource.getConnectionConfiguration();
 
         if (site.isNew() && CommonUtils.isEmpty(configuration.getUserName())) {
-            configuration.setUserName(activeDataSource.getDriver().getDefaultUser());
+            configuration.setUserName(dataSource.getDriver().getDefaultUser());
         }
 
-        DBPAuthModelDescriptor selectedAuthModel = activeDataSource.getDriver().getDataSourceProvider().detectConnectionAuthModel(
-            activeDataSource.getDriver(), configuration);
+        DBPAuthModelDescriptor selectedAuthModel = dataSource.getDriver().getDataSourceProvider().detectConnectionAuthModel(
+            dataSource.getDriver(), configuration);
 
         if (selectedAuthModel != null) {
-            DBPAuthModelDescriptor amReplace = selectedAuthModel.getReplacedBy(activeDataSource.getDriver());
+            DBPAuthModelDescriptor amReplace = selectedAuthModel.getReplacedBy(dataSource.getDriver());
             if (amReplace != null) {
                 log.debug("Auth model '" + selectedAuthModel.getId() + "' was replaced by '" + amReplace.getId() + "'");
                 selectedAuthModel = amReplace;
@@ -90,7 +104,11 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
             }
         }
 
-        authModelSelector.loadSettings(getSite().getActiveDataSource(), selectedAuthModel, getDefaultAuthModelId(activeDataSource));
+        authModelSelector.loadSettings(dataSource, selectedAuthModel, getDefaultAuthModelId(dataSource));
+
+        if (serviceConnectionEditor != null) {
+            serviceConnectionEditor.loadSettings(dataSource);
+        }
     }
 
     @NotNull
@@ -113,11 +131,20 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
                 selectedAuthModel == null ? null : selectedAuthModel.getId());
             authModelSelector.saveSettings(dataSource);
         }
+
+        if (serviceConnectionEditor != null) {
+            serviceConnectionEditor.saveSettings(dataSource);
+        }
     }
 
     @Override
     public boolean isComplete() {
         return !isAuthEnabled() || (authModelSelector != null && authModelSelector.isComplete());
+    }
+
+    @Override
+    public boolean isExternalConfigurationProvided() {
+        return serviceConnectionEditor != null && serviceConnectionEditor.isExternalConfigurationProvided();
     }
 
     protected boolean isAuthEnabled() {

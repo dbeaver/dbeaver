@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.ProgressMonitorWithExceptionContext;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -58,15 +58,14 @@ class DriverDependenciesTree {
     private static final Log log = Log.getLog(DriverDependenciesTree.class);
 
     public static final String NETWORK_TEST_URL = "https://repo1.maven.org";
-    private DBRRunnableContext runnableContext;
-    private DBPDriver driver;
-    private Collection<? extends DBPDriverLibrary> libraries;
+    private final DBRRunnableContext runnableContext;
+    private final DBPDriver driver;
+    private final Collection<? extends DBPDriverLibrary> libraries;
     private final DBPDriverDependencies dependencies;
-    private boolean editable;
+    private final boolean editable;
 
-    private Tree filesTree;
+    private final Tree filesTree;
     private TreeEditor treeEditor;
-    private Font boldFont;
 
     public DriverDependenciesTree(Composite parent, DBRRunnableContext runnableContext, DBPDriverDependencies dependencies, DBPDriver driver, Collection<? extends DBPDriverLibrary> libraries, boolean editable) {
         this.runnableContext = runnableContext;
@@ -85,8 +84,6 @@ class DriverDependenciesTree {
         UIUtils.createTreeColumn(filesTree, SWT.LEFT, "Description");
 
         if (editable) {
-            boldFont = UIUtils.makeBoldFont(filesTree.getFont());
-
             treeEditor = new TreeEditor(filesTree);
             treeEditor.horizontalAlignment = SWT.RIGHT;
             treeEditor.verticalAlignment = SWT.CENTER;
@@ -106,8 +103,6 @@ class DriverDependenciesTree {
                     disposeOldEditor();
                 }
             });
-
-            filesTree.addDisposeListener(e -> UIUtils.dispose(boldFont));
         }
     }
 
@@ -164,7 +159,7 @@ class DriverDependenciesTree {
             item.setText(1, CommonUtils.notEmpty(library.getVersion()));
             item.setText(2, CommonUtils.notEmpty(library.getDescription()));
             if (editable) {
-                item.setFont(1, boldFont);
+                item.setFont(1, BaseThemeSettings.instance.baseFontBold);
             }
             totalItems++;
             if (addDependencies(item, node)) {
@@ -193,9 +188,9 @@ class DriverDependenciesTree {
         Path localFile = node.library.getLocalFile();
         try {
             if (node.library.isInvalidLibrary()) {
-                item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_RED));
+                item.setBackground(BaseThemeSettings.instance.colorError);
             } else if (editable && localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) {
-                item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+                item.setBackground(BaseThemeSettings.instance.colorSuccess);
             }
         } catch (IOException ex) {
             log.error("Error reading " + node.library.getDisplayName() + " local file", ex);
@@ -268,7 +263,7 @@ class DriverDependenciesTree {
                 item.setText(2, CommonUtils.notEmpty(dep.library.getDescription()));
                 grayOutInstalledArtifact(dep, item);
                 if (dep.duplicate) {
-                    item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+                    item.setBackground(BaseThemeSettings.instance.colorWarning);
                 } else {
                     addDependencies(item, dep);
                 }

@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.kingbase;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.kingbase.model.KingbaseDataSource;
@@ -39,6 +36,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class KingbaseDataSourceProvider extends JDBCDataSourceProvider {
     private static Map<String, String> connectionsProps;
@@ -99,6 +99,7 @@ public class KingbaseDataSourceProvider extends JDBCDataSourceProvider {
     public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new KingbaseDataSource(monitor, container);
     }
+    
     @Override
     public boolean providesDriverClasses() {
         return false;

@@ -39,6 +39,8 @@ public interface DBDValueHint {
         ERROR
     }
 
+    int OPTION_READ_ONLY = 1;
+
     HintType getHintType();
 
     String getHintText();
@@ -51,6 +53,10 @@ public interface DBDValueHint {
 
     default HintStyle getHintStyle() {
         return HintStyle.NORMAL;
+    }
+
+    default int getHintOptions() {
+        return 0;
     }
 
 }

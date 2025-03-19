@@ -17,17 +17,6 @@
 
 package org.jkiss.dbeaver.ext.kingbase.model;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.StringJoiner;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -68,6 +57,17 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringJoiner;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 public class KingbaseProcedure extends PostgreProcedure{
     private static final Log log = Log.getLog(KingbaseProcedure.class);
    
@@ -100,7 +100,7 @@ public class KingbaseProcedure extends PostgreProcedure{
     }
 
     public KingbaseProcedure(DBRProgressMonitor monitor, PostgreSchema schema, ResultSet dbResult) {
-    	super(schema);
+        super(schema);
         this.persisted = true;
         this.propackageid = JDBCUtils.safeGetLong(dbResult, "propackageid");
         this.procSrc = JDBCUtils.safeGetString(dbResult, "prosrc");
@@ -108,9 +108,6 @@ public class KingbaseProcedure extends PostgreProcedure{
     }
     
     private void loadInfo(DBRProgressMonitor monitor, ResultSet dbResult) {
-
-        PostgreDataSource dataSource = getDataSource();
-
         this.oid = JDBCUtils.safeGetLong(dbResult, "poid");
         setName(JDBCUtils.safeGetString(dbResult, "proname"));
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "proowner");
@@ -152,11 +149,13 @@ public class KingbaseProcedure extends PostgreProcedure{
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.acl = JDBCUtils.safeGetObject(dbResult, "proacl");
         this.config = PostgreUtils.safeGetStringArray(dbResult, "proconfig");
+        PostgreDataSource dataSource = getDataSource();
         procedureJudge(dataSource, dbResult);
     
     }
+    
     private void argTypesJudge(Number[] allArgTypes, ResultSet dbResult, DBRProgressMonitor monitor, String[] argNames) {
-    	if (!ArrayUtils.isEmpty(allArgTypes)) {
+        if (!ArrayUtils.isEmpty(allArgTypes)) {
             String[] argModes = PostgreUtils.safeGetStringArray(dbResult, "proargmodes");
             allArgTypesJudge(allArgTypes, monitor, argNames, argModes);
 
@@ -165,8 +164,9 @@ public class KingbaseProcedure extends PostgreProcedure{
             inArgTypesJudge(inArgTypes, monitor, argNames);
         }
     }
+    
     private void allArgTypesJudge(Number[] allArgTypes, DBRProgressMonitor monitor, String[] argNames, String[] argModes) {
-    	for (int i = 0; i < allArgTypes.length; i++) {
+        for (int i = 0; i < allArgTypes.length; i++) {
             final long paramType = allArgTypes[i].longValue();
             final PostgreDataType dataType = container.getDatabase().getDataType(monitor, paramType);
             if (dataType == null) {
@@ -191,28 +191,34 @@ public class KingbaseProcedure extends PostgreProcedure{
             ));
         }
     }
+    
     private String[] argDefaultsJudge(String argDefaultsString, String[] argDefaults) {
-    	String[] newArgDefaults = argDefaults;
-    	if (!CommonUtils.isEmpty(argDefaultsString)) {
+        String[] newArgDefaults = argDefaults;
+        if (!CommonUtils.isEmpty(argDefaultsString)) {
             try {
-            	newArgDefaults = PostgreValueParser.parseSingleObject(argDefaultsString);
+                newArgDefaults = PostgreValueParser.parseSingleObject(argDefaultsString);
             } catch (DBCException e) {
                 log.debug("Error parsing function parameters defaults", e);
             }
         }
-    	return newArgDefaults;
+        return newArgDefaults;
     }
+    
     private void paramsSetDefaultValue(String[] argDefaults) {
-    	if (argDefaults != null && argDefaults.length > 0) {
+        if (argDefaults != null && argDefaults.length > 0) {
             // Assign defaults to last X arguments
             int paramsAssigned = 0;
             for (int i = params.size() - 1; i >= 0; i--) {
                 DBSProcedureParameterKind parameterKind = params.get(i).getParameterKind();
-                if (parameterKind == DBSProcedureParameterKind.OUT || parameterKind == DBSProcedureParameterKind.TABLE || parameterKind == DBSProcedureParameterKind.RETURN) {
+                if (parameterKind == DBSProcedureParameterKind.OUT 
+                        || parameterKind == DBSProcedureParameterKind.TABLE 
+                        || parameterKind == DBSProcedureParameterKind.RETURN) {
                     continue;
                 }
                 String defaultValue = argDefaults[argDefaults.length - 1 - paramsAssigned];
-                if (defaultValue != null) defaultValue = defaultValue.trim();
+                if (defaultValue != null) {
+                    defaultValue = defaultValue.trim();
+                }
                 params.get(i).setDefaultValue(defaultValue);
                 paramsAssigned++;
                 if (paramsAssigned >= argDefaults.length) {
@@ -221,8 +227,9 @@ public class KingbaseProcedure extends PostgreProcedure{
             }
         }
     }
+    
     private void inArgTypesJudge(long[] inArgTypes, DBRProgressMonitor monitor, String[] argNames) {
-    	if (!ArrayUtils.isEmpty(inArgTypes)) {
+        if (!ArrayUtils.isEmpty(inArgTypes)) {
             for (int i = 0; i < inArgTypes.length; i++) {
                 Long paramType = inArgTypes[i];
                 final PostgreDataType dataType = container.getDatabase().getDataType(monitor, paramType.intValue());
@@ -236,37 +243,38 @@ public class KingbaseProcedure extends PostgreProcedure{
                 params.add(param);
             }
         }
-    	
     }
+    
     private void procedureJudge(PostgreDataSource dataSource, ResultSet dbResult) {
-    	if (dataSource.getServerType().supportsStoredProcedures()) {
+        if (dataSource.getServerType().supportsStoredProcedures()) {
             String proKind = JDBCUtils.safeGetString(dbResult, "prokind");
             kind = CommonUtils.valueOf(PostgreProcedureKind.class, proKind, PostgreProcedureKind.f);
             kindAJudge();
         } else {
-        	kindJudge(dbResult);
+            kindJudge(dbResult);
         }
     }
     
     private void varArrayType(long varTypeId, DBRProgressMonitor monitor) {
-    	if (varTypeId != 0) {
-        	varArrayType = container.getDatabase().getDataType(monitor, varTypeId);
+        if (varTypeId != 0) {
+            varArrayType = container.getDatabase().getDataType(monitor, varTypeId);
         }
     }
+    
     private void returnTypeJudge(long retTypeId, DBRProgressMonitor monitor) {
-    	if (retTypeId != 0) {
+        if (retTypeId != 0) {
             returnType = container.getDatabase().getDataType(monitor, retTypeId);
         }
     }
     
     private void kindAJudge() {
-    	if (kind == PostgreProcedureKind.a) {
+        if (kind == PostgreProcedureKind.a) {
             isAggregate = true;
         }
     }
     
     private void kindJudge(ResultSet dbResult) {
-    	if (isAggregate) {
+        if (isAggregate) {
             kind = PostgreProcedureKind.a;
         } else if (isWindow) {
             kind = PostgreProcedureKind.w;
@@ -275,6 +283,7 @@ public class KingbaseProcedure extends PostgreProcedure{
             try {
                 isProcedure = dbResult.getBoolean("prosp");
             } catch (SQLException e) {
+                log.debug("Error get procedure.", e);
             }
             if (isProcedure) {
                 kind = PostgreProcedureKind.p;
@@ -306,8 +315,7 @@ public class KingbaseProcedure extends PostgreProcedure{
     }
 
     @Override
-    public DBSProcedureType getProcedureType()
-    {
+    public DBSProcedureType getProcedureType() {
         switch (kind) {
             case f:
             case a:
@@ -319,8 +327,7 @@ public class KingbaseProcedure extends PostgreProcedure{
     }
 
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getBody()
-    {
+    public String getBody() {
         return body;
     }
 
@@ -352,8 +359,7 @@ public class KingbaseProcedure extends PostgreProcedure{
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
             this);
@@ -387,58 +393,62 @@ public class KingbaseProcedure extends PostgreProcedure{
         boolean omitHeader = CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE);
         String procDDL = omitHeader ? "" : "-- DROP " + getProcedureTypeName() + " " + getFullQualifiedSignature() + ";\n\n";
         if (isPersisted() && (!getDataSource().getServerType().supportsFunctionDefRead() || omitHeader) && !isAggregate) {
-        	procSrcJudge(monitor);
+            procSrcJudge(monitor);
             PostgreDataType returnType = getReturnType();
             String returnTypeName = returnType == null ? null : returnType.getFullTypeName();
             procDDL += omitHeader ? procSrc : generateFunctionDeclaration(getLanguage(monitor), returnTypeName, procSrc);
         } else {
-        	bodyJudge(monitor);
+            bodyJudge(monitor);
             procDDL += body;
         }
         procDDL = omitHeaderJudge(omitHeader, procDDL, options, monitor);
         return procDDL;
     }
-    private String bodyJudge(DBRProgressMonitor monitor) throws DBException{
-    	if (body == null) {
+    
+    private String bodyJudge(DBRProgressMonitor monitor) throws DBException {
+        if (body == null) {
             if (!isPersisted()) {
                 PostgreDataType returnType = getReturnType();
                 String returnTypeName = returnType == null ? null : returnType.getFullTypeName();
                 body = generateFunctionDeclaration(getLanguage(monitor), returnTypeName, "\n\t-- Enter function body here\n");
             } else if (oid == 0) {
                 // No OID so let's use old (bad) way
-            	body = this.procSrc;
+                body = this.procSrc;
             } else {
                 if (isAggregate) {
                     configureAggregateQuery(monitor);
                 } else {
                     try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
-                    	body = JDBCUtils.queryString(session, "SELECT sys_get_functiondef(" + getObjectId() + ")");
+                        body = JDBCUtils.queryString(session, "SELECT sys_get_functiondef(" + getObjectId() + ")");
                     } catch (SQLException e) {
                         throw new DBException("Error reading procedure body", e);
                     }
                 }
             }
         }
-    	return body;
+        return body;
     }
-    private String procSrcJudge(DBRProgressMonitor monitor) throws DBException{
-    	if (procSrc == null) {
+    
+    private String procSrcJudge(DBRProgressMonitor monitor) throws DBException {
+        if (procSrc == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
-            	procSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM sys_proc where oid = ?", getObjectId());
+                procSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM sys_proc where oid = ?", getObjectId());
             } catch (SQLException e) {
                 throw new DBException("Error reading procedure body", e);
             }
         }
-    	return procSrc;
+        return procSrc;
     }
     
-    private String omitHeaderJudge(boolean omitHeader, String procDDL, Map<String, Object> options, DBRProgressMonitor monitor) throws DBException {
-    	String newProcDDL = procDDL;
-    	if (this.isPersisted() && !omitHeader) {
-    		newProcDDL += ";\n";
+    private String omitHeaderJudge(boolean omitHeader, String procDDL, Map<String, Object> options, 
+            DBRProgressMonitor monitor) throws DBException {
+        String newProcDDL = procDDL;
+        if (this.isPersisted() && !omitHeader) {
+            newProcDDL += ";\n";
 
             if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_COMMENTS) && !CommonUtils.isEmpty(getDescription())) {
-            	newProcDDL += "\nCOMMENT ON " + getProcedureTypeName() + " " + getFullQualifiedSignature() + " IS " + SQLUtils.quoteString(this, getDescription()) + ";\n";
+                newProcDDL += "\nCOMMENT ON " + getProcedureTypeName() + " " 
+                    + getFullQualifiedSignature() + " IS " + SQLUtils.quoteString(this, getDescription()) + ";\n";
             }
 
             if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_PERMISSIONS)) {
@@ -447,7 +457,7 @@ public class KingbaseProcedure extends PostgreProcedure{
                 newProcDDL += "\n" + SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[0]), false);
             }
         }
-    	return newProcDDL;
+        return newProcDDL;
     }
 
     private void configureAggregateQuery(DBRProgressMonitor monitor) throws DBCException {
@@ -474,23 +484,6 @@ public class KingbaseProcedure extends PostgreProcedure{
 
                         // Data type of the aggregate function's internal transition (state) data
                         String aggtranstype = JDBCUtils.safeGetString(dbResult, "aggtranstype");
-                        String aggfinalfn = JDBCUtils.safeGetString(dbResult, "aggfinalfn"); // Final function
-                        String oprname = JDBCUtils.safeGetString(dbResult, "oprname"); // Associated sort operator
-
-                        // The initial value of the transition state
-                        String initval = JDBCUtils.safeGetString(dbResult, "agginitval");
-
-                        // Forward transition function for moving-aggregate mode
-                        String mtransfn = JDBCUtils.safeGetString(dbResult, "aggmtransfn");
-                        String mtranstype = JDBCUtils.safeGetString(dbResult, "aggmtranstype");
-
-                        // Inverse transition function for moving-aggregate mode
-                        String minvtransfn = JDBCUtils.safeGetString(dbResult, "aggminvtransfn");
-
-                        String serialfn = JDBCUtils.safeGetString(dbResult, "aggserialfn");
-                        String deserialfn = JDBCUtils.safeGetString(dbResult, "aggdeserialfn");
-                        String mfinalfn = JDBCUtils.safeGetString(dbResult, "aggmfinalfn");
-
                         TransitionModifies finalmodify = null;
                         TransitionModifies mfinalmodify = null;
                         finalmodify = TransitionModifies.valueOf(
@@ -498,7 +491,7 @@ public class KingbaseProcedure extends PostgreProcedure{
                         mfinalmodify = TransitionModifies.valueOf(
                                 JDBCUtils.safeGetString(dbResult, "aggmfinalmodify")); // For the aggmfinalfn
                         boolean finalextra = JDBCUtils.safeGetBoolean(dbResult, "aggfinalextra"); // arguments to aggfinalfn
-                        boolean mfinalextra = JDBCUtils.safeGetBoolean(dbResult, "aggmfinalextra"); // arguments to aggmfinalfn
+                        
 
                         StringBuilder aggregateBody = new StringBuilder("CREATE OR REPLACE AGGREGATE ");
                         final String delim = ",\n\t";
@@ -506,13 +499,26 @@ public class KingbaseProcedure extends PostgreProcedure{
                         aggregateBody.append(fullName).append(" (\n")
                             .append("\tSFUNC = ").append(aggtransfn).append(delim)
                             .append("STYPE = ").append(aggtranstype);
+                        String aggfinalfn = JDBCUtils.safeGetString(dbResult, "aggfinalfn"); // Final function
                         aggfinalfnJudge(aggfinalfn, aggregateBody, finalextra, delim, finalmodify);
+                        String serialfn = JDBCUtils.safeGetString(dbResult, "aggserialfn");
                         serialfnJudge(serialfn, aggregateBody, notResult, delim);
+                        String deserialfn = JDBCUtils.safeGetString(dbResult, "aggdeserialfn");
                         deserialfnJudge(deserialfn, aggregateBody, notResult, delim);
+                        // The initial value of the transition state
+                        String initval = JDBCUtils.safeGetString(dbResult, "agginitval");
                         initvalJudge(initval, aggregateBody, delim);
+                        // Forward transition function for moving-aggregate mode
+                        String mtransfn = JDBCUtils.safeGetString(dbResult, "aggmtransfn");
+                        String mtranstype = JDBCUtils.safeGetString(dbResult, "aggmtranstype");
                         mtransfnJudge(mtransfn, mtranstype, notResult, aggregateBody, delim);
+                        // Inverse transition function for moving-aggregate mode
+                        String minvtransfn = JDBCUtils.safeGetString(dbResult, "aggminvtransfn");
                         minvtransfnJudge(minvtransfn, notResult, aggregateBody, delim);
+                        String mfinalfn = JDBCUtils.safeGetString(dbResult, "aggmfinalfn");
+                        boolean mfinalextra = JDBCUtils.safeGetBoolean(dbResult, "aggmfinalextra"); // arguments to aggmfinalfn
                         mfinalfnJudge(mfinalfn, notResult, mfinalextra, mfinalmodify, aggregateBody, delim);
+                        String oprname = JDBCUtils.safeGetString(dbResult, "oprname"); // Associated sort operator
                         oprNameJudge(oprname, aggregateBody, delim);
                         aggregateBody.append("\n)");
                         body = aggregateBody.toString();
@@ -524,99 +530,109 @@ public class KingbaseProcedure extends PostgreProcedure{
             body = "-- Aggregate function " + getFullQualifiedSignature() + "\n-- " + e.getMessage();
         }
     }
-    private StringBuilder mfinalfnJudge(String mfinalfn, String notResult, boolean mfinalextra, TransitionModifies mfinalmodify, StringBuilder aggregateBody, String delim) {
-    	if (CommonUtils.isNotEmpty(mfinalfn) && !notResult.equals(mfinalfn)) {
+    
+    private StringBuilder mfinalfnJudge(String mfinalfn, String notResult, boolean mfinalextra, 
+            TransitionModifies mfinalmodify, StringBuilder aggregateBody, String delim) {
+        if (CommonUtils.isNotEmpty(mfinalfn) && !notResult.equals(mfinalfn)) {
             aggregateBody.append(delim).append("MFINALFUNC = ").append(mfinalfn);
             mfinalextraJudge(mfinalextra, aggregateBody, delim);
             mfinalmodifyJudge(mfinalmodify, aggregateBody, delim);
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
+    
     private StringBuilder mfinalextraJudge(boolean mfinalextra, StringBuilder aggregateBody, String delim) {
-    	if (mfinalextra) {
+        if (mfinalextra) {
             aggregateBody.append(delim).append("MFINALFUNC_EXTRA");
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
+    
     private StringBuilder mfinalmodifyJudge(TransitionModifies mfinalmodify, StringBuilder aggregateBody, String delim) {
-    	if (mfinalmodify != null) {
+        if (mfinalmodify != null) {
             aggregateBody.append(delim).append("MFINALFUNC_MODIFY = ").append(mfinalmodify.keyword);
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
     
     private StringBuilder oprNameJudge(String oprname, StringBuilder aggregateBody, String delim) {
-    	if (CommonUtils.isNotEmpty(oprname)) {
+        if (CommonUtils.isNotEmpty(oprname)) {
             aggregateBody.append(delim).append("SORTOP = ").append(oprname);
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
+    
     private StringBuilder minvtransfnJudge(String minvtransfn, String notResult, StringBuilder aggregateBody, String delim) {
-    	if (CommonUtils.isNotEmpty(minvtransfn) && !notResult.equals(minvtransfn)) {
+        if (CommonUtils.isNotEmpty(minvtransfn) && !notResult.equals(minvtransfn)) {
             aggregateBody.append(delim).append("MINVFUNC = ").append(minvtransfn);
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
+    
     private StringBuilder mtransfnJudge(String mtransfn, String mtranstype, String notResult, StringBuilder aggregateBody, String delim) {
-    	if (CommonUtils.isNotEmpty(mtransfn) && !notResult.equals(mtransfn)) {
+        if (CommonUtils.isNotEmpty(mtransfn) && !notResult.equals(mtransfn)) {
             aggregateBody.append(delim).append("MSFUNC = ").append(mtransfn);
             mtranstypeJudge(mtranstype, notResult, aggregateBody, delim);
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
     
     private StringBuilder mtranstypeJudge(String mtranstype, String notResult, StringBuilder aggregateBody, String delim) {
-    	
-    	if (CommonUtils.isNotEmpty(mtranstype) && !notResult.equals(mtranstype)) {
+        if (CommonUtils.isNotEmpty(mtranstype) && !notResult.equals(mtranstype)) {
             aggregateBody.append(delim).append("MSTYPE = ").append(mtranstype);
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
     
     private StringBuilder initvalJudge(String initval, StringBuilder aggregateBody, String delim) {
-    	String newInitval = initval;
-    	if (CommonUtils.isNotEmpty(initval)) {
+        String newInitval = initval;
+        if (CommonUtils.isNotEmpty(initval)) {
             if (!Pattern.matches("[0-9]+", initval)) {
                 // Quote non numeric values
-            	newInitval = "'" + initval + "'";
+                newInitval = "'" + initval + "'";
             }
             aggregateBody.append(delim).append("INITCOND = ").append(newInitval);
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
     
-    private StringBuilder aggfinalfnJudge(String aggfinalfn, StringBuilder aggregateBody, boolean finalextra, String delim, TransitionModifies finalmodify) {
-    	if (CommonUtils.isNotEmpty(aggfinalfn)) {
+    private StringBuilder aggfinalfnJudge(String aggfinalfn, StringBuilder aggregateBody, 
+            boolean finalextra, String delim, TransitionModifies finalmodify) {
+        if (CommonUtils.isNotEmpty(aggfinalfn)) {
             aggregateBody.append(delim).append("FINALFUNC = ").append(aggfinalfn);
             finalextraJudge(aggregateBody, finalextra, delim);
             finalmodifyJudge(aggregateBody, finalmodify, delim);
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
     
     private StringBuilder finalextraJudge(StringBuilder aggregateBody, boolean finalextra, String delim) {
-    	if (finalextra) {
+        if (finalextra) {
             aggregateBody.append(delim).append("FINALFUNC_EXTRA");
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
-    private StringBuilder finalmodifyJudge(StringBuilder aggregateBody, TransitionModifies finalmodify, String delim) {
-    	if (finalmodify != null) {
+    
+    private StringBuilder finalmodifyJudge(StringBuilder aggregateBody, TransitionModifies finalmodify, 
+            String delim) {
+        if (finalmodify != null) {
             aggregateBody.append(delim).append("FINALFUNC_MODIFY = ").append(finalmodify.keyword);
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
+    
     private StringBuilder serialfnJudge(String serialfn, StringBuilder aggregateBody, String notResult, String delim) {
-    	if (CommonUtils.isNotEmpty(serialfn) && !notResult.equals(serialfn)) {
+        if (CommonUtils.isNotEmpty(serialfn) && !notResult.equals(serialfn)) {
             aggregateBody.append(delim).append("SERIALFUNC = ").append(serialfn);
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
+    
     private StringBuilder deserialfnJudge(String deserialfn, StringBuilder aggregateBody, String notResult, String delim) {
-    	if (CommonUtils.isNotEmpty(deserialfn) && !notResult.equals(deserialfn)) {
+        if (CommonUtils.isNotEmpty(deserialfn) && !notResult.equals(deserialfn)) {
             aggregateBody.append(delim).append("DESERIALFUNC = ").append(deserialfn);
         }
-    	return aggregateBody;
+        return aggregateBody;
     }
 
     protected String generateFunctionDeclaration(PostgreLanguage language, String returnTypeName, String functionBody) {
@@ -637,16 +653,17 @@ public class KingbaseProcedure extends PostgreProcedure{
         execCostJudge(decl, lineSeparator);
         estRowsJudge(decl, lineSeparator);
         if (!ArrayUtils.isEmpty(config)) {
-        	configJudge(decl, lineSeparator);
+            configJudge(decl, lineSeparator);
         }
-        String delimiter = "$$";// + getProcedureType().name().toLowerCase(Locale.ENGLISH) + "$";
+        String delimiter = "$$"; // + getProcedureType().name().toLowerCase(Locale.ENGLISH) + "$";
         decl.append("AS ").append(delimiter).append("\n");
         functionBodyJudge(functionBody, decl);
         decl.append(delimiter).append(lineSeparator);
         return decl.toString();
     }
+    
     private StringBuilder returnJudge(String returnTypeName, StringBuilder decl, String lineSeparator) {
-    	if (getProcedureType().hasReturnValue() && !CommonUtils.isEmpty(returnTypeName)) {
+        if (getProcedureType().hasReturnValue() && !CommonUtils.isEmpty(returnTypeName)) {
             decl.append("\tRETURNS ");
             if (isReturnsSet()) {
                 // Check for TABLE parameters and construct
@@ -657,29 +674,33 @@ public class KingbaseProcedure extends PostgreProcedure{
             }
             decl.append(lineSeparator);
         }
-    	return decl;
+        return decl;
     }
+    
     private StringBuilder tableParamsJudge(List<PostgreProcedureParameter> tableParams, StringBuilder decl, String returnTypeName) {
-    	if (!tableParams.isEmpty()) {
+        if (!tableParams.isEmpty()) {
             decl.append("TABLE (");
             tableParamsSizeJudge(tableParams, decl);
             decl.append(")");
         } else {
             decl.append("SETOF ").append(returnTypeName);
         }
-    	return decl;
+        return decl;
     }
+    
     private StringBuilder tableParamsSizeJudge(List<PostgreProcedureParameter> tableParams, StringBuilder decl) {
-    	for (int i = 0; i < tableParams.size(); i++) {
+        for (int i = 0; i < tableParams.size(); i++) {
             PostgreProcedureParameter tp = tableParams.get(i);
-            if (i > 0) decl.append(", ");
+            if (i > 0) {
+                decl.append(", ");
+            }
             decl.append(tp.getName()).append(" ").append(tp.getTypeName());
         }
-    	return decl;
+        return decl;
     }
     
     private StringBuilder configJudge(StringBuilder decl, String lineSeparator) {
-    	for (String configLine : config) {
+        for (String configLine : config) {
             int divPos = configLine.indexOf('=');
             if (divPos != -1) {
                 String paramName = configLine.substring(0, divPos);
@@ -690,65 +711,73 @@ public class KingbaseProcedure extends PostgreProcedure{
                 } catch (NumberFormatException e) {
                     isNumeric = false;
                 }
-                decl.append("\tSET ").append(paramName).append(" = ").append(isNumeric ? paramValue : "'" + paramValue + "'").append(lineSeparator);
+                decl.append("\tSET ").append(paramName).append(" = ")
+                .append(isNumeric ? paramValue : "'" + paramValue + "'").append(lineSeparator);
             } else {
                 log.debug("Wrong function configuration parameter [" + configLine + "]");
             }
         }
-    	return decl;
+        return decl;
     }
+    
     private StringBuilder languageJudge(PostgreLanguage language, StringBuilder decl, String lineSeparator) {
-    	if (language != null) {
+        if (language != null) {
             decl.append("\tLANGUAGE ").append(language).append(lineSeparator);
         }
-    	return decl;
+        return decl;
     }
+    
     private StringBuilder securityJudge(StringBuilder decl, String lineSeparator) {
-    	if (isSecurityDefiner()) {
+        if (isSecurityDefiner()) {
             decl.append("\tSECURITY DEFINER").append(lineSeparator);
         }
-    	return decl;
+        return decl;
     }
+    
     private StringBuilder windowJudge(StringBuilder decl, String lineSeparator) {
-    	if (isWindow()) {
+        if (isWindow()) {
             decl.append("\tWINDOW").append(lineSeparator);
         }
-    	return decl;
+        return decl;
     }
+    
     private StringBuilder strictJudge(StringBuilder decl, String lineSeparator) {
-    	if (isStrict) {
+        if (isStrict) {
             decl.append("\tSTRICT").append(lineSeparator);
         }
-    	return decl;
+        return decl;
     }
+    
     private StringBuilder procedureTypeJudge(StringBuilder decl, String lineSeparator) {
-    	if (getProcedureType() == DBSProcedureType.FUNCTION && procVolatile != null) {
+        if (getProcedureType() == DBSProcedureType.FUNCTION && procVolatile != null) {
             decl.append("\t").append(procVolatile.getCreateClause()).append(lineSeparator);
         }
-    	return decl;
+        return decl;
     }
+    
     private StringBuilder execCostJudge(StringBuilder decl, String lineSeparator) {
-    	if (execCost > 0 && execCost != DEFAULT_COST) {
+        if (execCost > 0 && execCost != DEFAULT_COST) {
             decl.append("\tCOST ").append(CommonUtils.niceFormatFloat(execCost)).append(lineSeparator);
         }
-    	return decl;
+        return decl;
     }
+    
     private StringBuilder estRowsJudge(StringBuilder decl, String lineSeparator) {
-    	if (estRows > 0 && estRows != DEFAULT_EST_ROWS) {
+        if (estRows > 0 && estRows != DEFAULT_EST_ROWS) {
             decl.append("\tROWS ").append(CommonUtils.niceFormatFloat(estRows)).append(lineSeparator);
         }
-    	return decl;
+        return decl;
     }
+    
     private StringBuilder functionBodyJudge(String functionBody, StringBuilder decl) {
-    	if (!CommonUtils.isEmpty(functionBody)) {
+        if (!CommonUtils.isEmpty(functionBody)) {
             decl.append("\t").append(functionBody).append("\n");
         }
-    	return decl;
+        return decl;
     }
 
     @Override
-    public void setObjectDefinitionText(String sourceText)
-    {
+    public void setObjectDefinitionText(String sourceText) {
         body = sourceText;
     }
 
@@ -896,8 +925,7 @@ public class KingbaseProcedure extends PostgreProcedure{
     @Nullable
     @Override
     @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 200)
-    public String getDescription()
-    {
+    public String getDescription() {
         return super.getDescription();
     }
 
@@ -916,7 +944,8 @@ public class KingbaseProcedure extends PostgreProcedure{
     }
 
     @Override
-    public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, 
+            boolean includeNestedObjects) throws DBException {
         return PostgreUtils.extractPermissionsFromACL(monitor, this, acl, false);
     }
 

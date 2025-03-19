@@ -17,10 +17,10 @@
 
 package org.jkiss.dbeaver.ext.kingbase.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.ResultSet;
 
 public class KingbaseFunction extends KingbaseProcedure {
 

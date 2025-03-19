@@ -33,9 +33,10 @@
                         class="org.apache.hive.jdbc.HiveDriver"
                         sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                         defaultPort="10000"
-                        description="Apache Hive JDBC"
+                        description="Apache Hive JDBC (Legacy)"
                         webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                         databaseDocumentationSuffixURL="Apache-Hive"
+                        supportedConfigurationTypes="MANUAL,URL"
                         category="Hadoop"
                         categories="hadoop">
                     <replace provider="generic" driver="apache_hive2"/>
@@ -43,9 +44,8 @@
                     <file type="jar"
                           path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar"
                           bundle="!drivers.hive"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.hive"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/hive" bundle="drivers.hive"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.hive"/>
 
                     <parameter name="supports-delimiter-in-views" value="false"/>
                     <parameter name="supports-limits" value="false"/>
@@ -65,14 +65,14 @@
                         description="Apache Hive JDBC"
                         webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                         databaseDocumentationSuffixURL="Apache-Hive"
+                        supportedConfigurationTypes="MANUAL,URL"
                         category="Hadoop"
                         categories="hadoop">
                     <replace provider="generic" driver="apache_hive2"/>
 
                     <file type="jar" path="maven:/org.apache.hive:hive-jdbc:standalone:RELEASE[4.0.1]" bundle="!drivers.hive4"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.hive4"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/hive" bundle="drivers.hive4"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.hive4"/>
 
                     <parameter name="supports-delimiter-in-views" value="false"/>
                     <parameter name="supports-limits" value="false"/>

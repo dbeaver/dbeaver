@@ -75,14 +75,14 @@
                         defaultUser="system"
                         description="%driver.kingbase.description"
                         supportedConfigurationTypes="MANUAL,URL"
-                    	promoted="1"
-                    	categories="sql"
-                    	dialect="kingbase">
-                    	<file type="jar" path="https://repo1.maven.org/maven2/cn/com/kingbase/kingbase8/8.6.1/kingbase8-8.6.1.jar" bundle="!drivers.kingbase"/>
-                    	<parameter name="serverType" value="kingbase"/>
-                    	<property name="loginTimeout" value="20"/>
-                    	<property name="connectTimeout" value="20"/>
-                    	<property name="escapeSyntaxCallMode" value="callIfNoReturn"/>
+                        promoted="1"
+                        categories="sql"
+                        dialect="kingbase">
+                        <file type="jar" path="https://repo1.maven.org/maven2/cn/com/kingbase/kingbase8/8.6.1/kingbase8-8.6.1.jar" bundle="!drivers.kingbase"/>
+                        <parameter name="serverType" value="kingbase"/>
+                        <property name="loginTimeout" value="20"/>
+                        <property name="connectTimeout" value="20"/>
+                        <property name="escapeSyntaxCallMode" value="callIfNoReturn"/>
                 </driver>
             </drivers>
         </datasource>

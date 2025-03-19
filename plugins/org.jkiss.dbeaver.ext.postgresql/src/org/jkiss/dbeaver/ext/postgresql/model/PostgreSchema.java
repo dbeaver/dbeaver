@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -298,6 +298,10 @@ public class PostgreSchema implements
         }
 
         return null;
+    }
+
+    public PostgreTableBase getTable(DBRProgressMonitor monitor, String tableName) throws DBException {
+        return (PostgreTableBase) getChild(monitor, tableName);
     }
 
     public TableCache getTableCache() {
@@ -1115,7 +1119,7 @@ public class PostgreSchema implements
                 sql.append(" c.relnamespace=?");
             }
             //sql.append(" AND NOT i.indisprimary");
-            sql.append(" ORDER BY c.relname");
+            sql.append(" ORDER BY tabrelname, c.relname");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             if (forTable != null) {

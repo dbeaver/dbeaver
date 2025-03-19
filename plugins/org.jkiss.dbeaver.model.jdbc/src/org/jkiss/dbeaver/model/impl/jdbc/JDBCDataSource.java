@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -601,7 +601,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return this;
     }
 
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
         return new JDBCExecutionContext(instance, type);
     }
 
@@ -862,9 +862,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
     public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
         try {
             statement.cancel();
-        }
-        catch (SQLException e) {
-            if (e instanceof SQLFeatureNotSupportedException) {
+        } catch (SQLException e) {
+            if (JDBCUtils.isFeatureNotSupportedError(this, e)) {
                 // ignore
                 return;
             }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
@@ -199,10 +201,18 @@ public class ProgressEditorPart extends EditorPart {
             if (result == null) {
                 // Close editor
                 UIUtils.asyncExec(() ->
-                    ownerEditor.getSite().getWorkbenchWindow().getActivePage().closeEditor(ownerEditor, false));
+                {
+                    IWorkbenchWindow workbenchWindow = ownerEditor.getSite().getWorkbenchWindow();
+                    if (workbenchWindow != null) {
+                        IWorkbenchPage activePage = workbenchWindow.getActivePage();
+                        if (activePage != null) {
+                            activePage.closeEditor(ownerEditor, false);
+                        }
+                    }
+                });
             } else {
                 // Activate entity editor (we have changed inner editors and need to force contexts activation).
-                DBWorkbench.getPlatformUI().refreshPartState(ownerEditor);
+                UIUtils.asyncExec(() -> EditorUtils.refreshPartContexts(ownerEditor));
             }
             ActionUtils.evaluatePropertyState("org.jkiss.dbeaver.ui.editors.entity.hasSource");
         }

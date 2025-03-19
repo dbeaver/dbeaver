@@ -77,6 +77,10 @@ public class StatisticsTransmitter {
         try {
             String appSessionId = DBWorkbench.getPlatform().getApplication().getApplicationRunId();
             Path activityLogsFolder = FeatureStatisticsCollector.getActivityLogsFolder();
+            if (Files.exists(activityLogsFolder) && !Files.isWritable(activityLogsFolder)) {
+                log.debug("Read-only metadata folder - can't send statistics");
+                return;
+            }
             try (Stream<Path> list = Files.list(activityLogsFolder)) {
                 List<Path> logFiles = list
                     .filter(path -> path.getFileName().toString().endsWith(".log"))
@@ -110,6 +114,10 @@ public class StatisticsTransmitter {
     }
 
     private void sendLogFile(Path logFile, String timestamp, String sessionId) {
+        if (Files.exists(logFile) && !Files.isWritable(logFile)) {
+            log.debug("Statistics file is read-only, skipping transmission: " + logFile);
+            return;
+        }
         //log.debug("Sending statistics file '" + logFile.toAbsolutePath() + "'");
         try {
             URLConnection urlConnection = WebUtils.openURLConnection(
@@ -143,15 +151,13 @@ public class StatisticsTransmitter {
                 log.debug("Error reading statistics server response");
             }
             ((HttpURLConnection) urlConnection).disconnect();
-
-            Files.delete(logFile);
         } catch (Exception e) {
             log.debug("Error sending statistics file '" + logFile.toAbsolutePath() + "'.", e);
-
+        } finally {
             try {
                 Files.delete(logFile);
             } catch (IOException ex) {
-                log.debug("Error deleting file with usage statistics '" + logFile.toAbsolutePath() + "'.", e);
+                log.debug("Error deleting file with usage statistics '" + logFile.toAbsolutePath() + "'.", ex);
             }
         }
     }

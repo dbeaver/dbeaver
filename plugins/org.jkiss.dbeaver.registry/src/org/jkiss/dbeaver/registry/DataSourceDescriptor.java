@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -474,6 +474,7 @@ public class DataSourceDescriptor
         return connectionReadOnly;
     }
 
+    @Override
     public void setConnectionReadOnly(boolean connectionReadOnly) {
         this.connectionReadOnly = connectionReadOnly;
     }
@@ -772,6 +773,7 @@ public class DataSourceDescriptor
         return temporary;
     }
 
+    @Override
     public void setTemporary(boolean temporary) {
         this.temporary = temporary;
     }
@@ -1053,7 +1055,7 @@ public class DataSourceDescriptor
         boolean succeeded = false;
         connecting = true;
         try {
-            getDriver().downloadRequiredDependencies(monitor);
+            getDriver().validateFilesPresence(monitor);
             if (isDetachedProcessEnabled() && !detachedProcess) {
                 // Open detached connection
                 succeeded = openDetachedConnection(monitor);
@@ -1164,7 +1166,6 @@ public class DataSourceDescriptor
         }
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
-        patchConnectionProperties(monitor, resolvedConnectionInfo);
         // Update auth properties if possible
         lastConnectionError = null;
         try {
@@ -1207,6 +1208,7 @@ public class DataSourceDescriptor
             }
 
             resolvePropertiesFromProfile();
+            patchConnectionProperties(monitor, resolvedConnectionInfo);
 
             // Handle tunnelHandler
             // Open tunnelHandler and replace connection info with new one
@@ -2147,11 +2149,15 @@ public class DataSourceDescriptor
         boolean canSavePassword)
     {
         DBPAuthInfo authInfo;
-        authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt,
-            RegistryMessages.dialog_connection_auth_username, user,
+        authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(
+            prompt,
+            null,
+            RegistryMessages.dialog_connection_auth_username,
+            user,
             authType == DBWTunnel.AuthCredentials.PASSWORD
                 ? RegistryMessages.dialog_connection_auth_passphrase
-                : RegistryMessages.dialog_connection_auth_password, password,
+                : RegistryMessages.dialog_connection_auth_password,
+            password,
             false,
             canSavePassword
         );

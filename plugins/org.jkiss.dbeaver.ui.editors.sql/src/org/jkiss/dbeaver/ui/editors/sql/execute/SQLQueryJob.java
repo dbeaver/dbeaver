@@ -117,7 +117,7 @@ public class SQLQueryJob extends DataSourceJob
     private DBCStatistics statistics;
     private int fetchResultSetNumber;
     private int resultSetNumber;
-    private SQLQuery lastGoodQuery;
+    private SQLScriptElement lastGoodQuery;
 
     private boolean skipConfirmation;
     private int fetchSize;
@@ -239,6 +239,7 @@ public class SQLQueryJob extends DataSourceJob
 
                     fetchResultSetNumber = resultSetNumber;
                     boolean runNext = executeSingleQuery(session, query, true);
+
                     if (txnManager != null && txnManager.isSupportsTransactions()
                         && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT
                         && query instanceof SQLQuery sqlQuery
@@ -372,11 +373,13 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLScriptElement element, final boolean fireEvents)
-    {
-
-        if (!scriptContext.getPragmas().isEmpty() && element instanceof SQLQuery) {
-            final SQLQueryDataContainer container = new SQLQueryDataContainer(this::getExecutionContext, (SQLQuery) element, scriptContext, log);
+    private boolean executeSingleQuery(
+        @NotNull DBCSession session,
+        @NotNull SQLScriptElement element,
+        final boolean fireEvents
+    ) {
+        if (!scriptContext.getPragmas().isEmpty() && element instanceof SQLQuery query) {
+            final SQLQueryDataContainer container = new SQLQueryDataContainer(this::getExecutionContext, query, scriptContext, log);
 
             for (var it = scriptContext.getPragmas().entrySet().iterator(); it.hasNext(); ) {
                 final Map.Entry<String, Map<String, Object>> entry = it.next();
@@ -403,21 +406,32 @@ public class SQLQueryJob extends DataSourceJob
                 }
             }
         }
-        if (element instanceof SQLControlCommand) {
+        if (element instanceof SQLControlCommand controlCommand) {
             try {
-                return scriptContext.executeControlCommand((SQLControlCommand)element);
+                SQLControlResult controlResult = scriptContext.executeControlCommand(session.getProgressMonitor(), controlCommand);
+                if (controlResult.getTransformed() != null) {
+                    element = controlResult.getTransformed();
+                } else {
+                    return true;
+                }
             } catch (Throwable e) {
                 if (!(e instanceof DBException)) {
                     log.error("Unexpected error while processing SQL command", e);
                 }
+                lastGoodQuery = element;
                 lastError = e;
                 return false;
             } finally {
-                statistics.addStatementsCount();
-                statistics.addMessage("Command " + ((SQLControlCommand) element).getCommand() + " processed");
+                if (element instanceof SQLControlCommand finalCommand) {
+                    statistics.addStatementsCount();
+                    statistics.addMessage("Command " + finalCommand.getCommand() + " processed");
+                }
             }
         }
-        SQLQuery sqlQuery = (SQLQuery) element;
+        if (!(element instanceof SQLQuery sqlQuery)) {
+            log.error("Unsupported SQL element type: " + element);
+            return false;
+        }
         lastError = null;
 
         if (!skipConfirmation && getDataSourceContainer().getConnectionConfiguration().getConnectionType().isConfirmExecute()) {
@@ -463,9 +477,19 @@ public class SQLQueryJob extends DataSourceJob
         // Modify query (filters + parameters)
         String queryText = originalQuery.getText();//.trim();
         if (dataFilter != null && dataFilter.hasFilters()) {
-            String filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
-                session.getProgressMonitor(),
-                dataSource, queryText, dataFilter);
+            String filteredQueryText;
+            try {
+                filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
+                    session.getProgressMonitor(),
+                    dataSource,
+                    queryText,
+                    dataFilter
+                );
+            } catch (DBException e) {
+                log.error("Unable to add filters to query", e);
+                lastError = e;
+                return false;
+            }
             sqlQuery = new SQLQuery(executionContext.getDataSource(), filteredQueryText, sqlQuery);
         } else {
             sqlQuery = new SQLQuery(executionContext.getDataSource(), queryText, sqlQuery);
@@ -570,11 +594,12 @@ public class SQLQueryJob extends DataSourceJob
             monitor.done();
         }
 
+        lastGoodQuery = originalQuery;
+
         if (curResult.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
             return false;
         }
         // Success
-        lastGoodQuery = originalQuery;
         return true;
     }
 
@@ -583,10 +608,7 @@ public class SQLQueryJob extends DataSourceJob
         if (statement instanceof Insert ||
             statement instanceof Delete ||
             statement instanceof Update ||
-            (statement instanceof Select &&
-                ((Select) statement).getSelectBody() instanceof PlainSelect &&
-                !CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables())))
-        {
+            (statement instanceof PlainSelect select && !CommonUtils.isEmpty(select.getIntoTables()))) {
             return false;
         }
         return true;
@@ -806,7 +828,7 @@ public class SQLQueryJob extends DataSourceJob
             default:
                 return false;
         }
-        
+
     }
 
     private void fetchExecutionResult(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull SQLQuery query) throws DBCException
@@ -835,19 +857,20 @@ public class SQLQueryJob extends DataSourceJob
                 new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()));
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_statistics);
         } else {
-            // Single statement
+            // Single statement - reorder fields to prioritize the important ones
+            // Important fields like "Updated Rows" and "Execute time" are now displayed before the query text for easier access.
             long updateCount = statistics.getRowsUpdated();
-            fakeResultSet.addColumn("Query", DBPDataKind.STRING);
             fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
+            fakeResultSet.addColumn("Query", DBPDataKind.STRING);
             fakeResultSet.addRow(
-                query.getText(),
-                updateCount,
-                RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
-                new Date(statistics.getStartTime()),
-                new Date());
+                    updateCount,
+                    RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
+                    new Date(statistics.getStartTime()),
+                    new Date(),
+                    query.getText());
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_data_grid);
         }
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);

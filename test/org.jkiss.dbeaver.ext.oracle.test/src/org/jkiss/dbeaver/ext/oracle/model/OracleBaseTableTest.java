@@ -31,20 +31,18 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.StandardConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
 
-@RunWith(MockitoJUnitRunner.class)
-public class OracleBaseTableTest {
+public class OracleBaseTableTest extends DBeaverUnitTest {
 
     @Mock
     private DBRProgressMonitor monitor;

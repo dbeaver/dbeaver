@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,9 +43,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.ControlPropertyCommandListener;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * MySQLUserEditorGeneral
@@ -176,24 +173,24 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
             return;
         }
         DBCExecutionContext executionContext = getExecutionContext();
-        if (executionContext != null) {
+        if (executionContext == null) {
             return;
         }
         isLoaded = true;
         LoadingJob.createService(
             new DatabaseLoadService<>(
                 MySQLUIMessages.editors_user_editor_general_service_load_catalog_privileges,
-                getExecutionContext()
+                executionContext
             ) {
                 @Override
                 public List<MySQLPrivilege> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
                     try {
-                        var dbObj = getDatabaseObject();
-                        if (dbObj == null) {
+                        MySQLUser user = getDatabaseObject();
+                        if (user == null) {
                             isLoaded = false;
                             return null;
                         }
-                        return dbObj.getDataSource().getPrivilegesByKind(monitor, MySQLPrivilege.Kind.ADMIN)
+                        return user.getDataSource().getPrivilegesByKind(monitor, MySQLPrivilege.Kind.ADMIN)
                             .stream()
                             .filter(p -> !p.getName().equalsIgnoreCase("proxy"))
                             .toList();

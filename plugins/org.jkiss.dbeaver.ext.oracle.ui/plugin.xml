@@ -117,7 +117,7 @@
         </editor>
         <editor
                 name="%editor.session_manager.name"
-                icon="#locked"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locked.png"
                 class="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleLockEditor"
                 id="org.jkiss.dbeaver.ext.oracle.ui.editors.OracleLockEditor">
         </editor>

@@ -562,7 +562,6 @@ public class SQLEditorUtils {
     private static void notifyPrefs(@NotNull DBPPreferenceStore prefStore, boolean newServicesEnabled) {
         final boolean foldingEnabled = prefStore.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
         final boolean autoActivationEnabled = prefStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
-        final boolean experimentalFeatureEnabled = prefStore.getBoolean(SQLPreferenceConstants.ENABLE_EXPERIMENTAL_FEATURES);
         final boolean markWordUnderCursorEnabled = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
         final boolean markWordForSelectionEnabled = prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
         final boolean oldServicesEnabled = !newServicesEnabled;
@@ -576,11 +575,6 @@ public class SQLEditorUtils {
             SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION,
             oldServicesEnabled && autoActivationEnabled,
             newServicesEnabled && autoActivationEnabled
-        );
-        prefStore.firePropertyChangeEvent(
-            SQLPreferenceConstants.ENABLE_EXPERIMENTAL_FEATURES,
-            oldServicesEnabled && experimentalFeatureEnabled,
-            newServicesEnabled && experimentalFeatureEnabled
         );
         prefStore.firePropertyChangeEvent(
             SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR,

@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.ext.kingbase.edit;
 
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.kingbase.model.KingbaseDatabase;
 import org.jkiss.dbeaver.ext.kingbase.model.KingbaseSchema;
@@ -27,6 +25,9 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.Map;
+
+
 /**
  * KingbaseSchemaManager
  */
@@ -34,10 +35,10 @@ public class KingbaseSchemaManager extends PostgreSchemaManager {
 
     @Override
     protected KingbaseSchema createDatabaseObject(@NotNull DBRProgressMonitor monitor,
-    		@NotNull DBECommandContext context,
-    		final Object container,
-    		Object copyFrom,
-    		@NotNull Map<String, Object> options) {
+            @NotNull DBECommandContext context,
+            final Object container,
+            Object copyFrom,
+            @NotNull Map<String, Object> options) {
         KingbaseDatabase database = (KingbaseDatabase) container;
         return database.createSchemaImpl(database, "NewSchema", (PostgreRole) null);
     }

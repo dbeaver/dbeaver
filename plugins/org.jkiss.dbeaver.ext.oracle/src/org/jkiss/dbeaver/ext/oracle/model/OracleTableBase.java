@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -160,7 +161,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public String getComment(DBRProgressMonitor monitor) {
         if (comment == null) {
             comment = "";
-            if (isPersisted()) {
+            if (isPersisted() && !DBWorkbench.getPlatform().isUnitTestMode()) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table comments")) {
                     comment = queryTableComment(session);
                     if (comment == null) {

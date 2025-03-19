@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.ext.kingbase.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.kingbase.model.KingbaseDataSource;
@@ -44,6 +41,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * KingbaseDatabaseManager
  */
@@ -51,7 +51,8 @@ public class KingbaseDatabaseManager extends PostgreDatabaseManager {
 
     @Override
     protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
-                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) {
+                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, 
+                                          @NotNull Map<String, Object> options) {
         final KingbaseDatabase database = (KingbaseDatabase) command.getObject();
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE DATABASE ").append(DBUtils.getQuotedIdentifier(database));

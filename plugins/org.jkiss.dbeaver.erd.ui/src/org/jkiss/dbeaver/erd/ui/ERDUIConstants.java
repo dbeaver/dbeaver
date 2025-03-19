@@ -36,9 +36,6 @@ public class ERDUIConstants {
     public static final int PRINT_MODE_DEFAULT = PrintFigureOperation.TILE;
     public static final int PRINT_MARGIN_DEFAULT = 0;
 
-    public static final String PROP_DIAGRAM_FONT = "org.jkiss.dbeaver.erd.diagram.font";
-    public static final String PROP_DIAGRAM_NOTATION_LABEL_FONT = "org.jkiss.dbeaver.erd.diagram.font.notation.label";
-
     public static final String PREF_DIAGRAM_SHOW_VIEWS = "erd.diagram.show.views";
     public static final String PREF_DIAGRAM_SHOW_PARTITIONS = "erd.diagram.show.partitions";
     public static final String PREF_DIAGRAM_CHANGE_BORDER_COLORS = "erd.diagram.change.borders.colors";
@@ -47,6 +44,10 @@ public class ERDUIConstants {
     public static final String PREF_GRID_SNAP_ENABLED = "erd.grid.snap";
     public static final String PREF_GRID_WIDTH = "erd.grid.width";
     public static final String PREF_GRID_HEIGHT = "erd.grid.height";
+
+    public static final String PROP_DIAGRAM_FONT = "org.jkiss.dbeaver.erd.diagram.font";
+    public static final String PROP_DIAGRAM_NOTATION_LABEL_FONT = "org.jkiss.dbeaver.erd.diagram.font.notation.label";
+
     public static final String COLOR_ERD_DIAGRAM_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.background";
     public static final String COLOR_ERD_ENTITY_PRIMARY_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.entity.primary.background";
     public static final String COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.entity.association.background";

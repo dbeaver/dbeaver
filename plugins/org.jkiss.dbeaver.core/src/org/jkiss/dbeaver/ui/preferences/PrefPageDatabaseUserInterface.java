@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +58,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -78,7 +76,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     private boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
     private Button useEmbeddedBrowserAuth;
-    
+
+    private Button statusBarShowBreadcrumbsCheck;
+    private Button statusBarShowStatusCheck;
+
 
     public PrefPageDatabaseUserInterface()
     {
@@ -163,10 +164,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             };
             ContentAssistUtils.installContentProposal(clientTimezone, new ComboContentAdapter(), proposalProvider);
 
-            Control tipLabel = UIUtils.createInfoLabel(regionalSettingsGroup,
+            Control tipLabelRestart = UIUtils.createInfoLabel(regionalSettingsGroup,
                 CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart
             );
-            tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
+            tipLabelRestart.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
                 GridData.VERTICAL_ALIGN_BEGINNING,
                 false,
                 false,
@@ -174,8 +175,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 1
             ));
 
-        }
-        if (isStandalone) {
             Group groupObjects = UIUtils.createControlGroup(
                 composite,
                 CoreMessages.pref_page_ui_general_group_browser, 2,
@@ -223,6 +222,29 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 });
             }
         }
+
+        Group breadcrumbs = UIUtils.createControlGroup(
+            composite,
+            CoreMessages.pref_page_ui_status_bar,
+            1,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+            0
+        );
+        statusBarShowBreadcrumbsCheck = UIUtils.createCheckbox(
+            breadcrumbs,
+            CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_check_label,
+            CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_check_tip,
+            true,
+            1
+        );
+        statusBarShowStatusCheck = UIUtils.createCheckbox(
+            breadcrumbs,
+            CoreMessages.pref_page_ui_status_bar_show_status_line_check_label,
+            CoreMessages.pref_page_ui_status_bar_show_status_line_check_tip,
+            true,
+            1
+        );
+
         setSettings();
         return composite;
     }
@@ -245,9 +267,12 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             if (DBConstants.DEFAULT_TIMEZONE.equals(timezone)) {
                 clientTimezone.setText(DBConstants.DEFAULT_TIMEZONE);
             } else {
-                clientTimezone.setText(TimezoneRegistry.getGMTString(timezone));
+                clientTimezone.setText(timezone);
             }
         }
+
+        statusBarShowBreadcrumbsCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS));
+        statusBarShowStatusCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
     }
 
     @Override
@@ -266,6 +291,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         if (clientTimezone != null) {
             UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
         }
+
+        statusBarShowBreadcrumbsCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS));
+        statusBarShowStatusCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
     }
 
     private boolean isWindowsDesktopClient() {
@@ -274,8 +302,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     @Override
     public boolean isValid() {
-        return super.isValid() && (!isStandalone || clientTimezone != null &&
-            (Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText()))));
+        return super.isValid();
     }
 
     @Override
@@ -290,39 +317,47 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             } else {
                 store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, Boolean.FALSE);
             }
-        }
 
-        if (isWindowsDesktopClient()) {
-            SWTBrowserRegistry.setActiveBrowser(SWTBrowserRegistry.BrowserSelection.values()[browserCombo.getSelectionIndex()]);
-        }
 
-        PrefUtils.savePreferenceStore(store);
-        if (clientTimezone != null) {
-            if (DBConstants.DEFAULT_TIMEZONE.equals(clientTimezone.getText())) {
-                TimezoneRegistry.setDefaultZone(null, true);
-            } else {
-                TimezoneRegistry.setDefaultZone(
-                    ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())), true);
+            if (isWindowsDesktopClient()) {
+                SWTBrowserRegistry.setActiveBrowser(SWTBrowserRegistry.BrowserSelection.values()[browserCombo.getSelectionIndex()]);
             }
-        }
-        if (workspaceLanguage.getSelectionIndex() >= 0) {
-            PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
-            DBPPlatformLanguage curLanguage = DBPPlatformDesktop.getInstance().getLanguage();
 
-            try {
-                if (curLanguage != language) {
-                    ((DBPPlatformLanguageManager) DBWorkbench.getPlatform()).setPlatformLanguage(language);
-                    if (UIUtils.confirmAction(
-                        getShell(),
-                        "Restart " + GeneralUtils.getProductName(),
-                        "You need to restart " + GeneralUtils.getProductName() + " to perform actual language change.\nDo you want to restart?")) {
-                        restartWorkbenchOnPrefChange();
-                    }
+            PrefUtils.savePreferenceStore(store);
+            if (clientTimezone != null) {
+                if (DBConstants.DEFAULT_TIMEZONE.equals(clientTimezone.getText())) {
+                    TimezoneRegistry.setDefaultZone(null, true);
+                } else {
+                    TimezoneRegistry.setDefaultZone(
+                        ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())), true);
                 }
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
+            }
+            if (workspaceLanguage.getSelectionIndex() >= 0) {
+                PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages()
+                    .get(workspaceLanguage.getSelectionIndex());
+                DBPPlatformLanguage curLanguage = DBPPlatformDesktop.getInstance().getLanguage();
+
+                try {
+                    if (curLanguage != language) {
+                        ((DBPPlatformLanguageManager) DBWorkbench.getPlatform()).setPlatformLanguage(language);
+                        if (UIUtils.confirmAction(
+                            getShell(),
+                            "Restart " + GeneralUtils.getProductName(),
+                            "You need to restart " + GeneralUtils.getProductName()
+                                + " to perform actual language change.\nDo you want to restart?"
+                        )) {
+                            restartWorkbenchOnPrefChange();
+                        }
+                    }
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
+                }
             }
         }
+
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, statusBarShowBreadcrumbsCheck.getSelection());
+        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
+
         return true;
     }
 

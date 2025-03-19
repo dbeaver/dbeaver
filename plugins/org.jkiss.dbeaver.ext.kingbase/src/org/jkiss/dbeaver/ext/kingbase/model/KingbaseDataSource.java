@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.ext.kingbase.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
@@ -32,6 +30,8 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.ResultSet;
 
 public class KingbaseDataSource extends PostgreDataSource {
 

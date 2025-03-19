@@ -17,11 +17,6 @@
 
 package org.jkiss.dbeaver.ext.kingbase.model;
 
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
-import java.lang.reflect.Field;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -38,6 +33,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class KingbaseSchema extends PostgreSchema {
     public long systemOid = 16384;
@@ -106,11 +106,11 @@ public class KingbaseSchema extends PostgreSchema {
             PostgreServerExtension serverType = owner.getDataSource().getServerType();
             String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
             String tableName;
-            if(serverType.getProceduresSystemTable().contains("pg_")) {
-        	    tableName = serverType.getProceduresSystemTable().replaceAll("pg_", "sys_");
-        	}else{
-        	    tableName = serverType.getProceduresSystemTable();
-        	}
+            if (serverType.getProceduresSystemTable().contains("pg_")) {
+                tableName = serverType.getProceduresSystemTable().replaceAll("pg_", "sys_");
+            } else {
+                tableName = serverType.getProceduresSystemTable();
+            }
             
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT p." + oidColumn + " as poid,p.*,"
                 + "sys_catalog.sys_get_expr(p.proargdefaults, 0)"
@@ -146,14 +146,14 @@ public class KingbaseSchema extends PostgreSchema {
             PostgreServerExtension serverType = owner.getDataSource().getServerType();
             String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
             String tableName;
-            if(serverType.getProceduresSystemTable().contains("pg_")) {
-        		tableName = serverType.getProceduresSystemTable().replaceAll("pg_", "sys_");
-        	}else{
-        		tableName = serverType.getProceduresSystemTable();
-        	}
+            if (serverType.getProceduresSystemTable().contains("pg_")) {
+                tableName = serverType.getProceduresSystemTable().replaceAll("pg_", "sys_");
+            } else {
+                tableName = serverType.getProceduresSystemTable();
+            }
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT p." + oidColumn + " as poid,p.*,"
                 + "sys_catalog.sys_get_expr(p.proargdefaults, 0)"
-                + " as arg_defaults,d.description\n" + "FROM sys_catalog." + tableName+ " p\n"
+                + " as arg_defaults,d.description\n" + "FROM sys_catalog." + tableName + " p\n"
                 + "LEFT OUTER JOIN sys_catalog.sys_description d ON d.objoid=p." + oidColumn
                 + " AND d.objsubid = 0" + // no links to columns
                 "\nWHERE p.pronamespace=?" + (object == null ? "" : " AND p." + oidColumn + "=?") + "\nORDER BY p.proname");

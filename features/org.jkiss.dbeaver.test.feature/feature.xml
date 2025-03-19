@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+        id="org.jkiss.dbeaver.test.feature"
+        label="%featureName"
+        version="25.0.2.qualifier"
+        provider-name="%providerName"
+        plugin="org.jkiss.dbeaver.headless.application">
+
+    <description>
+        %description
+    </description>
+
+    <copyright>
+        %copyright
+    </copyright>
+
+    <license url="%licenseURL">
+        %license
+    </license>
+
+    <url>
+        <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
+    </url>
+    <plugin id="org.jkiss.dbeaver.ext.snowflake.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.oracle.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.model.lsm.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.postgresql.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.sqlite.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.mysql.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.hana.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.greenplum.test" version = "0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.altibase.test" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.clickhouse.test" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.generic.test" version="0.0.0"/>
+</feature>

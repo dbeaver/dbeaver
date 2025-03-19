@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.util.Objects;
+import java.util.Set;
 
 public class SQLQueryObjectDropModel extends SQLQueryModelContent {
 
@@ -42,12 +43,13 @@ public class SQLQueryObjectDropModel extends SQLQueryModelContent {
     public static SQLQueryModelContent recognize(
         @NotNull SQLQueryModelRecognizer recognizer,
         @NotNull STMTreeNode node,
-        @NotNull DBSObjectType objectType
+        @NotNull DBSObjectType objectType,
+        @NotNull Set<DBSObjectType> objectContainerTypes
     ) {
         SQLQueryObjectDataModel procedure = node.findChildrenOfName(STMKnownRuleNames.qualifiedName).stream()
             .map(recognizer::collectQualifiedName)
             .filter(Objects::nonNull)
-            .map(n -> new SQLQueryObjectDataModel(n.getSyntaxNode(), n, objectType))
+            .map(n -> new SQLQueryObjectDataModel(n.getSyntaxNode(), n, objectType, objectContainerTypes))
             .findFirst().orElse(null);
         boolean ifExists = node.findFirstChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
         return new SQLQueryObjectDropModel(node, procedure, ifExists);

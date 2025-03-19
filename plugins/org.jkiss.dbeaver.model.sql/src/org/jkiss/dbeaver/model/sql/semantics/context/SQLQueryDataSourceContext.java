@@ -74,7 +74,7 @@ public class SQLQueryDataSourceContext extends SQLQueryDataContext {
     }
 
     @Override
-    public boolean hasUndresolvedSource() {
+    public boolean hasUnresolvedSource() {
         return false;
     }
 

@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.ext.kingbase.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -43,6 +40,9 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * KingbaseFunctionManager
  */
@@ -51,58 +51,52 @@ public class KingbaseFunctionManager extends SQLObjectEditor<KingbaseFunction, K
 
     @Nullable
     @Override
-    public DBSObjectCache<KingbaseSchema, KingbaseFunction> getObjectsCache(KingbaseFunction object)
-    {
+    public DBSObjectCache<KingbaseSchema, KingbaseFunction> getObjectsCache(KingbaseFunction object) {
         KingbaseSchema schema = (KingbaseSchema) object.getContainer();
         return schema.getKingbaseFunctionsCache();
     }
 
     @Override
-    public boolean canCreateObject(@NotNull Object container)
-    {
+    public boolean canCreateObject(@NotNull Object container) {
         return container instanceof PostgreSchema
             && ((PostgreSchema) container).getDataSource().getServerType().supportsFunctionCreate();
     }
 
     @Override
-    public boolean canDeleteObject(@NotNull KingbaseFunction object)
-    {
+    public boolean canDeleteObject(@NotNull KingbaseFunction object) {
         return object.getDataSource().getServerType().supportsFunctionCreate();
     }
 
     @Override
-    public long getMakerOptions(@NotNull DBPDataSource dataSource)
-    {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
     @Override
     protected void validateObjectProperties(DBRProgressMonitor monitor, ObjectChangeCommand command, Map<String, Object> options)
-        throws DBException
-    {
+            throws DBException {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Function name cannot be empty");
         }
     }
 
     @Override
-    protected KingbaseFunction createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, final Object container,
-                                                   Object copyFrom, @NotNull Map<String, Object> options)
-    {
+    protected KingbaseFunction createDatabaseObject(@NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, 
+            final Object container, Object copyFrom, @NotNull Map<String, Object> options) {
         return new KingbaseFunction((PostgreSchema) container);
     }
 
     @Override
     protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
-                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options)
-    {
+                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, 
+                                          @NotNull Map<String, Object> options) {
         createOrReplaceProcedureQuery(actions, command.getObject());
     }
 
     @Override
     protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
-                                          @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options)
-    {
+                                          @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, 
+                                          @NotNull Map<String, Object> options) {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             createOrReplaceProcedureQuery(actionList, command.getObject());
         }
@@ -110,23 +104,23 @@ public class KingbaseFunctionManager extends SQLObjectEditor<KingbaseFunction, K
 
     @Override
     protected void addObjectDeleteActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
-                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, @NotNull Map<String, Object> options)
-    {
+                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectDeleteCommand command, 
+                                          @NotNull Map<String, Object> options) {
         String objectType = command.getObject().getProcedureTypeName();
         actions.add(new SQLDatabasePersistAction("Drop function",
             "DROP " + objectType + " " + command.getObject().getFullQualifiedSignature()) //$NON-NLS-1$
         );
     }
 
-    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, KingbaseProcedure procedure)
-    {
+    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, KingbaseProcedure procedure) {
         actions.add(new SQLDatabasePersistAction("Create function", procedure.getBody(), true));
     }
 
     @Override
     protected void addObjectExtraActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
-                                         @NotNull List<DBEPersistAction> actions, @NotNull NestedObjectCommand<KingbaseFunction, PropertyHandler> command, @NotNull Map<String, Object> options)
-    {
+                                         @NotNull List<DBEPersistAction> actions, 
+                                         @NotNull NestedObjectCommand<KingbaseFunction, PropertyHandler> command, 
+                                         @NotNull Map<String, Object> options) {
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             actions.add(new SQLDatabasePersistAction("Comment function",
                 "COMMENT ON " + command.getObject().getProcedureTypeName() + " " + command.getObject().getFullQualifiedSignature()
@@ -145,15 +139,14 @@ public class KingbaseFunctionManager extends SQLObjectEditor<KingbaseFunction, K
 
     @Override
     public void renameObject(@NotNull DBECommandContext commandContext, @NotNull KingbaseFunction object,
-        @NotNull Map<String, Object> options, @NotNull String newName) throws DBException
-    {
+        @NotNull Map<String, Object> options, @NotNull String newName) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
 
     @Override
     protected void addObjectRenameActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext,
-                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, @NotNull Map<String, Object> options)
-    {
+                                          @NotNull List<DBEPersistAction> actions, @NotNull ObjectRenameCommand command, 
+                                          @NotNull Map<String, Object> options) {
         KingbaseProcedure procedure = command.getObject();
         actions.add(new SQLDatabasePersistAction("Rename function",
             "ALTER " + command.getObject().getProcedureTypeName() + " " + DBUtils.getQuotedIdentifier(procedure.getSchema()) + "."
