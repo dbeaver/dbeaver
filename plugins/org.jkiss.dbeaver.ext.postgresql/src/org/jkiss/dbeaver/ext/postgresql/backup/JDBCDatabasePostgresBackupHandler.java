@@ -40,16 +40,16 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
 
     @Override
     public void doBackup(
-        @NotNull Connection connection,
-        int currentSchemaVersion,
-        @NotNull InternalDatabaseConfig databaseConfig
+            @NotNull Connection connection,
+            int currentSchemaVersion,
+            @NotNull InternalDatabaseConfig databaseConfig
     ) throws DBException {
         try {
             URI uri = new URI(databaseConfig.getUrl().replace("jdbc:", ""));
             Path workspace = DBWorkbench.getPlatform().getWorkspace().getAbsolutePath().resolve(SQLBackupConstants.BACKUP_FOLDER);
             Path backupFile = workspace.resolve(uri.getPath().replace("/", "") + "_"
-                + SQLBackupConstants.BACKUP_FILE_NAME + databaseConfig.getSchema()
-                + currentSchemaVersion + SQLBackupConstants.BACKUP_FILE_TYPE);
+                    + SQLBackupConstants.BACKUP_FILE_NAME + databaseConfig.getSchema()
+                    + currentSchemaVersion + SQLBackupConstants.BACKUP_FILE_TYPE);
             if (Files.notExists(backupFile)) {
                 Files.createDirectories(workspace);
                 ProcessBuilder processBuilder = getBuilder(databaseConfig, uri, backupFile);
@@ -57,8 +57,8 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
                 Process process = processBuilder.start();
 
                 try (InputStream inputStream = process.getInputStream();
-                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+                     InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                     BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
 
                     StringBuilder processOutput = new StringBuilder();
                     String line;
@@ -69,10 +69,13 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
                     int exitCode = process.waitFor();
 
                     if (exitCode == 0) {
-                        log.info("Postgres backup successful");
+                        log.info("Postgres backup with backup file successful");
+                        log.info("Location: " + backupFile.toAbsolutePath().toString());
                     } else {
                         Files.deleteIfExists(backupFile);
-                        log.error("Postgres backup failed with output: " + processOutput.toString());
+                        log.error("Postgres backup with backup file failed with output: " + processOutput.toString());
+                        log.error("Backup failed. The intended backup file was: " + backupFile.toAbsolutePath().toString());
+                        log.error("Backup workspace was located at: " + workspace.toAbsolutePath().toString());
                         throw new DBException("Postgres backup failed");
                     }
                 } catch (IOException e) {
@@ -98,13 +101,13 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
         }
 
         ProcessBuilder processBuilder = new ProcessBuilder(
-            "pg_dump",
-            databaseName,
-            "--host", uri.getHost(),
-            "--port", String.valueOf(uri.getPort()),
-            "--blobs",
-            "--verbose",
-            "--file", backupFile.toAbsolutePath().toString()
+                "pg_dump",
+                databaseName,
+                "--host", uri.getHost(),
+                "--port", String.valueOf(uri.getPort()),
+                "--blobs",
+                "--verbose",
+                "--file", backupFile.toAbsolutePath().toString()
         );
 
         if (CommonUtils.isNotEmpty(databaseConfig.getSchema())) {
