@@ -179,7 +179,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
                     boolean useNewCompletionEngine = mode.useNewAnalyzer
                         && store.getBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE)
                         && store.getBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS)
-                        && dataSource.getSQLDialect() instanceof BasicSQLDialect;
+                        && dataSource != null && dataSource.getSQLDialect() instanceof BasicSQLDialect;
 
                     // UIUtils.waitJobCompletion(..) uses job.isFinished() which is not dropped on reschedule,
                     // so we should be able to recreate the whole job object including all its non-reusable dependencies.

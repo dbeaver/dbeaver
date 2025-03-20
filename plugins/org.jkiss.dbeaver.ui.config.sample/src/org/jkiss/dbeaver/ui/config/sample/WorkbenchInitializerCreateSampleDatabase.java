@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -71,7 +72,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
         }
 
         Shell mainShell = window.getShell();
-        UIUtils.scheduleDelayedPopup(
+        DialogUtils.showDelayedPopup(
             mainShell,
             () -> {
                 if (!showCreateSampleDatabasePrompt(mainShell)) {

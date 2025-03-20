@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
@@ -32,7 +32,7 @@ public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
             return;
         }
         Shell mainShell = window.getShell();
-        UIUtils.scheduleDelayedPopup(
+        DialogUtils.showDelayedPopup(
             mainShell,
             () -> ShowTipOfTheDayHandler.showTipOfTheDay(window),
             "Show tip of the day"

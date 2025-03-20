@@ -116,8 +116,6 @@ public class UIUtils {
     private static final SharedTextColors SHARED_TEXT_COLORS = new SharedTextColors();
     private static final SharedFonts SHARED_FONTS = new SharedFonts();
     private static final String MAX_LONG_STRING = String.valueOf(Long.MAX_VALUE);
-    private static final int INITIAL_POPUP_DELAY = 3000;
-    private static final int RETRY_POPUP_DELAY = 5000;
 
     public static VerifyListener getIntegerVerifyListener(Locale locale)
     {
@@ -2529,44 +2527,6 @@ public class UIUtils {
             }
         }
         return UIMessages.label_catalog_schema;
-    }
-
-    /**
-     * Schedules a popup action to be executed after initial delay, and if necessary,
-     * reschedules the action until the specified main shell becomes active.
-     * <p>
-     * This method creates a new {@link UIJob} with the given {@code jobName} that runs on the display of the provided
-     * {@code mainShell}. It checks the currently active shell on that display. If the active shell is not the same as
-     * the provided {@code mainShell} (for example, when a modal dialog is open), the job is rescheduled using the retry
-     * delay defined by {@code RETRY_POPUP_DELAY}. Once the main shell becomes active, the specified {@code popupAction}
-     * is executed. The job is marked as a system job and initially scheduled using the delay defined by
-     * {@code INITIAL_POPUP_DELAY}.
-     * </p>
-     *
-     * @param mainShell   the main {@link Shell} that must be active for the popup action to run; must not be null.
-     * @param popupAction the action to execute when the main shell is active; must not be null.
-     * @param jobName     the name of the UIJob for identification purposes; must not be null.
-     */
-    public static void scheduleDelayedPopup(
-        @NotNull Shell mainShell,
-        @NotNull Runnable popupAction,
-        @NotNull String jobName
-    ) {
-        UIJob uiJob = new UIJob(mainShell.getDisplay(), jobName) {
-            @Override
-            public IStatus runInUIThread(IProgressMonitor monitor) {
-
-                Shell activeShell = mainShell.getDisplay().getActiveShell();
-                if (activeShell != null && !activeShell.equals(mainShell)) {
-                    schedule(RETRY_POPUP_DELAY);
-                } else {
-                    popupAction.run();
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        uiJob.setSystem(true);
-        uiJob.schedule(INITIAL_POPUP_DELAY);
     }
 
     /**

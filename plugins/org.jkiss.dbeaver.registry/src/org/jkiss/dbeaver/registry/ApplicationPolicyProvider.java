@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.sun.jna.platform.win32.WinReg;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPPolicyProvider;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -29,32 +30,37 @@ import org.jkiss.utils.CommonUtils;
  * The general logic catch policy value in .ini file as system property next in
  * windows registry under HKEY_CURRENT_USER and HKEY_LOCAL_MACHINE nodes.
  */
-public class BasePolicyDataProvider {
-    private static final Log log = Log.getLog(BasePolicyDataProvider.class);
+public class ApplicationPolicyProvider implements DBPPolicyProvider {
+    private static final Log log = Log.getLog(ApplicationPolicyProvider.class);
 
     private static final String DBEAVER_REGISTRY_POLICY_NODE = "Software\\DBeaver Corp\\DBeaver\\policy"; //$NON-NLS-1$
-    private static final BasePolicyDataProvider INSTANCE = new BasePolicyDataProvider();
+
+    public static final String POLICY_DATA_EXPORT = "policy.data.export.disabled"; //$NON-NLS-1$
+    public static final String POLICY_DATA_COPY = "policy.data.copy.disabled"; //$NON-NLS-1$
+
+    private static ApplicationPolicyProvider instance = new ApplicationPolicyProvider();
 
     @NotNull
-    public static BasePolicyDataProvider getInstance() {
-        return INSTANCE;
+    public static ApplicationPolicyProvider getInstance() {
+        return instance;
     }
 
-    private BasePolicyDataProvider() {
+    protected ApplicationPolicyProvider() {
         // private constructor
     }
 
-    /**
-     * Return boolean value of policy data property
-     *
-     * @param propertyName - property name
-     * @return - boolean value
-     */
+    public static void setInstance(@NotNull ApplicationPolicyProvider instance) {
+        ApplicationPolicyProvider.instance = instance;
+    }
+
+
+    @Override
     public boolean isPolicyEnabled(@NotNull String propertyName) {
         return convertToBooleanValue(getPolicyProperty(propertyName));
     }
 
     @Nullable
+    @Override
     public Object getPolicyValue(@NotNull String propertyName) {
         return getPolicyProperty(propertyName);
     }
@@ -75,13 +81,8 @@ public class BasePolicyDataProvider {
         return CommonUtils.toBoolean(value);
     }
 
-    /**
-     * Retrieves policy data value from system environment or Windows registry
-     *
-     * @param property  policy data property
-     * @return policy data value or {@code null} if not found
-     */
     @Nullable
+    @Override
     public Object getPolicyProperty(@NotNull String property) {
         Object value = System.getProperty(property);
         if (value != null) {

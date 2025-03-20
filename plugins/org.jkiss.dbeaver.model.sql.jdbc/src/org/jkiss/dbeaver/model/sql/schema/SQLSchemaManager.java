@@ -48,27 +48,28 @@ import java.sql.Statement;
 public final class SQLSchemaManager {
     private static final Log log = Log.getLog(SQLSchemaManager.class);
 
+    @NotNull
     private final String schemaId;
+    @NotNull
     private final SQLSchemaScriptSource scriptSource;
+    @NotNull
     private final SQLSchemaConnectionProvider connectionProvider;
+    @NotNull
     private final SQLSchemaVersionManager versionManager;
-
+    @NotNull
     private final SQLDialect targetDatabaseDialect;
-    private final String targetDatabaseName;
-    private final String targetSchemaName;
 
     private final int schemaVersionActual;
     private final int schemaVersionObsolete;
+    @NotNull
     private final InternalDatabaseConfig databaseConfig;
 
     public SQLSchemaManager(
-        String schemaId,
-        SQLSchemaScriptSource scriptSource,
-        SQLSchemaConnectionProvider connectionProvider,
-        SQLSchemaVersionManager versionManager,
-        SQLDialect targetDatabaseDialect,
-        String targetDatabaseName,
-        String targetSchemaName,
+        @NotNull String schemaId,
+        @NotNull SQLSchemaScriptSource scriptSource,
+        @NotNull SQLSchemaConnectionProvider connectionProvider,
+        @NotNull SQLSchemaVersionManager versionManager,
+        @NotNull SQLDialect targetDatabaseDialect,
         int schemaVersionActual,
         int schemaVersionObsolete,
         @NotNull InternalDatabaseConfig databaseConfig
@@ -79,20 +80,18 @@ public final class SQLSchemaManager {
         this.connectionProvider = connectionProvider;
         this.versionManager = versionManager;
         this.targetDatabaseDialect = targetDatabaseDialect;
-        this.targetDatabaseName = targetDatabaseName;
-        this.targetSchemaName = targetSchemaName;
 
         this.schemaVersionActual = schemaVersionActual;
         this.schemaVersionObsolete = schemaVersionObsolete;
         this.databaseConfig = databaseConfig;
     }
 
-    public void updateSchema(DBRProgressMonitor monitor) throws DBException {
+    public void updateSchema(@NotNull DBRProgressMonitor monitor) throws DBException {
         try {
             Connection dbCon = connectionProvider.getDatabaseConnection(monitor);
             try (JDBCTransaction txn = new JDBCTransaction(dbCon)) {
                 try {
-                    int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, targetSchemaName);
+                    int currentSchemaVersion = versionManager.getCurrentSchemaVersion(monitor, dbCon, databaseConfig.getSchema());
                     // Do rollback in case some error happened during version check (makes sense for PG)
                     txn.rollback();
                     if (currentSchemaVersion < 0) {
@@ -129,7 +128,7 @@ public final class SQLSchemaManager {
     }
 
     private void upgradeSchemaVersion(
-        DBRProgressMonitor monitor,
+        @NotNull DBRProgressMonitor monitor,
         @NotNull Connection connection,
         @NotNull JDBCTransaction txn,
         int currentSchemaVersion
@@ -144,7 +143,7 @@ public final class SQLSchemaManager {
             try {
                 executeScript(monitor, connection, ddlStream, true);
                 // Update schema version
-                versionManager.updateCurrentSchemaVersion(monitor, connection, targetSchemaName, updateToVer);
+                versionManager.updateCurrentSchemaVersion(monitor, connection, databaseConfig.getSchema(), updateToVer);
                 txn.commit();
             } catch (Exception e) {
                 log.warn("Error updating " + schemaId + " schema version from " + curVer + " to " + updateToVer, e);
@@ -155,7 +154,10 @@ public final class SQLSchemaManager {
         }
     }
 
-    private void createNewSchema(DBRProgressMonitor monitor, Connection connection) throws IOException, DBException, SQLException {
+    private void createNewSchema(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Connection connection
+    ) throws IOException, DBException, SQLException {
         log.debug("Create new schema " + schemaId);
         try (Reader ddlStream = scriptSource.openSchemaCreateScript(monitor)) {
             executeScript(monitor, connection, ddlStream, false);
@@ -164,20 +166,28 @@ public final class SQLSchemaManager {
         versionManager.updateCurrentSchemaVersion(
             monitor,
             connection,
-            targetSchemaName,
+            databaseConfig.getSchema(),
             versionManager.getLatestSchemaVersion()
         );
         versionManager.fillInitialSchemaData(monitor, connection);
     }
 
-    private void dropSchema(DBRProgressMonitor monitor, Connection connection) throws DBException, SQLException, IOException {
+    private void dropSchema(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Connection connection
+    ) throws DBException, SQLException, IOException {
         log.debug("Drop schema " + schemaId);
         executeScript(monitor, connection, new StringReader("DROP ALL OBJECTS"), true);
     }
 
-    private void executeScript(DBRProgressMonitor monitor, Connection connection, Reader ddlStream, boolean logQueries) throws SQLException, IOException, DBException {
+    private void executeScript(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Connection connection,
+        @NotNull Reader ddlStream,
+        boolean logQueries
+    ) throws SQLException, IOException, DBException {
         // Read DDL script
-        String ddlText = CommonUtils.normalizeTableNames(IOUtils.readToString(ddlStream), targetSchemaName);
+        String ddlText = CommonUtils.normalizeTableNames(IOUtils.readToString(ddlStream), databaseConfig.getSchema());
         // Translate script to target dialect
         DBPPreferenceStore prefStore = SQLQueryTranslator.getDefaultPreferenceStore();
         BasicSQLDialect sourceDialect = new BasicSQLDialect() {
