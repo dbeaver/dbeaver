@@ -241,7 +241,13 @@ public abstract class SQLQueryCompletionContext {
     ) {
         return new SQLQueryCompletionContext(scriptItem.offset, requestOffset) {
             private final Set<DBSObjectContainer> exposedContexts = SQLQueryCompletionContext.obtainExposedContexts(dbcExecutionContext);
-            private final Map<String, Boolean> columnNameConflicts = context.deepestContext().getColumnsList().stream()
+            private final Map<String, Boolean> columnNameConflicts = (
+                // use data context from symbols origin if presented (correctly derived from tail lexical scope when provided by the model)
+                // otherwise, try context provided by the deepest model node (legacy and may be incorrect sometimes)
+                context.symbolsOrigin() instanceof SQLQuerySymbolOrigin.DataContextSymbolOrigin o && !o.isChained()
+                    ? o.getDataContext()
+                    : context.deepestContext()
+            ).getColumnsList().stream()
                 .collect(Collectors.groupingBy(c -> c.symbol.getName())).entrySet().stream()
                 .collect(Collectors.toMap(kv -> kv.getKey(), kv -> kv.getValue().size() > 1));
 
