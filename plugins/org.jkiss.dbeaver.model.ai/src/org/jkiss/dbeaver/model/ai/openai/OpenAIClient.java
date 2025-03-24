@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,32 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.ai.openai;
 
-package org.jkiss.dbeaver.model.ai.translator;
-
+import com.theokanning.openai.completion.chat.ChatCompletionRequest;
+import com.theokanning.openai.completion.chat.ChatCompletionResult;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
-import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * Natural language text translator
+ * Client adapter for Azure AI service.
  */
-public class DAITextTranslator {
-
+public interface OpenAIClient extends AutoCloseable {
     /**
-     * Translates text into SQL query (DML)
+     * Create a chat completion.
      */
     @NotNull
-    public static DAITranslatedItem translateTextToSQL(
+    ChatCompletionResult createChatCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionEngine engine,
-        @NotNull DBSLogicalDataSource dataSource,
-        @NotNull String natualText
-    ) throws DBCException {
-        throw new DBCFeatureNotSupportedException();
-    }
+        ChatCompletionRequest request
+    ) throws DBException;
 
+    @Override
+    void close();
 }

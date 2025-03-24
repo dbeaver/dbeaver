@@ -14,28 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.commands;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
+package org.jkiss.dbeaver.ext.gbase8s;
 
-enum AIOutputSeverity implements DBCOutputSeverity {
-    PROMPT("AI");
+/**
+ * GBase8sConstants
+ */
+public class GBase8sConstants {
 
-    private final String name;
+    public static final String JDBC_SQL_MODE = "SQLMODE";
+    public static final String JDBC_SQL_MODE_ORACLE = "oracle";
+    public static final String JDBC_SQL_MODE_GBASE = "gbase";
 
-    AIOutputSeverity(@NotNull String name) {
-        this.name = name;
-    }
-
-    @NotNull
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public boolean isForced() {
-        return true;
-    }
+    public static final String SQL_TABLE_COMMENT = "COMMENT ON TABLE %s IS %s";
 }

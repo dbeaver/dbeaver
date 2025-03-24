@@ -1025,7 +1025,7 @@
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://docs.dremio.com/drivers/dremio-jdbc-driver.html"
                         categories="analytic,hadoop,sql">
-                    <file type="jar" path="https://download.dremio.com/jdbc-driver/24.0.0-202302100528110223-3a169b7c/dremio-jdbc-driver-24.0.0-202302100528110223-3a169b7c.jar" bundle="!drivers.dremio"/>
+                    <file type="jar" path="https://download.dremio.com/jdbc-driver/dremio-jdbc-driver-LATEST.jar" bundle="!drivers.dremio"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/dremio" bundle="drivers.dremio"/>
                     <parameter name="omit-catalog" value="true"/>
