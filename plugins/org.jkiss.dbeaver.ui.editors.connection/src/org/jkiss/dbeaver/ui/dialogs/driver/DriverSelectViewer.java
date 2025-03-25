@@ -500,7 +500,7 @@ public class DriverSelectViewer extends Viewer {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
             if (element instanceof DBPDriver driver) {
-                return driver.isDriverInstalled();
+                return driver.getDefaultDriverLoader().isDriverInstalled();
             }
             return true;
         }

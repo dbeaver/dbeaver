@@ -1055,7 +1055,7 @@ public class DataSourceDescriptor
         boolean succeeded = false;
         connecting = true;
         try {
-            getDriver().validateFilesPresence(monitor);
+            getDriver().validateFilesPresence(monitor, this);
             if (isDetachedProcessEnabled() && !detachedProcess) {
                 // Open detached connection
                 succeeded = openDetachedConnection(monitor);
@@ -1801,8 +1801,8 @@ public class DataSourceDescriptor
                     }
                 }
             }
-            if (driver.getClassLoader() instanceof URLClassLoader) {
-                final URL[] urls = ((URLClassLoader) driver.getClassLoader()).getURLs();
+            if (driver.getDefaultDriverLoader().getClassLoader() instanceof URLClassLoader urlClassLoader) {
+                final URL[] urls = urlClassLoader.getURLs();
                 for (int urlIndex = 0; urlIndex < urls.length; urlIndex++) {
                     Object path = urls[urlIndex];
                     try {
