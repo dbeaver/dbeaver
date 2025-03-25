@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.widgets.CompositeFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -1067,11 +1070,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             Control msg;
             if (object.getObject() instanceof QMMStatementExecuteInfo qmmStatementExecuteInfo) {
                 msg = createSQLPanel(topFrame);
-                Composite sqlDetailsPanel = UIUtils.createComposite(topFrame, 4);
-                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.horizontalSpan = 2;
-                sqlDetailsPanel.setLayoutData(gd);
-
                 String catalogTerm = null;
                 String schemaTerm = null;
                 DBPDataSourceContainer ds = getDataSourceContainer(qmmStatementExecuteInfo);
@@ -1088,10 +1086,24 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 if (schemaTerm == null) {
                     schemaTerm = ModelMessages.controls_querylog_column_schema_name;
                 }
-                UIUtils.createLabelText(sqlDetailsPanel, catalogTerm,
-                    qmmStatementExecuteInfo.getCatalog(), SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
-                UIUtils.createLabelText(sqlDetailsPanel, schemaTerm,
-                    qmmStatementExecuteInfo.getSchema(), SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
+                String catalogName = qmmStatementExecuteInfo.getCatalog();
+                String schemaName = qmmStatementExecuteInfo.getSchema();
+                if (CommonUtils.isNotEmpty(catalogName) || CommonUtils.isNotEmpty(schemaName)) {
+                    UIUtils.createControlLabel(topFrame, catalogTerm);
+                    Composite container = CompositeFactory.newComposite(SWT.NONE)
+                        .layoutData(GridDataFactory.fillDefaults().create())
+                        .layout(GridLayoutFactory.fillDefaults().numColumns(3).create())
+                        .create(topFrame);
+
+                    Text catalogText = new Text(container, SWT.BORDER | SWT.READ_ONLY);
+                    catalogText.setText(CommonUtils.notEmpty(catalogName));
+                    catalogText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                    catalogText.setToolTipText(ModelMessages.controls_querylog_column_catalog_tip);
+
+                    UIUtils
+                        .createLabelText(container, schemaTerm, schemaName, SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL))
+                        .setToolTipText(ModelMessages.controls_querylog_column_schema_tip);
+                }
             } else {
                 final Text messageText = new Text(topFrame, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
                 messageText.setText(COLUMN_TEXT.getText(object, true));

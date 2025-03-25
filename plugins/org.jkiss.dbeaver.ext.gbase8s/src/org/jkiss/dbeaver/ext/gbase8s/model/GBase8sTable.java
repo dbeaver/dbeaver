@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.gbase8s.model;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 /**
@@ -37,4 +38,13 @@ public class GBase8sTable extends GenericTable {
         super(container, tableName, tableCatalogName, tableSchemaName);
     }
 
+    @Override
+    protected boolean isCacheDDL() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsObjectDefinitionOption(String option) {
+        return DBPScriptObject.OPTION_INCLUDE_COMMENTS.equals(option);
+    }
 }

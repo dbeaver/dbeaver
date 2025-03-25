@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,15 @@ public interface IResultSetController extends IDataController, DBPContextProvide
         AFTER_SELECTION,
         AT_END
     }
+
+    enum ContextMenuLocation {
+        COLUMN_HEADER,
+        ROW_HEADER,
+        TOP_LEFT,
+        DATA,
+        UNKNOWN
+    }
+
 
     @NotNull
     IResultSetContainer getContainer();
@@ -154,7 +163,13 @@ public interface IResultSetController extends IDataController, DBPContextProvide
      */
     void redrawData(boolean attributesChanged, boolean rowsChanged);
 
-    void fillContextMenu(@NotNull IMenuManager manager, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row, int[] rowIndexes);
+    void fillContextMenu(
+        @NotNull IMenuManager manager,
+        @Nullable DBDAttributeBinding attr,
+        @Nullable ResultSetRow row,
+        int[] rowIndexes,
+        @NotNull ContextMenuLocation menuLocation
+    );
 
     @Nullable
     ResultSetRow getCurrentRow();

@@ -215,7 +215,13 @@ public class SQLScriptParser {
                     continue;
                 } else if (tokenType == SQLTokenType.T_SET_DELIMITER || tokenType == SQLTokenType.T_CONTROL) {
                     isDelimiter = true;
-                    isControl = true;
+                    // see https://github.com/dbeaver/pro/issues/3935
+                    // If there is a statement preceding a command (e.g., @ai, @echo)
+                    // and it does not contain any delimiters, then that statement should be extracted.
+                    boolean cursorInsideToken = currentPos >= tokenOffset && currentPos <= tokenOffset + tokenLength;
+                    if (!hasValuableTokens || cursorInsideToken) {
+                        isControl = true;
+                    }
                 } else if (tokenType == SQLTokenType.T_COMMENT) {
                     lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
                 }

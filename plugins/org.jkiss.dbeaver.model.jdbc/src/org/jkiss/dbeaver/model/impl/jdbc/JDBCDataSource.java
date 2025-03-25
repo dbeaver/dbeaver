@@ -862,9 +862,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
     public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
         try {
             statement.cancel();
-        }
-        catch (SQLException e) {
-            if (e instanceof SQLFeatureNotSupportedException) {
+        } catch (SQLException e) {
+            if (JDBCUtils.isFeatureNotSupportedError(this, e)) {
                 // ignore
                 return;
             }

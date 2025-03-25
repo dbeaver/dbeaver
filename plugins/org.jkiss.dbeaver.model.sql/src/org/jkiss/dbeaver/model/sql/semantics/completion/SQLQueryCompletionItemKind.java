@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.sql.semantics.completion;
 
 public enum SQLQueryCompletionItemKind {
-    UNKNOWN,
+    UNKNOWN(false, false, Integer.MAX_VALUE),
     /**
      * Keywords and alike
      */
@@ -68,10 +68,6 @@ public enum SQLQueryCompletionItemKind {
     public final boolean isTableName;
     public final boolean isColumnName;
     public final int sortOrder;
-
-    SQLQueryCompletionItemKind() {
-        this(false, false, Integer.MAX_VALUE);
-    }
 
     SQLQueryCompletionItemKind(boolean isTableName, boolean isColumnName, int sortOrder) {
         this.isTableName = isTableName;
