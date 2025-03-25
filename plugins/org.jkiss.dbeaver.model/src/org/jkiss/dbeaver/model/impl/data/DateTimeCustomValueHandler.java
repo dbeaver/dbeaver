@@ -125,13 +125,4 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler im
 
     @NotNull
     protected abstract String getFormatterId(DBSTypedObject column);
-
-    @NotNull
-    public Object getQuotedValue(@NotNull Object value) {
-        String strValue = value.toString();
-        if (!strValue.startsWith("'") && !strValue.endsWith("'")) {
-            value = "'" + strValue + "'";
-        }
-        return value;
-    }
 }
