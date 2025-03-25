@@ -14,27 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.copilot.dto;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.completion.DAIChatMessage;
+import org.jkiss.dbeaver.model.ai.completion.DAIChatRole;
 
-public sealed interface MessageChunk {
-    @NotNull
-    String toRawString();
-
-    record Text(@NotNull String text) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return text;
-        }
+public record CopilotMessage(
+    String role,
+    String content
+) {
+    public static CopilotMessage from(DAIChatMessage message) {
+        return new CopilotMessage(mapRole(message.role()), message.content());
     }
 
-    record Code(@NotNull String text, @NotNull String language) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return "```" + language + "\n" + text + "\n```";
-        }
+    private static String mapRole(DAIChatRole role) {
+        return switch (role) {
+            case USER -> "user";
+            case ASSISTANT -> "assistant";
+            case SYSTEM -> "system";
+        };
     }
 }

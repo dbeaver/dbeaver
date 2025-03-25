@@ -14,27 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.utils;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 
-public sealed interface MessageChunk {
-    @NotNull
-    String toRawString();
+import java.net.URI;
+import java.net.URISyntaxException;
 
-    record Text(@NotNull String text) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return text;
-        }
+public final class HttpUtils {
+
+    private HttpUtils() {
     }
 
-    record Code(@NotNull String text, @NotNull String language) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return "```" + language + "\n" + text + "\n```";
+    /**
+     * Resolves URI from base and paths
+     */
+    public static URI resolve(String base, String... paths) throws DBException {
+        try {
+            URI uri = new URI(base);
+            for (String path : paths) {
+                uri = uri.resolve(path);
+            }
+            return uri;
+        } catch (URISyntaxException e) {
+            throw new DBException("Incorrect URI", e);
         }
     }
 }

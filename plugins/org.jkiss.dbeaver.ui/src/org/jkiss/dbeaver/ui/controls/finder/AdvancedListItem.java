@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,16 +79,16 @@ public class AdvancedListItem {
         }
 
         Image icon = labelProvider.getImage(data);
-        ImageData iconData = icon.getImageData();
+        Rectangle iconBounds = icon.getBounds();
         Point imageSize = list.getImageSize();
 
         int imgPosX = (itemSize.x - imageSize.x) / 2;
-        int imgPosY = BORDER_MARGIN;//(itemBounds.height - iconData.height) / 2 ;
+        int imgPosY = BORDER_MARGIN;//(itemBounds.height - iconBounds.height) / 2 ;
 
-        if (iconData.width == imageSize.x && iconData.height == imageSize.y) {
+        if (iconBounds.width == imageSize.x && iconBounds.height == imageSize.y) {
             gc.drawImage(icon, x + imgPosX, y + imgPosY);
         } else {
-            gc.drawImage(icon, 0, 0, iconData.width, iconData.height,
+            gc.drawImage(icon, 0, 0, iconBounds.width, iconBounds.height,
                 x + imgPosX, y + imgPosY, imageSize.x, imageSize.y);
         }
 

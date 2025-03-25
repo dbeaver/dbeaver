@@ -16,25 +16,17 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
+public class AIAssistantRegistry {
+    private static final AIAssistantRegistry INSTANCE = new AIAssistantRegistry();
 
-public sealed interface MessageChunk {
-    @NotNull
-    String toRawString();
-
-    record Text(@NotNull String text) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return text;
-        }
+    public static AIAssistantRegistry getInstance() {
+        return INSTANCE;
     }
 
-    record Code(@NotNull String text, @NotNull String language) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return "```" + language + "\n" + text + "\n```";
-        }
+    private AIAssistantRegistry() {
+    }
+
+    public AIAssistant getAssistant() {
+        return new AIAssistantImpl();
     }
 }

@@ -14,27 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.copilot.dto;
 
-import org.jkiss.code.NotNull;
+import java.util.List;
 
-public sealed interface MessageChunk {
-    @NotNull
-    String toRawString();
+public record CopilotChatResponse(List<Choice> choices) {
 
-    record Text(@NotNull String text) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return text;
-        }
+    public record Choice(Message message) {
     }
 
-    record Code(@NotNull String text, @NotNull String language) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return "```" + language + "\n" + text + "\n```";
-        }
+    public record Message(String content) {
+
     }
 }

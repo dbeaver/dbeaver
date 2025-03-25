@@ -18,34 +18,30 @@ package org.jkiss.dbeaver.model.ai.completion;
 
 import org.jkiss.code.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
- * Completion session
+ * Represents a single completion message
+ *
  */
-public class DAICompletionSession {
-    private final List<DAIChatMessage> messages;
-
-    public DAICompletionSession() {
-        this.messages = new ArrayList<>();
-    }
-
-    public void add(@NotNull DAIChatMessage message) {
-        messages.add(message);
-    }
-
-    public void remove(@NotNull DAIChatMessage message) {
-        messages.remove(message);
-    }
-
-    public void clear() {
-        messages.clear();
-    }
-
+public record DAIChatMessage(
     @NotNull
-    public List<DAIChatMessage> getMessages() {
-        return List.copyOf(messages);
+    DAIChatRole role,
+    @NotNull
+    String content
+) {
+    public static DAIChatMessage systemMessage(String message) {
+        return new DAIChatMessage(DAIChatRole.SYSTEM, message);
+    }
+
+    public static DAIChatMessage userMessage(String message) {
+        return new DAIChatMessage(DAIChatRole.USER, message);
+    }
+
+    public static DAIChatMessage assistantMessage(String message) {
+        return new DAIChatMessage(DAIChatRole.ASSISTANT, message);
+    }
+
+    public DAIChatMessage(@NotNull DAIChatRole role, @NotNull String content) {
+        this.role = role;
+        this.content = content;
     }
 }

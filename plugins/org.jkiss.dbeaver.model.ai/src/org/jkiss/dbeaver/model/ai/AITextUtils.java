@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionMessage;
+import org.jkiss.dbeaver.model.ai.completion.DAIChatMessage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -48,14 +48,14 @@ public class AITextUtils {
 
     @NotNull
     public static String convertToSQL(
-        @NotNull DAICompletionMessage prompt,
+        @NotNull DAIChatMessage prompt,
         @NotNull MessageChunk[] response,
         @Nullable DBPDataSource dataSource
     ) {
         final StringBuilder builder = new StringBuilder();
 
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
-            builder.append(SQLUtils.generateCommentLine(dataSource, prompt.getContent()));
+            builder.append(SQLUtils.generateCommentLine(dataSource, prompt.content()));
         }
 
         for (MessageChunk chunk : response) {

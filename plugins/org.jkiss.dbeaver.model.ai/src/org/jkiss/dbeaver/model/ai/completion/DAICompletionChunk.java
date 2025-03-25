@@ -14,27 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.completion;
 
-import org.jkiss.code.NotNull;
-
-public sealed interface MessageChunk {
-    @NotNull
-    String toRawString();
-
-    record Text(@NotNull String text) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return text;
-        }
-    }
-
-    record Code(@NotNull String text, @NotNull String language) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return "```" + language + "\n" + text + "\n```";
-        }
-    }
+public record DAICompletionChunk(
+    String text
+) {
 }

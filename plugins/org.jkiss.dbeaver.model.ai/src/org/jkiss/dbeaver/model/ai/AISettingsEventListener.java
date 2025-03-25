@@ -16,25 +16,6 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
-
-public sealed interface MessageChunk {
-    @NotNull
-    String toRawString();
-
-    record Text(@NotNull String text) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return text;
-        }
-    }
-
-    record Code(@NotNull String text, @NotNull String language) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return "```" + language + "\n" + text + "\n```";
-        }
-    }
+public interface AISettingsEventListener {
+    void onSettingsUpdate(AISettingsRegistry registry);
 }

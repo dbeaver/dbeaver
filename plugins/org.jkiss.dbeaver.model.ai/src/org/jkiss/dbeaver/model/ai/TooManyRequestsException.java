@@ -16,25 +16,14 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.exec.DBCException;
 
-public sealed interface MessageChunk {
-    @NotNull
-    String toRawString();
-
-    record Text(@NotNull String text) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return text;
-        }
+public class TooManyRequestsException extends DBCException {
+    public TooManyRequestsException(String message) {
+        super(message);
     }
 
-    record Code(@NotNull String text, @NotNull String language) implements MessageChunk {
-        @NotNull
-        @Override
-        public String toRawString() {
-            return "```" + language + "\n" + text + "\n```";
-        }
+    public TooManyRequestsException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
