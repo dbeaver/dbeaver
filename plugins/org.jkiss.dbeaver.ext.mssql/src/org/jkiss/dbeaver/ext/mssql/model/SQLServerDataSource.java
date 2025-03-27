@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -160,6 +158,10 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     public boolean isSynapseDatabase() {
         return isSynapseDatabase;
+    }
+
+    public boolean isAtLeastV16() {
+        return getInfo().getDatabaseVersion().getMajor() >= 16;
     }
 
     private String getServerVersion(DBRProgressMonitor monitor) {

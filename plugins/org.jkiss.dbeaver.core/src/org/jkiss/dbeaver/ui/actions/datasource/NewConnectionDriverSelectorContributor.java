@@ -40,13 +40,10 @@ public class NewConnectionDriverSelectorContributor extends DataSourceMenuContri
     protected void fillContributionItems(final List<IContributionItem> menuItems)
     {
         IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-        if (window == null) {
-            return;
-        }
 
         List<DBPDriver> allDrivers = DriverUtils.getAllDrivers();
         if (DBWorkbench.isDistributed()) {
-            allDrivers.removeIf(Predicate.not(DBPDriver::isDriverInstalled));
+            allDrivers.removeIf(Predicate.not(driver -> driver.getDefaultDriverLoader().isDriverInstalled()));
         }
         List<DBPDriver> recentDrivers = DriverUtils.getRecentDrivers(allDrivers, 10);
         for (DBPDriver driver : recentDrivers) {

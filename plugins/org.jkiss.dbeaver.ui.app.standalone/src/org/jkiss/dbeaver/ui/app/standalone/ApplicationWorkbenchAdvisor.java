@@ -72,6 +72,7 @@ import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
@@ -370,7 +371,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     private void startVersionChecker() {
         Shell mainShell = UIUtils.getActiveWorkbenchShell();
         if (mainShell != null) {
-            UIUtils.scheduleDelayedPopup(
+            DialogUtils.showDelayedPopup(
                 mainShell,
                 () -> new DBeaverVersionChecker(false).schedule(),
                 "Version Checker Wrapper"

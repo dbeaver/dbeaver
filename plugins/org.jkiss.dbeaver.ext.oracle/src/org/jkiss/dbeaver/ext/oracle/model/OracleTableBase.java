@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,9 +61,9 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<OracleTableBase> {
         @Override
-        public boolean isPropertyCached(OracleTableBase object, Object propertyId)
-        {
-            return object.getAdditionalInfo().isLoaded();
+        public boolean isPropertyCached(OracleTableBase object, Object propertyId) {
+            return object.getAdditionalInfo().isLoaded() // for isLazy() check when property already loaded in the cache returns true
+                || object.getDataSource().dataTypeCache.isFullyCached();
         }
     }
 
