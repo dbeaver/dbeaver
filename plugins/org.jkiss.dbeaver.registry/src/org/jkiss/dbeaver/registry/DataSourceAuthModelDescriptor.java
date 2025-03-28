@@ -84,15 +84,13 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
             this.hasCondReplaces = hasCondReplaces || !ArrayUtils.isEmpty(replFor);
         }
 
-        List<DBPDriverLibrary> libs = null;
+        this.libraries = new ArrayList<>();
         for (IConfigurationElement libConfig : config.getChildren(RegistryConstants.TAG_FILE)) {
             DriverLibraryAbstract lib = DriverLibraryAbstract.createFromConfig(null, libConfig);
-            if (libs == null) {
-                libs = new ArrayList<>();
+            if (lib != null) {
+                libraries.add(lib);
             }
-            libs.add(lib);
         }
-        libraries = libs == null ? Collections.emptyList() : libs;
     }
 
     @NotNull
