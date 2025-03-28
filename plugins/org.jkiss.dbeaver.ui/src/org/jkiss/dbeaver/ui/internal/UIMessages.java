@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class UIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UIMessages"; //$NON-NLS-1$
@@ -119,6 +118,12 @@ public class UIMessages extends NLS {
 
     public static String link_external_label;
     public static String link_external_tip;
+    public static String label_catalog_schema;
+    public static String label_choose;
+    public static String dialog_policy_data_export_msg;
+    public static String dialog_policy_data_export_title;
+    public static String dialog_policy_data_copy_title;
+    public static String dialog_policy_data_copy_msg;
 
     static {
         // initialize resource bundle

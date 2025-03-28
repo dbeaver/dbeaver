@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -115,8 +114,8 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
             scriptsViewer.setLabelProvider(new ColumnLabelProvider() {
                 @Override
                 public String getText(Object element) {
-                    if (element instanceof DBNPathBase path) {
-                        return path.getPath().toString();
+                    if (element instanceof DBNPathBase pathNode) {
+                        return DBFUtils.convertPathToString(pathNode.getPath());
                     }
                     DBNNode node = (DBNNode) element;
                     DBPProject ownerProject = node.getOwnerProject();
@@ -149,15 +148,11 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                         try {
                             handler.openResource(resource);
                         } catch (Exception e) {
-                            log.error("Failed to open resource " + resource, e);
+                            DBWorkbench.getPlatformUI().showError("Error opening resource", "Failed to open resource " + resource, e);
                         }
                     }
                 }
             });
-//            GridData gd = new GridData(GridData.FILL_BOTH);
-//            gd.heightHint = 300;
-//            gd.widthHint = 400;
-//            scriptsViewer.getTable().setLayoutData(gd);
             SQLScriptTaskScriptSelectorDialog.createScriptColumns(scriptsViewer);
 
             final Table scriptTable = scriptsViewer.getTable();
@@ -165,79 +160,93 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
             ToolBar buttonsToolbar = new ToolBar(filesGroup, SWT.VERTICAL);
             buttonsToolbar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_add_script, UIIcon.ROW_ADD, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    SQLScriptTaskScriptSelectorDialog dialog = new SQLScriptTaskScriptSelectorDialog(getShell(), projectNode);
-                    if (dialog.open() == IDialogConstants.OK_ID) {
-                        for (DBNNode script : dialog.getSelectedScripts()) {
-                            if (!selectedScripts.contains(script)) {
-                                selectedScripts.add(script);
-                            }
-                        }
-                        refreshScripts();
-                    }
-                }
-            });
-            if (DBFUtils.supportsMultiFileSystems(project)) {
-                UIUtils.createToolItem(buttonsToolbar, UIMessages.text_with_open_dialog_browse_remote, UIIcon.OPEN_EXTERNAL, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        DBNPathBase selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
-                            UIMessages.text_with_open_dialog_browse_remote,
-                            false,
-                            SWT.OPEN,
-                            false,
-                            new String[]{ "*.sql", "*"},
-                            null);
-                        if (selected != null) {
-                            if (!selectedScripts.contains(selected)) {
-                                selectedScripts.add(selected);
+            UIUtils.createToolItem(
+                buttonsToolbar,
+                DTUIMessages.sql_script_task_page_settings_tool_item_text_add_script,
+                UIIcon.ROW_ADD,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                        SQLScriptTaskScriptSelectorDialog dialog = new SQLScriptTaskScriptSelectorDialog(getShell(), projectNode);
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            for (DBNNode script : dialog.getSelectedScripts()) {
+                                if (!selectedScripts.contains(script)) {
+                                    selectedScripts.add(script);
+                                }
                             }
                             refreshScripts();
                         }
                     }
-                });
-            }
-            ToolItem deleteItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_remove_script, UIIcon.ROW_DELETE, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ISelection selection = scriptsViewer.getSelection();
-                    if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-                        for (Object element : ((IStructuredSelection) selection).toArray()) {
-                            if (element instanceof DBNNode node && node.getAdapter(IResource.class) != null) {
-                                selectedScripts.remove(element);
+                ));
+            if (DBFUtils.supportsMultiFileSystems(project)) {
+                UIUtils.createToolItem(
+                    buttonsToolbar,
+                    UIMessages.text_with_open_dialog_browse_remote,
+                    UIIcon.OPEN_EXTERNAL,
+                    SelectionListener.widgetSelectedAdapter(e -> {
+                            int selectionIndex = scriptTable.getSelectionIndex();
+                            DBNNode nextScript = selectionIndex < 0 || selectionIndex >= selectedScripts.size() ?
+                                (selectedScripts.isEmpty() ? null : selectedScripts.get(0)) : selectedScripts.get(selectionIndex);
+
+                            DBNPathBase selected = DBWorkbench.getPlatformUI().openFileSystemSelector(
+                                UIMessages.text_with_open_dialog_browse_remote,
+                                false,
+                                SWT.OPEN,
+                                false,
+                                new String[]{"*.sql", "*"},
+                                nextScript instanceof DBNPathBase sp ? DBFUtils.convertPathToString(sp.getPath()) : null);
+                            if (selected != null) {
+                                if (!selectedScripts.contains(selected)) {
+                                    selectedScripts.add(selected);
+                                }
+                                refreshScripts();
                             }
                         }
-                        refreshScripts();
+                    ));
+            }
+            ToolItem deleteItem = UIUtils.createToolItem(
+                buttonsToolbar,
+                DTUIMessages.sql_script_task_page_settings_tool_item_text_remove_script,
+                UIIcon.ROW_DELETE,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                        ISelection selection = scriptsViewer.getSelection();
+                        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+                            for (Object element : ((IStructuredSelection) selection).toArray()) {
+                                if (element instanceof DBNNode node && node.getAdapter(IResource.class) != null) {
+                                    selectedScripts.remove(element);
+                                }
+                            }
+                            refreshScripts();
+                        }
                     }
-                }
-            });
+                ));
             UIUtils.createToolBarSeparator(buttonsToolbar, SWT.HORIZONTAL);
-            ToolItem moveUpItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_move_script_up, UIIcon.ARROW_UP, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    int selectionIndex = scriptTable.getSelectionIndex();
-                    if (selectionIndex > 0) {
-                        DBNNode prevScript = selectedScripts.get(selectionIndex - 1);
-                        selectedScripts.set(selectionIndex - 1, selectedScripts.get(selectionIndex));
-                        selectedScripts.set(selectionIndex, prevScript);
-                        refreshScripts();
+            ToolItem moveUpItem = UIUtils.createToolItem(
+                buttonsToolbar,
+                DTUIMessages.sql_script_task_page_settings_tool_item_text_move_script_up,
+                UIIcon.ARROW_UP,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                        int selectionIndex = scriptTable.getSelectionIndex();
+                        if (selectionIndex > 0) {
+                            DBNNode prevScript = selectedScripts.get(selectionIndex - 1);
+                            selectedScripts.set(selectionIndex - 1, selectedScripts.get(selectionIndex));
+                            selectedScripts.set(selectionIndex, prevScript);
+                            refreshScripts();
+                        }
                     }
-                }
-            });
-            ToolItem moveDownItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_move_script_down, UIIcon.ARROW_DOWN, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    int selectionIndex = scriptTable.getSelectionIndex();
-                    if (selectionIndex < scriptTable.getItemCount() - 1) {
-                        DBNNode nextScript = selectedScripts.get(selectionIndex + 1);
-                        selectedScripts.set(selectionIndex + 1, selectedScripts.get(selectionIndex));
-                        selectedScripts.set(selectionIndex, nextScript);
-                        refreshScripts();
+                ));
+            ToolItem moveDownItem = UIUtils.createToolItem(
+                buttonsToolbar,
+                DTUIMessages.sql_script_task_page_settings_tool_item_text_move_script_down,
+                UIIcon.ARROW_DOWN,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                        int selectionIndex = scriptTable.getSelectionIndex();
+                        if (selectionIndex < scriptTable.getItemCount() - 1) {
+                            DBNNode nextScript = selectedScripts.get(selectionIndex + 1);
+                            selectedScripts.set(selectionIndex + 1, selectedScripts.get(selectionIndex));
+                            selectedScripts.set(selectionIndex, nextScript);
+                            refreshScripts();
+                        }
                     }
-                }
-            });
+                ));
             scriptsViewer.addSelectionChangedListener(event -> {
                 int selectionIndex = scriptTable.getSelectionIndex();
                 deleteItem.setEnabled(selectionIndex >= 0);
@@ -248,7 +257,12 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         }
 
         {
-            Composite connectionsGroup = UIUtils.createControlGroup(mainGroup, DTMessages.sql_script_task_page_settings_group_connections, 2, GridData.FILL_BOTH, 0);
+            Composite connectionsGroup = UIUtils.createControlGroup(
+                mainGroup,
+                DTMessages.sql_script_task_page_settings_group_connections,
+                2,
+                GridData.FILL_BOTH,
+                0);
 
             dataSourceViewer = new TableViewer(connectionsGroup, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
             dataSourceViewer.setContentProvider(new ListContentProvider());
@@ -273,61 +287,69 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
             ToolBar buttonsToolbar = new ToolBar(connectionsGroup, SWT.VERTICAL);
             buttonsToolbar.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_add_data_source, UIIcon.ROW_ADD, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    SQLScriptTaskDataSourceSelectorDialog dialog = new SQLScriptTaskDataSourceSelectorDialog(getShell(), projectNode);
-                    if (dialog.open() == IDialogConstants.OK_ID) {
-                        for (DBNDataSource ds : dialog.getSelectedDataSources()) {
-                            if (!selectedDataSources.contains(ds)) {
-                                selectedDataSources.add(ds);
+            UIUtils.createToolItem(
+                buttonsToolbar,
+                DTUIMessages.sql_script_task_page_settings_tool_item_text_add_data_source,
+                UIIcon.ROW_ADD,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                        SQLScriptTaskDataSourceSelectorDialog dialog = new SQLScriptTaskDataSourceSelectorDialog(getShell(), projectNode);
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            for (DBNDataSource ds : dialog.getSelectedDataSources()) {
+                                if (!selectedDataSources.contains(ds)) {
+                                    selectedDataSources.add(ds);
+                                }
                             }
+                            refreshDataSources();
+                            updatePageCompletion();
                         }
-                        refreshDataSources();
-                        updatePageCompletion();
                     }
-                }
-            });
-            ToolItem deleteItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_remove_data_source, UIIcon.ROW_DELETE, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    ISelection selection = dataSourceViewer.getSelection();
-                    if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-                        for (Object element : ((IStructuredSelection) selection).toArray()) {
-                            if (element instanceof DBNDataSource) {
-                                selectedDataSources.remove(element);
+                ));
+            ToolItem deleteItem = UIUtils.createToolItem(
+                buttonsToolbar,
+                DTUIMessages.sql_script_task_page_settings_tool_item_text_remove_data_source,
+                UIIcon.ROW_DELETE,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                        ISelection selection = dataSourceViewer.getSelection();
+                        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+                            for (Object element : ((IStructuredSelection) selection).toArray()) {
+                                if (element instanceof DBNDataSource) {
+                                    selectedDataSources.remove(element);
+                                }
                             }
+                            refreshDataSources();
+                            updatePageCompletion();
                         }
-                        refreshDataSources();
-                        updatePageCompletion();
                     }
-                }
-            });
+                ));
             UIUtils.createToolBarSeparator(buttonsToolbar, SWT.HORIZONTAL);
-            ToolItem moveUpItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_move_data_source_up, UIIcon.ARROW_UP, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    int selectionIndex = dsTable.getSelectionIndex();
-                    if (selectionIndex > 0) {
-                        DBNDataSource prevScript = selectedDataSources.get(selectionIndex - 1);
-                        selectedDataSources.set(selectionIndex - 1, selectedDataSources.get(selectionIndex));
-                        selectedDataSources.set(selectionIndex, prevScript);
-                        refreshDataSources();
+            ToolItem moveUpItem = UIUtils.createToolItem(
+                buttonsToolbar,
+                DTUIMessages.sql_script_task_page_settings_tool_item_text_move_data_source_up,
+                UIIcon.ARROW_UP,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                        int selectionIndex = dsTable.getSelectionIndex();
+                        if (selectionIndex > 0) {
+                            DBNDataSource prevScript = selectedDataSources.get(selectionIndex - 1);
+                            selectedDataSources.set(selectionIndex - 1, selectedDataSources.get(selectionIndex));
+                            selectedDataSources.set(selectionIndex, prevScript);
+                            refreshDataSources();
+                        }
                     }
-                }
-            });
-            ToolItem moveDownItem = UIUtils.createToolItem(buttonsToolbar, DTUIMessages.sql_script_task_page_settings_tool_item_text_move_data_source_down, UIIcon.ARROW_DOWN, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    int selectionIndex = dsTable.getSelectionIndex();
-                    if (selectionIndex < dsTable.getItemCount() - 1) {
-                        DBNDataSource nextScript = selectedDataSources.get(selectionIndex + 1);
-                        selectedDataSources.set(selectionIndex + 1, selectedDataSources.get(selectionIndex));
-                        selectedDataSources.set(selectionIndex, nextScript);
-                        refreshScripts();
+                ));
+            ToolItem moveDownItem = UIUtils.createToolItem(
+                buttonsToolbar,
+                DTUIMessages.sql_script_task_page_settings_tool_item_text_move_data_source_down,
+                UIIcon.ARROW_DOWN,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                        int selectionIndex = dsTable.getSelectionIndex();
+                        if (selectionIndex < dsTable.getItemCount() - 1) {
+                            DBNDataSource nextScript = selectedDataSources.get(selectionIndex + 1);
+                            selectedDataSources.set(selectionIndex + 1, selectedDataSources.get(selectionIndex));
+                            selectedDataSources.set(selectionIndex, nextScript);
+                            refreshScripts();
+                        }
                     }
-                }
-            });
+                ));
             dataSourceViewer.addSelectionChangedListener(event -> {
                 int selectionIndex = dsTable.getSelectionIndex();
                 deleteItem.setEnabled(selectionIndex >= 0);
@@ -353,22 +375,23 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         }
 
         getWizard().createVariablesEditButton(composite);
-
-        try {
-            getWizard().getContainer().run(true, true, monitor -> {
-                try {
-                    loadSettings(new DefaultProgressMonitor(monitor));
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            setErrorMessage("Error loading settings: " + e.getTargetException().getMessage());
-        } catch (InterruptedException e) {
-            // ignore
-        }
-
         setControl(composite);
+
+        UIUtils.asyncExec(() -> {
+            try {
+                getWizard().getContainer().run(true, true, monitor -> {
+                    try {
+                        loadSettings(new DefaultProgressMonitor(monitor));
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                setErrorMessage("Error loading settings: " + e.getTargetException().getMessage());
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        });
     }
 
     private void refreshScripts() {
@@ -449,13 +472,19 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                 if (IOUtils.isLocalFile(filePath)) {
                     Path workspaceFile;
                     RMControllerProvider rmControllerProvider = DBUtils.getAdapter(RMControllerProvider.class, project);
-                    if (rmControllerProvider != null) {
-                        workspaceFile = project.getAbsolutePath().resolve(filePath);
-                    } else {
-                        workspaceFile = DTUtils.findProjectFile(project, filePath);
+                    try {
+                        if (rmControllerProvider != null) {
+                            workspaceFile = project.getAbsolutePath().resolve(filePath);
+                        } else {
+                            workspaceFile = DTUtils.findProjectFile(project, filePath);
+                        }
+                    } catch (Exception e) {
+                        log.error(e);
+                        continue;
                     }
                     if (workspaceFile == null) {
-                        log.debug("Script file '" + filePath + "' not found");
+                        UIUtils.syncExec(() -> setMessage("Script file '" + filePath + "' not found", WARNING));
+                        log.error("Script file '" + filePath + "' not found");
                         continue;
                     }
                     DBNNode resource = projectNode.findResource(monitor, workspaceFile);
@@ -468,6 +497,9 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
                         DBNPathBase pathNode = fsNode.findNodeByPath(monitor, filePath);
                         if (pathNode != null) {
                             selectedScripts.add(pathNode);
+                        } else {
+                            UIUtils.syncExec(() -> setErrorMessage("Cannot find navigator node for path " + filePath));
+                            log.error("Cannot find navigator node for path " + filePath);
                         }
                     }
                 }
@@ -484,6 +516,7 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
         UIUtils.syncExec(() -> {
             scriptsViewer.setInput(selectedScripts);
             dataSourceViewer.setInput(selectedDataSources);
+            determinePageCompletion();
         });
     }
 
@@ -495,8 +528,8 @@ class SQLScriptTaskPageSettings extends ActiveWizardPage<SQLScriptTaskConfigurat
 
         List<String> scriptPaths = new ArrayList<>();
         for (DBNNode resource : selectedScripts) {
-            if (resource instanceof DBNPathBase) {
-                scriptPaths.add(((DBNPathBase) resource).getPath().toString());
+            if (resource instanceof DBNPathBase pn) {
+                scriptPaths.add(DBFUtils.getUriFromPath(pn.getPath()).toString());
             } else {
                 IResource res = resource.getAdapter(IResource.class);
                 if (res instanceof IFile && getWizard().getProject() instanceof RCPProject rcpProject) {

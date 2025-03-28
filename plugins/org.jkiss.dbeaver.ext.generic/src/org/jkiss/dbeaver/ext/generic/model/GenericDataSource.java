@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     private SimpleObjectCache<GenericStructContainer, GenericSchema> schemas;
     private final GenericMetaModel metaModel;
     private GenericObjectContainer structureContainer;
-    boolean catalogsFiltered;
+    protected boolean catalogsFiltered;
 
     private String queryGetActiveDB;
     private String querySetActiveDB;
@@ -213,7 +213,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     }
 
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
         return new GenericExecutionContext(instance, type);
     }
 
@@ -534,7 +534,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         }
     }
 
-    public List<String> getCatalogsNames(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData, GenericMetaObject catalogObject, @Nullable DBSObjectFilter catalogFilters) throws DBException {
+    public List<String> getCatalogsNames(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCDatabaseMetaData metaData,
+        GenericMetaObject catalogObject,
+        @Nullable DBSObjectFilter catalogFilters
+    ) throws DBException {
         final List<String> catalogNames = new ArrayList<>();
         try {
             try (JDBCResultSet dbResult = metaData.getCatalogs()) {

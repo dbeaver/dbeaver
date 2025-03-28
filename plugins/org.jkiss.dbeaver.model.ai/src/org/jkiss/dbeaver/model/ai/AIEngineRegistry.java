@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,6 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
-import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -41,45 +36,6 @@ public class AIEngineRegistry {
 
     private static final Log log = Log.getLog(AIEngineRegistry.class);
 
-    public static class EngineDescriptor extends AbstractDescriptor {
-
-        private final IConfigurationElement contributorConfig;
-        private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
-        protected EngineDescriptor(IConfigurationElement contributorConfig) {
-            super(contributorConfig);
-            this.contributorConfig = contributorConfig;
-            for (IConfigurationElement propGroup : ArrayUtils.safeArray(contributorConfig.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
-                properties.addAll(PropertyDescriptor.extractProperties(propGroup));
-            }
-        }
-
-        public String getId() {
-            return contributorConfig.getAttribute("id");
-        }
-
-        public String getLabel() {
-            return contributorConfig.getAttribute("label");
-        }
-
-        String getReplaces() {
-            return contributorConfig.getAttribute("replaces");
-        }
-
-        public boolean isDefault() {
-            return CommonUtils.toBoolean(contributorConfig.getAttribute("default"));
-        }
-
-        public List<DBPPropertyDescriptor> getProperties() {
-            return properties;
-        }
-
-        public DAICompletionEngine<?> createInstance() throws DBException {
-            ObjectType objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
-            return objectType.createInstance(DAICompletionEngine.class);
-        }
-
-    }
-
     private static AIEngineRegistry instance = null;
 
     public synchronized static AIEngineRegistry getInstance() {
@@ -89,14 +45,14 @@ public class AIEngineRegistry {
         return instance;
     }
 
-    private final Map<String, EngineDescriptor> descriptorMap = new LinkedHashMap<>();
+    private final Map<String, AIEngineDescriptor> descriptorMap = new LinkedHashMap<>();
     private final Map<String, String> replaceMap = new LinkedHashMap<>();
 
     public AIEngineRegistry(IExtensionRegistry registry) {
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor("com.dbeaver.ai.engine");
         for (IConfigurationElement ext : extElements) {
             if ("completionEngine".equals(ext.getName())) {
-                EngineDescriptor descriptor = new EngineDescriptor(ext);
+                AIEngineDescriptor descriptor = new AIEngineDescriptor(ext);
                 descriptorMap.put(descriptor.getId(), descriptor);
 
                 String replaces = descriptor.getReplaces();
@@ -109,9 +65,9 @@ public class AIEngineRegistry {
         }
     }
 
-    public List<EngineDescriptor> getCompletionEngines() {
-        List<EngineDescriptor> list = new ArrayList<>();
-        for (Map.Entry<String, EngineDescriptor> entry : descriptorMap.entrySet()) {
+    public List<AIEngineDescriptor> getCompletionEngines() {
+        List<AIEngineDescriptor> list = new ArrayList<>();
+        for (Map.Entry<String, AIEngineDescriptor> entry : descriptorMap.entrySet()) {
             if (replaceMap.containsKey(entry.getKey())) {
                 continue;
             }
@@ -120,15 +76,15 @@ public class AIEngineRegistry {
         return list;
     }
 
-    public EngineDescriptor getDefaultCompletionEngineDescriptor() {
-        return getCompletionEngines().stream().filter(EngineDescriptor::isDefault).findFirst().orElse(null);
+    public AIEngineDescriptor getDefaultCompletionEngineDescriptor() {
+        return getCompletionEngines().stream().filter(AIEngineDescriptor::isDefault).findFirst().orElse(null);
     }
 
-    public DAICompletionEngine<?> getCompletionEngine(String id) throws DBException {
-        EngineDescriptor descriptor = getEngineDescriptor(id);
+    public DAICompletionEngine getCompletionEngine(String id) throws DBException {
+        AIEngineDescriptor descriptor = getEngineDescriptor(id);
         if (descriptor == null) {
             log.warn("Active engine is not present in the configuration, switching to default active engine");
-            EngineDescriptor defaultCompletionEngineDescriptor = getDefaultCompletionEngineDescriptor();
+            AIEngineDescriptor defaultCompletionEngineDescriptor = getDefaultCompletionEngineDescriptor();
             if (defaultCompletionEngineDescriptor == null) {
                 throw new DBException("AI engine '" + id + "' not found");
             }
@@ -137,7 +93,7 @@ public class AIEngineRegistry {
         return descriptor.createInstance();
     }
 
-    public EngineDescriptor getEngineDescriptor(String id) {
+    public AIEngineDescriptor getEngineDescriptor(String id) {
         while (true) {
             String replace = replaceMap.get(id);
             if (replace == null) {

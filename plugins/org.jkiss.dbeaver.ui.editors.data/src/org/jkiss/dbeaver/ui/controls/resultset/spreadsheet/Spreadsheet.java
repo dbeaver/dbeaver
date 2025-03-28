@@ -370,7 +370,11 @@ public class Spreadsheet extends LightGrid implements Listener {
             case LightGrid.Event_NavigateLink:
                 // Perform navigation async because it may change grid content and
                 // we don't want to mess current grid state
-                UIUtils.asyncExec(() -> presentation.navigateLink((GridCell) event.data, event.stateMask));
+                UIUtils.asyncExec(() -> presentation.navigateLink(
+                    (GridCell) event.data,
+                    event.x,
+                    event.y,
+                    event.stateMask));
                 break;
         }
     }
@@ -434,13 +438,17 @@ public class Spreadsheet extends LightGrid implements Listener {
                 presentation.fillContextMenu(
                     manager,
                     isRecordMode ? null : getColumnByPosition(focusPos),
-                    isRecordMode ? getRowByPosition(focusPos) : null
+                    isRecordMode ? getRowByPosition(focusPos) : null,
+                    isHoveringOnHeader(),
+                    isHoveringOnRowHeader()
                 );
             } else {
                 presentation.fillContextMenu(
                     manager,
                     isHoveringOnRowHeader() ? null : getColumnByPosition(focusPos),
-                    isHoveringOnHeader() ? null : getRowByPosition(focusPos)
+                    isHoveringOnHeader() ? null : getRowByPosition(focusPos),
+                    isHoveringOnHeader(),
+                    isHoveringOnRowHeader()
                 );
             }
         });

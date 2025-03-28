@@ -36,7 +36,10 @@
         <generator id="tableMerge" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorMerge" label="MERGE" description="MERGE table" order="5">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </generator>
-        <generator id="tableJoin" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorJoin" label="JOIN" description="JOIN tables" order="6" multiObject="true">
+        <generator id="tableJoin" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorSimpleJoin" label="SIMPLE JOIN" description="JOIN tables" order="6" multiObject="true">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+        </generator>
+        <generator id="tableInnerJoin" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorInnerJoin" label="INNER JOIN" description="JOIN tables" order="7" multiObject="true">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </generator>
         <generator id="procedureCall" class="org.jkiss.dbeaver.model.sql.generator.SQLGeneratorProcedureCall" label="CALL" description="Execute procedure" order="1000">
@@ -70,7 +73,7 @@
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
                 base-type="org.eclipse.core.runtime.text"
-                file-extensions="sql"
+                file-extensions="sql,ddl"
                 id="org.jkiss.dbeaver.sql"
                 name="SQL Script"
                 priority="high"
@@ -100,7 +103,7 @@
                 <property id="sql.proposals.insert.table.alias" label="Insert table aliases (in FROM clause)"
                           validValues="NONE,PLAIN,EXTENDED" defaultValue="PLAIN" type="string" scopes="global,user"
                           description="Automatically inserts table aliases"/>
-                <property id="SQLEditor.ContentAssistant.proposals.long.name" label="Use long object names (always use schema/catalog)"
+                <property id="SQLEditor.ContentAssistant.proposals.long.name" label="%SQLEditor.ContentAssistant.proposals.long.name"
                           defaultValue="false" type="boolean" scopes="global,user"/>
             </propertyGroup>
         </propertyGroup>

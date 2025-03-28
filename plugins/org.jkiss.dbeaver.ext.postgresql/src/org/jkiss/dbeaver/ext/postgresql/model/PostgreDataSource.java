@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,18 +94,19 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private SettingCache settingCache;
     private String activeDatabaseName;
     private PostgreServerExtension serverExtension;
-    private String serverVersion;
+    protected String serverVersion;
+    private boolean shouldShowStatistics;
     private volatile boolean hasStatistics;
     private boolean supportsEnumTable;
     private boolean supportsReltypeColumn = true;
+    private volatile boolean isConnectionRefreshing = false;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
         super(monitor, container, new PostgreDialect());
 
-        // Statistics was disabled then mark it as already read
-        this.hasStatistics = !CommonUtils.getBoolean(container.getConnectionConfiguration().getProviderProperty(
+        this.shouldShowStatistics = CommonUtils.getBoolean(container.getConnectionConfiguration().getProviderProperty(
             PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
     }
 
@@ -114,8 +115,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                              @NotNull SQLDialect dialect) throws DBException {
         super(monitor, container, dialect);
 
-        // Statistics was disabled then mark it as already read
-        this.hasStatistics = !CommonUtils.getBoolean(container.getConnectionConfiguration()
+        this.shouldShowStatistics = CommonUtils.getBoolean(container.getConnectionConfiguration()
                     .getProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
     }
 
@@ -169,7 +169,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
         databaseCache.setCache(dbList);
         // Initiate default context
-        getDefaultInstance().checkInstanceConnection(monitor, false);
+        if (!this.isConnectionRefreshing()) {
+            getDefaultInstance().checkInstanceConnection(monitor, false);
+        }
         try {
             // Preload some settings, if available
             settingCache.getObject(monitor, this, PostgreConstants.OPTION_STANDARD_CONFORMING_STRINGS);
@@ -467,15 +469,21 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         super.refreshObject(monitor);
         shutdown(monitor);
 
-        this.databaseCache.clearCache();
-        this.activeDatabaseName = null;
+        try {
+            this.isConnectionRefreshing = true;
+            this.databaseCache.clearCache();
+            this.activeDatabaseName = null;
+            this.hasStatistics = false;
+            this.initializeRemoteInstance(monitor);
+        } finally {
+            this.isConnectionRefreshing = false;
+        }
+        getDefaultInstance().checkInstanceConnection(monitor, false);
 
-        this.initializeRemoteInstance(monitor);
         this.initialize(monitor);
 
         return this;
@@ -514,15 +522,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (instance != null) {
             log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + instance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
-        boolean timezoneOverridden = false;
+        String currentTimezoneId = ZoneId.systemDefault().getId();
+        String legacyTimezoneOverridden = PostgreConstants.REPLACING_TIMEZONE.get(currentTimezoneId);
 
         try {
             // Old versions of postgres and some linux distributions, on which docker images are made, may not contain
             // new timezone, which will lead to the error while connecting, there is no way to know before connecting
             // so to be sure we will use the old name
-            if (PostgreConstants.NEW_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) {
-                TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.LEGACY_UA_TIMEZONE), false);
-                timezoneOverridden = true;
+            if (isNeedToReplaceLegacyTimezone() && legacyTimezoneOverridden != null) {
+                TimezoneRegistry.setDefaultZone(ZoneId.of(legacyTimezoneOverridden), false);
             }
 
             if (isReadDatabaseList(conConfig) || !CommonUtils.isEmpty(conConfig.getBootstrap().getDefaultCatalogName())) {
@@ -574,8 +582,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
             throw e;
         } finally {
-            if (timezoneOverridden && PostgreConstants.LEGACY_UA_TIMEZONE.equals(TimeZone.getDefault().getID())) {
-                TimezoneRegistry.setDefaultZone(ZoneId.of(PostgreConstants.NEW_UA_TIMEZONE), false);
+            if (isNeedToReplaceLegacyTimezone() && legacyTimezoneOverridden != null) {
+                TimezoneRegistry.setDefaultZone(ZoneId.of(currentTimezoneId), false);
             }
         }
 
@@ -744,11 +752,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     public boolean isStatisticsCollected() {
-        return hasStatistics;
+        return !shouldShowStatistics || hasStatistics;
     }
 
     @Override
     public void collectObjectStatistics(DBRProgressMonitor monitor, boolean totalSizeOnly, boolean forceRefresh) throws DBException {
+        if (!shouldShowStatistics) {
+            return;
+        }
+        
         if (hasStatistics && !forceRefresh) {
             return;
         }
@@ -781,6 +793,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } finally {
             hasStatistics = true;
         }
+    }
+
+    @Override
+    public boolean isConnectionRefreshing() {
+        return isConnectionRefreshing;
     }
 
     private static class DatabaseCache extends SimpleObjectCache<PostgreDataSource, PostgreDatabase> {
@@ -890,6 +907,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     public boolean supportsReadingKeysWithColumns() {
         return CommonUtils.toBoolean(
             getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
+    }
+
+    public boolean isNeedToReplaceLegacyTimezone() {
+        return CommonUtils.toBoolean(
+            getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE));
     }
 
     public boolean isSupportsEnumTable() {

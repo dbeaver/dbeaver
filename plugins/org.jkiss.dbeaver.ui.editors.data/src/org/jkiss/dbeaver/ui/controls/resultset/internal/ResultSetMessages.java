@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class ResultSetMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages"; //$NON-NLS-1$
@@ -83,6 +83,7 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_action_column_view;
     public static String controls_resultset_viewer_action_logical_structure;
     public static String controls_resultset_viewer_action_view_format;
+    public static String controls_resultset_viewer_action_view_hints;
     public static String controls_resultset_viewer_action_view_as;
     public static String controls_resultset_viewer_action_view_column_type;
     public static String controls_resultset_viewer_action_view_column_types;
@@ -298,6 +299,7 @@ public class ResultSetMessages extends NLS {
 
     public static String pref_page_data_viewer_dictionary_panel_group;
     public static String getPref_page_data_viewer_dictionary_panel_results_max_size;
+    public static String getPref_page_data_viewer_dictionary_panel_results_max_size_tip;
 
 
     public static String dialog_data_format_profiles_button_delete_profile;
@@ -415,6 +417,7 @@ public class ResultSetMessages extends NLS {
     public static String panel_editor_text_loading_placeholder_label;
     public static String panel_editor_text_word_wrap_name;
     public static String panel_editor_text_auto_format_name;
+    public static String panel_editor_text_minify_name;
     public static String panel_editor_text_encoding_name;
     public static String panel_editor_text_encoding_title;
     public static String panel_editor_text_content_limitation_lbl;
@@ -486,9 +489,6 @@ public class ResultSetMessages extends NLS {
     public static String reference_value_editor_current_pagination_value;
     public static String reference_value_editor_define_description_value;
     public static String reference_value_editor_search_hint_value;
-
-    public static String dialog_policy_data_export_msg;
-    public static String dialog_policy_data_export_title;
 
     static {
         // initialize resource bundle

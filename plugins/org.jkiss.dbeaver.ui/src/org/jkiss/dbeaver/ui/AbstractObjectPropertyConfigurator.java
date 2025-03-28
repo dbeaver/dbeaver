@@ -24,7 +24,6 @@ public abstract class AbstractObjectPropertyConfigurator<OBJECT, SETTINGS> imple
     private DBPConnectionEditIntention editIntention = DBPConnectionEditIntention.DEFAULT;
 
     @NotNull
-    @Override
     public DBPConnectionEditIntention getEditIntention() {
         return this.editIntention;
     }

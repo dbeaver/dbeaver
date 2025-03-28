@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.vertica.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class VerticaMessages extends NLS {
 

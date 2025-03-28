@@ -35,11 +35,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.utils.ArrayUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecutionContext> {
     private final HANADataSource dataSource;
@@ -60,6 +61,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
             HANAObjectType.VIEW,
             HANAObjectType.PROCEDURE,
             HANAObjectType.SYNONYM,
+            HANAObjectType.SCHEMA,
             RelationalObjectType.TYPE_TABLE_COLUMN,
             RelationalObjectType.TYPE_VIEW_COLUMN, 
        };
@@ -109,15 +111,20 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
     public List<DBSObjectReference> findObjectsByMask(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext executionContext,
                                                       @NotNull ObjectsSearchParams params) throws DBException {
         List<DBSObjectReference> result = new ArrayList<>();
-        List<DBSObjectType> objectTypesList = Arrays.asList(params.getObjectTypes());
+        DBSObjectType[] objectTypes = params.getObjectTypes();
         StringBuilder objectTypeClause = new StringBuilder(100);
         GenericSchema parentSchema = params.getParentObject() instanceof GenericSchema ?
                 (GenericSchema) params.getParentObject() : (params.isGlobalSearch() || !(executionContext instanceof GenericExecutionContext) ? null : ((GenericExecutionContext) executionContext).getDefaultSchema());
 
         try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.META, "Find objects by mask")) {
-            if (objectTypesList.contains(HANAObjectType.TABLE) || objectTypesList.contains(HANAObjectType.VIEW) || objectTypesList.contains(HANAObjectType.PROCEDURE) ||
-                    objectTypesList.contains(HANAObjectType.SYNONYM)) {
-                for (DBSObjectType objectType : params.getObjectTypes()) {
+            if (ArrayUtils.containsAny(objectTypes,
+                HANAObjectType.TABLE,
+                HANAObjectType.VIEW,
+                HANAObjectType.PROCEDURE,
+                HANAObjectType.SYNONYM,
+                HANAObjectType.SCHEMA
+            )) {
+                for (DBSObjectType objectType : objectTypes) {
                     if (objectTypeClause.length() > 0) objectTypeClause.append(",");
                     objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
                 }
@@ -126,10 +133,10 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                 }
                 searchNotColumnObjects(session, parentSchema, params, result, objectTypeClause.toString());
             }
-            if (objectTypesList.contains(RelationalObjectType.TYPE_TABLE_COLUMN)) {
+            if (ArrayUtils.contains(objectTypes, RelationalObjectType.TYPE_TABLE_COLUMN)) {
                 findTableColumnsByMask(session, parentSchema, params, result);
             }
-            if (objectTypesList.contains(RelationalObjectType.TYPE_VIEW_COLUMN)) {
+            if (ArrayUtils.contains(objectTypes, RelationalObjectType.TYPE_VIEW_COLUMN)) {
                 findViewColumnsByMask(session, parentSchema, params, result);
             }
         } catch (SQLException ex) {
@@ -141,17 +148,30 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
 
     private void searchNotColumnObjects(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,
                                         List<DBSObjectReference> result, String objectTypeClause) throws SQLException {
+        boolean isNeedSearchSchemas = Set.of(params.getObjectTypes()).contains(HANAObjectType.SCHEMA);
         String stmt = "SELECT SCHEMA_NAME, OBJECT_NAME, OBJECT_TYPE FROM SYS.OBJECTS WHERE";
+        stmt += isNeedSearchSchemas ? "(" : "";
         stmt += params.isCaseSensitive() ? " OBJECT_NAME LIKE ?" : " UPPER(OBJECT_NAME) LIKE ?";
         if (parentSchema != null) stmt += " AND SCHEMA_NAME = ?";
         stmt += " AND OBJECT_TYPE IN (" + objectTypeClause + ")";
+        stmt += isNeedSearchSchemas ? ")" : "";
+        if (isNeedSearchSchemas) {
+            stmt += "OR (OBJECT_TYPE = 'SCHEMA' AND ";
+            stmt += params.isCaseSensitive() ? "UPPER(SCHEMA_NAME)" : "SCHEMA_NAME" + " LIKE ? )";
+        }
+
         stmt += " ORDER BY SCHEMA_NAME, OBJECT_NAME LIMIT " + (params.getMaxResults() - result.size());
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
-            dbStat.setString(1, params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase());
+            int paramIndex = 1;
+            String searchString = params.isCaseSensitive() ? params.getMask() : params.getMask().toUpperCase();
+            dbStat.setString(paramIndex++, searchString);
             if (parentSchema != null) {
-                dbStat.setString(2, parentSchema.getName());
+                dbStat.setString(paramIndex++, parentSchema.getName());
+            }
+            if (isNeedSearchSchemas) {
+                dbStat.setString(paramIndex, searchString);
             }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (!monitor.isCanceled() && dbResult.next()) {
@@ -159,6 +179,11 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                     final String objectName = dbResult.getString(2);
                     final String objectTypeName = dbResult.getString(3);
                     final HANAObjectType objectType = HANAObjectType.valueOf(objectTypeName);
+
+                    if (HANAObjectType.SCHEMA.equals(objectType)) {
+                        addSchemaToResult(schemaName, result);
+                        continue;
+                    }
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
                     if (schema == null) {
                         log.debug("Schema '" + schemaName + "' not found. Probably was filtered");
@@ -189,6 +214,27 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                 }
             }
         }
+    }
+
+    private void addSchemaToResult(String schemaName, List<DBSObjectReference> result) {
+        final DBSObject schema = dataSource.getSchema(schemaName);
+        if (schema == null) {
+            log.warn(HANAObjectType.SCHEMA + " '" + schemaName + "' is not found");
+            return;
+        }
+        result.add(new AbstractObjectReference<>(schemaName, schema.getParentObject(), null, HANAObjectType.SCHEMA.getTypeClass(),
+            HANAObjectType.SCHEMA) {
+            @Override
+            public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                return schema;
+            }
+
+            @NotNull
+            @Override
+            public String getFullyQualifiedName(DBPEvaluationContext context) {
+                return super.getFullyQualifiedName(context);
+            }
+        });
     }
 
     private void findTablesByMask(JDBCSession session, GenericSchema parentSchema, @NotNull ObjectsSearchParams params,

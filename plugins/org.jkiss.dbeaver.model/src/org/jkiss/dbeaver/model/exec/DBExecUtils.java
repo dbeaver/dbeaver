@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.data.*;
@@ -930,15 +927,27 @@ public class DBExecUtils {
         return tableColumn.getDataKind().isComplex() == resultSetAttributeMeta.getDataKind().isComplex();
     }
 
+    /**
+     * Returns read-only status for an attribute.
+     */
     public static boolean isAttributeReadOnly(@Nullable DBDAttributeBinding attribute) {
+        return isAttributeReadOnly(attribute, false);
+    }
+
+    /**
+     * Returns read-only status for an attribute (also can check that row identifier is incomplete by checking a valid key).
+     */
+    public static boolean isAttributeReadOnly(@Nullable DBDAttributeBinding attribute, boolean checkValidKey) {
         if (attribute == null || attribute.getMetaAttribute() == null || attribute.getMetaAttribute().isReadOnly()) {
             return true;
         }
         DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
+        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator dataContainer)) {
             return true;
         }
-        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
+        if (checkValidKey && rowIdentifier.isIncomplete()) {
+            return true;
+        }
         return !dataContainer.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE);
     }
 
@@ -969,6 +978,37 @@ public class DBExecUtils {
         }
         if (!((DBSDataManipulator) dataContainer).isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE)) {
             return "Underlying entity doesn't support data update";
+        }
+        return null;
+    }
+
+    /**
+     * Checks if a result set is read-only.
+     */
+    public static boolean isResultSetReadOnly(@Nullable DBCExecutionContext executionContext) {
+        return executionContext == null ||
+            !executionContext.isConnected() ||
+            !executionContext.getDataSource().getContainer().hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA) ||
+            executionContext.getDataSource().getInfo().isReadOnlyData();
+    }
+
+    /**
+     * Gets read-only status for a result set.
+     */
+    @Nullable
+    public static String getResultSetReadOnlyStatus(@Nullable DBPDataSourceContainer container) {
+        DBPDataSource dataSource = container == null ? null : container.getDataSource();
+        if (dataSource == null || !container.isConnected()) {
+            return "No connection to database";
+        }
+        if (container.isConnectionReadOnly()) {
+            return "Connection is in read-only state";
+        }
+        if (dataSource.getInfo().isReadOnlyData()) {
+            return "Read-only data container";
+        }
+        if (!container.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
+            return "Data edit restricted";
         }
         return null;
     }

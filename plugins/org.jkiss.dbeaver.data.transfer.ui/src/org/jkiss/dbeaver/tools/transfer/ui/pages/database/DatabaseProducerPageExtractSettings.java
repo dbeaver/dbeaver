@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,6 +75,14 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
             Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_max_threads);
             threadsNumText = new Text(generalSettings, SWT.BORDER);
             threadsNumText.setToolTipText(DTUIMessages.database_producer_page_extract_settings_threads_num_text_tooltip);
+            threadsNumText.setLayoutData(new GridData(
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                false,
+                false,
+                3,
+                1));
+            ((GridData)threadsNumText.getLayoutData()).widthHint = UIUtils.getFontHeight(threadsNumText) * 5;
             threadsNumText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
             threadsNumText.addModifyListener(e -> {
                 try {
@@ -87,7 +95,6 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                 threadsNumLabel.setEnabled(false);
                 threadsNumText.setEnabled(false);
             }
-            threadsNumText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
             {
 

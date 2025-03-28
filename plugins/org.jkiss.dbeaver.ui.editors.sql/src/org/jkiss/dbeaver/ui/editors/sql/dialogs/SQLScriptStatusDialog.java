@@ -19,11 +19,9 @@ package org.jkiss.dbeaver.ui.editors.sql.dialogs;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
@@ -36,8 +34,8 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 import java.util.Collection;
@@ -177,9 +175,7 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
         if (treeItem != null) {
             treeItem.setText(1, error == null ? "Done" : error.getMessage());
             if (error != null) {
-                ColorRegistry colorRegistry = UIUtils.getActiveWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
-                Color colorError = colorRegistry.get(QueryLogViewer.COLOR_REVERTED);
-                treeItem.setForeground(1, colorError);
+                treeItem.setForeground(1, BaseThemeSettings.instance.colorError);
             }
         }
     }

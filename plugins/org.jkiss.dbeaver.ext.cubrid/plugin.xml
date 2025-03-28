@@ -8,7 +8,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="cubrid" parent="generic" class="org.jkiss.dbeaver.ext.cubrid.model.CubridSQLDialect.java" label="Cubrid"
+        <dialect id="cubrid" parent="generic" class="org.jkiss.dbeaver.ext.cubrid.model.CubridSQLDialect" label="Cubrid"
                  description="Cubrid SQL dialect." icon="icons/cubrid_icon.png">
         </dialect>
     </extension>
@@ -229,6 +229,7 @@
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTriggerManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridServerManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridServer"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridSequenceManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridSequence"/>
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridSynonymManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridSynonym"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridViewManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridView"/>
     </extension>
 </plugin>

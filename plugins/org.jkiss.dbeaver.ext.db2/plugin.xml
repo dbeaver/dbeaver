@@ -511,7 +511,7 @@
        <provider
             class="org.jkiss.dbeaver.ext.db2.data.DB2ValueHandlerProvider"
             description="DB2 data types provider"
-            id="org.jkiss.dbeaver.ext.db2.data.DB2ValueHandlerProvider"
+            id="DB2ValueHandlerProvider"
             label="Db2 data types provider">
 
             <datasource id="db2"/>

@@ -96,6 +96,16 @@ public class SQLConstants {
     public static final String DATA_TYPE_STRING = "STRING";
     public static final String DATA_TYPE_TINYINT = "TINYINT";
 
+    public static final String[] QUERY_KEYWORDS = {
+        KEYWORD_SELECT,
+        KEYWORD_INSERT,
+        KEYWORD_UPDATE,
+        KEYWORD_DELETE,
+        KEYWORD_MERGE,
+        KEYWORD_UPSERT,
+        KEYWORD_TRUNCATE
+    };
+
     public static final String[] TABLE_KEYWORDS = {
         KEYWORD_FROM,
         KEYWORD_INSERT,

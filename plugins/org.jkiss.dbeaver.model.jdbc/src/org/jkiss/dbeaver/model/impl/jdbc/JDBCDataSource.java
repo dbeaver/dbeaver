@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,6 +201,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             }
 
             JDBCConnectionOpener connectTask = new JDBCConnectionOpener(
+                this,
                 driver,
                 driverInstance,
                 url,
@@ -337,8 +338,9 @@ public abstract class JDBCDataSource extends AbstractDataSource
         } else {
             if (!CommonUtils.isEmpty(driverClassName)) {
                 try {
-                    driver.loadDriver(monitor);
-                    Class.forName(driverClassName, true, driver.getClassLoader());
+                    DBPDriverLoader driverLoader = driver.getDriverLoader(getContainer());
+                    driverLoader.loadDriver(monitor);
+                    Class.forName(driverClassName, true, driverLoader.getClassLoader());
                 } catch (Exception e) {
                     throw new DBCConnectException("Driver class '" + driverClassName + "' not found", e, this);
                 }
@@ -601,7 +603,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return this;
     }
 
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
         return new JDBCExecutionContext(instance, type);
     }
 
@@ -771,7 +773,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         if (driverSubstitution != null) {
             return driverSubstitution.getInstance().getSubstitutingDriverInstance(monitor);
         } else {
-            return container.getDriver().getDriverInstance(monitor);
+            return container.getDriver().getDriverLoader(getContainer()).getDriverInstance(monitor);
         }
     }
 
@@ -862,9 +864,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
     public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
         try {
             statement.cancel();
-        }
-        catch (SQLException e) {
-            if (e instanceof SQLFeatureNotSupportedException) {
+        } catch (SQLException e) {
+            if (JDBCUtils.isFeatureNotSupportedError(this, e)) {
                 // ignore
                 return;
             }

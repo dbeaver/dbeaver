@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,6 +72,10 @@ public abstract class ObjectAttributeDescriptor {
         this.id = id;
         if (CommonUtils.isEmpty(this.id)) {
             this.id = BeanUtils.getPropertyNameFromGetter(getter.getName());
+            String parentId = parent == null ? null : CommonUtils.notEmpty(parent.getId());
+            if (parentId != null) {
+                this.id = parentId + "." + this.id;
+            }
         }
 
         declaringClass = parent == null ? getter.getDeclaringClass() : parent.getDeclaringClass();

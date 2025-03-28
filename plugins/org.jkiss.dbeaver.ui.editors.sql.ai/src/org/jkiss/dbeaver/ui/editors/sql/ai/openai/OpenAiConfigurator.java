@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
-import org.jkiss.dbeaver.model.ai.openai.GPTModel;
+import org.jkiss.dbeaver.model.ai.openai.OpenAIModel;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages;
@@ -35,7 +35,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
-public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAICompletionEngine<?>, AIEngineSettings> {
+public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String token = "";
     private String temperature = "0.0";
@@ -51,7 +51,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
     @Override
     public void createControl(
         @NotNull Composite parent,
-        DAICompletionEngine<?> object,
+        DAICompletionEngine object,
         @NotNull Runnable propertyChangeListener
     ) {
         Composite composite = UIUtils.createComposite(parent, 2);
@@ -83,7 +83,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
     protected void createModelParameters(@NotNull Composite parent) {
         if (isUsesModel()) {
             modelCombo = UIUtils.createLabelCombo(parent, AIUIMessages.gpt_preference_page_combo_engine, SWT.READ_ONLY);
-            for (GPTModel model : getSupportedGPTModels()) {
+            for (OpenAIModel model : getSupportedGPTModels()) {
                 if (model.getDeprecationReplacementModel() == null) {
                     modelCombo.add(model.getName());
                 }
@@ -104,8 +104,8 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
     }
 
     @NotNull
-    protected GPTModel[] getSupportedGPTModels() {
-        return GPTModel.values();
+    protected OpenAIModel[] getSupportedGPTModels() {
+        return OpenAIModel.values();
     }
 
     protected void createConnectionParameters(@NotNull Composite parent) {
@@ -153,12 +153,12 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
         applySettings();
     }
 
-    private GPTModel readModel(@NotNull AIEngineSettings aiSettings) {
-        return GPTModel.getByName(CommonUtils.toString(aiSettings.getProperties().get(AIConstants.GPT_MODEL), getDefaultModel()));
+    private OpenAIModel readModel(@NotNull AIEngineSettings aiSettings) {
+        return OpenAIModel.getByName(CommonUtils.toString(aiSettings.getProperties().get(AIConstants.GPT_MODEL), getDefaultModel()));
     }
 
     protected String getDefaultModel() {
-        return GPTModel.GPT_TURBO.getName();
+        return OpenAIModel.GPT_TURBO.getName();
     }
 
     protected void applySettings() {

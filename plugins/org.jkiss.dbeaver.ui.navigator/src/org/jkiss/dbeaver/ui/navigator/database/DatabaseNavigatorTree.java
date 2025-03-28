@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,16 +43,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAlias;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
-import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.registry.RuntimeProjectPropertiesConstant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
@@ -90,9 +89,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     private boolean filterShowConnected = false;
     private String filterPlaceholderText = UINavigatorMessages.actions_navigator_search_tip;
-    private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.table;
+    private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.connection;
     private volatile ProgressPainter treeLoadingListener;
-    ;
 
     // It is static to share loading nodes between all tree controls
     private static final Set<DBNNode> nodeInLoadingProcess = new HashSet<>();
@@ -838,8 +836,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 return false;
             }
             if ((filterShowConnected ||
-                 getFilterObjectType() == DatabaseNavigatorTreeFilterObjectType.connection ||
-                 (hasPattern && filter.filterFolders())) && element instanceof DBNLocalFolder) {
+                (hasPattern && getFilterObjectType() == DatabaseNavigatorTreeFilterObjectType.connection) ||
+                (hasPattern && filter.filterFolders())) && element instanceof DBNLocalFolder
+            ) {
                 return hasVisibleConnections(viewer, (DBNLocalFolder) element);
             }
             if (!filter.select(element)) {
@@ -850,10 +849,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             if (!needToMatch && element instanceof DBNDatabaseNode node) {
                 DBSObject object = node.getObject();
                 switch (filterObjectType) {
-                    case connection:
-                        needToMatch = (object instanceof DBPDataSourceContainer);
-                        break;
-                    case container:
+                    case connection -> needToMatch = (object instanceof DBPDataSourceContainer);
+                    case container -> {
                         needToMatch = object instanceof DBSSchema || object instanceof DBSCatalog;
                         if (needToMatch) {
                             try {
@@ -863,18 +860,12 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                                 log.debug(e);
                             }
                         }
-                        break;
-                    default:
-                        needToMatch =
-                            object instanceof DBSEntity ||
-                            object instanceof DBSProcedure ||
-                            object instanceof DBSTableIndex ||
-                            object instanceof DBSTrigger ||
-                            object instanceof DBSPackage ||
-                            object instanceof DBSSequence ||
-                            object instanceof DBSAlias ||
-                            object instanceof DBAUser;
-                        break;
+                    }
+                    default -> needToMatch = !(object instanceof DBPDataSourceContainer) &&
+                                             !(object instanceof DBSSchema) &&
+                                             !(object instanceof DBSCatalog) &&
+                                             !(object instanceof DBNDatabaseFolder) &&
+                                             !(object instanceof DBSTableColumn);
                 }
             }
             if (!needToMatch) {
@@ -954,7 +945,12 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private class CustomFilteredTree extends FilteredTree {
 
         CustomFilteredTree(int treeStyle) {
-            super(DatabaseNavigatorTree.this, treeStyle, new TreeFilter(DatabaseNavigatorTree.this.navigatorFilter), true);
+            super(
+                DatabaseNavigatorTree.this,
+                treeStyle,
+                new TreeFilter(DatabaseNavigatorTree.this.navigatorFilter),
+                true,
+                true);
             try {
                 if (treeViewer != null) {
                     treeViewer.setUseHashlookup(true);
