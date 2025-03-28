@@ -102,14 +102,21 @@ class PostgreBackupWizard extends AbstractNativeExportWizard<PostgreDatabaseBack
     }
 
     @Override
-	public void onSuccess(long workTime) {
+    public void onSuccess(long workTime) {
+        Set<String> outputFolders = getSettings().getExportObjects().stream()
+                .map(it -> getSettings().getOutputFolder(it))
+                .collect(Collectors.toSet());
+
+        String successMessage = PostgreMessages.wizard_backup_msgbox_success_description + "\nFile paths:\n" +
+                outputFolders.stream().collect(Collectors.joining("\n")) + "\nTEST SUCCESSFUL";
+
         UIUtils.showMessageBox(
-            getShell(),
-            PostgreMessages.wizard_backup_msgbox_success_title,
-            NLS.bind(PostgreMessages.wizard_backup_msgbox_success_description, CommonUtils.truncateString(getObjectsName(), 255)),
-            SWT.ICON_INFORMATION);
-        Set<String> set = getSettings().getExportObjects().stream().map(it -> getSettings().getOutputFolder(it)).collect(Collectors.toSet());
-        set.forEach(ShellUtils::launchProgram);
+                getShell(),
+                PostgreMessages.wizard_backup_msgbox_success_title,
+                successMessage,
+                SWT.ICON_INFORMATION);
+
+        outputFolders.forEach(ShellUtils::launchProgram);
     }
 
     @Override

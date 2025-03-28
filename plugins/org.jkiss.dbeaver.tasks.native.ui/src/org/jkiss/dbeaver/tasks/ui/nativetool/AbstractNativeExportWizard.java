@@ -45,7 +45,6 @@ public abstract class AbstractNativeExportWizard<SETTINGS extends AbstractImport
 
     @Override
     public boolean performFinish() {
-        //verify that output files do not yet exist
         SETTINGS settings = getSettings();
         for (INFO info: settings.getExportObjects()) {
             try {
@@ -64,8 +63,8 @@ public abstract class AbstractNativeExportWizard<SETTINGS extends AbstractImport
                     continue;
                 }
                 boolean deleteFile = UIUtils.confirmAction(
-                    TaskNativeUIMessages.tools_db_export_wizard_file_already_exists_title,
-                    TaskNativeUIMessages.tools_db_export_wizard_file_already_exists_message
+                        TaskNativeUIMessages.tools_db_export_wizard_file_already_exists_title,
+                        TaskNativeUIMessages.tools_db_export_wizard_file_already_exists_message
                 );
                 if (!deleteFile) {
                     return false;
@@ -74,9 +73,9 @@ public abstract class AbstractNativeExportWizard<SETTINGS extends AbstractImport
                     Files.delete(file);
                 } catch (IOException e) {
                     DBWorkbench.getPlatformUI().showError(
-                        TaskNativeUIMessages.tools_db_export_wizard_file_have_not_been_deleted_title,
-                        TaskNativeUIMessages.tools_db_export_wizard_file_have_not_been_deleted_message,
-                        e
+                            TaskNativeUIMessages.tools_db_export_wizard_file_have_not_been_deleted_title,
+                            TaskNativeUIMessages.tools_db_export_wizard_file_have_not_been_deleted_message,
+                            e
                     );
                     return false;
                 }
@@ -85,7 +84,17 @@ public abstract class AbstractNativeExportWizard<SETTINGS extends AbstractImport
                 return false;
             }
         }
+        boolean result = super.performFinish();
 
-        return super.performFinish();
+        // Show a success message if export was completed
+        if (result) {
+            DBWorkbench.getPlatformUI().showMessageBox(
+                    "Export Successful",
+                    "Successfully exported to: " + settings.getOutputFolder(null),
+                    true  // Use 'true' here to indicate an informational message
+            );
+        }
+
+        return result;
     }
 }
