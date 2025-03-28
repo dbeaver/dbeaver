@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,20 +45,21 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
     private static final Log log = Log.getLog(DriverLibraryLocal.class);
     private boolean useOriginalJar;
 
-    public DriverLibraryLocal(DriverDescriptor driver, FileType type, String path) {
+    public DriverLibraryLocal(@NotNull DriverDescriptor driver, @NotNull FileType type, @NotNull String path) {
         super(driver, type, path);
     }
 
-    public DriverLibraryLocal(DriverDescriptor driver, IConfigurationElement config) {
+    public DriverLibraryLocal(@Nullable DriverDescriptor driver, @NotNull IConfigurationElement config) {
         super(driver, config);
     }
 
-    public DriverLibraryLocal(DriverDescriptor driverDescriptor, DriverLibraryLocal copyFrom) {
+    public DriverLibraryLocal(@NotNull DriverDescriptor driverDescriptor, @NotNull DriverLibraryLocal copyFrom) {
         super(driverDescriptor, copyFrom);
     }
 
+    @NotNull
     @Override
-    public DBPDriverLibrary copyLibrary(DriverDescriptor driverDescriptor) {
+    public DBPDriverLibrary copyLibrary(@NotNull DriverDescriptor driverDescriptor) {
         return new DriverLibraryLocal(driverDescriptor, this);
     }
 
@@ -93,11 +94,11 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
     public Path getLocalFile() {
         // Try to use direct path
         String localFilePath = this.getLocalFilePath();
-        if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+        if (driver != null && (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser())) {
             Path resolvedCache;
-            List<DriverDescriptor.DriverFileInfo> driverFileInfos = driver.getResolvedFiles().get(this);
+            List<DriverFileInfo> driverFileInfos = driver.getDefaultDriverLoader().getResolvedFiles().get(this);
             if (!CommonUtils.isEmpty(driverFileInfos) && driverFileInfos.size() == 1) {
-                DriverDescriptor.DriverFileInfo driverFileInfo = driverFileInfos.get(0);
+                DriverFileInfo driverFileInfo = driverFileInfos.get(0);
                 resolvedCache = resolveCacheDir().resolve(driverFileInfo.getFile().toString());
             } else {
                 // need to correct driver initialization, otherwise, if at least one file was copied,
@@ -119,14 +120,14 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             // Try to get local file
             platformFile = detectLocalFile();
             if (platformFile != null && Files.exists(platformFile)) {
-                // Relative file do not exists - use plain one
+                // Relative file does not exist - use plain one
                 return platformFile;
             }
         } catch (InvalidPathException e) {
             // ignore - bad local path
         }
 
-        URL url = driver.getProviderDescriptor().getContributorBundle().getEntry(localFilePath);
+        URL url = driver == null ? null : driver.getProviderDescriptor().getContributorBundle().getEntry(localFilePath);
         if (url == null) {
             // Find in external resources
             url = DataSourceProviderRegistry.getInstance().findResourceURL(localFilePath);
@@ -212,16 +213,12 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
         if (localFile != null && Files.isDirectory(localFile)) {
             return DBIcon.TREE_FOLDER_ADMIN;
         } else {
-            switch (type) {
-                case lib:
-                    return DBIcon.LIBRARY;
-                case jar:
-                    return DBIcon.JAR;
-                case license:
-                    return DBIcon.TYPE_TEXT;
-                default:
-                    return DBIcon.TYPE_UNKNOWN;
-            }
+            return switch (type) {
+                case lib -> DBIcon.LIBRARY;
+                case jar -> DBIcon.JAR;
+                case license -> DBIcon.TYPE_TEXT;
+                default -> DBIcon.TYPE_UNKNOWN;
+            };
         }
     }
 

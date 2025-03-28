@@ -38,9 +38,9 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
+import org.jkiss.dbeaver.model.ai.copilot.CopilotClient;
 import org.jkiss.dbeaver.model.ai.copilot.CopilotConstants;
-import org.jkiss.dbeaver.model.ai.copilot.auth.CopilotAuthService;
-import org.jkiss.dbeaver.model.ai.openai.GPTModel;
+import org.jkiss.dbeaver.model.ai.openai.OpenAIModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.ShellUtils;
@@ -51,9 +51,7 @@ import org.jkiss.dbeaver.ui.editors.sql.ai.openai.OpenAiConfigurator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -66,7 +64,7 @@ public class CopilotConfigurator extends OpenAiConfigurator {
     @Override
     public void createControl(
         @NotNull Composite parent,
-        DAICompletionEngine<?> object,
+        DAICompletionEngine object,
         @NotNull Runnable propertyChangeListener
     ) {
         Composite authorizeComposite = UIUtils.createComposite(parent, 3);
@@ -102,16 +100,16 @@ public class CopilotConfigurator extends OpenAiConfigurator {
 
     @NotNull
     @Override
-    protected GPTModel[] getSupportedGPTModels() {
-        return new GPTModel[] {
-            GPTModel.GPT_4,
-            GPTModel.GPT_TURBO
+    protected OpenAIModel[] getSupportedGPTModels() {
+        return new OpenAIModel[] {
+            OpenAIModel.GPT_4,
+            OpenAIModel.GPT_TURBO
         };
     }
 
     @Override
     protected String getDefaultModel() {
-        return GPTModel.GPT_4.getName();
+        return OpenAIModel.GPT_4.getName();
     }
 
     @Override
@@ -132,8 +130,8 @@ public class CopilotConfigurator extends OpenAiConfigurator {
                 new AbstractJob("Requesting authorization") {
                     @Override
                     protected IStatus run(DBRProgressMonitor monitor) {
-                        try {
-                            CopilotAuthService.ResponseDataDTO responseData = CopilotAuthService.requestAuth(monitor);
+                        try (var copilotClient = new CopilotClient()) {
+                            CopilotClient.ResponseData responseData = copilotClient.requestAuth(monitor);
                             AtomicReference<BrowserPopup> popupOauth = new AtomicReference<>();
                             UIUtils.asyncExec(() -> {
                                 CopyDeviceDialog copyYourCode = new CopyDeviceDialog(
@@ -155,7 +153,7 @@ public class CopilotConfigurator extends OpenAiConfigurator {
                                 }
                             });
                             monitor.subTask("Requesting access token");
-                            String token = CopilotAuthService.requestAccessToken(responseData.device_code(), monitor);
+                            String token = copilotClient.requestAccessToken(responseData.device_code(), monitor);
                             if (token != null) {
                                 CopilotConfigurator.this.accessToken = token;
                             }
@@ -176,8 +174,7 @@ public class CopilotConfigurator extends OpenAiConfigurator {
                                     accessTokenText.setText(accessToken);
                                 }
                             });
-                        } catch (IOException | URISyntaxException | TimeoutException |
-                                 DBException ex) {
+                        } catch (TimeoutException | DBException ex) {
                             return GeneralUtils.makeErrorStatus("Error during authorization", ex);
                         } catch (InterruptedException ex) {
                             return Status.OK_STATUS;
