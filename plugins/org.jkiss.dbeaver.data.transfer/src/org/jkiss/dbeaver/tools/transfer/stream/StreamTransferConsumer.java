@@ -307,7 +307,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 BlobFileConflictBehavior.OVERWRITE
             }[response.choiceIndex];
             
-            runtimeParameters.blobFileConflictPreviousChoice = response.choiceIndex;
+            runtimeParameters.blobFileConflictPreviousChoice = (Integer) response.choiceIndex;
             if (response.forAllChoiceIndex != null) {
                 runtimeParameters.blobFileConflictBehavior = behavior;
                 runtimeParameters.dontDropBlobFileConflictBehavior = response.forAllChoiceIndex == 0;
@@ -368,7 +368,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
             // Open output streams
             boolean outputClipboard = settings.isOutputClipboard();
-            if (parameters.isBinary || !outputClipboard) {
+            if (parameters.exportToStream == null && (parameters.isBinary || !outputClipboard)) {
                 outputFile = makeOutputFile(session.getProgressMonitor());
                 outputFiles.add(outputFile);
             } else {
@@ -444,7 +444,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 DataFileConflictBehavior.OVERWRITE
             }[response.choiceIndex];
             
-            runtimeParameters.dataFileConflictPreviousChoice = response.choiceIndex;
+            runtimeParameters.dataFileConflictPreviousChoice = (Integer) response.choiceIndex;
             if (response.forAllChoiceIndex != null || settings.isUseSingleFile()) {
                 runtimeParameters.dataFileConflictBehavior = behavior;
             }
@@ -477,35 +477,40 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     
     private void openOutputStreams(DBRProgressMonitor monitor) throws IOException {
         final boolean truncate;
-
-        boolean fileExists = Files.exists(outputFile);
-        if (fileExists && !Files.isDirectory(outputFile)) {
-            DataFileConflictBehavior behavior = prepareDataFileConflictBehavior(outputFile.getFileName().toString());
-            switch (behavior) {
-                case APPEND -> truncate = false;
-                case PATCHNAME -> {
-                    outputFile = makeOutputFile(monitor, "-" + System.currentTimeMillis());
-                    truncate = false;
-                    fileExists = false;
-                }
-                case OVERWRITE -> truncate = true;
-                default -> throw new RuntimeException("Unexpected data file conflict behavior " + behavior);
-            }
-        } else {
-            truncate = true;
-        }
-
         OutputStream stream;
-        if (!fileExists) {
-            log.debug("Export to the new file \"" + outputFile + "\"");
-            stream = Files.newOutputStream(outputFile, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);
+        if (parameters.exportToStream != null) {
+            stream = parameters.exportToStream;
         } else {
-            log.debug("Export to the existing file \"" + outputFile + "\"");
-            stream = Files.newOutputStream(
-                outputFile,
-                StandardOpenOption.WRITE,
-                (truncate ? StandardOpenOption.TRUNCATE_EXISTING : StandardOpenOption.APPEND));
+            boolean fileExists = Files.exists(outputFile);
+            if (fileExists && !Files.isDirectory(outputFile)) {
+                DataFileConflictBehavior behavior = prepareDataFileConflictBehavior(outputFile.getFileName().toString());
+                switch (behavior) {
+                    case APPEND -> truncate = false;
+                    case PATCHNAME -> {
+                        outputFile = makeOutputFile(monitor, "-" + System.currentTimeMillis());
+                        truncate = false;
+                        fileExists = false;
+                    }
+                    case OVERWRITE -> truncate = true;
+                    default -> throw new RuntimeException("Unexpected data file conflict behavior " + behavior);
+                }
+            } else {
+                truncate = true;
+            }
+
+            if (!fileExists) {
+                log.debug("Export to the new file \"" + outputFile + "\"");
+                stream = Files.newOutputStream(outputFile, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW);
+            } else {
+                log.debug("Export to the existing file \"" + outputFile + "\"");
+                stream = Files.newOutputStream(
+                    outputFile,
+                    StandardOpenOption.WRITE,
+                    (truncate ? StandardOpenOption.TRUNCATE_EXISTING : StandardOpenOption.APPEND)
+                );
+            }
         }
+
         this.outputStream = new BufferedOutputStream(stream, OUT_FILE_BUFFER_SIZE);
         this.outputStream = this.statStream = new StatOutputStream(outputStream);
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,7 +268,18 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
             }
         });
-        
+
+        boolean validFolder = false;
+        for (TabbedFolderInfo folder : folders) {
+            if (folder.getId().equals(curFolderId)) {
+                validFolder = true;
+                break;
+            }
+        }
+        if (!validFolder && folders.length > 0) {
+            curFolderId = folders[0].getId();
+        }
+
         UIUtils.syncExec(() -> folderComposite.switchFolder(curFolderId));
         
         return foldersPlaceholder;
@@ -528,8 +539,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         };
 
         if (propertiesPanel != null) {
-            if (propertiesPanel.refreshPart(force, afterRefresh) == RefreshResult.CANCELED) {
+            RefreshResult result = propertiesPanel.refreshPart(force, afterRefresh);
+            if (result == RefreshResult.CANCELED) {
                 return RefreshResult.CANCELED;
+            } else if (result == RefreshResult.IGNORED) {
+                UIUtils.asyncExec(afterRefresh);
             }
         } else {
             // we still have to refresh folders in that way

@@ -79,7 +79,9 @@ public class OpenLocalFileActionExt extends AbstractHandler {
         if (dialog.open() == null) {
             return null;
         }
-        filterExtension = dialog.getFilterExtensions()[dialog.getFilterIndex()];
+        if (dialog.getFilterIndex() >= 0) {
+            filterExtension = dialog.getFilterExtensions()[dialog.getFilterIndex()];
+        }
 
         String[] names = dialog.getFileNames();
 

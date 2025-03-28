@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
-import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -59,7 +59,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
     protected DBPDataSourceContainer dataSource;
 
-    public static final boolean CREDENTIALS_SAVE_RESTRICTED = BasePolicyDataProvider.getInstance()
+    public static final boolean CREDENTIALS_SAVE_RESTRICTED = ApplicationPolicyProvider.getInstance()
         .isPolicyEnabled(DBConnectionConstants.POLICY_RESTRICT_PASSWORD_SAVE);
 
     public void createControl(@NotNull Composite authPanel, DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
@@ -106,10 +106,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             DataSourceHandlerUtils.resolveSharedCredentials(dsd, null);
         }
 
-        if (this.usernameText != null) {
+        if (this.usernameText != null && !this.usernameText.isDisposed()) {
             this.usernameText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserName()));
         }
-        if (this.passwordText != null) {
+        if (this.passwordText != null && !this.passwordText.isDisposed()) {
             this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
             if (CREDENTIALS_SAVE_RESTRICTED) {
                 this.savePasswordCheck.setSelection(false);
@@ -132,6 +132,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             }
         }
     }
+
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {

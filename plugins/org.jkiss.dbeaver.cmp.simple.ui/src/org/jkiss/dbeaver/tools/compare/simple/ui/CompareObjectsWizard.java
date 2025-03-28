@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,12 +39,13 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 
 public class CompareObjectsWizard extends Wizard implements IExportWizard {
 
@@ -52,10 +53,9 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
 
     private static final String RS_COMPARE_WIZARD_DIALOG_SETTINGS = "CompareWizard";//$NON-NLS-1$
 
-    private CompareObjectsSettings settings;
+    private final CompareObjectsSettings settings;
 
-    public CompareObjectsWizard(List<DBNDatabaseNode> nodes)
-    {
+    public CompareObjectsWizard(List<DBNDatabaseNode> nodes) {
         this.settings = new CompareObjectsSettings(nodes);
         this.settings.setOutputFolder(DialogUtils.getCurDialogFolder());
 
@@ -66,27 +66,23 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
     }
 
-    public CompareObjectsSettings getSettings()
-    {
+    public CompareObjectsSettings getSettings() {
         return settings;
     }
 
     @Override
-    public void addPages()
-    {
+    public void addPages() {
         super.addPages();
         addPage(new CompareObjectsPageSettings());
         addPage(new CompareObjectsPageOutput());
     }
 
     @Override
-    public void init(IWorkbench workbench, IStructuredSelection currentSelection)
-    {
+    public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
         setWindowTitle(CompareUIMessages.compare_objects_wizard_title);
         setNeedsProgressMonitor(true);
     }
@@ -98,8 +94,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
     }
 
     @Override
-    public boolean performFinish()
-    {
+    public boolean performFinish() {
         // Save settings
         getSettings().saveTo(new DialogSettingsDelegate(getDialogSettings()));
         showError(null);
@@ -115,7 +110,12 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
                     throw new InvocationTargetException(e);
                 }
             });
-            UIUtils.showMessageBox(getShell(), CompareUIMessages.compare_objects_wizard_finish_report_title, CompareUIMessages.compare_objects_wizard_finish_report_info, SWT.ICON_INFORMATION);
+            UIUtils.showMessageBox(
+                getShell(),
+                CompareUIMessages.compare_objects_wizard_finish_report_title,
+                CompareUIMessages.compare_objects_wizard_finish_report_info,
+                SWT.ICON_INFORMATION
+            );
         } catch (InvocationTargetException e) {
             if (executor.getInitializeError() != null) {
                 showError(executor.getInitializeError().getMessage());
@@ -135,8 +135,8 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
         return true;
     }
 
-    private CompareReport generateReport(DBRProgressMonitor monitor, CompareObjectsExecutor executor) throws DBException, InterruptedException
-    {
+    private CompareReport generateReport(DBRProgressMonitor monitor, CompareObjectsExecutor executor)
+    throws DBException, InterruptedException {
         monitor.beginTask("Compare objects", 1000);
         CompareReport report = executor.compareObjects(monitor, getSettings().getNodes());
         monitor.done();
@@ -145,41 +145,38 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
 
     private void renderReport(DBRProgressMonitor monitor, CompareReport report) {
         try {
-            File reportFile;
-            switch (settings.getOutputType()) {
-                case BROWSER:
-                    reportFile = File.createTempFile("compare-report", ".html");
-                    break;
-                default: {
-                    StringBuilder fileName = new StringBuilder("compare"); //"compare-report.html";
-                    if (report.getNodes().size() <= 3) {
-                        for (DBNDatabaseNode node : report.getNodes()) {
-                            fileName.append("-").append(CommonUtils.escapeIdentifier(node.getName()));
-                        }
-                        fileName.append("-report.html");
-                    } else {
-                        fileName.append("-report").append("-").append(RuntimeUtils.getCurrentTimeStamp()).append(".html");
+            Path reportFile;
+            if (Objects.requireNonNull(settings.getOutputType()) == CompareObjectsSettings.OutputType.BROWSER) {
+                reportFile = Files.createTempFile(
+                    DBWorkbench.getPlatform().getTempFolder(monitor, "compare-report"),
+                    "compare",
+                    ".html"
+                );
+            } else {
+                StringBuilder fileName = new StringBuilder("compare"); //"compare-report.html";
+                if (report.getNodes().size() <= 3) {
+                    for (DBNDatabaseNode node : report.getNodes()) {
+                        fileName.append("-").append(CommonUtils.escapeIdentifier(node.getName()));
                     }
-                    File parentFolder = new File(settings.getOutputFolder());
-                    if (!parentFolder.exists()) {
-                        if (!parentFolder.mkdirs()) {
-                            throw new IOException("Can't create directory '" + parentFolder.getAbsolutePath() + "'");
-                        }
-                    }
-                    reportFile = new File(parentFolder, fileName.toString());
-                    break;
+                    fileName.append("-report.html");
+                } else {
+                    fileName.append("-report").append("-").append(RuntimeUtils.getCurrentTimeStamp()).append(".html");
                 }
+                Path parentFolder = Path.of(settings.getOutputFolder());
+                if (!Files.exists(parentFolder)) {
+                    Files.createDirectories(parentFolder);
+                }
+                reportFile = parentFolder.resolve(fileName.toString());
             }
 
-            reportFile.deleteOnExit();
-            try (OutputStream outputStream = new FileOutputStream(reportFile)) {
+            try (OutputStream outputStream = Files.newOutputStream(reportFile)) {
                 monitor.beginTask("Render report", report.getReportLines().size());
                 CompareReportRenderer reportRenderer = new CompareReportRenderer();
                 reportRenderer.renderReport(monitor, report, getSettings(), outputStream);
                 monitor.done();
             }
             if (settings.getOutputType() == CompareObjectsSettings.OutputType.BROWSER) {
-                ShellUtils.launchProgram(reportFile.getAbsolutePath());
+                ShellUtils.launchProgram(reportFile.toAbsolutePath().toString());
             }
         } catch (IOException e) {
             showError(e.getMessage());

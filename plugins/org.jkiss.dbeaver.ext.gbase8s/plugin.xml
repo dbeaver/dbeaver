@@ -38,14 +38,14 @@
 					webURL="https://cdn.gbase.cn/products/27/duljCAzDVSy_SLTpy7j1l/GBase%208s%20V8.8%20JDBC%20Driver%20%E7%A8%8B%E5%BA%8F%E5%91%98%E6%8C%87%E5%8D%97.pdf"
 					supportedPageFields="host,port,database,server"
 					categories="sql">
-					<property name="opt_goal" value="0" />
-					<property name="sqlMode" value="oracle" />
+					<property name="OPT_GOAL" value="0" />
+					<property name="SQLMODE" value="oracle" />
 
 					<property name="@dbeaver-default-database.meta.client.name.disable" value="true" />
 					<property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH.mm.ss.ffffff" />
 
 					<file type="jar" path="maven:/com.gbasedbt:jdbc:RELEASE[3.5.1]" bundle="!drivers.gbase8s" />
-					<file type="license" path="http://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.gbase8s" />
+					<file type="license" path="licenses/external/asl-2.0.txt"/>
 					<file type="jar" path="drivers/gbase" bundle="drivers.gbase8s" />
 
 					<parameter name="query-get-active-db" value="SELECT odb_dbname FROM sysmaster?sysopendb WHERE odb_iscurrent = 'Y' AND odb_sessionid = DBINFO('sessionid')" />

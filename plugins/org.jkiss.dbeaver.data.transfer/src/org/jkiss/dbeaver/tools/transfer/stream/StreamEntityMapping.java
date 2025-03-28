@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,17 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
     private final boolean child;
 
     public StreamEntityMapping(@NotNull Path inputFile) {
-        this(inputFile, inputFile.getFileName().toString(), false);
+        this(inputFile, getEntityNameFromFile(inputFile), false);
+    }
+
+    @NotNull
+    private static String getEntityNameFromFile(@NotNull Path inputFile) {
+        Path fileName = inputFile.getFileName();
+        if (fileName != null) {
+            return fileName.toString();
+        } else {
+            return inputFile.toUri().toString();
+        }
     }
 
     public StreamEntityMapping(@NotNull Path inputFile, @NotNull String entityName, boolean child) {

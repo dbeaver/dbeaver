@@ -24,7 +24,10 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 
 import java.util.LinkedList;
@@ -73,6 +76,19 @@ public abstract class SQLQueryCompletionItem {
         return new SQLReservedWordCompletionItem(score, filterKey, text);
     }
 
+    /**
+     * Build completion item for columns expansion
+     */
+    @NotNull
+    public static SQLQueryCompletionItem forSpecialText(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @NotNull String text,
+        @Nullable String description
+    ) {
+        return new SQLSpecialTextCompletionItem(score, filterKey, text, description);
+    }
+
     @NotNull
     public static SQLQueryCompletionItem forRowsSourceAlias(
         int score,
@@ -111,7 +127,28 @@ public abstract class SQLQueryCompletionItem {
         @Nullable ContextObjectInfo resolvedContext,
         @NotNull DBSObject object
     ) {
-        return new SQLDbNamedObjectCompletionItem(score, filterKey, resolvedContext, object);
+        return new SQLDbNamedObjectCompletionItem(score, filterKey, resolvedContext, object, SQLQueryCompletionItemKind.UNKNOWN);
+    }
+
+
+    @NotNull
+    public static SQLQueryCompletionItem forDbCatalogObject(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @Nullable ContextObjectInfo resolvedContext,
+        @NotNull DBSObject object
+    ) {
+        return new SQLDbNamedObjectCompletionItem(score, filterKey, resolvedContext, object, SQLQueryCompletionItemKind.CATALOG);
+    }
+
+    @NotNull
+    public static SQLQueryCompletionItem forDbSchemaObject(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @Nullable ContextObjectInfo resolvedContext,
+        @NotNull DBSObject object
+    ) {
+        return new SQLDbNamedObjectCompletionItem(score, filterKey, resolvedContext, object, SQLQueryCompletionItemKind.SCHEMA);
     }
 
     @NotNull
@@ -300,21 +337,52 @@ public abstract class SQLQueryCompletionItem {
         }
     }
 
-    public static class SQLDbNamedObjectCompletionItem extends SQLDbObjectCompletionItem<DBSObject>  {
+    public static class SQLSpecialTextCompletionItem extends SQLQueryCompletionItem {
+        public final String text;
+        public final String description;
 
-        SQLDbNamedObjectCompletionItem(
+        SQLSpecialTextCompletionItem(
             int score,
             @NotNull SQLQueryWordEntry filterKey,
-            @Nullable ContextObjectInfo resolvedContext,
-            @NotNull DBSObject object
+            @NotNull String text,
+            @Nullable String description
         ) {
-            super(score, filterKey, resolvedContext, object);
+            super(score, filterKey);
+            this.text = text;
+            this.description = description;
         }
 
         @NotNull
         @Override
         public SQLQueryCompletionItemKind getKind() {
             return SQLQueryCompletionItemKind.UNKNOWN;
+        }
+
+        @Override
+        protected <R> R applyImpl(@NotNull SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitSpecialText(this);
+        }
+    }
+
+    public static class SQLDbNamedObjectCompletionItem extends SQLDbObjectCompletionItem<DBSObject>  {
+
+        private final SQLQueryCompletionItemKind itemKind;
+
+        SQLDbNamedObjectCompletionItem(
+            int score,
+            @NotNull SQLQueryWordEntry filterKey,
+            @Nullable ContextObjectInfo resolvedContext,
+            @NotNull DBSObject object,
+            @NotNull SQLQueryCompletionItemKind itemKind
+        ) {
+            super(score, filterKey, resolvedContext, object);
+            this.itemKind = itemKind;
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return this.itemKind;
         }
 
         @Override

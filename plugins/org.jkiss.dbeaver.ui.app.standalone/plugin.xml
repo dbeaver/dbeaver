@@ -20,7 +20,7 @@
     <extension point="org.eclipse.core.runtime.products" id="product">
         <product application="org.jkiss.dbeaver.ui.app.standalone.standalone" description="%productSubTitle" name="DBeaver">
             <property name="aboutText" value="%aboutText"/>
-            <property name="copyright" value="© 2024 DBeaver Corp"/>
+            <property name="copyright" value="© 2025 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
@@ -29,38 +29,38 @@
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="appEdition" value="ce"/>
-            <property name="versionInfoCoord" value="112,230"/>
+            <property name="versionInfoCoord" value="170,55"/>
             <property name="versionInfoSize" value="8"/>
-            <property name="startupMessageRect" value="60,273,240,21"/>
-            <property name="startupProgressRect" value="0,295,601,6"/>
+            <property name="startupMessageRect" value="60,273,340,21"/>
+            <property name="startupProgressRect" value="0,294,600,6"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
-            <property name="tipsFile" value="tips.xml"/>
+            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ui.app.standalone/tips.xml"/>
         </product>
     </extension>
 
     <extension point="org.eclipse.core.runtime.products" id="appstore">
         <product application="org.jkiss.dbeaver.ui.app.standalone.appstore" description="%productSubTitle" name="DBeaver CE">
             <property name="aboutText" value="%aboutText"/>
-            <property name="copyright" value="© 2024 DBeaver Corp"/>
+            <property name="copyright" value="© 2025 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver CE"/>
-            <property name="versionInfoCoord" value="112,230"/>
+            <property name="versionInfoCoord" value="170,55"/>
             <property name="versionInfoSize" value="8"/>
-            <property name="startupMessageRect" value="60,273,240,21"/>
-            <property name="startupProgressRect" value="0,295,601,6"/>
+            <property name="startupMessageRect" value="60,273,340,21"/>
+            <property name="startupProgressRect" value="0,294,600,6"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
-            <property name="tipsFile" value="tips.xml"/>
+            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ui.app.standalone/tips.xml"/>
         </product>
     </extension>
 
@@ -442,7 +442,7 @@
 
     <extension point="org.eclipse.ui.keywords">
         <keyword id="org.jkiss.dbeaver.keyword.pref.ui.misc" label="checkbox bool boolean holiday decoration christmas snow"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.network.expert" label="ip ipv4 ipv6 protocol"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.network.expert" label="ip ipv4 ipv6 protocol ssl tls net debug"/>
     </extension>
 
     <extension point="org.eclipse.ui.splashHandlers">

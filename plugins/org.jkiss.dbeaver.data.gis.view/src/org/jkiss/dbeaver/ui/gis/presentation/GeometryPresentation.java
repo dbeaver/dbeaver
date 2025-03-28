@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.gis.GisTransformUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
+import org.jkiss.dbeaver.ui.gis.internal.GISMessages;
 import org.jkiss.dbeaver.ui.gis.panel.GISLeafletViewer;
 
 import java.util.ArrayList;
@@ -64,6 +65,19 @@ public class GeometryPresentation extends AbstractPresentation {
             this
         );
         leafletViewer.getBrowserComposite().setLayoutData(new GridData(GridData.FILL_BOTH));
+    }
+
+    @Override
+    public boolean canShowPresentation(@NotNull IResultSetController controller) {
+        if (GeometryDataUtils.extractGeometryAttributes(controller).isEmpty()) {
+            DBWorkbench.getPlatformUI().showWarningMessageBox(
+                GISMessages.presentation_no_spatial_columns_title,
+                GISMessages.presentation_no_spatial_columns_message
+            );
+            return false;
+        }
+
+        return true;
     }
 
     @Override
