@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,6 +148,7 @@ import org.jkiss.utils.Pair;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.List;
@@ -311,6 +312,7 @@ public class SQLEditor extends SQLEditorBase implements
             IResultSetController.RESULTS_CONTEXT_ID};
     }
 
+    @Nullable
     @Override
     public DBPDataSource getDataSource() {
         DBPDataSourceContainer container = getDataSourceContainer();
@@ -446,11 +448,13 @@ public class SQLEditor extends SQLEditorBase implements
                 // FIXME: this is a hack. We can't fire event on resource change so editor's state won't be updated in UI.
                 // FIXME: To update main toolbar and other controls we hade and show this editor
                 IWorkbenchPage page = getSite().getPage();
-                for (IEditorReference er : page.getEditorReferences()) {
-                    if (er.getEditor(false) == this) {
-                        page.hideEditor(er);
-                        page.showEditor(er);
-                        break;
+                if (page != null) {
+                    for (IEditorReference er : page.getEditorReferences()) {
+                        if (er.getEditor(false) == this) {
+                            page.hideEditor(er);
+                            page.showEditor(er);
+                            break;
+                        }
                     }
                 }
                 //page.activate(this);
@@ -727,8 +731,8 @@ public class SQLEditor extends SQLEditorBase implements
     public void refreshActions() {
         // Redraw toolbar to refresh action sets
         this.updateMultipleResultsPerTabToolItem();
-        topBarMan.getControl().redraw();
-        bottomBarMan.getControl().redraw();
+        if (topBarMan != null) topBarMan.getControl().redraw();
+        if (bottomBarMan != null) bottomBarMan.getControl().redraw();
         MultipleResultsPerTabMenuContribution.syncWithEditor(this);
     }
 
@@ -1744,9 +1748,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Nullable
     private ToolItem getViewToolItem(@NotNull String commandId) {
-        ToolItem viewItem = UIUtils.findToolItemByCommandId(topBarMan, commandId);
+        ToolItem viewItem = topBarMan == null ? null : UIUtils.findToolItemByCommandId(topBarMan, commandId);
         if (viewItem == null) {
-            viewItem = UIUtils.findToolItemByCommandId(bottomBarMan, commandId);
+            viewItem = bottomBarMan == null ? null : UIUtils.findToolItemByCommandId(bottomBarMan, commandId);
         }
         return viewItem;
     }
@@ -2183,16 +2187,29 @@ public class SQLEditor extends SQLEditorBase implements
         SQLScriptContext parentContext = null;
         {
             DatabaseEditorContext parentEditorContext = EditorUtils.getEditorContext(editorInput);
-            if (parentEditorContext instanceof SQLNavigatorContext) {
-                parentContext = ((SQLNavigatorContext) parentEditorContext).getScriptContext();
+            if (parentEditorContext instanceof SQLNavigatorContext nc) {
+                parentContext = nc.getScriptContext();
+                if (nc.isReuseExecutionContext()) {
+                    DBCExecutionContext iec = nc.getExecutionContext();
+                    this.executionContextProvider = () -> iec;
+                }
             }
         }
         this.globalScriptContext = new SQLScriptContext(
             parentContext,
             this,
-            EditorUtils.getPathFromInput(getEditorInput()),
+            null,
             new OutputLogWriter(),
-            new SQLEditorParametersProvider(getSite()));
+            new SQLEditorParametersProvider(site)) {
+            @Override
+            public Path getSourceFile() {
+                return EditorUtils.getPathFromInput(getEditorInput());
+            }
+        };
+        DBCExecutionContext inputExecutionContext = this.globalScriptContext.getExecutionContext();
+        if (inputExecutionContext != null) {
+            dataSourceContainer = inputExecutionContext.getDataSource().getContainer();
+        }
 
         this.globalScriptContext.addListener(new DBCScriptContextListener() {
             @Override
@@ -2953,10 +2970,16 @@ public class SQLEditor extends SQLEditorBase implements
             }
             if (confirmResult == IDialogConstants.YES_ID) {
                 for (int i = 0; i < tabsToClose.size(); i++) {
-                    if (i == 0 && keepFirstTab) {
-                        continue;
+                    if (i == 0 && tabsToClose.get(0).getData() instanceof SingleTabQueryProcessor sqp && keepFirstTab) {
+                        // to avoid concurrent modification exception
+                        List<QueryResultsContainer> results = new ArrayList<>(sqp.getResultContainers());
+                        results.stream().skip(1).forEach(QueryResultsContainer::dispose);
+                    } else {
+                        if (i == 0 && keepFirstTab) {
+                            continue;
+                        }
+                        tabsToClose.get(i).dispose();
                     }
-                    tabsToClose.get(i).dispose();
                 }
             }
             return confirmResult;
@@ -3439,6 +3462,10 @@ public class SQLEditor extends SQLEditorBase implements
         } catch (CoreException e) {
             DBWorkbench.getPlatformUI().showError("File save", "Can't open SQL editor from external file", e);
         }
+    }
+
+    public boolean supportsRename() {
+        return true;
     }
 
     @Override

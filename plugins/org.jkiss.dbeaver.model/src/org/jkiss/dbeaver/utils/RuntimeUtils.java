@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,8 +60,6 @@ public final class RuntimeUtils {
     private static final boolean IS_LINUX;
     private static final boolean IS_MACOS;
     private static final boolean IS_WINDOWS;
-
-    private static final boolean IS_GTK = Platform.getWS().equals(Platform.WS_GTK);
 
     private static final byte[] NULL_MAC_ADDRESS = new byte[] {0, 0, 0, 0, 0, 0};
 
@@ -198,10 +196,10 @@ public final class RuntimeUtils {
             return String.format("%dh %dm %ds", hours, minutes, seconds);
         } else if (minutes > 0) {
             return String.format("%dm %ds", minutes, seconds);
-        } else if (seconds > 0) {
+        } else if (seconds >= 10) {
             return String.format("%ds", seconds);
         } else {
-            return String.format("%.03fs", millis / 1000.0);
+            return String.format("%d.%03ds", seconds, millis);
         }
     }
 
@@ -394,8 +392,13 @@ public final class RuntimeUtils {
         return IS_LINUX;
     }
 
-    public static boolean isGtk() {
-        return IS_GTK;
+    /**
+     * Checks if the system is running Linux with the Wayland server.
+     *
+     * @return true if running on Wayland, false otherwise
+     */
+    public static boolean isWayland() {
+        return isLinux() && CommonUtils.isNotEmpty(System.getenv("WAYLAND_DISPLAY"));
     }
 
     /**
@@ -635,7 +638,9 @@ public final class RuntimeUtils {
             job.schedule();
         }
         try {
-            jobGroup.join(0, new NullProgressMonitor());
+            while (!jobGroup.join(50, new NullProgressMonitor())) {
+                DBWorkbench.getPlatformUI().readAndDispatchEvents();
+            }
         } catch (InterruptedException e) {
             // ignore
         }

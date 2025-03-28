@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.update.Update;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -118,6 +117,7 @@ public class SQLQueryJob extends DataSourceJob
     private int fetchResultSetNumber;
     private int resultSetNumber;
     private SQLScriptElement lastGoodQuery;
+    private int queryNum = 0;
 
     private boolean skipConfirmation;
     private int fetchSize;
@@ -204,6 +204,9 @@ public class SQLQueryJob extends DataSourceJob
         RuntimeUtils.setThreadName("SQL script execution");
         statistics = new DBCStatistics();
         skipConfirmation = false;
+        if (queryNum == queries.size()) {
+            queryNum = 0;
+        }
         monitor.beginTask("Execute SQL script", queries.size());
         try {
             DBCExecutionContext context = getExecutionContext();
@@ -233,7 +236,7 @@ public class SQLQueryJob extends DataSourceJob
                 }
 
                 resultSetNumber = 0;
-                for (int queryNum = 0; queryNum < queries.size(); ) {
+                while (queryNum < queries.size()) {
                     // Execute query
                     SQLScriptElement query = queries.get(queryNum);
 
@@ -267,7 +270,8 @@ public class SQLQueryJob extends DataSourceJob
                                 break;
                             case RETRY:
                                 // just make it again
-                                continue;
+                                this.schedule(100);
+                                break;
                             case IGNORE:
                                 // Just do nothing
                                 break;
@@ -608,10 +612,7 @@ public class SQLQueryJob extends DataSourceJob
         if (statement instanceof Insert ||
             statement instanceof Delete ||
             statement instanceof Update ||
-            (statement instanceof Select &&
-                ((Select) statement).getSelectBody() instanceof PlainSelect &&
-                !CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables())))
-        {
+            (statement instanceof PlainSelect select && !CommonUtils.isEmpty(select.getIntoTables()))) {
             return false;
         }
         return true;
@@ -831,7 +832,7 @@ public class SQLQueryJob extends DataSourceJob
             default:
                 return false;
         }
-        
+
     }
 
     private void fetchExecutionResult(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull SQLQuery query) throws DBCException
@@ -860,19 +861,20 @@ public class SQLQueryJob extends DataSourceJob
                 new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT).format(new Date()));
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_statistics);
         } else {
-            // Single statement
+            // Single statement - reorder fields to prioritize the important ones
+            // Important fields like "Updated Rows" and "Execute time" are now displayed before the query text for easier access.
             long updateCount = statistics.getRowsUpdated();
-            fakeResultSet.addColumn("Query", DBPDataKind.STRING);
             fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Start time", DBPDataKind.DATETIME);
             fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
+            fakeResultSet.addColumn("Query", DBPDataKind.STRING);
             fakeResultSet.addRow(
-                query.getText(),
-                updateCount,
-                RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
-                new Date(statistics.getStartTime()),
-                new Date());
+                    updateCount,
+                    RuntimeUtils.formatExecutionTime(statistics.getExecuteTime()),
+                    new Date(statistics.getStartTime()),
+                    new Date(),
+                    query.getText());
             executeResult.setResultSetName(SQLEditorMessages.editors_sql_data_grid);
         }
         fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);

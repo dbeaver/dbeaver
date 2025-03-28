@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ public class PostgreConstants {
     public static final String PROP_SHOW_TEMPLATES_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-template-db@";
     public static final String PROP_READ_ALL_DATA_TYPES = DBConstants.INTERNAL_PROP_PREFIX + "read-all-data-types-db@";
     public static final String PROP_READ_KEYS_WITH_COLUMNS = "read-keys-with-columns";
+    public static final String PROP_REPLACE_LEGACY_TIMEZONE = "replace-legacy-timezone";
     public static final String PROP_USE_PREPARED_STATEMENTS = DBConstants.INTERNAL_PROP_PREFIX + "use-prepared-statements-db@";
     public static final String PROP_DD_PLAIN_STRING = "postgresql.dd.plain.string";
     public static final String PROP_DD_TAG_STRING = "postgresql.dd.tag.string";
@@ -165,7 +166,9 @@ public class PostgreConstants {
     public static final String PG_PASS_HOSTNAME = "overriddenUsername";
     public static final Map<String, String> REPLACING_TIMEZONE = Map.of(
         "Europe/Kyiv", "Europe/Kiev",
-        "Asia/Calcutta", "Asia/Kolkata"
+        "Europe/Kiev", "Europe/Kyiv",
+        "Asia/Calcutta", "Asia/Kolkata",
+        "Asia/Kolkata", "Asia/Calcutta"
     );
 
     static {

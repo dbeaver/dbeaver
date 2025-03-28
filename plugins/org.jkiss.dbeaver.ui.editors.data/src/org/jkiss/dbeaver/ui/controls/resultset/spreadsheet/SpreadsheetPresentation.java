@@ -990,12 +990,19 @@ public class SpreadsheetPresentation extends AbstractPresentation
     void fillContextMenu(
         @NotNull IMenuManager manager,
         @Nullable IGridColumn colObject,
-        @Nullable IGridRow rowObject)
+        @Nullable IGridRow rowObject,
+        boolean columnHeaderMenu,
+        boolean rowHeaderMenu
+    )
     {
         boolean recordMode = controller.isRecordMode();
         final DBDAttributeBinding attr = colObject == null ? getFocusAttribute() : getAttributeFromGrid(colObject, rowObject);
         final ResultSetRow row = rowObject == null ? getFocusRow() : getResultRowFromGrid(colObject, rowObject);
-        controller.fillContextMenu(manager, attr, row, getRowNestedIndexes(rowObject));
+        IResultSetController.ContextMenuLocation menuLocation = columnHeaderMenu ?
+            IResultSetController.ContextMenuLocation.COLUMN_HEADER :
+                rowHeaderMenu ? IResultSetController.ContextMenuLocation.ROW_HEADER :
+                    IResultSetController.ContextMenuLocation.DATA;
+        controller.fillContextMenu(manager, attr, row, getRowNestedIndexes(rowObject), menuLocation);
 
         if (colObject != null && rowObject == null) {
             final List<IGridColumn> selectedColumns = spreadsheet.getColumnSelection();
@@ -1351,7 +1358,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         if (isShowAsCheckbox(attr)) {
             // Switch boolean value
             Object cellValue = controller.getModel().getCellValue(cellLocation);
-            if (cellValue instanceof Boolean || cellValue instanceof Number) {
+            if (cellValue instanceof Boolean || cellValue instanceof Number || cellValue == null) {
                 toggleBooleanValue(cellLocation, cellValue);
             }
         }
@@ -2499,7 +2506,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     }
                 }
             }
-            return UIUtils.getContrastColor(background);
+            return UIStyles.getContrastColor(background);
         }
 
         private Color getCellBackground(

@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 public class SQLNavigatorContext implements DatabaseEditorContext {
 
+    private boolean reuseExecutionContext = false;
+
     private DBPDataSourceContainer dataSourceContainer;
     private DBSObject selectedObject;
     private DBCExecutionContext executionContext;
@@ -80,9 +82,14 @@ public class SQLNavigatorContext implements DatabaseEditorContext {
         this.executionContext = executionContext;
     }
 
-    public SQLNavigatorContext(SQLScriptContext scriptContext) {
+    public SQLNavigatorContext(SQLScriptContext scriptContext, boolean reuseExecutionContext) {
         this.selectedObject = null;
         this.scriptContext = scriptContext;
+        this.reuseExecutionContext = reuseExecutionContext;
+    }
+
+    public boolean isReuseExecutionContext() {
+        return this.reuseExecutionContext;
     }
 
     @Nullable

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -99,8 +100,8 @@ public class SQLQuerySelectionResultModel extends SQLQueryNodeModel {
     /**
      * Add all columns of some table to the selection result model
      */
-    public void addCompleteTupleSpec(@NotNull STMTreeNode syntaxNode) {
-        this.registerSublist(new SQLQuerySelectionResultCompleteTupleSpec(this, syntaxNode));
+    public void addCompleteTupleSpec(@NotNull STMTreeNode syntaxNode, @NotNull SQLQueryTupleRefEntry tupleRefEntry) {
+        this.registerSublist(new SQLQuerySelectionResultCompleteTupleSpec(this, syntaxNode, tupleRefEntry));
     }
 
     /**

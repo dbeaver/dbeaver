@@ -168,8 +168,16 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         }
 
         {
-            Label serverLabel = new Label(settingsGroup, SWT.NONE);
-            serverLabel.setText(GenericMessages.dialog_connection_server_label);
+            Label serverLabel;
+            DBPDriver driver = site.getActiveDataSource().getDriver();
+            String dbTerm = (String) driver.getDriverParameter(GenericConstants.PARAM_TERM_SERVER);
+            if (CommonUtils.isNotEmpty(dbTerm)) {
+                serverLabel = UIUtils.createControlLabel(settingsGroup, dbTerm);
+            } else {
+                serverLabel = new Label(settingsGroup, SWT.NONE);
+                serverLabel.setText(GenericMessages.dialog_connection_server_label);
+            }
+
             serverLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             serverText = new Text(settingsGroup, SWT.BORDER);
@@ -187,8 +195,15 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
         }
 
         {
-            Label dbLabel = new Label(settingsGroup, SWT.NONE);
-            dbLabel.setText(GenericMessages.dialog_connection_database_schema_label);
+            Label dbLabel;
+            DBPDriver driver = site.getActiveDataSource().getDriver();
+            String dbTerm = (String) driver.getDriverParameter(GenericConstants.PARAM_TERM_DATABASE);
+            if (CommonUtils.isNotEmpty(dbTerm)) {
+                dbLabel = UIUtils.createControlLabel(settingsGroup, dbTerm);
+            } else {
+                dbLabel = new Label(settingsGroup, SWT.NONE);
+                dbLabel.setText(GenericMessages.dialog_connection_database_schema_label);
+            }
             dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
             dbText = new Text(settingsGroup, SWT.BORDER);
