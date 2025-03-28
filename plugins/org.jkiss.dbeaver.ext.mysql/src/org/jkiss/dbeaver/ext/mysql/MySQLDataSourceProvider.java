@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         boolean needMariDBString = false;
         if (MySQLUtils.isMariaDB(driver)) {
             try {
-                Object driverInstance = driver.getDriverInstance(new VoidProgressMonitor());
+                Object driverInstance = driver.getDefaultDriverLoader().getDriverInstance(new VoidProgressMonitor());
                 if (driverInstance instanceof Driver && ((Driver) driverInstance).getMajorVersion() >= 3) {
                     // Since 3.0 version Maria DB driver only accept `jdbc:mariadb:` classpath by default.
                     needMariDBString = true;

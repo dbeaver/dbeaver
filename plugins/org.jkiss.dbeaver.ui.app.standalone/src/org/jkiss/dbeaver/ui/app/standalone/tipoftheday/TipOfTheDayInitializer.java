@@ -16,13 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.tipoftheday;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
@@ -33,15 +31,12 @@ public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
         if (!isTipsEnabled() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
             return;
         }
-        // Show tips with delay to let UI initialize properly
-        new UIJob(window.getShell().getDisplay(), "Show tip of the day") {
-            @Override
-            public IStatus runInUIThread(IProgressMonitor monitor) {
-                ShowTipOfTheDayHandler.showTipOfTheDay(window);
-                return Status.OK_STATUS;
-            }
-        }.schedule(3000);
-
+        Shell mainShell = window.getShell();
+        DialogUtils.showDelayedPopup(
+            mainShell,
+            () -> ShowTipOfTheDayHandler.showTipOfTheDay(window),
+            "Show tip of the day"
+        );
     }
 
     private static boolean isTipsEnabled() {

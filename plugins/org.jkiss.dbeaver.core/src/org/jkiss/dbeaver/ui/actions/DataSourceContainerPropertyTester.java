@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
 
 import java.util.Objects;
 
@@ -33,6 +34,7 @@ public class DataSourceContainerPropertyTester extends PropertyTester
     public static final String PROP_DRIVER_CLASS = "driverClass";
     public static final String PROP_CONNECTED = "connected";
     public static final String PROP_CONNECTING = "connecting";
+    public static final String PROP_SUPPORTS_SCHEMAS = "supportsSchemas";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -44,6 +46,7 @@ public class DataSourceContainerPropertyTester extends PropertyTester
             case PROP_DRIVER_CLASS -> Objects.equals(container.getDriver().getDriverClassName(), expectedValue);
             case PROP_CONNECTED -> container.isConnected();
             case PROP_CONNECTING -> container.isConnecting();
+            case PROP_SUPPORTS_SCHEMAS -> DataSourceToolbarUtils.isSchemasSupported(container);
             default -> false;
         };
     }

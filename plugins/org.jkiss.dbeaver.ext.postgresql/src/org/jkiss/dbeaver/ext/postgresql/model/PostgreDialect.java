@@ -1270,6 +1270,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @Override
     public boolean isEscapeBackslash() {
-        return true;
+        return serverExtension != null && serverExtension.supportsBackslashStringEscape();
     }
 }
