@@ -2,6 +2,7 @@ package org.jkiss.dbeaver.ext.iotdb.model.meta;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -16,6 +17,8 @@ import java.util.Map;
 
 public class IoTDBMetaModel extends GenericMetaModel {
 
+    private static final Log log = Log.getLog(IoTDBMetaModel.class);
+
     /**
      * @param monitor to create session or to read metadata
      * @param sourceObject source object with required name and parents info
@@ -23,19 +26,18 @@ public class IoTDBMetaModel extends GenericMetaModel {
      * @return "test" for temporary
      */
     @Override
-    public String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase sourceObject,
-                              @NotNull Map<String, Object> options) throws DBException {
+    public String getTableDDL(@NotNull DBRProgressMonitor monitor,
+                              @NotNull GenericTableBase sourceObject,
+                              @NotNull Map<String, Object> options)  {
 
-        DBSEntity table = (DBSEntity) sourceObject;
-        String device1 = table.getParentObject().getName();
-        String device2 = table.getName();
+        String device1 = ((DBSEntity) sourceObject).getParentObject().getName();
+        String device2 = ((DBSEntity) sourceObject).getName();
         String device = device1 + "." + device2;
 
         boolean isAligned = false;
         StringBuilder ddl = new StringBuilder(200);
 
-        try {
-            JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Execute SQL for IoTDB-tree");
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Execute SQL for IoTDB-tree")) {
             String sql = String.format("show devices %s", device);
             JDBCStatement stmt = session.createStatement();
             JDBCResultSet rs = stmt.executeQuery(sql);
@@ -43,30 +45,26 @@ public class IoTDBMetaModel extends GenericMetaModel {
                 isAligned = (rs.getString("IsAligned")).equals("true");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Error executing sql", e);
         }
 
-        try {
-            JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Execute SQL for IoTDB-tree");
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Execute SQL for IoTDB-tree")) {
             String sql = String.format("show timeseries %s.**", device);
             JDBCStatement stmt = session.createStatement();
             JDBCResultSet rs = stmt.executeQuery(sql);
-
             while (rs.next()) {
                 ddl.append("delete timeseries ").append(rs.getString("Timeseries")).append(";\n");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Error executing sql", e);
         }
 
         ddl.append("\n");
 
-        try {
-            JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Execute SQL for IoTDB-tree");
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Execute SQL for IoTDB-tree")) {
             String sql = String.format("show timeseries %s.**", device);
             JDBCStatement stmt = session.createStatement();
             JDBCResultSet rs = stmt.executeQuery(sql);
-
             if (isAligned) {
                 String prefix = device + ".";
                 ddl.append("create aligned timeseries ").append(device).append("(");
@@ -88,10 +86,9 @@ public class IoTDBMetaModel extends GenericMetaModel {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Error executing sql", e);
         }
 
-        //ddl.setLength(ddl.length() - 2);
         return ddl.toString();
     }
 

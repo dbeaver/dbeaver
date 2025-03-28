@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.iotdb.IoTDBPrivilegeInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -22,11 +23,16 @@ public class IoTDBDataSource extends GenericDataSource {
 
     private static final Log log = Log.getLog(IoTDBDataSource.class);
 
-    private List<IoTDBUser> users;
+    private List<IoTDBAbstractUser> users;
+    private final boolean isTree;
+    private List<IoTDBPrivilege> privileges;    // All global and schema privileges
 
-    public IoTDBDataSource(DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull GenericMetaModel metaModel)
-            throws DBException {
+    public IoTDBDataSource(DBRProgressMonitor monitor,
+                           @NotNull DBPDataSourceContainer container,
+                           @NotNull GenericMetaModel metaModel,
+                           boolean tree) throws DBException {
         super(monitor, container, metaModel, new GenericSQLDialect());
+        this.isTree = tree;
     }
 
     /**
@@ -35,7 +41,7 @@ public class IoTDBDataSource extends GenericDataSource {
      * @return List of IoTDBUser
      * @throws DBException if an error occurs
      */
-    public List<IoTDBUser> getUsers(DBRProgressMonitor monitor) throws DBException {
+    public List<IoTDBAbstractUser> getUsers(DBRProgressMonitor monitor) throws DBException {
         if (users == null) {
             users = loadUsers(monitor);
         }
@@ -48,33 +54,29 @@ public class IoTDBDataSource extends GenericDataSource {
      * @return List of IoTDBUser
      * @throws DBException if an error occurs
      */
-    private List<IoTDBUser> loadUsers(DBRProgressMonitor monitor) throws DBException {
+    private List<IoTDBAbstractUser> loadUsers(DBRProgressMonitor monitor) throws DBException {
 
-        List<IoTDBUser> userList = new ArrayList<>();
+        List<IoTDBAbstractUser> userList = new ArrayList<>();
         String currentUserName = null;
         boolean hasManageUserPrivilege = false;
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Show Current User & Check Privileges")) {
             String sql = "show current_user";
-            try (JDBCStatement stmt = session.createStatement()) {
-                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    while (rs.next()) {
-                        currentUserName = rs.getString("CurrentUser");
-                        IoTDBUser user = new IoTDBUser(this, currentUserName);
-                        userList.add(user);
-                    }
+            JDBCStatement stmt = session.createStatement();
+            JDBCResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                currentUserName = rs.getString("CurrentUser");
+                IoTDBAbstractUser user = isTree? new IoTDBUser(this, currentUserName, monitor) : new IoTDBRelationalUser(this, currentUserName, monitor);
+                userList.add(user);
+            }
 
-                    sql = "list privileges of user " + currentUserName;
-                    try (JDBCStatement stmt2 = session.createStatement()) {
-                        try (JDBCResultSet rs2 = stmt2.executeQuery(sql)) {
-                            while (rs2.next()) {
-                                if (rs2.getString("Privileges").equals("MANAGE_USER")) {
-                                    hasManageUserPrivilege = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
+            sql = "list privileges of user " + currentUserName;
+            stmt = session.createStatement();
+            rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                if (rs.getString("Privileges").equals("MANAGE_USER")) {
+                    hasManageUserPrivilege = true;
+                    break;
                 }
             }
         } catch (Exception e) {
@@ -88,19 +90,17 @@ public class IoTDBDataSource extends GenericDataSource {
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Users")) {
             String sql = "list user";
-            try (JDBCStatement stmt = session.createStatement()) {
-                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    while (rs.next()) {
-                        String tmpUserName = rs.getString("User");
-                        if (tmpUserName.equals(currentUserName)) {
-                            continue;
-                        }
-                        IoTDBUser user = new IoTDBUser(this, tmpUserName);
-                        userList.add(user);
-                    }
-                    return userList;
+            JDBCStatement stmt = session.createStatement();
+            JDBCResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                String tmpUserName = rs.getString("User");
+                if (tmpUserName.equals(currentUserName)) {
+                    continue;
                 }
+                IoTDBAbstractUser user = isTree? new IoTDBUser(this, tmpUserName, monitor) : new IoTDBRelationalUser(this, tmpUserName, monitor);
+                userList.add(user);
             }
+            return userList;
         } catch (Exception e) {
             log.error("Error loading users", e);
             throw new DBDatabaseException(e, this);
@@ -108,11 +108,76 @@ public class IoTDBDataSource extends GenericDataSource {
     }
 
     @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-            throws DBException {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
-
         this.users = loadUsers(monitor);
         return this;
+    }
+
+    /**
+     * Get the list of privileges
+     * @return List of IoTDBPrivilege according to tree or table model
+     */
+    public List<IoTDBPrivilege> getAllPrivileges() {
+        if (privileges == null) {
+            generatePrivilegesList();
+        }
+        return privileges;
+    }
+
+    /**
+     * Get the list of privileges by kind
+     * @param isGlobal true if global, false if schema
+     * @return List of IoTDBPrivilege
+     */
+    public List<IoTDBPrivilege> getPrivilegesByKind(boolean isGlobal) {
+        List<IoTDBPrivilege> privs = new ArrayList<>();
+        IoTDBPrivilegeInfo.Kind k = isGlobal ? IoTDBPrivilegeInfo.Kind.GLOBAL : (isTree ? IoTDBPrivilegeInfo.Kind.SERIES : IoTDBPrivilegeInfo.Kind.DATABASE);
+        for (IoTDBPrivilege priv : getAllPrivileges()) {
+            if (priv.getKind() == k) {
+                privs.add(priv);
+            }
+        }
+        return privs;
+    }
+
+    /**
+     * Generate the list of privileges according to tree or table model
+     */
+    public void generatePrivilegesList() {
+        String[] globalPrivileges = isTree ? IoTDBPrivilegeInfo.treeGlobalPrivileges : IoTDBPrivilegeInfo.tableGlobalPrivileges;
+        String[] dbPrivileges = isTree ? IoTDBPrivilegeInfo.treeSeriesPrivileges : IoTDBPrivilegeInfo.tableDatabasePrivileges;
+
+        List<IoTDBPrivilege> newPrivileges = new ArrayList<>();
+        for (String privilege : globalPrivileges) {
+            newPrivileges.add(new IoTDBPrivilege(this, privilege, IoTDBPrivilegeInfo.Kind.GLOBAL));
+        }
+
+        IoTDBPrivilegeInfo.Kind kind = isTree ? IoTDBPrivilegeInfo.Kind.SERIES : IoTDBPrivilegeInfo.Kind.DATABASE;
+        for (String privilege : dbPrivileges) {
+            newPrivileges.add(new IoTDBPrivilege(this, privilege, kind));
+        }
+
+        this.privileges = newPrivileges;
+    }
+
+    /**
+     * Get the privilege by name
+     * @param monitor progress monitor
+     * @param name name of the privilege
+     * @return IoTDBPrivilege
+     * @throws DBException if an error occurs
+     */
+    public IoTDBPrivilege getPrivilege(DBRProgressMonitor monitor,
+                                       String name) throws DBException {
+        return DBUtils.findObject(getAllPrivileges(), name, true);
+    }
+
+    public boolean isTree() {
+        return isTree;
+    }
+
+    public boolean isTable() {
+        return !isTree;
     }
 }

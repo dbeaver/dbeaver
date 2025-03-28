@@ -113,9 +113,8 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
                               @NotNull GenericTableBase sourceObject,
                               @NotNull Map<String, Object> options) {
 
-        DBSEntity table = (DBSEntity) sourceObject;
-        String databaseName = table.getParentObject().getName();
-        String tableName = table.getName();
+        String databaseName = ((DBSEntity) sourceObject).getParentObject().getName();
+        String tableName = ((DBSEntity) sourceObject).getName();
         String insertTableName = tableName;
         for (String keyword : allIotdbTableSQLKeywords) {
             if (tableName.equalsIgnoreCase(keyword)) {
@@ -126,24 +125,84 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
 
         StringBuilder ddl = new StringBuilder(200);
         ddl.append("DROP TABLE IF EXISTS ").append(insertTableName).append(";\n\n");
+        String ttl = "";
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table column details")) {
-            String sql = String.format("select * from information_schema.columns where database like '%s' and table_name like '%s'", databaseName, tableName);
-            try (JDBCStatement stmt = session.createStatement()) {
-                try (JDBCResultSet rs = stmt.executeQuery(sql)) {
-                    ddl.append("CREATE TABLE ").append(insertTableName).append(" (\n");
-                    while (rs.next()) {
-                        ddl.append("\t").append(rs.getString("column_name")).append(" ");
-                        ddl.append(rs.getString("datatype")).append(" ");
-                        ddl.append(rs.getString("category")).append(",\n");
-                    }
-                    ddl.setLength(ddl.length() - 2);
-                    String processedTtl = table.getDescription().replace("(ms): ", "=");
-                    ddl.append("\n) WITH (").append(processedTtl).append(");");
-                }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table details")) {
+            String sql = String.format("select * from information_schema.tables where database like '%s'", databaseName);
+            JDBCStatement stmt = session.createStatement();
+            JDBCResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                ttl = rs.getString("ttl(ms)");
             }
         } catch (Exception e) {
-            log.error("Error executing sql", e);
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table details")) {
+                String sql = String.format("show tables details from %s", databaseName);
+                JDBCStatement stmt = session.createStatement();
+                JDBCResultSet rs = stmt.executeQuery(sql);
+                while (rs.next()) {
+                    ttl = rs.getString("TTL(ms)");
+                }
+            } catch (Exception e1) {
+                log.error("Error executing sql", e1);
+            }
+        }
+
+        if (ttl.equals("INF")) {
+            ttl = "'INF'";
+        }
+
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table column details")) {
+            String sql = String.format("select * from information_schema.columns where database like '%s' and table_name like '%s'", databaseName, insertTableName);
+            JDBCStatement stmt = session.createStatement();
+            JDBCResultSet rs = stmt.executeQuery(sql);
+            ddl.append("CREATE TABLE ").append(insertTableName).append(" (\n");
+            while (rs.next()) {
+                ddl.append("\t").append(rs.getString("column_name")).append(" ");
+                ddl.append(rs.getString("datatype")).append(" ");
+                ddl.append(rs.getString("category"));
+                String columnComment = rs.getString("comment");
+                if (columnComment != null && !columnComment.isEmpty()) {
+                    ddl.append(" COMMENT '").append(columnComment).append("'");
+                }
+                ddl.append(",\n");
+            }
+            ddl.setLength(ddl.length() - 2);
+            String tableComment = ((DBSEntity) sourceObject).getDescription();
+            if (tableComment != null && !tableComment.isEmpty()) {
+                ddl.append("\n) COMMENT '").append(tableComment).append("' ");
+                ddl.append("WITH (TTL=").append(ttl).append(");");
+            }
+            else {
+                ddl.append("\n) WITH (TTL=").append(ttl).append(");");
+            }
+        } catch (Exception e) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table column details")) {
+                String sql = String.format("desc %s.%s details", databaseName, insertTableName);
+                JDBCStatement stmt = session.createStatement();
+                JDBCResultSet rs = stmt.executeQuery(sql);
+                ddl.append("CREATE TABLE ").append(insertTableName).append(" (\n");
+                while (rs.next()) {
+                    ddl.append("\t").append(rs.getString("ColumnName")).append(" ");
+                    ddl.append(rs.getString("DataType")).append(" ");
+                    ddl.append(rs.getString("Category"));
+                    String columnComment = rs.getString("Comment");
+                    if (columnComment != null && !columnComment.isEmpty()) {
+                        ddl.append(" COMMENT '").append(columnComment).append("'");
+                    }
+                    ddl.append(",\n");
+                }
+                ddl.setLength(ddl.length() - 2);
+                String tableComment = ((DBSEntity) sourceObject).getDescription();
+                if (tableComment != null && !tableComment.isEmpty()) {
+                    ddl.append("\n) COMMENT '").append(tableComment).append("' ");
+                    ddl.append("WITH (TTL=").append(ttl).append(");");
+                }
+                else {
+                    ddl.append("\n) WITH (TTL=").append(ttl).append(");");
+                }
+            } catch (Exception e1) {
+                log.error("Error executing sql", e1);
+            }
         }
 
         return ddl.toString();

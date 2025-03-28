@@ -13,16 +13,19 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
 
-public class IoTDBGrant implements DBSObject, DBAPrivilegeGrant{
+public class IoTDBGrant implements DBSObject, DBAPrivilegeGrant {
 
-    private final Log log = Log.getLog(IoTDBGrant.class);
-    private final IoTDBUser user;
+    private final IoTDBAbstractUser user;
     private final List<IoTDBPrivilege> privileges;
     private String role;
     private String scope;
-    private boolean grantOption;
+    private Boolean grantOption;
 
-    public IoTDBGrant(IoTDBUser user, List<IoTDBPrivilege> privileges, String role, String scope, boolean grantOption) {
+    public IoTDBGrant(IoTDBAbstractUser user,
+                      List<IoTDBPrivilege> privileges,
+                      String role,
+                      String scope,
+                      boolean grantOption) {
         this.user = user;
         this.privileges = privileges;
         this.role = role;
@@ -47,7 +50,7 @@ public class IoTDBGrant implements DBSObject, DBAPrivilegeGrant{
 
     @Override
     public boolean isGranted() {
-        return true;
+        return grantOption;
     }
 
     @Override
@@ -99,12 +102,24 @@ public class IoTDBGrant implements DBSObject, DBAPrivilegeGrant{
         this.scope = scope;
     }
 
-    @Property(viewable = true, editable = true, order = 4, id = "grantOption")
-    public boolean getGrantOption() {
+    @Property(viewable = true, editable = true, order = 4)
+    public Boolean getGrantOption() {
         return grantOption;
     }
 
-    public void setGrantOption(boolean grantOption) {
+    public void setGrantOption(Boolean grantOption) {
         this.grantOption = grantOption;
+    }
+
+    public boolean matches(String db, String tb) {
+        return scope.equals("*.*") || scope.equals(db + "." + tb) || scope.equals(db + "." + "*");
+    }
+
+    public boolean canHighlightDatabase(String db) {
+        return scope.startsWith("*.") || scope.startsWith(db + ".");
+    }
+
+    public boolean canHighlightTable(String db, String tb) {
+        return scope.startsWith("*.") || scope.equals(db + ".*") || scope.equals(db + "." + tb);
     }
 }

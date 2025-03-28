@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor
+                id="org.jkiss.dbeaver.ext.iotdb.ui.editors.IoTDBUserEditorGeneral"
+                class="org.jkiss.dbeaver.ext.iotdb.ui.editors.IoTDBUserEditorGeneral"
+                objectType="org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser"
+                main="true"
+                label="General"
+                description="General user settings"
+                icon="#user">
+        </editor>
+        <editor
+                id="org.jkiss.dbeaver.ext.iotdb.ui.editors.IoTDBUserEditorPrivileges"
+                class="org.jkiss.dbeaver.ext.iotdb.ui.editors.IoTDBUserEditorPrivileges"
+                objectType="org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser"
+                main="false"
+                label="Schema Privileges"
+                description="User schema privileges"
+                position="additions_start"
+                icon="#user">
+        </editor>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.iotdb.ui.config.IoTDBUserManager" objectType="org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.iotdb.dataSourceWizardView"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                dataSource="iotdb"
+                label="IoTDB Connection Page"
+                class="org.jkiss.dbeaver.ext.iotdb.ui.views.IoTDBConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.iotdb/icons/iotdb_icon.png">
+        </view>
+        <view
+                id="org.jkiss.dbeaver.ext.iotdb.dataSourceEditorView"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                dataSource="iotdb"
+                label="IoTDB Connection Page"
+                class="org.jkiss.dbeaver.ext.iotdb.ui.views.IoTDBConnectionPage"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.iotdb/icons/iotdb_icon.png">
+        </view>
+    </extension>
+
+</plugin>

@@ -1,0 +1,73 @@
+package org.jkiss.dbeaver.ext.iotdb.ui.editors;
+
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.iotdb.model.IoTDBGrant;
+import org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser;
+import org.jkiss.dbeaver.ext.iotdb.ui.internal.IoTDBUIMessages;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
+import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
+public abstract class IoTDBUserEditorAbstract extends AbstractDatabaseObjectEditor<IoTDBRelationalUser> {
+
+    /**
+     * Load all global and schema privileges of current user
+     */
+    void loadGrants() {
+        LoadingJob.createService(
+            new DatabaseLoadService<List<IoTDBGrant>>(IoTDBUIMessages.editors_user_editor_abstract_load_grants, getDatabaseObject().getDataSource()) {
+                @Override
+                public List<IoTDBGrant> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        return getDatabaseObject().getGrants(monitor);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            },
+            getPageControl().createGrantsLoadVisualizer())
+            .schedule();
+    }
+
+    @Override
+    public void setFocus() {
+        if (getPageControl() != null) {
+            getPageControl().setFocus();
+        }
+    }
+
+    protected abstract UserPageControl getPageControl();
+
+    protected abstract void processGrants(List<IoTDBGrant> grants);
+
+    protected class UserPageControl extends ObjectEditorPageControl {
+        public UserPageControl(Composite parent) {
+            super(parent, SWT.NONE, IoTDBUserEditorAbstract.this);
+        }
+
+        public ProgressVisualizer<List<IoTDBGrant>> createGrantsLoadVisualizer() {
+            return new ProgressVisualizer<List<IoTDBGrant>>() {
+                @Override
+                public void completeLoading(List<IoTDBGrant> grants) {
+                    super.completeLoading(grants);
+                    processGrants(grants);
+                }
+            };
+        }
+
+        @Override
+        public void fillCustomActions(IContributionManager contributionManager) {
+            super.fillCustomActions(contributionManager);
+            DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
+        }
+    }
+}
