@@ -201,6 +201,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             }
 
             JDBCConnectionOpener connectTask = new JDBCConnectionOpener(
+                this,
                 driver,
                 driverInstance,
                 url,
@@ -337,8 +338,9 @@ public abstract class JDBCDataSource extends AbstractDataSource
         } else {
             if (!CommonUtils.isEmpty(driverClassName)) {
                 try {
-                    driver.loadDriver(monitor);
-                    Class.forName(driverClassName, true, driver.getClassLoader());
+                    DBPDriverLoader driverLoader = driver.getDriverLoader(getContainer());
+                    driverLoader.loadDriver(monitor);
+                    Class.forName(driverClassName, true, driverLoader.getClassLoader());
                 } catch (Exception e) {
                     throw new DBCConnectException("Driver class '" + driverClassName + "' not found", e, this);
                 }
@@ -771,7 +773,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         if (driverSubstitution != null) {
             return driverSubstitution.getInstance().getSubstitutingDriverInstance(monitor);
         } else {
-            return container.getDriver().getDriverInstance(monitor);
+            return container.getDriver().getDriverLoader(getContainer()).getDriverInstance(monitor);
         }
     }
 

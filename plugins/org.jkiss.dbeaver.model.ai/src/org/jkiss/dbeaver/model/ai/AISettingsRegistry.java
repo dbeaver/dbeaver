@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.StringReader;
 import java.util.*;
-import java.util.function.Consumer;
 
 public class AISettingsRegistry {
     private static final Log log = Log.getLog(AISettingsRegistry.class);
@@ -39,7 +38,7 @@ public class AISettingsRegistry {
 
     private static final Gson gson = new Gson();
 
-    private final Set<Consumer<AISettingsRegistry>> settingsChangedListeners = Collections.synchronizedSet(new HashSet<>());
+    private final Set<AISettingsEventListener> settingsChangedListeners = Collections.synchronizedSet(new HashSet<>());
 
     private interface AISettingsHolder {
         AISettings getSettings();
@@ -145,17 +144,17 @@ public class AISettingsRegistry {
         return instance;
     }
 
-    public void addChangedListener(Consumer<AISettingsRegistry> listener) {
+    public void addChangedListener(AISettingsEventListener listener) {
         this.settingsChangedListeners.add(listener);
     }
 
-    public void removeChangedListener(Consumer<AISettingsRegistry> listener) {
+    public void removeChangedListener(AISettingsEventListener listener) {
         this.settingsChangedListeners.remove(listener);
     }
 
     private void raiseChangedEvent(AISettingsRegistry registry) {
-        for (Consumer<AISettingsRegistry> listener : this.settingsChangedListeners.toArray(Consumer[]::new)) {
-            listener.accept(registry);
+        for (AISettingsEventListener listener : this.settingsChangedListeners.toArray(AISettingsEventListener[]::new)) {
+            listener.onSettingsUpdate(registry);
         }
     }
 
