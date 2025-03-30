@@ -44,6 +44,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
     private boolean queryRowCount = true;
     private boolean selectedRowsOnly = false;
     private boolean selectedColumnsOnly = false;
+    private boolean exportInReportMode = false;
     private ExtractType extractType = ExtractType.SINGLE_QUERY;
     private int fetchSize = DEFAULT_FETCH_SIZE;
 
@@ -99,6 +100,10 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
     public void setOpenNewConnections(boolean openNewConnections) {
         this.openNewConnections = openNewConnections;
     }
+
+    public boolean isExportInReportView() { return exportInReportMode; }
+
+    public void setExportInReportView(boolean exportInReportMode) { this.exportInReportMode = exportInReportMode; }
 
     public ExtractType getExtractType() {
         return extractType;

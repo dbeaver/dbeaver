@@ -52,6 +52,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     private Button rowCountCheckbox;
     private Button selectedColumnsOnlyCheckbox;
     private Button selectedRowsOnlyCheckbox;
+    private Button selectedExportInReportViewCheckbox;
     private Text fetchSizeText;
 
     public DatabaseProducerPageExtractSettings() {
@@ -204,6 +205,14 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                     selectedColumnsOnlyCheckbox.addSelectionListener(listener);
                 }
                 selectedRowsOnlyCheckbox.addSelectionListener(listener);
+
+                selectedExportInReportViewCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_export_in_report_view, null, false, 4);
+                selectedExportInReportViewCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        settings.setExportInReportView(selectedExportInReportViewCheckbox.getSelection());
+                    }
+                });
             }
         }
         if(getWizard().getCurrentTask() != null){
@@ -250,6 +259,9 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         }
         if (selectedRowsOnlyCheckbox != null) {
             selectedRowsOnlyCheckbox.setSelection(settings.isSelectedRowsOnly());
+        }
+        if (selectedExportInReportViewCheckbox != null) {
+            selectedExportInReportViewCheckbox.setSelection(settings.isExportInReportView());
         }
         enableNewConnectionCheckbox();
 

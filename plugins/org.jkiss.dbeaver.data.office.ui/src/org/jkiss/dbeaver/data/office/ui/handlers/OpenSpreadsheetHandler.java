@@ -119,6 +119,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     producerSettings.setQueryRowCount(false);
                     producerSettings.setSelectedRowsOnly(true);
                     producerSettings.setSelectedColumnsOnly(true);
+                    producerSettings.setExportInReportView(false);
 
                     producer.transferData(monitor, consumer, null, producerSettings, null);
 

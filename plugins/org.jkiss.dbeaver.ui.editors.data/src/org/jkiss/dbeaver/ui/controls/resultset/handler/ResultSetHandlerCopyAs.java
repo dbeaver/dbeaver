@@ -176,6 +176,7 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
                     producerSettings.setQueryRowCount(false);
                     producerSettings.setSelectedRowsOnly(!CommonUtils.isEmpty(options.getSelectedRows()));
                     producerSettings.setSelectedColumnsOnly(!CommonUtils.isEmpty(options.getSelectedColumns()));
+                    producerSettings.setExportInReportView(false);
 
                     monitor.worked(1);
                     monitor.subTask("Export data");
