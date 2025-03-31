@@ -46,6 +46,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
     private Button showDatabaseStatistics;
     private Button readAllDataTypes;
     private Button readKeysWithColumns;
+    private Button replaceLegacyTimezone;
 
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
@@ -116,6 +117,11 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
                 PostgreMessages.dialog_setting_connection_read_keys_with_columns_tip,
                 globalPrefs.getBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS),
                 2);
+            replaceLegacyTimezone = UIUtils.createCheckbox(secureGroup,
+                PostgreMessages.dialog_setting_connection_replace_legacy_timezone,
+                PostgreMessages.dialog_setting_connection_replace_legacy_timezone_tip,
+                globalPrefs.getBoolean(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE),
+                2);
         }
 
         {
@@ -157,6 +163,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
         preferenceStore.setValue(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS, String.valueOf(showDatabaseStatistics.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_READ_ALL_DATA_TYPES, String.valueOf(readAllDataTypes.getSelection()));
         preferenceStore.setValue(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS, String.valueOf(readKeysWithColumns.getSelection()));
+        preferenceStore.setValue(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE, String.valueOf(replaceLegacyTimezone.getSelection()));
 
         preferenceStore.setValue(PostgreConstants.PROP_DD_PLAIN_STRING, ddPlainBehaviorCombo.getSelectionIndex() == 0);
         preferenceStore.setValue(PostgreConstants.PROP_DD_TAG_STRING, ddTagBehaviorCombo.getSelectionIndex() == 0);
@@ -173,6 +180,7 @@ public class PrefPagePostgreSQL extends AbstractPrefPage implements IWorkbenchPr
         showDatabaseStatistics.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS));
         readAllDataTypes.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_READ_ALL_DATA_TYPES));
         readKeysWithColumns.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS));
+        replaceLegacyTimezone.setSelection(store.getDefaultBoolean(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE));
         ddPlainBehaviorCombo.select(store.getDefaultInt(PostgreConstants.PROP_DD_PLAIN_STRING));
         ddTagBehaviorCombo.select(store.getDefaultInt(PostgreConstants.PROP_DD_TAG_STRING));
         setCheckboxesState();

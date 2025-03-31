@@ -17,6 +17,9 @@
         <event topicId="cb_session" id="cb_session_websocket_connected"
                class="org.jkiss.dbeaver.model.websocket.event.session.WSSocketConnectedEvent"/>
 
+        <event topicId="cb_session_auth" id="cb_session_auth"
+               class="org.jkiss.dbeaver.model.websocket.event.session.WSAuthEvent"/>
+
         <event topicId="cb_session" id="cb_session_state" class="org.jkiss.dbeaver.model.websocket.event.session.WSSessionStateEvent"/>
         <event topicId="cb_session" id="cb_session_expired" class="org.jkiss.dbeaver.model.websocket.event.session.WSSessionExpiredEvent"/>
         <event topicId="cb_session" id="cb_access_token_expired"

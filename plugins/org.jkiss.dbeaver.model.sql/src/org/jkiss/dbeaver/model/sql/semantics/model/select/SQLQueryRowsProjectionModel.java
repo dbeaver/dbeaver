@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,15 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
+import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 
-import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -252,12 +254,15 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
             for (STMTreeNode selectSublist : selectSublists) {
                 STMTreeNode sublistNode = selectSublist.findFirstNonErrorChild();
                 if (sublistNode != null) {
-                    switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn|qualifier Period Asterisk
+                    switch (sublistNode.getNodeKindId()) { // selectSublist: (Asterisk|derivedColumn)? anyUnexpected??;
                         case SQLStandardParser.RULE_derivedColumn -> {
                             // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
                             STMTreeNode exprNode = sublistNode.findFirstChildOfName(STMKnownRuleNames.valueExpression);
                             SQLQueryValueExpression expr = exprNode == null ? null : recognizer.collectValueExpression(exprNode);
                             if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
+                                if (tupleRef.getTupleRefEntry() != null) {
+                                    recognizer.registerScopeItem(tupleRef.getTupleRefEntry());
+                                }
                                 resultModel.addTupleSpec(sublistNode, tupleRef);
                             } else {
                                 STMTreeNode asClauseNode = sublistNode.findLastChildOfName(STMKnownRuleNames.asClause);
@@ -277,7 +282,11 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                             // error in query text, ignoring it
                         }
                         default -> {
-                            resultModel.addCompleteTupleSpec(sublistNode);
+                            if (STMKnownRuleNames.ASTERISK_TERM.equals(sublistNode.getNodeName())) {
+                                SQLQueryTupleRefEntry tupleRefEntry = new SQLQueryTupleRefEntry(sublistNode);
+                                recognizer.registerScopeItem(tupleRefEntry);
+                                resultModel.addCompleteTupleSpec(sublistNode, tupleRefEntry);
+                            }
                         }
                     }
                 }
@@ -296,7 +305,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         STMTreeNode tableExpr = syntaxNode.findFirstChildOfName(STMKnownRuleNames.tableExpression);
         SQLQueryRowsSourceModel projectionModel;
         if (tableExpr != null) {
-            selectListScope.setInterval(Interval.of(selectListScopeStart, tableExpr.getRealInterval().a));
+            selectListScope.setInterval(Interval.of(selectListScopeStart, tableExpr.getRealInterval().a - 1));
             SQLQueryLexicalScope fromScope = new SQLQueryLexicalScope();
             STMTreeNode[] filterNodes = new STMTreeNode[]{
                 tableExpr.findFirstChildOfName(STMKnownRuleNames.whereClause),
@@ -331,7 +340,26 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                 SQLQueryLexicalScope scope = scopes[i];
                 if (scope != null) {
                     tailScope = scope;
-                    int from = prevScopes[i].getInterval().b;
+
+                    Interval leadingKeywordInterval = null;
+                    STMTreeNode leadingNode;
+                    if (i == 0) {
+                        leadingNode = tableExpr.findFirstNonErrorChild();
+                    } else {
+                        leadingNode = filterNodes[i - 1];
+                    }
+                    if (leadingNode != null) {
+                        leadingKeywordInterval = findLeadingKeywordsInterval(leadingNode);
+                    }
+
+                    int from;
+                    if (leadingKeywordInterval != null) {
+                        // interval end points to the last keyword character
+                        // so we need to assume this last character and space after to find next position
+                        from = leadingKeywordInterval.b + 2;
+                    } else {
+                        from = prevScopes[i].getInterval().b;
+                    }
                     int to = nextScopeNodes[i] != null ? nextScopeNodes[i].getRealInterval().a : Integer.MAX_VALUE;
                     scope.setInterval(Interval.of(from, to));
                 }
@@ -356,5 +384,21 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         }
 
         return projectionModel;
+    }
+
+    @Nullable
+    private static Interval findLeadingKeywordsInterval(@NotNull STMTreeNode node) {
+        Iterator<STMTreeNode> it = node.getChildren().iterator();
+        if (it.hasNext() && it.next() instanceof STMTreeTermNode t1) {
+            Interval i = t1.getRealInterval();
+            int from = i.a;
+            int to = i.b;
+            while (it.hasNext() && it.next() instanceof STMTreeTermNode t) {
+                to = t.getRealInterval().b;
+            }
+            return Interval.of(from, to);
+        } else {
+            return null;
+        }
     }
 }

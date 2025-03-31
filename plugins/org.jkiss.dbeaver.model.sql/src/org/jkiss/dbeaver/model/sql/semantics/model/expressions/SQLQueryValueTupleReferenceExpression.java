@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
@@ -44,21 +45,31 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
     private final SQLQueryMemberAccessEntry memberAccessEntry;
 
     @Nullable
+    private final SQLQueryTupleRefEntry tupleRefEntry;
+
+    @Nullable
     private SQLQueryRowsSourceModel tupleSource = null;
 
     public SQLQueryValueTupleReferenceExpression(
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryQualifiedName tableName,
-        @Nullable SQLQueryMemberAccessEntry memberAccessEntry
+        @Nullable SQLQueryMemberAccessEntry memberAccessEntry,
+        @Nullable SQLQueryTupleRefEntry tupleRefEntry
     ) {
         super(syntaxNode);
         this.tableName = tableName;
         this.memberAccessEntry = memberAccessEntry;
+        this.tupleRefEntry = tupleRefEntry;
     }
 
     @NotNull 
     public SQLQueryQualifiedName getTableName() {
         return this.tableName;
+    }
+
+    @Nullable
+    public SQLQueryTupleRefEntry getTupleRefEntry() {
+        return this.tupleRefEntry;
     }
     
     @Nullable
@@ -77,6 +88,9 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
                     this.tableName.setDefinition(rr, tableNameOrigin);
                     if (this.memberAccessEntry != null) {
                         this.memberAccessEntry.setOrigin(new SQLQuerySymbolOrigin.ColumnRefFromReferencedContext(rr));
+                    }
+                    if (this.tupleRefEntry != null) {
+                        this.tupleRefEntry.setOrigin(new SQLQuerySymbolOrigin.ExpandableTupleRef(this.getSyntaxNode(), context, rr));
                     }
                 } else {
                     this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,6 @@ public class MySQLConstants {
     /** @deprecated Use {@link SSLHandlerTrustStoreImpl#PROP_SSL_CA_CERT} instead */
     @Deprecated
     public static final String PROP_SSL_CA_CERT = "ssl.ca.cert";
-    public static final String PROP_SSL_DEBUG = "ssl.debug";
 
     public static final String PROP_CACHE_META_DATA = "cache-meta-data";
 
@@ -243,4 +242,7 @@ public class MySQLConstants {
 
     // https://dev.mysql.com/doc/mysql-errors/8.4/en/server-error-reference.html
     public static final int ER_MUST_CHANGE_PASSWORD_LOGIN = 1862;
+
+    // https://mariadb.com/kb/en/e1820/
+    public static final int MARIA_ER_MUST_CHANGE_PASSWORD_LOGIN = 1820;
 }

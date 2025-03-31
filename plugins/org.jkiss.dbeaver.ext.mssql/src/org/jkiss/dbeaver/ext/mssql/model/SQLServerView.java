@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,9 +133,11 @@ public class SQLServerView extends SQLServerTableBase implements DBSView {
         }
         if (ddl == null) {
             if (isPersisted()) {
-                ddl = SQLServerUtils.extractSource(monitor, getSchema(), getName());
+                String ddl1 = SQLServerUtils.extractSource(monitor, getSchema(), getName());
+                ddl = SQLServerUtils.changeCreateToAlterDDL(getDataSource(), ddl1);
             } else {
-                ddl = "CREATE VIEW " + this.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n";
+                String createOrAlter = getDataSource().isAtLeastV16() ? "CREATE OR ALTER" : "ALTER";
+                ddl = createOrAlter + "VIEW " + this.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n";
             }
         }
         return ddl;
