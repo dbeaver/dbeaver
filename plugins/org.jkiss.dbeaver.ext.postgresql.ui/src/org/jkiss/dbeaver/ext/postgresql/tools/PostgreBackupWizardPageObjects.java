@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -63,7 +64,7 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     PostgreBackupWizardPageObjects(PostgreBackupWizard wizard)
     {
         super(wizard, PostgreMessages.wizard_backup_page_object_title_schema_table);
-        setTitle(PostgreMessages.wizard_backup_page_object_title);
+        setTitle(PostgreMessages.wizard_backup_page_select_title);
         setDescription(PostgreMessages.wizard_backup_page_object_description);
     }
 
@@ -157,13 +158,20 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
     public void activatePage() {
         super.activatePage();
         loadSettings();
-
         updateState();
     }
 
     @Override
     public void deactivatePage() {
         saveState();
+    }
+
+    private void updateTitle() {
+        if (dataBase != null) {
+            String newTitle = NLS.bind(PostgreMessages.wizard_backup_page_object_title,
+                    CommonUtils.truncateString(dataBase.getName(), 255));
+            setTitle(newTitle);
+        }
     }
 
     private void loadSettings() {
@@ -200,6 +208,9 @@ class PostgreBackupWizardPageObjects extends AbstractNativeToolWizardPage<Postgr
             wizard.getSettings().setShowViews(true);
             exportViewsCheck.setSelection(true);
         }
+
+        updateTitle();
+
         if (dataBase != null) {
             boolean tablesLoaded = false;
             try {

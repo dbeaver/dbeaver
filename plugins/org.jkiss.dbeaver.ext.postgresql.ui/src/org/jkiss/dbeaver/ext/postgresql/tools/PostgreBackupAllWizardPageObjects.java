@@ -45,7 +45,7 @@ public class PostgreBackupAllWizardPageObjects extends AbstractNativeToolWizardP
 
     protected PostgreBackupAllWizardPageObjects(PostgreBackupAllWizard wizard) {
         super(wizard, PostgreMessages.wizard_backup_all_page_global_backup_name);
-        setTitle(PostgreMessages.wizard_backup_page_object_title);
+        setTitle(PostgreMessages.wizard_backup_page_select_title);
         setDescription(PostgreMessages.wizard_backup_all_page_global_backup_tip);
     }
 
