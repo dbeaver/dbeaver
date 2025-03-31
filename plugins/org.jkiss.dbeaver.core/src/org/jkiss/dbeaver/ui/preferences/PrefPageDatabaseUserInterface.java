@@ -58,7 +58,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -165,10 +164,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             };
             ContentAssistUtils.installContentProposal(clientTimezone, new ComboContentAdapter(), proposalProvider);
 
-            Control tipLabel = UIUtils.createInfoLabel(regionalSettingsGroup,
+            Control tipLabelRestart = UIUtils.createInfoLabel(regionalSettingsGroup,
                 CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart
             );
-            tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
+            tipLabelRestart.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING,
                 GridData.VERTICAL_ALIGN_BEGINNING,
                 false,
                 false,
@@ -176,8 +175,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 1
             ));
 
-        }
-        if (isStandalone) {
             Group groupObjects = UIUtils.createControlGroup(
                 composite,
                 CoreMessages.pref_page_ui_general_group_browser, 2,
@@ -305,8 +302,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
     @Override
     public boolean isValid() {
-        return super.isValid() && (!isStandalone || clientTimezone != null &&
-            (Arrays.stream(clientTimezone.getItems()).anyMatch(s -> s.equals(clientTimezone.getText()))));
+        return super.isValid();
     }
 
     @Override
@@ -321,37 +317,41 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             } else {
                 store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, Boolean.FALSE);
             }
-        }
 
-        if (isWindowsDesktopClient()) {
-            SWTBrowserRegistry.setActiveBrowser(SWTBrowserRegistry.BrowserSelection.values()[browserCombo.getSelectionIndex()]);
-        }
 
-        PrefUtils.savePreferenceStore(store);
-        if (clientTimezone != null) {
-            if (DBConstants.DEFAULT_TIMEZONE.equals(clientTimezone.getText())) {
-                TimezoneRegistry.setDefaultZone(null, true);
-            } else {
-                TimezoneRegistry.setDefaultZone(
-                    ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())), true);
+            if (isWindowsDesktopClient()) {
+                SWTBrowserRegistry.setActiveBrowser(SWTBrowserRegistry.BrowserSelection.values()[browserCombo.getSelectionIndex()]);
             }
-        }
-        if (workspaceLanguage.getSelectionIndex() >= 0) {
-            PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
-            DBPPlatformLanguage curLanguage = DBPPlatformDesktop.getInstance().getLanguage();
 
-            try {
-                if (curLanguage != language) {
-                    ((DBPPlatformLanguageManager) DBWorkbench.getPlatform()).setPlatformLanguage(language);
-                    if (UIUtils.confirmAction(
-                        getShell(),
-                        "Restart " + GeneralUtils.getProductName(),
-                        "You need to restart " + GeneralUtils.getProductName() + " to perform actual language change.\nDo you want to restart?")) {
-                        restartWorkbenchOnPrefChange();
-                    }
+            PrefUtils.savePreferenceStore(store);
+            if (clientTimezone != null) {
+                if (DBConstants.DEFAULT_TIMEZONE.equals(clientTimezone.getText())) {
+                    TimezoneRegistry.setDefaultZone(null, true);
+                } else {
+                    TimezoneRegistry.setDefaultZone(
+                        ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())), true);
                 }
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
+            }
+            if (workspaceLanguage.getSelectionIndex() >= 0) {
+                PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages()
+                    .get(workspaceLanguage.getSelectionIndex());
+                DBPPlatformLanguage curLanguage = DBPPlatformDesktop.getInstance().getLanguage();
+
+                try {
+                    if (curLanguage != language) {
+                        ((DBPPlatformLanguageManager) DBWorkbench.getPlatform()).setPlatformLanguage(language);
+                        if (UIUtils.confirmAction(
+                            getShell(),
+                            "Restart " + GeneralUtils.getProductName(),
+                            "You need to restart " + GeneralUtils.getProductName()
+                                + " to perform actual language change.\nDo you want to restart?"
+                        )) {
+                            restartWorkbenchOnPrefChange();
+                        }
+                    }
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError("Change language", "Can't switch language to " + language, e);
+                }
             }
         }
 

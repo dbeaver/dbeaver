@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
 import org.jkiss.dbeaver.ui.controls.breadcrumb.BreadcrumbViewer;
@@ -118,7 +119,10 @@ public class BreadcrumbTrim {
         var propertyListener = new IPropertyListener() {
             @Override
             public void propertyChanged(Object source, int propId) {
-                if (propId == IEditorPart.PROP_INPUT && source instanceof IEditorPart editorPart) {
+                if (propId != IEditorPart.PROP_INPUT && propId != IEditorPart.PROP_DIRTY) {
+                    return;
+                }
+                if (source instanceof IEditorPart editorPart) {
                     setInput(viewer, editorPart.getEditorInput());
                 }
             }
@@ -130,14 +134,14 @@ public class BreadcrumbTrim {
             @Override
             public void partActivated(IWorkbenchPart part) {
                 if (part instanceof IEditorPart editorPart) {
-                    setLastEditorPart(editorPart);
+                    UIExecutionQueue.queueExec(() -> setLastEditorPart(editorPart));
                 }
             }
 
             @Override
             public void partDeactivated(IWorkbenchPart part) {
                 if (part instanceof IEditorPart editorPart) {
-                    setLastEditorPart(editorPart);
+                    UIExecutionQueue.queueExec(() -> setLastEditorPart(editorPart));
                 }
             }
 

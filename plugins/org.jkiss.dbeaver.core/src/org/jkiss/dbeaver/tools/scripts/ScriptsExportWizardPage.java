@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.scripts;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -35,11 +34,14 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -61,15 +63,13 @@ class ScriptsExportWizardPage extends WizardPage {
     private DatabaseNavigatorTree scriptsNavigator;
     private final List<DBNResource> selectedResources = new ArrayList<>();
 
-    protected ScriptsExportWizardPage(String pageName)
-    {
+    protected ScriptsExportWizardPage(String pageName) {
         super(pageName);
         setTitle(CoreMessages.dialog_project_export_wizard_page_title);
     }
 
     @Override
-    public boolean isPageComplete()
-    {
+    public boolean isPageComplete() {
         if (directoryText == null || directoryText.isDisposed() || scriptsNavigator == null || scriptsNavigator.isDisposed()) {
             return false;
         }
@@ -94,8 +94,7 @@ class ScriptsExportWizardPage extends WizardPage {
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         String outDir = DBWorkbench.getPlatform().getPreferenceStore().getString(PREF_SCRIPTS_EXPORT_OUT_DIR);
         if (CommonUtils.isEmpty(outDir)) {
             outDir = RuntimeUtils.getUserHomeDir().getAbsolutePath();
@@ -105,23 +104,33 @@ class ScriptsExportWizardPage extends WizardPage {
         placeholder.setLayout(new GridLayout(1, false));
 
         // Project list
-        scriptsNavigator = new DatabaseNavigatorTree(placeholder, DBWorkbench.getPlatform().getNavigatorModel().getRoot(), SWT.BORDER | SWT.CHECK);
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (activeProject == null || activeProject.getNavigatorModel() == null) {
+            return;
+        }
+
+        scriptsNavigator = new DatabaseNavigatorTree(
+            placeholder,
+            activeProject.getNavigatorModel().getRoot().getProjectNode(activeProject),
+            SWT.BORDER | SWT.CHECK
+        );
         GridData gd = new GridData(GridData.FILL_BOTH);
         scriptsNavigator.setLayoutData(gd);
         CheckboxTreeViewer viewer = (CheckboxTreeViewer) scriptsNavigator.getViewer();
         viewer.addCheckStateListener(new ICheckStateListener() {
             @Override
-            public void checkStateChanged(CheckStateChangedEvent event)
-            {
+            public void checkStateChanged(CheckStateChangedEvent event) {
                 updateState();
             }
         });
 
+        IFolder scriptFolder = DBPPlatformDesktop.getInstance().getWorkspace()
+            .getResourceDefaultRoot(activeProject, ScriptsHandlerImpl.class, false);
         scriptsNavigator.getViewer().addFilter(new ViewerFilter() {
             @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element)
-            {
-                return element instanceof DBNResource && ((DBNResource) element).getResource() instanceof IContainer;
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
+                return (element instanceof DBNResource dbnResource && dbnResource.getResource().equals(scriptFolder)) ||
+                    (parentElement instanceof DBNResource parentDbnResource && parentDbnResource.getResource().equals(scriptFolder));
             }
         });
 
@@ -129,7 +138,11 @@ class ScriptsExportWizardPage extends WizardPage {
         Composite generalSettings = UIUtils.createPlaceholder(placeholder, 3);
         generalSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
-            overwriteCheck = UIUtils.createCheckbox(generalSettings, CoreMessages.dialog_project_export_wizard_page_checkbox_overwrite_files, false);
+            overwriteCheck = UIUtils.createCheckbox(
+                generalSettings,
+                CoreMessages.dialog_project_export_wizard_page_checkbox_overwrite_files,
+                false
+            );
             gd = new GridData(GridData.BEGINNING);
             gd.horizontalSpan = 3;
             overwriteCheck.setLayoutData(gd);
@@ -139,8 +152,7 @@ class ScriptsExportWizardPage extends WizardPage {
             directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             directoryText.addModifyListener(new ModifyListener() {
                 @Override
-                public void modifyText(ModifyEvent e)
-                {
+                public void modifyText(ModifyEvent e) {
                     updateState();
                 }
             });
@@ -149,8 +161,7 @@ class ScriptsExportWizardPage extends WizardPage {
             openFolder.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
             openFolder.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
                     dialog.setMessage(CoreMessages.dialog_project_export_wizard_page_dialog_choose_export_dir_message);
                     dialog.setText(CoreMessages.dialog_project_export_wizard_page_dialog_choose_export_dir_text);
@@ -171,13 +182,11 @@ class ScriptsExportWizardPage extends WizardPage {
         updateState();
     }
 
-    private void updateState()
-    {
+    private void updateState() {
         getContainer().updateButtons();
     }
 
-    public ScriptsExportData getExportData()
-    {
+    public ScriptsExportData getExportData() {
         Set<IResource> result = new LinkedHashSet<>();
         // Add folders
         for (DBNResource resourceNode : selectedResources) {
@@ -197,8 +206,7 @@ class ScriptsExportWizardPage extends WizardPage {
         return new ScriptsExportData(result, overwriteCheck.getSelection(), new File(outputDir));
     }
 
-    private void addResourceToSet(Set<IResource> result, IResource resource)
-    {
+    private void addResourceToSet(Set<IResource> result, IResource resource) {
         boolean skip = false;
         for (IResource parent = resource.getParent(); parent != null; parent = parent.getParent()) {
             if (result.contains(parent)) {

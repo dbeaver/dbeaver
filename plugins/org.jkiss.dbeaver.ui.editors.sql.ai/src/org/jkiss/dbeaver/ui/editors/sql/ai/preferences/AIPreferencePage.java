@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai";
     private final AISettings settings;
 
-    private DAICompletionEngine<?> completionEngine;
+    private DAICompletionEngine completionEngine;
     private IAIFormatter formatter;
 
     private IObjectPropertyConfigurator<IAIFormatter, AISettings> formatterConfigurator;
@@ -92,7 +92,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
     }
 
     @Nullable
-    private IObjectPropertyConfigurator<DAICompletionEngine<?>, AIEngineSettings> createEngineConfigurator() {
+    private IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> createEngineConfigurator() {
         UIPropertyConfiguratorDescriptor engineDescriptor =
             UIPropertyConfiguratorRegistry.getInstance().getDescriptor(completionEngine.getClass().getName());
         if (engineDescriptor != null) {
@@ -136,13 +136,6 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
             log.debug(e);
         }
 
-        for (AIEngineRegistry.EngineDescriptor engine : AIEngineRegistry.getInstance().getCompletionEngines()) {
-            try {
-                engine.createInstance().getServiceMap().clear();
-            } catch (DBException e) {
-                log.error("Error clearing existing services");
-            }
-        }
         return true;
     }
 
@@ -163,7 +156,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         Composite serviceComposite = UIUtils.createComposite(composite, 2);
         serviceComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         serviceCombo = UIUtils.createLabelCombo(serviceComposite, "Service", SWT.DROP_DOWN | SWT.READ_ONLY);
-        List<AIEngineRegistry.EngineDescriptor> completionEngines = AIEngineRegistry.getInstance()
+        List<AIEngineDescriptor> completionEngines = AIEngineRegistry.getInstance()
             .getCompletionEngines();
         int defaultEngineSelection = -1;
         for (int i = 0; i < completionEngines.size(); i++) {
@@ -212,7 +205,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         activeEngineConfiguratorPage = engineConfiguratorMapping.get(id);
 
         if (activeEngineConfiguratorPage == null) {
-            IObjectPropertyConfigurator<DAICompletionEngine<?>, AIEngineSettings> engineConfigurator
+            IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> engineConfigurator
                 = createEngineConfigurator();
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
             activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
@@ -229,14 +222,14 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
     }
 
     private static class EngineConfiguratorPage {
-        private final IObjectPropertyConfigurator<DAICompletionEngine<?>, AIEngineSettings> configurator;
+        private final IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> configurator;
         private Composite composite;
 
-        EngineConfiguratorPage(IObjectPropertyConfigurator<DAICompletionEngine<?>, AIEngineSettings> configurator) {
+        EngineConfiguratorPage(IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> configurator) {
             this.configurator = configurator;
         }
 
-        private void createControl(Composite parent, DAICompletionEngine<?> engine) {
+        private void createControl(Composite parent, DAICompletionEngine engine) {
             composite = UIUtils.createComposite(parent, 1);
             composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             configurator.createControl(composite, engine, () -> {});

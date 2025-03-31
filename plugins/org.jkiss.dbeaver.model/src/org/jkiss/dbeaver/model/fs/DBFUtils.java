@@ -34,13 +34,16 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 /**
@@ -231,5 +234,15 @@ public class DBFUtils {
             return null;
         }
         return dsContainer;
+    }
+
+    public static void move(@NotNull Path from, @NotNull Path to) throws IOException {
+        if (IOUtils.isFileFromDefaultFS(to)) {
+            Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
+        } else {
+            // external fs may not support move
+            Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
+            Files.delete(from);
+        }
     }
 }

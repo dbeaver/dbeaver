@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,8 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
-import org.jkiss.dbeaver.ui.AbstractPartListener;
-import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogThemeSettings;
 
 /**
@@ -229,6 +227,7 @@ public class TransactionMonitorToolbar {
                 }
                 redraw();
                 updateToolTipText();
+                ActionUtils.fireCommandRefresh(ConnectionCommands.CMD_TOGGLE_AUTOCOMMIT);
             });
         }
 

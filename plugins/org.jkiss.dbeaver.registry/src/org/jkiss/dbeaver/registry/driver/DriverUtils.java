@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -250,6 +253,41 @@ public class DriverUtils {
             return DriverDescriptor.getWorkspaceDriversStorageFolder().relativize(path).toString();
         }
         return path.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    @NotNull
+    public static <T> Class<T> getDriverClass(@NotNull DBPDataSource dataSource, @NotNull String className) throws ClassNotFoundException {
+        return (Class<T>) Class.forName(className, true, dataSource.getContainer().getDriver().getDefaultDriverLoader().getClassLoader());
+    }
+
+    public static long calculateFileCRC(Path localDriverFile) {
+        try (InputStream is = Files.newInputStream(localDriverFile)) {
+            return calculateCRC(is);
+        } catch (IOException e) {
+            log.error("Error reading file '" + localDriverFile + "', CRC calculation failed", e);
+            return 0;
+        }
+    }
+
+    public static long calculateBytesCRC(byte[] bytes) {
+        try (InputStream is = new ByteArrayInputStream(bytes)) {
+            return calculateCRC(is);
+        } catch (IOException e) {
+            log.error("CRC calculation failed from bytes", e);
+            return 0;
+        }
+    }
+
+    private static long calculateCRC(InputStream is) throws IOException {
+        CRC32 crc = new CRC32();
+
+        byte[] buffer = new byte[65536];
+        int bytesRead;
+        while ((bytesRead = is.read(buffer)) != -1) {
+            crc.update(buffer, 0, bytesRead);
+        }
+        return crc.getValue();
     }
 
     public static class DriverNameComparator implements Comparator<DBPDriver> {
