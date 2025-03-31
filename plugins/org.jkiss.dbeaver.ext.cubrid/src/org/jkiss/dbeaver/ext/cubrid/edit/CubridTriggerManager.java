@@ -72,8 +72,7 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> {
         } else if (trigger.getActionType().equals("PRINT")) {
             sb.append(trigger.getActionType() + " ");
             sb.append(trigger.getActionDefinition() == null ? "" : SQLUtils.quoteString(trigger, trigger.getActionDefinition()));
-        }
-        else {
+        } else {
             sb.append(trigger.getActionDefinition() == null ? "" : trigger.getActionDefinition());
         }
     }
@@ -109,17 +108,17 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> {
 
         if (command.hasProperty("active")) {
             actionList.add(new SQLDatabasePersistAction(
-                    String.format("ALTER TRIGGER " + triggerName + " STATUS "
-                    + (trigger.getActive() ? "ACTIVE" : "INACTIVE"))));
+                    "ALTER TRIGGER " + triggerName + " STATUS "
+                    + (trigger.getActive() ? "ACTIVE" : "INACTIVE")));
         }
         if (command.hasProperty("priority")) {
             actionList.add(new SQLDatabasePersistAction(
-                    String.format("ALTER TRIGGER " + triggerName + " PRIORITY " + trigger.getPriority())));
+                    "ALTER TRIGGER " + triggerName + " PRIORITY " + trigger.getPriority()));
         }
         if (command.hasProperty("description")) {
             actionList.add(new SQLDatabasePersistAction(
-                    String.format("ALTER TRIGGER " + triggerName + " COMMENT "
-                    + SQLUtils.quoteString(trigger, CommonUtils.notEmpty(trigger.getDescription())))));
+                    "ALTER TRIGGER " + triggerName + " COMMENT "
+                    + SQLUtils.quoteString(trigger, CommonUtils.notEmpty(trigger.getDescription()))));
         }
     }
 
