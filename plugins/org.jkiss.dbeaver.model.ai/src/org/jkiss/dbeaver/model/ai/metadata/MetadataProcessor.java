@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.ai.completion.DAIChatMessage;
+import org.jkiss.dbeaver.model.ai.completion.DAIChatRole;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionMessage;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -106,26 +108,26 @@ public class MetadataProcessor {
      * Creates a new message containing completion metadata for the request
      */
     @NotNull
-    public DAICompletionMessage createMetadataMessage(
+    public String describeContext(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionContext context,
-        @Nullable DBSObjectContainer mainObject,
         @NotNull IAIFormatter formatter,
-        @NotNull String instructions,
         int maxRequestTokens
     ) throws DBException {
+        DBSObjectContainer mainObject = context.getScopeObject();
+
         if (mainObject == null || mainObject.getDataSource() == null) {
             throw new DBException("Invalid completion request");
         }
 
         final DBCExecutionContext executionContext = context.getExecutionContext();
-        final StringBuilder sb = new StringBuilder(instructions);
+        final StringBuilder sb = new StringBuilder();
         final String extraInstructions = formatter.getExtraInstructions(monitor, mainObject, executionContext);
         if (CommonUtils.isNotEmpty(extraInstructions)) {
             sb.append(", ").append(extraInstructions);
         }
 
-        sb.append("\nDialect is ").append(mainObject.getDataSource().getSQLDialect().getDialectName());
+        describeSQLDialect(mainObject.getDataSource().getSQLDialect(), sb);
 
         if (executionContext.getContextDefaults() != null) {
             final DBSSchema defaultSchema = executionContext.getContextDefaults().getDefaultSchema();
@@ -161,10 +163,7 @@ public class MetadataProcessor {
             ));
         }
 
-        return new DAICompletionMessage(
-            DAICompletionMessage.Role.SYSTEM,
-            sb.toString()
-        );
+        return sb.toString();
     }
 
     protected DBSEntityAttribute addPromptAttributes(
@@ -203,6 +202,18 @@ public class MetadataProcessor {
         DBCExecutionContextDefaults<?,?> contextDefaults = context.getContextDefaults();
         return parent != null && !(parent.equals(contextDefaults.getDefaultCatalog())
             || parent.equals(contextDefaults.getDefaultSchema()));
+    }
+
+    private static void describeSQLDialect(SQLDialect dialect, StringBuilder sb) {
+        sb.append("Dialect is ").append(dialect.getDialectName());
+
+        String[][] identifierQuoteStrings = dialect.getIdentifierQuoteStrings();
+        if (identifierQuoteStrings != null && identifierQuoteStrings.length > 0) {
+            sb.append("\nUse ").append(identifierQuoteStrings[0][0]).append(" to quote database object names");
+        }
+
+        String[][] stringQuoteStrings = dialect.getStringQuoteStrings();
+        sb.append("\nUse ").append(stringQuoteStrings[0][0]).append(" to quote string values");
     }
 
     private MetadataProcessor() {
