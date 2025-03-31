@@ -76,8 +76,10 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
 
     public SQLiteTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
-        SQLiteDataSource dataSource =  (SQLiteDataSource) this.getDataSource();
-        hasStrictTyping = dbResult != null && dataSource.supportsStrictTyping() && JDBCUtils.safeGetBoolean(dbResult, "STRICT"); //$NON-NLS-1$
+        hasStrictTyping = dbResult != null &&
+            this.getDataSource() instanceof SQLiteDataSource dataSource &&
+            dataSource.supportsStrictTyping() &&
+            JDBCUtils.safeGetBoolean(dbResult, "STRICT"); //$NON-NLS-1$
     }
 
     @Override
@@ -206,8 +208,8 @@ public class SQLiteTable extends GenericTable implements DBDPseudoAttributeConta
 
         @Override
         public boolean isValidValue(SQLiteTable object, Object value) throws IllegalArgumentException {
-            SQLiteDataSource dataSource =  (SQLiteDataSource) object.getDataSource();
-            return dataSource.supportsStrictTyping();
+            return object.getDataSource() instanceof SQLiteDataSource dataSource &&
+                dataSource.supportsStrictTyping();
         }
     }
 }
