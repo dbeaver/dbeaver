@@ -369,12 +369,12 @@ public class NavigatorUtils {
                 EditorInputTransfer.getInstance(),
                 FileTransfer.getInstance()
             };
-            
-            if (RuntimeUtils.isGtk()) { 
-                // TextTransfer should be the last on GTK due to platform' DND implementation inconsistency
+
+            if (RuntimeUtils.isWayland()) {
+                // TextTransfer should be the last when using Wayland
                 ArrayUtils.reverse(dragTransferTypes);
             }
-            
+
             int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
             final DragSource source = new DragSource(viewer.getControl(), operations);

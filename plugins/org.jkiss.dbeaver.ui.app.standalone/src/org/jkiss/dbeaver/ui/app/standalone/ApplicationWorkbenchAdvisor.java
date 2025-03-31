@@ -32,6 +32,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -64,12 +65,14 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
@@ -82,8 +85,8 @@ import java.awt.*;
 import java.awt.desktop.SystemEventListener;
 import java.awt.desktop.SystemSleepEvent;
 import java.awt.desktop.SystemSleepListener;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -366,8 +369,14 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     }
 
     private void startVersionChecker() {
-        DBeaverVersionChecker checker = new DBeaverVersionChecker(false);
-        checker.schedule(3000);
+        Shell mainShell = UIUtils.getActiveWorkbenchShell();
+        if (mainShell != null) {
+            DialogUtils.showDelayedPopup(
+                mainShell,
+                () -> new DBeaverVersionChecker(false).schedule(),
+                "Version Checker Wrapper"
+            );
+        }
     }
 
     ///////////////////////
