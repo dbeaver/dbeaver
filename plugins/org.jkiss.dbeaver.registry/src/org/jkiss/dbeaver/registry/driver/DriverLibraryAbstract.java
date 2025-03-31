@@ -68,7 +68,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         } else if (path.startsWith(DriverLibraryMavenArtifact.PATH_PREFIX)) {
             return new DriverLibraryMavenArtifact(driver, type, path, preferredVersion);
         } else if (path.startsWith(DriverLibraryBundle.PATH_PREFIX)) {
-            return new DriverLibraryBundle(driver, type, path);
+            return new DriverLibraryBundle(driver, path);
         } else {
             if (DriverLibraryRemote.supportsURL(path)) {
                 return new DriverLibraryRemote(driver, type, path);
