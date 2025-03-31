@@ -37,7 +37,7 @@ public class CubridView extends GenericView
             @Nullable String tableName,
             @Nullable String tableType,
             @Nullable JDBCResultSet dbResult) {
-        super(container, tableName, tableType, dbResult);
+        super(container, tableName.toLowerCase(), tableType, dbResult);
         if (dbResult != null) {
             String type = JDBCUtils.safeGetString(dbResult, CubridConstants.IS_SYSTEM_CLASS);
             if (type != null) {
@@ -47,11 +47,9 @@ public class CubridView extends GenericView
         this.owner = (CubridUser) container;
     }
 
-    @NotNull
-    @Property(viewable = true, editable = true, order =1)
     @Override
-    public String getName() {
-        return super.getName() != null ? super.getName().toLowerCase() : null;
+    public void setName(String name) {
+        super.setName(name.toLowerCase());
     }
 
     public void setSchema(@NotNull CubridUser owner) {
