@@ -670,8 +670,9 @@
                     category="Hadoop"
                     categories="hadoop"
                     singleConnection="true">
-                    <file type="jar" path="maven:/org.spark-project.hive:hive-jdbc:RELEASE"/>
-                    <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
+                    <file type="jar" path="maven:/org.spark-project.hive:hive-jdbc:RELEASE" bundle="!drivers.apache_spark"/>
+                    <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE" bundle="!drivers.apache_spark"/>
+                    <file type="jar" path="drivers/apache_spark" bundle="drivers.apache_spark"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
 
                     <parameter name="supports-truncate" value="false"/>
