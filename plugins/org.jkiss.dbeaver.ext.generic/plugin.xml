@@ -825,7 +825,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/dolphindb/jdbc"
                     categories="sql,analytic,timeseries">
-                    <file type="jar" path="maven:/com.dolphindb:jdbc:RELEASE[3.00.1.0]" />               
+                    <file type="jar" path="maven:/com.dolphindb:jdbc:RELEASE[3.00.1.0]" />
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="true"/>
                     <parameter name="omit-catalog" value="false"/>
@@ -1343,6 +1343,62 @@
                     <file type="jar" path="drivers/salesforce_datacloud" bundle="drivers.salesforce_datacloud"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <parameter name="read-only-meta-data" value="true"/>
+                </driver>
+
+                <!-- Teiid -->
+                <driver
+                        id="teiid"
+                        label="Teiid"
+		                icon="icons/teiid_icon.png"
+                        iconBig="icons/teiid_icon_big.png"
+                        class="org.teiid.jdbc.TeiidDriver"
+                        sampleURL="jdbc:teiid:{database}@mms://{host}:{port}"
+                        defaultPort="31000"
+                        webURL="https://github.com/teiid/teiid"
+                        description="Teiid JDBC Driver.">
+
+                    <file type="jar" path="maven:/org.teiid:teiid:jdbc:LATEST" bundle="!drivers.teiid" custom="true"/>
+                    <file type="jar" path="drivers/teiid" bundle="drivers.teiid"/>
+                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.teiid"/>
+                    <property name="serverName" value="{host}"/>
+                    <property name="portNumber" value="{port}"/>
+                    <property name="databaseName" value="{database}"/>
+                    <parameter name="read-only-data" value="false"/>
+                    <parameter name="supports-indexes" value="true"/>
+                    <parameter name="all-objects-pattern" value="%"/>
+                    <parameter name="quote-reserved-words" value="true"/>
+                    <parameter name="omit-schema" value="false"/>
+                    <parameter name="supports-table-constraints" value="true"/>
+                    <parameter name="schema-filters-enabled" value="false"/>
+                    <parameter name="supports-delimiter-in-views" value="true"/>
+                    <parameter name="supports-embedded-database-creation" value="true"/>
+                    <parameter name="supports-struct-cache" value="true"/>
+                    <parameter name="supports-truncate" value="true"/>
+                    <parameter name="read-only-meta-data" value="false"/>
+                    <parameter name="omit-type-cache" value="false"/>
+                    <parameter name="split-procedures-and-functions" value="false"/>
+                    <parameter name="supports-stored-code" value="true"/>
+                    <parameter name="supports-references" value="true"/>
+                    <parameter name="supports-multi-insert" value="false"/>
+                    <parameter name="omit-catalog-name" value="false"/>
+                    <parameter name="supports-catalog-selection" value="true"/>
+                    <parameter name="omit-single-catalog" value="false"/>
+                    <parameter name="ddl-drop-column-brackets" value="false"/>
+                    <parameter name="omit-single-schema" value="false"/>
+                    <parameter name="supports-scroll" value="false"/>
+                    <parameter name="omit-catalog" value="false"/>
+                    <parameter name="supports-views" value="true"/>
+                    <parameter name="script-delimiter" value=";"/>
+                    <parameter name="legacy-sql-dialect" value="false"/>
+                    <parameter name="script-delimiter-after-query" value="false"/>
+                    <parameter name="use-search-string-escape" value="false"/>
+                    <parameter name="supports-multiple-results" value="false"/>
+                    <parameter name="script-delimiter-after-block" value="false"/>
+                    <parameter name="supports-schema-selection" value="true"/>
+                    <parameter name="alter-table-add-column" value="false"/>
+                    <parameter name="ddl-drop-column-short" value="false"/>
+                    <parameter name="supports-limits" value="true"/>
+                    <parameter name="supports-select-count" value="true"/>
                 </driver>
 
                 <!--

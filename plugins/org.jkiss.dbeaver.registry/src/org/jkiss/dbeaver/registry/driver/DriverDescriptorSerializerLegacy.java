@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.registry.driver;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
-import org.jkiss.dbeaver.model.connection.LocalNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -38,8 +36,7 @@ import org.xml.sax.Attributes;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -147,56 +144,83 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
             }
 
             // Libraries
-            for (DBPDriverLibrary lib : driver.getDriverLibraries()) {
-                if (export && !lib.isDisabled()) {
-                    continue;
+            Map<DBPDriverLoader, List<? extends DBPDriverLibrary>> libraries = new LinkedHashMap<>();
+            for (DBPDriverLoader loader : driver.getAllDriverLoaders()) {
+                if (loader == driver.getDefaultDriverLoader()) {
+                    libraries.put(loader, driver.getDriverLibraries());
+                } else {
+                    List<DBPDriverLibraryProvider> libraryProviders = loader.getLibraryProviders();
+                    if (!CommonUtils.isEmpty(libraryProviders)) {
+                        List<DBPDriverLibrary> additionalLibraries = new ArrayList<>();
+                        for (DBPDriverLibraryProvider dlp : libraryProviders) {
+                            additionalLibraries.addAll(dlp.getDriverLibraries());
+                        }
+                        libraries.put(loader, additionalLibraries);
+                    }
                 }
-                try (XMLBuilder.Element e1 = xml.startElement(RegistryConstants.TAG_LIBRARY)) {
-                    xml.addAttribute(RegistryConstants.ATTR_TYPE, lib.getType().name());
-                    xml.addAttribute(RegistryConstants.ATTR_PATH, substitutePathVariables(pathSubstitutions, lib.getPath()));
-                    xml.addAttribute(RegistryConstants.ATTR_CUSTOM, lib.isCustom());
-                    if (lib.isEmbedded()) {
-                        xml.addAttribute(RegistryConstants.ATTR_EMBEDDED, true);
+            }
+            for (Map.Entry<DBPDriverLoader, List<? extends DBPDriverLibrary>> libEntry : libraries.entrySet()) {
+                for (DBPDriverLibrary lib : libEntry.getValue()) {
+                    if (export && !lib.isDisabled()) {
+                        continue;
                     }
-                    if (lib.isDisabled()) {
-                        xml.addAttribute(RegistryConstants.ATTR_DISABLED, true);
-                    }
-                    if (!CommonUtils.isEmpty(lib.getPreferredVersion())) {
-                        xml.addAttribute(RegistryConstants.ATTR_VERSION, lib.getPreferredVersion());
-                    }
-                    if (lib instanceof DriverLibraryMavenArtifact) {
-                        if (((DriverLibraryMavenArtifact) lib).isIgnoreDependencies()) {
-                            xml.addAttribute("ignore-dependencies", true);
+                    DBPDriverLoader driverLoader = libEntry.getKey();
+                    try (XMLBuilder.Element e1 = xml.startElement(RegistryConstants.TAG_LIBRARY)) {
+                        if (!Objects.equals(DriverLoaderDescriptor.DEFAULT_LOADER_ID, driverLoader.getLoaderId())) {
+                            xml.addAttribute("loader", driverLoader.getLoaderId());
                         }
-                        if (((DriverLibraryMavenArtifact) lib).isLoadOptionalDependencies()) {
-                            xml.addAttribute("load-optional-dependencies", true);
+                        xml.addAttribute(RegistryConstants.ATTR_TYPE, lib.getType().name());
+                        xml.addAttribute(RegistryConstants.ATTR_PATH, substitutePathVariables(pathSubstitutions, lib.getPath()));
+                        xml.addAttribute(RegistryConstants.ATTR_CUSTOM, lib.isCustom());
+                        if (lib.isEmbedded()) {
+                            xml.addAttribute(RegistryConstants.ATTR_EMBEDDED, true);
                         }
-                    }
+                        if (lib.isDisabled()) {
+                            xml.addAttribute(RegistryConstants.ATTR_DISABLED, true);
+                        }
+                        if (!CommonUtils.isEmpty(lib.getPreferredVersion())) {
+                            xml.addAttribute(RegistryConstants.ATTR_VERSION, lib.getPreferredVersion());
+                        }
+                        if (lib instanceof DriverLibraryMavenArtifact) {
+                            if (((DriverLibraryMavenArtifact) lib).isIgnoreDependencies()) {
+                                xml.addAttribute("ignore-dependencies", true);
+                            }
+                            if (((DriverLibraryMavenArtifact) lib).isLoadOptionalDependencies()) {
+                                xml.addAttribute("load-optional-dependencies", true);
+                            }
+                        }
 
-                    List<DriverDescriptor.DriverFileInfo> files = driver.getResolvedFiles().get(lib);
-                    if (files != null) {
-                        for (DriverDescriptor.DriverFileInfo file : files) {
-                            try (XMLBuilder.Element e2 = xml.startElement(RegistryConstants.TAG_FILE)) {
-                                if (file.getFile() == null) {
-                                    log.warn("File missing in " + file.getId());
-                                    continue;
-                                }
-                                xml.addAttribute(RegistryConstants.ATTR_ID, file.getId());
-                                // check if we need to store local file in storage
+                        {
+                            if (!(driverLoader instanceof DriverLoaderDescriptor dld)) {
+                                continue;
+                            }
+                            List<DriverFileInfo> files = dld.getResolvedFiles().get(lib);
+                            if (files != null) {
+                                for (DriverFileInfo file : files) {
+                                    try (XMLBuilder.Element e2 = xml.startElement(RegistryConstants.TAG_FILE)) {
+                                        if (file.getFile() == null) {
+                                            log.warn("File missing in " + file.getId());
+                                            continue;
+                                        }
+                                        xml.addAttribute(RegistryConstants.ATTR_ID, file.getId());
+                                        // check if we need to store local file in storage
 
-                                if (!CommonUtils.isEmpty(file.getVersion())) {
-                                    xml.addAttribute(RegistryConstants.ATTR_VERSION, file.getVersion());
-                                }
-                                String normalizedFilePath = file.getFile().toString();
-                                if (isDistributed) {
-                                    // we need to relativize path and exclude path variables in config file
-                                    normalizedFilePath = DriverUtils.getDistributedLibraryPath(file.getFile()).replace('\\', '/');
-                                }
-                                xml.addAttribute(
-                                    RegistryConstants.ATTR_PATH,
-                                    substitutePathVariables(pathSubstitutions, normalizedFilePath));
-                                if (file.getFileCRC() != 0) {
-                                    xml.addAttribute("crc", Long.toHexString(file.getFileCRC()));
+                                        if (!CommonUtils.isEmpty(file.getVersion())) {
+                                            xml.addAttribute(RegistryConstants.ATTR_VERSION, file.getVersion());
+                                        }
+                                        String normalizedFilePath = file.getFile().toString();
+                                        if (isDistributed) {
+                                            // we need to relativize path and exclude path variables in config file
+                                            normalizedFilePath = DriverUtils.getDistributedLibraryPath(file.getFile()).replace('\\', '/');
+                                        }
+                                        xml.addAttribute(
+                                            RegistryConstants.ATTR_PATH,
+                                            substitutePathVariables(pathSubstitutions, normalizedFilePath)
+                                        );
+                                        if (file.getFileCRC() != 0) {
+                                            xml.addAttribute("crc", Long.toHexString(file.getFileCRC()));
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -249,6 +273,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
         private final boolean providedDrivers;
         DataSourceProviderDescriptor curProvider;
         DriverDescriptor curDriver;
+        DriverLoaderDescriptor curDriverLoader;
         DBPDriverLibrary curLibrary;
         private boolean isLibraryUpgraded = false;
 
@@ -351,6 +376,15 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     }
                     isLibraryUpgraded = false;
 
+                    String loaderId = atts.getValue("loader");
+                    curDriverLoader = loaderId == null ? null : curDriver.preCreateDriverLoader(loaderId);
+                    if (curDriverLoader == null) {
+                        if (loaderId != null) {
+                            log.warn("Driver loader '" + loaderId + "' not found for driver '" + curDriver.getFullId() + "'");
+                        }
+                        curDriverLoader = curDriver.getDefaultDriverLoader();
+                    }
+
                     DBPDriverLibrary.FileType type;
                     String typeStr = atts.getValue(RegistryConstants.ATTR_TYPE);
                     if (CommonUtils.isEmpty(typeStr)) {
@@ -405,16 +439,16 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     break;
                 }
                 case RegistryConstants.TAG_FILE: {
-                    if (curDriver != null && curLibrary != null && !isLibraryUpgraded) {
+                    if (curDriver != null && curLibrary != null && curDriverLoader != null && !isLibraryUpgraded) {
                         String path = atts.getValue(RegistryConstants.ATTR_PATH);
                         if (path != null) {
                             path = replacePathVariables(path);
                             if (CommonUtils.isEmpty(path)) {
                                 log.warn("Empty path for library file");
                             } else {
-                                DriverDescriptor.DriverFileInfo info = new DriverDescriptor.DriverFileInfo(
-                                        atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_ID)),
-                                        atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_VERSION)),
+                                DriverFileInfo info = new DriverFileInfo(
+                                        atts.getValue(RegistryConstants.ATTR_ID),
+                                        atts.getValue(RegistryConstants.ATTR_VERSION),
                                         curLibrary.getType(),
                                         Path.of(path), path);
                                 String crcString = atts.getValue("crc");
@@ -424,7 +458,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                                         info.setFileCRC(crc);
                                     }
                                 }
-                                curDriver.addLibraryFile(curLibrary, info);
+                                curDriverLoader.addLibraryFile(curLibrary, info);
                             }
                         }
                     }
