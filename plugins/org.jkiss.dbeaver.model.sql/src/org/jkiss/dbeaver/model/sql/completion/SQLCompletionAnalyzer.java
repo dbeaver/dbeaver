@@ -120,6 +120,18 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         request.setQueryType(null);
         SQLWordPartDetector wordDetector = request.getWordDetector();
         SQLSyntaxManager syntaxManager = request.getContext().getSyntaxManager();
+
+        // Check if the current query is within a BEGIN-END block
+        boolean isInBeginEndBlock = request.getActiveQuery() != null &&
+            request.getActiveQuery().getText().toUpperCase(Locale.ENGLISH).contains("BEGIN") &&
+            request.getActiveQuery().getText().toUpperCase(Locale.ENGLISH).contains("END");
+
+        if (isInBeginEndBlock) {
+            // Handle BEGIN-END block-specific logic
+            handleBeginEndBlock();
+            return;
+        }
+
         String prevKeyWord = wordDetector.getPrevKeyWord();
         boolean isPrevWordEmpty = CommonUtils.isEmpty(wordDetector.getPrevWords());
         boolean isInLiteral = SQLParserPartitions.CONTENT_TYPE_SQL_STRING.equals(request.getContentType());
@@ -491,6 +503,40 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             return null;
         }
         return DBUtils.getActiveInstanceObject(context);
+    }
+
+    private void handleBeginEndBlock() throws DBException {
+        String wordPart = request.getWordPart();
+        boolean isEmptyWord = CommonUtils.isEmpty(wordPart);
+
+        // Fetch keywords and database objects relevant to BEGIN-END blocks
+        SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
+        List<String> matchedKeywords = sqlDialect.getMatchedKeywords(wordPart);
+
+        // Add matched keywords as proposals
+        for (String keyword : matchedKeywords) {
+            proposals.add(
+                SQLCompletionAnalyzer.createCompletionProposal(
+                        request,
+                        keyword,
+                        keyword,
+                        false,
+                        DBPKeywordType.KEYWORD,
+                        null,
+                        false,
+                        null,
+                        Collections.emptyMap()
+                )
+            );
+        }
+
+        // Add database objects (e.g., tables, columns) as proposals
+        if (!isEmptyWord) {
+            makeDataSourceProposals(Collections.emptyMap());
+        }
+
+        // Filter proposals to ensure relevance
+        filterProposals(request.getContext().getDataSource());
     }
 
     private void makeProceduresProposals(@NotNull DBPDataSource dataSource, @NotNull String wordPart, boolean exec) throws DBException {
