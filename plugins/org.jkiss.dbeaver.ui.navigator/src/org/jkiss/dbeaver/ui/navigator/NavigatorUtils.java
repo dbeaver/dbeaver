@@ -27,6 +27,7 @@ import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
@@ -73,6 +74,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.dnd.NavigatorDragSourceListener;
@@ -697,4 +699,23 @@ public class NavigatorUtils {
         }
     }
 
+    @Nullable
+    public static DatabaseNavigatorTree getNavigatorTree(@NotNull ExecutionEvent event) {
+        return getNavigatorTree(HandlerUtil.getActiveWorkbenchWindow(event));
+    }
+
+    @Nullable
+    public static DatabaseNavigatorTree getNavigatorTree(@Nullable IServiceLocator locator) {
+        DatabaseNavigatorTree tree = DatabaseNavigatorTree.getFromShell(Display.getCurrent());
+        if (tree != null) {
+            return tree;
+        }
+        if (locator != null) {
+            IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(locator);
+            if (partSite != null && partSite.getPart() instanceof DatabaseNavigatorView view) {
+                return view.getNavigatorTree();
+            }
+        }
+        return null;
+    }
 }
