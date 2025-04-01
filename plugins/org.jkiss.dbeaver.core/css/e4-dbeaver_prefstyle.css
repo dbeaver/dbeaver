@@ -6,3 +6,8 @@
 	preferences:
 		'org.eclipse.gef.color.line.foreground=192,192,192'
 }
+
+IEclipsePreferences#org-eclipse-ui-editors:org-eclipse-ui-themes {
+	preferences:
+		'AbstractTextEditor.Color.Background=47,47,47'
+}
