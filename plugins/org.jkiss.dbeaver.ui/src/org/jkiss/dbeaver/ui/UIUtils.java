@@ -65,7 +65,6 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
-import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
@@ -1557,7 +1556,10 @@ public class UIUtils {
         if (partSite == null) {
             IWorkbenchPart activePart = serviceLocator.getService(IWorkbenchPart.class);
             if (activePart == null) {
-                IWorkbenchWindow workbenchWindow = getActiveWorkbenchWindow();
+                IWorkbenchWindow workbenchWindow = serviceLocator.getService(IWorkbenchWindow.class);
+                if (workbenchWindow == null) {
+                    workbenchWindow = getActiveWorkbenchWindow();
+                }
                 if (workbenchWindow != null) {
                     IWorkbenchPage activePage = workbenchWindow.getActivePage();
                     if (activePage != null) {
