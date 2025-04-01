@@ -258,13 +258,12 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         if (thisResource == null) {
             return;
         }
+        DBNNode nodeToRefresh = this;
         if (isDirectory()) {
             folder = thisResource;
         } else {
             folder = thisResource.getParent();
-        }
-        if (!isDirectory()) {
-            throw new DBException("Can't drop files into non-folder '" + folder + "'");
+            nodeToRefresh = getParentNode();
         }
         if (nodes.isEmpty()) {
             return;
@@ -353,7 +352,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                 }
             }
             // Refresh folder
-            refreshNode(monitor, this);
+            nodeToRefresh.refreshNode(monitor, this);
         } catch (Exception e) {
             throw new DBException("Error creating NIO resource", e);
         } finally {

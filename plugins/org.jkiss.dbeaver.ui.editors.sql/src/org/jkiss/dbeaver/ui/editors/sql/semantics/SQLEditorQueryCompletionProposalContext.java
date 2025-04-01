@@ -54,9 +54,12 @@ public class SQLEditorQueryCompletionProposalContext extends SQLQueryCompletionP
         super(completionRequest, requestOffset);
 
         DBCExecutionContext executionContext = completionRequest.getContext().getExecutionContext();
-        DBPPreferenceStore prefStore = executionContext.getDataSource().getContainer().getPreferenceStore();
-        this.insertSpaceAfterProposal = executionContext == null
-            || prefStore.getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
+        if (executionContext != null) {
+            DBPPreferenceStore prefStore = executionContext.getDataSource().getContainer().getPreferenceStore();
+            this.insertSpaceAfterProposal = prefStore.getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
+        } else {
+            this.insertSpaceAfterProposal = true;
+        }
     }
 
     @Nullable

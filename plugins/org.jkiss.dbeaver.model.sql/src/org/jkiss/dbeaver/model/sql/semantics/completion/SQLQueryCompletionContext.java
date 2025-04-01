@@ -353,7 +353,7 @@ public abstract class SQLQueryCompletionContext {
                 SQLQueryWordEntry tail = parts.get(parts.size() - 1);
                 if (tail != null) {
                     String[][] quoteStrs = request.getContext().getDataSource().getSQLDialect().getIdentifierQuoteStrings();
-                    if (quoteStrs.length > 0) {
+                    if (quoteStrs != null && quoteStrs.length > 0) {
                         // The "word" being accomplished may be a quoted or a beginning of the quoted identifier,
                         // so we should remove potential quotes.
                         // TODO Consider identifiers containing escape-sequences
@@ -1181,6 +1181,9 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request
             ) {
+                if (dbcExecutionContext == null) {
+                    return Collections.emptyList();
+                }
                 DBCExecutionContextDefaults<?, ?> defaults = dbcExecutionContext.getContextDefaults();
                 if (defaults != null) {
                     DBSSchema defaultSchema = defaults.getDefaultSchema();

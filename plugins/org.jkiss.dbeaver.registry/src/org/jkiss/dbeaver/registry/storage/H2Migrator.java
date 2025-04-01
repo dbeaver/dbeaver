@@ -158,7 +158,7 @@ public class H2Migrator {
         if (driverDescriptor == null) {
             throw new DBException("Driver '" + driverName + "' couldn't be resolved");
         }
-        return driverDescriptor.getDriverInstance(monitor);
+        return driverDescriptor.getDefaultDriverLoader().getDriverInstance(monitor);
     }
 
     private void executeScript(

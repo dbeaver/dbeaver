@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,8 @@ public class NavigatorCommands {
     public static final String CMD_CREATE_FOLDER_LINK = "org.jkiss.dbeaver.core.resource.link.folder";
     public static final String CMD_CREATE_PROJECT = "org.jkiss.dbeaver.core.project.create";
 
-    public static final String CMD_FILTER_CONNECTIONS = "org.jkiss.dbeaver.navigator.filter.connected";
-
-    public static final String GROUP_CONNECTION_TOOLS = "connection-tools";
+    public static final String CMD_FILTER_CONNECTED = "org.jkiss.dbeaver.navigator.filter.connected";
+    public static final String CMD_FILTER_OBJECT_TYPE = "org.jkiss.dbeaver.navigator.filter.object.type";
 
     public static final String PARAM_OBJECT_TYPE = "org.jkiss.dbeaver.core.object.type";
     public static final String PARAM_OBJECT_TYPE_NAME = "org.jkiss.dbeaver.core.object.typeName";
