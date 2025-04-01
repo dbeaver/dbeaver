@@ -226,7 +226,8 @@ public class DamengMetaModel extends GenericMetaModel {
                 "CONS_OBJ.CRTDATE,\n" +
                 "SYSINDEXES.XTYPE & 0x01,\n" +
                 "SYSCONS.ID AS KEY_SEQ,\n" +
-                "LISTAGG(CASE WHEN SYSINDEXES.ID IS NULL THEN NULL ELSE SYSCOLUMNS.NAME END, ',') AS COLUMN_LIST\n" +
+                "LISTAGG(CASE WHEN SYSINDEXES.ID IS NULL THEN NULL ELSE SYSCOLUMNS.NAME END, ',') " +
+                "WITHIN GROUP (ORDER BY SYSCOLUMNS.ID) AS COLUMN_LIST\n" +
                 "FROM\n" +
                 "SYSOBJECTS CONS_OBJ,\n" +
                 "SYSCOLUMNS SYSCOLUMNS,\n" +
