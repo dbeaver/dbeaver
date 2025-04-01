@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.completion;
-
-import org.jkiss.code.NotNull;
+package org.jkiss.dbeaver.model.ai.copilot.dto;
 
 import java.util.List;
 
-public record DAICompletionChunk(
-    @NotNull List<DAICompletionChoice> choices
+public record CopilotChatChunk(
+    List<CopilotChunkChoice> choices
 ) {
+
 }
