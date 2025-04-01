@@ -62,7 +62,7 @@ public abstract class InternalDB<T extends InternalDatabaseConfig> {
             if (dataSource == null) {
                 return null;
             }
-            var conn = dataSource.getConnection();
+            var conn = new InternalProxyConnection(dataSource.getConnection(), databaseConfig);
             try {
                 if (!conn.getAutoCommit()) {
                     conn.setAutoCommit(true);
@@ -88,14 +88,6 @@ public abstract class InternalDB<T extends InternalDatabaseConfig> {
     @NotNull
     public DBPConnectionInformation getMetaDataInfo() {
         return dbConnectionInformation;
-    }
-
-    /**
-     * Replaces all predefined prefixes in sql query.
-     */
-    @NotNull
-    public String normalizeTableNames(@NotNull String sql) {
-        return CommonUtils.normalizeTableNames(sql, databaseConfig.getSchema());
     }
 
     public T getDatabaseConfig() {
