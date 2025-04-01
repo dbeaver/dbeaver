@@ -40,9 +40,13 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -301,16 +305,49 @@ public class CustomFormEditor {
             link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             return link;
         } else if (isTextPropertyType(propType)) {
-            if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).getLength() == PropertyLength.MULTILINE) {
+            if (property instanceof ObjectPropertyDescriptor && property.getLength() == PropertyLength.MULTILINE) {
                 Label label = UIUtils.createControlLabel(parent, propertyDisplayName);
                 label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-                Text editor = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | (readOnly ? SWT.READ_ONLY : SWT.NONE));
-
+                Composite composite = UIUtils.createComposite(parent, 2);
+                Text editor = new Text(composite, SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.V_SCROLL
+                    | (readOnly ? SWT.READ_ONLY : SWT.NONE));
+                editor.setLayoutData(new GridData(GridData.FILL_BOTH));
                 editor.setText(objectValueToString(value));
-                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                // Make multiline editor at least two lines height
-                gd.heightHint = (UIUtils.getTextHeight(editor) + editor.getBorderWidth()) * 2;
-                editor.setLayoutData(gd);
+
+                int textHeight = UIUtils.getTextHeight(editor) * 3;
+                GridData gdEditor = new GridData(SWT.FILL, SWT.TOP, true, false);
+                gdEditor.heightHint = textHeight;
+                composite.setLayoutData(gdEditor);
+
+                Button editButton = new Button(composite, SWT.FLAT | SWT.PUSH);
+                editButton.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
+                GridData gd = new GridData(SWT.END, SWT.NONE, false, true);
+                editButton.setLayoutData(gd);
+                editButton.setToolTipText(UIMessages.text_with_open_dialog_edit_text);
+                editButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        if (readOnly) {
+                            EditTextDialog.showText(
+                                editor.getShell(),
+                                UIMessages.edit_text_dialog_title_edit_value,
+                                editor.getText()
+                            );
+                        } else {
+                            String newValue = EditTextDialog.editText(
+                                editor.getShell(),
+                                UIMessages.edit_text_dialog_title_edit_value,
+                                editor.getText()
+                            );
+                            if (newValue != null) {
+                                editor.setText(newValue);
+                            }
+                        }
+                    }
+                });
+                GridData gdComposite = new GridData(SWT.FILL, SWT.TOP, true, false);
+                gdComposite.heightHint = textHeight + 6;
+                composite.setLayoutData(gdComposite);
                 return editor;
             } else {
                 Text text = UIUtils.createLabelText(

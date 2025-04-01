@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -535,6 +534,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_network_expert_preferred_ip_stack_tip;
     public static String pref_page_network_expert_preferred_ip_addresses_label;
     public static String pref_page_network_expert_preferred_ip_addresses_tip;
+    public static String pref_page_network_expert_debug_net_label;
+    public static String pref_page_network_expert_debug_net_tip;
     public static String pref_page_network_expert_restart_prompt_title;
     public static String pref_page_network_expert_restart_prompt_message;
 

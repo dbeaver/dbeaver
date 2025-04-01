@@ -46,6 +46,7 @@ import org.eclipse.jface.widgets.CompositeFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
@@ -1765,6 +1766,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         private final Composite placeholder;
         private final CLabel label;
+        private boolean editModeEnabled = false;
 
         public EditModeComposite(@NotNull Composite parent) {
             super(parent, SWT.NONE);
@@ -1779,8 +1781,15 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 .create(this);
 
             placeholder.addPaintListener(e -> {
+                if (!editModeEnabled) {
+                    return;
+                }
                 e.gc.setBackground(ERDThemeSettings.instance.linesForeground);
-                e.gc.fillRectangle(e.x, e.y, e.width, e.height);
+                Rectangle bounds = placeholder.getClientArea();
+                e.gc.fillRectangle(bounds.x, bounds.y, bounds.width, EDIT_MODE_BORDER_SIZE);
+                e.gc.fillRectangle(bounds.x, bounds.y + bounds.height - EDIT_MODE_BORDER_SIZE, bounds.width, EDIT_MODE_BORDER_SIZE);
+                e.gc.fillRectangle(bounds.x, bounds.y, EDIT_MODE_BORDER_SIZE, bounds.height);
+                e.gc.fillRectangle(bounds.x + bounds.width - EDIT_MODE_BORDER_SIZE, bounds.y, EDIT_MODE_BORDER_SIZE, bounds.height);
             });
 
             label = new CLabel(this, SWT.LEFT);
@@ -1791,6 +1800,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
         void setEditMode(boolean editMode) {
+            this.editModeEnabled = editMode;
             var layout = (FillLayout) placeholder.getLayout();
             var margin = editMode ? EDIT_MODE_BORDER_SIZE : 0;
             layout.marginWidth = margin;
