@@ -28,6 +28,7 @@ public class PostgreMessages extends NLS {
     public static String wizard_backup_msgbox_success_description;
     public static String wizard_backup_page_object_title_schema_table;
     public static String wizard_backup_page_object_title;
+    public static String wizard_backup_page_select_title;
     public static String wizard_backup_page_object_description;
     public static String wizard_backup_page_object_group_object;
     public static String wizard_backup_page_object_checkbox_show_view;
@@ -213,9 +214,9 @@ public class PostgreMessages extends NLS {
 
     public static String dialog_trigger_edit_page_label_trigger_function;
     public static String dialog_trigger_edit_page_select_function_title;
-    
+
     /* Procedure check, etc */
-    
+
     public static String procedure_check_label;
     public static String procedure_check_label2;
     public static String procedure_check_label_ext;
@@ -224,7 +225,7 @@ public class PostgreMessages extends NLS {
     public static String source_view_show_header_description;
     public static String message_open_console;
     public static String error_cant_open_sql_editor;
-    
+
     /* Query planner dialog */
 
     public static String dialog_query_planner_settings_title;
