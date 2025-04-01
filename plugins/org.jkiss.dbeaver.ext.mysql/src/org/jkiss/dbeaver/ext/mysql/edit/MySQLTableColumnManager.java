@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
@@ -121,11 +122,9 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
             decl.append(" AUTO_INCREMENT"); //$NON-NLS-1$
         }
         try {
-            if (
-                Optional.ofNullable(command.getObject().getParentObject().getConstraints(monitor))
-                .map(cc -> cc.stream().anyMatch(c -> c instanceof  MySQLTableConstraint tc &&
-                    MySQLConstraintManager.tryGetColumnOfPrimaryKeyConstraintForAutoincrementColumn(monitor, tc, false) == column))
-                .orElse(false)
+            Collection<? extends DBSTableConstraint> constraints = command.getObject().getParentObject().getConstraints(monitor);
+            if (constraints != null && constraints.stream().anyMatch(c -> c instanceof  MySQLTableConstraint tc &&
+                MySQLConstraintManager.tryGetColumnOfPrimaryKeyConstraintForAutoincrementColumn(monitor, tc, false) == column)
             ) {
                 decl.append(" PRIMARY KEY");
             }
