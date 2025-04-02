@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.tools;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFileRemote;
+import org.jkiss.utils.CommonUtils;
 
 
 class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<PostgreRestoreWizard> {
@@ -42,7 +44,7 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
     PostgreRestoreWizardPageSettings(PostgreRestoreWizard wizard)
     {
         super(wizard, PostgreMessages.wizard_restore_page_setting_title_setting);
-        setTitle(PostgreMessages.wizard_restore_page_setting_title);
+        setTitle(PostgreMessages.wizard_restore_page_setting_select_title);
         setDescription(PostgreMessages.wizard_restore_page_setting_description);
     }
 
@@ -116,6 +118,10 @@ class PostgreRestoreWizardPageSettings extends PostgreToolWizardPageSettings<Pos
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputFileText.getTextControl().addListener(SWT.Modify, updateListener);
         inputFileText.setText(settings.getInputFile());
+
+        String newTitle = NLS.bind(PostgreMessages.wizard_restore_page_setting_object_title,
+                CommonUtils.truncateString(settings.getRestoreInfo().getDatabase().getName(), 255));
+        setTitle(newTitle);
 
         createExtraArgsInput(inputGroup);
 
