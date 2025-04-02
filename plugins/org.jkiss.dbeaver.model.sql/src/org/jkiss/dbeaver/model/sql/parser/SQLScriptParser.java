@@ -107,7 +107,9 @@ public class SQLScriptParser {
 
         // Parse range
         TPRuleBasedScanner ruleScanner = context.getScanner();
-        boolean useBlankLines = !scriptMode && context.getSyntaxManager().getStatementDelimiterMode().useBlankLine;
+        boolean useBlankLines = scriptMode
+            ? context.getSyntaxManager().getStatementDelimiterMode().useSmart // respect blank lines in script mode if smart mode is on
+            : context.getSyntaxManager().getStatementDelimiterMode().useBlankLine; // respect blank lines always in single query exec if set
         boolean lineFeedIsDelimiter = ArrayUtils.contains(context.getSyntaxManager().getStatementDelimiters(), "\n");
         ruleScanner.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
@@ -215,7 +217,13 @@ public class SQLScriptParser {
                     continue;
                 } else if (tokenType == SQLTokenType.T_SET_DELIMITER || tokenType == SQLTokenType.T_CONTROL) {
                     isDelimiter = true;
-                    isControl = true;
+                    // see https://github.com/dbeaver/pro/issues/3935
+                    // If there is a statement preceding a command (e.g., @ai, @echo)
+                    // and it does not contain any delimiters, then that statement should be extracted.
+                    boolean cursorInsideToken = currentPos >= tokenOffset && currentPos <= tokenOffset + tokenLength;
+                    if (!hasValuableTokens || cursorInsideToken) {
+                        isControl = true;
+                    }
                 } else if (tokenType == SQLTokenType.T_COMMENT) {
                     lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
                 }

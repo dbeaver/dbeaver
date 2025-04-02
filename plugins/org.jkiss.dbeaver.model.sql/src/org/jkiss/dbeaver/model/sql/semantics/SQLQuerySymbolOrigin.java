@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.model.sql.semantics;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
@@ -46,6 +48,11 @@ public abstract class SQLQuerySymbolOrigin {
         void visitMemberOfType(MemberOfType origin);
 
         void visitDataContextSymbol(DataContextSymbolOrigin origin);
+
+        /**
+         * Visitor for * or table-alias.* which are supposed to be expanded to the list of columns on completion
+         */
+        void visitExpandableTupleRef(ExpandableTupleRef tupleRef);
     }
 
     public abstract boolean isChained();
@@ -254,4 +261,45 @@ public abstract class SQLQuerySymbolOrigin {
             visitor.visitMemberOfType(this);
         }
     }
+
+    public static class ExpandableTupleRef extends DataContextSymbolOrigin {
+
+        @NotNull
+        private final STMTreeNode placeholder;
+
+        @Nullable
+
+        private final SourceResolutionResult referencedSource;
+
+        public ExpandableTupleRef(
+            @NotNull STMTreeNode placeholder,
+            @NotNull SQLQueryDataContext dataContext,
+            @Nullable SourceResolutionResult referencedSource
+        ) {
+            super(dataContext);
+            this.placeholder = placeholder;
+            this.referencedSource = referencedSource;
+        }
+
+        @Override
+        public boolean isChained() {
+            return true;
+        }
+
+        @NotNull
+        public STMTreeNode getPlaceholder() {
+            return this.placeholder;
+        }
+
+        @Nullable
+        public SourceResolutionResult getRowsSource() {
+            return this.referencedSource;
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitExpandableTupleRef(this);
+        }
+    }
+
 }

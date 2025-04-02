@@ -298,6 +298,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         setRulerContextMenuId(SQLEditorContributions.SQL_RULER_CONTEXT_MENU_ID);
     }
 
+    @Nullable
     public DBPDataSource getDataSource() {
         DBCExecutionContext context = getExecutionContext();
         return context == null ? null : context.getDataSource();

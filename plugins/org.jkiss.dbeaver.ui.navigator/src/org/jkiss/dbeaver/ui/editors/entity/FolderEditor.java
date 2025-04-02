@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -64,13 +65,16 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
         UIExecutionQueue.queueExec(() -> {
             final DBNNode navigatorNode = getEditorInput().getNavigatorNode();
-            setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIcon()));
+            setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIconDefault()));
             setPartName(navigatorNode.getNodeDisplayName());
 
+            itemControl.setRootNode(navigatorNode);
             itemControl.loadData();
 
             DBNNode rootNode = getRootNode();
             history.add(rootNode.getNodeUri());
+
+            itemControl.getSelectionProvider().setDefaultSelection(new StructuredSelection(navigatorNode));
 
             parent.layout(true, true);
         });
@@ -186,7 +190,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
     private class FolderListControl extends ItemListControl {
         public FolderListControl(Composite parent) {
-            super(parent, SWT.SHEET, FolderEditor.this.getSite(), FolderEditor.this.getEditorInput().getNavigatorNode(), null);
+            super(parent, SWT.SHEET, FolderEditor.this.getSite(), DBWorkbench.getPlatform().getNavigatorModel().getRoot(), null);
         }
 
         @Override

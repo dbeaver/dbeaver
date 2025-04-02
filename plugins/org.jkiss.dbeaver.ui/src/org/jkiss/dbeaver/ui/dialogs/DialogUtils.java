@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -24,6 +27,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -46,6 +50,9 @@ import java.util.Arrays;
 public class DialogUtils {
 
     private static final Log log = Log.getLog(DialogUtils.class);
+
+    private static final int INITIAL_POPUP_DELAY = 3000;
+    private static final int RETRY_POPUP_DELAY = 5000;
 
     private static final String DIALOG_FOLDER_PROPERTY = "dialog.default.folder";
     
@@ -281,4 +288,31 @@ public class DialogUtils {
         }
         return filePath;
     }
+
+    /**
+     * Schedules a popup action to be executed after initial delay, and if necessary,
+     * reschedules the action until the specified main shell becomes active.
+     */
+    public static void showDelayedPopup(
+        @NotNull Shell mainShell,
+        @NotNull Runnable popupAction,
+        @NotNull String jobName
+    ) {
+        UIJob uiJob = new UIJob(mainShell.getDisplay(), jobName) {
+            @Override
+            public IStatus runInUIThread(IProgressMonitor monitor) {
+
+                Shell activeShell = mainShell.getDisplay().getActiveShell();
+                if (activeShell != null && !activeShell.equals(mainShell)) {
+                    schedule(RETRY_POPUP_DELAY);
+                } else {
+                    popupAction.run();
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        uiJob.setSystem(true);
+        uiJob.schedule(INITIAL_POPUP_DELAY);
+    }
+
 }

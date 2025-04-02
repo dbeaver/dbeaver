@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.update.Update;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -118,6 +117,7 @@ public class SQLQueryJob extends DataSourceJob
     private int fetchResultSetNumber;
     private int resultSetNumber;
     private SQLScriptElement lastGoodQuery;
+    private int queryNum = 0;
 
     private boolean skipConfirmation;
     private int fetchSize;
@@ -204,6 +204,9 @@ public class SQLQueryJob extends DataSourceJob
         RuntimeUtils.setThreadName("SQL script execution");
         statistics = new DBCStatistics();
         skipConfirmation = false;
+        if (queryNum == queries.size()) {
+            queryNum = 0;
+        }
         monitor.beginTask("Execute SQL script", queries.size());
         try {
             DBCExecutionContext context = getExecutionContext();
@@ -233,7 +236,7 @@ public class SQLQueryJob extends DataSourceJob
                 }
 
                 resultSetNumber = 0;
-                for (int queryNum = 0; queryNum < queries.size(); ) {
+                while (queryNum < queries.size()) {
                     // Execute query
                     SQLScriptElement query = queries.get(queryNum);
 
@@ -267,7 +270,8 @@ public class SQLQueryJob extends DataSourceJob
                                 break;
                             case RETRY:
                                 // just make it again
-                                continue;
+                                this.schedule(100);
+                                break;
                             case IGNORE:
                                 // Just do nothing
                                 break;

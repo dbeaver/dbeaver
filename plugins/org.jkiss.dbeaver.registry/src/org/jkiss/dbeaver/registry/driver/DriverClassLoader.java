@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,26 +31,26 @@ import java.util.List;
  */
 public class DriverClassLoader extends URLClassLoader
 {
-    private final DriverDescriptor driver;
+    private final DriverLoaderDescriptor driverLoader;
 
-    public DriverClassLoader(DriverDescriptor driver, URL[] urls, ClassLoader parent)
+    public DriverClassLoader(DriverLoaderDescriptor driverLoader, URL[] urls, ClassLoader parent)
     {
         super(urls, parent);
-        this.driver = driver;
+        this.driverLoader = driverLoader;
     }
 
     @Override
     protected String findLibrary(String libname)
     {
         String nativeName = System.mapLibraryName(libname);
-        for (DBPDriverLibrary driverFile : driver.getDriverLibraries()) {
+        for (DBPDriverLibrary driverFile : driverLoader.getDriver().getDriverLibraries()) {
             if (driverFile.getType() == DBPDriverLibrary.FileType.lib && driverFile.matchesCurrentPlatform()) {
                 Path localFile = driverFile.getLocalFile();
                 if (localFile == null) {
                     // Check library files cache
-                    List<DriverDescriptor.DriverFileInfo> cachedFiles = driver.getCachedFiles(driverFile);
+                    List<DriverFileInfo> cachedFiles = driverLoader.getCachedFiles(driverFile);
                     if (!CommonUtils.isEmpty(cachedFiles)) {
-                        for (DriverDescriptor.DriverFileInfo fileInfo : cachedFiles) {
+                        for (DriverFileInfo fileInfo : cachedFiles) {
                             if (fileInfo.getFile() != null && fileInfo.getFile().getFileName().toString().equalsIgnoreCase(nativeName)) {
                                 return fileInfo.getFile().toAbsolutePath().toString();
                             }

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -69,11 +70,19 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             // Already exist
             return;
         }
-        if (!showCreateSampleDatabasePrompt(window.getShell())) {
-            DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
-            return;
-        }
-        createSampleDatabase(registry);
+
+        Shell mainShell = window.getShell();
+        DialogUtils.showDelayedPopup(
+            mainShell,
+            () -> {
+                if (!showCreateSampleDatabasePrompt(mainShell)) {
+                    DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
+                } else {
+                    createSampleDatabase(registry);
+                }
+            },
+            "Sample Database Prompt Wrapper"
+        );
     }
 
     static boolean isSampleDatabaseExists(DBPDataSourceRegistry registry) {
