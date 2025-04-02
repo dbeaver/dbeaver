@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
@@ -41,20 +42,21 @@ public class DriverLibraryRemote extends DriverLibraryLocal
         "ftp",
     };
 
-    public DriverLibraryRemote(DriverDescriptor driver, FileType type, String url) {
+    public DriverLibraryRemote(@NotNull  DriverDescriptor driver, FileType type, String url) {
         super(driver, type, url);
     }
 
-    public DriverLibraryRemote(DriverDescriptor driver, IConfigurationElement config) {
+    public DriverLibraryRemote(@Nullable DriverDescriptor driver, @NotNull IConfigurationElement config) {
         super(driver, config);
     }
 
-    private DriverLibraryRemote(DriverDescriptor driver, DriverLibraryRemote copyFrom) {
+    private DriverLibraryRemote(@NotNull DriverDescriptor driver, @NotNull DriverLibraryRemote copyFrom) {
         super(driver, copyFrom);
     }
 
+    @NotNull
     @Override
-    public DBPDriverLibrary copyLibrary(DriverDescriptor driverDescriptor) {
+    public DBPDriverLibrary copyLibrary(@NotNull DriverDescriptor driverDescriptor) {
         return new DriverLibraryRemote(driverDescriptor, this);
     }
 
