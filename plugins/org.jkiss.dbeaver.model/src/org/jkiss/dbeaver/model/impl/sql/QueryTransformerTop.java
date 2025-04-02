@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,8 +85,7 @@ public class QueryTransformerTop implements DBCQueryTransformer, DBCQueryTransfo
         if (query.isPlainSelect()) {
             final Statement statement = query.getStatement();
             if (statement instanceof PlainSelect select) {
-                return select.getOffset() == null && select.getLimit() == null && select.getTop() == null
-                    && select.getFromItem() != null && CommonUtils.isEmpty(select.getIntoTables()) && select.getForUpdateTable() == null;
+                return select.getOffset() == null && select.getFromItem() != null;
             }
         }
         return false;
