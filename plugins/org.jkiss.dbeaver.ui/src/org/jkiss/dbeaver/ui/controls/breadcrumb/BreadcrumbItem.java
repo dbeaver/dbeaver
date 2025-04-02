@@ -16,32 +16,31 @@
  */
 package org.jkiss.dbeaver.ui.controls.breadcrumb;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.util.OpenStrategy;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.EmptyAction;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DoubleClickMouseAdapter;
+import org.jkiss.dbeaver.utils.NLS;
 import org.jkiss.utils.CommonUtils;
 
 final class BreadcrumbItem extends Item {
-    private static final int DROP_DOWN_MIN_WIDTH = 250;
-    private static final int DROP_DOWN_MAX_WIDTH = 500;
-    private static final int DROP_DOWN_MIN_HEIGHT = 10;
+    private static final int DROP_DOWN_MAX_ITEMS = 30;
 
     private final BreadcrumbViewer viewer;
 
@@ -52,13 +51,12 @@ final class BreadcrumbItem extends Item {
     private final Composite detailComposite;
     private final Composite imageComposite;
     private final Composite textComposite;
+    private final MenuManager menuManager;
 
     private ILabelProvider labelProvider;
     private ITreeContentProvider contentProvider;
     private ILabelProvider toolTipLabelProvider;
 
-    private Shell menuShell;
-    private TreeViewer menuViewer;
     private boolean showText = true;
 
     public BreadcrumbItem(@NotNull BreadcrumbViewer viewer, @NotNull Composite parent) {
@@ -96,12 +94,38 @@ final class BreadcrumbItem extends Item {
         addElementListener(textComposite);
         addElementListener(elementImage);
         addElementListener(elementText);
+
+        menuManager = new MenuManager();
+        menuManager.setRemoveAllWhenShown(true);
+        menuManager.addMenuListener(manager -> {
+            var contentProvider = viewer.getDropDownContentProvider();
+            var elements = contentProvider.getElements(getData());
+
+            for (int i = 0; i < Math.min(elements.length, DROP_DOWN_MAX_ITEMS); i++) {
+                var element = elements[i];
+                var labelProvider = (ILabelProvider) viewer.getLabelProvider();
+                var name = labelProvider.getText(element);
+                var image = labelProvider.getImage(element);
+
+                manager.add(new Action(name, ImageDescriptor.createFromImage(image)) {
+                    @Override
+                    public void run() {
+                        openElement(element);
+                    }
+                });
+            }
+
+            if (elements.length > DROP_DOWN_MAX_ITEMS) {
+                manager.add(new EmptyAction(NLS.bind("... {0} more", elements.length - DROP_DOWN_MAX_ITEMS)));
+            }
+        });
     }
 
     @Override
     public void dispose() {
         super.dispose();
         container.dispose();
+        menuManager.dispose();
     }
 
     public void refresh() {
@@ -191,50 +215,20 @@ final class BreadcrumbItem extends Item {
     }
 
     private void showMenu() {
-        menuShell = new Shell(container.getShell(), SWT.RESIZE | SWT.TOOL | SWT.ON_TOP);
-        menuShell.setLayout(new FillLayout());
+        Point location = detailComposite.toDisplay(0, 0);
 
-        Object input = getData();
+        if (CommonUtils.isBitSet(viewer.getStyle(), SWT.TOP)) {
+            // Adjust the location so the menu won't cover the viewer
+            location.y += detailComposite.getSize().y;
+        }
 
-        menuViewer = new TreeViewer(menuShell, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
-        menuViewer.addOpenListener(e -> {
-            if (e.getSelection() instanceof IStructuredSelection selection) {
-                Object element = selection.getFirstElement();
-                if (element != null) {
-                    openElement(element);
-                }
-            }
-        });
-        menuViewer.getTree().addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseUp(MouseEvent e) {
-                if (e.button != 1 || (OpenStrategy.getOpenMethod() & OpenStrategy.SINGLE_CLICK) != 0) {
-                    return;
-                }
-                Tree tree = (Tree) e.widget;
-                Item item = tree.getItem(new Point(e.x, e.y));
-                if (item != null) {
-                    openElement(item.getData());
-                }
-            }
-        });
-
-        viewer.configureDropDownViewer(menuViewer, input);
-        menuViewer.setInput(input);
-
-        configureShellBounds(menuShell);
-        configureShellCloser(menuShell);
-
-        menuShell.setVisible(true);
-        menuShell.setFocus();
+        Menu menu = menuManager.createContextMenu(container);
+        menu.setLocation(location);
+        menu.setVisible(true);
     }
 
     private void openElement(@NotNull Object element) {
         viewer.fireMenuSelection(element);
-
-        if (menuShell != null) {
-            menuShell.dispose();
-        }
     }
 
     private void addElementListener(@NotNull Control control) {
@@ -250,82 +244,6 @@ final class BreadcrumbItem extends Item {
                 BreadcrumbViewer viewer = getViewer();
                 viewer.selectItem(BreadcrumbItem.this);
                 viewer.fireDoubleClick();
-            }
-        });
-    }
-
-    private void configureShellBounds(@NotNull Shell shell) {
-        shell.pack();
-
-        var window = UIUtils.getActiveWorkbenchWindow();
-        var windowSize = window.getShell().getSize();
-
-        var shellSize = shell.getSize();
-        int width = CommonUtils.clamp(shellSize.x, DROP_DOWN_MIN_WIDTH, DROP_DOWN_MAX_WIDTH);
-        int height = CommonUtils.clamp(shellSize.y, DROP_DOWN_MIN_HEIGHT, windowSize.y / 2);
-
-        var itemBounds = container.getBounds();
-        var trimBounds = shell.computeTrim(0, 0, width, height);
-
-        var location = new Point(0, 0);
-        location.x = trimBounds.x + elementArrow.getSize().x;
-        location.y -= height + trimBounds.y + itemBounds.y;
-
-        shell.setLocation(container.toDisplay(location));
-        shell.setSize(width, height);
-    }
-
-    private void configureShellCloser(@NotNull Shell shell) {
-        Listener focusListener = e -> {
-            switch (e.type) {
-                case SWT.FocusIn -> {
-                    Widget focusElement = e.widget;
-                    boolean isFocusBreadcrumbTreeFocusWidget = focusElement == shell || focusElement instanceof Tree tree && tree.getShell() == shell;
-                    boolean isFocusWidgetParentShell = focusElement instanceof Control control && control.getShell().getParent() == shell;
-
-                    if (!isFocusBreadcrumbTreeFocusWidget && !isFocusWidgetParentShell) {
-                        shell.close();
-                    }
-                }
-                case SWT.FocusOut -> {
-                    if (e.display.getActiveShell() == null) {
-                        shell.close();
-                    }
-                }
-            }
-        };
-
-        Display display = shell.getDisplay();
-        display.addFilter(SWT.FocusIn, focusListener);
-        display.addFilter(SWT.FocusOut, focusListener);
-
-        ControlListener controlListener = new ControlListener() {
-            @Override
-            public void controlMoved(ControlEvent e) {
-                shell.close();
-            }
-
-            @Override
-            public void controlResized(ControlEvent e) {
-                shell.close();
-            }
-        };
-
-        container.addControlListener(controlListener);
-
-        shell.addDisposeListener(e -> {
-            display.removeFilter(SWT.FocusIn, focusListener);
-            display.removeFilter(SWT.FocusOut, focusListener);
-
-            if (!container.isDisposed()) {
-                container.removeControlListener(controlListener);
-            }
-        });
-        shell.addShellListener(new ShellAdapter() {
-            @Override
-            public void shellClosed(ShellEvent e) {
-                menuShell = null;
-                menuViewer = null;
             }
         });
     }
