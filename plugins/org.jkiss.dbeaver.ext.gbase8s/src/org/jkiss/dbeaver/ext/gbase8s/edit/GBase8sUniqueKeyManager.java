@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.gbase8s.edit;
 
+import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
 import org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 
@@ -27,7 +28,7 @@ public class GBase8sUniqueKeyManager extends GenericPrimaryKeyManager {
 
     @Override
     protected boolean isLegacyConstraintsSyntax(GenericTableBase owner) {
-        return false;
+        return GBase8sUtils.isOracleSqlMode(owner.getContainer().getDataSource().getContainer()) ? false : true;
     }
 
     @Override
