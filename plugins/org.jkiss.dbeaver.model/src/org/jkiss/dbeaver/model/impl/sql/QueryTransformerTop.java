@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.sql;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.Top;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -82,11 +81,9 @@ public class QueryTransformerTop implements DBCQueryTransformer, DBCQueryTransfo
     public boolean isApplicableTo(SQLQuery query) {
         // TOP cannot be used with OFFSET. See #13594
         // and for queries without FROM (See #16526)
-        if (query.isPlainSelect()) {
-            final Statement statement = query.getStatement();
-            if (statement instanceof PlainSelect select) {
-                return select.getOffset() == null && select.getFromItem() != null;
-            }
+        final Statement statement = query.getStatement();
+        if (statement instanceof PlainSelect select) {
+            return query.isPlainSelect() && select.getOffset() == null && select.getFromItem() != null;
         }
         return false;
     }
