@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.kingbase.ui.views;
 
+import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -30,14 +31,18 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
-import org.jkiss.dbeaver.ext.postgresql.ui.PostgreConnectionPage;
+import org.jkiss.dbeaver.ext.postgresql.ui.PostgreConnectionPageAdvanced;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
+import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,7 +51,7 @@ import java.util.Locale;
 /**
  * KingbaseConnectionPage
  */
-public class KingbaseConnectionPage extends PostgreConnectionPage {
+public class KingbaseConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
 
     private Text urlText;
     private Text hostText;
@@ -54,6 +59,11 @@ public class KingbaseConnectionPage extends PostgreConnectionPage {
     private Text dbText;
     private boolean activated = false;
 
+    @Override
+    public void dispose() {
+        super.dispose();
+    }
+    
     @Override
     public Image getImage() {
         final DBPDriver driver = site.getDriver();
@@ -139,9 +149,26 @@ public class KingbaseConnectionPage extends PostgreConnectionPage {
         createDriverPanel(mainGroup);
         setControl(mainGroup);
     }
+    
+    /**
+     * Returns server type for correct classes initialization
+     */
+    public PostgreServerType getServerType(DBPDriver driver) {
+        return PostgreUtils.getServerType(driver);
+    }
 
     protected boolean isSessionRoleSupported() {
         return true;
+    }
+    
+    @Override
+    public boolean isComplete() {
+        if (isCustomURL()) {
+            return !CommonUtils.isEmpty(urlText.getText());
+        } else {
+            return super.isComplete() && hostText != null && !CommonUtils.isEmpty(hostText.getText())
+                && (portText == null || !CommonUtils.isEmpty(portText.getText()));
+        }
     }
 
     @Override
@@ -206,6 +233,12 @@ public class KingbaseConnectionPage extends PostgreConnectionPage {
         }
 
         super.saveSettings(dataSource);
+    }
+    
+    @Override
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
+        return new IDialogPage[]
+        { new PostgreConnectionPageAdvanced(), new DriverPropertiesDialogPage(this) };
     }
 
     private void updateUrl() {
