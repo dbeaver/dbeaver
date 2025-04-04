@@ -24,10 +24,12 @@
     background-color: #ffffff;
 }
 
-#org-eclipse-e4-ui-compatibility-editor Composite{
-    background-color: #f0f0f0;
+#org-eclipse-e4-ui-compatibility-editor Composite {
+    background-color: #f8f8f8;
 }
 
-Composite.MPartSashContainer{
-    background-color: #f0f0f0;
+#org-eclipse-e4-ui-compatibility-editor Canvas,
+#org-eclipse-e4-ui-compatibility-editor Canvas > *
+{
+    background-color: #fbfbfb;
 }

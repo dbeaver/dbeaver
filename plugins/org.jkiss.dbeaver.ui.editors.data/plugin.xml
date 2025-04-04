@@ -1261,6 +1261,9 @@
         <stylesheet uri="css/e4-dark-data-editor.css">
             <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark"/>
         </stylesheet>
+        <stylesheet uri="css/e4-data-editor.css">
+            <themeid refid="org.eclipse.e4.ui.css.theme.e4_default"/>
+        </stylesheet>
     </extension>
 
     <extension point="org.jkiss.dbeaver.confirmations">
