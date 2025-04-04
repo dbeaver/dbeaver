@@ -44,8 +44,8 @@ public class DriverLibraryBundle extends DriverLibraryAbstract {
 
     private Bundle bundle;
 
-    public DriverLibraryBundle(DriverDescriptor driver, FileType type, String path) {
-        super(driver, type, path);
+    public DriverLibraryBundle(DriverDescriptor driver, String path) {
+        super(driver, FileType.jar, path);
     }
 
     public DriverLibraryBundle(DriverDescriptor driver, IConfigurationElement config) {
@@ -60,6 +60,12 @@ public class DriverLibraryBundle extends DriverLibraryAbstract {
     @Override
     public DBPDriverLibrary copyLibrary(@NotNull DriverDescriptor driverDescriptor) {
         return new DriverLibraryBundle(driverDescriptor, this);
+    }
+
+    @NotNull
+    @Override
+    public FileType getType() {
+        return FileType.jar;
     }
 
     @Override

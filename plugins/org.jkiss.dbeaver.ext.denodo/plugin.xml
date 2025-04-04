@@ -21,7 +21,7 @@
             <drivers managable="true">
                 <driver
                         id="denodo8_jdbc"
-                        label="Denodo 8"
+                        label="Denodo"
                         class="com.denodo.vdp.jdbc.Driver"
                         icon="icons/denodo_icon.png"
                         iconBig="icons/denodo_icon_big.png"
