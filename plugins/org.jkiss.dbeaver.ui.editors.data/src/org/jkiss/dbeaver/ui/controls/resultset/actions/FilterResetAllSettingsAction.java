@@ -32,7 +32,7 @@ public class FilterResetAllSettingsAction extends AbstractResultSetViewerAction 
     @Override
     public void run() {
         ResultSetViewer viewer = getResultSetViewer();
-        ActionUtils.runCommand(ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING, viewer.getSite());
+        viewer.clearDataFilter(false);
         if (viewer.getDataFilter().hasHiddenAttributes()) {
             ActionUtils.runCommand(SpreadsheetCommandHandler.CMD_SHOW_COLUMNS, viewer.getSite());
         }

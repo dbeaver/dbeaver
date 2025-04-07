@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,33 +20,7 @@ package org.jkiss.dbeaver.model.ai.completion;
 /**
  * Completion request
  */
-public class DAICompletionResponse {
-
-    private String resultPrompt;
-    private String resultCompletion;
-    private String resultMessage;
-
-    public String getResultPrompt() {
-        return resultPrompt;
-    }
-
-    public void setResultPrompt(String resultPrompt) {
-        this.resultPrompt = resultPrompt;
-    }
-
-    public String getResultCompletion() {
-        return resultCompletion;
-    }
-
-    public void setResultCompletion(String resultCompletion) {
-        this.resultCompletion = resultCompletion;
-    }
-
-    public String getResultMessage() {
-        return resultMessage;
-    }
-
-    public void setResultMessage(String resultMessage) {
-        this.resultMessage = resultMessage;
-    }
+public record DAICompletionResponse(
+    String text
+) {
 }

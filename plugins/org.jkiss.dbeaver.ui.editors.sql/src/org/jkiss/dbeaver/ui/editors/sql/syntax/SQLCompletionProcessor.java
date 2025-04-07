@@ -35,18 +35,21 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.completion.*;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionActivityTracker;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionProposal;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.SQLAutocompletionMode;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionAnalyzer;
-import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLQueryCompletionProposal;
+import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLEditorQueryCompletionAnalyzer;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
@@ -176,7 +179,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
                     boolean useNewCompletionEngine = mode.useNewAnalyzer
                         && store.getBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE)
                         && store.getBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS)
-                        && dataSource.getSQLDialect() instanceof BasicSQLDialect;
+                        && dataSource != null && dataSource.getSQLDialect() instanceof BasicSQLDialect;
 
                     // UIUtils.waitJobCompletion(..) uses job.isFinished() which is not dropped on reschedule,
                     // so we should be able to recreate the whole job object including all its non-reusable dependencies.
@@ -184,10 +187,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
 
                     if (useNewCompletionEngine) {
                         // new analyzer is reusable
-                        SQLQueryCompletionAnalyzer newAnalyzer = new SQLQueryCompletionAnalyzer(
-                            this.editor,
+                        SQLEditorQueryCompletionAnalyzer newAnalyzer = new SQLEditorQueryCompletionAnalyzer(
+                            monitor -> this.editor.obtainCompletionContext(monitor, completionRequestPosition),
                             request,
-                            completionRequestPosition
+                            () -> completionRequestPosition.getOffset()
                         );
                         completionJobSuppliers.add(() -> new ProposalsComputationJobHolder(new NewProposalSearchJob(newAnalyzer)) {
                             @Override
@@ -527,9 +530,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
     }
 
     private class NewProposalSearchJob extends AbstractJob {
-        private final SQLQueryCompletionAnalyzer analyzer;
+        private final SQLEditorQueryCompletionAnalyzer analyzer;
 
-        public NewProposalSearchJob(SQLQueryCompletionAnalyzer analyzer) {
+        public NewProposalSearchJob(SQLEditorQueryCompletionAnalyzer analyzer) {
             super("Analyzing query for proposals...");
             this.analyzer = analyzer;
         }

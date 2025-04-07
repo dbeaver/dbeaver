@@ -55,7 +55,7 @@ public class GBase8sTableColumn extends GenericTableColumn {
     }
 
     @Override
-    @Property(viewable = true, editableExpr = "!object.table.view", updatableExpr = "!object.table.view", order = 52)
+    @Property(hidden = true)
     public boolean isAutoIncrement() {
         return super.isAutoIncrement();
     }
