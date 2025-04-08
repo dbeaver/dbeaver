@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         Mockito.when(syntaxManager.getCatalogSeparator()).thenReturn(".");
         Mockito.when(configuration.getKeywordCase()).thenReturn(DBPIdentifierCase.UPPER);
         Mockito.when(syntaxManager.getStructSeparator()).thenReturn('.');
+        Mockito.when(syntaxManager.getEscapeChar()).thenReturn('\\');
         Mockito.when(configuration.getIndentString()).thenReturn("\t");
         Mockito.doReturn(preferenceStore).when(configuration).getPreferenceStore();
 
@@ -550,5 +551,17 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
 
         //then
         assertEquals(expString, formattedString);
+    }
+
+    @Test
+    public void shouldCorrectlyHandleBackslashEscapedQuotesInStringLiterals() {
+        //given
+        String inputString = "'D d\\'D D'";
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        assertEquals(inputString, formattedString);
     }
 }
