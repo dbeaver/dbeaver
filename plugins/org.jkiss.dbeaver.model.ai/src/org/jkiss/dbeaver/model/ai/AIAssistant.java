@@ -59,4 +59,14 @@ public interface AIAssistant {
      * Returns whether the AI assistant has a valid configuration.
      */
     boolean hasValidConfiguration() throws DBException;
+
+
+    /**
+     *  Generates the description for DBSObject.
+     */
+    @NotNull
+    String describe(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICommandRequest request
+    ) throws DBException;
 }

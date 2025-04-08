@@ -199,6 +199,43 @@ public class AIAssistantImpl implements AIAssistant {
         return getActiveEngine().hasValidConfiguration();
     }
 
+    @NotNull
+    @Override
+    public String describe(@NotNull DBRProgressMonitor monitor, @NotNull DAICommandRequest request) throws DBException {
+        DAICompletionEngine engine = request.engine() != null ?
+            request.engine() :
+            getActiveEngine();
+
+        DAIChatMessage e1 = DAIChatMessage.systemMessage(
+            metadataProcessor.describeContext(
+                monitor,
+                request.context(),
+                formatter(),
+                engine.getMaxContextSize(monitor) - AIConstants.MAX_RESPONSE_TOKENS
+            )
+        );
+        List<DAIChatMessage> chatMessages = List.of(
+            e1,
+            DAIChatMessage.userMessage(request.text())
+        );
+
+        DAICompletionRequest completionRequest = new DAICompletionRequest(
+            AIUtils.truncateMessages(true, chatMessages, engine.getMaxContextSize(monitor))
+        );
+
+        DAICompletionResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
+
+        MessageChunk[] messageChunks = processAndSplitCompletion(monitor, request.context(), completionResponse.text());
+
+        StringBuilder messages = new StringBuilder();
+        for (MessageChunk chunk : messageChunks) {
+            if (chunk instanceof MessageChunk.Text textChunk) {
+                messages.append(textChunk.text());
+            }
+        }
+        return messages.toString();
+    }
+
     private MessageChunk[] processAndSplitCompletion(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionContext context,
