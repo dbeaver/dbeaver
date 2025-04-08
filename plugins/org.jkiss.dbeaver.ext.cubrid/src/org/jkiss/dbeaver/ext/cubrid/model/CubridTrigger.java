@@ -43,7 +43,7 @@ public class CubridTrigger extends GenericTableTrigger {
     private String targetColumn;
     private boolean active;
     private boolean persisted;
-    private Double priority;
+    private double priority;
     private String event;
     private String condition;
     private String actionTime;
@@ -51,7 +51,7 @@ public class CubridTrigger extends GenericTableTrigger {
     private String actionDefinition;
     private Map<Integer, String> events = Map.of(0, "UPDATE", 1, "UPDATE STATEMENT", 2, "DELETE", 3, "DELETE STATEMENT", 4, "INSERT", 5, "INSERT STATEMENT", 8, "COMMIT", 9, "ROLLBACK");
     private Map<Integer, String> actionTimes = Map.of(1, "BEFORE", 2, "AFTER", 3, "DEFERRED");
-    private Map<Integer, String> actionTypes = Map.of(1, "OTHER STATEMENT", 2, "REJECT", 3, "INVALIDATE_TRANSACTION", 4, "PRINT");
+    private Map<Integer, String> actionTypes = Map.of(1, "OTHER STATEMENT", 2, "REJECT", 3, "INVALIDATE TRANSACTION", 4, "PRINT");
     List<String> columnList = new ArrayList<>();
 
     public CubridTrigger(
@@ -234,7 +234,7 @@ public class CubridTrigger extends GenericTableTrigger {
                 }
             }
             ddl.append("\nEXECUTE ");
-            if (getActionType().equals("REJECT") || getActionType().equals("INVALIDATE_TRANSACTION")) {
+            if (getActionType().equals("REJECT") || getActionType().equals("INVALIDATE TRANSACTION")) {
                 ddl.append(getActionType());
             } else if (getActionType().equals("PRINT")) {
                 ddl.append(getActionType() + " ");
@@ -242,6 +242,9 @@ public class CubridTrigger extends GenericTableTrigger {
             }
             else {
                 ddl.append(getActionDefinition() == null ? "" : actionDefinition);
+            }
+            if (getDescription() != null && !getDescription().isEmpty()) {
+                ddl.append("\nCOMMENT ").append(SQLUtils.quoteString(getDataSource(), getDescription()));
             }
             return ddl.toString();
         }

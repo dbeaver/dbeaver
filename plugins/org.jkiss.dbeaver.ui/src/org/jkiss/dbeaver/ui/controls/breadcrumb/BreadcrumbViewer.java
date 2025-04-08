@@ -22,6 +22,7 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Widget;
@@ -33,19 +34,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class BreadcrumbViewer extends StructuredViewer {
-    private final List<BreadcrumbItem> breadcrumbItems = new ArrayList<>();
+public class BreadcrumbViewer extends StructuredViewer {
+    // Makes breadcrumb items collapse by hiding their text if there is not enough space
+    private static final boolean COLLAPSE_ELEMENTS = false;
 
+    private final List<BreadcrumbItem> breadcrumbItems = new ArrayList<>();
     private final Composite container;
+    private final int style;
 
     private ILabelProvider toolTipLabelProvider;
+    private ITreeContentProvider dropDownContentProvider;
     private BreadcrumbItem selectedItem;
 
-    public BreadcrumbViewer(@NotNull Composite parent) {
+    /**
+     * Creates a breadcrumb viewer.
+     *
+     * @param parent the parent composite
+     * @param style  the style bits
+     * @see SWT#TOP
+     * @see SWT#BOTTOM
+     */
+    public BreadcrumbViewer(@NotNull Composite parent, int style) {
         container = new Composite(parent, SWT.NONE);
         container.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
-        container.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).numColumns(1000).create());
+        container.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
         container.addListener(SWT.Resize, e -> refresh());
+
+        if (style != SWT.TOP && style != SWT.BOTTOM) {
+            throw new IllegalArgumentException("Invalid style bits");
+        }
+
+        this.style = style;
     }
 
     @Override
@@ -68,12 +87,13 @@ public abstract class BreadcrumbViewer extends StructuredViewer {
         }
 
         try (var ignored = UIUtils.disableRedraw(container)) {
-            if (!breadcrumbItems.isEmpty()) {
+            if (COLLAPSE_ELEMENTS && !breadcrumbItems.isEmpty()) {
                 breadcrumbItems.get(breadcrumbItems.size() - 1).setTrailing(false);
             }
 
             int lastIndex = buildItemChain(input);
-            if (lastIndex > 0) {
+
+            if (COLLAPSE_ELEMENTS && lastIndex > 0) {
                 breadcrumbItems.get(lastIndex - 1).setTrailing(true);
             }
 
@@ -81,6 +101,7 @@ public abstract class BreadcrumbViewer extends StructuredViewer {
                 BreadcrumbItem item = breadcrumbItems.remove(breadcrumbItems.size() - 1);
                 unmapElement(item.getData());
                 item.dispose();
+                ((GridLayout) container.getLayout()).numColumns--;
             }
 
             updateSize();
@@ -171,6 +192,12 @@ public abstract class BreadcrumbViewer extends StructuredViewer {
     }
 
     @Override
+    public void setContentProvider(IContentProvider provider) {
+        super.setContentProvider(provider);
+        setDropDownContentProvider((ITreeContentProvider) provider);
+    }
+
+    @Override
     protected void assertContentProviderType(IContentProvider provider) {
         Assert.isTrue(provider instanceof ITreeContentProvider);
     }
@@ -206,23 +233,32 @@ public abstract class BreadcrumbViewer extends StructuredViewer {
         this.toolTipLabelProvider = toolTipLabelProvider;
     }
 
-    /**
-     * Configure the given drop down viewer. The given input is used for the viewers input. Clients
-     * must at least set the label and the content provider for the viewer.
-     *
-     * @param viewer the viewer to configure
-     * @param input  the input for the viewer
-     */
-    protected abstract void configureDropDownViewer(@NotNull TreeViewer viewer, @NotNull Object input);
+    @NotNull
+    public ITreeContentProvider getDropDownContentProvider() {
+        return dropDownContentProvider;
+    }
+
+    public void setDropDownContentProvider(@NotNull ITreeContentProvider dropDownContentProvider) {
+        this.dropDownContentProvider = dropDownContentProvider;
+    }
+
+    public int getStyle() {
+        return style;
+    }
 
     private boolean updateSize() {
-        int width = container.getClientArea().width;
+        int containerWidth = container.getClientArea().width;
         int currentWidth = computeWidth();
+
+        if (!COLLAPSE_ELEMENTS) {
+            return currentWidth < containerWidth;
+        }
+
         boolean requiresLayout = false;
 
-        if (currentWidth > width) {
+        if (currentWidth > containerWidth) {
             int index = 0;
-            while (currentWidth > width && index < breadcrumbItems.size()) {
+            while (currentWidth > containerWidth && index < breadcrumbItems.size()) {
                 BreadcrumbItem item = breadcrumbItems.get(index);
                 if (item.isShowText()) {
                     item.setShowText(false);
@@ -232,14 +268,14 @@ public abstract class BreadcrumbViewer extends StructuredViewer {
 
                 index++;
             }
-        } else if (currentWidth < width) {
+        } else if (currentWidth < containerWidth) {
             int index = breadcrumbItems.size() - 1;
-            while (currentWidth < width && index >= 0) {
+            while (currentWidth < containerWidth && index >= 0) {
                 BreadcrumbItem item = breadcrumbItems.get(index);
                 if (!item.isShowText()) {
                     item.setShowText(true);
                     currentWidth = computeWidth();
-                    if (currentWidth > width) {
+                    if (currentWidth > containerWidth) {
                         item.setShowText(false);
                         index = 0;
                     } else {
@@ -276,6 +312,7 @@ public abstract class BreadcrumbViewer extends StructuredViewer {
             item = breadcrumbItems.get(index);
             unmapElement(item.getData());
         } else {
+            ((GridLayout) container.getLayout()).numColumns++;
             item = createItem();
             breadcrumbItems.add(item);
         }
