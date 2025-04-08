@@ -52,8 +52,8 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
-        if (!(workspace.hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN)
-            || workspace.hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER))
+        if (!workspace.hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN) &&
+            !workspace.hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)
         ) {
             UIUtils.showMessageBox(
                 null,
