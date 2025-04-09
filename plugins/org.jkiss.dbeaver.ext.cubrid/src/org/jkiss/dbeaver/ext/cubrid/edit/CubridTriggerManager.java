@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.CommonUtils;
 
 public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> {
 
@@ -66,36 +67,59 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> {
             }
         }
         sb.append("\nEXECUTE ");
-        if (trigger.getActionType().equals("REJECT") || trigger.getActionType().equals("INVALIDATE_TRANSACTION")) {
+        if (trigger.getActionType().equals("REJECT") || trigger.getActionType().equals("INVALIDATE TRANSACTION")) {
             sb.append(trigger.getActionType());
         } else if (trigger.getActionType().equals("PRINT")) {
             sb.append(trigger.getActionType() + " ");
             sb.append(trigger.getActionDefinition() == null ? "" : SQLUtils.quoteString(trigger, trigger.getActionDefinition()));
-        }
-        else {
+        } else {
             sb.append(trigger.getActionDefinition() == null ? "" : trigger.getActionDefinition());
         }
     }
 
     @Override
-    protected void createOrReplaceTriggerQuery(
+    protected void addObjectCreateActions(
             @NotNull DBRProgressMonitor monitor,
             @NotNull DBCExecutionContext executionContext,
             @NotNull List<DBEPersistAction> actions,
-            @NotNull CubridTrigger trigger,
-            boolean create) {
+            @NotNull ObjectCreateCommand command,
+            @NotNull Map<String, Object> options) {
+        CubridTrigger trigger = command.getObject();
         StringBuilder sb = new StringBuilder();
-        sb.append(create ? "CREATE TRIGGER" : "ALTER TRIGGER ");
-        sb.append(trigger.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        sb.append("CREATE TRIGGER ").append(trigger.getFullyQualifiedName(DBPEvaluationContext.DDL));
         sb.append(trigger.getActive() ? "\nSTATUS ACTIVE": "\nSTATUS INACTIVE");
         sb.append("\nPRIORITY ").append(trigger.getPriority());
-        if (create) {
-            createTrigger(trigger, sb);
-        }
+        createTrigger(trigger, sb);
         if (trigger.getDescription() != null) {
             sb.append("\nCOMMENT ").append(SQLUtils.quoteString(trigger, trigger.getDescription()));
         }
-        actions.add(new SQLDatabasePersistAction("Create and Alter Trigger", sb.toString()));
+        actions.add(new SQLDatabasePersistAction("Create Trigger", sb.toString()));
+    }
+
+    @Override
+    protected void addObjectModifyActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actionList,
+            @NotNull ObjectChangeCommand command,
+            @NotNull Map<String, Object> options) {
+        CubridTrigger trigger = command.getObject();
+        String triggerName = trigger.getFullyQualifiedName(DBPEvaluationContext.DDL);
+
+        if (command.hasProperty("active")) {
+            actionList.add(new SQLDatabasePersistAction(
+                    "ALTER TRIGGER " + triggerName + " STATUS "
+                    + (trigger.getActive() ? "ACTIVE" : "INACTIVE")));
+        }
+        if (command.hasProperty("priority")) {
+            actionList.add(new SQLDatabasePersistAction(
+                    "ALTER TRIGGER " + triggerName + " PRIORITY " + trigger.getPriority()));
+        }
+        if (command.hasProperty("description")) {
+            actionList.add(new SQLDatabasePersistAction(
+                    "ALTER TRIGGER " + triggerName + " COMMENT "
+                    + SQLUtils.quoteString(trigger, CommonUtils.notEmpty(trigger.getDescription()))));
+        }
     }
 
 }
