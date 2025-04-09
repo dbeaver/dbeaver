@@ -334,7 +334,7 @@ public class TaskManagerImpl implements DBTTaskManager {
 
     @NotNull
     @Override
-    public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) {
+    public TaskRunJob scheduleTask(@NotNull DBTTask task, @NotNull DBTTaskExecutionListener listener) throws DBException {
         final TaskRunJob runJob = createJob((TaskImpl) task, listener);
         runJob.schedule();
         if (serviceJob == null) {
@@ -562,7 +562,7 @@ public class TaskManagerImpl implements DBTTaskManager {
             }
             JSONUtils.field(jsonWriter, TaskConstants.TAG_CREATE_TIME, systemDateFormat.format(task.getCreateTime()));
             JSONUtils.field(jsonWriter, TaskConstants.TAG_UPDATE_TIME, systemDateFormat.format(task.getUpdateTime()));
-            JSONUtils.serializeProperties(jsonWriter, TaskConstants.TAG_STATE, task.getProperties());
+            JSONUtils.serializeProperties(jsonWriter, TaskConstants.TAG_STATE, task.getProperties(), true);
             if (task.getMaxExecutionTime() > 0) {
                 JSONUtils.field(jsonWriter, TaskConstants.TAG_MAX_EXEC_TIME, task.getMaxExecutionTime());
             }

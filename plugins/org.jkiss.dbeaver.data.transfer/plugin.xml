@@ -154,6 +154,8 @@
                     <property id="quoteNever" label="%dataTransfer.processor.csv.property.quoteNever.name" type="boolean" description="%dataTransfer.processor.csv.property.quoteNever.description" defaultValue="false" required="false"/>
                     <property id="nullString" label="%dataTransfer.processor.csv.property.nullString.name" type="string" description="%dataTransfer.processor.csv.property.nullString.description" defaultValue="" required="false"/>
                     <property id="formatNumbers" label="%dataTransfer.processor.csv.property.formatNumbers.name" type="boolean" description="%dataTransfer.processor.csv.property.formatNumbers.description" defaultValue="false" required="false"/>
+                    <property id="lineFeedEscapeString" label="%dataTransfer.producer.stream.processor.csv.property.lineFeedEscapeString.name" type="string" description="%dataTransfer.producer.stream.processor.csv.property.lineFeedEscapeString.description" defaultValue="" validValues="\n,¶" allowCustomValues="true" required="false"/>
+                    <property id="formatArray" label="%dataTransfer.processor.csv.property.formatArray.name" type="string" description="%dataTransfer.processor.csv.property.formatArray.description" defaultValue="{ }" required="true" validValues="{ },[ ],( )" allowCustomValues="false"/>
                 </propertyGroup>
             </processor>
             <processor
@@ -265,6 +267,13 @@
                 label="%dataTransfer.eventProcessor.executeCommand.label"
                 description="%dataTransfer.eventProcessor.executeCommand.description"
                 class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"
+                nodes="streamTransferConsumer"/>
+
+        <eventProcessor
+                id="failedExportFileCleaner"
+                label="%dataTransfer.eventProcessor.failedExportFileCleaner.label"
+                description="%dataTransfer.eventProcessor.failedExportFileCleaner.description"
+                class="org.jkiss.dbeaver.tools.transfer.processor.FailedExportFileCleanerProcessor"
                 nodes="streamTransferConsumer"/>
 
     </extension>

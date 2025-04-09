@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,16 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -189,11 +194,11 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         }
     }
 
-    private void createDictionaryPage(TabFolder tabFolder) {
+    private void createDictionaryPage(CTabFolder tabFolder) {
         if (entity != null) {
             editDictionaryPage = new EditDictionaryPage(entity);
             editDictionaryPage.createControl(tabFolder);
-            TabItem dictItem = new TabItem(tabFolder, SWT.NONE);
+            CTabItem dictItem = new CTabItem(tabFolder, SWT.NONE);
             dictItem.setText(DataEditorsMessages.virtual_structure_editor_dictionary_page_text);
             dictItem.setControl(editDictionaryPage.getControl());
             dictItem.setData(EditVirtualEntityDialog.InitPage.DICTIONARY);

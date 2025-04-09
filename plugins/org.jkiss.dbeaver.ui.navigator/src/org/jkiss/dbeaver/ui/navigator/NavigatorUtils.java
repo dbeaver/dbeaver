@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.*;
@@ -42,23 +43,24 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.IDataSourceContainerUpdate;
@@ -72,6 +74,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.dnd.NavigatorDragSourceListener;
@@ -83,6 +86,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -306,8 +310,8 @@ public class NavigatorUtils {
             DBSObject selectedObject = ((DBNDatabaseNode) selectedNode).getObject();
             DBPDataSource dataSource = ((DBNDatabaseNode) selectedNode).getDataSource();
             if (dataSource != null) {
-                DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(new VoidProgressMonitor(), false);
-                DBCExecutionContextDefaults contextDefaults = defaultContext.getContextDefaults();
+                DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSource, false);
+                DBCExecutionContextDefaults<?,?> contextDefaults = defaultContext.getContextDefaults();
                 if (contextDefaults != null) {
                     if ((selectedObject instanceof DBSCatalog && contextDefaults.supportsCatalogChange() && contextDefaults.getDefaultCatalog() != selectedObject) ||
                         (selectedObject instanceof DBSSchema && contextDefaults.supportsSchemaChange() && contextDefaults.getDefaultSchema() != selectedObject))
@@ -367,12 +371,12 @@ public class NavigatorUtils {
                 EditorInputTransfer.getInstance(),
                 FileTransfer.getInstance()
             };
-            
-            if (RuntimeUtils.isGtk()) { 
-                // TextTransfer should be the last on GTK due to platform' DND implementation inconsistency
+
+            if (RuntimeUtils.isWayland()) {
+                // TextTransfer should be the last when using Wayland
                 ArrayUtils.reverse(dragTransferTypes);
             }
-            
+
             int operations = DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
 
             final DragSource source = new DragSource(viewer.getControl(), operations);
@@ -532,35 +536,57 @@ public class NavigatorUtils {
     }
 
     public static void openNavigatorNode(Object node, IWorkbenchWindow window, Map<?, ?> parameters) {
-        IResource resource = node instanceof IAdaptable ? ((IAdaptable) node).getAdapter(IResource.class) : null;
-        if (resource instanceof IFile) {
-            UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-            if (serviceSQL != null) {
-                serviceSQL.openResource(resource);
-            }
-        } else if (node instanceof DBNNode && ((DBNNode) node).allowsOpen()) {
-            if (node instanceof DBNObjectNode) {
-                INavigatorObjectManager objectManager = GeneralUtils.adapt(((DBNObjectNode) node).getNodeObject(), INavigatorObjectManager.class);
-                if (objectManager != null) {
-                    if (((objectManager.getSupportedFeatures() & INavigatorObjectManager.FEATURE_OPEN)) != 0) {
-                        try {
-                            objectManager.openObjectEditor(window, (DBNObjectNode) node);
-                        } catch (Exception e) {
-                            DBWorkbench.getPlatformUI().showError(
-                                "Error opening object",
-                                "Error while opening object '" + ((DBNObjectNode) node).getNodeObject() + "'",
-                                e);
-                        }
+        try {
+            if (node instanceof DBNResource resource) {
+                DBPResourceHandler resourceHandler = resource.getHandler();
+                resourceHandler.openResource(resource.getResource());
+            } else if (node instanceof DBNPathBase dbnPath) {
+                if (!EditorUtils.openExternalFiles(new Path[]{ dbnPath.getPath() }, null)) {
+                    // Try resource handler
+                    IResource resource = dbnPath.getAdapter(IResource.class);
+                    if (resource instanceof IFile file) {
+                        openResourceWithHandler(file);
+                    } else {
+                        openEntityEditor(node, window, parameters);
                     }
-                    return;
                 }
+            } else if (node instanceof DBNNode baseNode && baseNode.allowsOpen()) {
+                openEntityEditor(node, window, parameters);
+            } else {
+                throw new DBException("Do not know how to open node '" + node + "'");
             }
-            Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
-            NavigatorHandlerObjectOpen.openEntityEditor(
-                (DBNNode) node,
-                CommonUtils.toString(activePage, null),
-                window);
+        } catch (Exception e) {
+            DBWorkbench.getPlatformUI().showError(
+                "Error opening object",
+                "Error while opening object '" + node + "'",
+                e);
         }
+    }
+
+    private static void openResourceWithHandler(IFile file) throws CoreException, DBException {
+        DBPResourceHandler handler = DBPPlatformDesktop.getInstance().getWorkspace().getResourceHandler(file);
+        if (handler != null) {
+            handler.openResource(file);
+        } else {
+            throw new DBException("Cannot find resource handler for " + file);
+        }
+    }
+
+    private static void openEntityEditor(Object node, IWorkbenchWindow window, Map<?, ?> parameters) throws DBException {
+        if (node instanceof DBNObjectNode objectNode) {
+            INavigatorObjectManager objectManager = GeneralUtils.adapt(objectNode.getNodeObject(), INavigatorObjectManager.class);
+            if (objectManager != null) {
+                if (((objectManager.getSupportedFeatures() & INavigatorObjectManager.FEATURE_OPEN)) != 0) {
+                    objectManager.openObjectEditor(window, objectNode);
+                }
+                return;
+            }
+        }
+        Object activePage = parameters == null ? null : parameters.get(MultiPageDatabaseEditor.PARAMETER_ACTIVE_PAGE);
+        NavigatorHandlerObjectOpen.openEntityEditor(
+            (DBNNode) node,
+            CommonUtils.toString(activePage, null),
+            window);
     }
 
     @Nullable
@@ -673,4 +699,23 @@ public class NavigatorUtils {
         }
     }
 
+    @Nullable
+    public static DatabaseNavigatorTree getNavigatorTree(@NotNull ExecutionEvent event) {
+        return getNavigatorTree(HandlerUtil.getActiveWorkbenchWindow(event));
+    }
+
+    @Nullable
+    public static DatabaseNavigatorTree getNavigatorTree(@Nullable IServiceLocator locator) {
+        DatabaseNavigatorTree tree = DatabaseNavigatorTree.getFromShell(Display.getCurrent());
+        if (tree != null) {
+            return tree;
+        }
+        if (locator != null) {
+            IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(locator);
+            if (partSite != null && partSite.getPart() instanceof DatabaseNavigatorView view) {
+                return view.getNavigatorTree();
+            }
+        }
+        return null;
+    }
 }

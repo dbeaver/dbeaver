@@ -24,8 +24,7 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.erd.ui.editor.ERDThemeSettings;
 
 /**
  * A customized Label based on the label used in the flow example. 
@@ -72,10 +71,10 @@ public class EditableLabel extends Label
 		if (selected)
 		{
 			graphics.pushState();
-			graphics.setBackgroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND));
+			graphics.setBackgroundColor(ERDThemeSettings.instance.attrForeground);
 			graphics.fillRoundRectangle(getSelectionRectangle(), 3, 3);
 			graphics.popState();
-			graphics.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
+			graphics.setForegroundColor(ERDThemeSettings.instance.diagramBackground);
 		}
 		super.paintFigure(graphics);
 	}

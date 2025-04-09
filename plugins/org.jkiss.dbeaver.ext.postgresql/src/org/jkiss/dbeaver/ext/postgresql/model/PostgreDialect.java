@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -758,6 +758,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     };
 
     public static String[] POSTGRE_FUNCTIONS_FORMATTING = new String[]{
+        "format",
         "to_char",
         "to_date",
         "to_number",
@@ -890,6 +891,10 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         addExtraFunctions(POSTGRE_FUNCTIONS_XML);
 
         removeSQLKeyword("LENGTH");
+        removeSQLKeyword("JSON");
+        removeSQLKeyword("TEXT");
+        removeSQLKeyword("FORMAT");
+        removeSQLKeyword("WORK");
 
         if (dataSource instanceof PostgreDataSource) {
             serverExtension = ((PostgreDataSource) dataSource).getServerType();
@@ -960,13 +965,14 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @Override
     public String getCastedAttributeName(@NotNull DBSAttributeBase attribute, String attributeName) {
-        // This method actually works for special data types like JSON and XML. Because column names in the condition in a table without key must be also cast, as data in getTypeCast method.
-        if (attribute instanceof DBSObject && !DBUtils.isPseudoAttribute(attribute)) {
+        // This method actually works for special data types like JSON and XML.
+        // Because column names in the condition in a table without key must be also cast, as data in getTypeCast method.
+        if (attribute instanceof DBSObject sAttr && !DBUtils.isPseudoAttribute(attribute)) {
             if (!CommonUtils.equalObjects(attributeName, attribute.getName())) {
                 // Must use explicit attribute name
-                attributeName = DBUtils.getQuotedIdentifier(((DBSObject) attribute).getDataSource(), attributeName);
+                attributeName = DBUtils.getQuotedIdentifier(sAttr.getDataSource(), attributeName);
             } else {
-                attributeName = DBUtils.getObjectFullName(((DBSObject) attribute).getDataSource(), attribute, DBPEvaluationContext.DML);
+                attributeName = DBUtils.getObjectFullName(sAttr.getDataSource(), attribute, DBPEvaluationContext.DML);
             }
         }
         return getCastedString(attribute, attributeName, true, true);
@@ -981,10 +987,10 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     private String getCastedString(@NotNull DBSTypedObject attribute, String string, boolean isInCondition, boolean castColumnName) {
-        if (attribute instanceof DBSTypedObjectEx) {
-            DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
-            if (dataType instanceof PostgreDataType) {
-                String typeCasting = ((PostgreDataType) dataType).getConditionTypeCasting(isInCondition, castColumnName);
+        if (attribute instanceof DBSTypedObjectEx toEx) {
+            DBSDataType dataType = toEx.getDataType();
+            if (dataType instanceof PostgreDataType pdt) {
+                String typeCasting = pdt.getConditionTypeCasting(isInCondition, castColumnName);
                 if (CommonUtils.isNotEmpty(typeCasting)) {
                     return string + typeCasting;
                 }
@@ -1113,7 +1119,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     @Override
     public String convertExternalDataType(@NotNull SQLDialect sourceDialect, @NotNull DBSTypedObject sourceTypedObject, @Nullable DBPDataTypeProvider targetTypeProvider) {
-        String externalTypeName = sourceTypedObject.getTypeName().toLowerCase(Locale.ENGLISH);
+        String typeName = sourceTypedObject.getTypeName();
+        if (typeName == null) {
+            return null;
+        }
+        String externalTypeName = typeName.toLowerCase(Locale.ENGLISH);
         String localDataType = null, dataTypeModifies = null;
 
         switch (externalTypeName) {
@@ -1256,5 +1266,10 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             ProjectionAliasVisibilityScope.GROUP_BY,
             ProjectionAliasVisibilityScope.ORDER_BY
         );
+    }
+
+    @Override
+    public boolean isEscapeBackslash() {
+        return serverExtension != null && serverExtension.supportsBackslashStringEscape();
     }
 }

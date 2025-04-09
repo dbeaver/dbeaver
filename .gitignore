@@ -1,6 +1,7 @@
 #################
 ## Misc
 
+osgi-cache/
 bin/
 tmp/
 *.tmp
@@ -28,8 +29,10 @@ buildNumber.properties
 /workspace/
 
 ## IDEA configs
-
+.idea/
 *.iml
+*.ipr
+*.iws
 /idea/
 
 ## Eclipse configs
@@ -37,8 +40,6 @@ buildNumber.properties
 .project
 .classpath
 .settings/
-
-## Eclipse PDE
 *.product.launch
 
 # Dev executables

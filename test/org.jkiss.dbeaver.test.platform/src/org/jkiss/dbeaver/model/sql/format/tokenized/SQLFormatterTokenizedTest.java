@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,15 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
 
-
-@RunWith(MockitoJUnitRunner.class)
-public class SQLFormatterTokenizedTest {
+public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
 
     SQLFormatterTokenized formatter = new SQLFormatterTokenized();
     @Mock
@@ -61,6 +58,7 @@ public class SQLFormatterTokenizedTest {
         Mockito.when(syntaxManager.getCatalogSeparator()).thenReturn(".");
         Mockito.when(configuration.getKeywordCase()).thenReturn(DBPIdentifierCase.UPPER);
         Mockito.when(syntaxManager.getStructSeparator()).thenReturn('.');
+        Mockito.when(syntaxManager.getEscapeChar()).thenReturn('\\');
         Mockito.when(configuration.getIndentString()).thenReturn("\t");
         Mockito.doReturn(preferenceStore).when(configuration).getPreferenceStore();
 
@@ -553,5 +551,17 @@ public class SQLFormatterTokenizedTest {
 
         //then
         assertEquals(expString, formattedString);
+    }
+
+    @Test
+    public void shouldCorrectlyHandleBackslashEscapedQuotesInStringLiterals() {
+        //given
+        String inputString = "'D d\\'D D'";
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        assertEquals(inputString, formattedString);
     }
 }

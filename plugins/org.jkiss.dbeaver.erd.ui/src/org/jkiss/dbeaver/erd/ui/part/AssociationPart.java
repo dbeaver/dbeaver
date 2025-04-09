@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.erd.model.ERDEntityAttribute;
-import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
 import org.jkiss.dbeaver.erd.ui.ERDUIUtils;
 import org.jkiss.dbeaver.erd.ui.connector.ERDConnection;
 import org.jkiss.dbeaver.erd.ui.editor.*;
@@ -49,6 +48,7 @@ import org.jkiss.dbeaver.erd.ui.router.shortpath.ShortPathRouting;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.CommonUtils;
@@ -72,8 +72,8 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     private final Color labelForegroundColor;
 
     public AssociationPart() {
-        Color foreground = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND);
-        final Color contrastColor = UIUtils.getContrastColor(foreground);
+        Color foreground = ERDThemeSettings.instance.attrForeground;
+        final Color contrastColor = UIStyles.getContrastColor(foreground);
         final RGB labelForeground = UIUtils.blend(foreground.getRGB(), contrastColor.getRGB(), 60);
         labelForegroundColor = UIUtils.getSharedColor(labelForeground);
     }
@@ -124,7 +124,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         } else {
             conn = new ERDConnection();
         }
-        conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_LINES_FOREGROUND));
+        conn.setForegroundColor(ERDThemeSettings.instance.linesForeground);
         if (monitor.isCanceled()) {
             return conn;
         }
@@ -134,7 +134,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             if (association != null && association.getObject() != null && !CommonUtils.isEmpty(association.getObject().getDescription())) {
                 ConnectionLocator descLabelLocator = new ConnectionLocator(conn, ConnectionLocator.MIDDLE);
                 Label descLabel = new Label(association.getObject().getDescription());
-                descLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_ATTR_FOREGROUND));
+                descLabel.setForegroundColor(ERDThemeSettings.instance.attrForeground);
                 conn.add(descLabel, descLabelLocator);
             }
         }
@@ -257,10 +257,10 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
 
         if (value != EditPart.SELECTED_NONE) {
-            if (this.getViewer() instanceof ERDGraphicalViewer && associatedAttributesHighlighing == null) {
-                Color attributeColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
-                Color associationColor = UIUtils.getColorRegistry().get(ERDUIConstants.COLOR_ERD_FK_HIGHLIGHTING);
-                ERDHighlightingManager highlightingManager = ((ERDGraphicalViewer) this.getViewer()).getEditor().getHighlightingManager();
+            if (this.getViewer() instanceof ERDGraphicalViewer erdViewer && associatedAttributesHighlighing == null) {
+                Color attributeColor = ERDThemeSettings.instance.fkHighlightColor;
+                Color associationColor = ERDThemeSettings.instance.fkHighlightColor;
+                ERDHighlightingManager highlightingManager = erdViewer.getEditor().getHighlightingManager();
                 ListNode<ERDHighlightingHandle> nodes = highlightingManager.highlightRelatedAttributes(this, attributeColor);
                 nodes = highlightingManager.highlightAssociation(nodes, this, associationColor);
                 associatedAttributesHighlighing = highlightingManager.makeHighlightingGroupHandle(nodes);

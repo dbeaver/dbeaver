@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser.SqlQueriesContext;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
@@ -61,41 +62,7 @@ public class SyntaxParserTest {
             + "USING(ProductCategoryID)\r\n"
             + "GROUP BY ProductName\r\n"
             + "ORDER BY Product.ModifiedDate DESC";
-//        inputText = "\n\rSELECT schedule[1:2][1:1] FROM sal_emp se where s;";
-        
-        inputText = "\n"
-                + "SELECT BusinessEntityID, TerritoryID,   \n"
-                + "    CONVERT(VARCHAR(20),SUM(SalesYTD) OVER ("
-                + "          PARTITION BY TerritoryID   \n"
-                + "          ORDER BY DATEPART(yy,ModifiedDate)   \n"
-                + "          ROWS BETWEEN current_row AND 1 FOLLOWING \n"
-                + "    ),1) AS CumulativeTotal  \n"
-                + "FROM Sales.SalesPerson  \n"
-                + "WHERE TerritoryID IS NULL OR TerritoryID < 5";
 
-        inputText = "select "
-                + " c.id"
-                + " c.name,"
-                + " c.title,"
-                + " c.updated,"
-                + " c.name "
-                + ",(select json_aggr(distinct aafe order by 2 limit 50 separator 'f')\n"
-                + "   from order_products_rewards\n"
-                + "   where order_id = c.order_id\n"
-                + "   group by order_id) fdi\n"
-                + " from contracts c"
-                + "where date(c.updated) = date(sysdate())\n"
-                + "";
-        
-        inputText = "SELECT City, STRING_AGG(CONVERT(NVARCHAR(max), EmailAddress)s ';') FILTER (where a < b) AS Emails \n"
-                + " FROM Person.BusinessEntityAddress AS BEA  \n"
-                + " INNER JOIN Person.Address AS A ON BEA.AddressID = A.AddressID\n"
-                + " INNER JOIN Person.EmailAddress AS EA ON BEA.BusinessEntityID = EA.BusinessEntityID \n"
-                + " GROUP BY City";
-
-        inputText = "SELECT * FROM EMPLOYEES e WHERE e.EMPLOYEE_ID > :xl ";
-
-        inputText = "select * from test. ";
 
         var input = CharStreams.fromString(inputText);
         var params = new LSMAnalyzerParameters(
@@ -160,21 +127,45 @@ public class SyntaxParserTest {
             System.out.println(sb.toString());
         }
 
+        int pos = 36;
         System.out.println(LSMInspections.prepareTerms(tree));
-        System.out.println(LSMInspections.prepareAbstractSyntaxInspection(tree, inputText.length() - 1).getReachabilityByName());
+//        System.out.println(LSMInspections.prepareAbstractSyntaxInspection(tree, pos).getReachabilityByName());
+//        System.out.println(inputText.substring(0, pos) + "|" + inputText.substring(pos));
+    }
+
+    public static String collect(STMTreeNode ctx) {
+        var input = CharStreams.fromString("");
+        var params = new LSMAnalyzerParameters(
+            Map.of("\"", "\""),
+            true,
+            false,
+            '?',
+            List.of(Map.entry(1, Set.of(":"))),
+            true
+        );
+        var ll = new SQLStandardLexer(input, params);
+        var tokens = new CommonTokenStream(ll);
+        var pp = new SQLStandardParser(tokens, params);
+
+        { // print simple parse tree view
+            var sb = new StringBuilder();
+            sb.append("\n");
+            collect(ctx, pp, sb, "");
+            return sb.toString();
+        }
     }
     
-    private static void collect(Tree ctx, Parser pp, StringBuilder sb, String indent) {        
+    private static void collect(STMTreeNode ctx, Parser pp, StringBuilder sb, String indent) {
         sb.append(indent).append(Trees.getNodeText(ctx, pp));
         while (ctx.getChildCount() == 1 && !(ctx.getChild(0).getPayload() instanceof Token)) {
-            ctx = ctx.getChild(0);
+            ctx = ctx.getChildNode(0);
             sb.append(".").append(Trees.getNodeText(ctx, pp));
         }
-        sb.append("\n");
-        if (ctx.getChildCount() == 1 && ctx.getChild(0).getPayload() instanceof Token) {
-            sb.append(indent).append("    \"").append(Trees.getNodeText(ctx.getChild(0), pp)).append("\"\n");
+        sb.append(" [").append(ctx.getRealInterval()).append("]\n");
+        if (ctx.getChildCount() == 1 && ctx.getChild(0).getPayload() instanceof Token t) {
+            sb.append(indent).append("    ").append(pp.getVocabulary().getDisplayName(t.getType())).append(" \"").append(Trees.getNodeText(ctx.getChild(0), pp)).append("\" [").append(ctx.getChildNode(0).getRealInterval()).append("]\n");
         } else {
-            for (Tree t : Trees.getChildren(ctx)) {
+            for (STMTreeNode t : ctx.getChildren()) {
                 collect(t, pp, sb, indent + "    ");
             }
         }

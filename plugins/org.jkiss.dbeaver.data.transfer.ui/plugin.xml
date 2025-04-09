@@ -95,6 +95,9 @@
         <propertyConfigurator
                 class="org.jkiss.dbeaver.tools.transfer.processor.ExecuteCommandEventProcessor"
                 uiClass="org.jkiss.dbeaver.tools.transfer.ui.processor.config.ExecuteCommandEventProcessorConfigurator"/>
+        <propertyConfigurator
+                class="org.jkiss.dbeaver.tools.transfer.processor.FailedExportFileCleanerProcessor"
+                uiClass="org.jkiss.dbeaver.tools.transfer.ui.processor.config.FailedExportFileCleanerProcessorConfigurator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">

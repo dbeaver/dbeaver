@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,7 +107,9 @@ public class SQLScriptParser {
 
         // Parse range
         TPRuleBasedScanner ruleScanner = context.getScanner();
-        boolean useBlankLines = !scriptMode && context.getSyntaxManager().getStatementDelimiterMode().useBlankLine;
+        boolean useBlankLines = scriptMode
+            ? context.getSyntaxManager().getStatementDelimiterMode().useSmart // respect blank lines in script mode if smart mode is on
+            : context.getSyntaxManager().getStatementDelimiterMode().useBlankLine; // respect blank lines always in single query exec if set
         boolean lineFeedIsDelimiter = ArrayUtils.contains(context.getSyntaxManager().getStatementDelimiters(), "\n");
         ruleScanner.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
@@ -215,7 +217,13 @@ public class SQLScriptParser {
                     continue;
                 } else if (tokenType == SQLTokenType.T_SET_DELIMITER || tokenType == SQLTokenType.T_CONTROL) {
                     isDelimiter = true;
-                    isControl = true;
+                    // see https://github.com/dbeaver/pro/issues/3935
+                    // If there is a statement preceding a command (e.g., @ai, @echo)
+                    // and it does not contain any delimiters, then that statement should be extracted.
+                    boolean cursorInsideToken = currentPos >= tokenOffset && currentPos <= tokenOffset + tokenLength;
+                    if (!hasValuableTokens || cursorInsideToken) {
+                        isControl = true;
+                    }
                 } else if (tokenType == SQLTokenType.T_COMMENT) {
                     lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
                 }
@@ -339,14 +347,28 @@ public class SQLScriptParser {
                     if (curBlock != null) {
                         log.trace("Found leftover blocks in script after parsing");
                     }
-                    // make script line
-                    SQLQuery query = new SQLQuery(
-                        context.getDataSource(),
-                        queryText,
-                        statementStart,
-                        queryEndPos - statementStart);
-                    query.setEndsWithDelimiter(tokenType == SQLTokenType.T_DELIMITER);
-                    return query;
+
+                    SQLTokenPredicate lastMatchedPredicate = predicateEvaluator.getLastMatchedPredicate();
+                    if (lastMatchedPredicate != null && lastMatchedPredicate.getActionKind() == SQLParserActionKind.CAPTURE_COMMAND) {
+                        return new SQLControlCommand(
+                            context.getDataSource(),
+                            queryText,
+                            lastMatchedPredicate.getParameter(),
+                            statementStart,
+                            queryEndPos - statementStart,
+                            predicateEvaluator.obtainPrefixCaptures()
+                        );
+                    } else {
+                        // make script line
+                        SQLQuery query = new SQLQuery(
+                            context.getDataSource(),
+                            queryText,
+                            statementStart,
+                            queryEndPos - statementStart
+                        );
+                        query.setEndsWithDelimiter(tokenType == SQLTokenType.T_DELIMITER);
+                        return query;
+                    }
                 }
                 if (isDelimiter) {
                     statementStart = tokenOffset + tokenLength;
@@ -1096,7 +1118,7 @@ public class SQLScriptParser {
     }
     
     private static class ScriptElementContinuationDetector {
-        private static final Set<Integer> statementStartTokenIds = LSMInspections.prepareOffquerySyntaxInspection().predictedTokensIds;
+        private static final Set<Integer> statementStartTokenIds = LSMInspections.prepareOffquerySyntaxInspection().predictedTokenIds();
 
         private static final Map<SQLDialect, Set<String>> statementStartKeywordsByDialect = Collections.synchronizedMap(new WeakHashMap<>());
         
@@ -1107,15 +1129,16 @@ public class SQLScriptParser {
         
         public ScriptElementContinuationDetector(@NotNull SQLParserContext context) {
             this.context = context;
-            this.statementStartKeywords = getStatementStartKeywords(this.context.getDialect());
+            this.statementStartKeywords = getStatementStartKeywords(this.context);
             this.analyzerParameters = LSMAnalyzerParameters.forDialect(this.context.getDialect(), this.context.getSyntaxManager());
         }
 
-        private static Set<String> getStatementStartKeywords(SQLDialect dialect) {
-            return statementStartKeywordsByDialect.computeIfAbsent(dialect, d -> prepareStatementStartKeywordsSet(d));
+        private static Set<String> getStatementStartKeywords(SQLParserContext context) {
+            return statementStartKeywordsByDialect.computeIfAbsent(context.getDialect(), d -> prepareStatementStartKeywordsSet(context));
         }
 
-        private static Set<String> prepareStatementStartKeywordsSet(SQLDialect dialect) {
+        private static Set<String> prepareStatementStartKeywordsSet(SQLParserContext context) {
+            SQLDialect dialect = context.getDialect();
             Set<String> statementStartKeywords = new HashSet<>();
 
             if (dialect.getBlockHeaderStrings() != null) {
@@ -1137,8 +1160,11 @@ public class SQLScriptParser {
                 Arrays.stream(abstractSQLDialect.getNonTransactionKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
             }
             Arrays.stream(dialect.getExecuteKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
+            String commandPrefix = context.getSyntaxManager().getControlCommandPrefix();
+            String multilineCommandPrefix = commandPrefix.repeat(2);
             for (SQLCommandHandlerDescriptor controlCommand : SQLCommandsRegistry.getInstance().getCommandHandlers()) {
-                statementStartKeywords.add("@" + controlCommand.getId().toUpperCase());
+                statementStartKeywords.add(commandPrefix + controlCommand.getId().toUpperCase());
+                statementStartKeywords.add(multilineCommandPrefix + controlCommand.getId().toUpperCase());
             }
             Arrays.stream(dialect.getQueryKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);
             Arrays.stream(dialect.getDMLKeywords()).map(String::toUpperCase).forEach(statementStartKeywords::add);

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +40,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNNodeReference;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -1049,7 +1050,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     //////////////////////////////////////////////////////
     // Property source implementation
 
-    private class DefaultListPropertySource extends PropertySourceAbstract {
+    private class DefaultListPropertySource extends PropertySourceAbstract implements DBNNodeReference {
 
         DefaultListPropertySource() {
             super(ObjectListControl.this, ObjectListControl.this, true);
@@ -1070,6 +1071,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return getAllProperties().toArray(new DBPPropertyDescriptor[0]);
         }
 
+        @Override
+        public DBNNode getReferencedNode() {
+            if (ObjectListControl.this instanceof DBNNodeReference nnc) {
+                return nnc.getReferencedNode();
+            }
+            return null;
+        }
     }
 
     //////////////////////////////////////////////////////
@@ -1105,6 +1113,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     // List sorter
 
     protected class ObjectColumnLabelProvider extends ColumnLabelProvider implements ILabelProviderEx {
+        private static final int MAX_TOOLTIP_LENGTH = 250;
         protected final ObjectColumn objectColumn;
 
         protected ObjectColumnLabelProvider(ObjectColumn objectColumn) {
@@ -1202,6 +1211,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             String text = getText(element, true, true);
             if (CommonUtils.isEmpty(text)) {
                 return null;
+            }
+            if (text.length() > MAX_TOOLTIP_LENGTH) {
+                text = text.substring(0, MAX_TOOLTIP_LENGTH) + "...";
             }
             return text;
         }

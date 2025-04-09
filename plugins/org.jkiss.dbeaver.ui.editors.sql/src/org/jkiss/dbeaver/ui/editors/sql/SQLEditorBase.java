@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -220,8 +220,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     @Nullable
-    public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPostion) {
-        return backgroundParsingJob == null ? null : backgroundParsingJob.obtainCompletionContext(monitor, completionRequestPostion);
+    public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPosition) {
+        return backgroundParsingJob == null ? null : backgroundParsingJob.obtainCompletionContext(monitor, completionRequestPosition);
     }
 
     @Override
@@ -298,6 +298,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         setRulerContextMenuId(SQLEditorContributions.SQL_RULER_CONTEXT_MENU_ID);
     }
 
+    @Nullable
     public DBPDataSource getDataSource() {
         DBCExecutionContext context = getExecutionContext();
         return context == null ? null : context.getDataSource();
@@ -490,6 +491,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     protected void loadActivePreferenceSettings() {
+        if (sqlSymbolInserter == null) {
+            return;
+        }
         DBPPreferenceStore preferenceStore = getActivePreferenceStore();
         boolean closeSingleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         boolean closeDoubleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
@@ -568,7 +572,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
     @Override
     public void doSave(IProgressMonitor progressMonitor) {
-        super.doSave(progressMonitor);
+        try {
+            super.doSave(progressMonitor);
+        } catch (Exception e) {
+            log.error("Error saving SQL editor");
+        }
 
         handleInputChange(getEditorInput());
     }
@@ -839,12 +847,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         IDocument document = getDocument();
         syntaxManager.init(dialect, getActivePreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(getDataSourceContainer(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
-        ruleScanner.refreshRules(getDataSourceContainer(), ruleManager, this);
+        ruleManager.loadRules(getDataSourceContainerForSyntaxRuleReloading(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
+        ruleScanner.refreshRules(getDataSourceContainerForSyntaxRuleReloading(), ruleManager, this);
         if (getDataSource() != null) {
             parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
         } else {
-            parserContext = new SQLParserContext(getDataSourceContainer(), syntaxManager, ruleManager, document != null ? document : new Document());
+            parserContext = new SQLParserContext(getDataSourceContainerForSyntaxRuleReloading(), syntaxManager, ruleManager, document != null ? document : new Document());
         }
 
         if (document instanceof IDocumentExtension3) {
@@ -976,7 +984,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         if (getDataSource() != null) {
             context = new SQLParserContext(getDataSource(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
         } else {
-            context = new SQLParserContext(getDataSourceContainer(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
+            context = new SQLParserContext(getDataSourceContainerForSyntaxRuleReloading(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
         }
         return SQLScriptParser.parseParametersAndVariables(context, 0, query.getLength());
     }
@@ -1219,10 +1227,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             if (field != null) {
                 StringBuilder txt = new StringBuilder("Sel: ");
                 ISelection selection = getSelectionProvider().getSelection();
-                if (selection instanceof ITextSelection) {
-                    ITextSelection textSelection = (ITextSelection) selection;
+                if (selection instanceof ITextSelection textSelection) {
                     txt.append(textSelection.getLength()).append(" | ");
-                    if (((ITextSelection) selection).getLength() <= 0) {
+                    if (textSelection.getLength() <= 0) {
                         txt.append(0);
                     } else {
                         txt.append(textSelection.getEndLine() - textSelection.getStartLine() + 1);
@@ -1323,7 +1330,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     @Nullable
-    protected DBPDataSourceContainer getDataSourceContainer() {
+    protected DBPDataSourceContainer getDataSourceContainerForSyntaxRuleReloading() {
         DBPDataSource dataSource = getDataSource();
         return dataSource == null ? null : dataSource.getContainer();
     }

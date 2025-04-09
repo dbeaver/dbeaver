@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-
 import java.sql.SQLException;
 import java.util.Arrays;
 
@@ -31,7 +30,7 @@ public class CubridSQLDialect extends GenericSQLDialect
 {
     public static final String CUBRID_DIALECT_ID = "cubrid";
     private static final Log log = Log.getLog(CubridSQLDialect.class);
-    
+
     private static final String[] CUBRID_KEYWORD = {
             "BIT", "CONNECT_BY_ISCYCLE", "CONNECT_BY_ISLEAF", "CONNECT_BY_ROOT", "CURRENT_DATE", "CURRENT_DATETIME", "CURRENT_TIME", "CURRENT_TIMESTAMP", "CURRENT_USER", "DATA_TYPE",
             "DATABASE", "DATETIME", "DAY_HOUR", "DAY_MILLISECOND", "DAY_MINUTE", "DAY_SECOND", "DISTINCTROW", "DIV", "DO", "DUPLICATE",
@@ -39,7 +38,7 @@ public class CubridSQLDialect extends GenericSQLDialect
             "ROWNUM", "SECOND_MILLISECOND", "SIBLINGS", "SQLCODE", "SQLERROR", "STATISTICS", "SYS_CONNECT_BY_PATH", "SYSDATE",
             "SYSDATETIME", "SYSTIME", "TRUNCATE", "VALUE", "XOR", "YEAR_MONTH"
     };
-    
+
     private static final String[] REMOVE_KEYWORD = {
             "ALIAS", "ALWAYS", "ARRAY", "ASENSITIVE", "ASSIGNMENT", "ASYMMETRIC", "ATOMIC",
             "AUTHORIZATION", "BINARY", "CALLED", "CARDINALITY", "CHAIN", "CHARACTERISTICS",
@@ -49,7 +48,7 @@ public class CubridSQLDialect extends GenericSQLDialect
             "EXCLUDE", "EXCLUDING", "FILTER", "FINAL", "FOLLOWING", "FREE", "FUSION", "GENERATED",
             "GRANTED", "GROUPING", "HIERARCHY", "HOLD", "IMPLEMENTATION", "INCLUDING", "INCREMENT", "INSENSITIVE", "INSTANCE", "INSTANTIABLE",
             "INVOKER", "KEY_TYPE", "LAST_DAY", "LATERAL", "LDB", "LN", "LOCATOR", "LPAD",
-            "MAP", "MATCHED", "MAXVALUE", "MEMBER", "MODIFIES", 
+            "MAP", "MATCHED", "MAXVALUE", "MEMBER", "MODIFIES",
             "MORE", "MUMPS", "NESTING", "NEW", "NOMAXVALUE", "NOMINVALUE", "NORMALIZE", "NORMALIZED",
             "NULLS", "OLD", "OPERATION", "OPERATORS", "OPTIONS", "ORDERING", "ORDINALITY",
             "OTHERS", "OVERLAY", "OVERRIDING", "PARAMETER", "PATH", "PENDANT", "PERCENTILE_CONT",
@@ -77,8 +76,8 @@ public class CubridSQLDialect extends GenericSQLDialect
         super.initDriverSettings(session, dataSource, metaData);
         CubridDataSource source = (CubridDataSource) dataSource;
         source.setSupportMultiSchema(isSupportMultiSchema(session));
-        
-        for(String removeKeyWord: REMOVE_KEYWORD) {
+        source.setEOLVersion(isEOLVersion(session));
+        for (String removeKeyWord : REMOVE_KEYWORD) {
             this.removeSQLKeyword(removeKeyWord);
         }
         this.addSQLKeywords(Arrays.asList(CUBRID_KEYWORD));
@@ -99,8 +98,22 @@ public class CubridSQLDialect extends GenericSQLDialect
     }
 
     @NotNull
+    public boolean isEOLVersion(@NotNull JDBCSession session) {
+        try {
+            int major = session.getMetaData().getDatabaseMajorVersion();
+            if (major <= 9) {
+                return true;
+            }
+        } catch (SQLException e) {
+            log.error("Can't get database version", e);
+        }
+        return false;
+    }
+
+    @NotNull
     @Override
     public int getSchemaUsage() {
         return SQLDialect.USAGE_ALL;
     }
+
 }

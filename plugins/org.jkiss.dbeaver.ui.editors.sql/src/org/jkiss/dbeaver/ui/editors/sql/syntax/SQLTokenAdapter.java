@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * SQLTokenAdapter
@@ -51,8 +50,8 @@ public class SQLTokenAdapter extends Token {
     private static TextAttribute makeTextAttribute(TPToken token, SQLRuleScanner scanner) {
         String colorKey;
         int style;
-        if (token instanceof TPTokenDefault && token.getData() instanceof SQLTokenType) {
-            switch ((SQLTokenType) token.getData()) {
+        if (token instanceof TPTokenDefault && token.getData() instanceof SQLTokenType tokenType) {
+            switch (tokenType) {
                 case T_KEYWORD:
                 case T_BLOCK_BEGIN:
                 case T_BLOCK_END:
@@ -144,9 +143,9 @@ public class SQLTokenAdapter extends Token {
         Color color = scanner.getColor(colorKey);
         if (UIStyles.isDarkHighContrastTheme()) {
             if (SQLConstants.CONFIG_COLOR_TEXT.equals(colorKey)) {
-                color = UIUtils.COLOR_WHITE;
+                color = UIStyles.COLOR_WHITE;
             } else {
-                color = UIUtils.getInvertedColor(color);
+                color = UIStyles.getInvertedColor(color);
             }
         }
         return new TextAttribute(color, null, style);

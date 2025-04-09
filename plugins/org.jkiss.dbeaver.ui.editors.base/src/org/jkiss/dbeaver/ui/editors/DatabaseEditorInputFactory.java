@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,12 +51,12 @@ public class DatabaseEditorInputFactory implements IElementFactory
         return new DatabaseLazyEditorInput(memento);
     }
 
-    public static void saveState(IMemento memento, DatabaseEditorInput input) {
+    public static void saveState(IMemento memento, DatabaseEditorInput<?> input) {
         if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DatabaseEditorPreferences.PROP_SAVE_EDITORS_STATE)) {
             return;
         }
         final DBCExecutionContext context = input.getExecutionContext();
-        if (context == null) {
+        if (context == null || context.getDataSource().getContainer().isTemporary()) {
             // Detached - nothing to save
             return;
         }

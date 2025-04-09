@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
@@ -54,7 +55,7 @@ import java.util.*;
  * PostgreTypeType
  */
 public class PostgreDataType extends JDBCDataType<PostgreSchema> 
-    implements PostgreClass, PostgreScriptObject, DBPQualifiedObject, DBPImageProvider, DBSBindableDataType, DBPNamedObject2 {
+    implements PostgreClass, DBSDataTypeSerial, PostgreScriptObject, DBPQualifiedObject, DBPImageProvider, DBSBindableDataType, DBPNamedObject2 {
 
     private static final Log log = Log.getLog(PostgreDataType.class);
 
@@ -260,6 +261,17 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         alias = false;
         ownerId = 0;
         attributeCache = null;
+    }
+
+    @Override
+    public boolean isSerialDataType() {
+        return PostgreConstants.SERIAL_TYPES.containsKey(getFullTypeName());
+    }
+
+    @Override
+    public DBSDataType getBaseDataType() {
+        String baseTypeName = PostgreConstants.SERIAL_TYPES.get(getFullTypeName());
+        return getDataSource().getLocalDataType(baseTypeName);
     }
 
     void resolveValueTypeFromBaseType(DBRProgressMonitor monitor) {
@@ -541,6 +553,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return arrayDelimiter;
     }
 
+    /**
+     * Returns array type whose element is this type
+     */
     @Property(category = CAT_ARRAY)
     public PostgreDataType getArrayItemType(DBRProgressMonitor monitor) {
         return arrayItemTypeId == 0 ? null : getDatabase().getDataType(monitor, arrayItemTypeId);
@@ -570,17 +585,19 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     @Override
     public List<? extends DBSContextBoundAttribute> bindAttributesToContext(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSEntity dataContainer,
-        @NotNull DBSEntityAttribute memberContext
+        @NotNull DBDAttributeBinding memberContext
     ) throws DBException {
         List<PostgreDataTypeAttribute> attrs = this.getAttributes(monitor);
         if (attrs == null) {
             return null;
         }
-    
-        List<PostgreDataBoundTypeAttribute> boundAttrs = new ArrayList<>(attrs.size());
+
+        DBSEntityAttribute entityAttribute = memberContext.getTopParent().getEntityAttribute();
+        DBSEntity container = entityAttribute == null ? this : entityAttribute.getParentObject();
+
+        List<PostgreDataBoundTypeAttribute<?>> boundAttrs = new ArrayList<>(attrs.size());
         for (PostgreDataTypeAttribute attr : attrs) {
-            boundAttrs.add(new PostgreDataBoundTypeAttribute(monitor, (PostgreTableBase) dataContainer, memberContext, attr));
+            boundAttrs.add(new PostgreDataBoundTypeAttribute(monitor, container, memberContext, attr));
         }
         return boundAttrs;
     }

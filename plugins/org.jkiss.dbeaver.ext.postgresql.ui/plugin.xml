@@ -32,7 +32,7 @@
         </editor>
         <editor
             name="%editor.lock_manager.name"
-            icon="#locked"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locked.png"
             class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor"
             id="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreLockEditor">
         </editor>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.tasks.ui.view;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.MenuManager;
@@ -48,6 +51,8 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -59,7 +64,6 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
@@ -147,7 +151,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite());
             }
         });
-        tasksTree.getViewer().addSelectionChangedListener(event -> loadTaskRuns(false));
+        tasksTree.getViewer().addSelectionChangedListener(event -> UIUtils.asyncExec(() -> loadTaskRuns(false)));
 
         DatabaseTasksTree.addDragAndDropSourceSupport(tasksTree.getViewer());
     }
@@ -357,6 +361,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                     }
                 }
                 case TASK_EXECUTE -> refresh();
+                case TASK_ACTIVATE -> tasksTree.getViewer().setSelection(new StructuredSelection(task), true);
             }
         });
     }
@@ -418,16 +423,24 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         currentTask = selectedTask;
         if (selectedTask == null) {
             taskRunViewer.setInput(EMPTY_TASK_RUN_LIST);
-        } else {
-            selectedTask.refreshRunStatistics();
-            DBTTaskRun[] runs = selectedTask.getAllRuns();
-            if (ArrayUtils.isEmpty(runs)) {
-                taskRunViewer.setInput(EMPTY_TASK_RUN_LIST);
-            } else {
-                Arrays.sort(runs, Comparator.comparing(DBTTaskRun::getStartTime).reversed());
-                taskRunViewer.setInput(Arrays.asList(runs));
-            }
+            return;
         }
+        new AbstractJob("Refresh task runs") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask("Refresh task runs", IProgressMonitor.UNKNOWN);
+                try {
+                    selectedTask.refreshRunStatistics();
+                    List<DBTTaskRun> runs = Arrays.stream(selectedTask.getAllRuns())
+                        .sorted(Comparator.comparing(DBTTaskRun::getStartTime).reversed())
+                        .toList();
+                    UIUtils.asyncExec(() -> taskRunViewer.setInput(runs));
+                } finally {
+                    monitor.done();
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     private static class TreeRunContentProvider implements ITreeContentProvider {

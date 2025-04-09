@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -247,6 +248,9 @@ public abstract class DBXTreeNode
 
     protected boolean isVisible(DBNNode context)
     {
+        if (context instanceof DBNDatabaseNode dbNode && dbNode.getObject() == null) {
+            return false;
+        }
         try {
             return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(DBNUtils.makeContext(context)));
         } catch (JexlException e) {

@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -63,9 +62,7 @@ public class SQLiteDataSource extends GenericDataSource {
 
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
-        GenericDataSourceInfo info = (GenericDataSourceInfo) super.createDataSourceInfo(monitor, metaData);
-        info.setSupportsNullableUniqueConstraints(true);
-        return info;
+        return new SQLiteDataSourceInfo(container.getDriver(), metaData);
     }
 
     @Override
@@ -79,18 +76,19 @@ public class SQLiteDataSource extends GenericDataSource {
             return super.getLocalDataType(defaultAffinity().name());
         }
         // Resolve type name according to https://www.sqlite.org/datatype3.html
+        // except for the GUID type name considered as BLOB to allow its conversion to UUID
         typeName = typeName.toUpperCase(Locale.ENGLISH);
         SQLiteAffinity affinity;
         if (typeName.startsWith(SQLConstants.DATA_TYPE_INT)) {
             affinity = SQLiteAffinity.INTEGER;
         } else if (typeName.contains("CHAR") || typeName.contains("CLOB") || typeName.contains("TEXT") || typeName.startsWith("DATE") || typeName.startsWith("TIME")) {
             affinity = SQLiteAffinity.TEXT;
-        } else if (typeName.contains("BLOB")) {
+        } else if (typeName.contains("BLOB") || typeName.contains("GUID")) {
             affinity = SQLiteAffinity.BLOB;
         } else if (typeName.startsWith("REAL") || typeName.startsWith("FLOA") || typeName.startsWith("DOUB")) {
             affinity = SQLiteAffinity.REAL;
         } else if (typeName.contains(SQLConstants.DATA_TYPE_INT) || typeName.contains("NUMERIC") || typeName.contains("DECIMAL") ||
-            typeName.contains("BOOL") || typeName.contains("GUID")) {
+            typeName.contains("BOOL")) {
             affinity = SQLiteAffinity.NUMERIC;
         } else {
             affinity = defaultAffinity();

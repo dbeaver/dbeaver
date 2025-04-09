@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.api.ObjectWithContextParameters;
+import org.jkiss.api.verification.FileSystemAccessVerifyer;
+import org.jkiss.api.verification.ObjectWithVerification;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
@@ -27,6 +29,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -198,6 +201,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             }
 
             JDBCConnectionOpener connectTask = new JDBCConnectionOpener(
+                this,
                 driver,
                 driverInstance,
                 url,
@@ -264,8 +268,22 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     private void initializeDriverContext(Driver driverInstance) {
         if (driverInstance instanceof ObjectWithContextParameters owcp) {
+            DBPProject project = getContainer().getProject();
             owcp.setObjectContextParameter(DBConstants.CONTEXT_PARAMETER_PROJECT, getContainer().getProject());
             owcp.setObjectContextParameter(DBConstants.CONTEXT_PARAMETER_DATA_SOURCE, getContainer());
+            if (driverInstance instanceof ObjectWithVerification
+                && DBWorkbench.getPlatform().getApplication().isMultiuser()
+            ) {
+                owcp.setObjectContextParameter(ObjectWithVerification.CONTEXT_PARAMETER_FILE_SYSTEM_VERIFIER,
+                    (FileSystemAccessVerifyer) path -> {
+                        if (IOUtils.isFileFromDefaultFS(path)) {
+                            return path.normalize().startsWith(project.getAbsolutePath());
+                        }
+                        //allow all files from external storage
+                        return true;
+                    });
+
+            }
         }
     }
 
@@ -320,8 +338,9 @@ public abstract class JDBCDataSource extends AbstractDataSource
         } else {
             if (!CommonUtils.isEmpty(driverClassName)) {
                 try {
-                    driver.loadDriver(monitor);
-                    Class.forName(driverClassName, true, driver.getClassLoader());
+                    DBPDriverLoader driverLoader = driver.getDriverLoader(getContainer());
+                    driverLoader.loadDriver(monitor);
+                    Class.forName(driverClassName, true, driverLoader.getClassLoader());
                 } catch (Exception e) {
                     throw new DBCConnectException("Driver class '" + driverClassName + "' not found", e, this);
                 }
@@ -584,7 +603,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return this;
     }
 
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
         return new JDBCExecutionContext(instance, type);
     }
 
@@ -754,7 +773,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         if (driverSubstitution != null) {
             return driverSubstitution.getInstance().getSubstitutingDriverInstance(monitor);
         } else {
-            return container.getDriver().getDriverInstance(monitor);
+            return container.getDriver().getDriverLoader(getContainer()).getDriverInstance(monitor);
         }
     }
 
@@ -804,11 +823,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 return ErrorType.UNIQUE_KEY_VIOLATION;
             }
         }
-        if (GeneralUtils.getRootCause(error) instanceof SocketException) {
+        if (CommonUtils.getRootCause(error) instanceof SocketException) {
             return ErrorType.CONNECTION_LOST;
         }
         if (error instanceof DBCConnectException) {
-            Throwable rootCause = GeneralUtils.getRootCause(error);
+            Throwable rootCause = CommonUtils.getRootCause(error);
             if (rootCause instanceof ClassNotFoundException) {
                 // Looks like bad driver configuration
                 return ErrorType.DRIVER_CLASS_MISSING;
@@ -840,16 +859,29 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     /////////////////////////////////////////////////
-    // DBDFormatSettings
+    // Canceling
 
     public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
         try {
             statement.cancel();
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
+            if (JDBCUtils.isFeatureNotSupportedError(this, e)) {
+                // ignore
+                return;
+            }
             throw new DBDatabaseException(e, this);
         }
     }
+
+    public boolean cancelCurrentExecution(@NotNull Connection connection, @Nullable Thread connectionThread) throws DBException {
+        if (connectionThread != null) {
+            connectionThread.interrupt();
+        }
+        return true;
+    }
+
+    /////////////////////////////////////////////////
+    // Certs
 
     protected String saveCertificateToFile(String rootCertProp) throws IOException {
         Path certPath = Files.createTempFile(

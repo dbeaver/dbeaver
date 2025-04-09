@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,14 @@ import org.jkiss.dbeaver.model.rm.RMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceConfigurationManagerBuffer;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceFolder;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public class DataSourceRegistryRM extends DataSourceRegistry {
+public class DataSourceRegistryRM<T extends DataSourceDescriptor> extends DataSourceRegistry<T> {
     private static final Log log = Log.getLog(DataSourceRegistryRM.class);
 
     @NotNull
@@ -139,7 +140,7 @@ public class DataSourceRegistryRM extends DataSourceRegistry {
 
 
     @Override
-    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) {
+    public void moveFolder(@NotNull String oldPath, @NotNull String newPath) throws DBException {
         if (getProject().isInMemory()) {
             super.moveFolder(oldPath, newPath);
             return;

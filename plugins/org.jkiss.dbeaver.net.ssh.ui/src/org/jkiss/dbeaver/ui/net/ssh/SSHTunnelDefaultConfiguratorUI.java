@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -67,8 +66,10 @@ import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * SSH tunnel configuration
@@ -399,6 +400,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         try {
             return DBWorkbench.getPlatformUI().promptUserCredentials(
                 SSHUIMessages.model_ssh_dialog_credentials,
+                null,
                 SSHUIMessages.model_ssh_dialog_credentials_username,
                 CommonUtils.notEmpty(username),
                 type.equals(SSHConstants.AuthType.PUBLIC_KEY)
@@ -410,7 +412,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
             );
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
-                CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                "SSH error",
                 e.getMessage(),
                 e
             );
@@ -480,7 +482,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         } catch (InvocationTargetException ex) {
             if (ex.getTargetException() != null) {
                 DBWorkbench.getPlatformUI().showError(
-                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                    "SSH error",
                     null,
                     GeneralUtils.makeExceptionStatus(ex.getTargetException())
                 );
@@ -844,7 +846,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
         private void showPrivateKeyField(boolean show) {
             UIUtils.setControlVisible(privateKeyLabel, show);
-            UIUtils.setControlVisible(privateKeyText, show);
+            UIUtils.setControlVisible(privateKeyText.getPanel(), show);
         }
     }
 

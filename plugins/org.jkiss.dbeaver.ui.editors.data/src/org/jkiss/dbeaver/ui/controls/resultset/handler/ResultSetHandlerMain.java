@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,8 +64,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
-import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
-import org.jkiss.dbeaver.tools.transfer.DTConstants;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
@@ -84,6 +83,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -137,8 +137,8 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
     public static final String CMD_COPY_ROW_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyRowNames";
     public static final String CMD_EXPORT = "org.jkiss.dbeaver.core.resultset.export";
 
-    public static final String CMD_ZOOM_IN = "org.eclipse.ui.edit.text.zoomIn";
-    public static final String CMD_ZOOM_OUT = "org.eclipse.ui.edit.text.zoomOut";
+    public static final String CMD_ZOOM_IN = "org.jkiss.dbeaver.core.resultset.zoomIn";
+    public static final String CMD_ZOOM_OUT = "org.jkiss.dbeaver.core.resultset.zoomOut";
 
     public static final String CMD_TOGGLE_ORDER = "org.jkiss.dbeaver.core.resultset.toggleOrder";
     public static final String CMD_SELECT_ROW_COLOR = "org.jkiss.dbeaver.core.resultset.grid.selectRowColor";
@@ -309,9 +309,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                                 }
                             }
                         } else {
-                            rsv.getModel().resetCellValue(
-                                new ResultSetCellLocation(
-                                    attr, row, selection.getElementRowIndexes(cell)));
+                            rsv.resetCellValue(attr, row, selection.getElementRowIndexes(cell));
                         }
                     }
                 }
@@ -420,9 +418,18 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 break;
             }
             case IWorkbenchCommandConstants.EDIT_COPY:
-                ResultSetUtils.copyToClipboard(
-                    presentation.copySelection(
-                        new ResultSetCopySettings(false, false, false, true, false, null, null, null, DBDDisplayFormat.EDIT)));
+                if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_COPY)) {
+                    UIUtils.showMessageBox(
+                        HandlerUtil.getActiveShell(event),
+                        UIMessages.dialog_policy_data_copy_title,
+                        UIMessages.dialog_policy_data_copy_msg,
+                        SWT.ICON_WARNING
+                    );
+                } else {
+                    ResultSetUtils.copyToClipboard(
+                        presentation.copySelection(
+                            new ResultSetCopySettings(false, false, false, true, false, null, null, null, DBDDisplayFormat.EDIT)));
+                }
                 break;
             case IWorkbenchCommandConstants.EDIT_PASTE:
                 if (presentation instanceof IResultSetEditor) {
@@ -551,10 +558,10 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 break;
             }
             case CMD_EXPORT: {
-                if (BasePolicyDataProvider.getInstance().isPolicyEnabled(DTConstants.POLICY_DATA_EXPORT)) {
+                if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
                     UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
-                        ResultSetMessages.dialog_policy_data_export_title,
-                        ResultSetMessages.dialog_policy_data_export_msg,
+                        UIMessages.dialog_policy_data_export_title,
+                        UIMessages.dialog_policy_data_export_msg,
                         SWT.ICON_WARNING);
                 } else {
                     if (event.getParameter(PARAM_EXPORT_WITH_PARAM) != null) {
@@ -705,7 +712,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
     }
     
     private void updateColors(ResultSetViewer resultSetViewer, DBVEntity entity, boolean refresh) {
-        resultSetViewer.getModel().updateColorMapping(true);
+        resultSetViewer.getModel().updateColorMapping(entity, true);
         entity.persistConfiguration();
         if (refresh) {
             resultSetViewer.redrawData(false, false);

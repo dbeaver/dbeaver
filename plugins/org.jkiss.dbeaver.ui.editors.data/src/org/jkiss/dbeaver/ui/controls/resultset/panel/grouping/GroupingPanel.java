@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.sql.SQLGroupingAttribute;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.MenuCreator;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
@@ -218,14 +220,26 @@ public class GroupingPanel implements IResultSetPanel {
 
         @Override
         public void run() {
-            DBDAttributeBinding currentAttribute = groupingResultsContainer.getResultSetController().getActivePresentation().getCurrentAttribute();
-            if (currentAttribute != null) {
-                List<String> attributes = Collections.singletonList(currentAttribute.getFullyQualifiedName(DBPEvaluationContext.UI));
-                if (groupingResultsContainer.removeGroupingAttribute(attributes) || groupingResultsContainer.removeGroupingFunction(attributes)) {
-                    try {
-                        groupingResultsContainer.rebuildGrouping();
-                    } catch (DBException e) {
-                        DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change grouping query", e);
+            IResultSetController resultSetController = groupingResultsContainer.getResultSetController();
+            DBDAttributeBinding currentBinding = resultSetController.getActivePresentation().getCurrentAttribute();
+            if (currentBinding != null) {
+                int attrBindingIndex = ArrayUtils.indexOf(resultSetController.getModel().getAttributes(), currentBinding);
+                if (attrBindingIndex >= 0 && currentBinding.getDataContainer() instanceof GroupingDataContainer dataContainer) {
+                    SQLGroupingAttribute[] currAttrs = dataContainer.getGroupingAttributes();
+                    boolean removed;
+                    if (currAttrs != null && attrBindingIndex < currAttrs.length) {
+                        removed = groupingResultsContainer.removeGroupingAttribute(List.of(currAttrs[attrBindingIndex]));
+                    } else {
+                        removed = groupingResultsContainer.removeGroupingFunction(
+                            List.of(currentBinding.getFullyQualifiedName(DBPEvaluationContext.UI))
+                        );
+                    }
+                    if (removed) {
+                        try {
+                            groupingResultsContainer.rebuildGrouping();
+                        } catch (DBException e) {
+                            DBWorkbench.getPlatformUI().showError("Grouping error", "Can't change grouping query", e);
+                        }
                     }
                 }
             }

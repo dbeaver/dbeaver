@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,11 @@
 package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+
+import java.util.Map;
 
 /**
  * SQL control command
@@ -34,12 +38,34 @@ public class SQLControlCommand implements SQLScriptElement {
     private final int length;
     private Object data;
     private boolean emptyCommand;
+    private final Map<String, String> parameters;
+
+    public SQLControlCommand(
+        @Nullable DBPDataSource dataSource,
+        @NotNull String text,
+        @Nullable String commandId,
+        int offset,
+        int length,
+        @NotNull Map<String, String> parameters
+    ) {
+        this.dataSource = dataSource;
+        this.text = text;
+        this.command = commandId;
+        this.commandId = commandId;
+        this.parameter = null;
+        this.offset = offset;
+        this.length = length;
+        this.parameters = parameters;
+    }
 
     public SQLControlCommand(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, String text, String commandId, int offset, int length, boolean emptyCommand) {
         this.dataSource = dataSource;
 
         this.text = text;
-        if (text.startsWith(syntaxManager.getControlCommandPrefix())) {
+        final String multilineCommandPrefix = syntaxManager.getControlCommandPrefix().repeat(2);
+        if (text.startsWith(multilineCommandPrefix)) {
+            text = text.substring(multilineCommandPrefix.length(), text.length() - multilineCommandPrefix.length());
+        } else if (text.startsWith(syntaxManager.getControlCommandPrefix())) {
             text = text.substring(syntaxManager.getControlCommandPrefix().length());
         }
         int divPos = -1;
@@ -57,6 +83,11 @@ public class SQLControlCommand implements SQLScriptElement {
         this.emptyCommand = emptyCommand;
 
         this.commandId = commandId == null ? command : commandId;
+        this.parameters = null;
+    }
+
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSource == null ? null : dataSource.getContainer();
     }
 
     public DBPDataSource getDataSource() {
@@ -85,6 +116,10 @@ public class SQLControlCommand implements SQLScriptElement {
 
     public String getParameter() {
         return parameter;
+    }
+
+    public Map<String, String> getParameters() {
+        return this.parameters;
     }
 
     public boolean isEmptyCommand() {
@@ -120,4 +155,5 @@ public class SQLControlCommand implements SQLScriptElement {
     public String toString() {
         return text;
     }
+
 }

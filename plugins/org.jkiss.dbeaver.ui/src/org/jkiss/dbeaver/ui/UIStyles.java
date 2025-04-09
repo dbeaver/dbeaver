@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,9 +39,12 @@ import org.osgi.framework.ServiceReference;
  */
 public class UIStyles {
 
+    public static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
     private static final Log log = Log.getLog(UIStyles.class);
 
     private static final String THEME_HIGH_CONTRAST_ID = "org.eclipse.e4.ui.css.theme.high-contrast";
+    static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
+    static final Color COLOR_WHITE_DARK = new Color(null, 192, 192, 192);
 
     static IPreferenceStore EDITORS_PREFERENCE_STORE;
     
@@ -131,5 +134,27 @@ public class UIStyles {
 
     public static Color getErrorTextForeground() {
         return getDefaultTextColor("AbstractTextEditor.Error.Color.Foreground", SWT.COLOR_RED);
+    }
+
+
+    /**
+     * Calculate the Contrast color based on Luma(brightness)
+     * https://en.wikipedia.org/wiki/Luma_(video)
+     *
+     * Do not dispose returned color.
+     */
+    public static Color getContrastColor(Color color) {
+        if (color == null) {
+            return COLOR_BLACK;
+        }
+        double luminance = 1 - (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
+        if (luminance > 0.5) {
+            return isDarkTheme() ? COLOR_WHITE_DARK : COLOR_WHITE;
+        }
+        return COLOR_BLACK;
+    }
+
+    public static Color getInvertedColor(Color color) {
+        return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
     }
 }

@@ -136,9 +136,10 @@ public class PrefUtils {
     public static String collectSingleConnectionDrivers() {
         return DBWorkbench.getPlatform().getDataSourceProviderRegistry().getDataSourceProviders().stream()
             .flatMap(pr -> pr.getDrivers().stream())
-            .filter(DBPDriver::isSingleConnection)
+            .filter(d -> (d.isSingleConnection() || d.isEmbedded()))
             .sorted(Comparator.comparing(DBPNamedObject::getName))
             .map(d -> " - " + d.getName())
+            .distinct()
             .collect(Collectors.joining("\n"));
     }
 }

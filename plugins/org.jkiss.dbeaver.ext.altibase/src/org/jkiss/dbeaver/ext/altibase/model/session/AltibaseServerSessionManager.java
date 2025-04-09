@@ -53,7 +53,8 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
 
     @NotNull
     @Override
-    public Collection<AltibaseServerSession> getSessions(@NotNull DBCSession session, @NotNull Map<String, Object> options) throws DBException {
+    public Collection<AltibaseServerSession> getSessions(@NotNull DBCSession session, 
+            @NotNull Map<String, Object> options) throws DBException {
         try {
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(generateSessionReadQuery(options))) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -70,7 +71,8 @@ public class AltibaseServerSessionManager implements DBAServerSessionManager<Alt
     }
 
     @Override
-    public void alterSession(@NotNull DBCSession session, @NotNull String sessionId, @NotNull Map<String, Object> options) throws DBException {
+    public void alterSession(@NotNull DBCSession session, @NotNull String sessionId, 
+            @NotNull Map<String, Object> options) throws DBException {
         try {
 
             String sql = String.format("ALTER DATABASE %s SESSION CLOSE %s",

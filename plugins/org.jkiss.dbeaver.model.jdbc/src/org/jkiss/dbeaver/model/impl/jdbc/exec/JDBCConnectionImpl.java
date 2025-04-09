@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -47,6 +49,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
 
     @NotNull
     final JDBCExecutionContext context;
+    private volatile Thread blockThread;
 
     public JDBCConnectionImpl(@NotNull JDBCExecutionContext context, @NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String taskTitle)
     {
@@ -119,7 +122,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     return prepareCall(sqlQuery);
                 }
                 catch (SQLException e) {
-                    if (DBExecUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
+                    if (JDBCUtils.isFeatureNotSupportedError(getDataSource(), e)) {
                         return prepareCall(sqlQuery);
                     } else {
                         throw e;
@@ -181,7 +184,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     return prepareStatement(sqlQuery);
                 }
                 catch (SQLException e) {
-                    if (DBExecUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
+                    if (JDBCUtils.isFeatureNotSupportedError(getDataSource(), e)) {
                         return prepareStatement(sqlQuery);
                     } else {
                         throw e;
@@ -200,7 +203,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     dbStat =  prepareStatement(sqlQuery);
                 }
                 catch (SQLException e) {
-                    if (DBExecUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
+                    if (JDBCUtils.isFeatureNotSupportedError(getDataSource(), e)) {
                         dbStat = prepareStatement(sqlQuery);
                     } else {
                         throw e;
@@ -215,7 +218,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     }
 
     private static boolean isInternalDriverError(Throwable e) {
-        return !(e instanceof SQLException) || e instanceof SQLFeatureNotSupportedException;
+        return !(e instanceof SQLException) || JDBCUtils.isFeatureNotSupportedError(null, e);
     }
 
     // Disable escaping (#3512)
@@ -706,21 +709,21 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     }
 
     @Override
-    public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread)
-        throws DBException
-    {
-        if (context.isConnected()) {
-            try {
-                // Sync execution context because async access during disconnect may cause troubles
-                synchronized (getExecutionContext()) {
-                    if (!getDataSource().closeConnection(getOriginal(), "Close database connection", false)) {
-                        throw new DBCException("Couldn't close JDBC connection: timeout");
-                    }
-                }
-            } catch (SQLException e) {
-                throw new DBCException(e, getExecutionContext());
-            }
+    public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread) throws DBException {
+        // Let's try with driver implementation
+        Connection connection = context.getConnectionOrNull();
+        if (connection != null) {
+            getDataSource().cancelCurrentExecution(connection, blockThread);
         }
+    }
+
+    @Override
+    public Thread getBlockThread() {
+        return blockThread;
+    }
+
+    public void setBlockThread(Thread blockThread) {
+        this.blockThread = blockThread;
     }
 
     protected JDBCStatement createStatementImpl(Statement original)

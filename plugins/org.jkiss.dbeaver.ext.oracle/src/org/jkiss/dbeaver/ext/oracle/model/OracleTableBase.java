@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -60,9 +61,9 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<OracleTableBase> {
         @Override
-        public boolean isPropertyCached(OracleTableBase object, Object propertyId)
-        {
-            return object.getAdditionalInfo().isLoaded();
+        public boolean isPropertyCached(OracleTableBase object, Object propertyId) {
+            return object.getAdditionalInfo().isLoaded() // for isLazy() check when property already loaded in the cache returns true
+                || object.getDataSource().dataTypeCache.isFullyCached();
         }
     }
 
@@ -160,7 +161,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public String getComment(DBRProgressMonitor monitor) {
         if (comment == null) {
             comment = "";
-            if (isPersisted()) {
+            if (isPersisted() && !DBWorkbench.getPlatform().isUnitTestMode()) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table comments")) {
                     comment = queryTableComment(session);
                     if (comment == null) {

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,7 +157,7 @@ public class PrefPageResultSetPresentationGrid extends TargetPrefPage {
             UIUtils.createPreferenceLink(
                 behaviorGroup,
                 "<a>" + DataEditorsMessages.pref_page_database_resultsets_label_show_boolean_config_link + "  - ''{0}''</a>",
-                "org.jkiss.dbeaver.preferences.editors",
+                "org.jkiss.dbeaver.preferences.main.misc",
                 (IWorkbenchPreferenceContainer) getContainer(), null
             ).setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
 

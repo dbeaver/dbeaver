@@ -44,6 +44,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -79,7 +81,7 @@ public class PostgreRole implements
     protected boolean bypassRls;
     protected int connLimit;
     protected String password;
-    protected String validUntil;
+    protected LocalDateTime validUntil;
     protected String description;
     protected boolean persisted;
     private final MembersCache membersCache = new MembersCache(true);
@@ -143,7 +145,9 @@ public class PostgreRole implements
         this.bypassRls = JDBCUtils.safeGetBoolean(dbResult, "rolbypassrls");
         this.connLimit = JDBCUtils.safeGetInt(dbResult, "rolconnlimit");
         this.password = JDBCUtils.safeGetString(dbResult, "rolpassword");
-        this.validUntil = JDBCUtils.safeGetString(dbResult, "rolvaliduntil");
+        this.validUntil = Optional.ofNullable(JDBCUtils.safeGetTimestamp(dbResult, "rolvaliduntil"))
+            .map(Timestamp::toLocalDateTime)
+            .orElse(null);
         this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
@@ -294,11 +298,11 @@ public class PostgreRole implements
     }
 
     @Property(category = CAT_SETTINGS, editable = true, updatable = true, order = 22)
-    public String getValidUntil() {
+    public LocalDateTime getValidUntil() {
         return validUntil;
     }
 
-    public void setValidUntil(String validUntil) {
+    public void setValidUntil(LocalDateTime validUntil) {
         this.validUntil = validUntil;
     }
 
@@ -350,6 +354,7 @@ public class PostgreRole implements
                             database = getDataSource().getDatabase(databaseName);
                         }
                         for (String parameter : setconfig) {
+                            parameter = quoteParamIfNeed(parameter);
                             extraSettings.add(new PostgreRoleSetting(database, parameter));
                         }
                     }
@@ -358,6 +363,23 @@ public class PostgreRole implements
                 log.error("Can't read extra role configuration parameters.");
             }
         }
+    }
+
+    private String quoteParamIfNeed(String parameter) {
+
+        if (parameter == null || parameter.isEmpty()) {
+            return parameter;
+        }
+        int valueStartingIndex = parameter.indexOf("=");
+        if (valueStartingIndex < 0 || valueStartingIndex + 1 >= parameter.length()) {
+            return parameter;
+        }
+        valueStartingIndex = valueStartingIndex + 1;
+        String value = parameter.substring(valueStartingIndex);
+        if (CommonUtils.isNumber(value) || (value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')) {
+            return parameter;
+        }
+        return parameter.substring(0, valueStartingIndex) + SQLUtils.quoteString(this, value);
     }
 
     @Override
@@ -513,12 +535,12 @@ public class PostgreRole implements
                     "WHERE\n" +
                     "\tn.nspacl IS NOT NULL \n" +
                     "\t) AS tr\n" +
-                    "WHERE tr.granteeI=?" +
+                    "WHERE pg_get_userbyid(tr.granteeI)= ?" +
                     " AND tr.relkind IN('S', 'm', 'C')";
             }
             try (JDBCPreparedStatement dbStat = session.prepareStatement(otherObjectsSQL)) {
                 if (!supportsOnlySchemasPermissions) {
-                    dbStat.setLong(1, getObjectId());
+                    dbStat.setString(1, getName());
                 }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.nextRow()) {
@@ -588,8 +610,8 @@ public class PostgreRole implements
                         SELECT *,
                         (aclexplode(defaclacl)).grantee as grantee
                         FROM pg_default_acl a WHERE a.defaclnamespace <> 0) as g
-                        where g.grantee = ?""")) {
-                    dbStat.setLong(1, getObjectId());
+                        where pg_get_userbyid(g.grantee) = ?""")) {
+                    dbStat.setString(1, getName());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.nextRow()) {
                             long schemaId = JDBCUtils.safeGetLong(dbResult, "defaclnamespace");
@@ -610,7 +632,7 @@ public class PostgreRole implements
                             List<PostgrePrivilege> resultPrivileges = new ArrayList<>();
                             for (PostgrePrivilege privilege : privileges) {
                                 if (privilege instanceof PostgreDefaultPrivilege defaultPrivilege) {
-                                    if (!defaultPrivilege.getGrantee().equals(getName())) {
+                                    if (!defaultPrivilege.getGrantee().getRoleName().equals(getName())) {
                                         continue;
                                     }
                                     defaultPrivilege.setUnderKind(objectType);

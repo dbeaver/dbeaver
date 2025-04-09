@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
@@ -81,6 +82,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     private static final String PROP_DATE_FORMAT = "dateFormat";
     private static final String PROP_APPEND_STRATEGY = "appendStrategy";
+    private static final String PROP_USE_DEFAULT_SPREADSHEET_NAMES = "useDefaultSpreadsheetNames";
 
     private static final int EXCEL2007MAXROWS = 1048575;
     private static final int EXCEL_MAX_CELL_CHARACTERS = 32767; // Total number of characters that a cell can contain - 32,767 characters
@@ -106,6 +108,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private boolean exportSql = false;
     private boolean splitSqlText = false;
     private AppendStrategy appendStrategy = AppendStrategy.CREATE_NEW_SHEETS;
+    private String exportTableName = WorksheetUtils.DEFAULT_SHEET_NAME;
 
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
@@ -134,6 +137,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         properties.put(DataExporterXLSX.PROP_SPLIT_BYCOL, 0);
         properties.put(DataExporterXLSX.PROP_DATE_FORMAT, "");
         properties.put(DataExporterXLSX.PROP_APPEND_STRATEGY, AppendStrategy.CREATE_NEW_SHEETS.value);
+        properties.put(DataExporterXLSX.PROP_USE_DEFAULT_SPREADSHEET_NAMES, false);
         return properties;
     }
 
@@ -283,6 +287,11 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             DBExecUtils.bindAttributes(session, srcEntity, null, columns, null);
         }
         decorator = GeneralUtils.adapt(getSite().getSource(), DBDAttributeDecorator.class);
+
+        if (columns != null && columns.length > 0) {
+            exportTableName = DTUtils.getTableName(columns[0].getDataSource(), getSite().getSource(), true,
+                WorksheetUtils.DEFAULT_SHEET_NAME);
+        }
     }
 
     private void printHeader(DBCResultSet resultSet, Worksheet wsh) throws DBException {
@@ -392,7 +401,12 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             sheet = wb.getSheetAt(sheetIndex++);
             worksheet = new Worksheet(sheet, colValue, getPhysicalNumberOfRows(sheet));
         } else {
-            sheet = wb.createSheet();
+            if (CommonUtils.toBoolean(getSite().getProperties().get(PROP_USE_DEFAULT_SPREADSHEET_NAMES))) {
+                sheet = wb.createSheet();
+            } else {
+                sheet = wb.createSheet(WorksheetUtils.makeUniqueSheetName(wb, exportTableName));
+            }
+
             worksheet = new Worksheet(sheet, colValue, 0);
         }
         printHeader(resultSet, worksheet);

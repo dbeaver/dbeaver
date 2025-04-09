@@ -113,14 +113,21 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             throws SQLException {
         boolean multiSchema = forTable != null && ((CubridDataSource) forTable.getDataSource()).getSupportMultiSchema();
         StringBuilder sql = new StringBuilder();
-        sql.append("select *, def_order + 1 as ref_order from db_attribute ");
+        sql.append("SELECT a.*, a.def_order + 1 AS ref_order, i.is_foreign_key "
+                + "FROM db_attribute a LEFT JOIN (SELECT k.key_attr_name AS attr_name, "
+                + "i.class_name, i.is_foreign_key "
+                + (multiSchema ? ", i.owner_name " : "")
+                + "FROM db_index i JOIN db_index_key k "
+                + "ON i.index_name = k.index_name WHERE i.is_foreign_key = 'YES') i ON "
+                + "a.class_name = i.class_name AND a.attr_name = i.attr_name "
+                + (multiSchema ? "AND a.owner_name = i.owner_name " : ""));
         if (forTable != null) {
-            sql.append("where class_name = ? ");
+            sql.append("WHERE a.class_name = ? ");
             if (multiSchema) {
-                sql.append("and owner_name = ? ");
+                sql.append("AND a.owner_name = ? ");
             }
         }
-        sql.append("order by def_order");
+        sql.append("ORDER BY def_order");
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
         if (forTable != null) {
             dbStat.setString(1, forTable.getName());
@@ -295,14 +302,13 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             @NotNull GenericStructContainer container,
             @Nullable GenericTableBase table)
             throws SQLException {
-        String sql = "select t1.*, t2.*, owner.name from db_trigger t1 join db_trig t2 \n"
-                + "on t1.name = t2.trigger_name where owner.name = ? \n"
-                + (table != null ? "and target_class_name = ?" : "");
+        boolean supportMultiSchema = ((CubridDataSource) table.getDataSource()).getSupportMultiSchema();
+        String sql = "select t1.*, t2.*, t1.owner.name from db_trigger as t1, db_trig as t2 \n"
+                + "where t1.name = t2.trigger_name and t1.owner.name = ? and t2.target_class_name = ? \n"
+                + (supportMultiSchema ? "and t1.owner.name = t2.owner_name" : "");
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, container.getName());
-        if (table != null) {
-            dbStat.setString(2, table.getName());
-        }
+        dbStat.setString(2, table.getName());
         return dbStat;
     }
 
@@ -326,8 +332,10 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             @NotNull JDBCSession session,
             @NotNull GenericStructContainer container)
             throws SQLException {
-        String sql = "select t1.*, t2.*, owner.name from db_trigger t1 join db_trig t2 \n"
-                + "on t1.name = t2.trigger_name where owner.name = ? \n";
+        boolean supportMultiSchema = ((CubridDataSource) container.getDataSource()).getSupportMultiSchema();
+        String sql = "select t1.*, t2.*, t1.owner.name from db_trigger as t1, db_trig as t2 \n"
+                + "where t1.name = t2.trigger_name and t1.owner.name = ?\n"
+                + (supportMultiSchema ? "and t1.owner.name = t2.owner_name" : "");
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, container.getName());
         return dbStat;
@@ -389,7 +397,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        ddl = "create or replace view \"" + dbResult.getString("View") + "\" as " + dbResult.getString("Create View");
+                        ddl = "create or replace view " + dbResult.getString("View") + " as " + dbResult.getString("Create View");
                         ddl = SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
                     }
                 }

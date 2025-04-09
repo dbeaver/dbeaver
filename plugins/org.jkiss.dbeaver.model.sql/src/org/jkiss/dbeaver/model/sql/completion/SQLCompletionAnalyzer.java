@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzer;
 import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzerImpl;
-import org.jkiss.dbeaver.model.sql.analyzer.TableReferencesAnalyzerOld;
 import org.jkiss.dbeaver.model.sql.completion.hippie.HippieProposalProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
@@ -91,11 +90,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             prefStore = DBWorkbench.getPlatform().getPreferenceStore();
         }
 
-        if (prefStore.getBoolean(SQLModelPreferences.EXPERIMENTAL_AUTOCOMPLETION_ENABLE)) {
-            tableRefsAnalyzer = new TableReferencesAnalyzerImpl(request);
-        } else {
-            tableRefsAnalyzer = new TableReferencesAnalyzerOld(request);
-        }
+        tableRefsAnalyzer = new TableReferencesAnalyzerImpl(request);
     }
 
     @Override
@@ -609,13 +604,13 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, attribute);
                         DBPImage attrImage = null;
                         for (DBDLabelValuePair valuePair : valueEnumeration) {
-                            String displayString = SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, valuePair.getValue(), DBDDisplayFormat.UI);
+                            String displayString = SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, valuePair.getValue(), DBDDisplayFormat.UI, false);
                             if (!CommonUtils.isEmpty(valuePair.getLabel()) && !CommonUtils.equalObjects(valuePair.getLabel(), valuePair.getValue())) {
                                 displayString += " - " + valuePair.getLabel() + "";
                             }
                             String sqlValue = isInLiteral ?
                                 valueHandler.getValueDisplayString(attribute, valuePair.getValue(), DBDDisplayFormat.NATIVE) :
-                                SQLUtils.convertValueToSQL(dataSource.getDataSource(), attribute, valueHandler, valuePair.getValue(), DBDDisplayFormat.NATIVE);
+                                SQLUtils.convertValueToSQL(dataSource.getDataSource(), attribute, valueHandler, valuePair.getValue(), DBDDisplayFormat.NATIVE, false);
                             proposals.add(request.getContext().createProposal(
                                 request,
                                 displayString,
@@ -1263,26 +1258,29 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         || !ArrayUtils.contains(dialect.getDMLKeywords(), firstKeyword.toUpperCase(Locale.ENGLISH))) {
 
                         Set<String> aliases = new LinkedHashSet<>();
-                        if (request.getActiveQuery() instanceof SQLQuery) {
-                            Statement sqlStatement = ((SQLQuery) request.getActiveQuery()).getStatement();
+                        if (request.getActiveQuery() instanceof SQLQuery sqlQuery) {
+                            Statement sqlStatement = sqlQuery.getStatement();
                             if (sqlStatement != null) {
-                                TablesNamesFinder namesFinder = new TablesNamesFinder() {
+                                TablesNamesFinder<?> namesFinder = new TablesNamesFinder<>() {
                                     @Override
-                                    public void visit(@Nullable Table table) {
+                                    public Object visit(@Nullable Table table, @Nullable Object context) {
                                         if (table != null && table.getAlias() != null && table.getAlias().getName() != null) {
                                             aliases.add(table.getAlias().getName().toLowerCase(Locale.ENGLISH));
                                         }
+                                        return null;
                                     }
 
                                     @Override
-                                    public void visit(@Nullable CreateView createView) {
+                                    public Object visit(@Nullable CreateView createView, @Nullable Object context) {
                                         if (createView != null && createView.getView().getAlias() != null
-                                            && createView.getView().getName() != null) {
+                                            && createView.getView().getName() != null
+                                        ) {
                                             aliases.add(createView.getView().getAlias().getName().toLowerCase(Locale.ENGLISH));
                                         }
+                                        return null;
                                     }
                                 };
-                                sqlStatement.accept(namesFinder);
+                                namesFinder.getTables(sqlStatement);
                             }
                         }
                         // It is table name completion after FROM. Auto-generate table alias

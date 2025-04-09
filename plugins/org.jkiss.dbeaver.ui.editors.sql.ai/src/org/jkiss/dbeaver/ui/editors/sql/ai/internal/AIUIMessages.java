@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.ai.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class AIUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages"; //$NON-NLS-1$
