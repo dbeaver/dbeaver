@@ -16,13 +16,17 @@
  */
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.ui.internal.progress.JobInfo;
 import org.eclipse.ui.internal.progress.ProgressManager;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Similar to simple Display.asyncExec but puts all jobs in queue.
@@ -61,7 +65,11 @@ public class UIExecutionQueue {
         synchronized (execQueue) {
             boolean workbenchStarted = DBWorkbench.getPlatform() instanceof DBPPlatformDesktop pd && pd.isWorkbenchStarted();
             ProgressManager progressManager = ProgressManager.getInstance();
-            if (runCount > 0 || !workbenchStarted || !ArrayUtils.isEmpty(progressManager.getJobInfos(false))) {
+            boolean isUserTaskRunning = Arrays.stream(progressManager.getJobInfos(false))
+                .map(JobInfo::getJob)
+                .filter(Objects::nonNull)
+                .anyMatch(Job::isUser);
+            if (runCount > 0 || !workbenchStarted || isUserTaskRunning) {
                 // If workbench wasn't fully started or
                 // job is running or
                 // some Eclipse job is active in UI thread then retry later
