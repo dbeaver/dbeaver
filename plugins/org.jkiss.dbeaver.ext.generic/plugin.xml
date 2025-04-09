@@ -806,7 +806,7 @@
                     webURL="http://cloud.tdengine.com"
                     description="TDengine Cloud driver"
                     categories="timeseries">
-                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.7]"/>
+                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="stored-quoted-case" value="lower"/>
                     <parameter name="stored-unquoted-case" value="lower"/>
