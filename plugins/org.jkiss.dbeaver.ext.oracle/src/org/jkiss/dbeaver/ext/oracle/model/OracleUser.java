@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.*;
@@ -45,6 +44,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     private String name;
     private String externalName;
     private String status;
+    private boolean isLocked;
     private Timestamp createDate;
     private Timestamp lockDate;
     private Timestamp expiryDate;
@@ -67,6 +67,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
             this.name = JDBCUtils.safeGetString(resultSet, "USERNAME");
             this.externalName = JDBCUtils.safeGetString(resultSet, "EXTERNAL_NAME");
             this.status = JDBCUtils.safeGetString(resultSet, "ACCOUNT_STATUS");
+            this.isLocked = status != null && status.contains("LOCKED");
 
             this.createDate = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
             this.lockDate = JDBCUtils.safeGetTimestamp(resultSet, "LOCK_DATE");
@@ -174,7 +175,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
      * Passwords are never read from database. It is used to create/alter schema/user
      * @return password or null
      */
-    @Property(visibleIf = OracleUserPasswordValueValidator.class, editable = true, updatable = true, order = 12, password = true)
+    @Property(visibleIf = OracleUserModifyValueValidator.class, editable = true, updatable = true, order = 12, password = true)
     public String getPassword() {
         return password;
     }
@@ -183,13 +184,22 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         this.password = password;
     }
 
-    @Property(visibleIf = OracleUserPasswordValueValidator.class, editable = true, updatable = true, order = 13, password = true)
+    @Property(visibleIf = OracleUserModifyValueValidator.class, editable = true, updatable = true, order = 13, password = true)
     public String getConfirmPassword() {
         return confirmPassword;
     }
 
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
+    }
+
+    @Property(visibleIf = OracleUserModifyValueValidator.class, editable = true, updatable = true, order = 14)
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public void setLocked(boolean locked) {
+        isLocked = locked;
     }
 
     @Override
@@ -227,10 +237,10 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         this.persisted = persisted;
     }
 
-    public static class OracleUserPasswordValueValidator implements IPropertyValueValidator<OracleUser, Object> {
+    public static class OracleUserModifyValueValidator implements IPropertyValueValidator<OracleUser, Object> {
         @Override
         public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
-            return object.getDataSource().supportsUserPasswordEdit();
+            return object.getDataSource().supportsUserEdit();
         }
     }
 
