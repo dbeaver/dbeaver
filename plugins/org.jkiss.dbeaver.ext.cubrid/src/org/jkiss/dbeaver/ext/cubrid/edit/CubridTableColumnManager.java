@@ -46,14 +46,6 @@ import java.util.Map;
 
 public class CubridTableColumnManager extends GenericTableColumnManager implements DBEObjectRenamer<GenericTableColumn>
 {
-    @Override
-    public boolean canCreateObject(@NotNull Object container) {
-        if (container instanceof CubridPartition) {
-            return false;
-        }
-        return super.canCreateObject(container);
-    }
-
     public ColumnModifier<GenericTableColumn> CubridDataTypeModifier = (monitor, column, sql, command) -> {
         final String typeName = column.getTypeName();
         DBPDataKind dataKind = column.getDataKind();
@@ -65,6 +57,14 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             sql.append('(').append(column.getPrecision()).append(')');
         }
     };
+
+    @Override
+    public boolean canCreateObject(@NotNull Object container) {
+        if (container instanceof CubridPartition) {
+            return false;
+        }
+        return super.canCreateObject(container);
+    }
 
     @NotNull
     @Override

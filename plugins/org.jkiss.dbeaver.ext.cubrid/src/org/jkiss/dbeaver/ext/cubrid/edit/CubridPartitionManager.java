@@ -45,5 +45,6 @@ public class CubridPartitionManager extends CubridTableManager {
             @NotNull GenericTableBase object,
             @NotNull Map<String, Object> options,
             @NotNull String newName) {
+        /* This body intentionally empty. */
     }
 }
