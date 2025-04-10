@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,14 +127,15 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         Composite miscPanel = UIUtils.createComposite(placeholder, 2);
         miscPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        UIUtils.createControlLabel(miscPanel, "History");
+        UIUtils.createControlLabel(miscPanel, "&History");
         Combo historyCombo = new Combo(miscPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
         historyCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Button applyButton = UIUtils.createDialogButton(placeholder, "Translate",
+        Button applyButton = UIUtils.createDialogButton(placeholder, "&Translate",
             SelectionListener.widgetSelectedAdapter(selectionEvent -> okPressed()));
         ((GridData)applyButton.getLayoutData()).grabExcessHorizontalSpace = false;
         ((GridData)applyButton.getLayoutData()).horizontalAlignment = GridData.END;
+        parent.getShell().setDefaultButton(applyButton);
 
         closeOnFocusLost(
             inputField,
