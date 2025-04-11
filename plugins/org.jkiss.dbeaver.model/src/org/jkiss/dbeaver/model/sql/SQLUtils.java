@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,15 @@ public final class SQLUtils {
 //        }
     }
 
+    public static boolean isCommentLine(SQLDialect dialect, String line) {
+        for (String slc : dialect.getSingleLineComments()) {
+            if (line.startsWith(slc)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static String stripComments(@NotNull SQLDialect dialect, @NotNull String query)
     {
         Pair<String, String> multiLineComments = dialect.getMultiLineComments();
@@ -80,46 +89,69 @@ public final class SQLUtils {
             dialect.getSingleLineComments());
     }
 
-    public static boolean isCommentLine(SQLDialect dialect, String line) {
-        for (String slc : dialect.getSingleLineComments()) {
-            if (line.startsWith(slc)) {
-                return true;
+    /**
+     * Removes both multi-line and single-line comments from an SQL query
+     */
+    public static String stripComments(
+        @NotNull String query,
+        @Nullable String mlCommentStart,
+        @Nullable String mlCommentEnd,
+        String[] slComments
+    ) {
+        int startPos;
+        int endPos;
+        for (startPos = 0; startPos < query.length(); startPos++) {
+            if (!Character.isWhitespace(query.charAt(startPos))) {
+                break;
             }
         }
-        return false;
-    }
+        for (endPos = query.length() - 1; endPos > startPos; endPos--) {
+            if (!Character.isWhitespace(query.charAt(endPos))) {
+                break;
+            }
+        }
 
-    public static String stripComments(@NotNull String query, @Nullable String mlCommentStart, @Nullable String mlCommentEnd, String[] slComments)
-    {
-        String leading = "", trailing = "";
-        {
-            int startPos, endPos;
-            for (startPos = 0; startPos < query.length(); startPos++) {
-                if (!Character.isWhitespace(query.charAt(startPos))) {
-                    break;
-                }
-            }
-            for (endPos = query.length() - 1; endPos > startPos; endPos--) {
-                if (!Character.isWhitespace(query.charAt(endPos))) {
-                    break;
-                }
-            }
-            if (startPos > 0) {
-                leading = query.substring(0, startPos);
-            }
-            if (endPos < query.length() - 1) {
-                trailing = query.substring(endPos + 1);
-            }
+        String leading = "";
+        String trailing = "";
+        if (startPos > 0) {
+            leading = query.substring(0, startPos);
+        }
+        if (endPos < query.length() - 1) {
+            trailing = query.substring(endPos + 1);
         }
         query = query.trim();
-        if (mlCommentStart != null && mlCommentEnd != null && query.startsWith(mlCommentStart)) {
-            int endPos = query.indexOf(mlCommentEnd);
-            if (endPos != -1) {
-                query = query.substring(endPos + mlCommentEnd.length());
+        query = removeMlComments(query, mlCommentStart, mlCommentEnd);
+        query = removeSlComments(query, slComments);
+        if ((mlCommentStart != null && query.startsWith(mlCommentStart))) { //for remove if there's comments after comments
+            query = stripComments(query, mlCommentStart, mlCommentEnd, slComments);
+        }
+        return leading + query + trailing;
+    }
+
+    private static String removeMlComments(
+        @NotNull String query,
+        @Nullable String mlCommentStart,
+        @Nullable String mlCommentEnd
+    ) {
+        if (mlCommentStart != null && mlCommentEnd != null) {
+            int startPos = query.indexOf(mlCommentStart);
+            while (startPos != -1) {
+                int endPos = query.indexOf(mlCommentEnd, startPos + mlCommentStart.length());
+                if (endPos != -1) { //remove multiline comment
+                    query = query.substring(0, startPos) + query.substring(endPos + mlCommentEnd.length());
+                } else { //non closed comment
+                    query = query.substring(0, startPos); // to prevent infinity recursion
+                    break;
+                }
+                startPos = query.indexOf(mlCommentStart);
             }
         }
-        for (int i = 0; i < slComments.length; i++) {
-            while (query.startsWith(slComments[i])) {
+        return query;
+    }
+
+    private static String removeSlComments(@NotNull String query, String[] slComments) {
+        for (String slComment : slComments) {
+            while (query.startsWith(slComment)) {
                 int crPos = query.indexOf('\n');
                 if (crPos == -1) {
                     // Query is comment line - return empty
@@ -130,7 +162,7 @@ public final class SQLUtils {
                 }
             }
         }
-        return leading + query + trailing;
+        return query;
     }
 
     public static List<String> splitFilter(String filter)

@@ -61,8 +61,6 @@ public final class RuntimeUtils {
     private static final boolean IS_MACOS;
     private static final boolean IS_WINDOWS;
 
-    private static final boolean IS_GTK = Platform.getWS().equals(Platform.WS_GTK);
-
     private static final byte[] NULL_MAC_ADDRESS = new byte[] {0, 0, 0, 0, 0, 0};
 
     static {
@@ -394,8 +392,13 @@ public final class RuntimeUtils {
         return IS_LINUX;
     }
 
-    public static boolean isGtk() {
-        return IS_GTK;
+    /**
+     * Checks if the system is running Linux with the Wayland server.
+     *
+     * @return true if running on Wayland, false otherwise
+     */
+    public static boolean isWayland() {
+        return isLinux() && CommonUtils.isNotEmpty(System.getenv("WAYLAND_DISPLAY"));
     }
 
     /**

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverLoaderDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -171,7 +172,7 @@ public class PrefPageDriversClasspath extends AbstractPrefPage implements IWorkb
 
         PrefUtils.savePreferenceStore(store);
 
-        if (!Arrays.equals(currentGlobalLibraries, globalLibrariesList.getItems()) && DriverDescriptor.getRootClassLoader() != null) {
+        if (!Arrays.equals(currentGlobalLibraries, globalLibrariesList.getItems()) && DriverLoaderDescriptor.getRootClassLoader() != null) {
             final boolean restart = UIUtils.confirmAction(
                 getShell(),
                 NLS.bind(UIConnectionMessages.pref_page_drivers_classpath_global_libraries_restart_prompt_title, GeneralUtils.getProductName()),

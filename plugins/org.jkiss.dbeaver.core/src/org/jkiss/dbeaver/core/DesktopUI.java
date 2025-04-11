@@ -636,8 +636,15 @@ public class DesktopUI extends ConsoleUserInterface {
         } catch (InterruptedException ex) {
             return CompletableFuture.failedFuture(ex);
         }
-        
-        return job.getResult().isOK() ? runnable.getResult() : CompletableFuture.failedFuture(job.getResult().getException());
+
+        IStatus result = job.getResult();
+        if (result == null) {
+            return CompletableFuture.failedFuture(new DBException("the result of the job is null. Has it finished?"));
+        }
+        if (result.isOK()) {
+            return runnable.getResult();
+        }
+        return CompletableFuture.failedFuture(result.getException());
     }
 
     @Override

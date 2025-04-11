@@ -207,6 +207,10 @@ public abstract class SQLQueryCompletionContext {
         return Collections.emptySet();
     }
 
+    public boolean isColumnNameConflicting(String name) {
+        return false;
+    }
+
     /**
      * Prepare a set of completion proposal items for a given position in the text of the script item
      */
@@ -237,6 +241,15 @@ public abstract class SQLQueryCompletionContext {
     ) {
         return new SQLQueryCompletionContext(scriptItem.offset, requestOffset) {
             private final Set<DBSObjectContainer> exposedContexts = SQLQueryCompletionContext.obtainExposedContexts(dbcExecutionContext);
+            private final Map<String, Boolean> columnNameConflicts = (
+                // use data context from symbols origin if presented (correctly derived from tail lexical scope when provided by the model)
+                // otherwise, try context provided by the deepest model node (legacy and may be incorrect sometimes)
+                context.symbolsOrigin() instanceof SQLQuerySymbolOrigin.DataContextSymbolOrigin o && !o.isChained()
+                    ? o.getDataContext()
+                    : context.deepestContext()
+            ).getColumnsList().stream()
+                .collect(Collectors.groupingBy(c -> c.symbol.getName())).entrySet().stream()
+                .collect(Collectors.toMap(kv -> kv.getKey(), kv -> kv.getValue().size() > 1));
 
             @NotNull
             @Override
@@ -340,7 +353,7 @@ public abstract class SQLQueryCompletionContext {
                 SQLQueryWordEntry tail = parts.get(parts.size() - 1);
                 if (tail != null) {
                     String[][] quoteStrs = request.getContext().getDataSource().getSQLDialect().getIdentifierQuoteStrings();
-                    if (quoteStrs.length > 0) {
+                    if (quoteStrs != null && quoteStrs.length > 0) {
                         // The "word" being accomplished may be a quoted or a beginning of the quoted identifier,
                         // so we should remove potential quotes.
                         // TODO Consider identifiers containing escape-sequences
@@ -1069,6 +1082,11 @@ public abstract class SQLQueryCompletionContext {
                 return proceduresItems;
             }
 
+            @Override
+            public boolean isColumnNameConflicting(String name) {
+                return this.columnNameConflicts.get(name);
+            }
+
             @NotNull
             private List<? extends SQLQueryCompletionItem> prepareTupleColumns(
                 @NotNull SQLQueryDataContext context,
@@ -1163,6 +1181,9 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request
             ) {
+                if (dbcExecutionContext == null) {
+                    return Collections.emptyList();
+                }
                 DBCExecutionContextDefaults<?, ?> defaults = dbcExecutionContext.getContextDefaults();
                 if (defaults != null) {
                     DBSSchema defaultSchema = defaults.getDefaultSchema();

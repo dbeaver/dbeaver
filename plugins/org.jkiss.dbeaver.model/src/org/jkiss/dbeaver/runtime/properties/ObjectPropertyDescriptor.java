@@ -279,6 +279,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return features.toArray(new String[0]);
     }
 
+    @Nullable
+    @Override
+    public String[] getRequiredFeatures() {
+        return propInfo.requiredFeatures();
+    }
+
     @Override
     public boolean hasFeature(@NotNull String feature) {
 

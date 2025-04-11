@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.data.OracleBinaryFormatter;
+import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -85,16 +86,6 @@ public class OracleSQLDialect extends JDBCSQLDialect
         "IS",
     };
 
-    private static final String[] OTHER_TYPES_FUNCTIONS = {
-        //functions without parentheses #8710
-        "CURRENT_DATE",
-        "CURRENT_TIMESTAMP",
-        "DBTIMEZONE",
-        "SESSIONTIMEZONE",
-        "SYSDATE",
-        "SYSTIMESTAMP"
-    };
-
     private static final String[] ADVANCED_KEYWORDS = {
         "REPLACE",
         "PACKAGE",
@@ -125,6 +116,19 @@ public class OracleSQLDialect extends JDBCSQLDialect
         "TEMPFILE",
         "DATAFILE",
         "TABLESPACE"
+    };
+
+    private static final GlobalVariableInfo[] GLOBAL_VARIABLES = {
+        new GlobalVariableInfo("SYSDATE", OracleMessages.global_variable_sysdate, DBPDataKind.DATETIME),
+        new GlobalVariableInfo("SYSTIMESTAMP", OracleMessages.global_variable_systimestamp, DBPDataKind.DATETIME),
+        new GlobalVariableInfo("DBTIMEZONE", OracleMessages.global_variable_dbtimezone, DBPDataKind.DATETIME),
+        new GlobalVariableInfo("SESSIONTIMEZONE", OracleMessages.global_variable_sessiontimezone, DBPDataKind.DATETIME),
+        new GlobalVariableInfo("CURRENT_DATE", OracleMessages.global_variable_current_date, DBPDataKind.DATETIME),
+        new GlobalVariableInfo("CURRENT_TIMESTAMP", OracleMessages.global_variable_current_timestamp, DBPDataKind.DATETIME),
+        new GlobalVariableInfo("ORA_INVOKING_USER", OracleMessages.global_variable_ora_invoking_user, DBPDataKind.STRING),
+        new GlobalVariableInfo("ORA_INVOKING_USERID", OracleMessages.global_variable_ora_invoking_userid, DBPDataKind.NUMERIC),
+        new GlobalVariableInfo("UID", OracleMessages.global_variable_uid, DBPDataKind.NUMERIC),
+        new GlobalVariableInfo("USER", OracleMessages.global_variable_user, DBPDataKind.STRING),
     };
 
     private static final String AUTO_INCREMENT_KEYWORD = "GENERATED ALWAYS AS IDENTITY";
@@ -372,7 +376,7 @@ public class OracleSQLDialect extends JDBCSQLDialect
             addSQLKeyword(kw);
         }
 
-        addKeywords(Arrays.asList(OTHER_TYPES_FUNCTIONS), DBPKeywordType.OTHER);
+        addKeywords(Arrays.stream(GLOBAL_VARIABLES).map(GlobalVariableInfo::name).toList(), DBPKeywordType.OTHER);
         turnFunctionIntoKeyword("TRUNCATE");
 
         cachedDialectSkipTokenPredicates = this.makeDialectSkipTokenPredicates(dataSource);
@@ -404,6 +408,12 @@ public class OracleSQLDialect extends JDBCSQLDialect
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;
+    }
+
+    @NotNull
+    @Override
+    public GlobalVariableInfo[] getGlobalVariables() {
+        return GLOBAL_VARIABLES;
     }
 
     @NotNull
