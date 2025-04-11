@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ class SQLTokensParser {
 
     private final SQLFormatterConfiguration configuration;
     private final String[][] quoteStrings;
+    private final char escapeChar;
     private String fBefore;
     private int fPos;
     private char structSeparator;
@@ -46,6 +47,7 @@ class SQLTokensParser {
 
     public SQLTokensParser(SQLFormatterConfiguration configuration) {
         this.configuration = configuration;
+        this.escapeChar = configuration.getSyntaxManager().getEscapeChar();
         this.structSeparator = configuration.getSyntaxManager().getStructSeparator();
         this.catalogSeparator = configuration.getSyntaxManager().getCatalogSeparator();
         this.quoteStrings = configuration.getSyntaxManager().getIdentifierQuoteStrings();
@@ -246,9 +248,11 @@ class SQLTokensParser {
                     s.append(fChar);
                     fPos++;
                     char fNextChar = fPos >= fBefore.length() - 1 ? 0 : fBefore.charAt(fPos);
-                    if (fChar == endQuoteChar && fNextChar == endQuoteChar) {
+                    boolean isDoubledQuote = fChar == endQuoteChar && fNextChar == endQuoteChar;
+                    boolean isEscapedQuote = fChar == escapeChar && fNextChar == endQuoteChar;
+                    if (isDoubledQuote || isEscapedQuote) {
                         // Escaped quote
-                        s.append(fChar);
+                        s.append(fNextChar);
                         fPos++;
                         continue;
                     }

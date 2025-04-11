@@ -32,29 +32,30 @@ import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
 import org.jkiss.dbeaver.model.sql.schema.ClassLoaderScriptSource;
 import org.jkiss.dbeaver.model.sql.schema.SQLSchemaConfig;
 import org.jkiss.dbeaver.model.sql.schema.SQLSchemaManager;
-import org.jkiss.dbeaver.model.sql.schema.SQLSchemaVersionManager;
+import org.jkiss.dbeaver.model.sql.schema.UpdateSchemaResult;
 import org.jkiss.utils.CommonUtils;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
+import javax.sql.DataSource;
 
 public abstract class InternalDB<T extends InternalDatabaseConfig> {
     private static final Log log = Log.getLog(InternalDB.class);
     protected final T databaseConfig;
-    protected final SQLSchemaConfig schemaConfig;
+    protected final List<SQLSchemaConfig> schemaConfigList;
     private final String name;
     protected SQLDialect dialect;
     protected DataSource dataSource;
     protected DBPConnectionInformation dbConnectionInformation;
 
-    protected InternalDB(@NotNull String name, @NotNull T databaseConfig, @NotNull SQLSchemaConfig config) {
+    protected InternalDB(@NotNull String name, @NotNull T databaseConfig, @NotNull List<SQLSchemaConfig> configList) {
         this.databaseConfig = databaseConfig;
         this.name = name;
-        this.schemaConfig = config;
+        this.schemaConfigList = configList;
     }
 
     public synchronized Connection getConnection() {
@@ -122,25 +123,30 @@ public abstract class InternalDB<T extends InternalDatabaseConfig> {
 
     protected void updateSchema(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull Connection connection,
-        @NotNull ClassLoader classLoader,
-        @NotNull SQLSchemaVersionManager versionManager
+        @NotNull Connection connection
     ) throws DBException {
-        SQLSchemaManager schemaManager = new SQLSchemaManager(
-            schemaConfig.schemaId(),
-            new ClassLoaderScriptSource(
-                classLoader,
-                schemaConfig.createScriptPath(),
-                schemaConfig.updateScriptPrefix()
-            ),
-            monitor1 -> connection,
-            versionManager,
-            dialect,
-            schemaConfig.schemaVersionActual(),
-            schemaConfig.schemaVersionObsolete(),
-            databaseConfig
-        );
-        schemaManager.updateSchema(monitor);
+
+        List<SQLSchemaConfig> schemaConfigList = getSchemaConfigList();
+        UpdateSchemaResult updateSchemaResult = null;
+        for (int i = 0; i < schemaConfigList.size(); i++) {
+            SQLSchemaConfig schemaConfig = schemaConfigList.get(i);
+            SQLSchemaManager schemaManager = new SQLSchemaManager(
+                schemaConfig.getSchemaId(),
+                new ClassLoaderScriptSource(
+                    schemaConfig.getClassLoader(),
+                    schemaConfig.getCreateScriptPath(),
+                    schemaConfig.getUpdateScriptPrefix()
+                ),
+                monitor1 -> connection,
+                schemaConfig.getVersionManager(),
+                dialect,
+                schemaConfig.getSchemaVersionActual(),
+                schemaConfig.getSchemaVersionObsolete(),
+                databaseConfig,
+                schemaConfig.getInitialSchemaFiller()
+            );
+            updateSchemaResult = schemaManager.updateSchema(monitor, updateSchemaResult);
+        }
     }
 
     protected void createSchemaIfNotExists(@NotNull Connection connection) throws SQLException {
@@ -197,5 +203,9 @@ public abstract class InternalDB<T extends InternalDatabaseConfig> {
             }
             dataSource = null;
         }
+    }
+
+    protected List<SQLSchemaConfig> getSchemaConfigList() {
+        return schemaConfigList;
     }
 }

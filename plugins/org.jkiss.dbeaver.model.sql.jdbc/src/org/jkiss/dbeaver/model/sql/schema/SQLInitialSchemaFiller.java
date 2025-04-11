@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.model.sql.schema;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -25,29 +23,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
- * SQL schema version manager.
+ * Fill initial schema data after schema creation
  */
-public interface SQLSchemaVersionManager {
-
+public interface SQLInitialSchemaFiller {
     /**
-     * Returns current schema version.
-     * Returns -1 if schema doesn't exist
+     * Fill initial schema data
      */
-    int getCurrentSchemaVersion(DBRProgressMonitor monitor, Connection connection, String schemaName) throws DBException, SQLException;
-
-    /**
-     * Returns an actual schema version
-     */
-    int getLatestSchemaVersion();
-
-    /**
-     * Updates current schema version
-     */
-    void updateCurrentSchemaVersion(
-        DBRProgressMonitor monitor,
-        @NotNull Connection connection,
-        @NotNull String schemaName,
-        int version
-    ) throws DBException, SQLException;
-
+    void fillInitialSchemaData(DBRProgressMonitor monitor, Connection connection) throws DBException, SQLException;
 }
