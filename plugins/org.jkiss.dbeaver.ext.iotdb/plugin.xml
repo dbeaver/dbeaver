@@ -232,9 +232,7 @@
                     webURL="https://iotdb.apache.org/UserGuide/latest/QuickStart/QuickStart_apache.html"
                     supportedPageFields="host,port,sqlDialect"
                     categories="timeseries">
-               <library name="iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar" path="lib/iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar"/>
-               <file type="jar" path="lib/iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar"/>
-<!--               <file type="jar" path="maven:/org.apache.iotdb:iotdb-jdbc:2.0.1-beta"/>-->
+               <file type="jar" path="maven:/com.timecho.iotdb:iotdb-jdbc:2.0.2.2"/>
             </driver>
             <driver id="timechoDB"
                     label="TimechoDB"
@@ -250,9 +248,7 @@
                     webURL="https://www.timecho.com/docs/zh/UserGuide/latest/QuickStart/QuickStart_timecho.html"
                     supportedPageFields="host,port,sqlDialect"
                     categories="timeseries">
-               <library name="iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar" path="lib/iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar"/>
-               <file type="jar" path="lib/iotdb-jdbc-2.0.2-SNAPSHOT-jar-with-dependencies.jar"/>
-<!--                <file type="jar" path="maven:/org.apache.iotdb:iotdb-jdbc:2.0.2-SNAPSHOT"/>-->
+                <file type="jar" path="maven:/com.timecho.iotdb:iotdb-jdbc:2.0.2.2"/>
             </driver>
          </drivers>
       </datasource>
