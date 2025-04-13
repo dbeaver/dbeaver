@@ -14,16 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.copilot;
+package org.jkiss.dbeaver.model.ai.openai;
 
-public interface CopilotSettings {
-    String modelName();
+import org.jkiss.dbeaver.model.ai.AIEngineFactory;
+import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 
-    double temperature();
-
-    boolean isValidConfiguration();
-
-    boolean isLoggingEnabled();
-
-    String accessToken();
+public class OpenAIEngineFactory implements AIEngineFactory<OpenAICompletionEngine> {
+    @Override
+    public OpenAICompletionEngine createEngine(AISettingsRegistry registry) {
+        return new OpenAICompletionEngine(new OpenAISettingsImpl(registry));
+    }
 }

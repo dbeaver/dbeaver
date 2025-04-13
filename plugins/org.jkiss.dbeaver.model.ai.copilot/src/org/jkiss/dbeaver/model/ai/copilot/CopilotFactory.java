@@ -16,14 +16,12 @@
  */
 package org.jkiss.dbeaver.model.ai.copilot;
 
-public interface CopilotSettings {
-    String modelName();
+import org.jkiss.dbeaver.model.ai.AIEngineFactory;
+import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 
-    double temperature();
-
-    boolean isValidConfiguration();
-
-    boolean isLoggingEnabled();
-
-    String accessToken();
+public class CopilotFactory implements AIEngineFactory<CopilotCompletionEngine> {
+    @Override
+    public CopilotCompletionEngine createEngine(AISettingsRegistry registry) {
+        return new CopilotCompletionEngine(new CopilotSettingsImpl(registry));
+    }
 }

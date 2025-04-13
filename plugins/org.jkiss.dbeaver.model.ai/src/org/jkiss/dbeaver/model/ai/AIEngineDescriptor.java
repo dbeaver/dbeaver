@@ -64,7 +64,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
 
     public DAICompletionEngine createInstance() throws DBException {
         ObjectType objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
-        return objectType.createInstance(DAICompletionEngine.class);
+        AIEngineFactory<?> instance = objectType.createInstance(AIEngineFactory.class);
+        return instance.createEngine(AISettingsRegistry.getInstance());
     }
-
 }

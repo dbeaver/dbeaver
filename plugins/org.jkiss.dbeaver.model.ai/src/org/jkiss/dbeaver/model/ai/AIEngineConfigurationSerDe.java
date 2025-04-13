@@ -14,16 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.copilot;
+package org.jkiss.dbeaver.model.ai;
 
-public interface CopilotSettings {
-    String modelName();
+import com.google.gson.JsonObject;
 
-    double temperature();
+public interface AIEngineConfigurationSerDe<T extends AIEngineConfiguration> {
+    String getId();
 
-    boolean isValidConfiguration();
+    JsonObject serialize(AIEngineConfiguration configuration);
 
-    boolean isLoggingEnabled();
-
-    String accessToken();
+    T deserialize(JsonObject jsonObject);
 }

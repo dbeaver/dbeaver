@@ -14,16 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.copilot;
+package org.jkiss.dbeaver.model.ai;
 
-public interface CopilotSettings {
-    String modelName();
+import java.util.Map;
 
-    double temperature();
-
-    boolean isValidConfiguration();
-
-    boolean isLoggingEnabled();
-
-    String accessToken();
+public record DAISettings(
+    boolean aiDisabled,
+    String activeEngine,
+    Map<String, AIEngineConfiguration> engineSettings
+) {
 }
+

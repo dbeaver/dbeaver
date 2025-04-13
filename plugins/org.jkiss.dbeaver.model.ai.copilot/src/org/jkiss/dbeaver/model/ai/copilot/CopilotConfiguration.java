@@ -16,14 +16,26 @@
  */
 package org.jkiss.dbeaver.model.ai.copilot;
 
-public interface CopilotSettings {
-    String modelName();
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIEngineConfiguration;
 
-    double temperature();
+public class CopilotConfiguration implements AIEngineConfiguration {
+    @NotNull
+    private CopilotProperties properties;
 
-    boolean isValidConfiguration();
+    @NotNull
+    public CopilotProperties properties() {
+        return properties;
+    }
 
-    boolean isLoggingEnabled();
+    @Override
+    public void resolveSecrets() throws DBException {
+        properties.resolveSecrets();
+    }
 
-    String accessToken();
+    @Override
+    public void saveSecrets() throws DBException {
+        properties.saveSecrets();
+    }
 }

@@ -14,16 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.copilot;
+package org.jkiss.dbeaver.model.ai.openai;
 
-public interface CopilotSettings {
-    String modelName();
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIEngineConfiguration;
 
-    double temperature();
+public class OpenAIConfiguration implements AIEngineConfiguration {
+    private boolean engineEnabled;
+    @NotNull
+    private OpenAIProperties properties;
 
-    boolean isValidConfiguration();
+    @Override
+    public void resolveSecrets() throws DBException {
+        properties.resolveSecrets();
+    }
 
-    boolean isLoggingEnabled();
+    @Override
+    public void saveSecrets() throws DBException {
+        properties.saveSecrets();
+    }
 
-    String accessToken();
+    @NotNull
+    public OpenAIProperties properties() {
+        return properties;
+    }
 }

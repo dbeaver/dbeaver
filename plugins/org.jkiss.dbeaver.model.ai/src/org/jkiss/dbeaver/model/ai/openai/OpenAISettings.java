@@ -17,62 +17,34 @@
 package org.jkiss.dbeaver.model.ai.openai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AIEngineSettings;
-import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
 
-public class OpenAISettings {
-    public static final OpenAISettings INSTANCE = new OpenAISettings(
-        AISettingsRegistry.getInstance().getSettings().getEngineConfiguration(AIConstants.OPENAI_ENGINE)
-    );
-
-    private final AIEngineSettings settings;
-
-    private OpenAISettings(AIEngineSettings settings) {
-        this.settings = settings;
-    }
-
+/**
+ * OpenAISettings
+ */
+public interface OpenAISettings {
     /**
-     * Returns the token used to authenticate with the OpenAI API.
+     * Returns the OpenAI API token.
      */
-    public String token() {
-        Object token = settings.getProperties().get(AIConstants.GPT_API_TOKEN);
-        if (token != null) {
-            return token.toString();
-        }
-
-        return DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.GPT_API_TOKEN);
-    }
+    String getToken();
 
     /**
      * Returns the model used by the OpenAI API.
      */
     @NotNull
-    public OpenAIModel model() {
-        String modelId = CommonUtils.toString(settings.getProperties().get(AIConstants.GPT_MODEL), "");
-        return CommonUtils.isEmpty(modelId) ? OpenAIModel.GPT_TURBO : OpenAIModel.getByName(modelId);
-    }
+    OpenAIModel getModel();
 
     /**
      * Returns the temperature used by the OpenAI API.
      */
-    public double temperature() {
-        return CommonUtils.toDouble(settings.getProperties().get(AIConstants.AI_TEMPERATURE), 0.0);
-    }
+    double getTemperature();
 
     /**
      * Returns whether logging is enabled.
      */
-    public boolean isLoggingEnabled() {
-        return CommonUtils.toBoolean(settings.getProperties().get(AIConstants.AI_LOG_QUERY));
-    }
+    boolean isLoggingEnabled();
 
     /**
      * Returns whether the current configuration is valid.
      */
-    public boolean isValidConfiguration() {
-        return !CommonUtils.isEmpty(token());
-    }
+    boolean isValidConfiguration();
 }

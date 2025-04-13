@@ -48,9 +48,13 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
         }
     };
 
+    public OpenAICompletionEngine(OpenAISettings settings) {
+        this.settings = settings;
+    }
+
     @Override
     public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) {
-        return OpenAISettings.INSTANCE.model().getMaxTokens();
+        return 0;
     }
 
     @Override
@@ -124,12 +128,12 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
 
     @Override
     public boolean hasValidConfiguration() {
-        return OpenAISettings.INSTANCE.isValidConfiguration();
+        return settings.isValidConfiguration();
     }
 
     @Override
     public boolean isLoggingEnabled() {
-        return OpenAISettings.INSTANCE.isLoggingEnabled();
+        return settings.isLoggingEnabled();
     }
 
     @NotNull
@@ -174,10 +178,10 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
     }
 
     protected String model() {
-        return OpenAISettings.INSTANCE.model().getName();
+        return settings.getModel().getName();
     }
 
     protected double temperature() {
-        return OpenAISettings.INSTANCE.temperature();
+        return settings.getTemperature();
     }
 }
