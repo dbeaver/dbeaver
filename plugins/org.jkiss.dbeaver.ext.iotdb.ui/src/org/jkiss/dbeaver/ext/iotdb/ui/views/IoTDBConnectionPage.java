@@ -375,55 +375,83 @@ public class IoTDBConnectionPage extends ConnectionPageWithAuth implements IDial
         final DBPDataSourceContainer dataSource = site.getActiveDataSource();
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         this.parseSampleURL(site.getDriver());
+
         final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
         if (controlGroupsByUrl.size() > 0) {
             setupConnectionModeSelection(urlText, useURL, controlGroupsByUrl);
         }
-        site.updateButtons();
-        if (!isCustom) {
-            if (hostText != null) {
-                if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                    hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
-                } else {
-                    hostText.setText(CommonUtils.toString(site.getDriver().getDefaultHost(), DBConstants.HOST_LOCALHOST)); //$NON-NLS-1$
-                }
-            }
-            if (portText != null) {
-                if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    portText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultPort()));
-                } else if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    portText.setText(connectionInfo.getHostPort());
-                }
-            }
-            if (sqlDialectCombo != null) {
-                sqlDialectCombo.removeAll();
-                sqlDialectCombo.add("tree");
-                sqlDialectCombo.add("table");
 
-                if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getServerName())) {
-                    sqlDialectCombo.setText(CommonUtils.notEmpty(site.getDriver().getDefaultServer()));
-                } else {
-                    sqlDialectCombo.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
-                }
-            }
-            if (dbText != null) {
-                if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                    dbText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultDatabase()));
-                } else {
-                    dbText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
-                }
-            }
-            if (pathText != null) {
-                pathText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
-            }
+        site.updateButtons();
+
+        if (!isCustom) {
+            loadHost(connectionInfo);
+            loadPort(connectionInfo);
+            loadSqlDialect(connectionInfo);
+            loadDatabase(connectionInfo);
+            loadPath(connectionInfo);
         } else {
-            hostText.setText("");
-            portText.setText("");
-            sqlDialectCombo.setText("");
-            dbText.setText("");
-            pathText.setText("");
+            clearFields();
         }
 
+        handleUrl(connectionInfo, dataSource);
+
+        activated = true;
+
+        setupInitialFocus();
+
+    }
+
+    private void loadHost(DBPConnectionConfiguration connectionInfo) {
+        if (hostText != null) {
+            if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+                hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
+            } else {
+                hostText.setText(CommonUtils.toString(site.getDriver().getDefaultHost(), DBConstants.HOST_LOCALHOST)); //$NON-NLS-1$
+            }
+        }
+    }
+
+    private void loadPort(DBPConnectionConfiguration connectionInfo) {
+        if (portText != null) {
+            if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                portText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultPort()));
+            } else if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                portText.setText(connectionInfo.getHostPort());
+            }
+        }
+    }
+
+    private void loadSqlDialect(DBPConnectionConfiguration connectionInfo) {
+        if (sqlDialectCombo != null) {
+            sqlDialectCombo.removeAll();
+            sqlDialectCombo.add("tree");
+            sqlDialectCombo.add("table");
+
+            if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getServerName())) {
+                sqlDialectCombo.setText(CommonUtils.notEmpty(site.getDriver().getDefaultServer()));
+            } else {
+                sqlDialectCombo.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
+            }
+        }
+    }
+
+    private void loadDatabase(DBPConnectionConfiguration connectionInfo) {
+        if (dbText != null) {
+            if (site.isNew() && CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                dbText.setText(CommonUtils.notEmpty(site.getDriver().getDefaultDatabase()));
+            } else {
+                dbText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+            }
+        }
+    }
+
+    private void loadPath(DBPConnectionConfiguration connectionInfo) {
+        if (pathText != null) {
+            pathText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+        }
+    }
+
+    private void handleUrl(DBPConnectionConfiguration connectionInfo, DBPDataSourceContainer dataSource) {
         if (urlText != null) {
             if (CommonUtils.isEmpty(connectionInfo.getUrl())) {
                 try {
@@ -441,9 +469,9 @@ public class IoTDBConnectionPage extends ConnectionPageWithAuth implements IDial
                 urlText.setText("");
             }
         }
+    }
 
-        activated = true;
-
+    private void setupInitialFocus() {
         UIUtils.asyncExec(() -> {
             if (CommonUtils.isEmpty(site.getDriver().getSampleURL())) {
                 urlText.setFocus();
@@ -457,10 +485,17 @@ public class IoTDBConnectionPage extends ConnectionPageWithAuth implements IDial
                 pathText.setFocus();
             }
         });
-
     }
 
-    private void setPropertyIfPresent(Consumer<String> setter, Text widget, String prop, Set<String> properties, DBPConnectionConfiguration connectionInfo) {
+    private void clearFields() {
+        hostText.setText("");
+        portText.setText("");
+        sqlDialectCombo.setText("");
+        dbText.setText("");
+        pathText.setText("");
+    }
+
+    private void setPropertyIfPresent(Consumer<String> setter, Text widget, String prop, Set<String> properties) {
         if (widget != null && properties.contains(prop)) {
             setter.accept(widget.getText().trim());
         }
@@ -480,10 +515,10 @@ public class IoTDBConnectionPage extends ConnectionPageWithAuth implements IDial
         connectionInfo.setConfigurationType(
             typeURLRadio != null && typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
 
-        setPropertyIfPresent(connectionInfo::setHostName, hostText, DBConstants.PROP_HOST, properties, connectionInfo);
-        setPropertyIfPresent(connectionInfo::setHostPort, portText, DBConstants.PROP_PORT, properties, connectionInfo);
+        setPropertyIfPresent(connectionInfo::setHostName, hostText, DBConstants.PROP_HOST, properties);
+        setPropertyIfPresent(connectionInfo::setHostPort, portText, DBConstants.PROP_PORT, properties);
         setPropertyIfPresent(sqlDialectCombo, properties, connectionInfo);
-        setPropertyIfPresent(connectionInfo::setDatabaseName, dbText, DBConstants.PROP_DATABASE, properties, connectionInfo);
+        setPropertyIfPresent(connectionInfo::setDatabaseName, dbText, DBConstants.PROP_DATABASE, properties);
         super.saveSettings(dataSource);
 
         if (isCustomURL()) {
