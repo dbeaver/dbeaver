@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,23 +19,24 @@ package org.jkiss.dbeaver.model.ai.completion;
 import org.jkiss.code.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Completion session
  */
 public class DAICompletionSession {
-    private final List<DAICompletionMessage> messages;
+    private final List<DAIChatMessage> messages;
 
     public DAICompletionSession() {
         this.messages = new ArrayList<>();
     }
 
-    public void add(@NotNull DAICompletionMessage message) {
+    public void add(@NotNull DAIChatMessage message) {
         messages.add(message);
     }
 
-    public void remove(@NotNull DAICompletionMessage message) {
+    public void remove(@NotNull DAIChatMessage message) {
         messages.remove(message);
     }
 
@@ -44,7 +45,7 @@ public class DAICompletionSession {
     }
 
     @NotNull
-    public List<DAICompletionMessage> getMessages() {
-        return messages;
+    public List<DAIChatMessage> getMessages() {
+        return List.copyOf(messages);
     }
 }

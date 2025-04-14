@@ -35,6 +35,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -257,13 +258,12 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         if (thisResource == null) {
             return;
         }
+        DBNNode nodeToRefresh = this;
         if (isDirectory()) {
             folder = thisResource;
         } else {
             folder = thisResource.getParent();
-        }
-        if (!isDirectory()) {
-            throw new DBException("Can't drop files into non-folder '" + folder + "'");
+            nodeToRefresh = getParentNode();
         }
         if (nodes.isEmpty()) {
             return;
@@ -289,7 +289,18 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     break;
                 }
                 Path resource = node.getAdapter(Path.class);
-                if (resource == null || !Files.exists(resource)) {
+                if (resource == null) {
+                    try (InputStream inputStream = node.getAdapter(InputStream.class)) {
+                        if (inputStream != null) {
+                            monitor.subTask("Copy file");
+                            Files.copy(inputStream, folder.resolve(node.getNodeDisplayName()));
+                        }
+                    } finally {
+                        monitor.worked(1);
+                    }
+                    continue;
+                }
+                if (Files.notExists(resource)) {
                     log.debug("Resource " + resource + " doesn't not exists");
                     continue;
                 }
@@ -301,7 +312,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     // Already in this container
                     continue;
                 }
-               boolean doCopy = !isTheSameFileSystem(node);
+                boolean doCopy = !isTheSameFileSystem(node);
                 boolean doDelete = false;
                 monitor.subTask((doCopy ? "Copy" : "Move") + " file " + resource);
                 try {
@@ -341,7 +352,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                 }
             }
             // Refresh folder
-            refreshNode(monitor, this);
+            nodeToRefresh.refreshNode(monitor, this);
         } catch (Exception e) {
             throw new DBException("Error creating NIO resource", e);
         } finally {

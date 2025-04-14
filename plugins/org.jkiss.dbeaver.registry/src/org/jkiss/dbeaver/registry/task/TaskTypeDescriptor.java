@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,6 +147,13 @@ public class TaskTypeDescriptor extends DataSourceBindingDescriptor implements D
      */
     public boolean requiresMutableDatabase() {
         return CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_REQUIRES_MUTABILITY), false);
+    }
+
+    /**
+     * Defines if task execution is prohibited if disable export policy turned on
+     */
+    public boolean requiresExportPrivileges() {
+        return CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_REQUIRES_EXPORT_PRIVILEGES), false);
     }
 
     @Nullable

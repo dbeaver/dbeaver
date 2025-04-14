@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
 import org.jkiss.dbeaver.ui.screenreaders.ScreenReader;
 import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -62,7 +63,7 @@ public class DesktopPreferencesInitializer extends AbstractPreferenceInitializer
             !ApplicationPolicyService.getInstance().isInstallUpdateDisabled());
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_USE_EMBEDDED_AUTH, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_SHOW_HOLIDAY_DECORATIONS, true);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, BreadcrumbLocation.IN_STATUS_BAR);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, true);
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, true);

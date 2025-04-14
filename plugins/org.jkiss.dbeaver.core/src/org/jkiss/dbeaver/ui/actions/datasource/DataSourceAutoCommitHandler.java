@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
@@ -31,14 +32,17 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -47,6 +51,18 @@ import java.util.Map;
 public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler implements IElementUpdater {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+        if (!workspace.hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN) &&
+            !workspace.hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER)
+        ) {
+            UIUtils.showMessageBox(
+                null,
+                CoreMessages.action_menu_transaction_commit_mode_edit_restricted_dialog_title,
+                CoreMessages.action_menu_transaction_commit_mode_edit_restricted_dialog_description,
+                SWT.ICON_WARNING
+            );
+            return null;
+        }
         DBCExecutionContext context = getActiveExecutionContext(event, true);
         if (context != null) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);

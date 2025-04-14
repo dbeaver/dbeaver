@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         boolean needMariDBString = false;
         if (MySQLUtils.isMariaDB(driver)) {
             try {
-                Object driverInstance = driver.getDriverInstance(new VoidProgressMonitor());
+                Object driverInstance = driver.getDefaultDriverLoader().getDriverInstance(new VoidProgressMonitor());
                 if (driverInstance instanceof Driver && ((Driver) driverInstance).getMajorVersion() >= 3) {
                     // Since 3.0 version Maria DB driver only accept `jdbc:mariadb:` classpath by default.
                     needMariDBString = true;
@@ -202,14 +202,18 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         String path = System.getenv("PATH");
         if (path != null) {
             for (String token : path.split(File.pathSeparator)) {
-                File mysqlFile = new File(CommonUtils.removeTrailingSlash(token), MySQLUtils.getMySQLConsoleBinaryName());
-                if (mysqlFile.exists()) {
-                    File binFolder = mysqlFile.getAbsoluteFile().getParentFile();
+                File binPath = new File(CommonUtils.removeTrailingSlash(token));
+                File executableName = new File(binPath, MySQLUtils.getMariaDBConsoleBinaryName());
+                if (!executableName.exists()) {
+                    executableName = new File(binPath, MySQLUtils.getMySQLConsoleBinaryName());
+                }
+                if (executableName.exists()) {
+                    File binFolder = executableName.getAbsoluteFile().getParentFile();
                     if (binFolder.getName().equalsIgnoreCase("bin")) {
                         String homeId = CommonUtils.removeTrailingSlash(binFolder.getParentFile().getAbsolutePath());
                         log.trace(
-                            "Found a MySQL location in PATH. token=%s mysqlFile=%s binFolder=%s homeId=%s"
-                            .formatted(token, mysqlFile, binFolder, homeId)
+                            "Found a MySQL location in PATH. token=%s executableName=%s binFolder=%s homeId=%s"
+                            .formatted(token, executableName, binFolder, homeId)
                         );
                         result.put(homeId, new LocalNativeClientLocation(homeId, homeId));
                     }
@@ -274,9 +278,12 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
             binPath = binSubfolder;
         }
 
-        String cmd = new File(
-            binPath,
-            MySQLUtils.getMySQLConsoleBinaryName()).getAbsolutePath();
+        File executableName = new File(binPath, MySQLUtils.getMariaDBConsoleBinaryName());
+        if (!executableName.exists()) {
+            executableName = new File(binPath, MySQLUtils.getMySQLConsoleBinaryName());
+        }
+
+        String cmd = executableName.getAbsolutePath();
 
         try {
             Process p = Runtime.getRuntime().exec(new String[]{cmd, MySQLConstants.FLAG_VERSION});
