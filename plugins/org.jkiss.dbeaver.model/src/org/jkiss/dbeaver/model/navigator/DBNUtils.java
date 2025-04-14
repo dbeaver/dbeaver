@@ -31,11 +31,9 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.AlphanumericComparator;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -121,28 +119,43 @@ public class DBNUtils {
         return result;
     }
 
-    private static void sortNodes(DBNNode[] children)
-    {
-        final DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
-
-        // Sort children is we have this feature on in preferences
-        // and if children are not folders
-        if (children.length > 0) {
-            DBNNode firstChild = children[0];
-            boolean isResources = firstChild.getAdapter(Path.class) != null;
-            {
-                if (isResources) {
-                    Arrays.sort(children, NodeFolderComparator.INSTANCE);
-                } else if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY) || isMergedEntity(firstChild)) {
-                    if (!(firstChild instanceof DBNContainer)) {
-                        Arrays.sort(children, NodeNameComparator.INSTANCE);
-                    }
-                } else if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)) {
-                    Arrays.sort(children, NodeFolderComparator.INSTANCE);
-                }
-            }
+    private static void sortNodes(DBNNode[] children) {
+        if (children.length == 0) {
+            return;
         }
 
+        DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
+        DBNNode firstChild = children[0];
+        // Sort children is we have this feature on in preferences
+        // and if children are not folders
+
+        if (firstChild.getAdapter(Path.class) != null) {
+            Arrays.sort(children, NodeFolderComparator.INSTANCE);
+            return;
+        }
+
+        if (firstChild instanceof DBNContainer) {
+            return;
+        }
+
+        Comparator<DBNNode> comparator = null;
+
+        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
+            comparator = NodeFolderComparator.INSTANCE;
+        }
+
+        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST) || isMergedEntity(firstChild)) {
+            comparator = NodeFolderComparator.INSTANCE.thenComparing((o1, o2) -> {
+                if (o1 instanceof DBNContainer || o2 instanceof DBNContainer) {
+                    return 0;
+                }
+                return AlphanumericComparator.getInstance()
+                    .compare(o1.getNodeDisplayName(), o2.getNodeDisplayName());
+            });
+        }
+        if (comparator != null) {
+            Arrays.sort(children, comparator);
+        }
     }
 
     private static boolean isMergedEntity(DBNNode node) {
@@ -214,16 +227,9 @@ public class DBNUtils {
         return itemsMeta;
     }
 
-    private static class NodeNameComparator implements Comparator<DBNNode> {
-        static NodeNameComparator INSTANCE = new NodeNameComparator();
-        @Override
-        public int compare(DBNNode node1, DBNNode node2) {
-            return node1.getNodeDisplayName().compareToIgnoreCase(node2.getNodeDisplayName());
-        }
-    }
-
     private static class NodeFolderComparator implements Comparator<DBNNode> {
-        static NodeFolderComparator INSTANCE = new NodeFolderComparator();
+        static final NodeFolderComparator INSTANCE = new NodeFolderComparator();
+
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
             int first = isFolderNode(node1) ? -1 : 1;

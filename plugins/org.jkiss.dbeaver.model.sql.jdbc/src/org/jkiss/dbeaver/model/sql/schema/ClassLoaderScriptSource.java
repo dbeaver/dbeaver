@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.sql.schema;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import java.io.Reader;
  */
 public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
 
+    private static final Log log = Log.getLog(ClassLoaderScriptSource.class);
     private final ClassLoader classLoader;
     private final String createScriptPath;
     private final String updateScriptPrefix;
@@ -49,6 +51,7 @@ public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
         if (resource == null) {
             throw new IOException("Resource '" + createScriptPath + "' not found in " + this.classLoader.getClass().getName());
         }
+        log.info("Reading migration file: '" + createScriptPath + "'");
         return new InputStreamReader(resource);
     }
 
@@ -59,10 +62,20 @@ public class ClassLoaderScriptSource implements SQLSchemaScriptSource {
         int versionNumber,
         @Nullable String specificPrefix
     ) throws IOException, DBException {
-        InputStream resource = classLoader.getResourceAsStream(updateScriptPrefix + versionNumber + "_" + specificPrefix + ".sql");
-        if (resource == null) {
-            resource = classLoader.getResourceAsStream(updateScriptPrefix + versionNumber + ".sql");
+
+        String migrationFileNameWithSpecificPrefix = updateScriptPrefix + versionNumber + "_" + specificPrefix + ".sql";
+        InputStream resource = classLoader.getResourceAsStream(migrationFileNameWithSpecificPrefix);
+        if (resource != null) {
+            log.info("Reading migration file: '" + migrationFileNameWithSpecificPrefix + "'");
+            return new InputStreamReader(resource);
         }
-        return resource == null ? null : new InputStreamReader(resource);
+
+        String migrationFileName = updateScriptPrefix + versionNumber + ".sql";
+        resource = classLoader.getResourceAsStream(migrationFileName);
+        if (resource != null) {
+            log.info("Reading migration file: '" + migrationFileName + "'");
+            return new InputStreamReader(resource);
+        }
+        return null;
     }
 }

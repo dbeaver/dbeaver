@@ -1635,13 +1635,6 @@
                 toggleMessage="%confirm.sql.toggleMessage"
                 group="%confirm.sql.group.name"/>
         <confirmation
-                id="mass_parallel_sql"
-                title="%confirm.mass_parallel_sql.title"
-                description="%confirm.mass_parallel_sql.tip"
-                message="%confirm.mass_parallel_sql.message"
-                toggleMessage="%confirm.sql.toggleMessage"
-                group="%confirm.sql.group.name"/>
-        <confirmation
                 id="close_result_tabs"
                 title="%confirm.close_result_tabs.title"
                 description="%confirm.close_result_tabs.tip"

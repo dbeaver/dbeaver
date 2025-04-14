@@ -167,6 +167,13 @@ public @interface Property
     String[] features() default {};
 
     /**
+     * List of required application features to enable property
+     *
+     * @return the string
+     */
+    String[] requiredFeatures() default {};
+
+    /**
      * Can be used to format numbers and date/time property values
      */
     String format() default ""; //NON-NLS-1
