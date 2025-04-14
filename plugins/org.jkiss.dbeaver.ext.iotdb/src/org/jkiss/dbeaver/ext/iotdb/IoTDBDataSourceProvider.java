@@ -32,45 +32,53 @@ public class IoTDBDataSourceProvider extends GenericDataSourceProvider {
         return "{" + prop + "}";
     }
 
+    private boolean useRawUrl(DBPConnectionConfiguration connectionInfo) {
+        return !CommonUtils.isEmpty(connectionInfo.getUrl()) &&
+                CommonUtils.isEmpty(connectionInfo.getHostPort()) &&
+                CommonUtils.isEmpty(connectionInfo.getHostName()) &&
+                CommonUtils.isEmpty(connectionInfo.getServerName());
+    }
+
+    private String buildUrlFromTemplate(DBPConnectionConfiguration connectionInfo, String urlTemplate) throws DBException {
+        DatabaseURL.MetaURL metaURL = DatabaseURL.parseSampleURL(urlTemplate);
+        StringBuilder url = new StringBuilder();
+        for (String component : metaURL.getUrlComponents()) {
+            String newComponent = component;
+            if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+                newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_HOST), connectionInfo.getHostName());
+            }
+            if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PORT), connectionInfo.getHostPort());
+            }
+            if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
+                newComponent = newComponent.replace(makePropPattern("sqlDialect"), connectionInfo.getServerName());
+            }
+            newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_USER), CommonUtils.notEmpty(connectionInfo.getUserName()));
+
+            if (newComponent.startsWith("[")) {
+                if (!newComponent.equals(component)) {
+                    url.append(newComponent.substring(1, newComponent.length() - 1));
+                }
+            } else {
+                url.append(newComponent);
+            }
+        }
+        return url.toString();
+    }
+
     @Override
     public String getConnectionURL(DBPDriver driver,
                                    DBPConnectionConfiguration connectionInfo) {
         String urlTemplate = driver.getSampleURL();
-
-        if (!CommonUtils.isEmpty(connectionInfo.getUrl()) &&
-            CommonUtils.isEmpty(connectionInfo.getHostPort()) &&
-            CommonUtils.isEmpty(connectionInfo.getHostName()) &&
-            CommonUtils.isEmpty(connectionInfo.getServerName())) {
+        if (useRawUrl(connectionInfo)) {
             return connectionInfo.getUrl();
         }
-        try {
-            if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
-                return connectionInfo.getUrl();
-            }
-            DatabaseURL.MetaURL metaURL = DatabaseURL.parseSampleURL(urlTemplate);
-            StringBuilder url = new StringBuilder();
-            for (String component : metaURL.getUrlComponents()) {
-                String newComponent = component;
-                if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_HOST), connectionInfo.getHostName());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_PORT), connectionInfo.getHostPort());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
-                    newComponent = newComponent.replace(makePropPattern("sqlDialect"), connectionInfo.getServerName());
-                }
-                newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_USER), CommonUtils.notEmpty(connectionInfo.getUserName()));
+        if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
+            return connectionInfo.getUrl();
+        }
 
-                if (newComponent.startsWith("[")) {
-                    if (!newComponent.equals(component)) {
-                        url.append(newComponent.substring(1, newComponent.length() - 1));
-                    }
-                } else {
-                    url.append(newComponent);
-                }
-            }
-            return url.toString();
+        try {
+            return buildUrlFromTemplate(connectionInfo, urlTemplate);
         } catch (DBException e) {
             log.error(e);
             return null;

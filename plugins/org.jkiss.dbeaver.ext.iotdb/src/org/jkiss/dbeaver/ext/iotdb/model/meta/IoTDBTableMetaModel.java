@@ -225,7 +225,7 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
 
         String databaseName = ((DBSEntity) sourceObject).getParentObject().getName();
         String tableName = ((DBSEntity) sourceObject).getName();
-        String insertTableName = getInsertTableName(databaseName, tableName);
+        String insertTableName = getInsertTableName(tableName);
 
         StringBuilder ddl = new StringBuilder(200);
         ddl.append("DROP TABLE IF EXISTS ").append(insertTableName).append(";\n\n");
