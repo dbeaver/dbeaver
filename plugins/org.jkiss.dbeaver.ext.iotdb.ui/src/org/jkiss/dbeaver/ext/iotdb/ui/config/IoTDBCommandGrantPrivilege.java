@@ -17,7 +17,7 @@ public class IoTDBCommandGrantPrivilege extends DBECommandAbstract<IoTDBRelation
     private String database;
     private String table;
     private IoTDBPrivilege privilege;
-    private boolean isTree;
+    // private boolean isTree;
 
     public IoTDBCommandGrantPrivilege(IoTDBRelationalUser user,
                                       int type,
@@ -29,7 +29,7 @@ public class IoTDBCommandGrantPrivilege extends DBECommandAbstract<IoTDBRelation
         this.database = database;
         this.table = table;
         this.privilege = privilege;
-        isTree = user.getDataSource().isTree();
+        // isTree = user.getDataSource().isTree();
     }
 
     /**

@@ -153,10 +153,14 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
                     new IoTDBCommandGrantPrivilege(getDatabaseObject(), tp, db, tb, privilege),
                     new DBECommandReflector<IoTDBRelationalUser, IoTDBCommandGrantPrivilege>() {
                         @Override
-                        public void redoCommand(IoTDBCommandGrantPrivilege command) { }
+                        public void redoCommand(IoTDBCommandGrantPrivilege command) {
+                            return;
+                        }
 
                         @Override
-                        public void undoCommand(IoTDBCommandGrantPrivilege command) { }
+                        public void undoCommand(IoTDBCommandGrantPrivilege command) {
+                            return;
+                        }
                     });
             }
         });
@@ -192,7 +196,8 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
             return;
         }
         List<IoTDBGrant> currentGrants = new ArrayList<>();
-        String db = "", tb = "";
+        String db = "";
+        String tb = "";
         for (IoTDBGrant grant : grants) {
             db = selectedDatabase.name.equals("(ALL)") ? "*" : selectedDatabase.name;
             tb = selectedTable.equals("(ALL)") ? "*" : selectedTable;

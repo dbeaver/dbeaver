@@ -30,8 +30,7 @@ public class IoTDBAbstractUser implements DBAUser, DBARole, DBPRefreshableObject
     protected List<IoTDBGrant> schemaPrivileges;
 
     public IoTDBAbstractUser(IoTDBDataSource dataSource,
-                             String userName,
-                             DBRProgressMonitor monitor)  {
+                             String userName)  {
         this.dataSource = dataSource;
         this.persisted = true;
         this.userName = userName;

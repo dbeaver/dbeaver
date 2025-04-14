@@ -25,7 +25,7 @@ import java.util.List;
 
 public class PrivilegeTableControl extends Composite {
 
-    private boolean isStatic;
+    //private boolean isStatic;
     private TableViewer tableViewer;
     private ViewerColumnController<Object, Object> columnsController;
     private Table privTable;
@@ -34,7 +34,7 @@ public class PrivilegeTableControl extends Composite {
 
     public PrivilegeTableControl(Composite parent, String title, boolean isStatic) {
         super(parent, SWT.NONE);
-        this.isStatic = isStatic;
+        //this.isStatic = isStatic;
         GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
@@ -101,7 +101,7 @@ public class PrivilegeTableControl extends Composite {
                     if (element instanceof IoTDBObjectPrivilege) {
                         IoTDBObjectPrivilege elementPriv = (IoTDBObjectPrivilege) element;
                         boolean prevC = elementPriv.enabled;
-                        boolean prevG = elementPriv.withGrantOption;
+                        // boolean prevG = elementPriv.withGrantOption;
                         if (elementPriv.enabled != Boolean.TRUE.equals(value)) { // handle double click on the box cell
                             elementPriv.enabled = Boolean.TRUE.equals(value);
                             if (!elementPriv.enabled) { // disabled privilege should not have grant option
@@ -110,7 +110,7 @@ public class PrivilegeTableControl extends Composite {
                         }
                         boolean newC = elementPriv.enabled;
                         boolean newG = elementPriv.withGrantOption;
-                        notifyPrivilegeCheck(elementPriv.privilege, prevC, prevG, newC, newG);
+                        notifyPrivilegeCheck(elementPriv.privilege, prevC, newC, newG);
                     }
                 }
             });
@@ -150,12 +150,12 @@ public class PrivilegeTableControl extends Composite {
                     if (element instanceof IoTDBObjectPrivilege) {
                         IoTDBObjectPrivilege elementPriv = (IoTDBObjectPrivilege) element;
                         boolean prevC = elementPriv.enabled;
-                        boolean prevG = elementPriv.withGrantOption;
+                        // boolean prevG = elementPriv.withGrantOption;
                         if (elementPriv.withGrantOption != Boolean.TRUE.equals(value)) { // handle double click on the box cell
                             elementPriv.withGrantOption = Boolean.TRUE.equals(value);
                         }
                         boolean newG = elementPriv.withGrantOption;
-                        notifyPrivilegeCheck(elementPriv.privilege, prevC, prevG, prevC, newG);
+                        notifyPrivilegeCheck(elementPriv.privilege, prevC, prevC, newG);
                     }
                 }
             });
@@ -176,7 +176,7 @@ public class PrivilegeTableControl extends Composite {
                     for (IoTDBObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
                         userPrivilege.enabled = true;
                         userPrivilege.withGrantOption = true;
-                        notifyPrivilegeCheck(userPrivilege.privilege, true, true, true, true);
+                        notifyPrivilegeCheck(userPrivilege.privilege, true, true, true);
                     }
                     drawColumns(currentPrivileges);
                 }
@@ -191,7 +191,7 @@ public class PrivilegeTableControl extends Composite {
                     for (IoTDBObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
                         userPrivilege.enabled = false;
                         userPrivilege.withGrantOption = false;
-                        notifyPrivilegeCheck(userPrivilege.privilege, true, true, false, false);
+                        notifyPrivilegeCheck(userPrivilege.privilege, true, false, false);
                     }
                     drawColumns(currentPrivileges);
                 }
@@ -215,7 +215,7 @@ public class PrivilegeTableControl extends Composite {
      * @param checked boolean
      * @param withGrantOption boolean
      */
-    private void notifyPrivilegeCheck(IoTDBPrivilege privilege, boolean prevC, boolean prevG, boolean checked, boolean withGrantOption) {
+    private void notifyPrivilegeCheck(IoTDBPrivilege privilege, boolean prevC, boolean checked, boolean withGrantOption) {
         Event event = new Event();
 
         if (checked && withGrantOption) event.detail = 2;
