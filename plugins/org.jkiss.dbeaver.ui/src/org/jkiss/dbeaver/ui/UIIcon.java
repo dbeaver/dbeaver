@@ -105,7 +105,6 @@ public class UIIcon {
     public static final DBIcon ALIGN_TO_RIGHT = new DBIcon("align_to_right", "misc/align_to_right.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon FILTER = new DBIcon("misc/filter.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon FILTER_SMALL = new DBIcon("misc/filter_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_VALUE = new DBIcon("misc/filter_value.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_INPUT = new DBIcon("misc/filter_input.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_CLIPBOARD = new DBIcon("misc/filter_clipboard.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -113,6 +112,11 @@ public class UIIcon {
     public static final DBIcon FILTER_RESET = new DBIcon("misc/filter_reset.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_SAVE = new DBIcon("misc/filter_save.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_CONFIG = new DBIcon("misc/filter_config.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_CONNECTIONS = new DBIcon("misc/filter_connections.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_CONTAINERS = new DBIcon("misc/filter_containers.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_OBJECTS = new DBIcon("misc/filter_objects.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_CONNECTED = new DBIcon("misc/filter_connected.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_ALL = new DBIcon("misc/filter_all.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon EVENT = new DBIcon("event", "misc/event.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon HOME = new DBIcon("home", "misc/home.png"); //$NON-NLS-1$ //$NON-NLS-2$

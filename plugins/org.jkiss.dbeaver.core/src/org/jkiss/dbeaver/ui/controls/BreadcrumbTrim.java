@@ -19,32 +19,30 @@ package org.jkiss.dbeaver.ui.controls;
 import jakarta.annotation.PostConstruct;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.jface.viewers.*;
-import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.AbstractPartListener;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractPageListener;
 import org.jkiss.dbeaver.ui.controls.breadcrumb.BreadcrumbViewer;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
 import org.jkiss.dbeaver.ui.editors.ILazyEditorInput;
 import org.jkiss.dbeaver.ui.editors.INavigatorEditorInput;
-import org.jkiss.utils.ArrayUtils;
+import org.jkiss.dbeaver.ui.navigator.breadcrumb.NodeBreadcrumbViewer;
 
 import java.util.function.Consumer;
 
@@ -56,20 +54,10 @@ public class BreadcrumbTrim {
 
     @PostConstruct
     public void createControls(Composite parent) {
-        var breadcrumb = new BreadcrumbViewer(parent) {
-            @Override
-            protected void configureDropDownViewer(@NotNull TreeViewer viewer, @NotNull Object input) {
-                viewer.setContentProvider(new BreadcrumbNodeContentProvider(true));
-                viewer.setLabelProvider(new BreadcrumbNodeLabelProvider());
-            }
-        };
-        breadcrumb.setLabelProvider(new BreadcrumbNodeLabelProvider());
-        breadcrumb.setContentProvider(new BreadcrumbNodeContentProvider(false));
-        breadcrumb.addOpenListener(e -> openEditor(e.getSelection()));
-        breadcrumb.addDoubleClickListener(e -> openEditor(e.getSelection()));
+        var viewer = new NodeBreadcrumbViewer(parent, SWT.BOTTOM);
 
-        installListeners(breadcrumb);
-        updateElementVisibility();
+        installListeners(viewer);
+        UIUtils.asyncExec(BreadcrumbTrim::updateElementVisibility);
     }
 
     private static void updateElementVisibility() {
@@ -88,7 +76,7 @@ public class BreadcrumbTrim {
         boolean dirty = false;
 
         var breadcrumbsElement = modelService.find(BREADCRUMBS_ID, model);
-        var breadcrumbsVisible = store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS);
+        var breadcrumbsVisible = BreadcrumbLocation.get(store) == BreadcrumbLocation.IN_STATUS_BAR;
         if (breadcrumbsElement != null && breadcrumbsElement.isToBeRendered() != breadcrumbsVisible) {
             breadcrumbsElement.setToBeRendered(breadcrumbsVisible);
             dirty = true;
@@ -106,12 +94,6 @@ public class BreadcrumbTrim {
             if (element != null && element.getWidget() instanceof Composite composite) {
                 composite.layout(true, true);
             }
-        }
-    }
-
-    private static void openEditor(@NotNull ISelection selection) {
-        if (selection instanceof IStructuredSelection ss && ss.getFirstElement() instanceof DBNNode node) {
-            DBWorkbench.getPlatformUI().openEntityEditor(node, null);
         }
     }
 
@@ -201,6 +183,9 @@ public class BreadcrumbTrim {
     }
 
     private static void setInput(@NotNull BreadcrumbViewer viewer, @NotNull IEditorInput input) {
+        if (viewer.getControl().isDisposed()) {
+            return;
+        }
         if (!tryExtractNode(input, viewer::setInput)) {
             viewer.setInput(null);
         }
@@ -229,72 +214,5 @@ public class BreadcrumbTrim {
             }
         }
         return false;
-    }
-
-    private static class BreadcrumbNodeLabelProvider extends LabelProvider {
-        @Override
-        public Image getImage(Object element) {
-            return DBeaverIcons.getImage(((DBNNode) element).getNodeIconDefault());
-        }
-
-        @Override
-        public String getText(Object element) {
-            return ((DBNNode) element).getNodeDisplayName();
-        }
-    }
-
-    private record BreadcrumbNodeContentProvider(boolean allowFoldersOnly) implements ITreeContentProvider {
-        @Override
-        public Object[] getElements(Object inputElement) {
-            DBNNode child = (DBNNode) inputElement;
-            DBNNode parent = child.getParentNode();
-            if (parent != null) {
-                return getChildren(parent);
-            }
-            return new Object[0];
-        }
-
-        @Override
-        public Object getParent(Object element) {
-            DBNNode child = (DBNNode) element;
-            if (child instanceof DBNDataSource) {
-                return null; // don't show anything below data sources
-            }
-
-            DBNNode parent = child.getParentNode();
-            while (parent instanceof DBNDatabaseFolder) {
-                parent = parent.getParentNode(); // skip folder nodes
-            }
-
-            return parent;
-        }
-
-        @Override
-        public Object[] getChildren(Object parentElement) {
-            var children = getCachedChildren((DBNNode) parentElement);
-            if (children != null) {
-                return children;
-            }
-            return new Object[0];
-        }
-
-        @Override
-        public boolean hasChildren(Object element) {
-            if (!allowFoldersOnly || element instanceof DBNLocalFolder) {
-                return !ArrayUtils.isEmpty(getCachedChildren((DBNNode) element));
-            } else {
-                return false;
-            }
-        }
-
-        @Nullable
-        private static DBNNode[] getCachedChildren(@NotNull DBNNode parent) {
-            try {
-                return parent.getChildren(new LocalCacheProgressMonitor(new VoidProgressMonitor()));
-            } catch (DBException e) {
-                log.error("Error getting children", e); // should not happen
-                return null;
-            }
-        }
     }
 }
