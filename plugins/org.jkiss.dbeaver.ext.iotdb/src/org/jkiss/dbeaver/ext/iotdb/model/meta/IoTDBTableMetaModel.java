@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.sql.SQLException;
 import java.util.Map;
 
 public class IoTDBTableMetaModel extends GenericMetaModel {
@@ -102,29 +103,20 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
         "FILL"
     };
 
-    /**
-     * @param monitor to create session or to read metadata
-     * @param sourceObject source object with required name and parents info
-     * @param options for generated DDL
-     * @return "test" for temporary
-     */
-    @Override
-    public String getTableDDL(@NotNull DBRProgressMonitor monitor,
-                              @NotNull GenericTableBase sourceObject,
-                              @NotNull Map<String, Object> options) {
-
-        String databaseName = ((DBSEntity) sourceObject).getParentObject().getName();
-        String tableName = ((DBSEntity) sourceObject).getName();
-        String insertTableName = tableName;
+    private String getInsertTableName(String db, String tb) {
+        String insertTableName = tb;
         for (String keyword : allIotdbTableSQLKeywords) {
-            if (tableName.equalsIgnoreCase(keyword)) {
-                insertTableName = "\"" + tableName + "\"";
+            if (tb.equalsIgnoreCase(keyword)) {
+                insertTableName = "\"" + tb + "\"";
                 break;
             }
         }
+        return insertTableName;
+    }
 
-        StringBuilder ddl = new StringBuilder(200);
-        ddl.append("DROP TABLE IF EXISTS ").append(insertTableName).append(";\n\n");
+    private String getTTL(DBRProgressMonitor monitor,
+                          GenericTableBase sourceObject,
+                          String databaseName) {
         String ttl = "";
 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table details")) {
@@ -151,60 +143,106 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
             ttl = "'INF'";
         }
 
+        return ttl;
+    }
+
+    private String getTableDDLInfoWithISPrivilege(JDBCSession session,
+                                                  GenericTableBase sourceObject,
+                                                  String databaseName,
+                                                  String insertTableName,
+                                                  String ttl) throws SQLException {
+        StringBuilder toAppend = new StringBuilder(200);
+        String sql = String.format("select * from information_schema.columns where database like '%s' and table_name like '%s'", databaseName, insertTableName);
+        JDBCStatement stmt = session.createStatement();
+        JDBCResultSet rs = stmt.executeQuery(sql);
+        toAppend.append("CREATE TABLE ").append(insertTableName).append(" (\n");
+        while (rs.next()) {
+            toAppend.append("\t").append(rs.getString("column_name")).append(" ");
+            toAppend.append(rs.getString("datatype")).append(" ");
+            toAppend.append(rs.getString("category"));
+            String columnComment = rs.getString("comment");
+            if (columnComment != null && !columnComment.isEmpty()) {
+                toAppend.append(" COMMENT '").append(columnComment).append("'");
+            }
+            toAppend.append(",\n");
+        }
+        toAppend.setLength(toAppend.length() - 2);
+        String tableComment = ((DBSEntity) sourceObject).getDescription();
+        if (tableComment != null && !tableComment.isEmpty()) {
+            toAppend.append("\n) COMMENT '").append(tableComment).append("' ");
+            toAppend.append("WITH (TTL=").append(ttl).append(");");
+        }
+        else {
+            toAppend.append("\n) WITH (TTL=").append(ttl).append(");");
+        }
+
+        return toAppend.toString();
+    }
+
+    private String getTableDDLInfoWithoutISPrivilege(JDBCSession session,
+                                                     GenericTableBase sourceObject,
+                                                     String databaseName,
+                                                     String insertTableName,
+                                                     String ttl) throws SQLException {
+        StringBuilder toAppend = new StringBuilder(200);
+        String sql = String.format("desc %s.%s details", databaseName, insertTableName);
+        JDBCStatement stmt = session.createStatement();
+        JDBCResultSet rs = stmt.executeQuery(sql);
+        toAppend.append("CREATE TABLE ").append(insertTableName).append(" (\n");
+        while (rs.next()) {
+            toAppend.append("\t").append(rs.getString("ColumnName")).append(" ");
+            toAppend.append(rs.getString("DataType")).append(" ");
+            toAppend.append(rs.getString("Category"));
+            String columnComment = rs.getString("Comment");
+            if (columnComment != null && !columnComment.isEmpty()) {
+                toAppend.append(" COMMENT '").append(columnComment).append("'");
+            }
+            toAppend.append(",\n");
+        }
+        toAppend.setLength(toAppend.length() - 2);
+        String tableComment = ((DBSEntity) sourceObject).getDescription();
+        if (tableComment != null && !tableComment.isEmpty()) {
+            toAppend.append("\n) COMMENT '").append(tableComment).append("' ");
+            toAppend.append("WITH (TTL=").append(ttl).append(");");
+        }
+        else {
+            toAppend.append("\n) WITH (TTL=").append(ttl).append(");");
+        }
+
+        return toAppend.toString();
+    }
+
+    /**
+     * @param monitor to create session or to read metadata
+     * @param sourceObject source object with required name and parents info
+     * @param options for generated DDL
+     * @return "test" for temporary
+     */
+    @Override
+    public String getTableDDL(@NotNull DBRProgressMonitor monitor,
+                              @NotNull GenericTableBase sourceObject,
+                              @NotNull Map<String, Object> options) {
+
+        String databaseName = ((DBSEntity) sourceObject).getParentObject().getName();
+        String tableName = ((DBSEntity) sourceObject).getName();
+        String insertTableName = getInsertTableName(databaseName, tableName);
+
+        StringBuilder ddl = new StringBuilder(200);
+        ddl.append("DROP TABLE IF EXISTS ").append(insertTableName).append(";\n\n");
+        String ttl = getTTL(monitor, sourceObject, databaseName);
+        String toAppend = "";
+
         try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table column details")) {
-            String sql = String.format("select * from information_schema.columns where database like '%s' and table_name like '%s'", databaseName, insertTableName);
-            JDBCStatement stmt = session.createStatement();
-            JDBCResultSet rs = stmt.executeQuery(sql);
-            ddl.append("CREATE TABLE ").append(insertTableName).append(" (\n");
-            while (rs.next()) {
-                ddl.append("\t").append(rs.getString("column_name")).append(" ");
-                ddl.append(rs.getString("datatype")).append(" ");
-                ddl.append(rs.getString("category"));
-                String columnComment = rs.getString("comment");
-                if (columnComment != null && !columnComment.isEmpty()) {
-                    ddl.append(" COMMENT '").append(columnComment).append("'");
-                }
-                ddl.append(",\n");
-            }
-            ddl.setLength(ddl.length() - 2);
-            String tableComment = ((DBSEntity) sourceObject).getDescription();
-            if (tableComment != null && !tableComment.isEmpty()) {
-                ddl.append("\n) COMMENT '").append(tableComment).append("' ");
-                ddl.append("WITH (TTL=").append(ttl).append(");");
-            }
-            else {
-                ddl.append("\n) WITH (TTL=").append(ttl).append(");");
-            }
+            toAppend = getTableDDLInfoWithISPrivilege(session, sourceObject, databaseName, insertTableName, ttl);
         } catch (Exception e) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, (DBSObject) sourceObject, "Get IoTDB table column details")) {
-                String sql = String.format("desc %s.%s details", databaseName, insertTableName);
-                JDBCStatement stmt = session.createStatement();
-                JDBCResultSet rs = stmt.executeQuery(sql);
-                ddl.append("CREATE TABLE ").append(insertTableName).append(" (\n");
-                while (rs.next()) {
-                    ddl.append("\t").append(rs.getString("ColumnName")).append(" ");
-                    ddl.append(rs.getString("DataType")).append(" ");
-                    ddl.append(rs.getString("Category"));
-                    String columnComment = rs.getString("Comment");
-                    if (columnComment != null && !columnComment.isEmpty()) {
-                        ddl.append(" COMMENT '").append(columnComment).append("'");
-                    }
-                    ddl.append(",\n");
-                }
-                ddl.setLength(ddl.length() - 2);
-                String tableComment = ((DBSEntity) sourceObject).getDescription();
-                if (tableComment != null && !tableComment.isEmpty()) {
-                    ddl.append("\n) COMMENT '").append(tableComment).append("' ");
-                    ddl.append("WITH (TTL=").append(ttl).append(");");
-                }
-                else {
-                    ddl.append("\n) WITH (TTL=").append(ttl).append(");");
-                }
+                toAppend = getTableDDLInfoWithoutISPrivilege(session, sourceObject, databaseName, insertTableName, ttl);
             } catch (Exception e1) {
                 log.error("Error executing sql", e1);
             }
         }
 
+        ddl.append(toAppend);
         return ddl.toString();
     }
 
