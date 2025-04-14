@@ -22,7 +22,7 @@ public class IoTDBRelationalUser extends IoTDBAbstractUser {
     public IoTDBRelationalUser(IoTDBDataSource dataSource,
                                String userName,
                                DBRProgressMonitor monitor) throws DBException {
-        super(dataSource, userName, monitor);
+        super(dataSource, userName);
 
         try {
             loadDatabases(monitor);

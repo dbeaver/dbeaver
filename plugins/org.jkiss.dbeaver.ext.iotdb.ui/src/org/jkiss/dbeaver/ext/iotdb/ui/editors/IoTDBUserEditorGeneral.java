@@ -44,7 +44,7 @@ public class IoTDBUserEditorGeneral extends IoTDBUserEditorAbstract {
 
         // DBA Privileges
         {
-            privilegesTable = new PrivilegeTableControl(container, IoTDBUIMessages.editors_user_editor_general_control_dba_privileges, true);
+            privilegesTable = new PrivilegeTableControl(container, IoTDBUIMessages.editors_user_editor_general_control_dba_privileges);
             gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
             privilegesTable.setLayoutData(gd);

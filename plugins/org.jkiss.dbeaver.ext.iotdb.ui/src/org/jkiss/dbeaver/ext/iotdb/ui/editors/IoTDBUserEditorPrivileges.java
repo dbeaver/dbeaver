@@ -50,7 +50,6 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
 
     @Override
     public void createPartControl(Composite parent) {
-        boolean isTree = getDatabaseObject().getDataSource().isTree();
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         pageControl = new PageControl(parent);
@@ -126,7 +125,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
 
         // table privileges
         {
-            tablePrivilegesTable = new PrivilegeTableControl(rightPane, "Table Privileges", false);
+            tablePrivilegesTable = new PrivilegeTableControl(rightPane, "Table Privileges");
             gd = new GridData(GridData.FILL_BOTH);
             tablePrivilegesTable.setLayoutData(gd);
         }

@@ -6,8 +6,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public class IoTDBUser extends IoTDBAbstractUser {
 
     public IoTDBUser(IoTDBDataSource dataSource,
-                     String userName,
-                     DBRProgressMonitor monitor) throws DBException {
-        super(dataSource, userName, monitor);
+                     String userName) throws DBException {
+        super(dataSource, userName);
     }
 }

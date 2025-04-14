@@ -17,7 +17,6 @@ public class IoTDBCommandGrantPrivilege extends DBECommandAbstract<IoTDBRelation
     private String database;
     private String table;
     private IoTDBPrivilege privilege;
-    // private boolean isTree;
 
     public IoTDBCommandGrantPrivilege(IoTDBRelationalUser user,
                                       int type,
@@ -29,7 +28,6 @@ public class IoTDBCommandGrantPrivilege extends DBECommandAbstract<IoTDBRelation
         this.database = database;
         this.table = table;
         this.privilege = privilege;
-        // isTree = user.getDataSource().isTree();
     }
 
     /**
@@ -49,7 +47,8 @@ public class IoTDBCommandGrantPrivilege extends DBECommandAbstract<IoTDBRelation
                                                 @NotNull Map<String, Object> options) {
         String privilegeName = privilege.getName().toUpperCase();
 
-        String grantScript = "", revokeScript = "";
+        String grantScript = "";
+        String revokeScript = "";
         if (database.isEmpty() || table.isEmpty()) {
             grantScript = "GRANT " + privilegeName + " TO USER " + getObject().getName();
             revokeScript = "REVOKE " + privilegeName + " FROM USER " + getObject().getName();

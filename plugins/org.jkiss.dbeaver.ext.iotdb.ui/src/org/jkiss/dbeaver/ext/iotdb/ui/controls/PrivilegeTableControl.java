@@ -25,16 +25,14 @@ import java.util.List;
 
 public class PrivilegeTableControl extends Composite {
 
-    //private boolean isStatic;
     private TableViewer tableViewer;
     private ViewerColumnController<Object, Object> columnsController;
     private Table privTable;
     private List<IoTDBPrivilege> privileges;
     private List<IoTDBObjectPrivilege> currentPrivileges = new ArrayList<>();
 
-    public PrivilegeTableControl(Composite parent, String title, boolean isStatic) {
+    public PrivilegeTableControl(Composite parent, String title) {
         super(parent, SWT.NONE);
-        //this.isStatic = isStatic;
         GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
@@ -101,7 +99,6 @@ public class PrivilegeTableControl extends Composite {
                     if (element instanceof IoTDBObjectPrivilege) {
                         IoTDBObjectPrivilege elementPriv = (IoTDBObjectPrivilege) element;
                         boolean prevC = elementPriv.enabled;
-                        // boolean prevG = elementPriv.withGrantOption;
                         if (elementPriv.enabled != Boolean.TRUE.equals(value)) { // handle double click on the box cell
                             elementPriv.enabled = Boolean.TRUE.equals(value);
                             if (!elementPriv.enabled) { // disabled privilege should not have grant option
@@ -150,7 +147,6 @@ public class PrivilegeTableControl extends Composite {
                     if (element instanceof IoTDBObjectPrivilege) {
                         IoTDBObjectPrivilege elementPriv = (IoTDBObjectPrivilege) element;
                         boolean prevC = elementPriv.enabled;
-                        // boolean prevG = elementPriv.withGrantOption;
                         if (elementPriv.withGrantOption != Boolean.TRUE.equals(value)) { // handle double click on the box cell
                             elementPriv.withGrantOption = Boolean.TRUE.equals(value);
                         }

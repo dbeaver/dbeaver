@@ -66,7 +66,7 @@ public class IoTDBDataSource extends GenericDataSource {
             JDBCResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 currentUserName = rs.getString("CurrentUser");
-                IoTDBAbstractUser user = isTree? new IoTDBUser(this, currentUserName, monitor) : new IoTDBRelationalUser(this, currentUserName, monitor);
+                IoTDBAbstractUser user = isTree? new IoTDBUser(this, currentUserName) : new IoTDBRelationalUser(this, currentUserName, monitor);
                 userList.add(user);
             }
 
@@ -97,7 +97,7 @@ public class IoTDBDataSource extends GenericDataSource {
                 if (tmpUserName.equals(currentUserName)) {
                     continue;
                 }
-                IoTDBAbstractUser user = isTree? new IoTDBUser(this, tmpUserName, monitor) : new IoTDBRelationalUser(this, tmpUserName, monitor);
+                IoTDBAbstractUser user = isTree? new IoTDBUser(this, tmpUserName) : new IoTDBRelationalUser(this, tmpUserName, monitor);
                 userList.add(user);
             }
             return userList;

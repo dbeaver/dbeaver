@@ -49,6 +49,6 @@ public class IoTDBUserManager extends AbstractObjectManager<IoTDBRelationalUser>
     public void deleteObject(DBECommandContext commandContext,
                              IoTDBRelationalUser object,
                              Map<String, Object> options) throws DBException {
-
+        // no-op
     }
 }
