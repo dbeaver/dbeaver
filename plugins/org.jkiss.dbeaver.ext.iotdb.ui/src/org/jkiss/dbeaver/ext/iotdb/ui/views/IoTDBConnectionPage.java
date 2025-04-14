@@ -55,6 +55,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -459,6 +460,18 @@ public class IoTDBConnectionPage extends ConnectionPageWithAuth implements IDial
 
     }
 
+    private void setPropertyIfPresent(Consumer<String> setter, Text widget, String prop, Set<String> properties, DBPConnectionConfiguration connectionInfo) {
+        if (widget != null && properties.contains(prop)) {
+            setter.accept(widget.getText().trim());
+        }
+    }
+
+    private void setPropertyIfPresent(Combo widget, Set<String> properties, DBPConnectionConfiguration connectionInfo) {
+        if (widget != null && properties.contains("sqlDialect")) {
+            connectionInfo.setServerName(widget.getText().trim());
+        }
+    }
+
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
@@ -467,22 +480,10 @@ public class IoTDBConnectionPage extends ConnectionPageWithAuth implements IDial
         connectionInfo.setConfigurationType(
             typeURLRadio != null && typeURLRadio.getSelection() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
 
-        if (hostText != null && properties.contains(DBConstants.PROP_HOST)) {
-            connectionInfo.setHostName(hostText.getText().trim());
-        }
-        if (portText != null && properties.contains(DBConstants.PROP_PORT)) {
-            connectionInfo.setHostPort(portText.getText().trim());
-        }
-        if (sqlDialectCombo != null && properties.contains("sqlDialect")) {
-            connectionInfo.setServerName(sqlDialectCombo.getText().trim());
-        }
-        if (dbText != null && properties.contains(DBConstants.PROP_DATABASE)) {
-            connectionInfo.setDatabaseName(dbText.getText().trim());
-        }
-        if (pathText != null && (properties.contains(DBConstants.PROP_FOLDER) || properties.contains(DBConstants.PROP_FILE))) {
-            connectionInfo.setDatabaseName(pathText.getText().trim());
-        }
-
+        setPropertyIfPresent(connectionInfo::setHostName, hostText, DBConstants.PROP_HOST, properties, connectionInfo);
+        setPropertyIfPresent(connectionInfo::setHostPort, portText, DBConstants.PROP_PORT, properties, connectionInfo);
+        setPropertyIfPresent(sqlDialectCombo, properties, connectionInfo);
+        setPropertyIfPresent(connectionInfo::setDatabaseName, dbText, DBConstants.PROP_DATABASE, properties, connectionInfo);
         super.saveSettings(dataSource);
 
         if (isCustomURL()) {

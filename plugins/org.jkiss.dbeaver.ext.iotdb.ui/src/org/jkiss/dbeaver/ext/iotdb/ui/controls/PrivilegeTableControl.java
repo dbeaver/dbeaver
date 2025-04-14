@@ -54,145 +54,147 @@ public class PrivilegeTableControl extends Composite {
         privTable.setLayoutData(gd);
 
         columnsController = new ViewerColumnController<>("IoTDBPrivilegesEditor", tableViewer); //$NON-NLS-1$
-
-        // Privilege Name
-        {
-            columnsController.addColumn(IoTDBUIMessages.controls_privilege_table_column_privilege_name, IoTDBUIMessages.controls_privilege_table_column_privilege_name_tip, SWT.LEFT, true, true, new CellLabelProvider() {
-                @Override
-                public void update(ViewerCell cell) {
-                    Object element = cell.getElement();
-                    if (element instanceof IoTDBObjectPrivilege) {
-                        cell.setText(((IoTDBObjectPrivilege) element).privilege.getName());
-                    }
-                }
-            });
-        }
-
-        // Privilege Enabled Status
-        {
-            columnsController.addBooleanColumn(IoTDBUIMessages.controls_privilege_table_column_privilege_status, IoTDBUIMessages.controls_privilege_table_column_privilege_status_tip, SWT.CENTER, true, true, item -> {
-                if (item instanceof IoTDBObjectPrivilege) {
-                    return ((IoTDBObjectPrivilege) item).enabled;
-                }
-                return false;
-            }, new EditingSupport(tableViewer) {
-                @Override
-                protected CellEditor getCellEditor(Object element) {
-                    return new CustomCheckboxCellEditor(tableViewer.getTable(), true);
-                }
-
-                @Override
-                protected boolean canEdit(Object element) {
-                    return true;
-                }
-
-                @Override
-                protected Object getValue(Object element) {
-                    if (element instanceof IoTDBObjectPrivilege) {
-                        return ((IoTDBObjectPrivilege) element).enabled;
-                    }
-                    return false;
-                }
-
-                @Override
-                protected void setValue(Object element, Object value) {
-                    if (element instanceof IoTDBObjectPrivilege) {
-                        IoTDBObjectPrivilege elementPriv = (IoTDBObjectPrivilege) element;
-                        boolean prevC = elementPriv.enabled;
-                        if (elementPriv.enabled != Boolean.TRUE.equals(value)) { // handle double click on the box cell
-                            elementPriv.enabled = Boolean.TRUE.equals(value);
-                            if (!elementPriv.enabled) { // disabled privilege should not have grant option
-                                elementPriv.withGrantOption = false;
-                            }
-                        }
-                        boolean newC = elementPriv.enabled;
-                        boolean newG = elementPriv.withGrantOption;
-                        notifyPrivilegeCheck(elementPriv.privilege, prevC, newC, newG);
-                    }
-                }
-            });
-        }
-
-        // Privilege Grant Option
-        {
-            columnsController.addBooleanColumn(IoTDBUIMessages.controls_privilege_table_column_privilege_grant, IoTDBUIMessages.controls_privilege_table_column_privilege_grant_tip, SWT.CENTER, true, true, item -> {
-                if (item instanceof IoTDBObjectPrivilege) {
-                    return ((IoTDBObjectPrivilege) item).withGrantOption;
-                }
-                return false;
-            }, new EditingSupport(tableViewer) {
-                @Override
-                protected CellEditor getCellEditor(Object element) {
-                    return new CustomCheckboxCellEditor(tableViewer.getTable(), true);
-                }
-
-                @Override
-                protected boolean canEdit(Object element) {
-                    if (element instanceof IoTDBObjectPrivilege) {
-                        return ((IoTDBObjectPrivilege) element).enabled;
-                    }
-                    return false;
-                }
-
-                @Override
-                protected Object getValue(Object element) {
-                    if (element instanceof IoTDBObjectPrivilege) {
-                        return ((IoTDBObjectPrivilege) element).withGrantOption;
-                    }
-                    return false;
-                }
-
-                @Override
-                protected void setValue(Object element, Object value) {
-                    if (element instanceof IoTDBObjectPrivilege) {
-                        IoTDBObjectPrivilege elementPriv = (IoTDBObjectPrivilege) element;
-                        boolean prevC = elementPriv.enabled;
-                        if (elementPriv.withGrantOption != Boolean.TRUE.equals(value)) { // handle double click on the box cell
-                            elementPriv.withGrantOption = Boolean.TRUE.equals(value);
-                        }
-                        boolean newG = elementPriv.withGrantOption;
-                        notifyPrivilegeCheck(elementPriv.privilege, prevC, prevC, newG);
-                    }
-                }
-            });
-        }
-
+        initColumns();
         columnsController.createColumns(false);
-
         tableViewer.setContentProvider(new ListContentProvider());
 
         Composite buttonsPanel = UIUtils.createComposite(privsGroup, 3);
         buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        createCheckAllButton(buttonsPanel);
+        createClearAllButton(buttonsPanel);
+    }
 
-        // Check All button
-        {
-            UIUtils.createPushButton(buttonsPanel, IoTDBUIMessages.controls_privilege_table_push_button_check_all, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    for (IoTDBObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
-                        userPrivilege.enabled = true;
-                        userPrivilege.withGrantOption = true;
-                        notifyPrivilegeCheck(userPrivilege.privilege, true, true, true);
-                    }
-                    drawColumns(currentPrivileges);
-                }
-            });
-        }
+    private void initColumns() {
+        addPrivilegeNameColumn();
+        addPrivilegeEnabledColumn();
+        addPrivilegeGrantColumn();
+    }
 
-        // Clear All button
-        {
-            UIUtils.createPushButton(buttonsPanel, IoTDBUIMessages.controls_privilege_table_push_button_clear_all, null, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    for (IoTDBObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
-                        userPrivilege.enabled = false;
-                        userPrivilege.withGrantOption = false;
-                        notifyPrivilegeCheck(userPrivilege.privilege, true, false, false);
-                    }
-                    drawColumns(currentPrivileges);
+    private void addPrivilegeNameColumn() {
+        columnsController.addColumn(IoTDBUIMessages.controls_privilege_table_column_privilege_name, IoTDBUIMessages.controls_privilege_table_column_privilege_name_tip, SWT.LEFT, true, true, new CellLabelProvider() {
+            @Override
+            public void update(ViewerCell cell) {
+                Object element = cell.getElement();
+                if (element instanceof IoTDBObjectPrivilege) {
+                    cell.setText(((IoTDBObjectPrivilege) element).privilege.getName());
                 }
-            });
-        }
+            }
+        });
+    }
+
+    private void addPrivilegeEnabledColumn() {
+        columnsController.addBooleanColumn(IoTDBUIMessages.controls_privilege_table_column_privilege_status, IoTDBUIMessages.controls_privilege_table_column_privilege_status_tip, SWT.CENTER, true, true, item -> {
+            if (item instanceof IoTDBObjectPrivilege) {
+                return ((IoTDBObjectPrivilege) item).enabled;
+            }
+            return false;
+        }, new EditingSupport(tableViewer) {
+            @Override
+            protected CellEditor getCellEditor(Object element) {
+                return new CustomCheckboxCellEditor(tableViewer.getTable(), true);
+            }
+
+            @Override
+            protected boolean canEdit(Object element) {
+                return true;
+            }
+
+            @Override
+            protected Object getValue(Object element) {
+                if (element instanceof IoTDBObjectPrivilege) {
+                    return ((IoTDBObjectPrivilege) element).enabled;
+                }
+                return false;
+            }
+
+            @Override
+            protected void setValue(Object element, Object value) {
+                if (element instanceof IoTDBObjectPrivilege) {
+                    IoTDBObjectPrivilege elementPriv = (IoTDBObjectPrivilege) element;
+                    boolean prevC = elementPriv.enabled;
+                    if (elementPriv.enabled != Boolean.TRUE.equals(value)) { // handle double click on the box cell
+                        elementPriv.enabled = Boolean.TRUE.equals(value);
+                        if (!elementPriv.enabled) { // disabled privilege should not have grant option
+                            elementPriv.withGrantOption = false;
+                        }
+                    }
+                    boolean newC = elementPriv.enabled;
+                    boolean newG = elementPriv.withGrantOption;
+                    notifyPrivilegeCheck(elementPriv.privilege, prevC, newC, newG);
+                }
+            }
+        });
+    }
+
+    private void addPrivilegeGrantColumn() {
+        columnsController.addBooleanColumn(IoTDBUIMessages.controls_privilege_table_column_privilege_grant, IoTDBUIMessages.controls_privilege_table_column_privilege_grant_tip, SWT.CENTER, true, true, item -> {
+            if (item instanceof IoTDBObjectPrivilege) {
+                return ((IoTDBObjectPrivilege) item).withGrantOption;
+            }
+            return false;
+        }, new EditingSupport(tableViewer) {
+            @Override
+            protected CellEditor getCellEditor(Object element) {
+                return new CustomCheckboxCellEditor(tableViewer.getTable(), true);
+            }
+
+            @Override
+            protected boolean canEdit(Object element) {
+                if (element instanceof IoTDBObjectPrivilege) {
+                    return ((IoTDBObjectPrivilege) element).enabled;
+                }
+                return false;
+            }
+
+            @Override
+            protected Object getValue(Object element) {
+                if (element instanceof IoTDBObjectPrivilege) {
+                    return ((IoTDBObjectPrivilege) element).withGrantOption;
+                }
+                return false;
+            }
+
+            @Override
+            protected void setValue(Object element, Object value) {
+                if (element instanceof IoTDBObjectPrivilege) {
+                    IoTDBObjectPrivilege elementPriv = (IoTDBObjectPrivilege) element;
+                    boolean prevC = elementPriv.enabled;
+                    if (elementPriv.withGrantOption != Boolean.TRUE.equals(value)) { // handle double click on the box cell
+                        elementPriv.withGrantOption = Boolean.TRUE.equals(value);
+                    }
+                    boolean newG = elementPriv.withGrantOption;
+                    notifyPrivilegeCheck(elementPriv.privilege, prevC, prevC, newG);
+                }
+            }
+        });
+    }
+
+    private void createCheckAllButton(Composite buttonsPanel) {
+        UIUtils.createPushButton(buttonsPanel, IoTDBUIMessages.controls_privilege_table_push_button_check_all, null, new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                for (IoTDBObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
+                    userPrivilege.enabled = true;
+                    userPrivilege.withGrantOption = true;
+                    notifyPrivilegeCheck(userPrivilege.privilege, true, true, true);
+                }
+                drawColumns(currentPrivileges);
+            }
+        });
+    }
+
+    private void createClearAllButton(Composite buttonsPanel) {
+        UIUtils.createPushButton(buttonsPanel, IoTDBUIMessages.controls_privilege_table_push_button_clear_all, null, new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                for (IoTDBObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
+                    userPrivilege.enabled = false;
+                    userPrivilege.withGrantOption = false;
+                    notifyPrivilegeCheck(userPrivilege.privilege, true, false, false);
+                }
+                drawColumns(currentPrivileges);
+            }
+        });
     }
 
     /**
