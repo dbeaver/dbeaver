@@ -103,7 +103,7 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
         "FILL"
     };
 
-    private String getInsertTableName(String db, String tb) {
+    private String getInsertTableName(String tb) {
         String insertTableName = tb;
         for (String keyword : allIotdbTableSQLKeywords) {
             if (tb.equalsIgnoreCase(keyword)) {

@@ -40,8 +40,7 @@ public class IoTDBDataSourceProvider extends GenericDataSourceProvider {
         if (!CommonUtils.isEmpty(connectionInfo.getUrl()) &&
             CommonUtils.isEmpty(connectionInfo.getHostPort()) &&
             CommonUtils.isEmpty(connectionInfo.getHostName()) &&
-            CommonUtils.isEmpty(connectionInfo.getServerName()) &&
-            CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            CommonUtils.isEmpty(connectionInfo.getServerName())) {
             return connectionInfo.getUrl();
         }
         try {
@@ -60,11 +59,6 @@ public class IoTDBDataSourceProvider extends GenericDataSourceProvider {
                 }
                 if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
                     newComponent = newComponent.replace(makePropPattern("sqlDialect"), connectionInfo.getServerName());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_DATABASE), connectionInfo.getDatabaseName());
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_FOLDER), connectionInfo.getDatabaseName());
-                    newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_FILE), connectionInfo.getDatabaseName());
                 }
                 newComponent = newComponent.replace(makePropPattern(DBConstants.PROP_USER), CommonUtils.notEmpty(connectionInfo.getUserName()));
 

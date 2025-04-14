@@ -56,12 +56,12 @@ public class IoTDBUserEditorGeneral extends IoTDBUserEditorAbstract {
                     new DBECommandReflector<IoTDBRelationalUser, IoTDBCommandGrantPrivilege>() {
                         @Override
                         public void redoCommand(IoTDBCommandGrantPrivilege command) {
-                            return;
+                            // no-op
                         }
 
                         @Override
                         public void undoCommand(IoTDBCommandGrantPrivilege command) {
-                            return;
+                            // no-op
                         }
                     });
             });

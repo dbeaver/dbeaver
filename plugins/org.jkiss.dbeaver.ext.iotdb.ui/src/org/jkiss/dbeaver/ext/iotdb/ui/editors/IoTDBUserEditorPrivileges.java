@@ -153,12 +153,12 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
                     new DBECommandReflector<IoTDBRelationalUser, IoTDBCommandGrantPrivilege>() {
                         @Override
                         public void redoCommand(IoTDBCommandGrantPrivilege command) {
-                            return;
+                            // no-op
                         }
 
                         @Override
                         public void undoCommand(IoTDBCommandGrantPrivilege command) {
-                            return;
+                            // no-op
                         }
                     });
             }
@@ -253,7 +253,6 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
      * Highlight databases with granted privileges
      */
     private void highlightDatabases() {
-        boolean isTree = getDatabaseObject().getDataSource().isTree();
         if (databasesTable != null && !databasesTable.isDisposed()) {
             for (TableItem item : databasesTable.getItems()) {
                 String db = item.getText();

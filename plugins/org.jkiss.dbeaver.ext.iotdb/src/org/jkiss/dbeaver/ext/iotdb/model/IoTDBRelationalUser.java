@@ -83,7 +83,6 @@ public class IoTDBRelationalUser extends IoTDBAbstractUser {
             }
         } catch (Exception e) {
             log.error("Error loading databases and tables", e);
-            throw new RuntimeException(e);
         }
     }
 
