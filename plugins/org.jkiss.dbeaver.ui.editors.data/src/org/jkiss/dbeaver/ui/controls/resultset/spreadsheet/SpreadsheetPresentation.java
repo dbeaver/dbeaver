@@ -429,8 +429,19 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private void updateGridCursor(GridCell cell) {
         boolean changed;
-        IGridColumn newCol = cell == null ? null : cell.col;
-        IGridRow newRow = cell == null ? null : cell.row;
+        IGridColumn newCol;
+        IGridRow newRow;
+        if (cell == null) {
+            newCol = null;
+            newRow = null;
+        } else if (isArrayColAndFirstRow(cell.getColumn(), cell.getRow())) {
+            newCol = cell.getColumn().getParent();
+            newRow = cell.getRow();
+        } else {
+            newCol = cell.getColumn();
+            newRow = cell.getRow();
+        }
+        
         ResultSetRow curRow = controller.getCurrentRow();
         if (!controller.isRecordMode()) {
             changed = (newRow != null && curRow != newRow.getElement()) ||
@@ -996,7 +1007,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
     )
     {
         boolean recordMode = controller.isRecordMode();
-        final DBDAttributeBinding attr = colObject == null ? getFocusAttribute() : getAttributeFromGrid(colObject, rowObject);
+        DBDAttributeBinding attr;
+        if (colObject == null) {
+            attr = getFocusAttribute();
+        } else if (isArrayColAndFirstRow(colObject, rowObject)) {
+            attr = getAttributeFromGrid(colObject.getParent(), rowObject);
+        } else {
+            attr = getAttributeFromGrid(colObject, rowObject);
+        }
         final ResultSetRow row = rowObject == null ? getFocusRow() : getResultRowFromGrid(colObject, rowObject);
         IResultSetController.ContextMenuLocation menuLocation = columnHeaderMenu ?
             IResultSetController.ContextMenuLocation.COLUMN_HEADER :
@@ -1143,6 +1161,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
         }
         return maxIndex;
+    }
+    
+    private boolean isArrayColAndFirstRow(@Nullable IGridColumn colObject, @Nullable IGridRow rowObject) {
+        return colObject != null
+            && colObject.getParent() != null
+            && colObject.getParent().getElement() instanceof DBDAttributeBinding binding
+            && binding.getDataKind() == DBPDataKind.ARRAY
+            && rowObject != null
+            && rowObject.getParent() == null;
     }
 
     /////////////////////////////////////////////////

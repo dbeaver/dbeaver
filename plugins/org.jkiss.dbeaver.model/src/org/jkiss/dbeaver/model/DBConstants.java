@@ -145,6 +145,8 @@ public class DBConstants {
     public static final String PROP_FEATURE_HREF = "href";
     public static final String PROP_FEATURE_VIEWABLE = "viewable";
 
+    public static final String PRODUCT_FEATURE_DISTRIBUTED = "distributed";
+
     public static final String LOCAL_DOMAIN_NAME = "local";
 
     public static final String HOST_LOCALHOST = "localhost";
