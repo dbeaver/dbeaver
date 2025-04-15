@@ -611,7 +611,7 @@ public final class RuntimeUtils {
         return result;
     }
 
-    public static <T> void executeJobsForEach(List<T> objects, DBRRunnableParametrizedWithProgress<T> task) {
+    public static <T> void executeJobsForEach(Collection<? extends T> objects, DBRRunnableParametrizedWithProgress<? super T> task) {
         JobGroup jobGroup = new JobGroup("executeJobsForEach:" + objects, 10, 1);
         for (T object : objects) {
             AbstractJob job = new AbstractJob("Execute for " + object) {

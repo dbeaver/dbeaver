@@ -94,7 +94,6 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
                     model = modelCombo.getText();
                 }
             });
-            UIUtils.createInfoLabel(parent, NLS.bind(AIUIMessages.gpt_preference_page_info_model, getDefaultModel()), GridData.FILL_HORIZONTAL, 2);
         }
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
