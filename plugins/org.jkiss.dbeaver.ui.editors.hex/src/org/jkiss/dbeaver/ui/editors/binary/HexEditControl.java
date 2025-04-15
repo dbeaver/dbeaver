@@ -374,7 +374,7 @@ public class HexEditControl extends Composite {
         @Override
         public void paintControl(PaintEvent event)
         {
-            event.gc.setForeground(COLOR_LIGHT_SHADOW);
+            event.gc.setForeground(HexEditThemeSettings.instance.cellHeaderBackground);
             int lineWidth = 1;
             int charLen = 1;
             int rightHalfWidth = 0;  // is 1, but better to tread on leftmost char pixel than rightmost one
@@ -573,6 +573,12 @@ public class HexEditControl extends Composite {
      * This method initializes composite
      */
     private void initialize() {
+        Color headerRowBackgroundColor = UIUtils.getSharedTextColors().getColor(UIUtils.blend(
+            COLOR_LIGHT_SHADOW.getRGB(),
+            HexEditThemeSettings.instance.cellHeaderBackground.getRGB(),
+            15
+        ));
+
         GridLayout gridLayout1 = new GridLayout();
         gridLayout1.numColumns = 3;
         gridLayout1.marginHeight = 0;
@@ -611,12 +617,15 @@ public class HexEditControl extends Composite {
             gridDataTextSeparator.widthHint = 10;
             linesTextSeparator = new Text(linesColumn, SWT.SEPARATOR);
             linesTextSeparator.setEnabled(false);
-            linesTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
+            linesTextSeparator.setBackground(headerRowBackgroundColor);
             linesTextSeparator.setLayoutData(gridDataTextSeparator);
 
             linesText = new StyledText(linesColumn, SWT.MULTI | SWT.READ_ONLY);
             linesText.setEditable(false);
             linesText.setEnabled(false);
+            linesText.setBackground(HexEditThemeSettings.instance.cellHeaderBackground);
+            linesText.setForeground(HexEditThemeSettings.instance.cellHeaderForeground);
+
             //linesText.setBackground(COLOR_LIGHT_SHADOW);
             //linesText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
 //            fontDefault = new Font(Display.getCurrent(), DEFAULT_FONT_DATA);
@@ -659,8 +668,9 @@ public class HexEditControl extends Composite {
             hexHeaderText = new StyledText(hexHeaderGroup, SWT.SINGLE | SWT.READ_ONLY);
             hexHeaderText.setEditable(false);
             hexHeaderText.setEnabled(false);
-            hexHeaderText.setBackground(COLOR_LIGHT_SHADOW);
-            //hexHeaderText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
+            hexHeaderText.setBackground(headerRowBackgroundColor);
+            hexHeaderText.setForeground(HexEditThemeSettings.instance.cellHeaderForeground);
+        //hexHeaderText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
             hexHeaderText.setLayoutData(gridData);
             hexHeaderText.setFont(fontCurrent);
             refreshHeader();
@@ -714,7 +724,7 @@ public class HexEditControl extends Composite {
             gridDataTextSeparator2.grabExcessHorizontalSpace = true;
             previewTextSeparator = new Text(previewColumn, SWT.SEPARATOR);
             previewTextSeparator.setEnabled(false);
-            previewTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
+            previewTextSeparator.setBackground(headerRowBackgroundColor);
             previewTextSeparator.setLayoutData(gridDataTextSeparator2);
             makeFirstRowSameHeight();
 
