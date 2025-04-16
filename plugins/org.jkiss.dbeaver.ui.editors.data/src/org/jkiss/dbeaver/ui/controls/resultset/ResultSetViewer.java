@@ -89,6 +89,8 @@ import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingPolicy;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingStrategy;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.*;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.CustomizeColorsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
@@ -2425,12 +2427,12 @@ public class ResultSetViewer extends Viewer
         // }
         DBDAttributeConstraint constraint = dataFilter.getConstraint(columnElement);
         assert constraint != null;
-        ResultSetUtils.OrderingMode orderingMode = ResultSetUtils.getOrderingMode(this);
+        OrderingStrategy orderingMode = OrderingStrategy.get(this);
         if (CommonUtils.isNotEmpty(model.getDataFilter().getOrder())) {
-            orderingMode = ResultSetUtils.OrderingMode.SERVER_SIDE;
+            orderingMode = OrderingStrategy.SERVER_SIDE;
         }
         if (constraint.getOrderPosition() == 0 && forceOrder != ColumnOrder.NONE) {
-            if (orderingMode == ResultSetUtils.OrderingMode.SERVER_SIDE && supportsDataFilter()) {
+            if (orderingMode == OrderingStrategy.SERVER_SIDE && supportsDataFilter()) {
                 if (ConfirmationDialog.confirmAction(
                     viewerPanel.getShell(),
                     ConfirmationDialog.WARNING,
@@ -4007,6 +4009,11 @@ public class ResultSetViewer extends Viewer
                 if (activePresentation.getControl() != null && !activePresentation.getControl().isDisposed()) {
                     activePresentation.formatData(true);
                 }
+
+                if (dataFilter == null) {
+                    // If no user-defined filter is present, apply default ordering
+                    applyDefaultOrdering();
+                }
             };
 
             dataReceiver.setNextSegmentRead(false);
@@ -4014,6 +4021,33 @@ public class ResultSetViewer extends Viewer
             runDataPump(dataContainer, dataFilter, 0, segmentSize, 0, true, false, false, finalizer);
         } else {
             DBWorkbench.getPlatformUI().showError("Error executing query", "Viewer detached from data source");
+        }
+    }
+
+    private void applyDefaultOrdering() {
+        OrderingPolicy policy = OrderingPolicy.get(this);
+        DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
+
+        if (policy != OrderingPolicy.DEFAULT && rowIdentifier != null && !rowIdentifier.isIncomplete()) {
+            DBDDataFilter dataFilter = getDataFilter();
+
+            for (DBDAttributeBinding binding : rowIdentifier.getAttributes()) {
+                DBDAttributeConstraint constraint = dataFilter.getConstraint(binding);
+                if (constraint != null) {
+                    constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
+                    constraint.setOrderDescending(policy == OrderingPolicy.PRIMARY_KEY_DESC);
+                }
+            }
+
+            OrderingStrategy strategy = OrderingStrategy.get(this);
+
+            if (strategy == OrderingStrategy.SERVER_SIDE || isHasMoreData()) {
+                refreshWithFilter(dataFilter);
+            } else {
+                getModel().resetOrdering(rowIdentifier.getAttributes());
+                getActivePresentation().refreshData(false, false, true);
+                updateFiltersText();
+            }
         }
     }
 

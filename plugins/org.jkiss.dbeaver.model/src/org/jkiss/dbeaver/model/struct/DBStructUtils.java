@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -514,5 +515,42 @@ public final class DBStructUtils {
 
     public static boolean isConnectedContainer(DBPObject parent) {
         return !(parent instanceof DBSInstanceLazy il) || il.isInstanceConnected();
+    }
+
+    public static List<DBSEntity> getRelatedDBSEntities(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject dbsObject
+    ) throws DBException {
+        var result = new HashSet<DBSEntity>();
+        if (dbsObject instanceof DBSEntity mainEntity) {
+            result.add(mainEntity);
+            try {
+                var associations = DBVUtils.getAllAssociations(monitor, mainEntity);
+                for (var assoc : associations) {
+                    var associatedEntity = assoc.getAssociatedEntity();
+                    if (associatedEntity != null) {
+                        result.add(associatedEntity);
+                    }
+                }
+            } catch (DBException e) {
+                log.warn("Can't load associations for " + mainEntity.getName(), e);
+            }
+            var references = DBVUtils.getAllReferences(monitor, mainEntity);
+            for (var ref : references) {
+                var parent = ref.getParentObject();
+                result.add(parent);
+            }
+        } else if (dbsObject instanceof DBSObjectContainer container) {
+            var children = container.getChildren(monitor);
+            if (children != null) {
+                for (var child : children) {
+                    if (child instanceof DBSEntity resultChild) {
+                        result.add(resultChild);
+                    }
+                }
+            }
+        }
+
+        return result.stream().toList();
     }
 }

@@ -17,18 +17,33 @@
 package org.jkiss.dbeaver.model.ai.utils;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.completion.DAIChatMessage;
 import org.jkiss.dbeaver.model.ai.completion.DAIChatRole;
+import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public final class AIUtils {
+
+    private static final Log log = Log.getLog(AIUtils.class);
+
     /**
      * Counts tokens in the given list of messages.
      *
@@ -141,4 +156,74 @@ public final class AIUtils {
 
         return formatter.postProcessGeneratedQuery(monitor, mainObject, executionContext, completionText).trim();
     }
+
+    /**
+     * Checks if the given DBPObject is eligible for AI description.
+     *
+     * @param dbpObject the object to check
+     * @return true if the object can be described by AI, false otherwise
+     */
+    public static boolean isEligible(@Nullable DBPObject dbpObject) {
+        if (dbpObject instanceof DataSourceDescriptor descriptor) {
+            return descriptor.getDriver().isEmbedded();
+        }
+        return dbpObject instanceof DBSEntity
+            || dbpObject instanceof DBSSchema
+            || dbpObject instanceof DBSTableColumn
+            || dbpObject instanceof DBSProcedure
+            || dbpObject instanceof DBSTrigger
+            || dbpObject instanceof DBSEntityConstraint;
+    }
+
+    /**
+     * Returns a formatted string with the type and full name of the DBSObject.
+     *
+     * @param dbsObject the DBSObject to format
+     */
+    public static String getDBSObjectInfo(@NotNull DBSObject dbsObject, boolean isPromptInfo) {
+        String objectInfo = "";
+        String objectFullName = DBUtils.getObjectFullName(dbsObject, DBPEvaluationContext.DDL);
+        if (dbsObject instanceof DataSourceDescriptor) {
+            objectInfo = isPromptInfo ? "db with following tables" : "listed database tables";
+        } else if (dbsObject instanceof DBSSchema) {
+            objectInfo = "Schema " + objectFullName;
+        } else {
+            objectInfo = DBUtils.getObjectTypeName(dbsObject) + objectFullName;
+        }
+        return objectInfo;
+    }
+
+    /**
+     * Computes the maximum number of tokens available for a request based on the engine's context size.
+     *
+     * @param engine the completion engine
+     * @param monitor the progress monitor
+     */
+    public static int getMaxRequestTokens(@NotNull DAICompletionEngine engine, @NotNull DBRProgressMonitor monitor) {
+        return engine.getMaxContextSize(monitor) - AIConstants.MAX_RESPONSE_TOKENS;
+    }
+
+    /**
+     * Retrieves the DDL for the given DBSObject if applicable.
+     *
+     * @param object the DBSObject from which to retrieve the DDL
+     * @param monitor the progress monitor
+     */
+    public static String getObjectDDL(@Nullable DBSObject object, @NotNull DBRProgressMonitor monitor) {
+        if (object instanceof DBSProcedure
+            || object instanceof DBSTrigger
+            || object instanceof DBSEntityConstraint
+            || object instanceof DBSView
+        ) {
+            if (object instanceof DBPScriptObject scriptObject) {
+                try {
+                    return scriptObject.getObjectDefinitionText(monitor, Map.of());
+                } catch (DBException e) {
+                    log.debug(e);
+                }
+            }
+        }
+        return null;
+    }
+
 }
