@@ -18,8 +18,12 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.dbeaver.DBException;
 
+import java.util.Map;
+
 public interface AIEngineConfiguration {
     void resolveSecrets() throws DBException;
 
     void saveSecrets() throws DBException;
+
+    Map<String, Object> toMap();
 }

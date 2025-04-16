@@ -50,12 +50,12 @@ import java.util.Map;
 public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
     private static final Log log = Log.getLog(AIPreferencePage.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai";
-    private final AIConfiguration settings;
+    private final AISettings settings;
 
     private DAICompletionEngine completionEngine;
     private IAIFormatter formatter;
 
-    private IObjectPropertyConfigurator<IAIFormatter, AIConfiguration> formatterConfigurator;
+    private IObjectPropertyConfigurator<IAIFormatter, AISettings> formatterConfigurator;
     private Combo serviceCombo;
 
     private final Map<String, String> serviceNameMappings = new HashMap<>();

@@ -65,19 +65,19 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
 
     @Override
     public void loadSettings(@NotNull OpenAIConfiguration configuration) {
-        token = CommonUtils.toString(configuration.properties().token());
+        token = CommonUtils.toString(configuration.getProperties().token());
         model = readModel(configuration).getName();
-        temperature = CommonUtils.toString(configuration.properties().temperature(), "0.0");
-        logQuery = CommonUtils.toBoolean(configuration.properties().loggingEnabled());
+        temperature = CommonUtils.toString(configuration.getProperties().temperature(), "0.0");
+        logQuery = CommonUtils.toBoolean(configuration.getProperties().loggingEnabled());
         applySettings();
     }
 
     @Override
     public void saveSettings(@NotNull OpenAIConfiguration openAIConfiguration) {
-        openAIConfiguration.properties().setToken(token);
-        openAIConfiguration.properties().setModel(model);
-        openAIConfiguration.properties().setTemperature(Double.parseDouble(temperature));
-        openAIConfiguration.properties().setLoggingEnabled(logQuery);
+        openAIConfiguration.getProperties().setToken(token);
+        openAIConfiguration.getProperties().setModel(model);
+        openAIConfiguration.getProperties().setTemperature(Double.parseDouble(temperature));
+        openAIConfiguration.getProperties().setLoggingEnabled(logQuery);
     }
 
     @Override
@@ -162,7 +162,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
     }
 
     private OpenAIModel readModel(@NotNull OpenAIConfiguration aiSettings) {
-        return OpenAIModel.getByName(CommonUtils.toString(aiSettings.properties().model(), getDefaultModel()));
+        return OpenAIModel.getByName(CommonUtils.toString(aiSettings.getProperties().model(), getDefaultModel()));
     }
 
     protected String getDefaultModel() {

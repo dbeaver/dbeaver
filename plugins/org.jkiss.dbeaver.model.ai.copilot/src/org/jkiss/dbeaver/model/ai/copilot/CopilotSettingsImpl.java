@@ -32,7 +32,7 @@ public class CopilotSettingsImpl implements CopilotSettings {
      */
     public String modelName() {
         return CommonUtils.toString(
-            getCopilotConfiguration().properties().model(),
+            getCopilotConfiguration().getProperties().model(),
             OpenAIModel.GPT_TURBO16.getName()
         );
     }
@@ -41,14 +41,14 @@ public class CopilotSettingsImpl implements CopilotSettings {
      * Returns the access token to use for Copilot.
      */
     public String accessToken() {
-        return getCopilotConfiguration().properties().token();
+        return getCopilotConfiguration().getProperties().token();
     }
 
     /**
      * Returns whether the configuration is valid.
      */
     public boolean isValidConfiguration() {
-        return !CommonUtils.isEmpty(getCopilotConfiguration().properties().token());
+        return !CommonUtils.isEmpty(getCopilotConfiguration().getProperties().token());
     }
 
     /**
@@ -56,7 +56,7 @@ public class CopilotSettingsImpl implements CopilotSettings {
      */
     public double temperature() {
         return CommonUtils.toDouble(
-            getCopilotConfiguration().properties().temperature(),
+            getCopilotConfiguration().getProperties().temperature(),
             0.0
         );
     }
@@ -65,7 +65,7 @@ public class CopilotSettingsImpl implements CopilotSettings {
      * Returns whether logging is enabled.
      */
     public boolean isLoggingEnabled() {
-        return getCopilotConfiguration().properties().loggingEnabled();
+        return getCopilotConfiguration().getProperties().loggingEnabled();
     }
 
     private CopilotConfiguration getCopilotConfiguration() {

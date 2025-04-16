@@ -20,13 +20,28 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIEngineConfiguration;
 
+import java.util.Map;
+
 public class CopilotConfiguration implements AIEngineConfiguration {
+    private boolean engineEnabled;
     @NotNull
-    private CopilotProperties properties;
+    private CopilotProperties properties = new CopilotProperties();
+
+    public boolean isEngineEnabled() {
+        return engineEnabled;
+    }
+
+    public void setEngineEnabled(boolean engineEnabled) {
+        this.engineEnabled = engineEnabled;
+    }
 
     @NotNull
-    public CopilotProperties properties() {
+    public CopilotProperties getProperties() {
         return properties;
+    }
+
+    public void setProperties(@NotNull CopilotProperties properties) {
+        this.properties = properties;
     }
 
     @Override
@@ -37,5 +52,10 @@ public class CopilotConfiguration implements AIEngineConfiguration {
     @Override
     public void saveSecrets() throws DBException {
         properties.saveSecrets();
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        return Map.of();
     }
 }

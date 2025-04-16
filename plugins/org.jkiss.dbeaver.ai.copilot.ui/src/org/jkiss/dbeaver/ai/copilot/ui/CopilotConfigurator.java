@@ -89,21 +89,21 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<DAICompl
 
     @Override
     public void loadSettings(@NotNull CopilotConfiguration configuration) {
-        token = CommonUtils.toString(configuration.properties().token());
+        token = CommonUtils.toString(configuration.getProperties().token());
         model = readModel(configuration).getName();
-        temperature = CommonUtils.toString(configuration.properties().temperature(), "0.0");
-        logQuery = CommonUtils.toBoolean(configuration.properties().loggingEnabled());
-        accessToken = CommonUtils.toString(configuration.properties().token(), "");
+        temperature = CommonUtils.toString(configuration.getProperties().temperature(), "0.0");
+        logQuery = CommonUtils.toBoolean(configuration.getProperties().loggingEnabled());
+        accessToken = CommonUtils.toString(configuration.getProperties().token(), "");
         accessTokenText.setText(accessToken);
         applySettings();
     }
 
     @Override
     public void saveSettings(@NotNull CopilotConfiguration copilotConfiguration) {
-        copilotConfiguration.properties().setToken(accessToken);
-        copilotConfiguration.properties().setModel(model);
-        copilotConfiguration.properties().setTemperature(Double.parseDouble(temperature));
-        copilotConfiguration.properties().setLoggingEnabled(logQuery);
+        copilotConfiguration.getProperties().setToken(accessToken);
+        copilotConfiguration.getProperties().setModel(model);
+        copilotConfiguration.getProperties().setTemperature(Double.parseDouble(temperature));
+        copilotConfiguration.getProperties().setLoggingEnabled(logQuery);
     }
 
     @Override
@@ -174,7 +174,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<DAICompl
     }
 
     private OpenAIModel readModel(@NotNull CopilotConfiguration aiSettings) {
-        return OpenAIModel.getByName(CommonUtils.toString(aiSettings.properties().model(), getDefaultModel()));
+        return OpenAIModel.getByName(CommonUtils.toString(aiSettings.getProperties().model(), getDefaultModel()));
     }
 
     private void createConnectionParameters(@NotNull Composite parent) {

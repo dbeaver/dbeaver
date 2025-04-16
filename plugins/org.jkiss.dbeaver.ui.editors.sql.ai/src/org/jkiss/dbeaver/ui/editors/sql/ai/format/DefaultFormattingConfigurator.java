@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
-import org.jkiss.dbeaver.model.ai.AIConfiguration;
+import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages;
 
-public class DefaultFormattingConfigurator implements IObjectPropertyConfigurator<IAIFormatter, AIConfiguration> {
+public class DefaultFormattingConfigurator implements IObjectPropertyConfigurator<IAIFormatter, AISettings> {
     private Button includeSourceTextInCommentCheck;
     private Button executeQueryImmediatelyCheck;
 
@@ -108,7 +108,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
 
 
     @Override
-    public void loadSettings(@NotNull AIConfiguration aiSettings) {
+    public void loadSettings(@NotNull AISettings aiSettings) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         includeSourceTextInCommentCheck.setSelection(store.getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT));
         executeQueryImmediatelyCheck.setSelection(store.getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY));
@@ -117,7 +117,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     }
 
     @Override
-    public void saveSettings(@NotNull AIConfiguration aiSettings) {
+    public void saveSettings(@NotNull AISettings aiSettings) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setValue(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, includeSourceTextInCommentCheck.getSelection());
         store.setValue(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, executeQueryImmediatelyCheck.getSelection());
@@ -126,7 +126,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     }
 
     @Override
-    public void resetSettings(@NotNull AIConfiguration aiSettings) {
+    public void resetSettings(@NotNull AISettings aiSettings) {
 
     }
 

@@ -16,14 +16,42 @@
  */
 package org.jkiss.dbeaver.model.ai.openai;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
+import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIEngineConfiguration;
 
+import java.lang.reflect.Type;
+import java.util.Map;
+
 public class OpenAIConfiguration implements AIEngineConfiguration {
+    private static final Gson GSON = new GsonBuilder()
+        .setStrictness(Strictness.LENIENT)
+        .create();
+
     private boolean engineEnabled;
     @NotNull
-    private OpenAIProperties properties;
+    private OpenAIProperties properties = new OpenAIProperties();
+
+    public boolean isEngineEnabled() {
+        return engineEnabled;
+    }
+
+    public void setEngineEnabled(boolean engineEnabled) {
+        this.engineEnabled = engineEnabled;
+    }
+
+    @NotNull
+    public OpenAIProperties getProperties() {
+        return properties;
+    }
+
+    public void setProperties(@NotNull OpenAIProperties properties) {
+        this.properties = properties;
+    }
 
     @Override
     public void resolveSecrets() throws DBException {
@@ -35,8 +63,10 @@ public class OpenAIConfiguration implements AIEngineConfiguration {
         properties.saveSecrets();
     }
 
-    @NotNull
-    public OpenAIProperties properties() {
-        return properties;
+    @Override
+    public Map<String, Object> toMap() {
+        Type typeOfSrc = new TypeToken<Map<String, String>>() {
+        }.getType();
+        return GSON.fromJson(GSON.toJsonTree(properties), typeOfSrc);
     }
 }

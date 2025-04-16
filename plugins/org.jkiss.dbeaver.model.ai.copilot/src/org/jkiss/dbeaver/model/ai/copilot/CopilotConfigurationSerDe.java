@@ -20,6 +20,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.Strictness;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIEngineConfiguration;
 import org.jkiss.dbeaver.model.ai.AIEngineConfigurationSerDe;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
@@ -31,18 +33,25 @@ public class CopilotConfigurationSerDe implements AIEngineConfigurationSerDe<Cop
     private static final Gson saveNonSecurePropsGson = PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
         .create();
 
+    @NotNull
     @Override
     public String getId() {
         return "copilot";
     }
 
+    @NotNull
     @Override
-    public JsonObject serialize(AIEngineConfiguration configuration) {
+    public JsonObject serialize(@NotNull AIEngineConfiguration configuration) {
         return saveNonSecurePropsGson.toJsonTree(configuration, CopilotConfiguration.class).getAsJsonObject();
     }
 
+    @NotNull
     @Override
-    public CopilotConfiguration deserialize(JsonObject jsonObject) {
+    public CopilotConfiguration deserialize(@Nullable JsonObject jsonObject) {
+        if (jsonObject == null) {
+            return new CopilotConfiguration();
+        }
+
         return readPropsGson.fromJson(jsonObject, CopilotConfiguration.class);
     }
 }

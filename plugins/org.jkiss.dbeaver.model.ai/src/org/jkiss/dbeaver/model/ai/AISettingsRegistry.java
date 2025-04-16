@@ -42,18 +42,19 @@ public class AISettingsRegistry {
 
     private static final Gson readPropsGson = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
-        .registerTypeAdapter(AIConfiguration.class, new AIConfigurationSerDe())
+        .registerTypeAdapter(AISettings.class, new AIConfigurationSerDe())
         .create();
     private static final Gson saveNonSecurePropsGson = PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
-        .registerTypeAdapter(AIConfiguration.class, new AIConfigurationSerDe())
+        .registerTypeAdapter(AISettings.class, new AIConfigurationSerDe())
         .create();
 
     private final Set<AISettingsEventListener> settingsChangedListeners = Collections.synchronizedSet(new HashSet<>());
 
     private interface AISettingsHolder {
-        AIConfiguration getSettings();
+        AISettings getSettings();
 
-        void setSettings(AIConfiguration mruSettings);
+        void setSettings(AISettings mruSettings);
+
         void reset();
     }
 
@@ -63,7 +64,7 @@ public class AISettingsRegistry {
 
         private final SMSessionPersistent session;
 
-        private volatile AIConfiguration mruSettings = null;
+        private volatile AISettings mruSettings = null;
         private volatile boolean settingsReadInProgress = false;
 
         private AISettingsSessionHolder(SMSessionPersistent session) {
@@ -79,15 +80,15 @@ public class AISettingsRegistry {
         }
 
         @Override
-        public synchronized AIConfiguration getSettings() {
-            AIConfiguration mruSettings = this.mruSettings;
-            AIConfiguration sharedSettings = this.session.getAttribute(AIConfiguration.class.getName());
+        public synchronized AISettings getSettings() {
+            AISettings mruSettings = this.mruSettings;
+            AISettings sharedSettings = this.session.getAttribute(AISettings.class.getName());
             if (mruSettings == null || !mruSettings.equals(sharedSettings)) {
                 if (settingsReadInProgress) {
                     // FIXME: it is a hack. Settings loading may cause infinite recursion because
                     // conf loading shows UI which may re-ask settings
                     // The fix is to disable UI during config read? But this lead to UI freeze..
-                    return new AIConfiguration();
+                    return new AISettings();
                 }
                 settingsReadInProgress = true;
                 try {
@@ -101,9 +102,9 @@ public class AISettingsRegistry {
         }
 
         @Override
-        public synchronized void setSettings(AIConfiguration mruSettings) {
+        public synchronized void setSettings(AISettings mruSettings) {
             this.mruSettings = mruSettings;
-            this.session.setAttribute(AIConfiguration.class.getName(), mruSettings);
+            this.session.setAttribute(AISettings.class.getName(), mruSettings);
         }
 
         @Override
@@ -116,11 +117,11 @@ public class AISettingsRegistry {
     private static class AISettingsLocalHolder implements AISettingsHolder {
         public static final AISettingsHolder INSTANCE = new AISettingsLocalHolder();
 
-        private AIConfiguration settings = null;
+        private AISettings settings = null;
 
         @Override
-        public synchronized AIConfiguration getSettings() {
-            AIConfiguration settings = this.settings;
+        public synchronized AISettings getSettings() {
+            AISettings settings = this.settings;
             if (settings == null) {
                 // if current context is not initialized or was invalidated, then reload settings
                 this.settings = settings = loadSettingsFromConfig();
@@ -129,7 +130,7 @@ public class AISettingsRegistry {
         }
 
         @Override
-        public synchronized void setSettings(AIConfiguration mruSettings) {
+        public synchronized void setSettings(AISettings mruSettings) {
             this.settings = mruSettings;
         }
 
@@ -169,19 +170,19 @@ public class AISettingsRegistry {
     }
 
     @NotNull
-    public AIConfiguration getSettings() {
+    public AISettings getSettings() {
         return this.getSettingsHolder().getSettings();
     }
 
     @NotNull
-    private static AIConfiguration loadSettingsFromConfig() {
-        AIConfiguration settings;
+    private static AISettings loadSettingsFromConfig() {
+        AISettings settings;
         try {
             String content = loadConfig();
             if (CommonUtils.isEmpty(content)) {
                 settings = prepareDefaultSettings();
             } else {
-                settings = readPropsGson.fromJson(new StringReader(content), AIConfiguration.class);
+                settings = readPropsGson.fromJson(new StringReader(content), AISettings.class);
                 settings.resolveSecrets();
             }
         } catch (Exception e) {
@@ -196,8 +197,8 @@ public class AISettingsRegistry {
         return settings;
     }
 
-    private static AIConfiguration prepareDefaultSettings() {
-        AIConfiguration settings = new AIConfiguration();
+    private static AISettings prepareDefaultSettings() {
+        AISettings settings = new AISettings();
         if (DBWorkbench.getPlatform().getPreferenceStore().getString(AICompletionConstants.AI_DISABLED) != null) {
             settings.setAiDisabled(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_DISABLED));
         } else {
@@ -207,7 +208,7 @@ public class AISettingsRegistry {
         return settings;
     }
 
-    public void saveSettings(AIConfiguration settings) {
+    public void saveSettings(AISettings settings) {
         try {
             if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
                 log.warn("The user has no permission to save AI configuration");
@@ -215,7 +216,7 @@ public class AISettingsRegistry {
             }
 
             settings.saveSecrets();
-            String content = saveNonSecurePropsGson.toJson(settings, AIConfiguration.class);
+            String content = saveNonSecurePropsGson.toJson(settings, AISettings.class);
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_JSON, content);
             this.getSettingsHolder().setSettings(settings);
         } catch (Exception e) {
@@ -236,31 +237,32 @@ public class AISettingsRegistry {
     }
 
     private static class AIConfigurationSerDe
-        implements JsonSerializer<AIConfiguration>, JsonDeserializer<AIConfiguration> {
+        implements JsonSerializer<AISettings>, JsonDeserializer<AISettings> {
         private final List<AIEngineConfigurationSerDe<?>> engineSerDe = getSerDes();
 
         @Override
-        public AIConfiguration deserialize(
+        public AISettings deserialize(
             JsonElement json,
             Type typeOfT,
             JsonDeserializationContext context
         ) throws JsonParseException {
-            AIConfiguration aiConfiguration = new AIConfiguration();
-            aiConfiguration.setAiDisabled(json.getAsJsonObject().get("aiDisabled").getAsBoolean());
-            aiConfiguration.setActiveEngine(json.getAsJsonObject().get("activeEngine").getAsString());
+            AISettings aiSettings = new AISettings();
+            aiSettings.setAiDisabled(json.getAsJsonObject().get("aiDisabled").getAsBoolean());
+            aiSettings.setActiveEngine(json.getAsJsonObject().get("activeEngine").getAsString());
 
             JsonObject engineConfigurations = json.getAsJsonObject().getAsJsonObject("engineConfigurations");
-            Map<String, AIEngineConfiguration> engineConfigurationMap = engineSerDe.stream().collect(Collectors.toMap(
-                AIEngineConfigurationSerDe::getId,
-                serDe -> serDe.deserialize(engineConfigurations.getAsJsonObject(serDe.getId()))
-            ));
-            aiConfiguration.setEngineConfigurations(engineConfigurationMap);
+            Map<String, AIEngineConfiguration> engineConfigurationMap = engineSerDe.stream()
+                .collect(Collectors.toMap(
+                    AIEngineConfigurationSerDe::getId,
+                    serDe -> serDe.deserialize(engineConfigurations.getAsJsonObject(serDe.getId()))
+                ));
+            aiSettings.setEngineConfigurations(engineConfigurationMap);
 
-            return aiConfiguration;
+            return aiSettings;
         }
 
         @Override
-        public JsonElement serialize(AIConfiguration src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(AISettings src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject json = new JsonObject();
             json.addProperty("aiDisabled", src.aiDisabled());
             json.addProperty("activeEngine", src.activeEngine());

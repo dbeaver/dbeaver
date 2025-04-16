@@ -20,6 +20,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.Strictness;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineConfiguration;
 import org.jkiss.dbeaver.model.ai.AIEngineConfigurationSerDe;
@@ -32,18 +34,25 @@ public class OpenAIConfigurationSerDe implements AIEngineConfigurationSerDe<Open
     private static final Gson saveNonSecurePropsGson = PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
         .create();
 
+    @NotNull
     @Override
     public String getId() {
         return AIConstants.OPENAI_ENGINE;
     }
 
+    @NotNull
     @Override
-    public JsonObject serialize(AIEngineConfiguration configuration) {
+    public JsonObject serialize(@NotNull AIEngineConfiguration configuration) {
         return saveNonSecurePropsGson.toJsonTree(configuration, OpenAIConfiguration.class).getAsJsonObject();
     }
 
+    @NotNull
     @Override
-    public OpenAIConfiguration deserialize(JsonObject jsonObject) {
+    public OpenAIConfiguration deserialize(@Nullable JsonObject jsonObject) {
+        if (jsonObject == null) {
+            return new OpenAIConfiguration();
+        }
+
         return readPropsGson.fromJson(jsonObject, OpenAIConfiguration.class);
     }
 }
