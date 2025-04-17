@@ -106,10 +106,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             DataSourceHandlerUtils.resolveSharedCredentials(dsd, null);
         }
 
-        if (this.usernameText != null && !this.usernameText.isDisposed()) {
+        if (this.usernameText != null) {
             this.usernameText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserName()));
         }
-        if (this.passwordText != null && !this.passwordText.isDisposed()) {
+        if (this.passwordText != null) {
             this.passwordText.setText(CommonUtils.notEmpty(dataSource.getConnectionConfiguration().getUserPassword()));
             if (CREDENTIALS_SAVE_RESTRICTED) {
                 this.savePasswordCheck.setSelection(false);
@@ -132,7 +132,6 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
             }
         }
     }
-
 
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
