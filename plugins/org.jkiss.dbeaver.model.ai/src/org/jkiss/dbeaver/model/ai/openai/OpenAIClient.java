@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.theokanning.openai.OpenAiError;
 import com.theokanning.openai.completion.chat.ChatCompletionChunk;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatCompletionResult;
@@ -39,6 +40,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class OpenAIClient {
     private static final Log log = Log.getLog(OpenAIClient.class);
@@ -100,10 +102,16 @@ public class OpenAIClient {
 
         SubmissionPublisher<ChatCompletionChunk> publisher = new SubmissionPublisher<>();
 
+        AtomicBoolean hasError = new AtomicBoolean(false);
+        StringBuilder error = new StringBuilder();
+
         client.sendAsync(modifiedRequest, HttpResponse.BodyHandlers.ofLines())
             .thenAccept(response -> {
                 response.body().forEach(line -> {
-                    if (line.startsWith("data: ")) {
+                    if (hasError.get() || line.startsWith("{")) {
+                        hasError.set(true);
+                        error.append(line);
+                    } else if (line.startsWith("data: ")) {
 
                         String data = line.substring(6).trim();
                         if ("[DONE]".equals(data)) {
@@ -119,10 +127,19 @@ public class OpenAIClient {
                     }
                 });
             })
-            .exceptionally(ex -> {
-                publisher.closeExceptionally(ex);
-                return null;
+            .whenComplete((v, e) -> {
+                if (e != null) {
+                    publisher.closeExceptionally(e);
+                } else if (hasError.get()) {
+                    try {
+                        OpenAiError openAIerror = MAPPER.readValue(error.toString(), OpenAiError.class);
+                        publisher.closeExceptionally(new DBException("Error: " + openAIerror.toString()));
+                    } catch (Exception ex) {
+                        publisher.closeExceptionally(ex);
+                    }
+                }
             });
+
         return publisher;
     }
 
