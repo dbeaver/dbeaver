@@ -30,6 +30,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
@@ -77,7 +78,12 @@ public class AITranslateHandler extends AbstractHandler {
             return null;
         }
 
-        AIAssistant aiAssistant = AIAssistantRegistry.getInstance().getAssistant();
+        AIAssistant aiAssistant;
+        try {
+            aiAssistant = AIAssistantRegistry.getInstance().getAssistant();
+        } catch (DBException e) {
+            throw new IllegalArgumentException("Cannot find AI assistant", e);
+        }
 
         try {
             if (!aiAssistant.hasValidConfiguration()) {

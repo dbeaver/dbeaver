@@ -31,7 +31,11 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.AlphanumericComparator;
 import org.jkiss.utils.ArrayUtils;
@@ -138,10 +142,17 @@ public class DBNUtils {
             return;
         }
 
+        if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBSTableColumn) {
+            if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
+                Arrays.sort(children, NodeNameComparator.INSTANCE);
+            }
+            return;
+        }
+
         Comparator<DBNNode> comparator = null;
 
         if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
-            comparator = NodeFolderComparator.INSTANCE;
+            comparator = NodeNameComparator.INSTANCE;
         }
 
         if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST) || isMergedEntity(firstChild)) {
@@ -242,6 +253,15 @@ public class DBNUtils {
                 return false;
             }
             return node instanceof DBNContainer || node.allowsChildren();
+        }
+    }
+
+    private static class NodeNameComparator implements Comparator<DBNNode> {
+        static NodeNameComparator INSTANCE = new NodeNameComparator();
+
+        @Override
+        public int compare(DBNNode node1, DBNNode node2) {
+            return node1.getNodeDisplayName().compareToIgnoreCase(node2.getNodeDisplayName());
         }
     }
 

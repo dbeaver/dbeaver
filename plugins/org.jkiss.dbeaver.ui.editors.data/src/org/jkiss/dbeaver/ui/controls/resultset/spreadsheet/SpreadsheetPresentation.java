@@ -2478,7 +2478,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         private Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row, Object cellValue, Color background, boolean selected) {
             if (selected) {
                 Color fg = ResultSetThemeSettings.instance.foregroundSelected;
-                if (colorizeDataTypes && isSimpleAttribute(attribute) && !DBUtils.isNullValue(cellValue)) {
+                if (colorizeDataTypes && !DBUtils.isNullValue(cellValue)) {
                     Color color = dataTypesForegrounds.get(attribute.getDataKind());
                     if (color != null) {
                         RGB mixRGB = UIUtils.blend(
@@ -2525,7 +2525,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (DBUtils.isNullValue(cellValue)) {
                     return ResultSetThemeSettings.instance.foregroundNull;
                 } else {
-                    if (colorizeDataTypes && isSimpleAttribute(attribute)) {
+                    if (colorizeDataTypes) {
                         Color color = dataTypesForegrounds.get(attribute.getDataKind());
                         if (color != null) {
                             return color;

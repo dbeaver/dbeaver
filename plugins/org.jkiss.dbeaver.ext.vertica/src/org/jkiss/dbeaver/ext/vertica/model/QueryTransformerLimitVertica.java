@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,9 @@ package org.jkiss.dbeaver.ext.vertica.model;
 
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformerExt;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.utils.CommonUtils;
 
 /**
 * Query transformer for LIMIT.
@@ -36,14 +34,10 @@ public class QueryTransformerLimitVertica extends QueryTransformerLimit implemen
     @Override
     public boolean isApplicableTo(SQLQuery query) {
         Statement statement = query.getStatement();
-        return statement != null && isLimitApplicable(statement);
-    }
-
-    public boolean isLimitApplicable(Statement statement) {
-        if (statement instanceof PlainSelect plainSelect) {
-            return plainSelect.getFromItem() != null && CommonUtils.isEmpty(plainSelect.getIntoTables())
-                && plainSelect.getLimit() == null && plainSelect.getTop() == null && plainSelect.getForUpdateTable() == null;
+        if (statement instanceof PlainSelect select) {
+            return query.isPlainSelect() && select.getFromItem() != null;
         }
         return false;
     }
+    
 }

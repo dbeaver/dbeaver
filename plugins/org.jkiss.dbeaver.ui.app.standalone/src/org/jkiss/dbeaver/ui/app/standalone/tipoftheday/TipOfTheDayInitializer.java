@@ -16,27 +16,23 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.tipoftheday;
 
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
     private static final String PROP_NOT_FIRST_RUN = "tipOfTheDayInitializer.notFirstRun";
 
     @Override
-    public void initializeWorkbenchWindow(IWorkbenchWindow window) {
+    public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
+        IWorkbenchWindow window = configurer.getWindow();
         if (!isTipsEnabled() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
             return;
         }
-        Shell mainShell = window.getShell();
-        DialogUtils.showDelayedPopup(
-            mainShell,
-            () -> ShowTipOfTheDayHandler.showTipOfTheDay(window),
-            "Show tip of the day"
-        );
+        ShowTipOfTheDayHandler.showTipOfTheDay(window);
     }
 
     private static boolean isTipsEnabled() {

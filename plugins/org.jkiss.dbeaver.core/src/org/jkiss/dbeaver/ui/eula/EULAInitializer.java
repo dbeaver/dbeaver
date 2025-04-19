@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.eula;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
@@ -27,7 +28,8 @@ public class EULAInitializer implements IWorkbenchWindowInitializer {
     public static final String DBEAVER_EULA = "DBeaver.eula";
 
     @Override
-    public void initializeWorkbenchWindow(@NotNull IWorkbenchWindow window) {
+    public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
+        IWorkbenchWindow window = configurer.getWindow();
         if (!DBWorkbench.getPlatform().getApplication().isStandalone() || !isEulaDialogNeeded() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
             return;
         }
