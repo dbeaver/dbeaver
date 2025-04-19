@@ -28,6 +28,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.Map;
@@ -39,6 +40,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
     private static final Log log = Log.getLog(NumberDataFormatter.class);
 
     private DecimalFormat numberFormat;
+    private DecimalFormat scientificFormat;
     private StringBuffer buffer;
     private FieldPosition position;
     private boolean nativeSpecialValues;
@@ -116,6 +118,12 @@ public class NumberDataFormatter implements DBDDataFormatter {
         buffer = new StringBuffer();
         position = new FieldPosition(0);
         nativeSpecialValues = CommonUtils.toBoolean(properties.get(NumberFormatSample.PROP_NATIVE_SPECIAL_VALUES));
+
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+        scientificFormat = (DecimalFormat) numberFormat.clone();
+        symbols.setExponentSeparator("E");
+        scientificFormat.setDecimalFormatSymbols(symbols);
+        scientificFormat.applyPattern("0.###E0");
     }
 
     @Nullable
@@ -146,7 +154,14 @@ public class NumberDataFormatter implements DBDDataFormatter {
             synchronized (this) {
                 buffer.setLength(0);
                 try {
-                    return numberFormat.format(value, buffer, position).toString();
+                    int maxFD = numberFormat.getMaximumFractionDigits();
+                    BigDecimal smallestValue = BigDecimal.valueOf(1.0).movePointLeft(maxFD);
+                    if (value instanceof BigDecimal && ((BigDecimal) value).compareTo(smallestValue) < 0) {
+                        // This is a very small BigDecimal
+                        return scientificFormat.format(value, buffer, position).toString();
+                    } else {
+                        return numberFormat.format(value, buffer, position).toString();
+                    }
                 } catch (ArithmeticException e) {
                     if (numberFormat.getRoundingMode() == RoundingMode.UNNECESSARY) {
                         // This type can't use UNNECESSARY rounding. Let's set default one
