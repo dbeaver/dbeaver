@@ -4,6 +4,6 @@ cd ..
 [ ! -d ../dbeaver-jdbc-libsql ] && git clone https://github.com/dbeaver/dbeaver-jdbc-libsql.git ../dbeaver-jdbc-libsql
 
 cd product/aggregate
-mvn clean install -Pall-platforms -T 1C
+mvn clean install -Pall-platforms -T 1C -Djdk.xml.maxGeneralEntitySizeLimit=2097152 -Djdk.xml.totalEntitySizeLimit=2097152
 cd ../..
 
