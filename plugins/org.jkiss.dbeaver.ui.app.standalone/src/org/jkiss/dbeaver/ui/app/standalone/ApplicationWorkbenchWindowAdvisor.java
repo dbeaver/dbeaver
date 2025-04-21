@@ -42,13 +42,13 @@ import org.eclipse.ui.part.EditorInputTransfer;
 import org.eclipse.ui.part.MarkerTransfer;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
@@ -354,8 +354,12 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 
     protected void initWorkbenchWindows() {
         UIExecutionQueue.queueExec(() -> {
-            for (IWorkbenchWindowInitializer wwInit : WorkbenchHandlerRegistry.getInstance().getWorkbenchWindowInitializers()) {
-                wwInit.initializeWorkbenchWindow(getWindowConfigurer().getWindow());
+            for (var descriptor : WorkbenchHandlerRegistry.getInstance().getWorkbenchWindowInitializers()) {
+                try {
+                    descriptor.newInstance().initializeWorkbenchWindow(getWindowConfigurer());
+                } catch (DBException e) {
+                    log.error("Error creating workbench window initializer", e);
+                }
             }
         });
     }

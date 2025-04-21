@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.model.ai.copilot;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.copilot.dto.CopilotChatChunk;
 import org.jkiss.dbeaver.model.ai.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.copilot.dto.CopilotChatResponse;
 import org.jkiss.dbeaver.model.ai.copilot.dto.CopilotSessionToken;
@@ -32,6 +34,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.concurrent.Flow;
+import java.util.concurrent.SubmissionPublisher;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -164,6 +168,48 @@ public class CopilotClient implements AutoCloseable {
         } else {
             throw mapHttpError(response);
         }
+    }
+
+    public Flow.Publisher<CopilotChatChunk> createChatCompletionStream(
+        @NotNull DBRProgressMonitor monitor,
+        String token,
+        @NotNull CopilotChatRequest chatRequest
+    ) throws DBException {
+        HttpRequest request = HttpRequest.newBuilder()
+            .header("Content-type", "application/json")
+            .uri(HttpUtils.resolve(CHAT_REQUEST_URL))
+            .header("authorization", "Bearer " + token)
+            .header("Editor-Version", CHAT_EDITOR_VERSION)
+            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(chatRequest)))
+            .timeout(TIMEOUT)
+            .build();
+
+        SubmissionPublisher<CopilotChatChunk> publisher = new SubmissionPublisher<>();
+
+        client.sendAsync(request, HttpResponse.BodyHandlers.ofLines())
+            .thenAccept(response -> {
+                response.body().forEach(line -> {
+                    if (line.startsWith("data: ")) {
+
+                        String data = line.substring(6).trim();
+                        if ("[DONE]".equals(data)) {
+                            publisher.close();
+                        } else {
+                            try {
+                                CopilotChatChunk chunk = GSON.fromJson(data, CopilotChatChunk.class);
+                                publisher.submit(chunk);
+                            } catch (Exception e) {
+                                publisher.closeExceptionally(e);
+                            }
+                        }
+                    }
+                });
+            })
+            .exceptionally(ex -> {
+                publisher.closeExceptionally(ex);
+                return null;
+            });
+        return publisher;
     }
 
     @Override

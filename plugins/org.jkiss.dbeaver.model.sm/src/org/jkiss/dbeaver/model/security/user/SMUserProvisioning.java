@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,5 +50,41 @@ public class SMUserProvisioning {
     @Nullable
     public String getAuthRole() {
         return authRole;
+    }
+
+    public static SMUserProvisioningBuilder builder() {
+        return new SMUserProvisioningBuilder();
+    }
+
+    public static final class SMUserProvisioningBuilder {
+        private String authRole;
+        private String userId;
+        private Map<String, String> metaParameters;
+
+        private SMUserProvisioningBuilder() {
+        }
+
+        public static SMUserProvisioningBuilder aSMUserProvisioning() {
+            return new SMUserProvisioningBuilder();
+        }
+
+        public SMUserProvisioningBuilder authRole(String authRole) {
+            this.authRole = authRole;
+            return this;
+        }
+
+        public SMUserProvisioningBuilder userId(String userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public SMUserProvisioningBuilder metaParameters(Map<String, String> metaParameters) {
+            this.metaParameters = metaParameters;
+            return this;
+        }
+
+        public SMUserProvisioning build() {
+            return new SMUserProvisioning(userId, metaParameters, authRole);
+        }
     }
 }

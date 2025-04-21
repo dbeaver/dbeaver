@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.utils;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -25,6 +26,7 @@ import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 public class MonitoredHttpClient implements AutoCloseable {
     private final HttpClient client;
@@ -72,6 +74,12 @@ public class MonitoredHttpClient implements AutoCloseable {
         }
     }
 
+    public <T> CompletableFuture<HttpResponse<Stream<T>>> sendAsync(
+        @NotNull HttpRequest request,
+        @NotNull HttpResponse.BodyHandler<Stream<T>> streamBodyHandler
+    ) {
+        return client.sendAsync(request, streamBodyHandler);
+    }
 
     @Override
     public void close() {

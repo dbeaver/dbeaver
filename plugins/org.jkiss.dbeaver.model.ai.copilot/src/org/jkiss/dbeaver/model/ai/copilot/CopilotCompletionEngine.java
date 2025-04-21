@@ -20,16 +20,17 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionRequest;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionResponse;
+import org.jkiss.dbeaver.model.ai.completion.*;
+import org.jkiss.dbeaver.model.ai.copilot.dto.CopilotChatChunk;
 import org.jkiss.dbeaver.model.ai.copilot.dto.CopilotChatRequest;
-import org.jkiss.dbeaver.model.ai.copilot.dto.CopilotChatResponse;
 import org.jkiss.dbeaver.model.ai.copilot.dto.CopilotMessage;
 import org.jkiss.dbeaver.model.ai.copilot.dto.CopilotSessionToken;
 import org.jkiss.dbeaver.model.ai.openai.OpenAIModel;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.List;
+import java.util.concurrent.Flow;
 
 public class CopilotCompletionEngine implements DAICompletionEngine {
     private static final Log log = Log.getLog(CopilotCompletionEngine.class);
@@ -68,8 +69,63 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
             .withN(1)
             .build();
 
-        CopilotChatResponse chatResponse = client.evaluate().chat(monitor, requestSessionToken(monitor).token(), chatRequest);
-        return new DAICompletionResponse(chatResponse.choices().get(0).message().content());
+        List<DAICompletionChoice> choices = client.evaluate().chat(monitor, requestSessionToken(monitor).token(), chatRequest)
+            .choices()
+            .stream()
+            .map(it -> new DAICompletionChoice(it.message().content(), null))
+            .toList();
+
+        return new DAICompletionResponse(choices);
+    }
+
+    @Override
+    public Flow.Publisher<DAICompletionChunk> requestCompletionStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionRequest request
+    ) throws DBException {
+        CopilotChatRequest chatRequest = CopilotChatRequest.builder()
+            .withModel(CopilotSettings.INSTANCE.modelName())
+            .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
+            .withTemperature(CopilotSettings.INSTANCE.temperature())
+            .withStream(true)
+            .withIntent(false)
+            .withTopP(1)
+            .withN(1)
+            .build();
+
+        Flow.Publisher<CopilotChatChunk> chunkPublisher = client.evaluate().createChatCompletionStream(
+            monitor,
+            requestSessionToken(monitor).token(),
+            chatRequest
+        );
+
+
+        return subscriber -> chunkPublisher.subscribe(
+            new Flow.Subscriber<>() {
+                @Override
+                public void onSubscribe(Flow.Subscription subscription) {
+                    subscriber.onSubscribe(subscription);
+                }
+
+                @Override
+                public void onNext(CopilotChatChunk chunk) {
+                    List<DAICompletionChoice> choices = chunk.choices().stream()
+                        .map(it -> new DAICompletionChoice(it.delta().content(), null))
+                        .toList();
+                    subscriber.onNext(new DAICompletionChunk(choices));
+                }
+
+                @Override
+                public void onError(Throwable throwable) {
+                    subscriber.onError(throwable);
+                }
+
+                @Override
+                public void onComplete() {
+                    subscriber.onComplete();
+                }
+            }
+        );
     }
 
     @Override
