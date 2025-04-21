@@ -238,7 +238,9 @@ public class SQLDocumentSyntaxContext {
                 int firstAffectedOffset = 0;
                 for (ListNode<Integer> kn = keyOffsetsToRemove; kn != null; kn = kn.next) {
                     firstAffectedOffset = kn.data;
-                    this.scriptItems.removeAt(kn.data);
+                    if (kn.next != null) {
+                        this.scriptItems.removeAt(kn.data);
+                    }
                 }
                 if (delta > 0) { // when delta is non-negative, we are dropping only the affected region and applying offset for the rest
                     this.scriptItems.applyOffset(offset, delta);
