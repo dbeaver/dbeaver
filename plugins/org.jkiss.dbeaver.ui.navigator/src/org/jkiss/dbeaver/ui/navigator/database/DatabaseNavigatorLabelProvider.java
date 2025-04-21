@@ -28,6 +28,8 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -35,6 +37,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
@@ -56,6 +59,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     private final DatabaseNavigatorTree tree;
     protected Color lockedForeground;
     private ILabelDecorator labelDecorator;
+    private static final Log log = Log.getLog(DatabaseNavigatorLabelProvider.class);
 
     public DatabaseNavigatorLabelProvider(@NotNull DatabaseNavigatorTree tree) {
         this.tree = tree;
@@ -102,6 +106,15 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             text = labelProvider.getText(obj);
         } else if (obj instanceof DBNNode dbnNode) {
             text = dbnNode.getNodeDisplayName();
+            if (dbnNode.hasChildren(false) && isRelevantNodeType(dbnNode)) {
+                int childCount = 0;
+                try {
+                    childCount = dbnNode.getChildren(new VoidProgressMonitor()).length;
+                } catch (DBException e) {
+                    log.error("Error fetching children for node: " + dbnNode.getNodeDisplayName());
+                }
+                text += " (" + childCount + ") ";
+            }
             if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS)) {
                 String briefInfo = dbnNode.getNodeBriefInfo();
                 if (!CommonUtils.isEmpty(briefInfo)) {
@@ -118,6 +131,11 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             text += " (...)";
         }
         return text;
+    }
+
+    private boolean isRelevantNodeType(DBNNode node) {
+        String nodeType = node.getNodeType();
+        return !"index".equalsIgnoreCase(nodeType);
     }
 
     @Override
