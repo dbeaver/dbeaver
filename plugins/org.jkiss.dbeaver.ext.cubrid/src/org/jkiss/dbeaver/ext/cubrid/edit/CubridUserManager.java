@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.cubrid.ui.config;
+package org.jkiss.dbeaver.ext.cubrid.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -125,7 +125,7 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
 
     @NotNull
     private String getUserName(CubridPrivilage user, Map<Object, Object> properties) {
-        Object name = properties.get(CubridPrivilageHandler.NAME.getId());
+        Object name = properties.get("NAME");
         if (name != null) {
             user.setName(name.toString().toUpperCase());
         }

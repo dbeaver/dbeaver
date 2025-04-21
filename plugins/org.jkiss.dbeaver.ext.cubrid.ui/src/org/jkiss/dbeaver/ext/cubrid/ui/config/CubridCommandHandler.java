@@ -54,10 +54,10 @@ public class CubridCommandHandler extends DBECommandComposite<CubridPrivilage, C
         for (Object key : getProperties().keySet()) {
             switch (key.toString()) {
                 case "PASSWORD":
-                    builder.append(" PASSWORD ").append(SQLUtils.quoteString(getObject(), getProperties().get(key).toString()));
+                    builder.append(" PASSWORD ").append(SQLUtils.quoteString(getObject(), getProperty(key).toString()));
                     break;
                 case "DESCRIPTION":
-                    builder.append(" COMMENT ").append(SQLUtils.quoteString(getObject(), getProperties().get(key).toString()));
+                    builder.append(" COMMENT ").append(SQLUtils.quoteString(getObject(), getProperty(key).toString()));
                 default:
                     break;
             }
