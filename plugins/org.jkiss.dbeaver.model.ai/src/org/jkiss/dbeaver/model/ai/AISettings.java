@@ -26,7 +26,7 @@ public class AISettings {
     private String activeEngine;
     private Map<String, AIEngineConfiguration> engineConfigurations;
 
-    public boolean aiDisabled() {
+    public boolean isAiDisabled() {
         return aiDisabled;
     }
 

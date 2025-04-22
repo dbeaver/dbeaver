@@ -39,7 +39,7 @@ public class AIPropertyTester extends PropertyTester {
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         switch (property) {
             case PROP_IS_DISABLED: {
-                return AISettingsRegistry.getInstance().getSettings().aiDisabled();
+                return AISettingsRegistry.getInstance().getSettings().isAiDisabled();
             }
         }
         return false;

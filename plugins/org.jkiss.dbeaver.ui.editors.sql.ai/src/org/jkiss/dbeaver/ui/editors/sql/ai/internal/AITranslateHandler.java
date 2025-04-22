@@ -79,7 +79,7 @@ public class AITranslateHandler extends AbstractHandler {
 
         AIFeatures.SQL_AI_POPUP.use();
 
-        if (AISettingsRegistry.getInstance().getSettings().aiDisabled()) {
+        if (AISettingsRegistry.getInstance().getSettings().isAiDisabled()) {
             return null;
         }
 

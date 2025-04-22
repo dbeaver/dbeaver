@@ -264,7 +264,7 @@ public class AISettingsRegistry {
         @Override
         public JsonElement serialize(AISettings src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject json = new JsonObject();
-            json.addProperty("aiDisabled", src.aiDisabled());
+            json.addProperty("aiDisabled", src.isAiDisabled());
             json.addProperty("activeEngine", src.activeEngine());
 
             JsonObject engineConfigurations = new JsonObject();

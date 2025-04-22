@@ -17,13 +17,13 @@
 package org.jkiss.dbeaver.model.ai.copilot;
 
 public interface CopilotSettings {
-    String modelName();
+    String getModelName();
 
-    double temperature();
+    double getTemperature();
 
     boolean isValidConfiguration();
 
     boolean isLoggingEnabled();
 
-    String accessToken();
+    String getAccessToken();
 }

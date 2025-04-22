@@ -56,7 +56,7 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
 
     @Override
     public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) {
-        return OpenAIModel.getByName(settings.modelName()).getMaxTokens();
+        return OpenAIModel.getByName(settings.getModelName()).getMaxTokens();
     }
 
     @Override
@@ -65,9 +65,9 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
         @NotNull DAICompletionRequest request
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
-            .withModel(settings.modelName())
+            .withModel(settings.getModelName())
             .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
-            .withTemperature(settings.temperature())
+            .withTemperature(settings.getTemperature())
             .withStream(false)
             .withIntent(false)
             .withTopP(1)
@@ -89,9 +89,9 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
         @NotNull DAICompletionRequest request
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
-            .withModel(CopilotSettings.INSTANCE.modelName())
+            .withModel(settings.getModelName())
             .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
-            .withTemperature(CopilotSettings.INSTANCE.temperature())
+            .withTemperature(settings.getTemperature())
             .withStream(true)
             .withIntent(false)
             .withTopP(1)
@@ -168,7 +168,7 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
                 return sessionToken;
             }
 
-            return client.evaluate().sessionToken(monitor, settings.accessToken());
+            return client.evaluate().sessionToken(monitor, settings.getAccessToken());
         }
     }
 }

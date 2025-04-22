@@ -173,7 +173,7 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
     protected OpenAIClient createClient() throws DBException {
         return new OpenAIClient(
             OPENAI_ENDPOINT,
-            List.of(new OpenAIRequestFilter(OpenAISettings.INSTANCE.token()))
+            List.of(new OpenAIRequestFilter(settings.getToken()))
         );
     }
 

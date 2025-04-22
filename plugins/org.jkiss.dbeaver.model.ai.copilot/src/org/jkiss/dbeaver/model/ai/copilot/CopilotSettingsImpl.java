@@ -30,7 +30,7 @@ public class CopilotSettingsImpl implements CopilotSettings {
     /**
      * Returns the model name to use for Copilot.
      */
-    public String modelName() {
+    public String getModelName() {
         return CommonUtils.toString(
             getCopilotConfiguration().getProperties().model(),
             OpenAIModel.GPT_TURBO16.getName()
@@ -40,7 +40,7 @@ public class CopilotSettingsImpl implements CopilotSettings {
     /**
      * Returns the access token to use for Copilot.
      */
-    public String accessToken() {
+    public String getAccessToken() {
         return getCopilotConfiguration().getProperties().token();
     }
 
@@ -54,7 +54,7 @@ public class CopilotSettingsImpl implements CopilotSettings {
     /**
      * Returns the temperature to use for Copilot.
      */
-    public double temperature() {
+    public double getTemperature() {
         return CommonUtils.toDouble(
             getCopilotConfiguration().getProperties().temperature(),
             0.0

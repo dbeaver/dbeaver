@@ -110,7 +110,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         if (!hasAccessToPage()) {
             return;
         }
-        enableAICheck.setSelection(!this.settings.aiDisabled());
+        enableAICheck.setSelection(!this.settings.isAiDisabled());
         formatterConfigurator.loadSettings(this.settings);
     }
 
