@@ -18,7 +18,7 @@
         </completionEngine>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.ai.engine.settingsSerDe">
+    <extension point="com.dbeaver.ai.engine.settingsSerDe">
         <serde id="openai" class="org.jkiss.dbeaver.model.ai.openai.OpenAISettingsSerDe"/>
     </extension>
 

@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
  * Descriptor for AI engine configuration serializer/deserializer
  */
 public class AIEngineConfigurationSerDeDescriptor extends AbstractDescriptor {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.ai.engine.configurationSerDe";
+    public static final String EXTENSION_ID = "com.dbeaver.ai.engine.settingsSerDe";
 
     private final IConfigurationElement contributorConfig;
 
