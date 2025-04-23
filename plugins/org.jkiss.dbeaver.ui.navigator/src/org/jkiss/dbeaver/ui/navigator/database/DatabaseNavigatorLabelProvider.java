@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -102,18 +103,21 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     @Override
     public String getText(Object obj) {
         String text = null;
+        int childCount;
         if (obj instanceof ILabelProvider labelProvider) {
             text = labelProvider.getText(obj);
         } else if (obj instanceof DBNNode dbnNode) {
             text = dbnNode.getNodeDisplayName();
-            if (dbnNode.hasChildren(false) && isRelevantNodeType(dbnNode)) {
-                int childCount = 0;
-                try {
-                    childCount = dbnNode.getChildren(new VoidProgressMonitor()).length;
-                } catch (DBException e) {
-                    log.error("Error fetching children for node: " + dbnNode.getNodeDisplayName());
+            if (dbnNode instanceof DBNDatabaseFolder) {
+                if (tree.getViewer().getExpandedState(dbnNode)){
+                    childCount = 0;
+                    try {
+                        childCount = dbnNode.getChildren(new VoidProgressMonitor()).length;
+                    } catch (DBException e) {
+                        log.error("Error fetching children for node: " + dbnNode.getNodeDisplayName());
+                    }
+                    text += " (" + childCount + ")";
                 }
-                text += " (" + childCount + ") ";
             }
             if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS)) {
                 String briefInfo = dbnNode.getNodeBriefInfo();
@@ -131,11 +135,6 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             text += " (...)";
         }
         return text;
-    }
-
-    private boolean isRelevantNodeType(DBNNode node) {
-        String nodeType = node.getNodeType();
-        return !"index".equalsIgnoreCase(nodeType);
     }
 
     @Override
