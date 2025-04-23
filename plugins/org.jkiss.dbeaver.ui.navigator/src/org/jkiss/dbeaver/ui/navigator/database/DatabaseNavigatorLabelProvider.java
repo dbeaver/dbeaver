@@ -98,7 +98,6 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     @Override
     public String getText(Object obj) {
         String text = null;
-        int childCount;
         if (obj instanceof ILabelProvider labelProvider) {
             text = labelProvider.getText(obj);
         } else if (obj instanceof DBNNode dbnNode) {
