@@ -5,6 +5,7 @@ Bundle-Version: 1.0.100.qualifier
 Bundle-Release-Date: 20250505
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql;visibility:=reexport,
  org.jkiss.dbeaver.ext.generic;visibility:=reexport

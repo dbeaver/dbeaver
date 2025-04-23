@@ -14,13 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.completion;
+package org.jkiss.dbeaver.model.ai.openai;
 
 import org.jkiss.code.NotNull;
 
-import java.util.List;
+import java.net.http.HttpRequest;
 
-public record DAICompletionChunk(
-    @NotNull List<DAICompletionChoice> choices
-) {
+public class OpenAIRequestFilter implements OpenAIClient.HttpRequestFilter {
+    private final String token;
+
+    public OpenAIRequestFilter(String token) {
+        this.token = token;
+    }
+
+    @NotNull
+    @Override
+    public HttpRequest filter(@NotNull HttpRequest request) {
+        return HttpRequest.newBuilder(request.uri())
+            .uri(request.uri())
+            .method(request.method(), request.bodyPublisher().orElse(HttpRequest.BodyPublishers.noBody()))
+            .header("Content-Type", "application/json")
+            .headers("Authorization", "Bearer " + token)
+            .build();
+    }
 }

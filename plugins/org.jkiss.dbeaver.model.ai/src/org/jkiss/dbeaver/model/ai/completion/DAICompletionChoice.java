@@ -17,10 +17,10 @@
 package org.jkiss.dbeaver.model.ai.completion;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-import java.util.List;
-
-public record DAICompletionChunk(
-    @NotNull List<DAICompletionChoice> choices
+public record DAICompletionChoice(
+    @NotNull String text,
+    @Nullable String finishReason
 ) {
 }

@@ -638,8 +638,22 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return true;
     }
 
-    public static void writeWorkspaceInfo() {
-        final Path metadataFolder = GeneralUtils.getMetadataFolder();
+    private void writeWorkspaceInfo() {
+        Path defaultDir = getDefaultWorkingFolder();
+        Path metadataFolder;
+        if (defaultDir != null) {
+            metadataFolder = defaultDir.resolve(DBPWorkspace.METADATA_FOLDER);
+            if (!Files.exists(metadataFolder)) {
+                try {
+                    Files.createDirectories(metadataFolder);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.err.println("Error creating metadata folder: " + metadataFolder);
+                }
+            }
+        } else {
+            metadataFolder = GeneralUtils.getMetadataFolder();
+        }
         Properties props = BaseWorkspaceImpl.readWorkspaceInfo(metadataFolder);
         props.setProperty(VERSION_PROP_PRODUCT_NAME, GeneralUtils.getProductName());
         props.setProperty(VERSION_PROP_PRODUCT_VERSION, GeneralUtils.getProductVersion().toString());

@@ -54,10 +54,15 @@ public enum OpenAIModel {
      */
     @NotNull
     public static OpenAIModel getByName(@NotNull String name) {
+        return getByName(name, GPT_4_MINI);
+    }
+
+    @NotNull
+    public static OpenAIModel getByName(@NotNull String name, @NotNull OpenAIModel defaultModel) {
         return Arrays.stream(values()).filter(it -> it.name.equals(name))
-                .findFirst()
-                .map(OpenAIModel::getFinalReplacementModel)
-            .orElse(GPT_4_MINI);
+            .findFirst()
+            .map(OpenAIModel::getFinalReplacementModel)
+            .orElse(defaultModel);
     }
 
     OpenAIModel(String name, int maxTokens, boolean isChatAPI) {

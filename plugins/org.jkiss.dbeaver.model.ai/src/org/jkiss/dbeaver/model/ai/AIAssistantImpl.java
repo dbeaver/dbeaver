@@ -129,7 +129,7 @@ public class AIAssistantImpl implements AIAssistant {
         MessageChunk[] messageChunks = processAndSplitCompletion(
             monitor,
             request.context(),
-            completionResponse.text()
+            completionResponse.choices().get(0).text()
         );
 
         return AITextUtils.convertToSQL(
@@ -175,7 +175,11 @@ public class AIAssistantImpl implements AIAssistant {
 
         DAICompletionResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
 
-        MessageChunk[] messageChunks = processAndSplitCompletion(monitor, request.context(), completionResponse.text());
+        MessageChunk[] messageChunks = processAndSplitCompletion(
+            monitor,
+            request.context(),
+            completionResponse.choices().get(0).text()
+        );
 
         String finalSQL = null;
         StringBuilder messages = new StringBuilder();

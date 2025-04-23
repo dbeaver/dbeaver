@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -522,15 +522,20 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Association
     public Collection<PostgreCollation> getCollations(DBRProgressMonitor monitor)
         throws DBException {
-        return collationCache.getAllObjects(monitor, this);
+        if (getDataSource().getServerType().supportsCollations()) {
+            return collationCache.getAllObjects(monitor, this);
+        }
+        return null;
     }
 
     @Association
     public PostgreCollation getCollation(DBRProgressMonitor monitor, long id)
         throws DBException {
-        for (PostgreCollation collation : collationCache.getAllObjects(monitor, this)) {
-            if (collation.getObjectId() == id) {
-                return collation;
+        if (getDataSource().getServerType().supportsCollations()) {
+            for (PostgreCollation collation : collationCache.getAllObjects(monitor, this)) {
+                if (collation.getObjectId() == id) {
+                    return collation;
+                }
             }
         }
         log.debug("Collation '" + id + "' not found in schema " + getName());

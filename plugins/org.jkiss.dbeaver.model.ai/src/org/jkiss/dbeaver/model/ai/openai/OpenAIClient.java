@@ -16,25 +16,164 @@
  */
 package org.jkiss.dbeaver.model.ai.openai;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.theokanning.openai.OpenAiError;
+import com.theokanning.openai.completion.chat.ChatCompletionChunk;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatCompletionResult;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.TooManyRequestsException;
+import org.jkiss.dbeaver.model.ai.utils.HttpUtils;
+import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-/**
- * Client adapter for Azure AI service.
- */
-public interface OpenAIClient extends AutoCloseable {
-    /**
-     * Create a chat completion.
-     */
-    @NotNull
-    ChatCompletionResult createChatCompletion(
-        @NotNull DBRProgressMonitor monitor,
-        ChatCompletionRequest request
-    ) throws DBException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.Flow;
+import java.util.concurrent.SubmissionPublisher;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-    @Override
-    void close();
+public class OpenAIClient {
+    private static final Log log = Log.getLog(OpenAIClient.class);
+
+    private static final Duration TIMEOUT = Duration.ofSeconds(30);
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+    private final String baseUrl;
+    private final List<HttpRequestFilter> requestFilters;
+    private final MonitoredHttpClient client = new MonitoredHttpClient(HttpClient.newBuilder().build());
+
+    public OpenAIClient(
+        @NotNull String baseUrl,
+        @NotNull List<HttpRequestFilter> requestFilters
+    ) {
+        this.baseUrl = baseUrl;
+        this.requestFilters = requestFilters;
+    }
+
+    @NotNull
+    public ChatCompletionResult createChatCompletion(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ChatCompletionRequest completionRequest
+    ) throws DBException {
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(HttpUtils.resolve(baseUrl, "chat/completions"))
+            .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
+            .timeout(TIMEOUT)
+            .build();
+
+        HttpRequest modifiedRequest = applyFilters(request);
+        HttpResponse<String> response = client.send(monitor, modifiedRequest, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return deserializeValue(response.body(), ChatCompletionResult.class);
+        } else if (response.statusCode() == 429) {
+            throw new TooManyRequestsException("Too many requests: " + response.body());
+        } else {
+            log.error("Request failed [status=" + response.statusCode() + ", body=" + response.body() + "]");
+
+            throw new DBException("Request failed: " + response.statusCode() + ", body=" + response.body());
+        }
+    }
+
+    @NotNull
+    public Flow.Publisher<ChatCompletionChunk> createChatCompletionStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull ChatCompletionRequest completionRequest
+    ) throws DBException {
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(HttpUtils.resolve(baseUrl, "chat/completions"))
+            .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
+            .timeout(TIMEOUT)
+            .build();
+
+        HttpRequest modifiedRequest = applyFilters(request);
+
+        SubmissionPublisher<ChatCompletionChunk> publisher = new SubmissionPublisher<>();
+
+        AtomicBoolean hasError = new AtomicBoolean(false);
+        StringBuilder error = new StringBuilder();
+
+        client.sendAsync(modifiedRequest, HttpResponse.BodyHandlers.ofLines())
+            .thenAccept(response -> {
+                response.body().forEach(line -> {
+                    if (hasError.get() || line.startsWith("{")) {
+                        hasError.set(true);
+                        error.append(line);
+                    } else if (line.startsWith("data: ")) {
+
+                        String data = line.substring(6).trim();
+                        if ("[DONE]".equals(data)) {
+                            publisher.close();
+                        } else {
+                            try {
+                                ChatCompletionChunk chunk = MAPPER.readValue(data, ChatCompletionChunk.class);
+                                publisher.submit(chunk);
+                            } catch (Exception e) {
+                                publisher.closeExceptionally(e);
+                            }
+                        }
+                    }
+                });
+            })
+            .whenComplete((v, e) -> {
+                if (e != null) {
+                    publisher.closeExceptionally(e);
+                } else if (hasError.get()) {
+                    try {
+                        OpenAiError openAIerror = MAPPER.readValue(error.toString(), OpenAiError.class);
+                        publisher.closeExceptionally(new DBException("Error: " + openAIerror.toString()));
+                    } catch (Exception ex) {
+                        publisher.closeExceptionally(ex);
+                    }
+                }
+            });
+
+        return publisher;
+    }
+
+    public void close() {
+        client.close();
+    }
+
+    private HttpRequest applyFilters(HttpRequest request) throws DBException {
+        for (HttpRequestFilter filter : requestFilters) {
+            request = filter.filter(request);
+        }
+        return request;
+    }
+
+    @Nullable
+    private static String serializeValue(@Nullable Object value) throws DBException {
+        try {
+            return MAPPER.writeValueAsString(value);
+        } catch (Exception e) {
+            throw new DBException("Error serializing value", e);
+        }
+    }
+
+    @NotNull
+    private static <T> T deserializeValue(@NotNull String value, @NotNull Class<T> type) throws DBException {
+        try {
+            return MAPPER.readValue(value, type);
+        } catch (Exception e) {
+            throw new DBException("Error deserializing value", e);
+        }
+    }
+
+    public interface HttpRequestFilter {
+        @NotNull
+        HttpRequest filter(@NotNull HttpRequest request) throws DBException;
+    }
 }
