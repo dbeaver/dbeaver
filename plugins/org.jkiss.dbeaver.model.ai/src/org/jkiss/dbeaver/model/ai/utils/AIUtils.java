@@ -46,7 +46,14 @@ public final class AIUtils {
 
     private static final Log log = Log.getLog(AIUtils.class);
 
-    public static String getSecretValueOrDefault(@NotNull String secretId, @Nullable String defaultValue) throws DBException {
+    /**
+     * Retrieves a secret value from the global secret controller.
+     * If the secret value is empty, it returns the provided default value.
+     */
+    public static String getSecretValueOrDefault(
+        @NotNull String secretId,
+        @Nullable String defaultValue
+    ) throws DBException {
         String secretValue = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(secretId);
         if (CommonUtils.isEmpty(secretValue)) {
             return defaultValue;

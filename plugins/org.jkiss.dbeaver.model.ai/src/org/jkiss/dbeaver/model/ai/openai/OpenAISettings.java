@@ -17,34 +17,38 @@
 package org.jkiss.dbeaver.model.ai.openai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 
-/**
- * OpenAISettings
- */
-public interface OpenAISettings {
-    /**
-     * Returns the OpenAI API token.
-     */
-    String getToken();
-
-    /**
-     * Returns the model used by the OpenAI API.
-     */
+public class OpenAISettings implements AIEngineSettings {
+    private boolean engineEnabled;
     @NotNull
-    OpenAIModel getModel();
+    private OpenAIProperties properties = new OpenAIProperties();
 
-    /**
-     * Returns the temperature used by the OpenAI API.
-     */
-    double getTemperature();
+    public boolean isEngineEnabled() {
+        return engineEnabled;
+    }
 
-    /**
-     * Returns whether logging is enabled.
-     */
-    boolean isLoggingEnabled();
+    public void setEngineEnabled(boolean engineEnabled) {
+        this.engineEnabled = engineEnabled;
+    }
 
-    /**
-     * Returns whether the current configuration is valid.
-     */
-    boolean isValidConfiguration();
+    @NotNull
+    public OpenAIProperties getProperties() {
+        return properties;
+    }
+
+    public void setProperties(@NotNull OpenAIProperties properties) {
+        this.properties = properties;
+    }
+
+    @Override
+    public void resolveSecrets() throws DBException {
+        properties.resolveSecrets();
+    }
+
+    @Override
+    public void saveSecrets() throws DBException {
+        properties.saveSecrets();
+    }
 }

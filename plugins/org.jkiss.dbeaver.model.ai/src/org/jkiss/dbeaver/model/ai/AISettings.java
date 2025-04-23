@@ -24,7 +24,7 @@ import java.util.Map;
 public class AISettings {
     private boolean aiDisabled;
     private String activeEngine;
-    private Map<String, AIEngineConfiguration> engineConfigurations;
+    private Map<String, AIEngineSettings> engineConfigurations;
 
     public boolean isAiDisabled() {
         return aiDisabled;
@@ -43,26 +43,26 @@ public class AISettings {
     }
 
     @NotNull
-    public <T extends AIEngineConfiguration> AIEngineConfiguration getEngineConfiguration(String engineId) {
+    public <T extends AIEngineSettings> AIEngineSettings getEngineConfiguration(String engineId) {
         return engineConfigurations.get(engineId);
     }
 
-    public void setEngineConfiguration(String engineId, AIEngineConfiguration engineConfiguration) {
+    public void setEngineConfiguration(String engineId, AIEngineSettings engineConfiguration) {
         engineConfigurations.put(engineId, engineConfiguration);
     }
 
-    public void setEngineConfigurations(Map<String, AIEngineConfiguration> engineConfigurations) {
+    public void setEngineConfigurations(Map<String, AIEngineSettings> engineConfigurations) {
         this.engineConfigurations = engineConfigurations;
     }
 
     public void resolveSecrets() throws DBException {
-        for (AIEngineConfiguration engineConfiguration : engineConfigurations.values()) {
+        for (AIEngineSettings engineConfiguration : engineConfigurations.values()) {
             engineConfiguration.resolveSecrets();
         }
     }
 
     public void saveSecrets() throws DBException {
-        for (AIEngineConfiguration engineConfiguration : engineConfigurations.values()) {
+        for (AIEngineSettings engineConfiguration : engineConfigurations.values()) {
             engineConfiguration.saveSecrets();
         }
     }

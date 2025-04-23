@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.openai;
+package org.jkiss.dbeaver.model.ai.copilot;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -22,12 +22,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.Strictness;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AIEngineConfiguration;
-import org.jkiss.dbeaver.model.ai.AIEngineConfigurationSerDe;
+import org.jkiss.dbeaver.model.ai.AIEngineSettings;
+import org.jkiss.dbeaver.model.ai.AIEngineSettingsSerDe;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 
-public class OpenAIConfigurationSerDe implements AIEngineConfigurationSerDe<OpenAIConfiguration> {
+public class CopilotSettingsSerDe implements AIEngineSettingsSerDe<CopilotSettings> {
     private static final Gson readPropsGson = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .create();
@@ -37,22 +36,22 @@ public class OpenAIConfigurationSerDe implements AIEngineConfigurationSerDe<Open
     @NotNull
     @Override
     public String getId() {
-        return AIConstants.OPENAI_ENGINE;
+        return "copilot";
     }
 
     @NotNull
     @Override
-    public JsonObject serialize(@NotNull AIEngineConfiguration configuration) {
-        return saveNonSecurePropsGson.toJsonTree(configuration, OpenAIConfiguration.class).getAsJsonObject();
+    public JsonObject serialize(@NotNull AIEngineSettings configuration) {
+        return saveNonSecurePropsGson.toJsonTree(configuration, CopilotSettings.class).getAsJsonObject();
     }
 
     @NotNull
     @Override
-    public OpenAIConfiguration deserialize(@Nullable JsonObject jsonObject) {
+    public CopilotSettings deserialize(@Nullable JsonObject jsonObject) {
         if (jsonObject == null) {
-            return new OpenAIConfiguration();
+            return new CopilotSettings();
         }
 
-        return readPropsGson.fromJson(jsonObject, OpenAIConfiguration.class);
+        return readPropsGson.fromJson(jsonObject, CopilotSettings.class);
     }
 }

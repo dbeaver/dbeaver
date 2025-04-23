@@ -3,7 +3,7 @@
 <schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.ai.engine.configurationSerDe" id="org.jkiss.dbeaver.ai.engine.configurationSerDe" name="AI Engine Configuration Serde"/>
+         <meta.schema plugin="com.dbeaver.ai.engine.settingsSerDe" id="com.dbeaver.ai.engine.settingsSerDe" name="AI Engine Settings Serde"/>
       </appInfo>
       <documentation>
          AI Engine Configuration Serde
@@ -31,7 +31,7 @@
 
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIEngineConfigurationSerDe"/>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIEngineSettingsSerDe"/>
                </appInfo>
             </annotation>
          </attribute>

@@ -35,7 +35,7 @@ import java.util.concurrent.Flow;
 public class CopilotCompletionEngine implements DAICompletionEngine {
     private static final Log log = Log.getLog(CopilotCompletionEngine.class);
 
-    private final CopilotSettings settings;
+    private final CopilotConfiguration configuration;
     private final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
         @Override
         protected CopilotClient initialize() throws DBException {
@@ -50,13 +50,13 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
 
     private volatile CopilotSessionToken sessionToken;
 
-    public CopilotCompletionEngine(CopilotSettings settings) {
-        this.settings = settings;
+    public CopilotCompletionEngine(CopilotConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     @Override
     public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) {
-        return OpenAIModel.getByName(settings.getModelName()).getMaxTokens();
+        return OpenAIModel.getByName(configuration.getModelName()).getMaxTokens();
     }
 
     @Override
@@ -65,9 +65,9 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
         @NotNull DAICompletionRequest request
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
-            .withModel(settings.getModelName())
+            .withModel(configuration.getModelName())
             .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
-            .withTemperature(settings.getTemperature())
+            .withTemperature(configuration.getTemperature())
             .withStream(false)
             .withIntent(false)
             .withTopP(1)
@@ -89,9 +89,9 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
         @NotNull DAICompletionRequest request
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
-            .withModel(settings.getModelName())
+            .withModel(configuration.getModelName())
             .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
-            .withTemperature(settings.getTemperature())
+            .withTemperature(configuration.getTemperature())
             .withStream(true)
             .withIntent(false)
             .withTopP(1)
@@ -136,12 +136,12 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
 
     @Override
     public boolean hasValidConfiguration() {
-        return settings.isValidConfiguration();
+        return configuration.isValidConfiguration();
     }
 
     @Override
     public boolean isLoggingEnabled() {
-        return settings.isLoggingEnabled();
+        return configuration.isLoggingEnabled();
     }
 
     @Override
@@ -168,7 +168,7 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
                 return sessionToken;
             }
 
-            return client.evaluate().sessionToken(monitor, settings.getAccessToken());
+            return client.evaluate().sessionToken(monitor, configuration.getAccessToken());
         }
     }
 }

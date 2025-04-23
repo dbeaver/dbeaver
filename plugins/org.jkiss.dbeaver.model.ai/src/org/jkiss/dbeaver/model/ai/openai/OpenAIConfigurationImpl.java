@@ -21,32 +21,32 @@ import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 import org.jkiss.utils.CommonUtils;
 
-public class OpenAISettingsImpl implements OpenAISettings {
+public class OpenAIConfigurationImpl implements OpenAIConfiguration {
     private final AISettingsRegistry registry;
 
-    public OpenAISettingsImpl(AISettingsRegistry registry) {
+    public OpenAIConfigurationImpl(AISettingsRegistry registry) {
         this.registry = registry;
     }
 
     @Override
     public String getToken() {
-        return getConfiguration().getProperties().token();
+        return getSettings().getProperties().token();
     }
 
     @NotNull
     @Override
     public OpenAIModel getModel() {
-        return OpenAIModel.getByName(getConfiguration().getProperties().model());
+        return OpenAIModel.getByName(getSettings().getProperties().model());
     }
 
     @Override
     public double getTemperature() {
-        return getConfiguration().getProperties().temperature();
+        return getSettings().getProperties().temperature();
     }
 
     @Override
     public boolean isLoggingEnabled() {
-        return getConfiguration().getProperties().loggingEnabled();
+        return getSettings().getProperties().loggingEnabled();
     }
 
     @Override
@@ -54,7 +54,7 @@ public class OpenAISettingsImpl implements OpenAISettings {
         return !CommonUtils.isEmpty(getToken());
     }
 
-    private OpenAIConfiguration getConfiguration() {
-        return (OpenAIConfiguration) registry.getSettings().getEngineConfiguration(AIConstants.OPENAI_ENGINE);
+    private OpenAISettings getSettings() {
+        return (OpenAISettings) registry.getSettings().getEngineConfiguration(AIConstants.OPENAI_ENGINE);
     }
 }

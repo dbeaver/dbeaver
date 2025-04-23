@@ -20,55 +20,41 @@ import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.openai.OpenAIModel;
 import org.jkiss.utils.CommonUtils;
 
-public class CopilotSettingsImpl implements CopilotSettings {
-    public CopilotSettingsImpl(AISettingsRegistry registry) {
+public class CopilotConfigurationImpl implements CopilotConfiguration {
+    public CopilotConfigurationImpl(AISettingsRegistry registry) {
         this.registry = registry;
     }
 
     private final AISettingsRegistry registry;
 
-    /**
-     * Returns the model name to use for Copilot.
-     */
     public String getModelName() {
         return CommonUtils.toString(
-            getCopilotConfiguration().getProperties().model(),
-            OpenAIModel.GPT_TURBO16.getName()
+            getSettings().getProperties().getModel(),
+            OpenAIModel.GPT_TURBO.getName()
         );
     }
 
-    /**
-     * Returns the access token to use for Copilot.
-     */
     public String getAccessToken() {
-        return getCopilotConfiguration().getProperties().token();
+        return getSettings().getProperties().getToken();
     }
 
-    /**
-     * Returns whether the configuration is valid.
-     */
     public boolean isValidConfiguration() {
-        return !CommonUtils.isEmpty(getCopilotConfiguration().getProperties().token());
+        return !CommonUtils.isEmpty(getSettings().getProperties().getToken());
     }
 
-    /**
-     * Returns the temperature to use for Copilot.
-     */
+
     public double getTemperature() {
         return CommonUtils.toDouble(
-            getCopilotConfiguration().getProperties().temperature(),
+            getSettings().getProperties().getTemperature(),
             0.0
         );
     }
 
-    /**
-     * Returns whether logging is enabled.
-     */
     public boolean isLoggingEnabled() {
-        return getCopilotConfiguration().getProperties().loggingEnabled();
+        return getSettings().getProperties().isLoggingEnabled();
     }
 
-    private CopilotConfiguration getCopilotConfiguration() {
-        return (CopilotConfiguration) registry.getSettings().getEngineConfiguration("copilot");
+    private CopilotSettings getSettings() {
+        return (CopilotSettings) registry.getSettings().getEngineConfiguration("copilot");
     }
 }

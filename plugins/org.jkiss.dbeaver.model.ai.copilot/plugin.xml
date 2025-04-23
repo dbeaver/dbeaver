@@ -14,7 +14,7 @@
         </completionEngine>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.ai.engine.configurationSerDe">
-        <serde id="copilot" class="org.jkiss.dbeaver.model.ai.copilot.CopilotConfigurationSerDe"/>
+    <extension point="com.dbeaver.ai.engine.settingsSerDe">
+        <serde id="copilot" class="org.jkiss.dbeaver.model.ai.copilot.CopilotSettingsSerDe"/>
     </extension>
 </plugin>

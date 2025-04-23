@@ -16,14 +16,39 @@
  */
 package org.jkiss.dbeaver.model.ai.copilot;
 
-public interface CopilotSettings {
-    String getModelName();
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 
-    double getTemperature();
+public class CopilotSettings implements AIEngineSettings {
+    private boolean engineEnabled;
+    @NotNull
+    private CopilotProperties properties = new CopilotProperties();
 
-    boolean isValidConfiguration();
+    public boolean isEngineEnabled() {
+        return engineEnabled;
+    }
 
-    boolean isLoggingEnabled();
+    public void setEngineEnabled(boolean engineEnabled) {
+        this.engineEnabled = engineEnabled;
+    }
 
-    String getAccessToken();
+    @NotNull
+    public CopilotProperties getProperties() {
+        return properties;
+    }
+
+    public void setProperties(@NotNull CopilotProperties properties) {
+        this.properties = properties;
+    }
+
+    @Override
+    public void resolveSecrets() throws DBException {
+        properties.resolveSecrets();
+    }
+
+    @Override
+    public void saveSecrets() throws DBException {
+        properties.saveSecrets();
+    }
 }

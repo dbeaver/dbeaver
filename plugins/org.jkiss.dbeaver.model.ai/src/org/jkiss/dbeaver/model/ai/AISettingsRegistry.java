@@ -238,7 +238,7 @@ public class AISettingsRegistry {
 
     private static class AIConfigurationSerDe
         implements JsonSerializer<AISettings>, JsonDeserializer<AISettings> {
-        private final List<AIEngineConfigurationSerDe<?>> engineSerDe = getSerDes();
+        private final List<AIEngineSettingsSerDe<?>> engineSerDe = getSerDes();
 
         @Override
         public AISettings deserialize(
@@ -251,9 +251,9 @@ public class AISettingsRegistry {
             aiSettings.setActiveEngine(json.getAsJsonObject().get("activeEngine").getAsString());
 
             JsonObject engineConfigurations = json.getAsJsonObject().getAsJsonObject("engineConfigurations");
-            Map<String, AIEngineConfiguration> engineConfigurationMap = engineSerDe.stream()
+            Map<String, AIEngineSettings> engineConfigurationMap = engineSerDe.stream()
                 .collect(Collectors.toMap(
-                    AIEngineConfigurationSerDe::getId,
+                    AIEngineSettingsSerDe::getId,
                     serDe -> serDe.deserialize(engineConfigurations.getAsJsonObject(serDe.getId()))
                 ));
             aiSettings.setEngineConfigurations(engineConfigurationMap);
@@ -268,7 +268,7 @@ public class AISettingsRegistry {
             json.addProperty("activeEngine", src.activeEngine());
 
             JsonObject engineConfigurations = new JsonObject();
-            for (AIEngineConfigurationSerDe<?> serDe : engineSerDe) {
+            for (AIEngineSettingsSerDe<?> serDe : engineSerDe) {
                 engineConfigurations.add(serDe.getId(), serDe.serialize(src.getEngineConfiguration(serDe.getId())));
             }
             json.add("engineConfigurations", engineConfigurations);
@@ -277,8 +277,8 @@ public class AISettingsRegistry {
         }
     }
 
-    private static List<AIEngineConfigurationSerDe<?>> getSerDes() {
-        List<AIEngineConfigurationSerDe<?>> result = new ArrayList<>();
+    private static List<AIEngineSettingsSerDe<?>> getSerDes() {
+        List<AIEngineSettingsSerDe<?>> result = new ArrayList<>();
         for (IConfigurationElement iConfigurationElement : Platform.getExtensionRegistry()
             .getConfigurationElementsFor(AIEngineConfigurationSerDeDescriptor.EXTENSION_ID)) {
             AIEngineConfigurationSerDeDescriptor descriptor = new AIEngineConfigurationSerDeDescriptor(iConfigurationElement);

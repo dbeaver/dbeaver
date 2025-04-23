@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.copilot.CopilotClient;
-import org.jkiss.dbeaver.model.ai.copilot.CopilotConfiguration;
+import org.jkiss.dbeaver.model.ai.copilot.CopilotSettings;
 import org.jkiss.dbeaver.model.ai.openai.OpenAIModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -54,7 +54,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class CopilotConfigurator implements IObjectPropertyConfigurator<DAICompletionEngine, CopilotConfiguration> {
+public class CopilotConfigurator implements IObjectPropertyConfigurator<DAICompletionEngine, CopilotSettings> {
 
     @Nullable
     protected Text tokenText;
@@ -88,26 +88,26 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<DAICompl
     }
 
     @Override
-    public void loadSettings(@NotNull CopilotConfiguration configuration) {
-        token = CommonUtils.toString(configuration.getProperties().token());
+    public void loadSettings(@NotNull CopilotSettings configuration) {
+        token = CommonUtils.toString(configuration.getProperties().getToken());
         model = readModel(configuration).getName();
-        temperature = CommonUtils.toString(configuration.getProperties().temperature(), "0.0");
-        logQuery = CommonUtils.toBoolean(configuration.getProperties().loggingEnabled());
-        accessToken = CommonUtils.toString(configuration.getProperties().token(), "");
+        temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
+        logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
+        accessToken = CommonUtils.toString(configuration.getProperties().getToken(), "");
         accessTokenText.setText(accessToken);
         applySettings();
     }
 
     @Override
-    public void saveSettings(@NotNull CopilotConfiguration copilotConfiguration) {
-        copilotConfiguration.getProperties().setToken(accessToken);
-        copilotConfiguration.getProperties().setModel(model);
-        copilotConfiguration.getProperties().setTemperature(Double.parseDouble(temperature));
-        copilotConfiguration.getProperties().setLoggingEnabled(logQuery);
+    public void saveSettings(@NotNull CopilotSettings copilotSettings) {
+        copilotSettings.getProperties().setToken(accessToken);
+        copilotSettings.getProperties().setModel(model);
+        copilotSettings.getProperties().setTemperature(Double.parseDouble(temperature));
+        copilotSettings.getProperties().setLoggingEnabled(logQuery);
     }
 
     @Override
-    public void resetSettings(@NotNull CopilotConfiguration copilotConfiguration) {
+    public void resetSettings(@NotNull CopilotSettings copilotSettings) {
 
     }
 
@@ -173,8 +173,8 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<DAICompl
         logQueryCheck.setSelection(logQuery);
     }
 
-    private OpenAIModel readModel(@NotNull CopilotConfiguration aiSettings) {
-        return OpenAIModel.getByName(CommonUtils.toString(aiSettings.getProperties().model(), getDefaultModel()));
+    private OpenAIModel readModel(@NotNull CopilotSettings aiSettings) {
+        return OpenAIModel.getByName(CommonUtils.toString(aiSettings.getProperties().getModel(), getDefaultModel()));
     }
 
     private void createConnectionParameters(@NotNull Composite parent) {

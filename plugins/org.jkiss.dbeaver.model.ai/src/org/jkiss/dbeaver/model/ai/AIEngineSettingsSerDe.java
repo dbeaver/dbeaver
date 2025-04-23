@@ -16,12 +16,24 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import java.util.Map;
+import com.google.gson.JsonObject;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-public record DAISettings(
-    boolean aiDisabled,
-    String activeEngine,
-    Map<String, AIEngineConfiguration> engineSettings
-) {
+public interface AIEngineSettingsSerDe<T extends AIEngineSettings> {
+    @NotNull
+    String getId();
+
+    /**
+     * Serializes the given AI engine configuration into a JSON object.
+     */
+    @NotNull
+    JsonObject serialize(@NotNull AIEngineSettings configuration);
+
+    /**
+     * Deserializes the given JSON object into an AI engine configuration.
+     * If the JSON object is null, a default configuration should be returned.
+     */
+    @NotNull
+    T deserialize(@Nullable JsonObject jsonObject);
 }
-

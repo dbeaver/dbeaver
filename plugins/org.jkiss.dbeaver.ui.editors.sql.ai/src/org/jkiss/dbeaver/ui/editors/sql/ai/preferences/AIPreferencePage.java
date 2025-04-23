@@ -92,7 +92,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
     }
 
     @Nullable
-    private IObjectPropertyConfigurator<DAICompletionEngine, AIEngineConfiguration> createEngineConfigurator() {
+    private IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> createEngineConfigurator() {
         UIPropertyConfiguratorDescriptor engineDescriptor =
             UIPropertyConfiguratorRegistry.getInstance().getDescriptor(completionEngine.getClass().getName());
         if (engineDescriptor != null) {
@@ -124,7 +124,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         this.settings.setActiveEngine(serviceNameMappings.get(serviceCombo.getText()));
         if (!serviceCombo.getText().isEmpty()) {
             for (Map.Entry<String, EngineConfiguratorPage> entry : engineConfiguratorMapping.entrySet()) {
-                AIEngineConfiguration engineConfiguration = this.settings.getEngineConfiguration(entry.getKey());
+                AIEngineSettings engineConfiguration = this.settings.getEngineConfiguration(entry.getKey());
                 entry.getValue().saveSettings(engineConfiguration);
             }
         }
@@ -205,7 +205,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         activeEngineConfiguratorPage = engineConfiguratorMapping.get(id);
 
         if (activeEngineConfiguratorPage == null) {
-            IObjectPropertyConfigurator<DAICompletionEngine, AIEngineConfiguration> engineConfigurator
+            IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> engineConfigurator
                 = createEngineConfigurator();
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
             activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
@@ -222,10 +222,10 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
     }
 
     private static class EngineConfiguratorPage {
-        private final IObjectPropertyConfigurator<DAICompletionEngine, AIEngineConfiguration> configurator;
+        private final IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> configurator;
         private Composite composite;
 
-        EngineConfiguratorPage(IObjectPropertyConfigurator<DAICompletionEngine, AIEngineConfiguration> configurator) {
+        EngineConfiguratorPage(IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> configurator) {
             this.configurator = configurator;
         }
 
@@ -241,13 +241,13 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
             composite.dispose();
         }
 
-        private void loadSettings(AIEngineConfiguration settings) {
+        private void loadSettings(AIEngineSettings settings) {
             if (configurator != null) {
                 configurator.loadSettings(settings);
             }
         }
 
-        private void saveSettings(AIEngineConfiguration settings) {
+        private void saveSettings(AIEngineSettings settings) {
             if (configurator != null) {
                 configurator.saveSettings(settings);
             }

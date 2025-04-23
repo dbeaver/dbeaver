@@ -36,7 +36,7 @@ public class CopilotProperties {
     @SerializedName("gpt.log.query")
     private boolean loggingEnabled;
 
-    public String token() {
+    public String getToken() {
         return token;
     }
 
@@ -44,7 +44,7 @@ public class CopilotProperties {
         this.token = token;
     }
 
-    public String model() {
+    public String getModel() {
         return model;
     }
 
@@ -52,7 +52,7 @@ public class CopilotProperties {
         this.model = model;
     }
 
-    public double temperature() {
+    public double getTemperature() {
         return temperature;
     }
 
@@ -60,7 +60,7 @@ public class CopilotProperties {
         this.temperature = temperature;
     }
 
-    public boolean loggingEnabled() {
+    public boolean isLoggingEnabled() {
         return loggingEnabled;
     }
 
@@ -68,10 +68,16 @@ public class CopilotProperties {
         this.loggingEnabled = loggingEnabled;
     }
 
+    /**
+     * Resolve secrets from the secret controller.
+     */
     public void resolveSecrets() throws DBException {
         token = AIUtils.getSecretValueOrDefault(CopilotConstants.COPILOT_ACCESS_TOKEN, token);
     }
 
+    /**
+     * Save secrets to the secret controller.
+     */
     public void saveSecrets() throws DBException {
         DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
             CopilotConstants.COPILOT_ACCESS_TOKEN, token

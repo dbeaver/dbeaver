@@ -18,10 +18,17 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.dbeaver.DBException;
 
-import java.util.Map;
-
-public interface AIEngineConfiguration {
+/**
+ * AI engine settings
+ */
+public interface AIEngineSettings {
+    /**
+     * Resolve secrets in the settings.
+     */
     void resolveSecrets() throws DBException;
 
+    /**
+     * Save secrets in the settings.
+     */
     void saveSecrets() throws DBException;
 }

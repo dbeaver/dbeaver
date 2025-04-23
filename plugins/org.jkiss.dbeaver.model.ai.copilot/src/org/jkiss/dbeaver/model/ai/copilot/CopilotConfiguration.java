@@ -16,39 +16,32 @@
  */
 package org.jkiss.dbeaver.model.ai.copilot;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIEngineConfiguration;
+/**
+ * Copilot configuration interface.
+ */
+public interface CopilotConfiguration {
+    /**
+     * Returns the model name to use for Copilot.
+     */
+    String getModelName();
 
-public class CopilotConfiguration implements AIEngineConfiguration {
-    private boolean engineEnabled;
-    @NotNull
-    private CopilotProperties properties = new CopilotProperties();
+    /**
+     * Returns the temperature to use for Copilot.
+     */
+    double getTemperature();
 
-    public boolean isEngineEnabled() {
-        return engineEnabled;
-    }
+    /**
+     * Returns whether the configuration is valid.
+     */
+    boolean isValidConfiguration();
 
-    public void setEngineEnabled(boolean engineEnabled) {
-        this.engineEnabled = engineEnabled;
-    }
+    /**
+     * Returns whether logging is enabled.
+     */
+    boolean isLoggingEnabled();
 
-    @NotNull
-    public CopilotProperties getProperties() {
-        return properties;
-    }
-
-    public void setProperties(@NotNull CopilotProperties properties) {
-        this.properties = properties;
-    }
-
-    @Override
-    public void resolveSecrets() throws DBException {
-        properties.resolveSecrets();
-    }
-
-    @Override
-    public void saveSecrets() throws DBException {
-        properties.saveSecrets();
-    }
+    /**
+     * Returns the access token to use for Copilot.
+     */
+    String getAccessToken();
 }

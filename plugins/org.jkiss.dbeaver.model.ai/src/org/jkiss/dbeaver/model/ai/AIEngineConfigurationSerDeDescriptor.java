@@ -21,6 +21,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
+/**
+ * Descriptor for AI engine configuration serializer/deserializer
+ */
 public class AIEngineConfigurationSerDeDescriptor extends AbstractDescriptor {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.ai.engine.configurationSerDe";
 
@@ -35,8 +38,11 @@ public class AIEngineConfigurationSerDeDescriptor extends AbstractDescriptor {
         return contributorConfig.getAttribute("id");
     }
 
-    public AIEngineConfigurationSerDe<?> createInstance() throws DBException {
+    /**
+     * Creates an instance of the AI engine configuration serializer/deserializer.
+     */
+    public AIEngineSettingsSerDe<?> createInstance() throws DBException {
         ObjectType objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
-        return objectType.createInstance(AIEngineConfigurationSerDe.class);
+        return objectType.createInstance(AIEngineSettingsSerDe.class);
     }
 }
