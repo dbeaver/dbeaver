@@ -38,11 +38,11 @@ public class OpenAIProperties {
     @SerializedName("gpt.log.query")
     private boolean loggingEnabled;
 
-    public String token() {
+    public String getToken() {
         return token;
     }
 
-    public String model() {
+    public String getModel() {
         if (fallbackToPrefStore()) {
             return DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.GPT_MODEL);
         }
@@ -50,7 +50,7 @@ public class OpenAIProperties {
         return model;
     }
 
-    public double temperature() {
+    public double getTemperature() {
         if (fallbackToPrefStore()) {
             return DBWorkbench.getPlatform().getPreferenceStore().getDouble(AIConstants.AI_TEMPERATURE);
         }
@@ -58,7 +58,7 @@ public class OpenAIProperties {
         return temperature;
     }
 
-    public boolean loggingEnabled() {
+    public boolean isLoggingEnabled() {
         if (fallbackToPrefStore()) {
             return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_LOG_QUERY);
         }

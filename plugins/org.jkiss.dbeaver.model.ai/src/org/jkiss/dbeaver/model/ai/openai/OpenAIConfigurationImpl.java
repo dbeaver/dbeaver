@@ -30,23 +30,23 @@ public class OpenAIConfigurationImpl implements OpenAIConfiguration {
 
     @Override
     public String getToken() {
-        return getSettings().getProperties().token();
+        return getSettings().getProperties().getToken();
     }
 
     @NotNull
     @Override
     public OpenAIModel getModel() {
-        return OpenAIModel.getByName(getSettings().getProperties().model());
+        return OpenAIModel.getByName(getSettings().getProperties().getModel());
     }
 
     @Override
     public double getTemperature() {
-        return getSettings().getProperties().temperature();
+        return getSettings().getProperties().getTemperature();
     }
 
     @Override
     public boolean isLoggingEnabled() {
-        return getSettings().getProperties().loggingEnabled();
+        return getSettings().getProperties().isLoggingEnabled();
     }
 
     @Override

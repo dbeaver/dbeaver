@@ -65,10 +65,10 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
 
     @Override
     public void loadSettings(@NotNull OpenAISettings configuration) {
-        token = CommonUtils.toString(configuration.getProperties().token());
+        token = CommonUtils.toString(configuration.getProperties().getToken());
         model = readModel(configuration).getName();
-        temperature = CommonUtils.toString(configuration.getProperties().temperature(), "0.0");
-        logQuery = CommonUtils.toBoolean(configuration.getProperties().loggingEnabled());
+        temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
+        logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
         applySettings();
     }
 
@@ -162,7 +162,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
     }
 
     private OpenAIModel readModel(@NotNull OpenAISettings aiSettings) {
-        return OpenAIModel.getByName(CommonUtils.toString(aiSettings.getProperties().model(), getDefaultModel()));
+        return OpenAIModel.getByName(CommonUtils.toString(aiSettings.getProperties().getModel(), getDefaultModel()));
     }
 
     protected String getDefaultModel() {
