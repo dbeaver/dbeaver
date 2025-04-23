@@ -67,11 +67,11 @@ public class OpenAIProperties {
     }
 
     public void resolveSecrets() throws DBException {
-        token = AIUtils.getSecretValueOrDefault("openai.token", token);
+        token = AIUtils.getSecretValueOrDefault(AIConstants.GPT_API_TOKEN, token);
     }
 
     public void saveSecrets() throws DBException {
-        DBSSecretController.getGlobalSecretController().setPrivateSecretValue("openai.token", token);
+        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(AIConstants.GPT_API_TOKEN, token);
     }
 
     public void setToken(String token) {

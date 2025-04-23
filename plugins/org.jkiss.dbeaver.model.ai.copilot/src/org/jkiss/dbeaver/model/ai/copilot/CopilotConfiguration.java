@@ -20,8 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIEngineConfiguration;
 
-import java.util.Map;
-
 public class CopilotConfiguration implements AIEngineConfiguration {
     private boolean engineEnabled;
     @NotNull
@@ -52,10 +50,5 @@ public class CopilotConfiguration implements AIEngineConfiguration {
     @Override
     public void saveSecrets() throws DBException {
         properties.saveSecrets();
-    }
-
-    @Override
-    public Map<String, Object> toMap() {
-        return Map.of();
     }
 }

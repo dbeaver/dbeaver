@@ -16,22 +16,11 @@
  */
 package org.jkiss.dbeaver.model.ai.openai;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.Strictness;
-import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIEngineConfiguration;
 
-import java.lang.reflect.Type;
-import java.util.Map;
-
 public class OpenAIConfiguration implements AIEngineConfiguration {
-    private static final Gson GSON = new GsonBuilder()
-        .setStrictness(Strictness.LENIENT)
-        .create();
-
     private boolean engineEnabled;
     @NotNull
     private OpenAIProperties properties = new OpenAIProperties();
@@ -61,12 +50,5 @@ public class OpenAIConfiguration implements AIEngineConfiguration {
     @Override
     public void saveSecrets() throws DBException {
         properties.saveSecrets();
-    }
-
-    @Override
-    public Map<String, Object> toMap() {
-        Type typeOfSrc = new TypeToken<Map<String, String>>() {
-        }.getType();
-        return GSON.fromJson(GSON.toJsonTree(properties), typeOfSrc);
     }
 }

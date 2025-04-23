@@ -24,6 +24,4 @@ public interface AIEngineConfiguration {
     void resolveSecrets() throws DBException;
 
     void saveSecrets() throws DBException;
-
-    Map<String, Object> toMap();
 }

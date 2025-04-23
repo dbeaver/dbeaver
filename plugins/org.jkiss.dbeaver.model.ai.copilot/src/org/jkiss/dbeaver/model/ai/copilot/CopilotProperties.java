@@ -69,10 +69,12 @@ public class CopilotProperties {
     }
 
     public void resolveSecrets() throws DBException {
-        token = AIUtils.getSecretValueOrDefault("copilot.token", token);
+        token = AIUtils.getSecretValueOrDefault(CopilotConstants.COPILOT_ACCESS_TOKEN, token);
     }
 
     public void saveSecrets() throws DBException {
-        DBSSecretController.getGlobalSecretController().setPrivateSecretValue("copilot.token", token);
+        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
+            CopilotConstants.COPILOT_ACCESS_TOKEN, token
+        );
     }
 }
