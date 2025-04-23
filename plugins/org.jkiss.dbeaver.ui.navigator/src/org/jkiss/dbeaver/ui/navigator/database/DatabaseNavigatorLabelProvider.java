@@ -108,15 +108,17 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
             text = labelProvider.getText(obj);
         } else if (obj instanceof DBNNode dbnNode) {
             text = dbnNode.getNodeDisplayName();
-            if (dbnNode instanceof DBNDatabaseFolder) {
-                if (tree.getViewer().getExpandedState(dbnNode)){
-                    childCount = 0;
-                    try {
-                        childCount = dbnNode.getChildren(new VoidProgressMonitor()).length;
-                    } catch (DBException e) {
-                        log.error("Error fetching children for node: " + dbnNode.getNodeDisplayName());
+            if(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT)){
+                if (dbnNode instanceof DBNDatabaseFolder) {
+                    if (tree.getViewer().getExpandedState(dbnNode)){
+                        childCount = 0;
+                        try {
+                            childCount = dbnNode.getChildren(new VoidProgressMonitor()).length;
+                        } catch (DBException e) {
+                            log.error("Error fetching children for node: " + dbnNode.getNodeDisplayName());
+                        }
+                        text += " (" + childCount + ")";
                     }
-                    text += " (" + childCount + ")";
                 }
             }
             if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECT_TIPS)) {
