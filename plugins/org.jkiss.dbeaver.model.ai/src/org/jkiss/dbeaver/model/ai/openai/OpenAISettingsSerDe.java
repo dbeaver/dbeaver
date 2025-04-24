@@ -20,18 +20,24 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.Strictness;
+import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.AIEngineSettingsSerDe;
+import org.jkiss.dbeaver.model.ai.LegacyAISettings;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 
-public class OpenAISettingsSerDe implements AIEngineSettingsSerDe<OpenAISettings> {
-    private static final Gson readPropsGson = new GsonBuilder()
+import java.lang.reflect.Type;
+
+public class OpenAISettingsSerDe implements AIEngineSettingsSerDe<LegacyAISettings<OpenAIProperties>> {
+    private static final Type TYPE = new TypeToken<LegacyAISettings<OpenAIProperties>>() {
+    }.getType();
+    private static final Gson READ_PROPS_GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .create();
-    private static final Gson saveNonSecurePropsGson = PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
+    private static final Gson SAVE_NON_SECURE_PROPS_GSON = PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
         .create();
 
     @NotNull
@@ -43,16 +49,16 @@ public class OpenAISettingsSerDe implements AIEngineSettingsSerDe<OpenAISettings
     @NotNull
     @Override
     public JsonObject serialize(@NotNull AIEngineSettings configuration) {
-        return saveNonSecurePropsGson.toJsonTree(configuration, OpenAISettings.class).getAsJsonObject();
+        return SAVE_NON_SECURE_PROPS_GSON.toJsonTree(configuration, TYPE).getAsJsonObject();
     }
 
     @NotNull
     @Override
-    public OpenAISettings deserialize(@Nullable JsonObject jsonObject) {
+    public LegacyAISettings<OpenAIProperties> deserialize(@Nullable JsonObject jsonObject) {
         if (jsonObject == null) {
-            return new OpenAISettings();
+            return new LegacyAISettings<>(new OpenAIProperties());
         }
 
-        return readPropsGson.fromJson(jsonObject, OpenAISettings.class);
+        return READ_PROPS_GSON.fromJson(jsonObject, TYPE);
     }
 }

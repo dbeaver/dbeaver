@@ -14,34 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.copilot;
+package org.jkiss.dbeaver.model.ai;
 
-/**
- * Copilot configuration interface.
- */
-public interface CopilotConfiguration {
-    /**
-     * Returns the model name to use for Copilot.
-     */
-    String getModelName();
+import org.jkiss.dbeaver.DBException;
 
-    /**
-     * Returns the temperature to use for Copilot.
-     */
-    double getTemperature();
+public interface AIEngineProperties {
+    void resolveSecrets() throws DBException;
 
-    /**
-     * Returns whether the configuration is valid.
-     */
-    boolean isValidConfiguration();
-
-    /**
-     * Returns whether logging is enabled.
-     */
-    boolean isLoggingEnabled();
-
-    /**
-     * Returns the access token to use for Copilot.
-     */
-    String getAccessToken();
+    void saveSecrets() throws DBException;
 }

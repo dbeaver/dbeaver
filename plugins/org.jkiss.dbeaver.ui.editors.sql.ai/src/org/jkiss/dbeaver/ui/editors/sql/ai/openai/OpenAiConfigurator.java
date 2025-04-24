@@ -24,9 +24,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.openai.OpenAIModel;
-import org.jkiss.dbeaver.model.ai.openai.OpenAISettings;
+import org.jkiss.dbeaver.model.ai.openai.OpenAIProperties;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages;
@@ -34,7 +35,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
-public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAICompletionEngine, OpenAISettings> {
+public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAICompletionEngine, LegacyAISettings<OpenAIProperties>> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String token = "";
     protected String model = "";
@@ -64,7 +65,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
     }
 
     @Override
-    public void loadSettings(@NotNull OpenAISettings configuration) {
+    public void loadSettings(@NotNull LegacyAISettings<OpenAIProperties> configuration) {
         token = CommonUtils.toString(configuration.getProperties().getToken());
         model = readModel(configuration).getName();
         temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
@@ -73,15 +74,15 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
     }
 
     @Override
-    public void saveSettings(@NotNull OpenAISettings openAIConfiguration) {
-        openAIConfiguration.getProperties().setToken(token);
-        openAIConfiguration.getProperties().setModel(model);
-        openAIConfiguration.getProperties().setTemperature(Double.parseDouble(temperature));
-        openAIConfiguration.getProperties().setLoggingEnabled(logQuery);
+    public void saveSettings(@NotNull LegacyAISettings<OpenAIProperties> configuration) {
+        configuration.getProperties().setToken(token);
+        configuration.getProperties().setModel(model);
+        configuration.getProperties().setTemperature(Double.parseDouble(temperature));
+        configuration.getProperties().setLoggingEnabled(logQuery);
     }
 
     @Override
-    public void resetSettings(@NotNull OpenAISettings openAIConfiguration) {
+    public void resetSettings(@NotNull LegacyAISettings<OpenAIProperties> openAIPropertiesLegacyAISettings) {
 
     }
 
@@ -161,8 +162,8 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
         return API_KEY_URL;
     }
 
-    private OpenAIModel readModel(@NotNull OpenAISettings aiSettings) {
-        return OpenAIModel.getByName(CommonUtils.toString(aiSettings.getProperties().getModel(), getDefaultModel()));
+    private OpenAIModel readModel(@NotNull LegacyAISettings<OpenAIProperties> configuration) {
+        return OpenAIModel.getByName(CommonUtils.toString(configuration.getProperties().getModel(), getDefaultModel()));
     }
 
     protected String getDefaultModel() {

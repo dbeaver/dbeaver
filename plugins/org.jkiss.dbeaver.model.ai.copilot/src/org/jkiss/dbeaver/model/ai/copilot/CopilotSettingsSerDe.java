@@ -20,13 +20,19 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.Strictness;
+import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.AIEngineSettingsSerDe;
+import org.jkiss.dbeaver.model.ai.LegacyAISettings;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 
-public class CopilotSettingsSerDe implements AIEngineSettingsSerDe<CopilotSettings> {
+import java.lang.reflect.Type;
+
+public class CopilotSettingsSerDe implements AIEngineSettingsSerDe<LegacyAISettings<CopilotProperties>> {
+    private static final Type TYPE = new TypeToken<LegacyAISettings<CopilotProperties>>() {
+    }.getType();
     private static final Gson readPropsGson = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .create();
@@ -42,16 +48,16 @@ public class CopilotSettingsSerDe implements AIEngineSettingsSerDe<CopilotSettin
     @NotNull
     @Override
     public JsonObject serialize(@NotNull AIEngineSettings configuration) {
-        return saveNonSecurePropsGson.toJsonTree(configuration, CopilotSettings.class).getAsJsonObject();
+        return saveNonSecurePropsGson.toJsonTree(configuration, TYPE).getAsJsonObject();
     }
 
     @NotNull
     @Override
-    public CopilotSettings deserialize(@Nullable JsonObject jsonObject) {
+    public LegacyAISettings<CopilotProperties> deserialize(@Nullable JsonObject jsonObject) {
         if (jsonObject == null) {
-            return new CopilotSettings();
+            return new LegacyAISettings<>(new CopilotProperties());
         }
 
-        return readPropsGson.fromJson(jsonObject, CopilotSettings.class);
+        return readPropsGson.fromJson(jsonObject, TYPE);
     }
 }

@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.model.ai.openai;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
-public class OpenAIProperties {
+public class OpenAIProperties implements AIEngineProperties {
     @SecureProperty
     @SerializedName("gpt.token")
     private String token;
@@ -88,6 +90,10 @@ public class OpenAIProperties {
 
     public void setLoggingEnabled(boolean loggingEnabled) {
         this.loggingEnabled = loggingEnabled;
+    }
+
+    public boolean isValidConfiguration() {
+        return !CommonUtils.isEmpty(getToken());
     }
 
     private boolean fallbackToPrefStore() {

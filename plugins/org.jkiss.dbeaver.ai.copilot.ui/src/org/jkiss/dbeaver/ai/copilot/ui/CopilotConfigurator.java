@@ -33,9 +33,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.ai.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.copilot.CopilotClient;
-import org.jkiss.dbeaver.model.ai.copilot.CopilotSettings;
+import org.jkiss.dbeaver.model.ai.copilot.CopilotProperties;
 import org.jkiss.dbeaver.model.ai.openai.OpenAIModel;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -54,7 +55,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class CopilotConfigurator implements IObjectPropertyConfigurator<DAICompletionEngine, CopilotSettings> {
+public class CopilotConfigurator implements IObjectPropertyConfigurator<DAICompletionEngine, LegacyAISettings<CopilotProperties>> {
 
     @Nullable
     protected Text tokenText;
@@ -88,7 +89,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<DAICompl
     }
 
     @Override
-    public void loadSettings(@NotNull CopilotSettings configuration) {
+    public void loadSettings(@NotNull LegacyAISettings<CopilotProperties> configuration) {
         token = CommonUtils.toString(configuration.getProperties().getToken());
         model = readModel(configuration).getName();
         temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
@@ -99,7 +100,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<DAICompl
     }
 
     @Override
-    public void saveSettings(@NotNull CopilotSettings copilotSettings) {
+    public void saveSettings(@NotNull LegacyAISettings<CopilotProperties> copilotSettings) {
         copilotSettings.getProperties().setToken(accessToken);
         copilotSettings.getProperties().setModel(model);
         copilotSettings.getProperties().setTemperature(Double.parseDouble(temperature));
@@ -107,7 +108,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<DAICompl
     }
 
     @Override
-    public void resetSettings(@NotNull CopilotSettings copilotSettings) {
+    public void resetSettings(@NotNull LegacyAISettings<CopilotProperties> copilotPropertiesLegacyAISettings) {
 
     }
 
@@ -173,7 +174,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<DAICompl
         logQueryCheck.setSelection(logQuery);
     }
 
-    private OpenAIModel readModel(@NotNull CopilotSettings aiSettings) {
+    private OpenAIModel readModel(@NotNull LegacyAISettings<CopilotProperties> aiSettings) {
         return OpenAIModel.getByName(CommonUtils.toString(aiSettings.getProperties().getModel(), getDefaultModel()));
     }
 

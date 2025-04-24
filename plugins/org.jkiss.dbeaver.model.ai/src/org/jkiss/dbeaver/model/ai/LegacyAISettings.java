@@ -14,32 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.copilot;
+package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
+import com.google.gson.reflect.TypeToken;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 
-public class CopilotSettings implements AIEngineSettings {
-    private boolean engineEnabled;
-    @NotNull
-    private CopilotProperties properties = new CopilotProperties();
+import java.lang.reflect.Type;
+import java.util.Map;
 
-    public boolean isEngineEnabled() {
-        return engineEnabled;
-    }
+public class LegacyAISettings<P extends AIEngineProperties> implements AIEngineSettings {
+    private static final Gson GSON = new GsonBuilder()
+        .setStrictness(Strictness.LENIENT)
+        .create();
 
-    public void setEngineEnabled(boolean engineEnabled) {
-        this.engineEnabled = engineEnabled;
-    }
+    private final P properties;
 
-    @NotNull
-    public CopilotProperties getProperties() {
-        return properties;
-    }
-
-    public void setProperties(@NotNull CopilotProperties properties) {
+    public LegacyAISettings(P properties) {
         this.properties = properties;
+    }
+
+    public P getProperties() {
+        return properties;
     }
 
     @Override
@@ -50,5 +48,13 @@ public class CopilotSettings implements AIEngineSettings {
     @Override
     public void saveSecrets() throws DBException {
         properties.saveSecrets();
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Type type = new TypeToken<Map<String, Object>>() {
+        }.getType();
+
+        return GSON.fromJson(GSON.toJson(properties), type);
     }
 }

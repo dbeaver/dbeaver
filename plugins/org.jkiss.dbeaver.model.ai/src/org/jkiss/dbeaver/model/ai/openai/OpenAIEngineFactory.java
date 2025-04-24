@@ -22,6 +22,6 @@ import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 public class OpenAIEngineFactory implements AIEngineFactory<OpenAICompletionEngine> {
     @Override
     public OpenAICompletionEngine createEngine(AISettingsRegistry registry) {
-        return new OpenAICompletionEngine(new OpenAIConfigurationImpl(registry));
+        return new OpenAICompletionEngine(registry);
     }
 }

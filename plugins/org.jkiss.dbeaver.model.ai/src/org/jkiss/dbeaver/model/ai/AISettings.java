@@ -43,8 +43,8 @@ public class AISettings {
     }
 
     @NotNull
-    public <T extends AIEngineSettings> AIEngineSettings getEngineConfiguration(String engineId) {
-        return engineConfigurations.get(engineId);
+    public <T extends AIEngineSettings> T getEngineConfiguration(String engineId) {
+        return (T) engineConfigurations.get(engineId);
     }
 
     public void setEngineConfiguration(String engineId, AIEngineSettings engineConfiguration) {

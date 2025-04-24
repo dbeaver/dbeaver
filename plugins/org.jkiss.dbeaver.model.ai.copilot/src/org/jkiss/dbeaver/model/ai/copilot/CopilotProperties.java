@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.model.ai.copilot;
 
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.utils.CommonUtils;
 
-public class CopilotProperties {
+public class CopilotProperties implements AIEngineProperties {
     @SecureProperty
     @SerializedName("copilot.access.token")
     private String token;
@@ -82,5 +84,9 @@ public class CopilotProperties {
         DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
             CopilotConstants.COPILOT_ACCESS_TOKEN, token
         );
+    }
+
+    public boolean isValidConfiguration() {
+        return !CommonUtils.isEmpty(getToken());
     }
 }
