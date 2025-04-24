@@ -34,11 +34,6 @@ import java.lang.reflect.Type;
 public class OpenAISettingsSerDe implements AIEngineSettingsSerDe<LegacyAISettings<OpenAIProperties>> {
     private static final Type TYPE = new TypeToken<LegacyAISettings<OpenAIProperties>>() {
     }.getType();
-    private static final Gson READ_PROPS_GSON = new GsonBuilder()
-        .setStrictness(Strictness.LENIENT)
-        .create();
-    private static final Gson SAVE_NON_SECURE_PROPS_GSON = PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
-        .create();
 
     @NotNull
     @Override

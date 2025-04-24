@@ -33,11 +33,6 @@ import java.lang.reflect.Type;
 public class CopilotSettingsSerDe implements AIEngineSettingsSerDe<LegacyAISettings<CopilotProperties>> {
     private static final Type TYPE = new TypeToken<LegacyAISettings<CopilotProperties>>() {
     }.getType();
-    private static final Gson readPropsGson = new GsonBuilder()
-        .setStrictness(Strictness.LENIENT)
-        .create();
-    private static final Gson saveNonSecurePropsGson = PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
-        .create();
 
     @NotNull
     @Override
@@ -48,7 +43,7 @@ public class CopilotSettingsSerDe implements AIEngineSettingsSerDe<LegacyAISetti
     @NotNull
     @Override
     public JsonObject serialize(@NotNull AIEngineSettings configuration) {
-        return saveNonSecurePropsGson.toJsonTree(configuration, TYPE).getAsJsonObject();
+        return SAVE_NON_SECURE_PROPS_GSON.toJsonTree(configuration, TYPE).getAsJsonObject();
     }
 
     @NotNull
@@ -58,6 +53,6 @@ public class CopilotSettingsSerDe implements AIEngineSettingsSerDe<LegacyAISetti
             return new LegacyAISettings<>(new CopilotProperties());
         }
 
-        return readPropsGson.fromJson(jsonObject, TYPE);
+        return READ_PROPS_GSON.fromJson(jsonObject, TYPE);
     }
 }

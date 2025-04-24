@@ -16,11 +16,21 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.google.gson.Strictness;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 
 public interface AIEngineSettingsSerDe<T extends AIEngineSettings> {
+    Gson READ_PROPS_GSON = new GsonBuilder()
+        .setStrictness(Strictness.LENIENT)
+        .create();
+    Gson SAVE_NON_SECURE_PROPS_GSON = PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
+        .create();
+
     @NotNull
     String getId();
 

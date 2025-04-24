@@ -37,6 +37,8 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
     private static final Log log = Log.getLog(OpenAICompletionEngine.class);
     public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
 
+    private final AISettingsRegistry registry;
+
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @Override
         protected OpenAIClient initialize() throws DBException {
@@ -55,7 +57,7 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
 
     @Override
     public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) {
-        return 0;
+        return OpenAIModel.getByName(getSettings().getModel()).getMaxTokens();
     }
 
     @Override
