@@ -121,7 +121,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 drawObjectStatistics(gc, databaseNode, item, event);
             }
             if (node instanceof DBNDatabaseFolder && store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT)) {
-                if(!databaseNode.needsInitialization()) {
+                if (!databaseNode.needsInitialization()) {
                     drawObjectChildrenCounter(gc, databaseNode, item);
                 }
             }
