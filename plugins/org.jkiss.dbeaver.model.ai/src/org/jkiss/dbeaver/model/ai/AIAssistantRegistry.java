@@ -16,17 +16,49 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.DBException;
+
 public class AIAssistantRegistry {
-    private static final AIAssistantRegistry INSTANCE = new AIAssistantRegistry();
 
-    public static AIAssistantRegistry getInstance() {
-        return INSTANCE;
+    private static AIAssistantRegistry instance = null;
+
+    private final AIAssistantDescriptor customDescriptor;
+    private AIAssistant globalAssistant;
+
+    public synchronized static AIAssistantRegistry getInstance() {
+        if (instance == null) {
+            instance = new AIAssistantRegistry(Platform.getExtensionRegistry());
+        }
+        return instance;
     }
 
-    private AIAssistantRegistry() {
+    public AIAssistantRegistry(IExtensionRegistry registry) {
+        AIAssistantDescriptor customAssistantDescriptor = null;
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(AIAssistantDescriptor.EXTENSION_ID);
+        for (IConfigurationElement ext : extElements) {
+            if ("assistant".equals(ext.getName())) {
+                customAssistantDescriptor = new AIAssistantDescriptor(ext);
+                break;
+            }
+        }
+        this.customDescriptor = customAssistantDescriptor;
     }
 
-    public AIAssistant getAssistant() {
-        return new AIAssistantImpl();
+    public AIAssistant getAssistant() throws DBException {
+        if (globalAssistant == null) {
+            synchronized (this) {
+                if (globalAssistant == null) {
+                    if (customDescriptor != null) {
+                        globalAssistant = customDescriptor.createInstance();
+                    } else {
+                        globalAssistant = new AIAssistantImpl();
+                    }
+                }
+            }
+        }
+        return globalAssistant;
     }
 }

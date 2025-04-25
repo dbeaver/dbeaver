@@ -16,7 +16,11 @@
  */
 package org.jkiss.dbeaver.model.ai.completion;
 
+import org.jkiss.code.NotNull;
+
+import java.util.List;
+
 public record DAICompletionChunk(
-    String text
+    @NotNull List<DAICompletionChoice> choices
 ) {
 }

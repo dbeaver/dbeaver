@@ -65,7 +65,6 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
-import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.code.NotNull;
@@ -1557,7 +1556,10 @@ public class UIUtils {
         if (partSite == null) {
             IWorkbenchPart activePart = serviceLocator.getService(IWorkbenchPart.class);
             if (activePart == null) {
-                IWorkbenchWindow workbenchWindow = getActiveWorkbenchWindow();
+                IWorkbenchWindow workbenchWindow = serviceLocator.getService(IWorkbenchWindow.class);
+                if (workbenchWindow == null) {
+                    workbenchWindow = getActiveWorkbenchWindow();
+                }
                 if (workbenchWindow != null) {
                     IWorkbenchPage activePage = workbenchWindow.getActivePage();
                     if (activePage != null) {
@@ -1887,7 +1889,7 @@ public class UIUtils {
         getDefaultRunnableContext().run(true, true, runnable);
     }
 
-    public static <T, R> T runWithMonitor(final DBRRunnableWithReturn<T> runnable) throws DBException  {
+    public static <T> T runWithMonitor(final DBRRunnableWithReturn<T> runnable) throws DBException  {
         Object[] result = new Object[1];
         try {
             getDefaultRunnableContext().run(true, true, monitor -> {
@@ -1907,6 +1909,35 @@ public class UIUtils {
             log.error(e);
         }
         return (T) result[0];
+    }
+
+    public static <T> T runWithDialog(final DBRRunnableWithReturn<T> runnable) throws DBException  {
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
+        if (workbenchWindow != null) {
+            ProgressMonitorDialog dialog = new ProgressMonitorDialog(workbench.getActiveWorkbenchWindow().getShell());
+            Object[] result = new Object[1];
+            try {
+                dialog.run(true, true, monitor -> {
+                    try {
+                        result[0] = runnable.runTask(RuntimeUtils.makeMonitor(monitor));
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                if (e.getTargetException() instanceof DBException dbe) {
+                    throw dbe;
+                } else {
+                    throw new DBException("Internal error", e.getTargetException());
+                }
+            } catch (Throwable e) {
+                log.error(e);
+            }
+            return (T) result[0];
+        } else {
+            return runWithMonitor(runnable);
+        }
     }
 
     /**
@@ -2321,9 +2352,8 @@ public class UIUtils {
 
     public static void setControlVisible(Control control, boolean visible) {
         control.setVisible(visible);
-        Object gd = control.getLayoutData();
-        if (gd instanceof GridData) {
-            ((GridData) gd).exclude = !visible;
+        if (control.getLayoutData() instanceof GridData gd) {
+            gd.exclude = !visible;
         }
     }
 

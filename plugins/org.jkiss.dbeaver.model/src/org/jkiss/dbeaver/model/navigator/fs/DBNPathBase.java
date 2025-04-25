@@ -35,6 +35,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -288,7 +289,18 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     break;
                 }
                 Path resource = node.getAdapter(Path.class);
-                if (resource == null || !Files.exists(resource)) {
+                if (resource == null) {
+                    try (InputStream inputStream = node.getAdapter(InputStream.class)) {
+                        if (inputStream != null) {
+                            monitor.subTask("Copy file");
+                            Files.copy(inputStream, folder.resolve(node.getNodeDisplayName()));
+                        }
+                    } finally {
+                        monitor.worked(1);
+                    }
+                    continue;
+                }
+                if (Files.notExists(resource)) {
                     log.debug("Resource " + resource + " doesn't not exists");
                     continue;
                 }

@@ -18,7 +18,8 @@ package org.jkiss.dbeaver.ui.config.sample;
 
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -33,7 +34,6 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -51,7 +51,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
     private static final Log log = Log.getLog(WorkbenchInitializerCreateSampleDatabase.class);
 
     @Override
-    public void initializeWorkbenchWindow(IWorkbenchWindow window) {
+    public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PROP_SAMPLE_DB_CANCELED)) {
             // Create was canceled
             return;
@@ -70,19 +70,11 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             // Already exist
             return;
         }
-
-        Shell mainShell = window.getShell();
-        DialogUtils.showDelayedPopup(
-            mainShell,
-            () -> {
-                if (!showCreateSampleDatabasePrompt(mainShell)) {
-                    DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
-                } else {
-                    createSampleDatabase(registry);
-                }
-            },
-            "Sample Database Prompt Wrapper"
-        );
+        if (!showCreateSampleDatabasePrompt(configurer.getWindow().getShell())) {
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
+        } else {
+            createSampleDatabase(registry);
+        }
     }
 
     static boolean isSampleDatabaseExists(DBPDataSourceRegistry registry) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,10 +66,6 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
             }
 
             PostgreDataType itemType = arrayType.getElementType(session.getProgressMonitor());
-            if (itemType == null && arrayType.getTypeType() == PostgreTypeType.d) {
-                // Domains store component type information in another field
-                itemType = arrayType.getBaseType(session.getProgressMonitor());
-            }
             if (itemType == null) {
                 throw new DBCException("Array type " + arrayType.getFullTypeName() + " doesn't have a component type");
             }
@@ -207,6 +203,6 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
             }
         }
 
-        return value.equals(PostgreUtils.getArrayDelimiter(type));
+        return value.contains(PostgreUtils.getArrayDelimiter(type));
     }
 }
