@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
@@ -41,6 +40,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
@@ -121,8 +121,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
                 drawObjectStatistics(gc, databaseNode, item, event);
             }
             if (node instanceof DBNDatabaseFolder && store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT)) {
-                TreeItem treeItem = (TreeItem) event.item;
-                if(treeItem.getExpanded()) {
+                if(!databaseNode.needsInitialization()) {
                     drawObjectChildrenCounter(gc, databaseNode, item);
                 }
             }
@@ -203,9 +202,9 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
     private void drawObjectChildrenCounter(@NotNull GC gc, @NotNull DBNDatabaseNode node, @NotNull Rectangle bounds) {
         int childCount = 0;
         try {
-            childCount = node.getChildren(new VoidProgressMonitor()).length;
+            childCount = node.getChildren(new LocalCacheProgressMonitor(new VoidProgressMonitor())).length;
         } catch (DBException e) {
-            log.error("Error fetching children for node: " + node.getNodeDisplayName());
+            // Ignore
         }
         String text = "(" + childCount + ")";
         drawText(gc, text, bounds);
