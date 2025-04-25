@@ -58,7 +58,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button rereadOnScrollingCheck;
     private Text resultSetSize;
     private Button resultSetUseSQLCheck;
-    private Combo orderingModeCombo;
+    private Combo orderingStrategyCombo;
+    private Combo orderingPolicyCombo;
     private Text queryCancelTimeout;
     private Button filterForceSubselect;
 
@@ -101,7 +102,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER) ||
             store.contains(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
             store.contains(ResultSetPreferences.KEEP_STATEMENT_OPEN) ||
-            store.contains(ResultSetPreferences.RESULT_SET_ORDERING_MODE) ||
+            store.contains(ResultSetPreferences.RESULT_SET_ORDERING_STRATEGY) ||
+            store.contains(ResultSetPreferences.RESULT_SET_ORDERING_POLICY) ||
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
             store.contains(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE) ||
@@ -146,10 +148,27 @@ public class PrefPageResultSetMain extends TargetPrefPage
             rereadOnScrollingCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling, ResultSetMessages.pref_page_database_resultsets_label_reread_on_scrolling_tip, true, 2);
             resultSetUseSQLCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_use_sql, ResultSetMessages.pref_page_database_resultsets_label_use_sql_tip, false, 2);
             automaticRowCountCheck = UIUtils.createCheckbox(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count, ResultSetMessages.pref_page_database_resultsets_label_automatic_row_count_tip, false, 2);
-            orderingModeCombo = UIUtils.createLabelCombo(queriesGroup, ResultSetMessages.pref_page_database_resultsets_label_order_mode, ResultSetMessages.pref_page_database_resultsets_label_order_mode_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (ResultSetUtils.OrderingMode mode : ResultSetUtils.OrderingMode.values()) {
-                orderingModeCombo.add(mode.getText());
+
+            orderingStrategyCombo = UIUtils.createLabelCombo(
+                queriesGroup,
+                ResultSetMessages.pref_page_database_resultsets_label_order_mode,
+                ResultSetMessages.pref_page_database_resultsets_label_order_mode_tip,
+                SWT.DROP_DOWN | SWT.READ_ONLY
+            );
+            for (ResultSetUtils.OrderingStrategy mode : ResultSetUtils.OrderingStrategy.values()) {
+                orderingStrategyCombo.add(mode.getText());
             }
+
+            orderingPolicyCombo = UIUtils.createLabelCombo(
+                queriesGroup,
+                ResultSetMessages.pref_page_database_resultsets_label_order_policy,
+                ResultSetMessages.pref_page_database_resultsets_label_order_policy_tip,
+                SWT.DROP_DOWN | SWT.READ_ONLY
+            );
+            for (ResultSetUtils.OrderingPolicy policy : ResultSetUtils.OrderingPolicy.values()) {
+                orderingPolicyCombo.add(policy.getText());
+            }
+
             queryCancelTimeout = UIUtils.createLabelText(queriesGroup, ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout + UIMessages.label_ms, "0");
             queryCancelTimeout.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             queryCancelTimeout.setToolTipText(ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout_tip);
@@ -257,7 +276,16 @@ public class PrefPageResultSetMain extends TargetPrefPage
             resultSetSize.setText(String.valueOf(rsSegmentSize));
             resultSetUseSQLCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
             automaticRowCountCheck.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT));
-            orderingModeCombo.select(CommonUtils.valueOf(ResultSetUtils.OrderingMode.class, store.getString(ResultSetPreferences.RESULT_SET_ORDERING_MODE), ResultSetUtils.OrderingMode.SMART).ordinal());
+            orderingStrategyCombo.select(CommonUtils.valueOf(
+                ResultSetUtils.OrderingStrategy.class,
+                store.getString(ResultSetPreferences.RESULT_SET_ORDERING_STRATEGY),
+                ResultSetUtils.OrderingStrategy.SMART
+            ).ordinal());
+            orderingPolicyCombo.select(CommonUtils.valueOf(
+                ResultSetUtils.OrderingPolicy.class,
+                store.getString(ResultSetPreferences.RESULT_SET_ORDERING_POLICY),
+                ResultSetUtils.OrderingPolicy.DEFAULT
+            ).ordinal());
             queryCancelTimeout.setText(store.getString(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT));
             filterForceSubselect.setSelection(store.getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));
             useBrowserCheckbox.setSelection(store.getBoolean(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER));
@@ -293,7 +321,14 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getText());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT, automaticRowCountCheck.getSelection());
-            store.setValue(ResultSetPreferences.RESULT_SET_ORDERING_MODE, ResultSetUtils.OrderingMode.values()[orderingModeCombo.getSelectionIndex()].toString());
+            store.setValue(
+                ResultSetPreferences.RESULT_SET_ORDERING_STRATEGY,
+                ResultSetUtils.OrderingStrategy.values()[orderingStrategyCombo.getSelectionIndex()].toString()
+            );
+            store.setValue(
+                ResultSetPreferences.RESULT_SET_ORDERING_POLICY,
+                ResultSetUtils.OrderingPolicy.values()[orderingPolicyCombo.getSelectionIndex()].toString()
+            );
             store.setValue(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getText());
             store.setValue(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT, filterForceSubselect.getSelection());
             store.setValue(ResultSetPreferences.RESULT_IMAGE_USE_BROWSER_BASED_RENDERER, useBrowserCheckbox.getSelection());
@@ -328,7 +363,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
         store.setToDefault(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT);
-        store.setToDefault(ResultSetPreferences.RESULT_SET_ORDERING_MODE);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_ORDERING_STRATEGY);
+        store.setToDefault(ResultSetPreferences.RESULT_SET_ORDERING_POLICY);
         store.setToDefault(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT);
         store.setToDefault(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT);
 
@@ -357,7 +393,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         resultSetSize.setText(String.valueOf(store.getDefaultInt(ModelPreferences.RESULT_SET_MAX_ROWS)));
         resultSetUseSQLCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
         automaticRowCountCheck.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT));
-        orderingModeCombo.select(ResultSetUtils.OrderingMode.SMART.ordinal());
+        orderingStrategyCombo.select(ResultSetUtils.OrderingStrategy.SMART.ordinal());
         queryCancelTimeout.setText(String.valueOf(store.getDefaultInt(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT)));
         filterForceSubselect.setSelection(store.getDefaultBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));
         keepStatementOpenCheck.setSelection(store.getDefaultBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN));

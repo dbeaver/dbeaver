@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,8 @@
 package org.jkiss.dbeaver.ext.dameng.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableTrigger;
-import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -32,6 +28,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintInfo;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -50,6 +48,15 @@ public class DamengTable extends GenericTable implements DBPObjectStatistics {
 
     public DamengTable(GenericStructContainer container, String tableName, String tableCatalogName, String tableSchemaName) {
         super(container, tableName, tableCatalogName, tableSchemaName);
+    }
+
+    @Override
+    public List<DBSEntityConstraintInfo> getSupportedConstraints() {
+        return List.of(
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.PRIMARY_KEY, GenericTableConstraint.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.UNIQUE_KEY, GenericTableConstraint.class),
+            DBSEntityConstraintInfo.of(DBSEntityConstraintType.CHECK, GenericTableConstraint.class)
+        );
     }
 
     @Override

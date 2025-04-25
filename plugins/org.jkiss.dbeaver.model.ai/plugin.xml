@@ -4,6 +4,7 @@
 <plugin>
     <extension-point id="com.dbeaver.ai.engine" name="AI integrations" schema="schema/com.dbeaver.ai.engine.exsd"/>
     <extension-point id="com.dbeaver.ai.formatter" name="AI formatters" schema="schema/com.dbeaver.ai.formatter.exsd"/>
+    <extension-point id="com.dbeaver.ai.assistant" name="AI assistants" schema="schema/com.dbeaver.ai.assistant.exsd"/>
 
     <extension point="com.dbeaver.ai.engine">
         <completionEngine id="openai" label="OpenAI" class="org.jkiss.dbeaver.model.ai.openai.OpenAICompletionEngine" default="true">

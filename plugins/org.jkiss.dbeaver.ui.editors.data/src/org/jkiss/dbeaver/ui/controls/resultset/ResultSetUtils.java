@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,10 +107,6 @@ public class ResultSetUtils
         }
     }
 
-    public static OrderingMode getOrderingMode(IResultSetController controller) {
-        return CommonUtils.valueOf(OrderingMode.class, controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_ORDERING_MODE), OrderingMode.SMART);
-    }
-
     // Use linear interpolation to make gradient color in a range
     // It is dummy but simple and fast
     public static RGB makeGradientValue(RGB c1, RGB c2, double minValue, double maxValue, double value) {
@@ -177,17 +173,53 @@ public class ResultSetUtils
         return rows < 0 ? "0" : String.valueOf(rows);
     }
 
-    public enum OrderingMode {
+    public enum OrderingPolicy {
+        DEFAULT(ResultSetMessages.pref_page_database_resultsets_label_order_policy_default),
+        PRIMARY_KEY_ASC(ResultSetMessages.pref_page_database_resultsets_label_order_policy_primary_key_asc),
+        PRIMARY_KEY_DESC(ResultSetMessages.pref_page_database_resultsets_label_order_policy_primary_key_desc);
+
+        private final String text;
+
+        OrderingPolicy(String text) {
+            this.text = text;
+        }
+
+        @NotNull
+        public static OrderingPolicy get(@NotNull IResultSetController controller) {
+            return CommonUtils.valueOf(
+                OrderingPolicy.class,
+                controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_ORDERING_POLICY),
+                DEFAULT
+            );
+        }
+
+        @NotNull
+        public String getText() {
+            return text;
+        }
+    }
+
+    public enum OrderingStrategy {
         SMART(ResultSetMessages.pref_page_database_resultsets_label_order_mode_smart),
         CLIENT_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_client),
         SERVER_SIDE(ResultSetMessages.pref_page_database_resultsets_label_order_mode_always_server);
 
         private final String text;
 
-        OrderingMode(String text) {
+        OrderingStrategy(String text) {
             this.text = text;
         }
 
+        @NotNull
+        public static OrderingStrategy get(@NotNull IResultSetController controller) {
+            return CommonUtils.valueOf(
+                OrderingStrategy.class,
+                controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_ORDERING_STRATEGY),
+                SMART
+            );
+        }
+
+        @NotNull
         public String getText() {
             return text;
         }

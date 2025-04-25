@@ -456,8 +456,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.WorkbenchInitializerNewConnection" priority="2"/>
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.tipoftheday.TipOfTheDayInitializer" priority="3"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.tipoftheday.TipOfTheDayInitializer" order="4"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.update.WorkbenchInitializerUpdateCheck" order="5"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">

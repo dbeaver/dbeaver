@@ -14,30 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.utils;
+package org.jkiss.dbeaver.model.ai.copilot.dto;
 
-import org.jkiss.dbeaver.DBException;
+public record CopilotChunkChoice(
+    int index,
+    CopilotChunkDelta delta
+) {
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-public final class HttpUtils {
-
-    private HttpUtils() {
-    }
-
-    /**
-     * Resolves URI from base and paths
-     */
-    public static URI resolve(String base, String... paths) throws DBException {
-        try {
-            URI uri = new URI(base);
-            for (String path : paths) {
-                uri = uri.resolve(path);
-            }
-            return uri;
-        } catch (URISyntaxException e) {
-            throw new DBException("Incorrect URI", e);
-        }
-    }
 }
