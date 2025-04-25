@@ -661,7 +661,7 @@ public class DBeaverLauncher {
             String json = "{args=[" +
                 Arrays.stream(args)
                     .filter(Objects::nonNull)
-                    .map(arg -> "\"" + arg + "\"")
+                    .map(arg -> "\"" + LauncherUtils.escape(arg) + "\"")
                     .collect(Collectors.joining(","))
                 + "]}";
             HttpRequest.Builder builder = HttpRequest.newBuilder()
