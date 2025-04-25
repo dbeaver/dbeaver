@@ -155,7 +155,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         formatterConfigurator.createControl(composite, formatter, () -> {});
         Composite serviceComposite = UIUtils.createComposite(composite, 2);
         serviceComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        serviceCombo = UIUtils.createLabelCombo(serviceComposite, "Service", SWT.DROP_DOWN | SWT.READ_ONLY);
+        serviceCombo = UIUtils.createLabelCombo(serviceComposite, "Engine", SWT.DROP_DOWN | SWT.READ_ONLY);
         List<AIEngineDescriptor> completionEngines = AIEngineRegistry.getInstance()
             .getCompletionEngines();
         int defaultEngineSelection = -1;

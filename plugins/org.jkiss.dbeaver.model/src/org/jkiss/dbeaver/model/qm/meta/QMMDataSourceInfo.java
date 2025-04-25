@@ -14,13 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.completion;
+package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-import java.util.List;
+/**
+ * QM model data source info.
+ */
+public interface QMMDataSourceInfo {
 
-public record DAICompletionChunk(
-    @NotNull List<DAICompletionChoice> choices
-) {
+    /**
+     * Returns id of data source container.
+     */
+    @NotNull
+    String getContainerId();
+
+    /**
+     * Returns name of data source container.
+     */
+    @Nullable
+    String getContainerName();
+
+    /**
+     * Returns id of data source driver.
+     */
+    @NotNull
+    String getDriverId();
+
+    /**
+     * Returns url of data source connection.
+     */
+    @Nullable
+    String getConnectionUrl();
 }

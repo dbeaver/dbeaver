@@ -25,12 +25,12 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
+import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.browser.BrowsePeerMethods;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
-import java.awt.*;
 import java.io.PrintStream;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -74,7 +74,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
         }
         if (getPreferenceStore().getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH)) {
             try {
-                if (Desktop.isDesktopSupported()) {
+                if (AWTUtils.isDesktopSupported()) {
                     injectProxyPeer();
                 } else {
                     getLog().warn("Desktop interface not available");

@@ -16,31 +16,28 @@
  */
 package org.jkiss.dbeaver.model.ai.openai;
 
+import com.theokanning.openai.completion.chat.ChatCompletionChunk;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatCompletionResult;
 import com.theokanning.openai.completion.chat.ChatMessage;
-import com.theokanning.openai.service.OpenAiService;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
-import org.jkiss.dbeaver.model.ai.TooManyRequestsException;
 import org.jkiss.dbeaver.model.ai.completion.*;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.Flow;
 
 public class OpenAICompletionEngine implements DAICompletionEngine {
     private static final Log log = Log.getLog(OpenAICompletionEngine.class);
 
-    private static final Duration TIMEOUT = Duration.ofSeconds(30);
-
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @Override
-        protected OpenAIClient initialize() {
+        protected OpenAIClient initialize() throws DBException {
             return createClient();
         }
 
@@ -61,7 +58,57 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
         @NotNull DAICompletionRequest request
     ) throws DBException {
         ChatCompletionResult completionResult = complete(monitor, request.messages(), getMaxContextSize(monitor));
-        return new DAICompletionResponse(completionResult.getChoices().get(0).getMessage().getContent());
+        List<DAICompletionChoice> choices = completionResult.getChoices().stream()
+            .map(it -> new DAICompletionChoice(it.getMessage().getContent(), it.getFinishReason()))
+            .toList();
+
+        return new DAICompletionResponse(choices);
+    }
+
+    @Override
+    public Flow.Publisher<DAICompletionChunk> requestCompletionStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionRequest request
+    ) throws DBException {
+        Flow.Publisher<ChatCompletionChunk> publisher = openAiService.evaluate()
+            .createChatCompletionStream(monitor, ChatCompletionRequest.builder()
+                .messages(fromMessages(request.messages()))
+                .temperature(temperature())
+                .frequencyPenalty(0.0)
+                .presencePenalty(0.0)
+                .maxTokens(AIConstants.MAX_RESPONSE_TOKENS)
+                .n(1)
+                .model(model())
+                .stream(true)
+                .build()
+            );
+
+        return subscriber -> publisher.subscribe(new Flow.Subscriber<>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+                subscriber.onSubscribe(subscription);
+            }
+
+            @Override
+            public void onNext(ChatCompletionChunk item) {
+                List<DAICompletionChoice> choices = item.getChoices().stream()
+                    .filter(it -> it.getMessage() != null)
+                    .map(it -> new DAICompletionChoice(it.getMessage().getContent(), it.getFinishReason()))
+                    .toList();
+
+                subscriber.onNext(new DAICompletionChunk(choices));
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                subscriber.onError(throwable);
+            }
+
+            @Override
+            public void onComplete() {
+                subscriber.onComplete();
+            }
+        });
     }
 
     @Override
@@ -116,28 +163,11 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
         };
     }
 
-    protected OpenAIClient createClient() {
-        OpenAiService aiService = new OpenAiService(OpenAISettings.INSTANCE.token(), TIMEOUT);
-
-        return new OpenAIClient() {
-            @NotNull
-            @Override
-            public ChatCompletionResult createChatCompletion(
-                @NotNull DBRProgressMonitor monitor,
-                ChatCompletionRequest request
-            ) throws DBException {
-                try {
-                    return aiService.createChatCompletion(request);
-                } catch (retrofit2.HttpException e) {
-                    throw mapHttpException(e);
-                }
-            }
-
-            @Override
-            public void close() {
-                aiService.shutdownExecutor();
-            }
-        };
+    protected OpenAIClient createClient() throws DBException {
+        return new OpenAIClient(
+            "https://api.openai.com/v1/",
+            List.of(new OpenAIRequestFilter(OpenAISettings.INSTANCE.token()))
+        );
     }
 
     protected String model() {
@@ -146,13 +176,5 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
 
     protected double temperature() {
         return OpenAISettings.INSTANCE.temperature();
-    }
-
-    private DBException mapHttpException(retrofit2.HttpException e) {
-        if (e.code() == 429) {
-            return new TooManyRequestsException("OpenAI rate limit exceeded", e);
-        } else {
-            return new DBException("Error executing OpenAI request", e);
-        }
     }
 }

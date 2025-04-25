@@ -14,28 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui;
+package org.jkiss.dbeaver.model.ai.utils;
 
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.DBException;
 
-import java.awt.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-public class AWTUtils {
+public final class AIHttpUtils {
 
-    private static final Log log = Log.getLog(AWTUtils.class);
+    private AIHttpUtils() {
+    }
 
-    public static boolean isDesktopSupported() {
+    /**
+     * Resolves URI from base and paths
+     */
+    public static URI resolve(String base, String... paths) throws DBException {
         try {
-            return !GraphicsEnvironment.isHeadless() && Desktop.isDesktopSupported();
-        } catch (Throwable e) {
-            log.warn("AWT initialization error", e);
-            return false;
+            URI uri = new URI(base);
+            for (String path : paths) {
+                uri = uri.resolve(path);
+            }
+            return uri;
+        } catch (URISyntaxException e) {
+            throw new DBException("Incorrect URI", e);
         }
     }
-
-    public static java.awt.Color makeAWTColor(org.eclipse.swt.graphics.Color src) {
-        org.eclipse.swt.graphics.RGB swtBgColor = src.getRGB();
-        return new Color(swtBgColor.red, swtBgColor.green, swtBgColor.blue);
-    }
-
 }

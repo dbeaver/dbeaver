@@ -14,28 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui;
+package org.jkiss.dbeaver.ext.sqlite.auth;
 
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNativeCredentials;
+import org.jkiss.dbeaver.model.meta.Property;
 
-import java.awt.*;
-
-public class AWTUtils {
-
-    private static final Log log = Log.getLog(AWTUtils.class);
-
-    public static boolean isDesktopSupported() {
-        try {
-            return !GraphicsEnvironment.isHeadless() && Desktop.isDesktopSupported();
-        } catch (Throwable e) {
-            log.warn("AWT initialization error", e);
-            return false;
-        }
+public class LibSQLAuthModelTokenCredentials extends AuthModelDatabaseNativeCredentials {
+    @Override
+    @Property(hidden = true)
+    public String getUserName() {
+        return null;
     }
 
-    public static java.awt.Color makeAWTColor(org.eclipse.swt.graphics.Color src) {
-        org.eclipse.swt.graphics.RGB swtBgColor = src.getRGB();
-        return new Color(swtBgColor.red, swtBgColor.green, swtBgColor.blue);
+    @Override
+    @Property(name = "Token", description = "Token")
+    public String getUserPassword() {
+        return super.getUserPassword();
     }
-
 }
