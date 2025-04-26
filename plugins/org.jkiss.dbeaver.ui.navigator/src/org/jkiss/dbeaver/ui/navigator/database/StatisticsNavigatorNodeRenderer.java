@@ -120,10 +120,8 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             if (store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO)) {
                 drawObjectStatistics(gc, databaseNode, item, event);
             }
-            if (node instanceof DBNDatabaseFolder && store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT)) {
-                if (!databaseNode.needsInitialization()) {
-                    drawObjectChildrenCounter(gc, databaseNode, item);
-                }
+            if (node instanceof DBNDatabaseFolder && store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT) && !databaseNode.needsInitialization()) {
+                drawObjectChildrenCounter(gc, databaseNode, item);
             }
             if (node instanceof DBNDatabaseItem && store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION)) {
                 drawObjectDescription(gc, databaseNode, item);
