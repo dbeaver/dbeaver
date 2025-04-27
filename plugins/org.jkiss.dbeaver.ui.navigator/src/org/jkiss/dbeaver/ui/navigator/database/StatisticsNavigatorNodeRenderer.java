@@ -202,7 +202,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         try {
             childCount = node.getChildren(new LocalCacheProgressMonitor(new VoidProgressMonitor())).length;
         } catch (DBException e) {
-            // Ignore
+            return;
         }
         String text = "(" + childCount + ")";
         drawText(gc, text, bounds);
