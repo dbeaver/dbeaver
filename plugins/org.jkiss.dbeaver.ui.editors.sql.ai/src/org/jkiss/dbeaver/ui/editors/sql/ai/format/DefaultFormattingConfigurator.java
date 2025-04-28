@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,24 +48,14 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     ) {
         Composite settingsPanel = UIUtils.createComposite(parent, 2);
         settingsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        Composite completionComposite = UIUtils.createPlaceholder(settingsPanel, 1);
-        Group appearanceSettings = UIUtils.createControlGroup(
-            completionComposite,
-            AIUIMessages.gpt_preference_page_advanced_appearance_group,
-            2,
-            SWT.NONE,
-            5
-        );
+        Group completionComposite = UIUtils.createControlGroup(settingsPanel, "SQL Completion", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        UIUtils.createControlLabel(completionComposite, AIUIMessages.gpt_preference_page_advanced_appearance_group, 2);
+        Composite appearanceSettings = UIUtils.createComposite(completionComposite, 2);
         appearanceSettings.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
 
         createAppearanceSettings(appearanceSettings, propertyChangeListener);
-        Group completionGroup = UIUtils.createControlGroup(
-            completionComposite,
-            AIUIMessages.gpt_preference_page_completion_group,
-            2,
-            SWT.NONE,
-            5
-        );
+        UIUtils.createControlLabel(completionComposite, AIUIMessages.gpt_preference_page_completion_group, 2);
+        Composite completionGroup = UIUtils.createComposite(completionComposite, 2);
         completionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createCompletionSettings(completionGroup, propertyChangeListener);
         Group schemaGroup = UIUtils.createControlGroup(

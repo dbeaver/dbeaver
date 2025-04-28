@@ -14,16 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.sqlite.auth;
+package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
+import org.jkiss.code.Nullable;
 
-public class LibSQLAuthModelToken extends AuthModelDatabaseNative<LibSQLAuthModelTokenCredentials> {
+/**
+ * QM model data source info.
+ */
+public interface QMMDataSourceInfo {
 
+    /**
+     * Returns id of data source container.
+     */
     @NotNull
-    @Override
-    public LibSQLAuthModelTokenCredentials createCredentials() {
-        return new LibSQLAuthModelTokenCredentials();
-    }
+    String getContainerId();
+
+    /**
+     * Returns name of data source container.
+     */
+    @Nullable
+    String getContainerName();
+
+    /**
+     * Returns id of data source driver.
+     */
+    @NotNull
+    String getDriverId();
+
+    /**
+     * Returns url of data source connection.
+     */
+    @Nullable
+    String getConnectionUrl();
 }

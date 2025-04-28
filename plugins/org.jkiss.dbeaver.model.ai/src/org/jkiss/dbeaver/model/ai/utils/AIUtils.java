@@ -20,7 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.completion.DAIChatMessage;
 import org.jkiss.dbeaver.model.ai.completion.DAIChatRole;
@@ -173,24 +174,6 @@ public final class AIUtils {
             || dbpObject instanceof DBSProcedure
             || dbpObject instanceof DBSTrigger
             || dbpObject instanceof DBSEntityConstraint;
-    }
-
-    /**
-     * Returns a formatted string with the type and full name of the DBSObject.
-     *
-     * @param dbsObject the DBSObject to format
-     */
-    public static String getDBSObjectInfo(@NotNull DBSObject dbsObject, boolean isPromptInfo) {
-        String objectInfo = "";
-        String objectFullName = DBUtils.getObjectFullName(dbsObject, DBPEvaluationContext.DDL);
-        if (dbsObject instanceof DataSourceDescriptor) {
-            objectInfo = isPromptInfo ? "db with following tables" : "listed database tables";
-        } else if (dbsObject instanceof DBSSchema) {
-            objectInfo = "Schema " + objectFullName;
-        } else {
-            objectInfo = DBUtils.getObjectTypeName(dbsObject) + objectFullName;
-        }
-        return objectInfo;
     }
 
     /**

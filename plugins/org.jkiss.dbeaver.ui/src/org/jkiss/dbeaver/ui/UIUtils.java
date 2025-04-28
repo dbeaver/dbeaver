@@ -1889,7 +1889,7 @@ public class UIUtils {
         getDefaultRunnableContext().run(true, true, runnable);
     }
 
-    public static <T, R> T runWithMonitor(final DBRRunnableWithReturn<T> runnable) throws DBException  {
+    public static <T> T runWithMonitor(final DBRRunnableWithReturn<T> runnable) throws DBException  {
         Object[] result = new Object[1];
         try {
             getDefaultRunnableContext().run(true, true, monitor -> {
@@ -1909,6 +1909,35 @@ public class UIUtils {
             log.error(e);
         }
         return (T) result[0];
+    }
+
+    public static <T> T runWithDialog(final DBRRunnableWithReturn<T> runnable) throws DBException  {
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
+        if (workbenchWindow != null) {
+            ProgressMonitorDialog dialog = new ProgressMonitorDialog(workbench.getActiveWorkbenchWindow().getShell());
+            Object[] result = new Object[1];
+            try {
+                dialog.run(true, true, monitor -> {
+                    try {
+                        result[0] = runnable.runTask(RuntimeUtils.makeMonitor(monitor));
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                if (e.getTargetException() instanceof DBException dbe) {
+                    throw dbe;
+                } else {
+                    throw new DBException("Internal error", e.getTargetException());
+                }
+            } catch (Throwable e) {
+                log.error(e);
+            }
+            return (T) result[0];
+        } else {
+            return runWithMonitor(runnable);
+        }
     }
 
     /**
@@ -2323,9 +2352,8 @@ public class UIUtils {
 
     public static void setControlVisible(Control control, boolean visible) {
         control.setVisible(visible);
-        Object gd = control.getLayoutData();
-        if (gd instanceof GridData) {
-            ((GridData) gd).exclude = !visible;
+        if (control.getLayoutData() instanceof GridData gd) {
+            gd.exclude = !visible;
         }
     }
 

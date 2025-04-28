@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * AbstractValueBindingDescriptor
@@ -165,7 +166,12 @@ public abstract class AbstractValueBindingDescriptor<TYPE, CONTEXT> extends Abst
                 continue;
             }
             if (info.typeName != null) {
-                if (info.typeName.equalsIgnoreCase(typedObject.getTypeName())) {
+                String typeName = info.typeName.toLowerCase(Locale.ROOT);
+                String actualTypeName = typedObject.getTypeName().toLowerCase(Locale.ROOT);
+                if (typeName.equalsIgnoreCase(actualTypeName)) {
+                    return true;
+                }
+                if (typeName.endsWith("*") && actualTypeName.startsWith(typeName.substring(0, typeName.length() - 1))) {
                     return true;
                 }
             }

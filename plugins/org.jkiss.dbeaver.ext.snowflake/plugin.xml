@@ -35,7 +35,7 @@
                         categories="sql,analytic"
                         singleConnection="true">
                     <replace provider="generic" driver="snowflake_generic"/>
-                    <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE" bundle="!drivers.snowflake"/>
+                    <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE[3.23.0]" bundle="!drivers.snowflake"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/snowflake" bundle="drivers.snowflake"/>
 
