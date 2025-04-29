@@ -164,6 +164,7 @@ public final class ModelPreferences
     public static final String CLIENT_BROWSER = "swt.client.browser";
 
     public static final String PROP_USE_WIN_TRUST_STORE_TYPE = "connections.useWinTrustStoreType"; //$NON-NLS-1$
+    public static final String PROP_USE_MAC_TRUST_STORE_TYPE = "connections.useMacTrustStoreType"; //$NON-NLS-1$
     public static final String PROP_PREFERRED_IP_STACK = "connections.preferredIPType"; //$NON-NLS-1$
     public static final String PROP_PREFERRED_IP_ADDRESSES = "connections.preferredIPAddresses"; //$NON-NLS-1$
     public static final String PROP_DEBUG_NETWORK_CONNECTIONS = "connections.debugNetworkConnections"; //$NON-NLS-1$
