@@ -14,14 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model;
 
-package org.jkiss.dbeaver.model.access;
+import org.jkiss.code.Nullable;
 
 /**
- * Auth credentials.
+ * Conditional property.
+ * Contains conditions that handle them dynamically.
  */
-public interface DBAAuthCredentials extends DBAAuthCredentialsForm {
+public interface DBPConditionalProperty {
 
-    boolean isComplete();
+    /**
+     * JEXL expression for determining the visibility of a property.
+     */
+    @Nullable
+    String getHideExpression();
 
+    /**
+     * JEXL expression for determining the activity of a property.
+     */
+    @Nullable
+    String getReadOnlyExpression();
 }

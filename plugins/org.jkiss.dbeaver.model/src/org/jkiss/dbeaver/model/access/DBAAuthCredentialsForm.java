@@ -14,14 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.model.access;
 
 /**
- * Auth credentials.
+ * Auth credentials form.
+ * Provides properties for generating auth model credentials form.
  */
-public interface DBAAuthCredentials extends DBAAuthCredentialsForm {
-
-    boolean isComplete();
-
+public interface DBAAuthCredentialsForm {
 }
