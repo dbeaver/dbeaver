@@ -59,6 +59,9 @@ public interface IAIFormatter {
         @NotNull DBRProgressMonitor monitor
     );
 
+    /**
+     * Add data sample of the object to the description.
+     */
     void addDataSample(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntity object,
