@@ -29,15 +29,11 @@ public final class AIHttpUtils {
     /**
      * Resolves URI from base and paths
      */
-    public static URI resolve(String base, String... paths) throws DBException {
-        try {
-            URI uri = new URI(base);
-            for (String path : paths) {
-                uri = uri.resolve(path);
-            }
-            return uri;
-        } catch (URISyntaxException e) {
-            throw new DBException("Incorrect URI", e);
+    public static URI resolve(String base, String... paths) {
+        URI uri = URI.create(base);
+        for (String path : paths) {
+            uri = uri.resolve(path);
         }
+        return uri;
     }
 }
