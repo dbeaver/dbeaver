@@ -24,8 +24,10 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMUtils;
+import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -394,5 +396,88 @@ public abstract class SQLQueryNodeModel {
         }
         
         return text.getContents();
+    }
+
+    /**
+     * The query model node that can lazily iterate over its children
+     */
+    public interface NodeSubtreeTraverseControl {
+        /**
+         * Delay walking of the neighbors of the current node
+         */
+        default boolean delayRestChildren() {
+            return false;
+        }
+
+        /**
+         * Returns children of the current node
+         */
+        @Nullable
+        default List<SQLQueryNodeModel> getChildren() {
+            return null;
+        }
+    }
+
+    protected static <N extends SQLQueryNodeModel, R> void traverseSubtree(
+        @NotNull N subroot,
+        @NotNull Class<N> childrenType,
+        @NotNull Consumer<N> action
+    ) {
+        Set<SQLQueryNodeModel> queued = new HashSet<>();
+        queued.add(subroot);
+        ListNode<N> queue = ListNode.of(subroot);
+
+        while (queue != null) {
+            ListNode<N> stack = ListNode.of(queue.data);
+            queue = queue.next;
+            while (stack != null) {
+                if (stack.data != null) {  // first time handling node
+                    SQLQueryNodeModel node = stack.data;
+                    if (node.subnodes != null) { // children presented, push and handle them at first
+                        stack = ListNode.push(stack, null);
+                        boolean delayChildren;
+                        List<SQLQueryNodeModel> children;
+                        if (node instanceof NodeSubtreeTraverseControl c) {
+                            delayChildren = c.delayRestChildren();
+                            children = c.getChildren();
+                            if (children == null) {
+                                children = node.subnodes;
+                            }
+                        } else {
+                            delayChildren = false;
+                            children = new ArrayList<>(node.subnodes);
+                            Collections.reverse(children);
+                        }
+                        int index = 0;
+                        for (SQLQueryNodeModel child : children) {
+                            if (childrenType.isInstance(child)) {
+                                if (delayChildren) {
+                                    if (index == 0) {
+                                        //noinspection unchecked
+                                        stack = ListNode.push(stack, (N) child);
+                                    } else {
+                                        //noinspection unchecked
+                                        if (queued.add(child)) {
+                                            queue = ListNode.push(queue, (N) child);
+                                        }
+                                    }
+                                } else {
+                                    //noinspection unchecked
+                                    stack = ListNode.push(stack, (N) child);
+                                }
+                            }
+                            index++;
+                        }
+                    } else { // no children, handle immediately
+                        action.accept(stack.data);
+                        stack = stack.next;
+                    }
+                } else { // children already handled, handle the node
+                    stack = stack.next;
+                    action.accept(stack.data);
+                    stack = stack.next;
+                }
+            }
+        }
     }
 }

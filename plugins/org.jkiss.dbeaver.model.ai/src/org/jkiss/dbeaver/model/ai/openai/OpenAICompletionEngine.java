@@ -93,6 +93,7 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
             public void onNext(ChatCompletionChunk item) {
                 List<DAICompletionChoice> choices = item.getChoices().stream()
                     .filter(it -> it.getMessage() != null)
+                    .takeWhile(it -> it.getMessage().getContent() != null)
                     .map(it -> new DAICompletionChoice(it.getMessage().getContent(), it.getFinishReason()))
                     .toList();
 

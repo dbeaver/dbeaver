@@ -779,8 +779,8 @@
                 <driver
                     id="tdengine"
                     label="TDengine"
-                    class="com.taosdata.jdbc.rs.RestfulDriver"
-                    sampleURL="jdbc:TAOS-RS://{host}:{port}/[{db}]"
+                    class="com.taosdata.jdbc.ws.WebSocketDriver"
+                    sampleURL="jdbc:TAOS-WS://{host}:{port}/[{db}]"
                     defaultPort="6041"
                     description="TDengine driver"
                     supportedConfigurationTypes="MANUAL"
@@ -788,7 +788,7 @@
                     icon="icons/tdengine_icon.png"
                     iconBig="icons/tdengine_icon_big.png"
                     categories="timeseries">
-                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.7]"/>
+                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="stored-quoted-case" value="lower"/>
                     <parameter name="stored-unquoted-case" value="lower"/>
@@ -801,12 +801,12 @@
                     label="TDengine Cloud"
                     icon="icons/tdengine_icon.png"
                     iconBig="icons/tdengine_icon_big.png"
-                    class="com.taosdata.jdbc.rs.RestfulDriver"
+                    class="com.taosdata.jdbc.ws.WebSocketDriver"
                     anonymous="true"
                     webURL="http://cloud.tdengine.com"
                     description="TDengine Cloud driver"
                     categories="timeseries">
-                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.7]"/>
+                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="stored-quoted-case" value="lower"/>
                     <parameter name="stored-unquoted-case" value="lower"/>

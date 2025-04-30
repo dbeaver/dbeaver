@@ -33,9 +33,11 @@ import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.LSMDialectRegistry;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
@@ -52,10 +54,12 @@ import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryConnectionContext;
 import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.Pair;
@@ -162,7 +166,8 @@ public class SQLQueryModelRecognizer {
         if (contents != null) {
             SQLQueryModel model = new SQLQueryModel(tree, contents, this.symbolEntries, this.lexicalItems.values().stream().toList());
 
-            model.propagateContext(this.queryDataContext, this.recognitionContext);
+            SQLQueryConnectionContext connectionContext = this.prepareConnectionContext(tree, this.queryDataContext);
+            model.propagateContext(this.queryDataContext, connectionContext, this.recognitionContext);
 
             for (SQLQuerySymbolEntry symbolEntry : this.symbolEntries) {
                 if (symbolEntry.isNotClassified() && this.reservedWords.contains(symbolEntry.getRawName().toUpperCase())) {
@@ -285,6 +290,76 @@ public class SQLQueryModelRecognizer {
                 }
                 default -> throw new IllegalArgumentException("Unexpected value: " + ref.getNodeName());
             }
+        }
+    }
+
+    @NotNull
+    private SQLQueryConnectionContext prepareConnectionContext(@NotNull STMTreeNode root, @NotNull SQLQueryDataContext queryDataContext) {
+        if (this.recognitionContext.useRealMetadata()
+            && this.executionContext != null
+            && this.executionContext.getDataSource() instanceof DBSObjectContainer
+            && this.executionContext.getDataSource().getSQLDialect() instanceof BasicSQLDialect basicSQLDialect
+        ) {
+            Map<String, SQLQueryResultPseudoColumn> globalPseudoColumns = Stream.of(basicSQLDialect.getGlobalVariables())
+                .map(v -> new SQLQueryResultPseudoColumn(
+                    new SQLQuerySymbol(SQLUtils.identifierToCanonicalForm(basicSQLDialect, v.name(), false, false)),
+                    null, null, SQLQueryExprType.forPredefined(v.type()),
+                    DBDPseudoAttribute.PropagationPolicy.GLOBAL_VARIABLE, v.description()
+                )).collect(Collectors.toMap(c -> c.symbol.getName(), c -> c));;
+
+            Function<SQLQueryRowsSourceModel, List<SQLQueryResultPseudoColumn>> rowsetPseudoColumns;
+            if (this.executionContext.getDataSource() instanceof DBDPseudoAttributeContainer pac) {
+                try {
+                    DBDPseudoAttribute[] pc = pac.getAllPseudoAttributes(this.recognitionContext.getMonitor());
+                    List<DBDPseudoAttribute> rowsetsPc = Stream.of(pc).filter(a -> a.getPropagationPolicy().providedByRowset).toList();
+                    rowsetPseudoColumns = rowsetsPc.isEmpty()
+                        ? s -> Collections.emptyList()
+                        : s -> SQLQueryRowsTableDataModel.prepareResultPseudoColumnsList(this.dialect, s, null, rowsetsPc.stream());
+                } catch (DBException e) {
+                    this.recognitionContext.appendError(root, "Failed to obtain global pseudo-columns information", e);
+                    rowsetPseudoColumns = s -> Collections.emptyList();
+                }
+            } else {
+                rowsetPseudoColumns = s -> Collections.emptyList();
+            }
+            return new SQLQueryConnectionContext(
+                this.dialect,
+                this.executionContext,
+                new SQLIdentifierDetector(this.dialect),
+                globalPseudoColumns,
+                rowsetPseudoColumns
+            );
+        } else {
+            // Don't have active connection, use dummy context
+            // TODO: refactor to a separate entity
+            return new SQLQueryConnectionContext(
+                queryDataContext.getDialect(),
+                recognitionContext.getExecutionContext(), // we're fine if it's null here
+                new SQLIdentifierDetector(queryDataContext.getDialect()),
+                Collections.emptyMap(),
+                m -> Collections.emptyList()
+            ) {
+                @Nullable
+                @Override
+                public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+                    return queryDataContext.findRealTable(monitor, tableName);
+                }
+
+                @Nullable
+                @Override
+                public DBSObject findRealObject(
+                    @NotNull DBRProgressMonitor monitor,
+                    @NotNull DBSObjectType objectType,
+                    @NotNull List<String> objectName
+                ) {
+                    return queryDataContext.findRealObject(monitor, objectType, objectName);
+                }
+
+                @Override
+                public boolean isDummy() {
+                    return true;
+                }
+            };
         }
     }
 

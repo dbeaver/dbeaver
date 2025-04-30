@@ -120,6 +120,7 @@ import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
+import org.jkiss.dbeaver.ui.editors.sql.ghost.SuggestionTextPainter;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
@@ -151,8 +152,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -257,6 +258,12 @@ public class SQLEditor extends SQLEditorBase implements
     private volatile boolean isPartControlInitialized = false;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
+
+    private SuggestionTextPainter suggestionTextPainter;
+
+    public SuggestionTextPainter getSuggestionTextPainter() {
+        return suggestionTextPainter;
+    }
 
     private static class ServerOutputInfo {
         private final DBCServerOutputReader outputReader;
@@ -1063,6 +1070,25 @@ public class SQLEditor extends SQLEditorBase implements
                 });
             }
         }
+        suggestionTextPainter = new SuggestionTextPainter(getViewer());
+        suggestionTextPainter.enable();
+
+        StyledText textWidget = getViewer().getTextWidget();
+        textWidget.addVerifyKeyListener(e -> {
+            if (e.keyCode == SWT.ARROW_RIGHT && suggestionTextPainter.hasContentToShow()) {
+                e.doit = false;
+                suggestionTextPainter.applyHint();
+            }
+        });
+        textWidget.addCaretListener(event -> {
+            if (suggestionTextPainter.hasContentToShow()) {
+                int caretOffset = event.caretOffset;
+                int ghostOffset = suggestionTextPainter.getCurrentPosition();
+                if (caretOffset != ghostOffset) {
+                    suggestionTextPainter.removeHint();
+                }
+            }
+        });
 
         // Start output reader
         new ServerOutputReader().schedule();
@@ -1108,6 +1134,9 @@ public class SQLEditor extends SQLEditorBase implements
     private void onTextChange(ModifyEvent e) {
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE)) {
             doScriptAutoSave();
+        }
+        if (suggestionTextPainter != null) {
+            suggestionTextPainter.removeHint();
         }
     }
 
