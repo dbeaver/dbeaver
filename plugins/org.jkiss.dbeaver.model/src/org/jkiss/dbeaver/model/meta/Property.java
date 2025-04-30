@@ -155,6 +155,16 @@ public @interface Property
 
     boolean required() default false;
 
+    /**
+     * Expression for determining the visibility of a property.
+     */
+    String hideExpr() default "";
+
+    /**
+     * Expression for determining the activity of a property.
+     */
+    String readOnlyExpr() default "";
+
     int order() default Integer.MAX_VALUE;
 
     String helpContextId() default ""; //NON-NLS-1

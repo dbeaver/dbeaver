@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,18 +32,24 @@ import java.io.IOException;
  * Completion settings.
  * These settings are stored for each connection separately.
  */
-public class DAICompletionSettings {
+public final class DAICompletionSettings {
 
     private static final Log log = Log.getLog(DAICompletionSettings.class);
 
-    private DBPDataSourceContainer dataSource;
+    private final DBPDataSourceContainer dataSourceContainer;
     private boolean metaTransferConfirmed;
     private boolean allowMetaTransfer;
     private DAICompletionScope scope;
     private String[] customObjectIds;
 
-    public DAICompletionSettings(DBPDataSourceContainer dataSource) {
-        setDataSource(dataSource);
+    public DAICompletionSettings(DBPDataSourceContainer dataSourceContainer) {
+        this.dataSourceContainer = dataSourceContainer;
+        loadSettings();
+    }
+
+    @NotNull
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceContainer;
     }
 
     public boolean isMetaTransferConfirmed() {
@@ -78,11 +84,6 @@ public class DAICompletionSettings {
         this.customObjectIds = customObjectIds;
     }
 
-    public void setDataSource(@NotNull DBPDataSourceContainer dataSource) {
-        this.dataSource = dataSource;
-        loadSettings();
-    }
-
     @NotNull
     private static BundlePreferenceStore getPreferenceStore() {
         return new BundlePreferenceStore("org.jkiss.dbeaver.model.ai");
@@ -90,7 +91,7 @@ public class DAICompletionSettings {
 
     private void loadSettings() {
         DBPPreferenceStore preferenceStore = getPreferenceStore();
-        String prefix = "ai-" + dataSource.getId() + ".";
+        String prefix = "ai-" + dataSourceContainer.getId() + ".";
         metaTransferConfirmed = preferenceStore.getBoolean(prefix + AICompletionConstants.AI_META_TRANSFER_CONFIRMED);
         scope = CommonUtils.valueOf(
             DAICompletionScope.class,
@@ -102,7 +103,7 @@ public class DAICompletionSettings {
 
     public void saveSettings() {
         DBPPreferenceStore preferenceStore = getPreferenceStore();
-        String prefix = "ai-" + dataSource.getId() + ".";
+        String prefix = "ai-" + dataSourceContainer.getId() + ".";
         preferenceStore.setValue(prefix + AICompletionConstants.AI_META_TRANSFER_CONFIRMED, metaTransferConfirmed);
         preferenceStore.setValue(prefix + AICompletionConstants.AI_META_SCOPE, scope.name());
         if (ArrayUtils.isEmpty(customObjectIds)) {

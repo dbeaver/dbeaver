@@ -30,9 +30,11 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.AIAssistant;
+import org.jkiss.dbeaver.model.ai.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.AICompletionConstants;
+import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
 import org.jkiss.dbeaver.model.ai.completion.DAITranslateRequest;
@@ -104,7 +106,7 @@ public class AITranslateHandler extends AbstractHandler {
         DAICompletionSettings settings = new DAICompletionSettings(dataSourceContainer);
 
         // Show info transfer warning
-        if (!AIUIUtils.confirmMetaTransfer(settings, dataSourceContainer)) {
+        if (!AIUIUtils.confirmMetaTransfer(settings)) {
             return null;
         }
 
@@ -161,7 +163,6 @@ public class AITranslateHandler extends AbstractHandler {
             String sql = translateUserInputIntoSql(
                 userInput,
                 executionContext,
-                dataSource,
                 popup
             );
 
@@ -191,7 +192,6 @@ public class AITranslateHandler extends AbstractHandler {
     private String translateUserInputIntoSql(
         String userInput,
         DBCExecutionContext executionContext,
-        DBSLogicalDataSource dataSource,
         @NotNull AISuggestionPopup popup
     ) throws InvocationTargetException {
         if (CommonUtils.isEmptyTrimmed(userInput)) {
@@ -204,7 +204,6 @@ public class AITranslateHandler extends AbstractHandler {
                 final DAICompletionContext context = new DAICompletionContext.Builder()
                     .setScope(popup.getScope())
                     .setCustomEntities(popup.getCustomEntities(monitor))
-                    .setDataSource(dataSource)
                     .setExecutionContext(executionContext)
                     .build();
 

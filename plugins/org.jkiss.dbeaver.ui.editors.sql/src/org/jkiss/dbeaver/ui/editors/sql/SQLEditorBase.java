@@ -948,7 +948,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     public SQLScriptElement extractQueryAtPos(int currentPos) {
-        return parserContext == null ? null : SQLScriptParser.extractQueryAtPos(parserContext, currentPos);
+        return parserContext == null ? null : SQLScriptParser.extractQueryAtPos(parserContext, currentPos, false);
     }
 
     public SQLScriptElement extractNextQuery(boolean next) {
