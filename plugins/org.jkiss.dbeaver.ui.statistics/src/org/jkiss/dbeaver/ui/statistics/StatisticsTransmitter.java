@@ -48,12 +48,18 @@ public class StatisticsTransmitter {
 
     private static final Log log = Log.getLog(StatisticsTransmitter.class);
 
-    private static final String ENDPOINT = "https://stats.dbeaver.com/send-statistics";
+    private final String endpoint;
 
     private final String workspaceId;
 
     public StatisticsTransmitter(String workspaceId) {
         this.workspaceId = workspaceId;
+
+        if (System.getenv("LM_STAGE_MODE") != null) {
+            endpoint = "https://stats.stage.dbeaver.infra/send-statistics";
+        } else {
+            endpoint = "https://stats.dbeaver.com/send-statistics";
+        }
     }
 
     public void send(boolean detached) {
@@ -121,7 +127,7 @@ public class StatisticsTransmitter {
         //log.debug("Sending statistics file '" + logFile.toAbsolutePath() + "'");
         try {
             URLConnection urlConnection = WebUtils.openURLConnection(
-                ENDPOINT + "?session=" + sessionId + "&time=" + timestamp,
+                endpoint + "?session=" + sessionId + "&time=" + timestamp,
                 null,
                 workspaceId,
                 "POST",
