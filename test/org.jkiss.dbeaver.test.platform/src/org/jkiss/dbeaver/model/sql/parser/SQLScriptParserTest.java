@@ -502,6 +502,36 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
         assertParse(ORACLE_DIALECT_NAME, packageBodyStatements);
     }
 
+    /**
+     * Issue 37925
+     */
+    @Test
+    public void parseOracleProcedureFunctionAs() throws DBException {
+        String[] statements = new String[] {
+            "CREATE OR REPLACE FUNCTION TEST_1.FUNC_1 \n" +
+            "RETURN NUMBER IS \n" +
+            "n NUMBER := 0;\n" +
+            "BEGIN\n" +
+            "SELECT 1 INTO n from dual;\n" +
+            "RETURN n;\n" +
+            "END;",
+
+            "CREATE OR REPLACE PROCEDURE my_procedure (\n" +
+            "    p_id IN NUMBER\n" +
+            ")\n" +
+            "AS\n" +
+            "    v_name VARCHAR2(100) DEFAULT 'Unknown';\n" +
+            "BEGIN\n" +
+            "    SELECT name INTO v_name\n" +
+            "    FROM employees\n" +
+            "    WHERE  employee_id = p_id;\n" +
+            "\n" +
+            "    DBMS_OUTPUT.PUT_LINE('Employee Name: ' || v_name);\n" +
+            "END;"
+        };
+        assertParse(ORACLE_DIALECT_NAME, statements);
+    }
+
     @Test
     public void parseCurrentControlCommandsCursorHead() throws DBException {
         String query = """
