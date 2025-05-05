@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.athena.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 /**
  * Athena SQL dialect
@@ -29,7 +30,7 @@ public class AthenaSQLDialect extends GenericSQLDialect {
     // https://docs.aws.amazon.com/athena/latest/ug/tables-databases-columns-names.html#tables-databases-columns-names-complex-types
     @Override
     public boolean validIdentifierPart(char c, boolean quoted) {
-        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || Character.isDigit(c) || c == '_' || (quoted
+        return SQLUtils.isLatinLetter(c) || Character.isDigit(c) || c == '_' || (quoted
             && validCharacters.indexOf(c) != -1);
     }
 }
