@@ -30,7 +30,6 @@ public class AthenaSQLDialect extends GenericSQLDialect {
     // https://docs.aws.amazon.com/athena/latest/ug/tables-databases-columns-names.html#tables-databases-columns-names-complex-types
     @Override
     public boolean validIdentifierPart(char c, boolean quoted) {
-        return SQLUtils.isLatinLetter(c) || Character.isDigit(c) || c == '_' || (quoted
-            && validCharacters.indexOf(c) != -1);
+        return SQLUtils.isLatinLetter(c) || Character.isDigit(c) || c == '_' || (quoted && validCharacters.indexOf(c) != -1);
     }
 }
