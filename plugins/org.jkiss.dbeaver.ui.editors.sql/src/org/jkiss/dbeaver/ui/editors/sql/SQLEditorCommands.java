@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,4 +64,5 @@ public interface SQLEditorCommands
     String CMD_TOGGLE_LAYOUT = "org.jkiss.dbeaver.ui.editors.sql.toggleLayout";
     String CMD_TOGGLE_SEPARATE_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.connection.separate";
 
+    String CMD_AI_SUGGESTION = "com.dbeaver.ai.sql.ghostsuggestion";
 }

@@ -39,7 +39,8 @@ public class WSUtils {
     private static GsonBuilder baseGsonBuilder() {
         return new GsonBuilder()
             .registerTypeAdapter(WSEvent.class, new WSEventDeserializer())
-            .registerTypeAdapter(WSClientEvent.class, new WSClientEventDeserializer());
+            .registerTypeAdapter(WSClientEvent.class, new WSClientEventDeserializer())
+            .enableComplexMapKeySerialization();
     }
 
     public static URI convertUriToWS(@NotNull URI wsServerUri) {

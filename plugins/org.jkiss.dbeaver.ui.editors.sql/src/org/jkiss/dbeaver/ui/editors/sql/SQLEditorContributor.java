@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,6 +156,7 @@ public class SQLEditorContributor extends TextEditorActionContributor
                 editMenu.add(contentAssistTip);
                 editMenu.add(contentAssistInformation);
                 editMenu.add(contentFormatProposal);
+                editMenu.add(ActionUtils.makeCommandContribution(window, SQLEditorCommands.CMD_AI_SUGGESTION));
             }
             IMenuManager navMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE);
             if (navMenu != null) {
