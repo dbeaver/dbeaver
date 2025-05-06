@@ -22,8 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatMessage;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatRole;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
@@ -42,6 +40,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MetadataProcessor {
     public static final MetadataProcessor INSTANCE = new MetadataProcessor();
@@ -141,6 +142,20 @@ public class MetadataProcessor {
         final int remainingRequestTokens = maxRequestTokens - sb.length() - 20;
 
         if (context.getScope() == DAICompletionScope.CUSTOM) {
+            Set<Map.Entry<DBSObjectContainer, Long>> objectContainers = context.getCustomEntities().stream()
+                .map(it -> (DBSObjectContainer) it.getParentObject())
+                .collect(Collectors.groupingBy(it -> it, Collectors.counting()))
+                .entrySet();
+
+            for (Map.Entry<DBSObjectContainer, Long> entry : objectContainers) {
+                if (entry.getValue() > 1) {
+                    entry.getKey().cacheStructure(
+                        monitor,
+                        DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
+                    );
+                }
+            }
+
             for (DBSEntity entity : context.getCustomEntities()) {
                 sb.append(generateObjectDescription(
                     monitor,
