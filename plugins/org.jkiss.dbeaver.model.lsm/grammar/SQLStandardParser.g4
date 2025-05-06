@@ -354,7 +354,7 @@ createTableHead: CREATE (OR REPLACE)? (GLOBAL|LOCAL)? (TEMPORARY|TEMP)? TABLE (I
 createTableExtraHead: (OF identifier)?;
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
 tableElement: (columnDefinition|tableConstraintDefinition) anyUnexpected??;
-createTableTail: anyUnexpected;
+createTableTail: anyUnexpected??;
 //                 createTableTailForValues? createTableTailOther*
 //                 createTableTailPartition? createTableTailOther*
 //                 createTableTailOnCommit? createTableTailOther*;
