@@ -81,7 +81,7 @@ public class TableReferencesAnalyzerImpl implements TableReferencesAnalyzer {
         if (!this.prepareTableReferencesIfNeeded()) {
             return Collections.emptyMap();
         }
-        if (CommonUtils.isNotEmpty(tableAlias) && tableReferences.size() > 0) {
+        if (CommonUtils.isNotEmpty(tableAlias) && !tableReferences.isEmpty()) {
             result = tableReferences.entrySet().stream()
                 .filter(r -> allowPartialMatch
                     ? r.getValue() != null && CommonUtils.startsWithIgnoreCase(r.getValue(), tableAlias)
