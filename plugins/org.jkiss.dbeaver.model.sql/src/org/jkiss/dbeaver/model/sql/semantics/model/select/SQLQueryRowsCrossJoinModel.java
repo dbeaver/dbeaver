@@ -18,24 +18,32 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 /**
  * Describes cross join clause
  */
-public class SQLQueryRowsCrossJoinModel extends SQLQueryRowsSetOperationModel {
+public class SQLQueryRowsCrossJoinModel extends SQLQueryRowsSetOperationModel
+    implements SQLQueryNodeModel.NodeSubtreeTraverseControl<SQLQueryRowsSourceModel, SQLQueryRowsDataContext> {
+
+    private final boolean isLateral;
+
     public SQLQueryRowsCrossJoinModel(
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
-        @NotNull SQLQueryRowsSourceModel right
+        @NotNull SQLQueryRowsSourceModel right,
+        boolean isLateral
     ) {
         super(range, syntaxNode, left, right);
+        this.isLateral = isLateral;
     }
 
     @NotNull
@@ -44,7 +52,10 @@ public class SQLQueryRowsCrossJoinModel extends SQLQueryRowsSetOperationModel {
         @NotNull SQLQueryDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        return this.left.propagateContext(context, statistics).combine(this.right.propagateContext(context, statistics));
+        SQLQueryDataContext left = this.left.propagateContext(context, statistics);
+        SQLQueryDataContext right = this.right.propagateContext(this.isLateral ? left : context, statistics);
+        SQLQueryDataContext combined = left.combine(right);
+        return combined;
     }
 
     @Override
@@ -52,7 +63,19 @@ public class SQLQueryRowsCrossJoinModel extends SQLQueryRowsSetOperationModel {
         @NotNull SQLQueryRowsSourceContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        return this.left.resolveRowSources(context, statistics).combine(this.right.resolveRowSources(context, statistics));
+        SQLQueryRowsSourceContext left = this.left.resolveRowSources(context, statistics);
+        SQLQueryRowsSourceContext right = this.right.resolveRowSources(this.isLateral ? left : context, statistics);
+        SQLQueryRowsSourceContext combined = left.combine(right);
+        return combined;
+    }
+
+    @Nullable
+    @Override
+    public SQLQueryRowsDataContext getContextForChild(
+        @NotNull SQLQueryRowsSourceModel child,
+        @Nullable SQLQueryRowsDataContext defaultContext
+    ) {
+        return child == this.right ? this.left.getRowsDataContext() : defaultContext;
     }
 
     @Override
