@@ -14,22 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.athena.model;
+package org.jkiss.dbeaver.client;
 
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.launcher.DBeaverLauncher;
 
-/**
- * Athena SQL dialect
- */
-public class AthenaSQLDialect extends GenericSQLDialect {
-    public AthenaSQLDialect() {
-        super("Athena", "aws_athena");
+import java.nio.file.Path;
+
+public class DBeaverRestClient {
+
+    public static Integer getDBeaverServerPort(Path dbeaverDataPath) {
+        return 1;
     }
 
-    // https://docs.aws.amazon.com/athena/latest/ug/tables-databases-columns-names.html#tables-databases-columns-names-complex-types
-    @Override
-    public boolean validIdentifierPart(char c, boolean quoted) {
-        return SQLUtils.isLatinLetter(c) || Character.isDigit(c) || c == '_' || (quoted && validCharacters.indexOf(c) != -1);
+    public static boolean supportsAutoLaunch() {
+        String launchPath = System.getenv(DBeaverLauncher.PROP_LAUNCHER);
+        return launchPath != null && !launchPath.trim().isEmpty();
     }
 }
