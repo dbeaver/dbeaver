@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,4 +147,10 @@ public class Constants {
      * machine running an unknown windowing system.
      */
     public static final String WS_UNKNOWN = "unknown";//$NON-NLS-1$
+
+    public static final String WORKSPACE6 = "workspace6";
+    public static final String METADATA = ".metadata";
+    public static final String DBEAVER_INSTANCE_PROPS = "dbeaver-instance.properties";
+    public static final String PROPERTY_PORT = "port";
+
 }
