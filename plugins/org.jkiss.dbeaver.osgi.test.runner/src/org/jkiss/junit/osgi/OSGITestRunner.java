@@ -28,11 +28,13 @@ import org.jkiss.junit.osgi.annotation.RunWithApplication;
 import org.jkiss.junit.osgi.annotation.RunWithProduct;
 import org.jkiss.junit.osgi.annotation.RunnerProxy;
 import org.jkiss.junit.osgi.behaviors.IAsyncApplication;
+import org.jkiss.junit.osgi.delegate.ProxyFilter;
 import org.jkiss.junit.osgi.launcher.TestLauncher;
 import org.jkiss.utils.Pair;
-import org.junit.runner.Description;
-import org.junit.runner.Runner;
+import org.junit.runner.manipulation.Filter;
+import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.BlockJUnit4ClassRunner;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -68,7 +70,8 @@ import java.util.stream.Collectors;
  *     Should allow debugging of the tests in the IDEA.
  * </p>
  */
-public class OSGITestRunner extends Runner {
+public class OSGITestRunner extends BlockJUnit4ClassRunner {
+
     public static final Pattern startLevel = Pattern.compile("@(\\d+):start");
     private static final Log log = Log.getLog(OSGITestRunner.class);
     private static final boolean DEBUG_BUNDLE_LAUNCH = false;
@@ -81,8 +84,15 @@ public class OSGITestRunner extends Runner {
     private String appRegistryName;
     private String appBundleName;
     private String[] args;
+    private Object runnerProxy = null;
 
-    public OSGITestRunner(Class<? extends IAsyncApplication> testClass) {
+    public OSGITestRunner(
+        @NotNull Class<? extends IAsyncApplication> testClass
+    ) throws Exception {
+        super(testClass);
+        if (testClass.getAnnotation(RunnerProxy.class) == null) {
+            throw new IllegalArgumentException("RunnerProxy annotation not found");
+        }
         this.testClass = testClass;
         if (isRunFromIDEA()) {
             //use UTF-8 for run
@@ -102,10 +112,15 @@ public class OSGITestRunner extends Runner {
             } catch (Exception e) {
                 log.error(e);
             }
+
             this.productPath = findProduct();
 
             getAppBundleFromAnnotation();
             this.framework = initializeFramework();
+            startFramework();
+            createProxyInTheBundleClassloader(testBundle.loadClass(testClass.getName()));
+        } else {
+            createProxyInSameClassloader();
         }
     }
 
@@ -121,8 +136,19 @@ public class OSGITestRunner extends Runner {
     }
 
     @Override
-    public Description getDescription() {
-        return Description.createTestDescription(testClass, testClass.getName());
+    public void filter(Filter filter) throws NoTestsRemainException {
+        super.filter(filter);
+        try {
+            if (isRunFromIDEA()) {
+                Constructor<?> constructor = testBundle.loadClass(ProxyFilter.class.getName()).getConstructors()[0];
+                Object filterProxy = constructor.newInstance(filter);
+                runnerProxy.getClass().getMethod("filter", testBundle.loadClass(Filter.class.getName())).invoke(runnerProxy, filterProxy);
+            } else {
+                runnerProxy.getClass().getMethod("filter", Filter.class).invoke(runnerProxy, filter);
+            }
+        } catch (Exception e) {
+            log.error("Error applying filter to proxy", e);
+        }
     }
 
     @Override
@@ -165,58 +191,26 @@ public class OSGITestRunner extends Runner {
     private void launchInExistingOSGI(RunNotifier notifier) {
         try {
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
-                Constructor<?> constructor = testClass
-                    .getClassLoader()
-                    .loadClass(testClass.getAnnotation(RunnerProxy.class).value().getName())
-                    .getConstructor(Class.class);
-                Object o = constructor.newInstance(testClass);
-                Arrays.stream(o.getClass().getMethods()).filter(it -> it.getName().equals("run")).findFirst().orElseThrow().invoke(
-                    o,
-                    notifier
-                );
+                Arrays.stream(runnerProxy.getClass().getMethods()).filter(it -> it.getName().equals("run")).findFirst().orElseThrow()
+                    .invoke(runnerProxy, notifier);
             }
         } catch (Throwable throwable) {
             log.error("An error occurred while running the test", throwable);
         }
     }
 
+    private void createProxyInSameClassloader(
+    ) throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        Constructor<?> constructor = testClass
+            .getClassLoader()
+            .loadClass(testClass.getAnnotation(RunnerProxy.class).value().getName())
+            .getConstructor(Class.class);
+        runnerProxy = constructor.newInstance(testClass);
+    }
+
     private void runInsideOSGI(RunNotifier notifier) {
         try {
-            framework.init();
-            // Start the OSGi framework
-            BundleContext context = framework.getBundleContext();
-            // Load and start all bundles
-            loadAndStartBundles(context);
-            EquinoxConfiguration equinoxConfig = null;
-            if (args != null) {
-                ServiceReference<EnvironmentInfo> configRef = context.getServiceReference(EnvironmentInfo.class);
-                equinoxConfig = (EquinoxConfiguration) context.getService(configRef);
-                equinoxConfig.setAllArgs(args);
-                equinoxConfig.setAppArgs(args);
-            }
-            framework.start();
-            if (equinoxConfig != null) {
-                Method processCommandLine = CommandLineArgs.class.getDeclaredMethod(
-                    "processCommandLine",
-                    EnvironmentInfo.class
-                );
-                processCommandLine.setAccessible(true);
-                processCommandLine.invoke(null, equinoxConfig);
-            }
-            TestLauncher launcher = new TestLauncher(context);
-            context.registerService(ApplicationLauncher.class.getName(), launcher,
-                null
-            );
-            if (IAsyncApplication.class.isAssignableFrom(testClass)) {
-                Thread thread = new Thread(() -> launcher.start(appRegistryName, args));
-                thread.start();
-            } else {
-                launcher.start(appRegistryName, args);
-            }
             if (testClass.getAnnotation(RunnerProxy.class) != null) {
-                Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class)
-                    .value()
-                    .getName()).getConstructor(Class.class);
                 Class<?> runningClass = testBundle.loadClass(testClass.getName());
                 if (IAsyncApplication.class.isAssignableFrom(testClass)) {
                     long startTime = System.currentTimeMillis();
@@ -231,11 +225,10 @@ public class OSGITestRunner extends Runner {
                         }
                     }
                 }
-                Object o = proxy.newInstance(runningClass);
-                Method runMethod = Arrays.stream(o.getClass().getMethods()).filter(it -> it.getName().equals("run"))
+                Method runMethod = Arrays.stream(runnerProxy.getClass().getMethods()).filter(it -> it.getName().equals("run"))
                     .findFirst().orElseThrow();
                 Object proxyNotifier = createProxyNotifier(notifier);
-                runMethod.invoke(o, proxyNotifier);
+                runMethod.invoke(runnerProxy, proxyNotifier);
             }
         } catch (Throwable throwable) {
             log.error("An error occurred while running the test", throwable);
@@ -247,6 +240,50 @@ public class OSGITestRunner extends Runner {
                 log.error("Error stopping framework", e);
             }
         }
+    }
+
+    private void startFramework() throws Exception {
+        framework.init();
+        // Start the OSGi framework
+        BundleContext context = framework.getBundleContext();
+        // Load and start all bundles
+        loadAndStartBundles(context);
+        EquinoxConfiguration equinoxConfig = null;
+        if (args != null) {
+            ServiceReference<EnvironmentInfo> configRef = context.getServiceReference(EnvironmentInfo.class);
+            equinoxConfig = (EquinoxConfiguration) context.getService(configRef);
+            equinoxConfig.setAllArgs(args);
+            equinoxConfig.setAppArgs(args);
+        }
+        framework.start();
+        if (equinoxConfig != null) {
+            Method processCommandLine = CommandLineArgs.class.getDeclaredMethod(
+                "processCommandLine",
+                EnvironmentInfo.class
+            );
+            processCommandLine.setAccessible(true);
+            processCommandLine.invoke(null, equinoxConfig);
+        }
+        TestLauncher launcher = new TestLauncher(context);
+        context.registerService(ApplicationLauncher.class.getName(), launcher,
+            null
+        );
+        if (IAsyncApplication.class.isAssignableFrom(testClass)) {
+            Thread thread = new Thread(() -> launcher.start(appRegistryName, args));
+            thread.start();
+        } else {
+            launcher.start(appRegistryName, args);
+        }
+    }
+
+    @NotNull
+    private void createProxyInTheBundleClassloader(
+        @NotNull Class<?> runningClass
+    ) throws NoSuchMethodException, ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        Constructor<?> proxy = testBundle.loadClass(testClass.getAnnotation(RunnerProxy.class)
+            .value()
+            .getName()).getConstructor(Class.class);
+        runnerProxy = proxy.newInstance(runningClass);
     }
 
     @NotNull
