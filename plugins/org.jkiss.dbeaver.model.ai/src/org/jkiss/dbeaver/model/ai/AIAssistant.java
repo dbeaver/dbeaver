@@ -18,24 +18,14 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.completion.*;
+import org.jkiss.dbeaver.model.ai.completion.DAICommandRequest;
+import org.jkiss.dbeaver.model.ai.completion.DAITranslateRequest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.concurrent.Flow;
 
 /**
  * AI Assistant interface. Provides methods for AI-based operations.
  */
 public interface AIAssistant {
-
-    /**
-     * Generates the next message in a chat conversation.
-     */
-    @NotNull
-    Flow.Publisher<DAICompletionChunk> chat(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DAIChatRequest chatCompletionRequest
-    ) throws DBException;
 
     /**
      * Translates text to SQL.

@@ -29,12 +29,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -61,6 +58,7 @@ public class MetadataProcessor {
         }
         StringBuilder description = new StringBuilder();
         if (object instanceof DBSEntity entity) {
+            description.append("\n-------------------------\n");
             String name = useFullyQualifiedName && context != null ? DBUtils.getObjectFullName(
                 context.getDataSource(),
                 object,
@@ -76,7 +74,7 @@ public class MetadataProcessor {
             formatter.addExtraDescription(monitor, entity, description, firstAttr);
             description.append(");");
             if (object instanceof DBSDataContainer dataContainer) {
-                formatter.addDataSample(monitor, entity, context, description);
+                formatter.addDataSample(monitor, dataContainer, context, description);
             }
 
         } else if (object instanceof DBSObjectContainer objectContainer) {
@@ -124,21 +122,6 @@ public class MetadataProcessor {
 
         final DBCExecutionContext executionContext = context.getExecutionContext();
         final StringBuilder sb = new StringBuilder();
-        final String extraInstructions = formatter.getExtraInstructions(monitor, mainObject, executionContext);
-        if (CommonUtils.isNotEmpty(extraInstructions)) {
-            sb.append(", ").append(extraInstructions);
-        }
-
-        describeSQLDialect(mainObject.getDataSource().getSQLDialect(), sb);
-
-        if (executionContext.getContextDefaults() != null) {
-            final DBSSchema defaultSchema = executionContext.getContextDefaults().getDefaultSchema();
-            if (defaultSchema != null) {
-                sb.append("\nCurrent schema is ").append(defaultSchema.getName());
-            }
-        }
-
-        sb.append("\nSQL tables, with their properties are:");
 
         final int remainingRequestTokens = maxRequestTokens - sb.length() - 20;
 
@@ -218,18 +201,6 @@ public class MetadataProcessor {
         DBCExecutionContextDefaults<?,?> contextDefaults = context.getContextDefaults();
         return parent != null && !(parent.equals(contextDefaults.getDefaultCatalog())
             || parent.equals(contextDefaults.getDefaultSchema()));
-    }
-
-    private static void describeSQLDialect(SQLDialect dialect, StringBuilder sb) {
-        sb.append("Dialect is ").append(dialect.getDialectName());
-
-        String[][] identifierQuoteStrings = dialect.getIdentifierQuoteStrings();
-        if (identifierQuoteStrings != null && identifierQuoteStrings.length > 0) {
-            sb.append("\nUse ").append(identifierQuoteStrings[0][0]).append(" to quote database object names");
-        }
-
-        String[][] stringQuoteStrings = dialect.getStringQuoteStrings();
-        sb.append("\nUse ").append(stringQuoteStrings[0][0]).append(" to quote string values");
     }
 
     private MetadataProcessor() {

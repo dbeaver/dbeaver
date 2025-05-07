@@ -21,5 +21,6 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
  org.jkiss.bundle.gpt3,
+ org.jkiss.dbeaver.ext.generic,
  com.google.gson
 
