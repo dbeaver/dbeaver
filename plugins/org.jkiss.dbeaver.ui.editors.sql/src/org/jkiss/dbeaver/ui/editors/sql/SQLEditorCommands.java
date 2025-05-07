@@ -65,4 +65,5 @@ public interface SQLEditorCommands
     String CMD_TOGGLE_SEPARATE_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.connection.separate";
 
     String CMD_AI_SUGGESTION = "com.dbeaver.ai.sql.ghostsuggestion";
+    String CMD_AI_CHAT_TOGGLE = "com.dbeaver.ai.chat.toggle"; //$NON-NLS-1$
 }
