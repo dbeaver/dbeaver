@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.app.DBPApplicationController;
 import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.cli.CmdProcessResult;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
@@ -181,9 +182,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         Location instanceLoc = Platform.getInstanceLocation();
 
-        CommandLine commandLine = DBeaverCommandLine.getCommandLine();
+        CommandLine commandLine = DBeaverCommandLine.getInstance().getCommandLine();
         String defaultHomePath = getDefaultInstanceLocation();
-        if (DBeaverCommandLine.handleCommandLine(commandLine, defaultHomePath)) {
+        if (DBeaverCommandLine.getInstance()
+            .handleCommandLineAsClient(commandLine, defaultHomePath)
+            .getPostAction() == CmdProcessResult.PostAction.SHUTDOWN
+        ) {
             if (!Log.isQuietMode()) {
                 System.err.println("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
             }
@@ -227,7 +231,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Custom parameters
         try {
             headlessMode = true;
-            if (DBeaverCommandLine.handleCustomParameters(commandLine)) {
+            if (DBeaverCommandLine.getInstance().handleCustomParameters(commandLine)) {
                 return IApplication.EXIT_OK;
             }
         } finally {
@@ -457,7 +461,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return isHeadlessMode() ? ConsoleUserInterface.class : DesktopUI.class;
     }
 
-    private String getDefaultInstanceLocation() {
+    public String getDefaultInstanceLocation() {
         String defaultHomePath = WORKSPACE_DIR_CURRENT;
         Location instanceLoc = Platform.getInstanceLocation();
         if (instanceLoc.isSet()) {
@@ -732,6 +736,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     @Nullable
+    @Override
     public IInstanceController getInstanceServer() {
         return instanceServer;
     }
