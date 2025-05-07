@@ -964,6 +964,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     @Override
+    public boolean validIdentifierStart(char c) {
+        return super.validIdentifierStart(c) || c == '_';
+    }
+
+    @Override
     public String getCastedAttributeName(@NotNull DBSAttributeBase attribute, String attributeName) {
         // This method actually works for special data types like JSON and XML.
         // Because column names in the condition in a table without key must be also cast, as data in getTypeCast method.
