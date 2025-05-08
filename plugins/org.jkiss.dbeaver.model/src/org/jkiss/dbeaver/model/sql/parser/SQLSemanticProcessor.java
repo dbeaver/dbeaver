@@ -64,7 +64,7 @@ public class SQLSemanticProcessor {
     private static final boolean ALLOW_COMPLEX_PARSING = false;
     private static final int PARSE_FUTURE_TIMEOUT_MS = 1000; // if we can't parse fast, we don't want to
 
-    private static ExecutorService executor = Executors.newFixedThreadPool(10);
+    private static ExecutorService executor = Executors.newCachedThreadPool();
 
     public static void shutdownExecutor() {
         if (!executor.shutdownNow().isEmpty()) {
