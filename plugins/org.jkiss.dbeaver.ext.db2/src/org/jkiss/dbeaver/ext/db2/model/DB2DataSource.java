@@ -126,7 +126,6 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
     private Double version;
     private char serverVariant;
     private volatile transient boolean hasStatistics;
-    private final boolean isDB2ForLUW = !isBigSQL() && !isWarehouse();
     // Version
 
     // -----------------------
@@ -296,7 +295,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         try {
             db2Connection = super.openConnection(monitor, context, purpose);
         } catch (DBCException e) {
-            if (isDB2ForLUW && isPasswordExpired(e)
+            if ((!isBigSQL() && !isWarehouse()) && isPasswordExpired(e)
                 && DBAuthUtils.promptAndChangePasswordForCurrentUser(
                 monitor, container, this::changeUserPassword)) {
                 return openConnection(monitor, context, purpose);
