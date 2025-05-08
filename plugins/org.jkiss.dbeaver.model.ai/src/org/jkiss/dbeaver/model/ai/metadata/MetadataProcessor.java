@@ -22,8 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatMessage;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatRole;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
@@ -32,16 +30,16 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MetadataProcessor {
     public static final MetadataProcessor INSTANCE = new MetadataProcessor();
@@ -77,6 +75,10 @@ public class MetadataProcessor {
             DBSEntityAttribute firstAttr = addPromptAttributes(monitor, entity, description, formatter);
             formatter.addExtraDescription(monitor, entity, description, firstAttr);
             description.append(");");
+            if (object instanceof DBSDataContainer dataContainer) {
+                formatter.addDataSample(monitor, entity, context, description);
+            }
+
         } else if (object instanceof DBSObjectContainer objectContainer) {
             monitor.subTask("Load cache of " + object.getName());
             objectContainer.cacheStructure(
@@ -141,6 +143,20 @@ public class MetadataProcessor {
         final int remainingRequestTokens = maxRequestTokens - sb.length() - 20;
 
         if (context.getScope() == DAICompletionScope.CUSTOM) {
+            Set<Map.Entry<DBSObjectContainer, Long>> objectContainers = context.getCustomEntities().stream()
+                .map(it -> (DBSObjectContainer) it.getParentObject())
+                .collect(Collectors.groupingBy(it -> it, Collectors.counting()))
+                .entrySet();
+
+            for (Map.Entry<DBSObjectContainer, Long> entry : objectContainers) {
+                if (entry.getValue() > 1) {
+                    entry.getKey().cacheStructure(
+                        monitor,
+                        DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
+                    );
+                }
+            }
+
             for (DBSEntity entity : context.getCustomEntities()) {
                 sb.append(generateObjectDescription(
                     monitor,
