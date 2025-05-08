@@ -62,13 +62,18 @@ public class SQLSemanticProcessor {
     private static final Log log = Log.getLog(SQLSemanticProcessor.class);
 
     private static final boolean ALLOW_COMPLEX_PARSING = false;
-    private static final int PARSE_FUTURE_TIMEOUT_MS = 10000; // 8000 is the default timeout for parser itself
+    private static final int PARSE_FUTURE_TIMEOUT_MS = 1000; // if we can't parse fast, we don't want to
+
+    private static ExecutorService executor = Executors.newFixedThreadPool(10);
+
+    public static void shutdownExecutor() {
+        if (!executor.shutdownNow().isEmpty()) {
+            log.warn("Unexpected awaiting tasks found while terminating JSqlParser executor.");
+        }
+    }
 
     public static Statement parseQuery(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
-
-
         String sqlWithoutComments = dialect == null ? sql : SQLUtils.stripComments(dialect, sql);
-        ExecutorService executorService =  Executors.newSingleThreadExecutor();
         try {
             CCJSqlParser parser = new CCJSqlParser(sqlWithoutComments)
                 .withAllowComplexParsing(ALLOW_COMPLEX_PARSING);
@@ -81,7 +86,7 @@ public class SQLSemanticProcessor {
                     }
                 }
             }
-            Future<Statement> future = executorService.submit(parser::Statement);
+            Future<Statement> future = executor.submit(parser::Statement);
             try {
                 return future.get(PARSE_FUTURE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
             } catch (TimeoutException | InterruptedException interruptedEx) {
@@ -91,10 +96,6 @@ public class SQLSemanticProcessor {
             }
         } catch (Exception e) {
             throw new DBCException("Error parsing SQL query: " + e.getMessage(), e);
-        } finally {
-            if (!executorService.shutdownNow().isEmpty()) {
-                log.warn("Unexpected awaiting tasks found while terminating JSqlParser executor.");
-            }
         }
     }
 
