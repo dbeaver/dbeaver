@@ -101,10 +101,10 @@
         <propertyGroup id="editors" label="Editors">
             <propertyGroup id="sqlEditor" label="SQL Editor">
                 <property id="sql.proposals.insert.table.alias" label="Insert table aliases (in FROM clause)"
-                          validValues="NONE,PLAIN,EXTENDED" defaultValue="PLAIN" type="string" scopes="global,user"
+                          validValues="NONE,PLAIN,EXTENDED" defaultValue="PLAIN" type="string" scopes="global,user,role"
                           description="Automatically inserts table aliases"/>
                 <property id="SQLEditor.ContentAssistant.proposals.long.name" label="%SQLEditor.ContentAssistant.proposals.long.name"
-                          defaultValue="false" type="boolean" scopes="global,user"/>
+                          defaultValue="false" type="boolean" scopes="global,user,role"/>
             </propertyGroup>
         </propertyGroup>
     </extension>
