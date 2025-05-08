@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -35,12 +36,10 @@ import org.jkiss.dbeaver.ext.db2.model.security.DB2Grantee;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2GranteeCache;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -63,7 +62,10 @@ import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -124,6 +126,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
     private Double version;
     private char serverVariant;
     private volatile transient boolean hasStatistics;
+    private final boolean isDB2ForLUW = !isBigSQL() && !isWarehouse();
     // Version
 
     // -----------------------
@@ -179,7 +182,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         } catch (SQLException e) {
             log.warn("Unable to determine server variant", e);
         }
-        
+
         ((JDBCObjectSimpleCache) dataTypeCache).setCaseSensitive(false);
         try {
             this.dataTypeCache.getAllObjects(monitor, this);
@@ -284,20 +287,90 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
     }
 
     @Override
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
-        Connection db2Connection = super.openConnection(monitor, context, purpose);
+    protected Connection openConnection(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose
+    ) throws DBCException {
+        Connection db2Connection;
+        try {
+            db2Connection = super.openConnection(monitor, context, purpose);
+        } catch (DBCException e) {
+            if (isDB2ForLUW && isPasswordExpired(e)
+                && DBAuthUtils.promptAndChangePasswordForCurrentUser(
+                monitor, container, this::changeUserPassword)) {
+                return openConnection(monitor, context, purpose);
+            }
+            throw e;
+        }
 
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
-            // Provide client info
             try {
-                db2Connection.setClientInfo(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY,
-                    CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), context, purpose), 255));
+                db2Connection.setClientInfo(
+                    JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY,
+                    CommonUtils.truncateString(
+                        DBUtils.getClientApplicationName(getContainer(), context, purpose),
+                        255));
             } catch (Throwable e) {
                 log.debug(e);
             }
         }
 
         return db2Connection;
+    }
+
+    private boolean isPasswordExpired(DBCException e) {
+        Throwable cause = e.getCause();
+        if (cause instanceof SQLException sqlEx) {
+            return sqlEx.getErrorCode() == -4214
+                && "28000".equals(sqlEx.getSQLState());
+        }
+        return false;
+    }
+
+
+    private void changeUserPassword(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String userName,
+        @NotNull String newPassword,
+        @NotNull String oldPassword
+    ) throws DBException {
+        DBPConnectionConfiguration cfg = container.getActualConnectionConfiguration();
+        String url = cfg.getUrl();
+
+        try {
+            Driver jdbcDriver = container
+                .getDriver()
+                .getDefaultDriverLoader()
+                .getDriverInstance(monitor);
+            ClassLoader loader = jdbcDriver.getClass().getClassLoader();
+
+            Class<?> db2DriverClass = loader.loadClass("com.ibm.db2.jcc.DB2Driver");
+
+            Method changePwd = db2DriverClass.getMethod(
+                "changeDB2Password",
+                String.class, String.class, String.class, String.class
+            );
+
+            changePwd.invoke(
+                null,
+                 url,
+                 userName,
+                 oldPassword,
+                 newPassword
+            );
+
+            cfg.setUserPassword(newPassword);
+
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
+            throw new DBException("Cannot invoke method", e);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof SQLException sqlEx) {
+                throw new DBDatabaseException("Error while changing password DB2", sqlEx);
+            }
+            throw new DBException("Error while calling changeDB2Password", e);
+        }
     }
 
     @Override
