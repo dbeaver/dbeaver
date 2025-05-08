@@ -31,7 +31,7 @@ You can also download <a href="https://dbeaver.io/files/ea" target="_blank">Earl
 
 Just run an installer (or unzip an archive) and run `dbeaver`.  
 
-Note: DBeaver needs Java to run. <a href="https://adoptium.net/" target="_blank">Open JDK 17</a> is included in all DBeaver distributions.
+Note: DBeaver needs Java to run. <a href="https://adoptium.net/temurin/releases/?package=jre" target="_blank">OpenJDK 21</a> is included in all DBeaver distributions.
 You can change default JDK version by replacing directory `jre` in dbeaver installation folder.
 
 ## Documentation

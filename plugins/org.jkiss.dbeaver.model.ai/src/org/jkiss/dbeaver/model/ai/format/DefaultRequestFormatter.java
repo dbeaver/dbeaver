@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,17 @@ public class DefaultRequestFormatter implements IAIFormatter {
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_SEND_TYPE_INFO)) {
             description.append(" ").append(attribute.getTypeName());
         }
+    }
+
+    @Override
+    public void addDataSample(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity object,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull StringBuilder description
+    )
+    throws DBException {
+        // nothing to do
     }
 
 }

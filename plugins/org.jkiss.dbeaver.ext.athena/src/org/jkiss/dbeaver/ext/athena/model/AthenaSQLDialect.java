@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.athena.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 /**
  * Athena SQL dialect
@@ -24,5 +25,11 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 public class AthenaSQLDialect extends GenericSQLDialect {
     public AthenaSQLDialect() {
         super("Athena", "aws_athena");
+    }
+
+    // https://docs.aws.amazon.com/athena/latest/ug/tables-databases-columns-names.html#tables-databases-columns-names-complex-types
+    @Override
+    public boolean validIdentifierPart(char c, boolean quoted) {
+        return SQLUtils.isLatinLetter(c) || Character.isDigit(c) || c == '_' || (quoted && validCharacters.indexOf(c) != -1);
     }
 }

@@ -37,7 +37,7 @@ class LogSubscriber implements Flow.Subscriber<DAICompletionChunk> {
 
     @Override
     public void onNext(DAICompletionChunk item) {
-        log.debug("Received completion chunk: " + item);
+        log.trace("Received completion chunk: " + item);
 
         subscriber.onNext(item);
     }
@@ -51,7 +51,7 @@ class LogSubscriber implements Flow.Subscriber<DAICompletionChunk> {
 
     @Override
     public void onComplete() {
-        log.debug("Completion stream completed");
+        log.trace("Completion stream completed");
 
         subscriber.onComplete();
     }

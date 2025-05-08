@@ -19,10 +19,8 @@ package org.jkiss.dbeaver.model.ai.completion;
 import org.eclipse.core.runtime.Assert;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
@@ -33,18 +31,15 @@ import java.util.Objects;
 public class DAICompletionContext {
     private final DAICompletionScope scope;
     private final List<DBSEntity> customEntities;
-    private final DBSLogicalDataSource dataSource;
     private final DBCExecutionContext executionContext;
 
     private DAICompletionContext(
         @NotNull DAICompletionScope scope,
         @Nullable List<DBSEntity> customEntities,
-        @NotNull DBSLogicalDataSource dataSource,
         @NotNull DBCExecutionContext executionContext
     ) {
         this.scope = scope;
         this.customEntities = customEntities;
-        this.dataSource = dataSource;
         this.executionContext = executionContext;
     }
 
@@ -59,11 +54,6 @@ public class DAICompletionContext {
     }
 
     @NotNull
-    public DBSLogicalDataSource getDataSource() {
-        return dataSource;
-    }
-
-    @NotNull
     public DBCExecutionContext getExecutionContext() {
         return executionContext;
     }
@@ -71,7 +61,6 @@ public class DAICompletionContext {
     public static class Builder {
         private DAICompletionScope scope;
         private List<DBSEntity> customEntities;
-        private DBSLogicalDataSource dataSource;
         private DBCExecutionContext executionContext;
 
         @NotNull
@@ -83,12 +72,6 @@ public class DAICompletionContext {
         @NotNull
         public Builder setCustomEntities(@NotNull List<DBSEntity> customEntities) {
             this.customEntities = customEntities;
-            return this;
-        }
-
-        @NotNull
-        public Builder setDataSource(@NotNull DBSLogicalDataSource dataSource) {
-            this.dataSource = dataSource;
             return this;
         }
 
@@ -109,15 +92,11 @@ public class DAICompletionContext {
                 "Custom entities must be specified when using custom scope"
             );
             Assert.isLegal(
-                dataSource != null,
-                "Data source must be specified"
-            );
-            Assert.isLegal(
                 executionContext != null,
                 "Execution context must be specified"
             );
 
-            return new DAICompletionContext(scope, customEntities, dataSource, executionContext);
+            return new DAICompletionContext(scope, customEntities, executionContext);
         }
     }
 

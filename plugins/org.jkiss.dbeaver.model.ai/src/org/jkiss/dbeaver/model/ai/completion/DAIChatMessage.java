@@ -18,15 +18,15 @@ package org.jkiss.dbeaver.model.ai.completion;
 
 import org.jkiss.code.NotNull;
 
+import java.time.LocalDateTime;
+
 /**
  * Represents a single completion message
- *
  */
 public record DAIChatMessage(
-    @NotNull
-    DAIChatRole role,
-    @NotNull
-    String content
+    @NotNull DAIChatRole role,
+    @NotNull String content,
+    @NotNull LocalDateTime time
 ) {
     public static DAIChatMessage systemMessage(String message) {
         return new DAIChatMessage(DAIChatRole.SYSTEM, message);
@@ -41,7 +41,6 @@ public record DAIChatMessage(
     }
 
     public DAIChatMessage(@NotNull DAIChatRole role, @NotNull String content) {
-        this.role = role;
-        this.content = content;
+        this(role, content, LocalDateTime.now());
     }
 }

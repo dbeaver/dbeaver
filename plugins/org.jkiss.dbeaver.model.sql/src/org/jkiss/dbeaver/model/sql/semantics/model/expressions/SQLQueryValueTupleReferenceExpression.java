@@ -23,9 +23,7 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
+import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
@@ -110,6 +108,50 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
             }
             type = SQLQueryExprType.UNKNOWN;
         }
+    }
+
+    @Override
+    protected void resolveRowSourcesImpl(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    }
+
+    @Override
+    protected SQLQueryExprType resolveValueTypeImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        if (this.tableName.isNotClassified()) {
+            SQLQuerySymbolOrigin tableNameOrigin = new SQLQuerySymbolOrigin.RowsDataRef(context);
+            if (this.tableName.invalidPartsCount == 0) {
+                SourceResolutionResult rr = context.getRowsSources().findReferencedSource(new SQLQueryComplexName(this.tableName.toListOfStrings()));
+                if (rr != null) {
+                    this.tupleSource = rr.source;
+                    this.tableName.setDefinition(rr, tableNameOrigin);
+                    if (this.memberAccessEntry != null) {
+                        this.memberAccessEntry.setOrigin(new SQLQuerySymbolOrigin.ColumnRefFromReferencedContext(rr));
+                    }
+                    if (this.tupleRefEntry != null) {
+                        this.tupleRefEntry.setOrigin(new SQLQuerySymbolOrigin.ExpandableTupleRef(this.getSyntaxNode(), null, rr));
+                    }
+                } else {
+                    this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
+                    statistics.appendError(this.tableName.entityName,
+                        "Table or subquery " + this.tableName.toIdentifierString() + " not found");
+                }
+            } else {
+                SQLQueryQualifiedName.performPartialResolution(
+                    context.getRowsSources(),
+                    statistics,
+                    this.tableName,
+                    tableNameOrigin,
+                    Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                    SQLQuerySymbolClass.ERROR
+                );
+                statistics.appendError(this.getSyntaxNode(), "Invalid tuple reference");
+            }
+            type = SQLQueryExprType.UNKNOWN;
+        }
+
+        return this.type;
     }
 
     @Override

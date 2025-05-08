@@ -1016,7 +1016,11 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             @Nullable SQLQuerySelectIntoModel.SQLQuerySelectIntoTargetsList targetsList
         ) {
             if (node.kind == OutlineQueryNodeKind.PROJECTION_SUBROOT || node instanceof OutlineScriptElementNode) {
-                String suffix = projection.getResultDataContext().getColumnsList().stream()
+                String suffix = (
+                    projection.getGivenDataContext() != null
+                        ? projection.getResultDataContext().getColumnsList()
+                        : projection.getRowsDataContext().getColumnsList()
+                ).stream()
                     .map(c -> c.symbol.getName())
                     .collect(Collectors.joining(", ", "(", ")"));
                 this.makeNode(

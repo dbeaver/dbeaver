@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,6 +130,9 @@ public abstract class SQLQueryDataContext {
         return new SQLQueryResultTupleContext(this, columns, allPseudoColumns);
     }
 
+    /**
+     * Prepare new semantic context by overriding result tuple columns information
+     */
     @NotNull
     public final SQLQueryDataContext overrideResultTuple(
         @Nullable SQLQueryRowsSourceModel source,
@@ -193,9 +196,9 @@ public abstract class SQLQueryDataContext {
     public abstract SQLDialect getDialect();
 
     /**
-     * Representation of the information about rows sources involved in semantic model
+     * Representation of the information about sources (tables, aliases, subqueries) involved in semantic model
      */
-    public static class KnownSourcesInfo {
+    public static class KnownSourcesInfo implements SQLQuerySourcesInfoCollection {
         @NotNull
         private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> sources = new LinkedHashMap<>();
         @NotNull
@@ -209,9 +212,11 @@ public abstract class SQLQueryDataContext {
 
         public void registerTableReference(@NotNull SQLQueryRowsSourceModel source, @NotNull DBSEntity table) {
             SQLQueryRowsSourceModel sourceModel = source instanceof SQLQueryRowsCorrelatedSourceModel cc && cc.getCorrelationColumNames().isEmpty()
-                ? cc.getSource() : source;
+                ? cc.getSource()
+                : source;
             this.sources.compute(sourceModel, (k, v) -> v == null
-                ? SourceResolutionResult.forRealTableByName(sourceModel, table) : SourceResolutionResult.withRealTable(v, table));
+                ? SourceResolutionResult.forRealTableByName(sourceModel, table)
+                : SourceResolutionResult.withRealTable(v, table));
             this.referencedTables.add(table);
         }
 
@@ -242,7 +247,7 @@ public abstract class SQLQueryDataContext {
     /**
      * Aggregate information about all the rows sources involved in this semantic context
      */
-    public KnownSourcesInfo getKnownSources() {
+    public SQLQuerySourcesInfoCollection getKnownSources() {
         if (this.knownSources == null) {
             KnownSourcesInfo result = new KnownSourcesInfo();
             this.collectKnownSourcesImpl(result);
