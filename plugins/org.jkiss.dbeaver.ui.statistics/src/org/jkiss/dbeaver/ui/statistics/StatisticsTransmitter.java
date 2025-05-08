@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class StatisticsTransmitter {
         this.workspaceId = workspaceId;
 
         if (System.getenv("LM_STAGE_MODE") != null) {
-            endpoint = "https://stats.stage.dbeaver.infra/send-statistics";
+            endpoint = "http://stats.stage.dbeaver.infra/send-statistics";
         } else {
             endpoint = "https://stats.dbeaver.com/send-statistics";
         }
