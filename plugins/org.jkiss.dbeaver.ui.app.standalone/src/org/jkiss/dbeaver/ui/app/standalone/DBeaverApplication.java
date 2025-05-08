@@ -197,10 +197,13 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         try {
             if (!isWorkspaceSwitchingAllowed() && !WORKSPACE_DIR_CURRENT.equals(RuntimeUtils.getLocalFileFromURL(instanceLoc.getURL())
                 .getAbsolutePath())) {
-                System.err.println("Workspace switching is not allowed for EAP. Exit " + GeneralUtils.getProductName() + ".");
+                System.err.println("Workspace switching is not allowed when participating in the early access program. Exiting "
+                    + GeneralUtils.getProductName() + ".");
                 return IApplication.EXIT_OK;
             }
         } catch (IOException e) {
+            System.err.println("Unable to resolve workspace location " + instanceLoc);
+            e.printStackTrace();
             return IApplication.EXIT_OK;
         }
 
