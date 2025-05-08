@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.security;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.security.role.SMRolePreference;
 import org.jkiss.dbeaver.model.security.user.*;
 
 import java.util.List;
@@ -233,14 +232,5 @@ public interface SMAdminController extends SMController {
 
     @NotNull
     List<SMTeamMemberInfo> getTeamMembersInfo(@NotNull String teamId) throws DBException;
-
-    @Nullable
-    SMRolePreference updateAuthRolePreference(@NotNull SMRolePreference rolePreference) throws DBException;
-
-    /**
-     * Return all role preference that id matches with authRoleIds. If authRoleIds is empty so return all preferences
-     */
-    @NotNull
-    List<SMRolePreference> getAuthRolePreferences(List<String> authRoleIds) throws DBException;
 
 }

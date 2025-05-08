@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBInternalDatabaseInformationProvider;
 import org.jkiss.dbeaver.model.DBPObjectController;
 import org.jkiss.dbeaver.model.auth.SMAuthCredentialsManager;
-import org.jkiss.dbeaver.model.security.role.SMRolePreference;
 import org.jkiss.dbeaver.model.security.user.SMAuthPermissions;
 import org.jkiss.dbeaver.model.security.user.SMObjectPermissions;
 import org.jkiss.dbeaver.model.security.user.SMUser;
@@ -233,9 +232,4 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
     @NotNull
     String[] getTeamMembers(String teamId) throws DBException;
 
-    /**
-     * Get auth role preference for specific user's authRole
-     */
-    @Nullable
-    SMRolePreference getUserAuthRolePreference(String authRoleId) throws DBException;
 }
