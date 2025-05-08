@@ -68,7 +68,7 @@
                 label="SSL"
                 description="SSL settings"
                 secured="false"
-                desktop="false"
+                desktop="true"
                 pinned="true"
                 order="100"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
