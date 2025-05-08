@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.parser.StringProvider;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -53,6 +52,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * Semantic SQL processor
@@ -62,12 +62,21 @@ public class SQLSemanticProcessor {
     private static final Log log = Log.getLog(SQLSemanticProcessor.class);
 
     private static final boolean ALLOW_COMPLEX_PARSING = false;
+    private static final int PARSE_FUTURE_TIMEOUT_MS = 1000; // if we can't parse fast, we don't want to
+
+    private static ExecutorService executor = Executors.newCachedThreadPool();
+
+    public static void shutdownExecutor() {
+        if (!executor.shutdownNow().isEmpty()) {
+            log.warn("Unexpected awaiting tasks found while terminating JSqlParser executor.");
+        }
+    }
 
     public static Statement parseQuery(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
         String sqlWithoutComments = dialect == null ? sql : SQLUtils.stripComments(dialect, sql);
-        CCJSqlParser parser = new CCJSqlParser(new StringProvider(sqlWithoutComments));
         try {
-            parser.withAllowComplexParsing(ALLOW_COMPLEX_PARSING);
+            CCJSqlParser parser = new CCJSqlParser(sqlWithoutComments)
+                .withAllowComplexParsing(ALLOW_COMPLEX_PARSING);
             if (dialect != null) {
                 // Enable square brackets
                 for (String[] qs : ArrayUtils.safeArray(dialect.getIdentifierQuoteStrings())) {
@@ -77,7 +86,14 @@ public class SQLSemanticProcessor {
                     }
                 }
             }
-            return parser.Statement();
+            Future<Statement> future = executor.submit(parser::Statement);
+            try {
+                return future.get(PARSE_FUTURE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            } catch (TimeoutException | InterruptedException interruptedEx) {
+                parser.interrupted = true;
+                future.cancel(true);
+                throw new DBCException("Failed to parse SQL query within reasonable time ", interruptedEx);
+            }
         } catch (Exception e) {
             throw new DBCException("Error parsing SQL query: " + e.getMessage(), e);
         }
@@ -171,19 +187,6 @@ public class SQLSemanticProcessor {
             throw new DBException("Error parsing SQL query", e);
         }
         throw new DBException("Can't inject filters to a query that is not a plain SELECT statement");
-    }
-
-
-    /**
-     *
-     * @deprecated Use {@link SQLQueryGenerator#getWrappedFilterQuery(DBPDataSource, String, DBDDataFilter)} instead
-     */
-    public static String wrapQuery(
-        @NotNull DBPDataSource dataSource,
-        @NotNull String sqlQuery,
-        @NotNull DBDDataFilter dataFilter
-    ) throws DBException {
-        return dataSource.getSQLDialect().getQueryGenerator().getWrappedFilterQuery(dataSource, sqlQuery, dataFilter);
     }
 
     private static boolean patchSelectQuery(

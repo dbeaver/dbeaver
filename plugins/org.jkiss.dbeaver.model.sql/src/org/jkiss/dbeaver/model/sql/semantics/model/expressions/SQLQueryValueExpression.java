@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
@@ -83,5 +81,39 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
     }
     
     protected abstract void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics);
+
+    /**
+     * Propagate information about available tables down the model and about actually referenced tables back up
+     */
+    public final void resolveRowSources(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        this.resolveRowSourcesImpl(context, statistics);
+    }
+
+    protected abstract void resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    );
+
+    /**
+     * Propagate information about values and row tuples across the query model
+     */
+    public final void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        traverseSubtree(this, SQLQueryValueExpression.class, n -> n.resolveValueType(context, statistics));
+    }
+
+    /**
+     * Propagate information about scalar values the query model
+     */
+    public final void resolveValueType(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        this.type = this.resolveValueTypeImpl(context, statistics);
+    }
+
+    protected abstract SQLQueryExprType resolveValueTypeImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    );
 }
 

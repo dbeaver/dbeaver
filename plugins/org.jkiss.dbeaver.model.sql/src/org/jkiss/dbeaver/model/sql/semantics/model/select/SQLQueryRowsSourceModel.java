@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,10 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -34,6 +35,10 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
     private SQLQueryDataContext givenDataContext = null;
     @Nullable
     private SQLQueryDataContext resultDataContext = null;
+    @Nullable
+    private SQLQueryRowsSourceContext rowsSourceContext = null;
+    @Nullable
+    private SQLQueryRowsDataContext rowsDataContext = null;
 
     public SQLQueryRowsSourceModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel... subnodes) {
         super(syntaxNode.getRealInterval(), syntaxNode, subnodes);
@@ -53,7 +58,7 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
     }
 
     /**
-     * Returns result data context, if it has been resolved. Otherwise, throws UnsupportedOperationException.
+     * Returns result data context, if it has been resolved. Otherwise, throws IllegalStateException.
      */
     @NotNull
     public SQLQueryDataContext getResultDataContext() {
@@ -63,7 +68,28 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
             return this.resultDataContext;
         }
     }
-    
+
+    /**
+     * Returns rows data context, if it has been resolved. Otherwise, throws IllegalStateException.
+     */
+    @NotNull
+    public SQLQueryRowsDataContext getRowsDataContext() {
+        if (this.rowsDataContext == null) {
+            throw new IllegalStateException("Rows data was not resolved yet");
+        } else {
+            return this.rowsDataContext;
+        }
+    }
+
+    @NotNull
+    protected SQLQueryRowsSourceContext getRowsSources() {
+        if (this.rowsSourceContext == null) {
+            throw new IllegalStateException("Rows sources were not resolved yet");
+        } else {
+            return this.rowsSourceContext;
+        }
+    }
+
     @Override
     protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
         this.propagateContext(dataContext, recognitionContext);
@@ -87,7 +113,50 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
         @NotNull SQLQueryRecognitionContext statistics
     );
 
+    /**
+     * Propagate information about available tables down the model and about actually referenced tables back up
+     */
+    public final void resolveObjectAndRowsReferences(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        this.resolveRowSources(context, statistics);
+    }
 
+    /**
+     * Propagate information about available tables down the model and about actually referenced tables back up,
+     * caching it in this rows source
+     */
+    @NotNull
+    public final SQLQueryRowsSourceContext resolveRowSources(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        return this.rowsSourceContext = this.resolveRowSourcesImpl(context, statistics);
+    }
+
+    protected abstract SQLQueryRowsSourceContext resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    );
+
+    /**
+     * Propagate information about values and row tuples across the query model
+     */
+    public final void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        traverseSubtree(this, SQLQueryRowsSourceModel.class, n -> n.resolveRowData(context, statistics));
+    }
+
+    protected final void resolveRowData(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        if (this.rowsDataContext == null) {
+            this.rowsDataContext = this.resolveRowDataImpl(context, statistics);
+        }
+    }
+
+    protected abstract SQLQueryRowsDataContext resolveRowDataImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    );
 }
 
 

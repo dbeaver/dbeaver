@@ -343,10 +343,11 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 
 
         try {
-            DBeaverCommandLine.executeCommandLineCommands(
-                DBeaverCommandLine.getCommandLine(),
+            DBeaverCommandLine.getInstance().executeCommandLineCommands(
+                DBeaverCommandLine.getInstance().getCommandLine(),
                 DBeaverApplication.getInstance().getInstanceServer(),
-                true);
+                true
+            );
         } catch (Exception e) {
             log.error("Error processing command line", e);
         }

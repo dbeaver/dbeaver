@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 /**
@@ -50,5 +52,19 @@ public class SQLQueryValueSubqueryExpression extends SQLQueryValueExpression {
     @Override
     protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
         return visitor.visitValueSubqueryExpr(this, arg);
+    }
+
+    @Override
+    protected void resolveRowSourcesImpl(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        this.source.resolveObjectAndRowsReferences(context, statistics);
+    }
+
+    @Override
+    protected SQLQueryExprType resolveValueTypeImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        this.source.resolveValueRelations(context, statistics);
+        return this.source.getRowsDataContext().getColumnsList().get(0).type;
     }
 }

@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.OperationSystemState;
+import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
@@ -80,8 +81,8 @@ import java.awt.*;
 import java.awt.desktop.SystemEventListener;
 import java.awt.desktop.SystemSleepEvent;
 import java.awt.desktop.SystemSleepListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -265,7 +266,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         filterWizards();
         patchJFaceIcons();
 
-        if (!GraphicsEnvironment.isHeadless() && Desktop.isDesktopSupported()) {
+        if (AWTUtils.isDesktopSupported()) {
             // System events
             Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
@@ -378,7 +379,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public void postShutdown() {
         super.postShutdown();
-        if (!GraphicsEnvironment.isHeadless() && Desktop.isDesktopSupported()) {
+        if (AWTUtils.isDesktopSupported()) {
             // System events
             Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {

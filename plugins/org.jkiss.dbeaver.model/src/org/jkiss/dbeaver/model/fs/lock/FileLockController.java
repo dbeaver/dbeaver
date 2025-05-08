@@ -50,12 +50,16 @@ public class FileLockController {
     private final long maxLockTime;
 
     public FileLockController(@NotNull String applicationId) throws DBException {
-        this(applicationId, DEFAULT_MAX_LOCK_TIME);
+        this(applicationId, DEFAULT_MAX_LOCK_TIME, GeneralUtils.getMetadataFolder());
+    }
+
+    public FileLockController(@NotNull String applicationId, @NotNull Path metadataFolder) throws DBException {
+        this(applicationId, DEFAULT_MAX_LOCK_TIME, metadataFolder);
     }
 
     // for tests
-    public FileLockController(@NotNull String applicationId, long maxLockTime) throws DBException {
-        this.lockFolderPath =  GeneralUtils.getMetadataFolder()
+    public FileLockController(@NotNull String applicationId, long maxLockTime, @NotNull Path metadataFolder) throws DBException {
+        this.lockFolderPath = metadataFolder
             .resolve(LOCK_META_FOLDER);
         this.applicationId = applicationId;
         this.maxLockTime = maxLockTime;

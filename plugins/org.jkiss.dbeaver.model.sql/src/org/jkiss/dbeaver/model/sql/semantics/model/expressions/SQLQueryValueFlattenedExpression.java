@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.List;
@@ -47,6 +50,24 @@ public class SQLQueryValueFlattenedExpression extends SQLQueryValueExpression {
     @Override
     protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.operands.forEach(opnd -> opnd.propagateContext(context, statistics));
+    }
+
+    @Override
+    protected void resolveRowSourcesImpl(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        for (SQLQueryValueExpression expr : this.operands) {
+            expr.resolveRowSources(context, statistics);
+        }
+    }
+
+    @Override
+    protected SQLQueryExprType resolveValueTypeImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        // TODO: we can resolve more information about functions,
+        //  add validation for the returned type and so on,
+        //  but that's another feature request
+        return SQLQueryExprType.UNKNOWN;
     }
 
     @Override

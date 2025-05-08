@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaverTest" uid="org.jkiss.dbeaver.test.product" id="org.jkiss.dbeaver.ui.app.test.product"
+<product name="DBeaverUnitTest" uid="org.jkiss.dbeaver.test.product" id="org.jkiss.dbeaver.ui.app.test.product"
     application="org.jkiss.dbeaver.ui.app.test.test" version="24.3.1.qualifier" useFeatures="true"
     includeLaunchers="true">
 

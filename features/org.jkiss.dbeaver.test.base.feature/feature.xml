@@ -21,6 +21,9 @@
     <url>
         <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
     </url>
+    <!-- DO NOT REMOVE THIS LINE -->
+    <includes id="org.eclipse.pde.spies" version="0.0.0" />
+
     <requires>
         <import plugin="org.eclipse.core.runtime" version="3.7" match="greaterOrEqual"/>
         <!-- Equinox -->

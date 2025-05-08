@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,17 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryPureResultTupleContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsCteModel;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryConnectionContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.utils.ListNode;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Query model for recognition
@@ -38,6 +44,8 @@ public class SQLQueryModel extends SQLQueryNodeModel {
     private final SQLQueryModelContent queryContent;
     @NotNull
     private final List<SQLQueryLexicalScopeItem> lexicalItems;
+    @Nullable
+    private SQLQueryDataContext dataContext = null;
 
     public SQLQueryModel(
         @NotNull STMTreeNode syntaxNode,
@@ -64,7 +72,7 @@ public class SQLQueryModel extends SQLQueryNodeModel {
     @Nullable
     @Override
     public SQLQueryDataContext getGivenDataContext() {
-        return this.queryContent == null ? null : this.queryContent.getGivenDataContext();
+        return this.dataContext;
     }
 
     @Nullable
@@ -76,9 +84,21 @@ public class SQLQueryModel extends SQLQueryNodeModel {
     /**
      * Propagate semantics context and establish relations through the query model
      */
-    public void propagateContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
+    public void propagateContext(
+        @NotNull SQLQueryDataContext dataContext,
+        @NotNull SQLQueryConnectionContext connectionContext,
+        @NotNull SQLQueryRecognitionContext recognitionContext
+    ) {
+        this.dataContext = dataContext;
+
         if (this.queryContent != null) {
-            this.queryContent.applyContext(dataContext, recognitionContext);
+            if (this.queryContent instanceof SQLQueryRowsCteModel rowsSource) {
+                SQLQueryRowsSourceContext rowsContext = new SQLQueryRowsSourceContext(connectionContext);
+                rowsSource.resolveObjectAndRowsReferences(rowsContext, recognitionContext);
+                rowsSource.resolveValueRelations(rowsContext.makeEmptyTuple(), recognitionContext);
+            } else {
+                this.queryContent.applyContext(dataContext, recognitionContext);
+            }
         }
 
         int actualTailPosition = this.getSyntaxNode().getRealInterval().b;
@@ -97,9 +117,17 @@ public class SQLQueryModel extends SQLQueryNodeModel {
         }
     }
 
+// TODO uncomment after propagateContext being removed
+//
+//    public void resolveRelations(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+//        this.queryContent.resolveObjectAndRowsReferences(context, statistics);
+//        this.queryContent.resolveValueRelations(context.makeEmptyTuple(), statistics);
+//    }
+
     /**
      * Returns nested node of the query model for the specified offset in the source text
      */
+    @NotNull
     public SQLQueryNodeModel findNodeContaining(int textOffset) {
         SQLQueryNodeModel node = this;
         SQLQueryNodeModel nested = node.findChildNodeContaining(textOffset);
@@ -122,7 +150,69 @@ public class SQLQueryModel extends SQLQueryNodeModel {
     /**
      * Returns nested node of the query model for the specified offset in the source text
      */
+    @NotNull
     public LexicalContextResolutionResult findLexicalContext(int textOffset) {
+        return this.queryContent != null && this.queryContent.getGivenDataContext() == null
+            ? this.findLexicalContextNew(textOffset)
+            : this.findLexicalContextOld(textOffset);
+    }
+
+
+    @NotNull
+    private LexicalContextResolutionResult findLexicalContextNew(int textOffset) {
+        ListNode<SQLQueryNodeModel> stack = ListNode.of(this);
+        { // walk down through the model till the deepest node describing given position
+            SQLQueryNodeModel node = this;
+            SQLQueryNodeModel nested = node.findChildNodeContaining(textOffset);
+            while (nested != null) {
+                stack = ListNode.push(stack, nested);
+                nested = nested.findChildNodeContaining(textOffset);
+            }
+        }
+
+        SQLQueryLexicalScopeItem lexicalItem = null;
+        SQLQueryLexicalScope scope = null;
+
+        // walk up till the lexical scope covering given position
+        // TODO consider corner-cases with adjacent scopes, maybe better use condition on lexicalItem!=null instead of the scope?
+        while (stack != null && scope == null) {
+            SQLQueryNodeModel node = stack.data;
+            scope = node.findLexicalScope(textOffset);
+            if (scope != null) {
+                lexicalItem = scope.findNearestItem(textOffset);
+            }
+            stack = stack.next;
+        }
+
+        if (lexicalItem == null) {
+            // table refs are not registered in lexical scopes properly for now (because rowsets model being build bottom-to-top),
+            // so trying to find their components in the global list
+            int index = STMUtils.binarySearchByKey(this.lexicalItems, n -> n.getSyntaxNode().getRealInterval().a, textOffset - 1, Comparator.comparingInt(x -> x));
+            if (index < 0) {
+                index = ~index - 1;
+            }
+            if (index >= 0) {
+                SQLQueryLexicalScopeItem item = lexicalItems.get(index);
+                Interval interval = item.getSyntaxNode().getRealInterval();
+                if (interval.a < textOffset && interval.b + 1 >= textOffset) {
+                    lexicalItem = item;
+                }
+            }
+        }
+
+        SQLQuerySymbolOrigin symbolsOrigin = lexicalItem == null ? null : lexicalItem.getOrigin();
+        if (symbolsOrigin == null && textOffset > this.getInterval().b) {
+            symbolsOrigin = this.getTailOrigin();
+        }
+        if (symbolsOrigin == null && scope != null) {
+            symbolsOrigin = scope.getSymbolsOrigin();
+        }
+
+        return new LexicalContextResolutionResult(textOffset, this.dataContext, this.dataContext, lexicalItem, symbolsOrigin);
+    }
+
+    @NotNull
+    private LexicalContextResolutionResult findLexicalContextOld(int textOffset) {
         ListNode<SQLQueryNodeModel> stack = ListNode.of(this);
         SQLQueryDataContext nearestResultContext = this.getResultDataContext();
         SQLQueryDataContext deepestContext;

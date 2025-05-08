@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Flow;
 import java.util.stream.Stream;
@@ -59,19 +60,17 @@ public class AIAssistantImpl implements AIAssistant {
             chatCompletionRequest.engine() :
             getActiveEngine();
 
-        List<DAIChatMessage> chatMessages = Stream.concat(
-            Stream.of(
-                DAIChatMessage.systemMessage(
-                    getSystemPrompt() + System.lineSeparator() + metadataProcessor.describeContext(
-                        monitor,
-                        chatCompletionRequest.context(),
-                        formatter(),
-                        AIUtils.getMaxRequestTokens(engine, monitor)
-                    )
-                )
-            ),
-            chatCompletionRequest.messages().stream()
-        ).toList();
+        List<DAIChatMessage> chatMessages = new ArrayList<>();
+        if (chatCompletionRequest.context() != null) {
+            String description = metadataProcessor.describeContext(
+                monitor,
+                chatCompletionRequest.context(),
+                formatter(),
+                AIUtils.getMaxRequestTokens(engine, monitor)
+            );
+            chatMessages.add(DAIChatMessage.systemMessage(getSystemPrompt() + System.lineSeparator() + description));
+        }
+        chatMessages.addAll(chatCompletionRequest.messages());
 
         List<DAIChatMessage> truncatedMessages = AIUtils.truncateMessages(
             true,

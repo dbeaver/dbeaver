@@ -394,7 +394,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_PORT, 1080);
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_USER, "");
         PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_PASSWORD, "");
-        PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_VERSION_UPDATE, false);
+        PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_VERSION_UPDATE, true);
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_HOME, "");
         PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_SOURCES, "https://dbeaver.io/files/jdbc/");
 

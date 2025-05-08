@@ -20,8 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 
@@ -128,5 +130,11 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     @Override
     public boolean supportsInsertAllDefaultValuesStatement() {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public DBDBinaryFormatter getNativeBinaryFormatter() {
+        return BinaryFormatterHexString.INSTANCE;
     }
 }

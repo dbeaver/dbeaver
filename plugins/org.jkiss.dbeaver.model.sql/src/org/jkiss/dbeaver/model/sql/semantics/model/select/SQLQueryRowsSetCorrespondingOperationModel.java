@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
@@ -33,7 +36,8 @@ import java.util.List;
 /**
  * Represents INTERSECT, UNION and EXCEPT operation model in the context of SQL query semantics
  */
-public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetOperationModel {
+public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetOperationModel
+    implements SQLQueryNodeModel.NodeSubtreeTraverseControl {
     @NotNull
     private final List<SQLQuerySymbolEntry> correspondingColumnNames;
     @NotNull
@@ -148,6 +152,30 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
         }
         // TODO multiple definitions per symbol
         return context.overrideResultTuple(this, resultColumns, Collections.emptyList());
+    }
+
+    @NotNull
+    @Override
+    protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        this.left.resolveRowSources(context, statistics);
+        this.right.resolveRowSources(context, statistics);
+        return context.reset();
+    }
+
+    @Override
+    public boolean delayRestChildren() {
+        return true;
+    }
+
+    @Override
+    protected SQLQueryRowsDataContext resolveRowDataImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        return this.left.getRowsDataContext();
     }
 
     @Override

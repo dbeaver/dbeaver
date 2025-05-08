@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.List;
@@ -122,6 +124,67 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
 
             if (this.condition != null) {
                 this.condition.propagateContext(combinedContext, statistics);
+                this.conditionScope.setSymbolsOrigin(conditionOrigin);
+            }
+        }
+
+        return combinedContext;
+    }
+
+    @NotNull
+    @Override
+    protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        context = this.left.resolveRowSources(context, statistics).combine(this.right.resolveRowSources(context, statistics));
+
+        if (this.condition != null) {
+            this.condition.resolveRowSources(context, statistics);
+        }
+
+        return context;
+    }
+
+    @NotNull
+    @Override
+    protected SQLQueryRowsDataContext resolveRowDataImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        SQLQueryRowsDataContext x = this.left.getRowsDataContext().combine(this.right.getRowsDataContext());
+        SQLQueryRowsDataContext combinedContext = this.getRowsSources().makeTuple(this, x.getColumnsList(), x.getPseudoColumnsList());
+
+        if (this.columsToJoin != null) {
+            var columnNameOrigin = new SQLQuerySymbolOrigin.RowsDataRef(combinedContext);
+            for (SQLQuerySymbolEntry column : columsToJoin) {
+                if (column.isNotClassified()) {
+                    SQLQuerySymbol symbol = column.getSymbol();
+                    SQLQueryResultColumn leftColumnDef = this.left.getRowsDataContext()
+                        .resolveColumn(statistics.getMonitor(), column.getName());
+                    SQLQueryResultColumn rightColumnDef = this.right.getRowsDataContext()
+                        .resolveColumn(statistics.getMonitor(), column.getName());
+                    if (leftColumnDef != null && rightColumnDef != null) {
+                        symbol.setDefinition(column); // TODO multiple definitions per symbol
+                        symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN);
+                    } else {
+                        if (leftColumnDef == null) {
+                            statistics.appendError(column, "Column " + column.getName() + " not found on the left of join");
+                        } else {
+                            statistics.appendError(column, "Column " + column.getName() + " not found on the right of join");
+                        }
+                        symbol.setSymbolClass(SQLQuerySymbolClass.ERROR);
+                    }
+                    column.setOrigin(columnNameOrigin);
+                }
+            }
+            this.conditionScope.setSymbolsOrigin(columnNameOrigin);
+        } else {
+            var conditionOrigin = new SQLQuerySymbolOrigin.RowsDataRef(combinedContext);
+            this.setTailOrigin(conditionOrigin);
+
+            if (this.condition != null) {
+                this.condition.resolveValueRelations(combinedContext, statistics);
                 this.conditionScope.setSymbolsOrigin(conditionOrigin);
             }
         }
