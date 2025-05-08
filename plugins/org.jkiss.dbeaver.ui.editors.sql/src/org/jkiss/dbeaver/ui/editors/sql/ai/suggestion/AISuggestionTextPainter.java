@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.editors.sql.ghost;
+package org.jkiss.dbeaver.ui.editors.sql.ai.suggestion;
 
 import org.eclipse.jface.text.*;
 import org.eclipse.swt.custom.LineBackgroundEvent;
@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-public class SuggestionTextPainter implements IPainter, PaintListener, LineBackgroundListener {
+public class AISuggestionTextPainter implements IPainter, PaintListener, LineBackgroundListener {
 
     public static final String HINT_CATEGORY = "suggestion";
     private final ITextViewer viewerComponent;
@@ -41,7 +41,7 @@ public class SuggestionTextPainter implements IPainter, PaintListener, LineBackg
     private IPositionUpdater updater;
     private boolean standaloneOperation = false;
 
-    public SuggestionTextPainter(ITextViewer viewer) {
+    public AISuggestionTextPainter(ITextViewer viewer) {
         this.viewerComponent = viewer;
         this.currentState = RenderState.IDLE;
         this.lockObject = new Semaphore(1);
