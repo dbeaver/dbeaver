@@ -48,6 +48,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
     private boolean ignoreDependencies;
     private boolean loadOptionalDependencies;
     private final String originalPreferredVersion;
+    private boolean forcedVersion;
 
     public DriverLibraryMavenArtifact(
         @NotNull DriverDescriptor driver,
@@ -121,6 +122,17 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
         return true;
     }
 
+    /**
+     * If true then library version was forcibly set by user. Do not upgrade it automatically.
+     */
+    public boolean isForcedVersion() {
+        return forcedVersion;
+    }
+
+    public void setForcedVersion(boolean forcedVersion) {
+        this.forcedVersion = forcedVersion;
+    }
+
     public boolean isIgnoreDependencies() {
         return ignoreDependencies;
     }
@@ -155,7 +167,6 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
         return preferredVersion;
     }
 
-    @Override
     public void setPreferredVersion(@NotNull String version) {
         this.preferredVersion = version;
         this.localVersion = null;
@@ -166,7 +177,6 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
         return localVersion == null || localVersion.isInvalidVersion();
     }
 
-    @Override
     public void resetVersion() {
         this.localVersion = null;
         this.preferredVersion = originalPreferredVersion;
