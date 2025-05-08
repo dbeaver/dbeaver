@@ -170,6 +170,7 @@ public class STMKnownRuleNames {
 
     // from
     public static final String fromClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_fromClause];
+    public static final String fromClauseTerm = SQLStandardParser.ruleNames[SQLStandardParser.RULE_fromClauseTerm];
     public static final String nonjoinedTableReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_nonjoinedTableReference];
     public static final String tableReference = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableReference]; // '.*' to handle incomplete queries
     public static final String tableReferenceHints = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableReferenceHints]; // dialect-specific options, should be described and moved to dialects in future
@@ -366,4 +367,5 @@ public class STMKnownRuleNames {
     public static final String PERIOD_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.Period);
     public static final String RIGHT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LeftParen);
     public static final String LEFT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.RightParen);
+    public static final String LATERAL_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LATERAL);
 }
