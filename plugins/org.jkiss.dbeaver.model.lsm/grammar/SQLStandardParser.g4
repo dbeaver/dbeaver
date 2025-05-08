@@ -76,7 +76,7 @@ options {
 
 // root rule for script
 sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
-sqlQuery: (directSqlDataStatement|callStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow) anyWordsWithProperty??;
+sqlQuery: (directSqlDataStatement|callStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow);
 
 directSqlDataStatement: withClause? (deleteStatement|selectStatement|insertStatement|updateStatement);
 selectStatement: queryExpression;
@@ -332,7 +332,7 @@ referencingColumns: referenceColumnList;
 // order by
 orderByClause: ORDER BY sortSpecificationList;
 limitClause: LIMIT valueExpression (OFFSET valueExpression)? (Comma valueExpression)?;
-sortSpecificationList: sortSpecification (Comma sortSpecification)*;
+sortSpecificationList: sortSpecification (Comma sortSpecification)* anyWordsWithProperty??;
 sortSpecification: sortKey (orderingSpecification)?;
 sortKey: valueReference | columnIndex | anyWordsWithProperty;
 columnIndex: UnsignedInteger;
