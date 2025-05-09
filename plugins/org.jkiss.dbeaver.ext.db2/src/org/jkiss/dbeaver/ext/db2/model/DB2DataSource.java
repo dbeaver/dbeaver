@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -321,12 +322,11 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
     private boolean isPasswordExpired(DBCException e) {
         Throwable cause = e.getCause();
         if (cause instanceof SQLException sqlEx) {
-            return sqlEx.getErrorCode() == -4214
-                && "28000".equals(sqlEx.getSQLState());
+            return sqlEx.getErrorCode() == DB2Constants.ER_MUST_CHANGE_PASSWORD_LOGIN
+                && DB2Constants.ER_STATE_MUST_CHANGE_PASSWORD_LOGIN.equals(sqlEx.getSQLState());
         }
         return false;
     }
-
 
     private void changeUserPassword(
         @NotNull DBRProgressMonitor monitor,
@@ -346,29 +346,23 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
 
             Class<?> db2DriverClass = loader.loadClass("com.ibm.db2.jcc.DB2Driver");
 
-            Method changePwd = db2DriverClass.getMethod(
-                "changeDB2Password",
-                String.class, String.class, String.class, String.class
-            );
+            try {
+                BeanUtils.invokeStaticMethod(
+                    db2DriverClass,
+                    "changeDB2Password",
+                    new Class<?>[] {String.class, String.class, String.class, String.class},
+                    new Object[] {url, userName, oldPassword, newPassword}
+                );
 
-            changePwd.invoke(
-                null,
-                 url,
-                 userName,
-                 oldPassword,
-                 newPassword
-            );
-
-            cfg.setUserPassword(newPassword);
-
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
-            throw new DBException("Cannot invoke method", e);
-        } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof SQLException sqlEx) {
-                throw new DBDatabaseException("Error while changing password DB2", sqlEx);
+                cfg.setUserPassword(newPassword);
+            } catch (Throwable e) {
+                if (e instanceof SQLException sqlEx) {
+                    throw new DBDatabaseException("Error while changing password DB2", sqlEx);
+                }
+                throw new DBException("Cannot invoke method", e);
             }
-            throw new DBException("Error while calling changeDB2Password", e);
+        } catch (ClassNotFoundException e) {
+            throw new DBException("Cannot find DB2Driver", e);
         }
     }
 
