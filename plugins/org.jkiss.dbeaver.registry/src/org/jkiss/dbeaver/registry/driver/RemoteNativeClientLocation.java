@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class RemoteNativeClientLocation implements DBPNativeClientLocation {
     }
 
     @Override
-    public boolean validateFilesPresence(DBRProgressMonitor progressMonitor) throws DBException, InterruptedException {
+    public boolean validateFilesPresence(@NotNull DBRProgressMonitor progressMonitor) throws DBException, InterruptedException {
         NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution();
         if (distribution != null) {
             return distribution.downloadFiles(progressMonitor, this);

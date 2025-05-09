@@ -49,7 +49,7 @@ import java.util.stream.Stream;
  * Describes table definition
  */
 public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
-    implements SQLQuerySymbolDefinition, SQLQueryNodeModel.NodeSubtreeTraverseControl {
+    implements SQLQuerySymbolDefinition, SQLQueryNodeModel.NodeSubtreeTraverseControl<SQLQueryRowsSourceModel, SQLQueryRowsDataContext> {
 
     private static final Log log = Log.getLog(SQLQueryRowsTableDataModel.class);
     @Nullable
@@ -60,7 +60,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
     private final boolean forDdl;
 
     @Nullable
-    private SQLQueryRowsSourceModel referencedSource;
+    protected SQLQueryRowsSourceModel referencedSource;
 
     public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryQualifiedName name, boolean forDdl) {
         super(syntaxNode);
