@@ -93,6 +93,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -1762,7 +1763,7 @@ public class UIUtils {
         if (textSize.x > bounds.width) {
             double charsPerLine = (double) bounds.width / gc.getFontMetrics().getAverageCharacterWidth();
 
-            message = UITextUtils.wrap(message, (int) charsPerLine);
+            message = StringUtils.wrap(message, (int) charsPerLine);
             textSize = gc.textExtent(message);
         }
 
