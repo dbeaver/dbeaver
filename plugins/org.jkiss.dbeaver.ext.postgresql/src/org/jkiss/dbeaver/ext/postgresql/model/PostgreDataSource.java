@@ -87,7 +87,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         PostgrePrivilegeType.CONNECT,
         PostgrePrivilegeType.TEMPORARY,
         PostgrePrivilegeType.EXECUTE,
-        PostgrePrivilegeType.USAGE
+        PostgrePrivilegeType.USAGE,
+        PostgrePrivilegeType.MAINTAIN
     };
 
     private DatabaseCache databaseCache;
