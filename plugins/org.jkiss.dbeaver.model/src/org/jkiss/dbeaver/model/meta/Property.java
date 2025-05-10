@@ -155,6 +155,16 @@ public @interface Property
 
     boolean required() default false;
 
+    /**
+     * Expression for determining the visibility of a property.
+     */
+    String hideExpr() default "";
+
+    /**
+     * Expression for determining the activity of a property.
+     */
+    String readOnlyExpr() default "";
+
     int order() default Integer.MAX_VALUE;
 
     String helpContextId() default ""; //NON-NLS-1
@@ -165,6 +175,13 @@ public @interface Property
      * @return the string
      */
     String[] features() default {};
+
+    /**
+     * List of required application features to enable property
+     *
+     * @return the string
+     */
+    String[] requiredFeatures() default {};
 
     /**
      * Can be used to format numbers and date/time property values

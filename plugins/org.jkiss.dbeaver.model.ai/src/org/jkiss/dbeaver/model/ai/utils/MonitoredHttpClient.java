@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.utils;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -25,6 +26,8 @@ import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class MonitoredHttpClient implements AutoCloseable {
     private final HttpClient client;
@@ -38,14 +41,13 @@ public class MonitoredHttpClient implements AutoCloseable {
      * The request is sent asynchronously and the method will block until the response is received.
      * The method will also check if the progress monitor is cancelled and cancel the request if it is.
      */
-    public <T> HttpResponse<T> send(
+    public HttpResponse<String> send(
         DBRProgressMonitor monitor,
-        HttpRequest request,
-        HttpResponse.BodyHandler<T> responseBodyHandler
+        HttpRequest request
     ) throws DBException {
         monitor.beginTask("Request AI completion", 1);
 
-        CompletableFuture<HttpResponse<T>> responseCompletableFuture = client.sendAsync(request, responseBodyHandler);
+        CompletableFuture<HttpResponse<String>> responseCompletableFuture = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
 
         try {
             monitor.subTask("Sending request to " + request.uri());
@@ -72,6 +74,31 @@ public class MonitoredHttpClient implements AutoCloseable {
         }
     }
 
+    public CompletableFuture<Void> sendAsync(
+        @NotNull HttpRequest request,
+        @NotNull Consumer<String> eventHandler,
+        @NotNull Consumer<Throwable> errorHandler,
+        @NotNull Runnable completionHandler
+    ) {
+        return client.sendAsync(request, HttpResponse.BodyHandlers.ofLines())
+            .thenAccept(response -> {
+                int statusCode = response.statusCode();
+                if (statusCode > 299) {
+                    String responseBody = response.body().collect(Collectors.joining());
+                    errorHandler.accept(new AIHttpTransportException(statusCode, responseBody));
+                    return;
+                }
+
+                response.body().forEach(eventHandler);
+            })
+            .whenComplete((v, e) -> {
+                if (e != null) {
+                    errorHandler.accept(e);
+                } else {
+                    completionHandler.run();
+                }
+            });
+    }
 
     @Override
     public void close() {

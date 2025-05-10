@@ -89,7 +89,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
                 return false;
             }
         });
-        if ((style & SWT.MULTI) != 0) {
+        if ((style & SWT.CHECK) != 0) {
             final CheckboxTreeViewer viewer = dataSourceTree.getCheckboxViewer();
 
             checkboxTreeManager = new DatabaseObjectsTreeManager(runnableContext, viewer,

@@ -116,10 +116,6 @@ public interface DBPDriverLibrary {
 
     String getPreferredVersion();
 
-    void setPreferredVersion(@NotNull String version);
-
-    void resetVersion();
-
     boolean isSecureDownload(@NotNull DBRProgressMonitor monitor);
 
     boolean isInvalidLibrary();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 /**
@@ -76,7 +79,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
     @Nullable
     @Override
     public SQLQuerySymbol getColumnNameIfTrivialExpression() {
-        return this.kind == VariableExpressionKind.BATCH_VARIABLE ? this.name.getSymbol() : null;
+        return this.kind == VariableExpressionKind.BATCH_VARIABLE && this.name != null ? this.name.getSymbol() : null;
     }
 
     @NotNull
@@ -91,6 +94,23 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
     
     @Override
     protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        this.resolveVariableImpl();
+    }
+
+    @Override
+    protected void resolveRowSourcesImpl(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    }
+
+    @Override
+    protected SQLQueryExprType resolveValueTypeImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        this.resolveVariableImpl();
+        return SQLQueryExprType.UNKNOWN;
+    }
+
+    private void resolveVariableImpl() {
         if (this.name != null && this.name.isNotClassified()) {
             this.name.getSymbol().setSymbolClass(this.kind.symbolClass);
         }

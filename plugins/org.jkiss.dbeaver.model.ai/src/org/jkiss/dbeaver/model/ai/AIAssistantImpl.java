@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Flow;
 import java.util.stream.Stream;
@@ -39,7 +40,8 @@ public class AIAssistantImpl implements AIAssistant {
     private final AISettingsRegistry settingsRegistry = AISettingsRegistry.getInstance();
     private final AIEngineRegistry engineRegistry = AIEngineRegistry.getInstance();
     private final AIFormatterRegistry formatterRegistry = AIFormatterRegistry.getInstance();
-    private final MetadataProcessor metadataProcessor = MetadataProcessor.INSTANCE;
+    private final AIAssistantRegistry assistantRegistry = AIAssistantRegistry.getInstance();
+    private static final MetadataProcessor metadataProcessor = MetadataProcessor.INSTANCE;
 
     /**
      * Chat with the AI assistant.
@@ -58,19 +60,17 @@ public class AIAssistantImpl implements AIAssistant {
             chatCompletionRequest.engine() :
             getActiveEngine();
 
-        List<DAIChatMessage> chatMessages = Stream.concat(
-            Stream.of(
-                DAIChatMessage.systemMessage(
-                    getSystemPrompt() + System.lineSeparator() + metadataProcessor.describeContext(
-                        monitor,
-                        chatCompletionRequest.context(),
-                        formatter(),
-                        engine.getMaxContextSize(monitor) -  AIConstants.MAX_RESPONSE_TOKENS
-                    )
-                )
-            ),
-            chatCompletionRequest.messages().stream()
-        ).toList();
+        List<DAIChatMessage> chatMessages = new ArrayList<>();
+        if (chatCompletionRequest.context() != null) {
+            String description = metadataProcessor.describeContext(
+                monitor,
+                chatCompletionRequest.context(),
+                formatter(),
+                AIUtils.getMaxRequestTokens(engine, monitor)
+            );
+            chatMessages.add(DAIChatMessage.systemMessage(getSystemPrompt() + System.lineSeparator() + description));
+        }
+        chatMessages.addAll(chatCompletionRequest.messages());
 
         List<DAIChatMessage> truncatedMessages = AIUtils.truncateMessages(
             true,
@@ -113,7 +113,7 @@ public class AIAssistantImpl implements AIAssistant {
                     monitor,
                     request.context(),
                     formatter(),
-                    engine.getMaxContextSize(monitor) -  AIConstants.MAX_RESPONSE_TOKENS
+                    AIUtils.getMaxRequestTokens(engine, monitor)
                 )
             ),
             userMessage
@@ -128,7 +128,7 @@ public class AIAssistantImpl implements AIAssistant {
         MessageChunk[] messageChunks = processAndSplitCompletion(
             monitor,
             request.context(),
-            completionResponse.text()
+            completionResponse.choices().get(0).text()
         );
 
         return AITextUtils.convertToSQL(
@@ -162,7 +162,7 @@ public class AIAssistantImpl implements AIAssistant {
                     monitor,
                     request.context(),
                     formatter(),
-                    engine.getMaxContextSize(monitor) -  AIConstants.MAX_RESPONSE_TOKENS
+                    AIUtils.getMaxRequestTokens(engine, monitor)
                 )
             ),
             DAIChatMessage.userMessage(request.text())
@@ -174,7 +174,11 @@ public class AIAssistantImpl implements AIAssistant {
 
         DAICompletionResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
 
-        MessageChunk[] messageChunks = processAndSplitCompletion(monitor, request.context(), completionResponse.text());
+        MessageChunk[] messageChunks = processAndSplitCompletion(
+            monitor,
+            request.context(),
+            completionResponse.choices().get(0).text()
+        );
 
         String finalSQL = null;
         StringBuilder messages = new StringBuilder();
@@ -199,7 +203,7 @@ public class AIAssistantImpl implements AIAssistant {
         return getActiveEngine().hasValidConfiguration();
     }
 
-    private MessageChunk[] processAndSplitCompletion(
+    protected MessageChunk[] processAndSplitCompletion(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionContext context,
         @NotNull String completion
@@ -231,11 +235,11 @@ public class AIAssistantImpl implements AIAssistant {
         throw new DBException("Request failed after " + MAX_RETRIES + " attempts");
     }
 
-    private DAICompletionEngine getActiveEngine() throws DBException {
+    protected DAICompletionEngine getActiveEngine() throws DBException {
         return engineRegistry.getCompletionEngine(settingsRegistry.getSettings().getActiveEngine());
     }
 
-    private DAICompletionResponse requestCompletion(
+    protected DAICompletionResponse requestCompletion(
         @NotNull DAICompletionEngine engine,
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionRequest request
@@ -300,7 +304,11 @@ public class AIAssistantImpl implements AIAssistant {
             """;
     }
 
-    private IAIFormatter formatter() throws DBException {
+    protected IAIFormatter formatter() throws DBException {
         return formatterRegistry.getFormatter(AIConstants.CORE_FORMATTER);
+    }
+
+    protected AIAssistant assistant() throws DBException {
+        return assistantRegistry.getAssistant();
     }
 }

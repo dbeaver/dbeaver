@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +87,9 @@ public class ClickhouseDataSource extends GenericDataSource {
     @Override
     protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+        if (!isDriverVersionAtLeast(0,8) && !properties.containsKey(ClickhouseConstants.PROP_USE_SERVER_TIME_ZONE)) {
+            properties.put(ClickhouseConstants.PROP_USE_SERVER_TIME_ZONE, "false");
+        }
 
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler("clickhouse-ssl");
 

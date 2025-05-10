@@ -29,8 +29,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.gbase8s.GBase8sConstants;
 import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
 import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sCatalog;
+import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sCheckConstraint;
 import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sDataTypeCache;
 import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sProcedure;
 import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sSchema;
@@ -100,14 +102,6 @@ public class GBase8sMetaModel extends GenericMetaModel {
     @Override
     public GenericCatalog createCatalogImpl(@NotNull GenericDataSource dataSource, @NotNull String catalogName) {
         return new GBase8sCatalog(dataSource, catalogName);
-    }
-
-    /**
-     * Constraint
-     */
-    public GBase8sUniqueKey createConstraintImpl(GenericTableBase table, String constraintName,
-            DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
-        return new GBase8sUniqueKey(table, constraintName, null, constraintType, persisted);
     }
 
     /**
@@ -200,6 +194,101 @@ public class GBase8sMetaModel extends GenericMetaModel {
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView sourceObject,
             @NotNull Map<String, Object> options) throws DBException {
         return GBase8sUtils.getViewDDL(monitor, sourceObject);
+    }
+
+    //////////////////////////////////////////////////////
+    // Constraints
+
+    public JDBCStatement prepareUniqueConstraintsLoadStatement(
+            @NotNull JDBCSession session,
+            @NotNull GenericStructContainer owner,
+            @Nullable GenericTableBase forParent) throws SQLException, DBException {
+        String tableName = forParent == null ? owner.getDataSource().getAllObjectsPattern()
+                : JDBCUtils.escapeWildCards(session, forParent.getName());
+        String catalog = owner.getCatalog() == null ? null : owner.getCatalog().getName();
+        String schema = owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null
+                : JDBCUtils.escapeWildCards(session, owner.getSchema().getName());
+        boolean isOracleMode = GBase8sUtils.isOracleSqlMode(owner.getDataSource().getContainer());
+        String ownerPattern = """
+                %s%s""".formatted(isOracleMode ? schema : catalog, isOracleMode ? "." : ":");
+        String sql = """
+                SELECT
+                    t.tabname AS TABLE_NAME,
+                    c.constrname AS CONSTRAINT_NAME,
+                    c.constrtype AS CONSTRAINT_TYPE,
+                    c.idxname AS INDEX_NAME,
+                    c.constrname AS PK_NAME,
+                    col.colname AS COLUMN_NAME,
+                    trim(ck.checktext) AS CHECK_TEXT,
+                    CASE WHEN c.constrtype != 'C' THEN ROW_NUMBER() OVER (PARTITION BY c.tabid, c.constrname ORDER BY col.colno) ELSE NULL END AS KEY_SEQ
+                FROM (
+                    SELECT constrid, constrname, tabid, constrtype, idxname
+                    FROM %ssysconstraints 
+                    WHERE constrtype IN ('U', 'P', 'C')
+                ) c
+                LEFT JOIN %ssystables t ON c.tabid = t.tabid
+                LEFT JOIN (
+                    SELECT constrid, checktext
+                    FROM %ssyschecks 
+                    WHERE type IN ('T') AND seqno = 0
+                ) ck ON c.constrid = ck.constrid
+                LEFT JOIN %ssyscoldepend cd ON c.constrid = cd.constrid
+                LEFT JOIN %ssysindexes i ON c.idxname = i.idxname
+                LEFT JOIN %ssyscolumns col ON c.tabid = col.tabid
+                WHERE
+                    t.tabname = ?
+                    AND (
+                        col.colno IN (
+                            i.part1, i.part2, i.part3, i.part4, i.part5, i.part6, 
+                            i.part7, i.part8, i.part9, i.part10, i.part11, i.part12, 
+                            i.part13, i.part14, i.part15, i.part16
+                        ) 
+                        OR (c.constrtype = 'C' AND col.colno = cd.colno)
+                    )
+                ORDER BY col.tabid, c.constrid, KEY_SEQ;
+                """.formatted(ownerPattern, ownerPattern, ownerPattern, ownerPattern, ownerPattern, ownerPattern);
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        dbStat.setString(1, tableName);
+        return dbStat;
+    }
+
+    public GBase8sUniqueKey createConstraintImpl(
+            GenericTableBase table,
+            String constraintName,
+            DBSEntityConstraintType constraintType,
+            JDBCResultSet dbResult,
+            boolean persisted) {
+        if (dbResult == null || !constraintType.isUnique()) {
+            String checkText = dbResult != null ? JDBCUtils.safeGetString(dbResult, GBase8sConstants.CHECK_CLAUSE)
+                    : null;
+            return new GBase8sCheckConstraint(table, constraintName, null, constraintType, checkText, persisted);
+        }
+        return new GBase8sUniqueKey(table, constraintName, null, constraintType, persisted);
+    }
+
+    @Override
+    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
+        String constraintType = JDBCUtils.safeGetString(dbResult, GBase8sConstants.CONSTRAINT_TYPE);
+        if (constraintType == null) {
+            log.warn("Can't get column '" + GBase8sConstants.CONSTRAINT_TYPE + "': No such column name");
+            return DBSEntityConstraintType.PRIMARY_KEY;
+        }
+        switch (constraintType) {
+        case GBase8sConstants.CONSTRAINT_TYPE_UNIQUE_KEY:
+            return DBSEntityConstraintType.UNIQUE_KEY;
+        case GBase8sConstants.CONSTRAINT_TYPE_CHECK:
+            return DBSEntityConstraintType.CHECK;
+        default:
+            return DBSEntityConstraintType.PRIMARY_KEY;
+        }
+    }
+
+    public boolean supportsUniqueKeys() {
+        return true;
+    }
+
+    public boolean supportsCheckConstraints() {
+        return true;
     }
 
     @Override

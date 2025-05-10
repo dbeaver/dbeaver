@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.LinkedList;
@@ -84,6 +85,28 @@ public class SQLQuerySelectionResultColumnSpec extends SQLQuerySelectionResultSu
             this.valueExpression.propagateContext(context, statistics);
         }
 
+        this.collectColumnImpl(rowsSourceModel, resultColumns);
+    }
+
+    @Override
+    protected void collectColumns(
+        @NotNull SQLQueryRowsDataContext knownValues,
+        @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull LinkedList<SQLQueryResultColumn> resultColumns
+    ) {
+        if (this.valueExpression != null) {
+            this.valueExpression.resolveRowSources(knownValues.getRowsSources(), statistics);
+            this.valueExpression.resolveValueRelations(knownValues, statistics);
+        }
+
+        this.collectColumnImpl(rowsSourceModel, resultColumns);
+    }
+
+    protected void collectColumnImpl(
+        @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+        @NotNull LinkedList<SQLQueryResultColumn> resultColumns
+    ) {
         SQLQuerySymbol columnName;
         SQLQueryResultColumn underlyingColumn;
         if (this.alias != null) {

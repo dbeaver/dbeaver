@@ -20,8 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -95,11 +95,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
 
     @Override
     public void fillProcessParameters(MySQLExportSettings settings, MySQLDatabaseExportInfo arg, List<String> cmd) throws IOException {
-        DBPNativeClientLocation nativeClientLocation = settings.getClientHome();
-        if (nativeClientLocation == null) {
-            throw new IllegalArgumentException("Client home can not be null!");
-        }
-        File dumpBinary = RuntimeUtils.getNativeClientBinary(settings.getClientHome(), MySQLConstants.BIN_FOLDER, "mysqldump"); //$NON-NLS-1$
+        File dumpBinary = MySQLUtils.getDumpExecutablePath(settings);
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
         cmd.add(settings.getMethod().getCliOption());
@@ -176,7 +172,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
 
 
     static class DumpFilterJob extends DumpJob {
-        private final Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`[^*]*`@`[0-9a-z\\-_\\.%]*`", Pattern.CASE_INSENSITIVE);
+        private final Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`.*?`@`.*?`", Pattern.CASE_INSENSITIVE);
 
         DumpFilterJob(DBRProgressMonitor monitor, InputStream stream, Path outFile, Log log) {
             super("MySQL database dump filter", monitor, stream, outFile, log);
