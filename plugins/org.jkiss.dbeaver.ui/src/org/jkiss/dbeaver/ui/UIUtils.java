@@ -1250,7 +1250,7 @@ public class UIUtils {
         @Nullable DBPImage image,
         @Nullable SelectionListener selectionListener
     ) {
-        Button button = new Button(parent, SWT.PUSH);
+        Button button = new Button(parent, SWT.PUSH | SWT.FLAT);
         if (label != null) {
             button.setText(label);
         }
