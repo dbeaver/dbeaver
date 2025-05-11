@@ -37,7 +37,7 @@ public class LineSeparator extends Composite {
         addPaintListener(e -> {
             Point size = LineSeparator.this.getSize();
             e.gc.setBackground(getDisplay().getSystemColor(
-                UIStyles.isDarkTheme() ? SWT.COLOR_WIDGET_DARK_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                UIStyles.isDarkTheme() ? SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW));
             e.gc.fillRectangle(0, 0, size.x, size.y);
         });
     }

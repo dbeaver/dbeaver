@@ -35,7 +35,7 @@ public class CompositeBorderPainter implements PaintListener {
     public void paintControl(PaintEvent e) {
         Rectangle bounds = control.getBounds();
         e.gc.setForeground(Display.getDefault().getSystemColor(
-            UIStyles.isDarkTheme() ? SWT.COLOR_WIDGET_DARK_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW));
+            UIStyles.isDarkTheme() ? SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW));
         e.gc.drawRectangle(0, 0, bounds.width - 1, bounds.height - 1);
     }
 }
