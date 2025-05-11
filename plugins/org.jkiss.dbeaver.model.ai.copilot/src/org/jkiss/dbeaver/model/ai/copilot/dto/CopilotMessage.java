@@ -32,6 +32,7 @@ public record CopilotMessage(
             case USER -> "user";
             case ASSISTANT -> "assistant";
             case SYSTEM -> "system";
+            default -> null;
         };
     }
 }

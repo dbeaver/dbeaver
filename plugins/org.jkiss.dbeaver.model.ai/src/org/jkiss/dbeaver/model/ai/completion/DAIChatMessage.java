@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.completion;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
 
@@ -40,7 +41,12 @@ public record DAIChatMessage(
         return new DAIChatMessage(DAIChatRole.ASSISTANT, message);
     }
 
+    public static DAIChatMessage errorMessage(Throwable throwable)  {
+        return new DAIChatMessage(DAIChatRole.ERROR, CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"));
+    }
+
     public DAIChatMessage(@NotNull DAIChatRole role, @NotNull String content) {
         this(role, content, LocalDateTime.now());
     }
+
 }
