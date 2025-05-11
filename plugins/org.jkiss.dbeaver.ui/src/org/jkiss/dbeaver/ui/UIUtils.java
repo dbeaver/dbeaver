@@ -2294,19 +2294,16 @@ public class UIUtils {
     }
 
     public static <T extends Control> void addEmptyTextHint(T control, DBRValueProvider<String, T> tipProvider) {
-        final Font hintFont = UIUtils.modifyFont(control.getFont(), SWT.ITALIC);
-
-        control.addDisposeListener(e -> hintFont.dispose());
         control.addPaintListener(e -> {
             String tip = tipProvider.getValue(control);
             if (tip != null && isEmptyTextControl(control) && !control.isFocusControl()) {
                 final GC gc = e.gc;
                 final Point textSize = gc.textExtent(tip);
-                final Point controlSize = control.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-                final int baseline = (controlSize.y - textSize.y) / 2;
+                final Point controlSize = control.getSize();
+                int baseline = (controlSize.y - control.getBorderWidth() * 2 - textSize.y) / 2;
 
                 gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                gc.setFont(hintFont);
+                gc.setFont(control.getFont());
                 gc.drawText(tip, baseline, baseline, true);
                 gc.setFont(null);
             }
