@@ -110,6 +110,7 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
                 @Override
                 public void onNext(CopilotChatChunk chunk) {
                     List<DAICompletionChoice> choices = chunk.choices().stream()
+                        .takeWhile(it -> it.delta().content() != null)
                         .map(it -> new DAICompletionChoice(it.delta().content(), null))
                         .toList();
                     subscriber.onNext(new DAICompletionChunk(choices));
