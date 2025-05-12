@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
+import org.eclipse.core.runtime.IStatus;
+import org.jkiss.code.NotNull;
 
 /**
- * Result set execute processor
+ * An action that can be performed when an error occurs.
  */
-public interface IResultSetContainerExt extends IResultSetContainer {
+public interface IResultSetErrorAction {
+    void perform(@NotNull IResultSetContainer container, @NotNull IStatus status);
 
-    void handleExecuteResult(DBCExecutionResult result);
-
-    void showCurrentError();
-
+    default boolean isVisible(@NotNull IResultSetContainer container, @NotNull IStatus status) {
+        return true;
+    }
 }
