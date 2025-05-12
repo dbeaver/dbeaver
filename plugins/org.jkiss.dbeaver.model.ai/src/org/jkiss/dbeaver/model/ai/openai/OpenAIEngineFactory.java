@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.model.ai.openai;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIEngineFactory;
 import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 
 public class OpenAIEngineFactory implements AIEngineFactory<OpenAICompletionEngine> {
+    @NotNull
     @Override
-    public OpenAICompletionEngine createEngine(AISettingsRegistry registry) {
+    public OpenAICompletionEngine createEngine(@NotNull AISettingsRegistry registry) {
         return new OpenAICompletionEngine(registry);
     }
 }

@@ -147,7 +147,7 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
     }
 
     @Override
-    public void onSettingsUpdate(AISettingsRegistry registry) {
+    public void onSettingsUpdate(@NotNull AISettingsRegistry registry) {
 
         try {
             client.dispose();

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.Map;
@@ -23,7 +24,7 @@ import java.util.Map;
 /**
  * AI engine settings
  */
-public interface AIEngineSettings {
+public interface AIEngineSettings<S extends AIEngineSettings<S>> {
     /**
      * Resolve secrets in the settings.
      */
@@ -34,5 +35,18 @@ public interface AIEngineSettings {
      */
     void saveSecrets() throws DBException;
 
+    /**
+     * Returns a map representation of the settings.
+     */
+    @NotNull
     Map<String, Object> toMap();
+
+    /**
+     * Merges the given map into the settings.
+     *
+     * @param map the map to merge
+     * @return the updated settings
+     */
+    @NotNull
+    S merge(@NotNull Map<String, Object> map);
 }

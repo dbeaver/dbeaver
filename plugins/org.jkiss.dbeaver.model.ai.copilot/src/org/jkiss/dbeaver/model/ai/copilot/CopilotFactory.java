@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.model.ai.copilot;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIEngineFactory;
 import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 
 public class CopilotFactory implements AIEngineFactory<CopilotCompletionEngine> {
+    @NotNull
     @Override
-    public CopilotCompletionEngine createEngine(AISettingsRegistry registry) {
+    public CopilotCompletionEngine createEngine(@NotNull AISettingsRegistry registry) {
         return new CopilotCompletionEngine(registry);
     }
 }

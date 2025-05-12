@@ -20,22 +20,26 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import com.google.gson.reflect.TypeToken;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.Map;
 
-public class LegacyAISettings<P extends AIEngineProperties> implements AIEngineSettings {
+public class LegacyAISettings<P extends AIEngineProperties> implements AIEngineSettings<LegacyAISettings<P>> {
     private static final Gson GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .create();
 
+    @NotNull
     private final P properties;
 
-    public LegacyAISettings(P properties) {
+    public LegacyAISettings(@NotNull P properties) {
         this.properties = properties;
     }
 
+    @NotNull
     public P getProperties() {
         return properties;
     }
@@ -50,11 +54,22 @@ public class LegacyAISettings<P extends AIEngineProperties> implements AIEngineS
         properties.saveSecrets();
     }
 
+    @NotNull
     @Override
     public Map<String, Object> toMap() {
         Type type = new TypeToken<Map<String, Object>>() {
         }.getType();
 
         return GSON.fromJson(GSON.toJson(properties), type);
+    }
+
+    @NotNull
+    @Override
+    public LegacyAISettings<P> merge(@NotNull Map<String, Object> map) {
+        Map<String, Object> engineProperties = new HashMap<>(toMap());
+        engineProperties.putAll(map);
+
+        P newProperties = (P) GSON.fromJson(GSON.toJsonTree(engineProperties), properties.getClass());
+        return new LegacyAISettings<>(newProperties);
     }
 }

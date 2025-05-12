@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 
 public interface AIEngineFactory<T extends DAICompletionEngine> {
-    T createEngine(AISettingsRegistry registry);
+    @NotNull
+    T createEngine(@NotNull AISettingsRegistry registry);
 }
