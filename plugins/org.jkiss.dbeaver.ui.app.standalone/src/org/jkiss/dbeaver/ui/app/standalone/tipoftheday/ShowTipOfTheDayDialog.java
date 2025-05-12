@@ -38,18 +38,17 @@ import org.eclipse.ui.forms.widgets.FormText;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledFormText;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class ShowTipOfTheDayDialog extends BaseDialog {
+public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
     private static final Log log = Log.getLog(ShowTipOfTheDayDialog.class);
 
     private static final String DIALOG_ID = "DBeaver." + ShowTipOfTheDayDialog.class.getSimpleName();
@@ -62,7 +61,8 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
     private int tipIndex;
 
     public ShowTipOfTheDayDialog(Shell parentShell) {
-        super(parentShell, "Tip of the day", DBIcon.TREE_INFO);
+        super(parentShell, "Tip of the day");
+        setModeless(true);
     }
 
     @Override
@@ -125,6 +125,7 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
         //form.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER);
         form.getBody().setLayoutData(new GridData(GridData.FILL_BOTH));
         form.getBody().setLayout(new GridLayout(1, true));
+        closeOnFocusLost(form);
 
         scrolledFormText = new ScrolledFormText(form.getBody(), SWT.V_SCROLL, false);
         FormText formText = new FormText(scrolledFormText, SWT.WRAP | SWT.NO_FOCUS);
@@ -163,9 +164,15 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
             });
 
             form.getBody().setTabList(new Control[] { showTipButton });
+            closeOnFocusLost(showTipButton);
         }
 
         return dialogArea;
+    }
+
+    @Override
+    protected boolean needsButtonBar() {
+        return true;
     }
 
     private void navigateLink(HyperlinkEvent e) {
@@ -233,6 +240,12 @@ public class ShowTipOfTheDayDialog extends BaseDialog {
             if (okButton != null) {
                 okButton.setFocus();
             }
+
+            closeOnFocusLost(
+                getButton(IDialogConstants.BACK_ID),
+                getButton(IDialogConstants.NEXT_ID),
+                getButton(IDialogConstants.OK_ID)
+            );
         });
     }
 
