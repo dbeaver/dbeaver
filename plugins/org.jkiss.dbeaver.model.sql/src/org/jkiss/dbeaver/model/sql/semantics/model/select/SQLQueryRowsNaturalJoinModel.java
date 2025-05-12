@@ -38,24 +38,28 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     @Nullable
     private final SQLQueryValueExpression condition;
     @Nullable
-    private final List<SQLQuerySymbolEntry> columsToJoin;
+    private final List<SQLQuerySymbolEntry> columnsToJoin;
 
     @NotNull
     private final SQLQueryLexicalScope conditionScope;
+
+    private final boolean isLateral;
 
     public SQLQueryRowsNaturalJoinModel(
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
+        boolean isLateral,
         @NotNull SQLQueryValueExpression condition,
         @NotNull SQLQueryLexicalScope conditionScope
     ) {
         super(range, syntaxNode, left, right);
         super.registerSubnode(condition);
+        this.isLateral = isLateral;
         this.condition = condition;
         this.conditionScope = conditionScope;
-        this.columsToJoin = null;
+        this.columnsToJoin = null;
         
         this.registerLexicalScope(conditionScope);
     }
@@ -65,13 +69,15 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
         @NotNull SQLQueryRowsSourceModel right,
-        @Nullable List<SQLQuerySymbolEntry> columsToJoin,
+        boolean isLateral,
+        @Nullable List<SQLQuerySymbolEntry> columnsToJoin,
         @NotNull SQLQueryLexicalScope conditionScope
     ) {
         super(range, syntaxNode, left, right);
+        this.isLateral = isLateral;
         this.condition = null;
         this.conditionScope = conditionScope;
-        this.columsToJoin = columsToJoin;
+        this.columnsToJoin = columnsToJoin;
 
         this.registerLexicalScope(conditionScope);
     }
@@ -82,8 +88,8 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
     }
 
     @Nullable
-    public List<SQLQuerySymbolEntry> getColumsToJoin() {
-        return columsToJoin;
+    public List<SQLQuerySymbolEntry> getColumnsToJoin() {
+        return columnsToJoin;
     }
 
     @NotNull
@@ -93,12 +99,12 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         SQLQueryDataContext left = this.left.propagateContext(context, statistics);
-        SQLQueryDataContext right = this.right.propagateContext(context, statistics);
+        SQLQueryDataContext right = this.right.propagateContext(this.isLateral ? left : context, statistics);
         SQLQueryDataContext combinedContext = left.combineForJoin(right);
 
-        if (this.columsToJoin != null) {
+        if (this.columnsToJoin != null) {
             var columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(combinedContext);
-            for (SQLQuerySymbolEntry column : columsToJoin) {
+            for (SQLQuerySymbolEntry column : columnsToJoin) {
                 if (column.isNotClassified()) {
                     SQLQuerySymbol symbol = column.getSymbol();
                     SQLQueryResultColumn leftColumnDef = left.resolveColumn(statistics.getMonitor(), column.getName());
@@ -155,9 +161,9 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         SQLQueryRowsDataContext x = this.left.getRowsDataContext().combine(this.right.getRowsDataContext());
         SQLQueryRowsDataContext combinedContext = this.getRowsSources().makeTuple(this, x.getColumnsList(), x.getPseudoColumnsList());
 
-        if (this.columsToJoin != null) {
+        if (this.columnsToJoin != null) {
             var columnNameOrigin = new SQLQuerySymbolOrigin.RowsDataRef(combinedContext);
-            for (SQLQuerySymbolEntry column : columsToJoin) {
+            for (SQLQuerySymbolEntry column : columnsToJoin) {
                 if (column.isNotClassified()) {
                     SQLQuerySymbol symbol = column.getSymbol();
                     SQLQueryResultColumn leftColumnDef = this.left.getRowsDataContext()

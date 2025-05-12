@@ -56,7 +56,8 @@ options {
         SQLStandardLexer.LEFT,
         SQLStandardLexer.RIGHT,
         SQLStandardLexer.FULL,
-        SQLStandardLexer.NATURAL
+        SQLStandardLexer.NATURAL,
+        SQLStandardLexer.STRAIGHT_JOIN
     );
 
     private boolean isAnonymousParametersEnabled;
@@ -76,7 +77,7 @@ options {
 
 // root rule for script
 sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
-sqlQuery: (directSqlDataStatement|callStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow) anyWordsWithProperty??;
+sqlQuery: (directSqlDataStatement|callStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow);
 
 directSqlDataStatement: withClause? (deleteStatement|selectStatement|insertStatement|updateStatement);
 selectStatement: queryExpression;
@@ -222,7 +223,8 @@ queryTerm: (nonJoinQueryTerm|joinedTable);
 queryExpression: (joinedTable|nonJoinQueryTerm) (unionTerm|exceptTerm)*;
 
 // from
-fromClause: FROM tableReference (Comma tableReference)*;
+fromClause: FROM tableReference (Comma fromClauseTerm)*;
+fromClauseTerm:  LATERAL? tableReference;
 nonjoinedTableReference: ((tableName (PARTITION anyProperty)?)|derivedTable) correlationSpecification? tableReferenceHints??;
 tableReference: (nonjoinedTableReference|joinedTable)|anyUnexpected??;
 tableReferenceHints: (tableHintKeywords|anyWord)+ anyProperty; // dialect-specific options, should be described and moved to dialects in future
@@ -233,8 +235,8 @@ derivedTable: tableSubquery;
 tableSubquery: subquery;
 
 //joins
-crossJoinTerm: CROSS JOIN tableReference;
-naturalJoinTerm: (NATURAL)? (joinType)? JOIN tableReference (joinSpecification|anyUnexpected??)?; // (.*?) - for error recovery
+crossJoinTerm: CROSS JOIN LATERAL? tableReference;
+naturalJoinTerm: ((NATURAL? joinType? JOIN LATERAL?)|(STRAIGHT_JOIN)) tableReference (joinSpecification|anyUnexpected??)?;
 joinType: (INNER|outerJoinType (OUTER)?|UNION);
 outerJoinType: (LEFT|RIGHT|FULL);
 joinSpecification: (joinCondition|namedColumnsJoin);
@@ -332,7 +334,7 @@ referencingColumns: referenceColumnList;
 // order by
 orderByClause: ORDER BY sortSpecificationList;
 limitClause: LIMIT valueExpression (OFFSET valueExpression)? (Comma valueExpression)?;
-sortSpecificationList: sortSpecification (Comma sortSpecification)*;
+sortSpecificationList: sortSpecification (Comma sortSpecification)* anyWordsWithProperty??;
 sortSpecification: sortKey (orderingSpecification)?;
 sortKey: valueReference | columnIndex | anyWordsWithProperty;
 columnIndex: UnsignedInteger;
@@ -354,7 +356,7 @@ createTableHead: CREATE (OR REPLACE)? (GLOBAL|LOCAL)? (TEMPORARY|TEMP)? TABLE (I
 createTableExtraHead: (OF identifier)?;
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
 tableElement: (columnDefinition|tableConstraintDefinition) anyUnexpected??;
-createTableTail: anyUnexpected;
+createTableTail: anyUnexpected??;
 //                 createTableTailForValues? createTableTailOther*
 //                 createTableTailPartition? createTableTailOther*
 //                 createTableTailOnCommit? createTableTailOther*;

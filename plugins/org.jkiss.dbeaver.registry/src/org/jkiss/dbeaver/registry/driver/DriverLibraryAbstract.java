@@ -169,11 +169,6 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
     }
 
     @Override
-    public void setPreferredVersion(@NotNull String version) {
-        // do nothing
-    }
-
-    @Override
     public boolean isInvalidLibrary() {
         return false;
     }
@@ -223,6 +218,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         return disabled;
     }
 
+    @Override
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
     }

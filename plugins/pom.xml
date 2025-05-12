@@ -17,6 +17,7 @@
         <module>org.jkiss.dbeaver.model</module>
         <module>org.jkiss.dbeaver.model.ai</module>
         <module>org.jkiss.dbeaver.model.ai.copilot</module>
+        <module>org.jkiss.dbeaver.model.cli</module>
         <module>org.jkiss.dbeaver.model.event</module>
         <module>org.jkiss.dbeaver.model.dashboard</module>
         <module>org.jkiss.dbeaver.model.jdbc</module>
