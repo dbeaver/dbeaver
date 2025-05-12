@@ -303,7 +303,8 @@ public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProv
                 "STAGE",
                 "STREAM",
                 "TAG",
-                "TASK"
+                "TASK",
+                "LATERAL"
             ));
         removeSQLKeyword("VIEWS");
         

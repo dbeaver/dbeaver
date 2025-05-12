@@ -829,6 +829,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             "TYPE",
             "USER",
             "COMMENT",
+            "LATERAL",
             "MATERIALIZED",
             "ILIKE",
             "ELSIF",

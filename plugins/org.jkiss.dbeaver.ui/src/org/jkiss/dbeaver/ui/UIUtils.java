@@ -84,6 +84,7 @@ import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.SmartTextContentAdapter;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
+import org.jkiss.dbeaver.ui.controls.LineSeparator;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
@@ -93,6 +94,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -188,6 +190,10 @@ public class UIUtils {
         Label label = new Label(toolBar, SWT.NONE);
         label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
         new ToolItem(toolBar, SWT.SEPARATOR).setControl(label);
+    }
+
+    public static void createLineSeparator(Composite toolBar, int style) {
+        new LineSeparator(toolBar, style);
     }
 
     public static TableColumn createTableColumn(Table table, int style, String text)
@@ -1244,7 +1250,7 @@ public class UIUtils {
         @Nullable DBPImage image,
         @Nullable SelectionListener selectionListener
     ) {
-        Button button = new Button(parent, SWT.PUSH);
+        Button button = new Button(parent, SWT.PUSH | SWT.FLAT);
         if (label != null) {
             button.setText(label);
         }
@@ -1762,7 +1768,7 @@ public class UIUtils {
         if (textSize.x > bounds.width) {
             double charsPerLine = (double) bounds.width / gc.getFontMetrics().getAverageCharacterWidth();
 
-            message = UITextUtils.wrap(message, (int) charsPerLine);
+            message = StringUtils.wrap(message, (int) charsPerLine);
             textSize = gc.textExtent(message);
         }
 
@@ -2293,19 +2299,16 @@ public class UIUtils {
     }
 
     public static <T extends Control> void addEmptyTextHint(T control, DBRValueProvider<String, T> tipProvider) {
-        final Font hintFont = UIUtils.modifyFont(control.getFont(), SWT.ITALIC);
-
-        control.addDisposeListener(e -> hintFont.dispose());
         control.addPaintListener(e -> {
             String tip = tipProvider.getValue(control);
             if (tip != null && isEmptyTextControl(control) && !control.isFocusControl()) {
                 final GC gc = e.gc;
                 final Point textSize = gc.textExtent(tip);
-                final Point controlSize = control.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-                final int baseline = (controlSize.y - textSize.y) / 2;
+                final Point controlSize = control.getSize();
+                int baseline = (controlSize.y - control.getBorderWidth() * 2 - textSize.y) / 2;
 
                 gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                gc.setFont(hintFont);
+                gc.setFont(control.getFont());
                 gc.drawText(tip, baseline, baseline, true);
                 gc.setFont(null);
             }
