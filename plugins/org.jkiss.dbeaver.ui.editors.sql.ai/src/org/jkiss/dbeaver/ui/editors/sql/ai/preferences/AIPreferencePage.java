@@ -232,7 +232,9 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         private void createControl(Composite parent, DAICompletionEngine engine) {
             composite = UIUtils.createComposite(parent, 1);
             composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            configurator.createControl(composite, engine, () -> {});
+            if (configurator != null) {
+                configurator.createControl(composite, engine, () -> {});
+            }
         }
 
         private void disposeControl() {
@@ -240,11 +242,15 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         }
 
         private void loadSettings(AIEngineSettings settings) {
-            configurator.loadSettings(settings);
+            if (configurator != null) {
+                configurator.loadSettings(settings);
+            }
         }
 
         private void saveSettings(AIEngineSettings settings) {
-            configurator.saveSettings(settings);
+            if (configurator != null) {
+                configurator.saveSettings(settings);
+            }
         }
     }
 

@@ -74,11 +74,6 @@ public class DriverLibraryBundle extends DriverLibraryAbstract {
     }
 
     @Override
-    public void resetVersion() {
-        // do nothing
-    }
-
-    @Override
     public boolean isSecureDownload(@NotNull DBRProgressMonitor monitor) {
         return true;
     }

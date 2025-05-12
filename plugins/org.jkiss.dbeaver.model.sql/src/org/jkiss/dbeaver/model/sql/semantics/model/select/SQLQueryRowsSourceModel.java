@@ -144,13 +144,23 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
      * Propagate information about values and row tuples across the query model
      */
     public final void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        traverseSubtree(this, SQLQueryRowsSourceModel.class, n -> n.resolveRowData(context, statistics));
+        traverseSubtreeSmart(
+            this,
+            SQLQueryRowsSourceModel.class,
+            context,
+            (n, c) -> n.resolveRowData(c, statistics),
+            () -> statistics.getMonitor().isCanceled()
+        );
     }
 
-    protected final void resolveRowData(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected final SQLQueryRowsDataContext resolveRowData(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
         if (this.rowsDataContext == null) {
             this.rowsDataContext = this.resolveRowDataImpl(context, statistics);
         }
+        return this.rowsDataContext;
     }
 
     protected abstract SQLQueryRowsDataContext resolveRowDataImpl(

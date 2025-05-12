@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.app.standalone.rpc;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.cli.ApplicationInstanceController;
 import org.jkiss.utils.rest.RequestMapping;
 import org.jkiss.utils.rest.RequestParameter;
 
@@ -26,18 +27,8 @@ import java.util.Map;
 /**
  * DBeaver instance controller.
  */
-public interface IInstanceController {
+public interface IInstanceController extends ApplicationInstanceController {
 
-    String CONFIG_PROP_FILE = "dbeaver-instance.properties";
-
-    @RequestMapping(value = "ping", timeout = 5)
-    long ping(@RequestParameter("payload") long payload);
-
-    @RequestMapping("version")
-    String getVersion();
-
-    @RequestMapping("threadDump")
-    String getThreadDump();
 
     @RequestMapping("openFiles")
     void openExternalFiles(

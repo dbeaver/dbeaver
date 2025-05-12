@@ -23,4 +23,9 @@ import java.util.List;
 public record DAICompletionRequest(
     @NotNull List<DAIChatMessage> messages
 ) {
+    @Override
+    public String toString() {
+        return "AI request " + messages;
+    }
+
 }

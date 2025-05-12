@@ -23,4 +23,8 @@ public record DAICompletionChoice(
     @NotNull String text,
     @Nullable String finishReason
 ) {
+    @Override
+    public String toString() {
+        return text + (finishReason == null ? "" : "(" + finishReason + ")");
+    }
 }

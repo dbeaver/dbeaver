@@ -27,4 +27,9 @@ import java.util.List;
 public record DAICompletionResponse(
     @NotNull List<DAICompletionChoice> choices
 ) {
+    @Override
+    public String toString() {
+        return "AI response " + choices;
+    }
+
 }

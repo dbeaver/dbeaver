@@ -101,7 +101,12 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
      * Propagate information about values and row tuples across the query model
      */
     public final void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        traverseSubtree(this, SQLQueryValueExpression.class, n -> n.resolveValueType(context, statistics));
+        traverseSubtreeSimple(
+            this,
+            SQLQueryValueExpression.class,
+            n -> n.resolveValueType(context, statistics),
+            () -> statistics.getMonitor().isCanceled()
+        );
     }
 
     /**
