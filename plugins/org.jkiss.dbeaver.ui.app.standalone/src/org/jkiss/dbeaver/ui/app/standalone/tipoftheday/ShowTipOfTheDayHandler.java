@@ -24,14 +24,9 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.xml.sax.SAXException;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -39,12 +34,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 public class ShowTipOfTheDayHandler extends AbstractHandler {
 
     private static final Log log = Log.getLog(ShowTipOfTheDayHandler.class);
-
-    public static final String UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP = "ui.show.tip.of.the.day.on.startup";
 
     static void showTipOfTheDay(IWorkbenchWindow window) {
         List<String> tips = loadTips();
@@ -54,20 +51,9 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
     }
 
     private static void showTipOfTheDayDialog(List<String> tips, IWorkbenchWindow window) {
-        ShowTipOfTheDayDialog tipDialog = new ShowTipOfTheDayDialog(window.getShell());
+        ShowTipOfTheDayDialog tipDialog = new ShowTipOfTheDayDialog(window.getShell(), tips);
         tipDialog.setDisplayShowOnStartup(true);
-        tipDialog.setShowOnStartup(
-            CommonUtils.getBoolean(
-                DBWorkbench.getPlatform().getPreferenceStore().getString(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP), true));
-
-        for (String tip : tips) {
-            tipDialog.addTip(tip);
-        }
-
         tipDialog.open();
-
-        DBWorkbench.getPlatform().getPreferenceStore().
-            setValue(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, String.valueOf(tipDialog.isShowOnStartup()));
     }
 
     private static List<String> loadTips() {
