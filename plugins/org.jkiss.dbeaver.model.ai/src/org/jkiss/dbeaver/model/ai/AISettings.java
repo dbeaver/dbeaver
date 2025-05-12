@@ -19,12 +19,13 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class AISettings {
     private boolean aiDisabled;
     private String activeEngine;
-    private Map<String, AIEngineSettings> engineConfigurations;
+    private Map<String, AIEngineSettings<?>> engineConfigurations = new HashMap<>();
 
     public boolean isAiDisabled() {
         return aiDisabled;
@@ -43,26 +44,26 @@ public class AISettings {
     }
 
     @NotNull
-    public <T extends AIEngineSettings> T getEngineConfiguration(String engineId) {
+    public <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) {
         return (T) engineConfigurations.get(engineId);
     }
 
-    public void setEngineConfiguration(String engineId, AIEngineSettings engineConfiguration) {
+    public void setEngineConfiguration(String engineId, AIEngineSettings<?> engineConfiguration) {
         engineConfigurations.put(engineId, engineConfiguration);
     }
 
-    public void setEngineConfigurations(Map<String, AIEngineSettings> engineConfigurations) {
-        this.engineConfigurations = engineConfigurations;
+    public void setEngineConfigurations(Map<String, AIEngineSettings<?>> engineConfigurations) {
+        this.engineConfigurations.putAll(engineConfigurations);
     }
 
     public void resolveSecrets() throws DBException {
-        for (AIEngineSettings engineConfiguration : engineConfigurations.values()) {
+        for (AIEngineSettings<?> engineConfiguration : engineConfigurations.values()) {
             engineConfiguration.resolveSecrets();
         }
     }
 
     public void saveSecrets() throws DBException {
-        for (AIEngineSettings engineConfiguration : engineConfigurations.values()) {
+        for (AIEngineSettings<?> engineConfiguration : engineConfigurations.values()) {
             engineConfiguration.saveSecrets();
         }
     }

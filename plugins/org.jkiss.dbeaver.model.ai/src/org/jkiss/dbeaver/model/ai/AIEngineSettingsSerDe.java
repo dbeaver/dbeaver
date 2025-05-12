@@ -24,7 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 
-public interface AIEngineSettingsSerDe<T extends AIEngineSettings> {
+public interface AIEngineSettingsSerDe<T extends AIEngineSettings<T>> {
     Gson READ_PROPS_GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .create();
@@ -38,7 +38,7 @@ public interface AIEngineSettingsSerDe<T extends AIEngineSettings> {
      * Serializes the given AI engine configuration into a JSON object.
      */
     @NotNull
-    JsonObject serialize(@NotNull AIEngineSettings configuration);
+    JsonObject serialize(@NotNull AIEngineSettings<T> configuration);
 
     /**
      * Deserializes the given JSON object into an AI engine configuration.

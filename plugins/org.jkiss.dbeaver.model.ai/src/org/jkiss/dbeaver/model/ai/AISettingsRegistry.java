@@ -205,6 +205,15 @@ public class AISettingsRegistry {
             // Enable AI by default
             settings.setAiDisabled(false);
         }
+
+        Map<String, AIEngineSettings<?>> stringMap = getSerDes().stream()
+            .collect(Collectors.toMap(
+                AIEngineSettingsSerDe::getId,
+                serDe -> serDe.deserialize(null)
+            ));
+
+        settings.setEngineConfigurations(stringMap);
+
         return settings;
     }
 
@@ -251,7 +260,7 @@ public class AISettingsRegistry {
             aiSettings.setActiveEngine(json.getAsJsonObject().get("activeEngine").getAsString());
 
             JsonObject engineConfigurations = json.getAsJsonObject().getAsJsonObject("engineConfigurations");
-            Map<String, AIEngineSettings> engineConfigurationMap = engineSerDe.stream()
+            Map<String, AIEngineSettings<?>> engineConfigurationMap = engineSerDe.stream()
                 .collect(Collectors.toMap(
                     AIEngineSettingsSerDe::getId,
                     serDe -> serDe.deserialize(engineConfigurations.getAsJsonObject(serDe.getId()))
