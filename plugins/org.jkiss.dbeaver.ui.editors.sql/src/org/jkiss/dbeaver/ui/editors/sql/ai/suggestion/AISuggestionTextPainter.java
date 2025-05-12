@@ -67,7 +67,7 @@ public class AISuggestionTextPainter implements IPainter, PaintListener, LineBac
      * @param content        the content of the hint to be displayed
      * @param removeExisting if true, removes any currently displayed hint before showing the new one
      */
-    public void showHint(String content, boolean removeExisting) {
+    public void showHint(String content, boolean removeExisting, int scriptEndOffset) {
         if (!tryLock()) {
             return;
         }
@@ -76,7 +76,7 @@ public class AISuggestionTextPainter implements IPainter, PaintListener, LineBac
             if (removeExisting) {
                 executeRemove();
             }
-            executeShow(content);
+            executeShow(content, scriptEndOffset);
         });
     }
 
@@ -202,16 +202,22 @@ public class AISuggestionTextPainter implements IPainter, PaintListener, LineBac
         resetState();
     }
 
-    private void executeShow(String text) {
-        int cursorPosition = getCursorPosition();
+    private void executeShow(String text, int scriptEndOffset) {
+        int positionToShow = getCursorPosition();
+
+        if (scriptEndOffset >= 0) {
+            positionToShow = scriptEndOffset;
+        }
+
         String wordPrefix = extractCurrentWord();
         String fragment = text;
         if (!wordPrefix.isEmpty() && fragment.toLowerCase().startsWith(wordPrefix.toLowerCase())) {
             fragment = fragment.substring(wordPrefix.length());
         }
-        activeHint = HintContent.initialize(cursorPosition, fragment);
+        activeHint = HintContent.initialize(positionToShow, fragment);
         getTextWidget().redraw();
     }
+
 
     private void executeRemove() {
         activeHint = HintContent.initialize(activeHint.getPosition(), "");
