@@ -195,8 +195,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
 
         try {
-            if (!isWorkspaceSwitchingAllowed() && !isDistributed() && !WORKSPACE_DIR_CURRENT.equals(RuntimeUtils.getLocalFileFromURL(
-                    instanceLoc.getURL())
+            if (!isWorkspaceSwitchingAllowed() && !WORKSPACE_DIR_CURRENT.equals(RuntimeUtils.getLocalFileFromURL(instanceLoc.getURL())
                 .getAbsolutePath())) {
                 System.err.println("Workspace switching is not allowed when participating in the early access program. Exiting "
                     + GeneralUtils.getProductName() + ".");
