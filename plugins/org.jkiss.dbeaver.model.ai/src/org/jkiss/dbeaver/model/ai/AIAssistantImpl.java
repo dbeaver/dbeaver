@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.completion.*;
@@ -27,10 +28,8 @@ import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Flow;
-import java.util.stream.Stream;
 
 public class AIAssistantImpl implements AIAssistant {
     private static final Log log = Log.getLog(AIAssistantImpl.class);
@@ -42,50 +41,6 @@ public class AIAssistantImpl implements AIAssistant {
     private final AIFormatterRegistry formatterRegistry = AIFormatterRegistry.getInstance();
     private final AIAssistantRegistry assistantRegistry = AIAssistantRegistry.getInstance();
     private static final MetadataProcessor metadataProcessor = MetadataProcessor.INSTANCE;
-
-    /**
-     * Chat with the AI assistant.
-     *
-     * @param monitor the progress monitor
-     * @param chatCompletionRequest the chat completion request
-     * @throws DBException if an error occurs
-     */
-    @NotNull
-    @Override
-    public Flow.Publisher<DAICompletionChunk> chat(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DAIChatRequest chatCompletionRequest
-    ) throws DBException {
-        DAICompletionEngine engine = chatCompletionRequest.engine() != null ?
-            chatCompletionRequest.engine() :
-            getActiveEngine();
-
-        List<DAIChatMessage> chatMessages = new ArrayList<>();
-        if (chatCompletionRequest.context() != null) {
-            String description = metadataProcessor.describeContext(
-                monitor,
-                chatCompletionRequest.context(),
-                formatter(),
-                AIUtils.getMaxRequestTokens(engine, monitor)
-            );
-            chatMessages.add(DAIChatMessage.systemMessage(getSystemPrompt() + System.lineSeparator() + description));
-        }
-        chatMessages.addAll(chatCompletionRequest.messages());
-
-        List<DAIChatMessage> truncatedMessages = AIUtils.truncateMessages(
-            true,
-            chatMessages,
-            engine.getMaxContextSize(monitor)
-        );
-
-        return requestCompletionStream(
-            engine,
-            monitor,
-            new DAICompletionRequest(
-                truncatedMessages
-            )
-        );
-    }
 
     /**
      * Translate the specified text to SQL.
@@ -107,15 +62,19 @@ public class AIAssistantImpl implements AIAssistant {
 
         DAIChatMessage userMessage = new DAIChatMessage(DAIChatRole.USER, request.text());
 
+        String prompt = buildPrompt(
+            monitor,
+            engine,
+            request.context()
+        ).addGoals(
+            "Translate natural language text to SQL."
+        ).addOutputFormats(
+            "Place any explanation or comments before the SQL code block.",
+            "Provide the SQL query in a fenced Markdown code block."
+        ).build();
+
         List<DAIChatMessage> chatMessages = List.of(
-            DAIChatMessage.systemMessage(
-                getSystemPrompt() + System.lineSeparator() + metadataProcessor.describeContext(
-                    monitor,
-                    request.context(),
-                    formatter(),
-                    AIUtils.getMaxRequestTokens(engine, monitor)
-                )
-            ),
+            DAIChatMessage.systemMessage(prompt),
             userMessage
         );
 
@@ -156,15 +115,19 @@ public class AIAssistantImpl implements AIAssistant {
             request.engine() :
             getActiveEngine();
 
+        String prompt = buildPrompt(
+            monitor,
+            engine,
+            request.context()
+        ).addGoals(
+            "Translate natural language text to SQL."
+        ).addOutputFormats(
+            "Place any explanation or comments before the SQL code block.",
+            "Provide the SQL query in a fenced Markdown code block."
+        ).build();
+
         List<DAIChatMessage> chatMessages = List.of(
-            DAIChatMessage.systemMessage(
-                getSystemPrompt() + System.lineSeparator() + metadataProcessor.describeContext(
-                    monitor,
-                    request.context(),
-                    formatter(),
-                    AIUtils.getMaxRequestTokens(engine, monitor)
-                )
-            ),
+            DAIChatMessage.systemMessage(prompt),
             DAIChatMessage.userMessage(request.text())
         );
 
@@ -267,7 +230,7 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
-    private Flow.Publisher<DAICompletionChunk> requestCompletionStream(
+    protected Flow.Publisher<DAICompletionChunk> requestCompletionStream(
         @NotNull DAICompletionEngine engine,
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionRequest request
@@ -296,11 +259,8 @@ public class AIAssistantImpl implements AIAssistant {
 
     protected String getSystemPrompt() {
         return """
-            You are SQL assistant. You must produce SQL code for given prompt.
-            You must produce valid SQL statement enclosed with Markdown code block and terminated with semicolon.
-            All database object names should be properly escaped according to the SQL dialect.
-            All comments MUST be placed before query outside markdown code block.
-            Be polite.
+            You are a DBeaver AI assistant.
+            You help users write SQL queries based ONLY on the information below.
             """;
     }
 
@@ -310,5 +270,31 @@ public class AIAssistantImpl implements AIAssistant {
 
     protected AIAssistant assistant() throws DBException {
         return assistantRegistry.getAssistant();
+    }
+
+    protected PromptBuilder buildPrompt(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionEngine engine,
+        @Nullable DAICompletionContext context
+    ) throws DBException {
+        PromptBuilder promptBuilder = PromptBuilder.createForDialect(
+            context != null ?
+                context.getExecutionContext().getDataSource().getSQLDialect() :
+                null,
+            formatter()
+        );
+
+        if (context != null) {
+            String description = metadataProcessor.describeContext(
+                monitor,
+                context,
+                formatter(),
+                AIUtils.getMaxRequestTokens(engine, monitor)
+            );
+
+            promptBuilder.addDatabaseSnapshot(description);
+        }
+
+        return promptBuilder;
     }
 }
