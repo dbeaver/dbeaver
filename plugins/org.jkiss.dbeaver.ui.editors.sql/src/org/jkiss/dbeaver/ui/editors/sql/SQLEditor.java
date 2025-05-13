@@ -118,6 +118,7 @@ import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddIn;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.ai.suggestion.AISuggestionTextPainter;
 import org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation;
@@ -257,6 +258,12 @@ public class SQLEditor extends SQLEditorBase implements
     private volatile boolean isPartControlInitialized = false;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
+
+    private AISuggestionTextPainter AISuggestionTextPainter;
+
+    public AISuggestionTextPainter getSuggestionTextPainter() {
+        return AISuggestionTextPainter;
+    }
 
     private static class ServerOutputInfo {
         private final DBCServerOutputReader outputReader;
@@ -465,7 +472,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DBWorkbench.getPlatformUI().showError(
                     "Can't connect to database", "Connection to '" + container.getName() + "' cannot be established.", status);
             }
-            setFocus();
+//            setFocus();
         }));
         setPartName(getEditorName());
 
@@ -1063,6 +1070,25 @@ public class SQLEditor extends SQLEditorBase implements
                 });
             }
         }
+        AISuggestionTextPainter = new AISuggestionTextPainter(getViewer());
+        AISuggestionTextPainter.enable();
+
+        StyledText textWidget = getViewer().getTextWidget();
+        textWidget.addVerifyKeyListener(e -> {
+            if (e.keyCode == SWT.ARROW_RIGHT && AISuggestionTextPainter.hasContentToShow()) {
+                e.doit = false;
+                AISuggestionTextPainter.applyHint();
+            }
+        });
+        textWidget.addCaretListener(event -> {
+            if (AISuggestionTextPainter.hasContentToShow()) {
+                int caretOffset = event.caretOffset;
+                int suggestionOffset = AISuggestionTextPainter.getCurrentPosition();
+                if (caretOffset != suggestionOffset) {
+                    AISuggestionTextPainter.removeHint();
+                }
+            }
+        });
 
         // Start output reader
         new ServerOutputReader().schedule();
@@ -1108,6 +1134,9 @@ public class SQLEditor extends SQLEditorBase implements
     private void onTextChange(ModifyEvent e) {
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE)) {
             doScriptAutoSave();
+        }
+        if (AISuggestionTextPainter != null) {
+            AISuggestionTextPainter.removeHint();
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,12 +117,12 @@ public class PostgreForeignServer extends PostgreInformation implements PostgreS
         {
             return session.prepareStatement(
                 "select distinct " +
-                "\nsrvname, " +
+                "\nfs.srvname, " +
                 "\ncase when rolname is null then 'public' else rolname end rolname, " +
                 "\nsrvoptions,  " +
                 "\numoptions  " +
-                "\nfrom pg_user_mapping um  " +
-                "\njoin pg_foreign_server fs on um.umserver = fs.OID  " +
+                "\nfrom pg_user_mappings um  " +
+                "\njoin pg_foreign_server fs on um.srvid = fs.OID  " +
                 "\nleft join pg_authid pa on um.umuser = pa.OID " +
                 "\nwhere fs.OID = " + owner.getObjectId() +
                 "\nORDER BY srvname"

@@ -155,7 +155,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         formatterConfigurator.createControl(composite, formatter, () -> {});
         Composite serviceComposite = UIUtils.createComposite(composite, 2);
         serviceComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        serviceCombo = UIUtils.createLabelCombo(serviceComposite, "Service", SWT.DROP_DOWN | SWT.READ_ONLY);
+        serviceCombo = UIUtils.createLabelCombo(serviceComposite, "Engine", SWT.DROP_DOWN | SWT.READ_ONLY);
         List<AIEngineDescriptor> completionEngines = AIEngineRegistry.getInstance()
             .getCompletionEngines();
         int defaultEngineSelection = -1;
@@ -232,7 +232,9 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         private void createControl(Composite parent, DAICompletionEngine engine) {
             composite = UIUtils.createComposite(parent, 1);
             composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            configurator.createControl(composite, engine, () -> {});
+            if (configurator != null) {
+                configurator.createControl(composite, engine, () -> {});
+            }
         }
 
         private void disposeControl() {
@@ -240,11 +242,15 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         }
 
         private void loadSettings(AIEngineSettings settings) {
-            configurator.loadSettings(settings);
+            if (configurator != null) {
+                configurator.loadSettings(settings);
+            }
         }
 
         private void saveSettings(AIEngineSettings settings) {
-            configurator.saveSettings(settings);
+            if (configurator != null) {
+                configurator.saveSettings(settings);
+            }
         }
     }
 

@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -53,6 +55,10 @@ public abstract class SQLQuerySymbolOrigin {
          * Visitor for * or table-alias.* which are supposed to be expanded to the list of columns on completion
          */
         void visitExpandableTupleRef(ExpandableTupleRef tupleRef);
+
+        void visitRowsSourceRef(RowsSourceRef rowsSourceRef);
+
+        void visitRowsDataRef(RowsDataRef rowsDataRef);
     }
 
     public abstract boolean isChained();
@@ -302,4 +308,46 @@ public abstract class SQLQuerySymbolOrigin {
         }
     }
 
+    // TODO: extends SQLQuerySymbolOrigin after removing DataContextSymbolOrigin
+    public static class RowsSourceRef extends DataContextSymbolOrigin {
+
+        @NotNull
+        private final SQLQueryRowsSourceContext rowsSourceContext;
+
+        public RowsSourceRef(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
+            super(null);
+            this.rowsSourceContext = rowsSourceContext;
+        }
+        
+        public @NotNull SQLQueryRowsSourceContext getRowsSourceContext() {
+            return this.rowsSourceContext;
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitRowsSourceRef(this);
+        }
+    }
+
+    // TODO: extends SQLQuerySymbolOrigin after removing DataContextSymbolOrigin
+    public static class RowsDataRef extends DataContextSymbolOrigin {
+        
+        @NotNull
+        private final SQLQueryRowsDataContext rowsDataContext;
+
+        public RowsDataRef(@NotNull SQLQueryRowsDataContext rowsDataContext) {
+            super(null);
+            this.rowsDataContext = rowsDataContext;
+        }
+
+        @NotNull
+        public SQLQueryRowsDataContext getRowsDataContext() {
+            return this.rowsDataContext;
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitRowsDataRef(this);
+        }
+    }
 }

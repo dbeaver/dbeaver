@@ -113,6 +113,7 @@ public class UIMessages extends NLS {
     public static String text_with_open_dialog_edit_file;
 
     public static String preference_page_no_access;
+    public static String preference_page_no_edit_access;
 
     public static String notification_popup_context_message;
 

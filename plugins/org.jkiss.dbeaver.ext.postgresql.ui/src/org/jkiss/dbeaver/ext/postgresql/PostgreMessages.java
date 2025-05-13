@@ -31,6 +31,7 @@ public class PostgreMessages extends NLS {
     public static String wizard_backup_page_object_description;
     public static String wizard_backup_page_object_group_object;
     public static String wizard_backup_page_object_checkbox_show_view;
+    public static String wizard_backup_page_object_checkbox_complete_backup;
     public static String wizard_backup_page_setting_title_setting;
     public static String wizard_backup_page_setting_title;
     public static String wizard_backup_page_setting_description;

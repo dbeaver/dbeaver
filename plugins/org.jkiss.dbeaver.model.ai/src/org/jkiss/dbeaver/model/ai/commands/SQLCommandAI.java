@@ -87,7 +87,6 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         DAICompletionScope scope = completionSettings.getScope();
         DAICompletionContext.Builder contextBuilder = new DAICompletionContext.Builder()
             .setScope(scope)
-            .setDataSource(lDataSource)
             .setExecutionContext(scriptContext.getExecutionContext());
         if (scope == DAICompletionScope.CUSTOM) {
             contextBuilder.setCustomEntities(

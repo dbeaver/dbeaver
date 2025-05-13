@@ -14,22 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.cubrid.ui.config;
-
-import java.util.List;
-import java.util.Map;
+package org.jkiss.dbeaver.ext.cubrid.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -37,8 +39,13 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+import java.util.Map;
+
 public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericStructContainer> /*implements DBEObjectRenamer<OracleSchema>*/
 {
+
+    private static final int MAX_NAME_GEN_ATTEMPTS = 100;
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
@@ -63,7 +70,8 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
             @Nullable Object copyFrom,
             @NotNull Map<String, Object> options) {
 
-        CubridPrivilage user = new CubridPrivilage((CubridDataSource) container, "NEW_USER", null);
+        String newName = this.getNewName((CubridDataSource) container, "NEW_USER");
+        CubridPrivilage user = new CubridPrivilage((CubridDataSource) container, newName, null);
         return user;
     }
 
@@ -78,7 +86,7 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
         CubridPrivilage user = (CubridPrivilage) command.getObject();
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE USER ");
-        builder.append(this.getUserName(user, command.getProperties()));
+        builder.append(DBUtils.getQuotedIdentifier(user.getDataSource(), this.getUserName(user, command.getProperties())));
         buildBody(user, builder, command.getProperties());
         actions.add(new SQLDatabasePersistAction("Create User", builder.toString()));
     }
@@ -93,7 +101,7 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
         StringBuilder builder = new StringBuilder();
         builder.append("DROP USER ");
         builder.append(DBUtils.getQuotedIdentifier(command.getObject()));
-        actions.add(new SQLDatabasePersistAction("Drop User", builder.toString()));
+        actions.add(new DeletePersistAction(command.getObject(), builder.toString()));
     }
 
     private void buildBody(CubridPrivilage user, StringBuilder builder, Map<Object, Object> properties) {
@@ -117,13 +125,45 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
 
     @NotNull
     private String getUserName(CubridPrivilage user, Map<Object, Object> properties) {
-        Object name = properties.get(CubridPrivilageHandler.NAME.getId());
+        Object name = properties.get("NAME");
         if (name != null) {
-            user.setName(name.toString());
+            user.setName(name.toString().toUpperCase());
         }
         return user.getName();
 
     }
 
+    private class DeletePersistAction extends SQLDatabasePersistActionAtomic
+    {
+        CubridPrivilage database;
+
+        public DeletePersistAction(CubridPrivilage privilage, String script) {
+            super("drop user", script);
+            this.database = privilage;
+        }
+
+        @Override
+        public void afterExecute(DBCSession session, Throwable error) throws DBCException {
+            super.afterExecute(session, error);
+            if (error == null) {
+                GenericSchema user = this.database.getParentObject().getSchema(database.getName());
+                DBUtils.fireObjectRemove(user);
+            }
+        }
+    }
+
+    @NotNull
+    private String getNewName(@NotNull CubridDataSource container, @NotNull String baseName) {
+        for (int i = 0; i < MAX_NAME_GEN_ATTEMPTS; i++) {
+            String transform = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? baseName : (baseName + "_" + i));
+            DBSObject child = container.getCubridPrivilageCache().getCachedObject(transform);
+            if (child == null) {
+                return transform;
+            }
+        }
+        log.error("Error generating child object name: max attempts reached");
+        return baseName;
+
+    }
 
 }

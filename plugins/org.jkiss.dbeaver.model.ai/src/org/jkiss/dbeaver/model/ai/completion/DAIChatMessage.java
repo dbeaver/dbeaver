@@ -17,16 +17,17 @@
 package org.jkiss.dbeaver.model.ai.completion;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.utils.CommonUtils;
+
+import java.time.LocalDateTime;
 
 /**
  * Represents a single completion message
- *
  */
 public record DAIChatMessage(
-    @NotNull
-    DAIChatRole role,
-    @NotNull
-    String content
+    @NotNull DAIChatRole role,
+    @NotNull String content,
+    @NotNull LocalDateTime time
 ) {
     public static DAIChatMessage systemMessage(String message) {
         return new DAIChatMessage(DAIChatRole.SYSTEM, message);
@@ -40,8 +41,17 @@ public record DAIChatMessage(
         return new DAIChatMessage(DAIChatRole.ASSISTANT, message);
     }
 
-    public DAIChatMessage(@NotNull DAIChatRole role, @NotNull String content) {
-        this.role = role;
-        this.content = content;
+    public static DAIChatMessage errorMessage(Throwable throwable)  {
+        return new DAIChatMessage(DAIChatRole.ERROR, CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"));
     }
+
+    public DAIChatMessage(@NotNull DAIChatRole role, @NotNull String content) {
+        this(role, content, LocalDateTime.now());
+    }
+
+    @Override
+    public String toString() {
+        return "Message (" + role + "): " + content;
+    }
+
 }

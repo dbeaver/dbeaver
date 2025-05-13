@@ -21,9 +21,9 @@ import org.jkiss.dbeaver.DBException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public final class HttpUtils {
+public final class AIHttpUtils {
 
-    private HttpUtils() {
+    private AIHttpUtils() {
     }
 
     /**

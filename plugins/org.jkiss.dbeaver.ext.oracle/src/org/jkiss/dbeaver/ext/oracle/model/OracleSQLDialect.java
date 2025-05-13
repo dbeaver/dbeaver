@@ -115,7 +115,8 @@ public class OracleSQLDialect extends JDBCSQLDialect
         "SUBPARTITION",
         "TEMPFILE",
         "DATAFILE",
-        "TABLESPACE"
+        "TABLESPACE",
+        "LATERAL"
     };
 
     private static final GlobalVariableInfo[] GLOBAL_VARIABLES = {

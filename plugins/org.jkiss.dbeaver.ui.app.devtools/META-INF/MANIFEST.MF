@@ -6,7 +6,6 @@ Bundle-Version: 2.0.0.qualifier
 Bundle-Release-Date: 20240722
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.eclipse.swt.tools.spies,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.model,
  org.eclipse.core.resources,

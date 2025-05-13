@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,15 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSavepoint;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
 import java.util.ArrayList;
@@ -128,9 +127,21 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         }
     }
 
-    private synchronized void tryFireMetaEvent(final QMMObject object, final QMEventAction action, DBCExecutionContext context) {
+    private void tryFireMetaEvent(
+        final @NotNull QMMObject object,
+        final @NotNull QMEventAction action,
+        final @NotNull DBCExecutionContext context
+    ) {
+        tryFireMetaEvent(object, action, context.getDataSource());
+    }
+
+    private synchronized void tryFireMetaEvent(
+        final @NotNull QMMObject object,
+        final @NotNull QMEventAction action,
+        final @NotNull DBPDataSource dataSource
+    ) {
         try {
-            String sessionId = QMUtils.getQmSessionId(context);
+            String sessionId = QMUtils.getQmSessionId(dataSource);
             eventPool.add(new QMMetaEvent(object, action, sessionId));
             // may be send event here
         } catch (DBException e) {
@@ -309,6 +320,17 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         }
     }
 
+
+    @Override
+    public synchronized void handleConnectError(@NotNull DBPDataSource dataSource, @NotNull Throwable error) {
+        QMMDataSourceConnectErrorInfo connectErrorInfo = new QMMDataSourceConnectErrorInfo(
+            dataSource.getContainer(),
+            DBExecUtils.discoverErrorType(dataSource, error).name(),
+            CommonUtils.getRootCause(error).getMessage()
+        );
+        tryFireMetaEvent(connectErrorInfo, QMEventAction.BEGIN, dataSource);
+    }
+
     private class EventDispatcher extends AbstractJob {
 
         protected EventDispatcher() {
@@ -365,5 +387,4 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             return Status.OK_STATUS;
         }
     }
-
 }

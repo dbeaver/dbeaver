@@ -871,6 +871,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 return ErrorType.CONNECTION_LOST;
             } else if (PostgreConstants.ERROR_TRANSACTION_ABORTED.equals(sqlState)) {
                 return ErrorType.TRANSACTION_ABORTED;
+            } else if (PostgreConstants.AUTHORIZATION_ERRORS.contains(sqlState)) {
+                return ErrorType.AUTHENTICATION_FAILED;
             }
         }
         if (getServerType() instanceof DBPErrorAssistant) {

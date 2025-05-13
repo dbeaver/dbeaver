@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -297,14 +297,20 @@ public abstract class SQLQueryExprType {
 
         @Override
         public @NotNull List<SQLQueryExprTypeMemberInfo> getNamedMembers(@NotNull DBRProgressMonitor monitor) throws DBException {
-            return this.referencedSource.source.getResultDataContext().getColumnsList().stream().map(
+            return (
+                this.referencedSource.source.getGivenDataContext() != null
+                    ? this.referencedSource.source.getResultDataContext().getColumnsList()
+                    : this.referencedSource.source.getRowsDataContext().getColumnsList()
+            ).stream().map(
                 c -> new SQLQueryExprTypeMemberInfo(this, c.symbol.getName(), c.type, c.realAttr, c)
             ).toList();
         }
 
         @Override
         public SQLQueryExprType findNamedMemberType(@NotNull DBRProgressMonitor monitor, @NotNull String memberName) throws DBException {
-            SQLQueryResultColumn column = this.referencedSource.source.getResultDataContext().resolveColumn(monitor, memberName);
+            SQLQueryResultColumn column = this.referencedSource.source.getGivenDataContext() != null
+                ? this.referencedSource.source.getResultDataContext().resolveColumn(monitor, memberName)
+                : this.referencedSource.source.getRowsDataContext().resolveColumn(monitor, memberName);
             return column == null ? null : column.type;
         }
 

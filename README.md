@@ -31,7 +31,7 @@ You can also download <a href="https://dbeaver.io/files/ea" target="_blank">Earl
 
 Just run an installer (or unzip an archive) and run `dbeaver`.  
 
-Note: DBeaver needs Java to run. <a href="https://adoptium.net/" target="_blank">Open JDK 17</a> is included in all DBeaver distributions.
+Note: DBeaver needs Java to run. <a href="https://adoptium.net/temurin/releases/?package=jre" target="_blank">OpenJDK 21</a> is included in all DBeaver distributions.
 You can change default JDK version by replacing directory `jre` in dbeaver installation folder.
 
 ## Documentation
@@ -49,7 +49,8 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 - For bug reports and feature requests - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
 - To promote <a href="https://github.com/dbeaver/dbeaver/issues?q=is%3Aissue+is%3Aopen+sort%3Areactions-%2B1-desc+label%3A%22wait+for+votes%22">a ticket</a> to a higher priority - please vote for it with 👍 under the ticket description.
 - If you have any questions, ideas, etc - please <a href="https://github.com/dbeaver/dbeaver/discussions">start a discussion</a>.
-- Pull requests are welcome.
+- For bug reports and feature requests - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
+- Pull requests are welcome. See our <a href="https://github.com/dbeaver/dbeaver/wiki/Contribute-your-code">guide for contributors</a>.
 - Visit https://dbeaver.com for more information.
 - Follow us on [Twitter](https://twitter.com/dbeaver_news/) and watch educational video on [YouTube](https://www.youtube.com/@DBeaver_video)
 - Thanks for using DBeaver! Star if you like it.

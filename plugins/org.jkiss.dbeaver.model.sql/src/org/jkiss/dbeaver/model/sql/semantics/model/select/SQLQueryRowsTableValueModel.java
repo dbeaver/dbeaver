@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.Collections;
@@ -70,6 +72,39 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
         }
 
         return context;
+    }
+
+    @Override
+    protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        return context.reset();
+    }
+
+    @Override
+    protected SQLQueryRowsDataContext resolveRowDataImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        LinkedList<SQLQueryResultColumn> resultColumns = new LinkedList<>();
+        SQLQueryRowsDataContext emptyTuple = this.getRowsSources().makeEmptyTuple();
+        for (SQLQueryValueExpression value : this.values) {
+            value.resolveRowSources(this.getRowsSources(), statistics);
+            value.resolveValueRelations(emptyTuple, statistics);
+            resultColumns.addLast(
+                new SQLQueryResultColumn(
+                    resultColumns.size(),
+                    new SQLQuerySymbol("?"),
+                    this,
+                    null,
+                    null,
+                    SQLQueryExprType.UNKNOWN
+                )
+            );
+        }
+
+        return this.getRowsSources().makeTuple(this, List.copyOf(resultColumns), Collections.emptyList());
     }
 
     @Override

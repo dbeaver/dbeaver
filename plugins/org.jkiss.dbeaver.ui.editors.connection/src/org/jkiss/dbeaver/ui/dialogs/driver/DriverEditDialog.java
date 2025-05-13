@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -405,9 +406,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
                         cell.setText(displayName);
                         Path localFile = lib.getLocalFile();
                         if (localFile != null && !Files.exists(localFile)) {
-                            cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
+                            cell.setForeground(JFaceColors.getErrorText(Display.getDefault()));
                         } else if (!driver.getDefaultDriverLoader().isLibraryResolved(lib)) {
-                            cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLUE));
+                            cell.setForeground(JFaceColors.getHyperlinkText(Display.getDefault()));
                         } else {
                             cell.setForeground(null);
                         }

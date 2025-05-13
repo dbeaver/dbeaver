@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ui.editors.sql.ai.internal;
 
 import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -30,9 +30,11 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.AIAssistant;
+import org.jkiss.dbeaver.model.ai.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.AICompletionConstants;
+import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
 import org.jkiss.dbeaver.model.ai.completion.DAITranslateRequest;
@@ -45,8 +47,10 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.ai.popup.AISuggestionPopup;
 import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage;
@@ -60,17 +64,24 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class AITranslateHandler extends AbstractHandler {
 
-    public AITranslateHandler() throws DBException {
-    }
-
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(ExecutionEvent event) {
+        Command command = ActionUtils.findCommand(SQLEditorCommands.CMD_AI_CHAT_TOGGLE);
+        if (command != null && command.isEnabled() && command.getHandler() != null) {
+            ActionUtils.runCommand(SQLEditorCommands.CMD_AI_CHAT_TOGGLE, HandlerUtil.getActiveWorkbenchWindow(event));
+            return null;
+        }
+
+        SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
+        if (editor == null) {
+            return null;
+        }
+
         AIFeatures.SQL_AI_POPUP.use();
 
         if (AISettingsRegistry.getInstance().getSettings().isAiDisabled()) {
             return null;
         }
-        SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
 
         DBPDataSourceContainer dataSourceContainer = editor.getDataSourceContainer();
         if (dataSourceContainer == null) {
@@ -104,7 +115,7 @@ public class AITranslateHandler extends AbstractHandler {
         DAICompletionSettings settings = new DAICompletionSettings(dataSourceContainer);
 
         // Show info transfer warning
-        if (!AIUIUtils.confirmMetaTransfer(settings, dataSourceContainer)) {
+        if (!AIUIUtils.confirmMetaTransfer(settings)) {
             return null;
         }
 
@@ -161,7 +172,6 @@ public class AITranslateHandler extends AbstractHandler {
             String sql = translateUserInputIntoSql(
                 userInput,
                 executionContext,
-                dataSource,
                 popup
             );
 
@@ -191,7 +201,6 @@ public class AITranslateHandler extends AbstractHandler {
     private String translateUserInputIntoSql(
         String userInput,
         DBCExecutionContext executionContext,
-        DBSLogicalDataSource dataSource,
         @NotNull AISuggestionPopup popup
     ) throws InvocationTargetException {
         if (CommonUtils.isEmptyTrimmed(userInput)) {
@@ -204,7 +213,6 @@ public class AITranslateHandler extends AbstractHandler {
                 final DAICompletionContext context = new DAICompletionContext.Builder()
                     .setScope(popup.getScope())
                     .setCustomEntities(popup.getCustomEntities(monitor))
-                    .setDataSource(dataSource)
                     .setExecutionContext(executionContext)
                     .build();
 

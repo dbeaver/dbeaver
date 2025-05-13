@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPConditionalProperty;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -54,7 +55,8 @@ import java.util.stream.Collectors;
 /**
  * ObjectPropertyDescriptor
 */
-public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>
+public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
+    implements DBPPropertyDescriptor, DBPConditionalProperty, IPropertyValueListProvider<Object>
 {
 
     private final Property propInfo;
@@ -693,6 +695,18 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         // Copied from ResourceTranslator.getResourceBundle
 //        Locale locale = (language == null) ? Locale.getDefault() : new Locale(language);
 //        return ResourceBundle.getBundle("plugin", locale, ownerClass.getClassLoader()); //$NON-NLS-1$
+    }
+
+    @Nullable
+    @Override
+    public String getHideExpression() {
+        return CommonUtils.nullIfEmpty(propInfo.hideExpr());
+    }
+
+    @Nullable
+    @Override
+    public String getReadOnlyExpression() {
+        return CommonUtils.nullIfEmpty(propInfo.readOnlyExpr());
     }
 
 }
