@@ -271,11 +271,25 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull DAICompletionEngine engine,
         @Nullable DAICompletionContext context
     ) throws DBException {
+        return buildPrompt(
+            monitor,
+            engine,
+            formatter(),
+            context
+        );
+    }
+
+    protected PromptBuilder buildPrompt(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionEngine engine,
+        @NotNull IAIFormatter formatter,
+        @Nullable DAICompletionContext context
+    ) throws DBException {
         PromptBuilder promptBuilder = PromptBuilder.createForDataSource(
             context != null ?
                 context.getExecutionContext().getDataSource() :
                 null,
-            formatter()
+            formatter
         );
 
         describeDatabaseMetadata(monitor, engine, context, promptBuilder);
@@ -287,13 +301,29 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionEngine engine,
         @Nullable DAICompletionContext context,
-        PromptBuilder promptBuilder
+        @NotNull PromptBuilder promptBuilder
+    ) throws DBException {
+        describeDatabaseMetadata(
+            monitor,
+            engine,
+            formatter(),
+            context,
+            promptBuilder
+        );
+    }
+
+    protected void describeDatabaseMetadata(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionEngine engine,
+        @NotNull IAIFormatter formatter,
+        @Nullable DAICompletionContext context,
+        @NotNull PromptBuilder promptBuilder
     ) throws DBException {
         if (context != null) {
             String description = metadataProcessor.describeContext(
                 monitor,
                 context,
-                formatter(),
+                formatter,
                 AIUtils.getMaxRequestTokens(engine, monitor)
             );
 

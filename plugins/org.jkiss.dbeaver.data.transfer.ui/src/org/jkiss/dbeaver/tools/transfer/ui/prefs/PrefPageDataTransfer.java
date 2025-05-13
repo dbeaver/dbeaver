@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,17 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.settings.DataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
@@ -35,6 +40,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPreferencePage {
+    private static final Log log = Log.getLog(PrefPageDataTransfer.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.datatransfer";
 
     private Button reconnectToLastDatabaseButton;
@@ -42,6 +48,18 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
     private Combo nameCaseCombo;
     private Combo replaceCombo;
     private Spinner typeLengthSpinner;
+
+    private IObjectPropertyConfigurator<Object, DataTransferSettings> configurator;
+
+    public PrefPageDataTransfer() {
+        try {
+            configurator = UIPropertyConfiguratorRegistry.getInstance()
+                .getDescriptor(DataTransferSettings.class.getName())
+                .createConfigurator();
+        } catch (DBException e) {
+            log.error("Can't create data transfer settings configurator", e);
+        }
+    }
 
     @Override
     protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dsContainer) {
@@ -72,6 +90,10 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
     protected Control createPreferenceContent(@NotNull Composite parent) {
         final Composite composite = UIUtils.createPlaceholder(parent, 1);
         final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
+
+        configurator.createControl(composite, null, () -> {
+            // do nothing
+        });
 
         if (!isDataSourcePreferencePage()) {
             final Group group = UIUtils
@@ -162,6 +184,8 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
         typeLengthSpinner.setSelection(preferences.contains(DTConstants.PREF_MAX_TYPE_LENGTH) ?
             preferences.getInt(DTConstants.PREF_MAX_TYPE_LENGTH) : DTConstants.DEFAULT_MAX_TYPE_LENGTH);
 
+        configurator.loadSettings(new DataTransferSettings());
+
     }
 
     @Override
@@ -183,6 +207,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
         preferences.setValue(DTConstants.PREF_MAX_TYPE_LENGTH, typeLengthSpinner.getSelection());
 
         PrefUtils.savePreferenceStore(preferences);
+        configurator.saveSettings(new DataTransferSettings());
     }
 
     @Override
@@ -192,6 +217,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
         store.setToDefault(DTConstants.PREF_NAME_CASE_MAPPING);
         store.setToDefault(DTConstants.PREF_REPLACE_MAPPING);
         store.setToDefault(DTConstants.PREF_MAX_TYPE_LENGTH);
+        configurator.resetSettings(new DataTransferSettings());
     }
 
     @Override

@@ -56,22 +56,30 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     private DBSEntityAttribute target;
     private String targetName;
     private String targetType;
+    private String targetTypeWithModifiers;
     private DatabaseMappingType mappingType;
     private DataTransferAttributeTransformerDescriptor transformer;
     private final Map<String, Object> transformerProperties = new LinkedHashMap<>();
 
-    DatabaseMappingAttribute(DatabaseMappingContainer parent, @NotNull DBSAttributeBase source) {
+    DatabaseMappingAttribute(
+        DatabaseMappingContainer parent,
+        @NotNull DBSAttributeBase source
+    ) {
         this.parent = parent;
         this.source = source;
         this.mappingType = DatabaseMappingType.unspecified;
     }
 
-    DatabaseMappingAttribute(@NotNull DatabaseMappingAttribute attribute, @NotNull DatabaseMappingContainer parent) {
+    DatabaseMappingAttribute(
+        @NotNull DatabaseMappingAttribute attribute,
+        @NotNull DatabaseMappingContainer parent
+    ) {
         this.parent = parent;
         this.source = attribute.source;
         this.target = attribute.target;
         this.targetName = attribute.targetName;
         this.targetType = attribute.targetType;
+        this.targetTypeWithModifiers = attribute.targetTypeWithModifiers;
         this.mappingType = attribute.mappingType;
     }
 
@@ -307,8 +315,10 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     public String getTargetType(DBPDataSource targetDataSource, boolean addModifiers) {
-        if (!CommonUtils.isEmpty(targetType)) {
+        if (!addModifiers && !CommonUtils.isEmpty(targetType)) {
             return targetType;
+        } else if (addModifiers && !CommonUtils.isEmpty(targetTypeWithModifiers)) {
+            return targetTypeWithModifiers;
         }
 
         changeDataTypeLength(targetDataSource);
@@ -316,13 +326,12 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     private void changeDataTypeLength(@NotNull DBPDataSource targetDataSource) {
-        if (source instanceof DBSTypedObjectExt2) {
+        if (source instanceof DBSTypedObjectExt2 sourceExt) {
             DBPPreferenceStore preferenceStore = targetDataSource.getContainer().getPreferenceStore();
             DBPPreferenceStore store = DTActivator.getDefault().getPreferences();
             if (preferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) || store.contains(DTConstants.PREF_MAX_TYPE_LENGTH)) {
                 int maxDataTypeLength = preferenceStore.contains(DTConstants.PREF_MAX_TYPE_LENGTH) ?
                     preferenceStore.getInt(DTConstants.PREF_MAX_TYPE_LENGTH) : store.getInt(DTConstants.PREF_MAX_TYPE_LENGTH);
-                DBSTypedObjectExt2 sourceExt = (DBSTypedObjectExt2) source;
                 if (source.getDataKind() == DBPDataKind.NUMERIC &&
                     source.getPrecision() != null && source.getPrecision() > maxDataTypeLength
                 ) {
@@ -336,6 +345,10 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
     public void setTargetType(String targetType) {
         this.targetType = targetType;
+    }
+
+    public void setTargetTypeWithModifiers(String targetTypeWithModifiers) {
+        this.targetTypeWithModifiers = targetTypeWithModifiers;
     }
 
     public DataTransferAttributeTransformerDescriptor getTransformer() {
