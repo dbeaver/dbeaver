@@ -56,7 +56,7 @@
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.antlr4:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-antlr4 -->
 
 								<!-- POI and dependencies -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-apache-poi -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.poi:5.4.0</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-apache-poi -->
 
 								<!-- GIS -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.gis:LATEST</id><transitive>false</transitive><source>false</source><override>false</override></artifact> <!-- repo:eclipse-bundle-gis -->
