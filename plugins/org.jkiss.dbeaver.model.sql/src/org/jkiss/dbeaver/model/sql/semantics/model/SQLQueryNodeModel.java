@@ -459,7 +459,10 @@ public abstract class SQLQueryNodeModel {
                             }
                         } else {
                             delayChildren = false;
-                            children = new ArrayList<>(subnodes);
+                            children = subnodes;
+                        }
+                        if (!delayChildren) {
+                            children = new ArrayList<>(children);
                             Collections.reverse(children);
                         }
                         int index = 0;
