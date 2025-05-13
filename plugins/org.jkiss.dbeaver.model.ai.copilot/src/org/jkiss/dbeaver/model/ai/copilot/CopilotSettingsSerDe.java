@@ -16,21 +16,17 @@
  */
 package org.jkiss.dbeaver.model.ai.copilot;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import com.google.gson.Strictness;
 import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.AIEngineSettingsSerDe;
 import org.jkiss.dbeaver.model.ai.LegacyAISettings;
-import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 
 import java.lang.reflect.Type;
 
-public class CopilotSettingsSerDe implements AIEngineSettingsSerDe<LegacyAISettings<CopilotProperties>> {
+public class CopilotSettingsSerDe extends AIEngineSettingsSerDe<LegacyAISettings<CopilotProperties>> {
     private static final Type TYPE = new TypeToken<LegacyAISettings<CopilotProperties>>() {
     }.getType();
 
@@ -43,7 +39,7 @@ public class CopilotSettingsSerDe implements AIEngineSettingsSerDe<LegacyAISetti
     @NotNull
     @Override
     public JsonObject serialize(@NotNull AIEngineSettings configuration) {
-        return SAVE_NON_SECURE_PROPS_GSON.toJsonTree(configuration, TYPE).getAsJsonObject();
+        return savePropsGson().toJsonTree(configuration, TYPE).getAsJsonObject();
     }
 
     @NotNull
@@ -53,6 +49,6 @@ public class CopilotSettingsSerDe implements AIEngineSettingsSerDe<LegacyAISetti
             return new LegacyAISettings<>(new CopilotProperties());
         }
 
-        return READ_PROPS_GSON.fromJson(jsonObject, TYPE);
+        return readPropsGson().fromJson(jsonObject, TYPE);
     }
 }
