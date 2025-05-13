@@ -23,10 +23,13 @@ import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+
+import java.util.List;
 
 public class DefaultRequestFormatter implements IAIFormatter {
     @Override
@@ -39,15 +42,10 @@ public class DefaultRequestFormatter implements IAIFormatter {
         return completionText;
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String getExtraInstructions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSObjectContainer mainObject,
-        @NotNull DBCExecutionContext executionContext
-    ) {
-        // nothing to do
-        return null;
+    public List<String> getExtraInstructions() {
+        return List.of();
     }
 
     @Override
@@ -89,11 +87,10 @@ public class DefaultRequestFormatter implements IAIFormatter {
     @Override
     public void addDataSample(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSEntity object,
+        @NotNull DBSDataContainer dataContainer,
         @NotNull DBCExecutionContext executionContext,
         @NotNull StringBuilder description
-    )
-    throws DBException {
+    ) throws DBException {
         // nothing to do
     }
 
