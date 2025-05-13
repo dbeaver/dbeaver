@@ -34,6 +34,7 @@ import java.util.concurrent.Flow;
 
 public class OpenAICompletionEngine implements DAICompletionEngine {
     private static final Log log = Log.getLog(OpenAICompletionEngine.class);
+    public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @Override
@@ -161,12 +162,13 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
             case SYSTEM -> "system";
             case USER -> "user";
             case ASSISTANT -> "assistant";
+            default -> null;
         };
     }
 
     protected OpenAIClient createClient() throws DBException {
         return new OpenAIClient(
-            "https://api.openai.com/v1/",
+            OPENAI_ENDPOINT,
             List.of(new OpenAIRequestFilter(OpenAISettings.INSTANCE.token()))
         );
     }

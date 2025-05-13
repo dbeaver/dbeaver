@@ -39,6 +39,8 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
 
     private Button sendDescriptionCheck;
 
+    protected Composite settingsPanel;
+
 
     @Override
     public void createControl(
@@ -46,7 +48,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         IAIFormatter object,
         @NotNull Runnable propertyChangeListener
     ) {
-        Composite settingsPanel = UIUtils.createComposite(parent, 2);
+        settingsPanel = UIUtils.createComposite(parent, 2);
         settingsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Group completionComposite = UIUtils.createControlGroup(settingsPanel, "SQL Completion", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
         UIUtils.createControlLabel(completionComposite, AIUIMessages.gpt_preference_page_advanced_appearance_group, 2);

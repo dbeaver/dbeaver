@@ -118,9 +118,9 @@ import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddIn;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.ai.suggestion.AISuggestionTextPainter;
 import org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
-import org.jkiss.dbeaver.ui.editors.sql.ghost.SuggestionTextPainter;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
@@ -152,8 +152,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -259,10 +259,10 @@ public class SQLEditor extends SQLEditorBase implements
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
-    private SuggestionTextPainter suggestionTextPainter;
+    private AISuggestionTextPainter AISuggestionTextPainter;
 
-    public SuggestionTextPainter getSuggestionTextPainter() {
-        return suggestionTextPainter;
+    public AISuggestionTextPainter getSuggestionTextPainter() {
+        return AISuggestionTextPainter;
     }
 
     private static class ServerOutputInfo {
@@ -472,7 +472,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DBWorkbench.getPlatformUI().showError(
                     "Can't connect to database", "Connection to '" + container.getName() + "' cannot be established.", status);
             }
-            setFocus();
+//            setFocus();
         }));
         setPartName(getEditorName());
 
@@ -1070,22 +1070,22 @@ public class SQLEditor extends SQLEditorBase implements
                 });
             }
         }
-        suggestionTextPainter = new SuggestionTextPainter(getViewer());
-        suggestionTextPainter.enable();
+        AISuggestionTextPainter = new AISuggestionTextPainter(getViewer());
+        AISuggestionTextPainter.enable();
 
         StyledText textWidget = getViewer().getTextWidget();
         textWidget.addVerifyKeyListener(e -> {
-            if (e.keyCode == SWT.ARROW_RIGHT && suggestionTextPainter.hasContentToShow()) {
+            if (e.keyCode == SWT.ARROW_RIGHT && AISuggestionTextPainter.hasContentToShow()) {
                 e.doit = false;
-                suggestionTextPainter.applyHint();
+                AISuggestionTextPainter.applyHint();
             }
         });
         textWidget.addCaretListener(event -> {
-            if (suggestionTextPainter.hasContentToShow()) {
+            if (AISuggestionTextPainter.hasContentToShow()) {
                 int caretOffset = event.caretOffset;
-                int ghostOffset = suggestionTextPainter.getCurrentPosition();
-                if (caretOffset != ghostOffset) {
-                    suggestionTextPainter.removeHint();
+                int suggestionOffset = AISuggestionTextPainter.getCurrentPosition();
+                if (caretOffset != suggestionOffset) {
+                    AISuggestionTextPainter.removeHint();
                 }
             }
         });
@@ -1135,8 +1135,8 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE)) {
             doScriptAutoSave();
         }
-        if (suggestionTextPainter != null) {
-            suggestionTextPainter.removeHint();
+        if (AISuggestionTextPainter != null) {
+            AISuggestionTextPainter.removeHint();
         }
     }
 

@@ -20,7 +20,28 @@ package org.jkiss.dbeaver.model.ai.completion;
  * Role of the message
  */
 public enum DAIChatRole {
-    SYSTEM,
-    USER,
-    ASSISTANT;
+    // System messages like context description
+    SYSTEM(false),
+    // User prompts
+    USER(false),
+    // Automatically generated prompts
+    GENERATED(true),
+    // Response from AI
+    ASSISTANT(false),
+    // Error messages
+    ERROR(true);
+
+    private final boolean isLocal;
+
+    DAIChatRole(boolean isLocal) {
+        this.isLocal = isLocal;
+    }
+
+    /**
+     * Local messages are never sent to AI engine, they exist only on dbeaver side.
+     */
+    public boolean isLocal() {
+        return isLocal;
+    }
+
 }

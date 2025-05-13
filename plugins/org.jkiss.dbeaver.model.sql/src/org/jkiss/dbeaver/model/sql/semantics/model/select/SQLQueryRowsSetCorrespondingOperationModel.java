@@ -37,7 +37,8 @@ import java.util.List;
  * Represents INTERSECT, UNION and EXCEPT operation model in the context of SQL query semantics
  */
 public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetOperationModel
-    implements SQLQueryNodeModel.NodeSubtreeTraverseControl {
+    implements SQLQueryNodeModel.NodeSubtreeTraverseControl<SQLQueryRowsSourceModel, SQLQueryRowsDataContext> {
+
     @NotNull
     private final List<SQLQuerySymbolEntry> correspondingColumnNames;
     @NotNull
