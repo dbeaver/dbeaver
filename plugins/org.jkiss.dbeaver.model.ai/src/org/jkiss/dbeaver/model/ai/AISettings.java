@@ -25,7 +25,7 @@ import java.util.Map;
 public class AISettings {
     private boolean aiDisabled;
     private String activeEngine;
-    private Map<String, AIEngineSettings<?>> engineConfigurations = new HashMap<>();
+    private final Map<String, AIEngineSettings<?>> engineConfigurations = new HashMap<>();
 
     public boolean isAiDisabled() {
         return aiDisabled;

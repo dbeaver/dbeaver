@@ -35,6 +35,9 @@ import java.util.stream.Collectors;
 
 public class AISettingsRegistry {
     private static final Log log = Log.getLog(AISettingsRegistry.class);
+    private static final String AI_DISABLED_KEY = "aiDisabled";
+    private static final String ACTIVE_ENGINE_KEY= "activeEngine";
+    private static final String ENGINE_CONFIGURATIONS_KEY = "engineConfigurations";
 
     public static final String AI_CONFIGURATION_JSON = "ai-configuration.json";
 
@@ -255,15 +258,37 @@ public class AISettingsRegistry {
             Type typeOfT,
             JsonDeserializationContext context
         ) throws JsonParseException {
-            AISettings aiSettings = new AISettings();
-            aiSettings.setAiDisabled(json.getAsJsonObject().get("aiDisabled").getAsBoolean());
-            aiSettings.setActiveEngine(json.getAsJsonObject().get("activeEngine").getAsString());
+            if (json == null || !json.isJsonObject()) {
+                return prepareDefaultSettings();
+            }
 
-            JsonObject engineConfigurations = json.getAsJsonObject().getAsJsonObject("engineConfigurations");
+            JsonObject root = json.getAsJsonObject();
+            AISettings aiSettings = new AISettings();
+
+            JsonElement aiDisabledEl = root.get(AI_DISABLED_KEY);
+            aiSettings.setAiDisabled(
+                aiDisabledEl != null
+                    && aiDisabledEl.isJsonPrimitive()
+                    && aiDisabledEl.getAsJsonPrimitive().isBoolean()
+                    && aiDisabledEl.getAsBoolean()
+            );
+
+            JsonElement activeEngineEl = root.get(ACTIVE_ENGINE_KEY);
+            aiSettings.setActiveEngine(
+                activeEngineEl != null && !activeEngineEl.isJsonNull()
+                    ? activeEngineEl.getAsString()
+                    : null
+            );
+
+            JsonObject ecRoot = root.has(ENGINE_CONFIGURATIONS_KEY)
+                && root.get(ENGINE_CONFIGURATIONS_KEY).isJsonObject()
+                ? root.getAsJsonObject(ENGINE_CONFIGURATIONS_KEY)
+                : new JsonObject();
+
             Map<String, AIEngineSettings<?>> engineConfigurationMap = engineSerDe.stream()
                 .collect(Collectors.toMap(
                     AIEngineSettingsSerDe::getId,
-                    serDe -> serDe.deserialize(engineConfigurations.getAsJsonObject(serDe.getId()))
+                    serDe -> serDe.deserialize(ecRoot.getAsJsonObject(serDe.getId()))
                 ));
             aiSettings.setEngineConfigurations(engineConfigurationMap);
 
@@ -273,14 +298,14 @@ public class AISettingsRegistry {
         @Override
         public JsonElement serialize(AISettings src, Type typeOfSrc, JsonSerializationContext context) {
             JsonObject json = new JsonObject();
-            json.addProperty("aiDisabled", src.isAiDisabled());
-            json.addProperty("activeEngine", src.activeEngine());
+            json.addProperty(AI_DISABLED_KEY, src.isAiDisabled());
+            json.addProperty(ACTIVE_ENGINE_KEY, src.activeEngine());
 
             JsonObject engineConfigurations = new JsonObject();
             for (AIEngineSettingsSerDe<?> serDe : engineSerDe) {
                 engineConfigurations.add(serDe.getId(), serDe.serialize(src.getEngineConfiguration(serDe.getId())));
             }
-            json.add("engineConfigurations", engineConfigurations);
+            json.add(ENGINE_CONFIGURATIONS_KEY, engineConfigurations);
 
             return json;
         }
