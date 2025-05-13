@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 import java.util.List;
 import java.util.Map;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure;
 import org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
@@ -52,5 +53,12 @@ public class CubridProcedureManager extends GenericProcedureManager {
     protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBCException {
         CubridProcedure procedure = (CubridProcedure) command.getObject();
         actions.add(new SQLDatabasePersistAction("Create Procedure", procedure.getSource()));
+    }
+
+    @Override
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand objectChangeCommand, @NotNull Map<String, Object> options)
+    {
+        CubridProcedure procedure = (CubridProcedure)objectChangeCommand.getObject();
+        actionList.add(new SQLDatabasePersistAction("Modify Procedure", procedure.getSource()));
     }
 }

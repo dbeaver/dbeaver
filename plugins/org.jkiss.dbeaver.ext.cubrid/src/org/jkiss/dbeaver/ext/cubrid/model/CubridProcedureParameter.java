@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 
 public class CubridProcedureParameter implements DBSProcedureParameter
 {
-    private String procName;
     private String argName;
     private String dataType;
     private String mode;
@@ -35,13 +34,11 @@ public class CubridProcedureParameter implements DBSProcedureParameter
 
     public CubridProcedureParameter(
             @NotNull CubridProcedure procedure,
-            @NotNull String procName,
             @NotNull String argName,
             @NotNull String dataType,
             @NotNull String mode,
             @Nullable String comment) {
         this.procedure = procedure;
-        this.procName = procName;
         this.argName = argName;
         this.dataType = dataType;
         this.mode = mode;
@@ -52,12 +49,6 @@ public class CubridProcedureParameter implements DBSProcedureParameter
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {
-        return procName;
-    }
-
-    @NotNull
-    @Property(viewable = true, order = 2)
-    public String getArgName() {
         return argName;
     }
 

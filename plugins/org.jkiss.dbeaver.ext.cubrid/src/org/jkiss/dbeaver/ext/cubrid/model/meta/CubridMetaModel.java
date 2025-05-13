@@ -371,6 +371,10 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                         String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
                         String type = JDBCUtils.safeGetString(dbResult, "sp_type");
                         String returnType = JDBCUtils.safeGetString(dbResult, "return_type");
+                        String code = null;
+                        if (((CubridDataSource)container.getDataSource()).isSupportDBMSOutputPLCSQL()) {
+                            code = JDBCUtils.safeGetString(dbResult, "code");
+                        }
                         DBSProcedureType procedureType;
                         if (type.equalsIgnoreCase(CubridConstants.TERM_PROCEDURE)) {
                             procedureType = DBSProcedureType.PROCEDURE;
@@ -379,7 +383,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                         } else {
                             procedureType = DBSProcedureType.UNKNOWN;
                         }
-                        container.addProcedure(new CubridProcedure(container, procedureName, description, procedureType, returnType));
+                        container.addProcedure(new CubridProcedure(container, procedureName, description, procedureType, code, returnType));
                     }
                 }
             }
