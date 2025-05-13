@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.statistics;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -47,18 +48,21 @@ import java.util.stream.Stream;
 public class StatisticsTransmitter {
 
     private static final Log log = Log.getLog(StatisticsTransmitter.class);
+    public static final String STATS_STAGE_DBEAVER = "stats.stage.dbeaver.infra";
+    public static final String STATS_DBEAVER_COM = "stats.dbeaver.com";
 
     private final String endpoint;
 
     private final String workspaceId;
+    private final String URL_TEMPLATE = "https://%s/send-statistics";
 
     public StatisticsTransmitter(String workspaceId) {
         this.workspaceId = workspaceId;
 
-        if (System.getenv("LM_STAGE_MODE") != null) {
-            endpoint = "http://stats.stage.dbeaver.infra/send-statistics";
+        if (System.getenv(DBConstants.LM_STAGE_MODE) != null) {
+            endpoint = URL_TEMPLATE.formatted(STATS_STAGE_DBEAVER);
         } else {
-            endpoint = "https://stats.dbeaver.com/send-statistics";
+            endpoint = URL_TEMPLATE.formatted(STATS_DBEAVER_COM);
         }
     }
 
@@ -142,8 +146,7 @@ public class StatisticsTransmitter {
                     "Application-Version", GeneralUtils.getProductVersion().toString(),
                     "OS", CommonUtils.notEmpty(System.getProperty(StandardConstants.ENV_OS_NAME))));
 
-            ((HttpURLConnection)urlConnection).setFixedLengthStreamingMode(Files.size(logFile));
-
+            ((HttpURLConnection) urlConnection).setFixedLengthStreamingMode(Files.size(logFile));
             try (OutputStream outputStream = urlConnection.getOutputStream()) {
                 Files.copy(logFile, outputStream);
             }
