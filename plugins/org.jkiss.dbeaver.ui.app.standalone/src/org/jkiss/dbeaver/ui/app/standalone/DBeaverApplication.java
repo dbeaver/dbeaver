@@ -194,6 +194,12 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             return IApplication.EXIT_OK;
         }
 
+        if (!isWorkspaceSwitchingAllowed() && !WORKSPACE_DIR_CURRENT.equals(defaultHomePath)) {
+            log.error("Workspace switching is not allowed when participating in the early access program. Exiting "
+                + GeneralUtils.getProductName() + ".");
+            return IApplication.EXIT_OK;
+        }
+
         boolean ideWorkspaceSet = setIDEWorkspace(instanceLoc);
 
         {

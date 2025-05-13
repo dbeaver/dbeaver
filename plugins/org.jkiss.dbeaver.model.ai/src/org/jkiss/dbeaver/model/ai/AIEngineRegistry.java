@@ -83,7 +83,7 @@ public class AIEngineRegistry {
     public DAICompletionEngine getCompletionEngine(String id) throws DBException {
         AIEngineDescriptor descriptor = getEngineDescriptor(id);
         if (descriptor == null) {
-            log.warn("Active engine is not present in the configuration, switching to default active engine");
+            log.trace("Active engine is not present in the configuration, switching to default active engine");
             AIEngineDescriptor defaultCompletionEngineDescriptor = getDefaultCompletionEngineDescriptor();
             if (defaultCompletionEngineDescriptor == null) {
                 throw new DBException("AI engine '" + id + "' not found");
