@@ -90,11 +90,8 @@ public class ClickhouseDataSource extends GenericDataSource {
     @Override
     protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-        if (Objects.equals(properties.getProperty(ClickhouseConstants.PROP_USE_SERVER_TIME_ZONE), "false") && !properties.containsKey(
-            ClickhouseConstants.PROP_USE_TIME_ZONE) || Objects.equals(
-            properties.getProperty(ClickhouseConstants.PROP_USE_TIME_ZONE),
-            "false"
-        )) {
+        if (!CommonUtils.toBoolean(properties.getProperty(ClickhouseConstants.PROP_USE_SERVER_TIME_ZONE)) &&
+            !CommonUtils.toBoolean(properties.getProperty(ClickhouseConstants.PROP_USE_TIME_ZONE))) {
             DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
             String customTimeZone = preferenceStore.getString(ModelPreferences.CLIENT_TIMEZONE);
             if (customTimeZone.equals(DBConstants.DEFAULT_TIMEZONE)) {
