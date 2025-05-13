@@ -414,7 +414,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
                 );
             }
         } else if (this.referencedSource != null) {
-            result = this.referencedSource.getRowsDataContext();
+            SQLQueryRowsDataContext referencedData = this.referencedSource.getRowsDataContext();
+            result = this.getRowsSources().makeTuple(this, referencedData.getColumnsList(), Collections.emptyList());
         } else {
             result = this.getRowsSources().makeEmptyTuple();
         }
