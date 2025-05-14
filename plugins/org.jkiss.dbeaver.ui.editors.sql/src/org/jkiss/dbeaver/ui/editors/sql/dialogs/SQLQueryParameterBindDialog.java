@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.dialogs;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.StringWriter;
@@ -57,7 +58,7 @@ import java.util.Map;
 /**
  * Parameter binding
  */
-public class SQLQueryParameterBindDialog extends TrayDialog {
+public class SQLQueryParameterBindDialog extends StatusDialog {
 
     private static final String DIALOG_ID = "DBeaver.SQLQueryParameterBindDialog";//$NON-NLS-1$
     private static final String PARAM_HIDE_IF_SET = "PARAM_HIDE_IF_SET";//$NON-NLS-1$
@@ -238,20 +239,21 @@ public class SQLQueryParameterBindDialog extends TrayDialog {
                 });
             }
         }
+        {
+            final Composite queryComposite = new Composite(sash, SWT.BORDER);
+            queryComposite.setLayout(new FillLayout());
 
-        final Composite queryComposite = new Composite(sash, SWT.BORDER);
-        queryComposite.setLayout(new FillLayout());
-
-        try {
-            queryPreviewPanel = DBWorkbench.getService(UIServiceSQL.class).createSQLPanel(
-                site,
-                queryComposite,
-                new DataSourceContextProvider(query.getDataSource()),
-                "Query preview",
-                false,
-                query.getText());
-        } catch (Exception e) {
-            log.error(e);
+            try {
+                queryPreviewPanel = DBWorkbench.getService(UIServiceSQL.class).createSQLPanel(
+                    site,
+                    queryComposite,
+                    new DataSourceContextProvider(query.getDataSource()),
+                    "Query preview",
+                    false,
+                    query.getText());
+            } catch (Exception e) {
+                log.error(e);
+            }
         }
 
         sash.setWeights(600, 400);
@@ -267,11 +269,9 @@ public class SQLQueryParameterBindDialog extends TrayDialog {
             }
         });
 
-        UIUtils.createInfoLabel(composite, SQLEditorMessages.dialog_sql_param_hint);
-        updateQueryPreview();
+        updateStatus(GeneralUtils.makeInfoStatus(SQLEditorMessages.dialog_sql_param_hint));
 
-        UIUtils.applyMainFont(composite);
-        UIUtils.applyMonospaceFont(queryComposite);
+        updateQueryPreview();
 
         return composite;
     }

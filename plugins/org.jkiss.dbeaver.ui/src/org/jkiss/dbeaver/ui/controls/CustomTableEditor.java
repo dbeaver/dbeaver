@@ -106,7 +106,6 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
         });
         UIUtils.installMacOSFocusLostSubstitution(editor, () -> onFocusLost(editor));
         editor.addTraverseListener(this);
-        UIUtils.applyMainFont(editor);
         tableEditor.setEditor(editor, item, columnIndex);
     }
 
