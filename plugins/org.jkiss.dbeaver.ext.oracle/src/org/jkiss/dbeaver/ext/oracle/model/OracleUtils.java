@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.Pair;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -622,4 +623,100 @@ public class OracleUtils {
 
 		return result.toString();
 	}
+
+    /**
+     * Searches the given text for the first occurrence of the specified text (case-insensitive)
+     *
+     * @return the index in text where needle begins, or -1 if it is not found.
+     */
+    public static int findTokenOutsideComments(
+        String text,
+        String needle,
+        int fromIndex,
+        String[] singleLineComments,
+        Pair<String, String> multiLineComments
+    ) {
+        String mlStart = multiLineComments.getFirst();
+        String mlEnd   = multiLineComments.getSecond();
+        int n = text.length(), m = needle.length();
+
+        boolean inML = false, inSL = false;
+        for (int i = Math.max(fromIndex, 0); i <= n - 1; i++) {
+            // multiline comment start
+            if (!inML && !inSL && mlStart != null
+                && text.regionMatches(true, i, mlStart, 0, mlStart.length())) {
+                inML = true;
+                i += mlStart.length() - 1;
+                continue;
+            }
+            // multiline comment end
+            if (inML && mlEnd != null
+                && text.regionMatches(true, i, mlEnd, 0, mlEnd.length())) {
+                inML = false;
+                i += mlEnd.length() - 1;
+                continue;
+            }
+            // single line comment start
+            if (!inML && !inSL) {
+                for (String sl : singleLineComments) {
+                    if (text.regionMatches(true, i, sl, 0, sl.length())) {
+                        inSL = true;
+                        i += sl.length() - 1;
+                        break;
+                    }
+                }
+                if (inSL) {
+                    continue;
+                }
+            }
+            // single line comment end
+            if (inSL && text.charAt(i) == '\n') {
+                inSL = false;
+                continue;
+            }
+            if (!inML && !inSL
+                && text.regionMatches(true, i, needle, 0, m)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Extracts the first PL/SQL block (BEGIN…END;) from rawAction,
+     */
+    public static String quotePlSqlBlock(
+        String rawAction,
+        DBSObject object
+    ) {
+        String[] singleLineComments = object.getDataSource()
+            .getSQLDialect().getSingleLineComments();
+        Pair<String, String> multiLineComments = object.getDataSource()
+            .getSQLDialect().getMultiLineComments();
+
+        int beginPos = findTokenOutsideComments(
+            rawAction, "BEGIN", 0,
+            singleLineComments, multiLineComments
+        );
+        if (beginPos < 0) {
+            return SQLUtils.quoteString(object, rawAction);
+        }
+
+        int endPos0 = findTokenOutsideComments(
+            rawAction, "END;", beginPos,
+            singleLineComments, multiLineComments
+        );
+        if (endPos0 < 0) {
+            return SQLUtils.quoteString(object, rawAction);
+        }
+
+        int endPos = endPos0 + "END;".length();
+        String block = rawAction.substring(beginPos, endPos);
+        String quotedBlock = SQLUtils.quoteString(object, block);
+
+        return rawAction.substring(0, beginPos)
+            + quotedBlock
+            + rawAction.substring(endPos);
+    }
+
 }
