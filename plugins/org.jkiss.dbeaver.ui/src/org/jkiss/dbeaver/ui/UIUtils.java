@@ -2433,15 +2433,17 @@ public class UIUtils {
             s -> applyMainFont(control),
             control
         );
-
-        //applyMainFont(control);
     }
 
     public static void applyMainFont(@Nullable Control control) {
-        applyMainFont(control, BaseThemeSettings.instance.baseFont);
+        applyFont(control, BaseThemeSettings.instance.baseFont);
     }
 
-    public static void applyMainFont(@Nullable Control control, @NotNull Font font) {
+    public static void applyMonospaceFont(@Nullable Control control) {
+        applyFont(control, BaseThemeSettings.instance.monospaceFont);
+    }
+
+    public static void applyFont(@Nullable Control control, @NotNull Font font) {
         if (control == null || control.isDisposed() || mainFontIsDefault()) {
             return;
         }
@@ -2452,7 +2454,7 @@ public class UIUtils {
 
         if (control instanceof Composite) {
             for (Control element : ((Composite) control).getChildren()) {
-                applyMainFont(element, font);
+                applyFont(element, font);
             }
         }
     }
