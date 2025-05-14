@@ -16,6 +16,13 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import java.math.BigDecimal;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -40,13 +47,6 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
-
-import java.math.BigDecimal;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Array holder
@@ -294,25 +294,25 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         DBSDataType elementType;
         DBPDataKind dataKind;
         DBPDataTypeProvider dataTypeProvider = session.getDataSource();
-        if (array instanceof int[]) {
+        if (array instanceof int[] || isBoxedObjectArray(array, Integer.class)) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.INTEGER);
-        } else if (array instanceof short[]) {
+        } else if (array instanceof short[] || isBoxedObjectArray(array, Short.class)) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.SMALLINT);
-        } else if (array instanceof byte[]) {
+        } else if (array instanceof byte[] || isBoxedObjectArray(array, Byte.class)) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.BINARY);
-        } else if (array instanceof long[]) {
+        } else if (array instanceof long[] || isBoxedObjectArray(array, Long.class)) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.BIGINT);
-        } else if (array instanceof float[]) {
+        } else if (array instanceof float[] || isBoxedObjectArray(array, Float.class)) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.FLOAT);
             if (elementType == null) {
                 elementType = dataTypeProvider.getLocalDataType(Types.DOUBLE);
             }
-        } else if (array instanceof double[]) {
+        } else if (array instanceof double[] || isBoxedObjectArray(array, Double.class)) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.DOUBLE);
             if (elementType == null) {
@@ -321,7 +321,7 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         } else if (array instanceof BigDecimal[]) {
             dataKind = DBPDataKind.NUMERIC;
             elementType = dataTypeProvider.getLocalDataType(Types.DECIMAL);
-        } else if (array instanceof boolean[]) {
+        } else if (array instanceof boolean[] || isBoxedObjectArray(array, Boolean.class)) {
             dataKind = DBPDataKind.BOOLEAN;
             elementType = dataTypeProvider.getLocalDataType(Types.BOOLEAN);
         } else if (array instanceof String[]) {
@@ -453,6 +453,17 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
             contents[i] = itemValue;
         }
         return new JDBCCollection(session.getProgressMonitor(), elementType, elementValueHandler, contents);
+    }
+
+    private static boolean isBoxedObjectArray(Object array, Class<?> type) {
+        if (array instanceof Object[] a) {
+            for (Object element : a) {
+                if (element != null) {
+                    return type.isInstance(element);
+                }
+            }
+        }
+        return false;
     }
 
     @NotNull
