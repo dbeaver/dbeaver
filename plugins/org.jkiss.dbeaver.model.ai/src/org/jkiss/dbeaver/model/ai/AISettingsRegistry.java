@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -141,6 +142,15 @@ public class AISettingsRegistry {
         public synchronized void reset() {
             this.settings = null;
         }
+    }
+
+
+    private AISettingsRegistry() {
+        WorkspaceConfigEventManager.addConfigChangedListener(AI_CONFIGURATION_JSON, o -> {
+            // reset current context for settings to be lazily reloaded when needed
+            this.getSettingsHolder().reset();
+            this.raiseChangedEvent(this); // consider detailed event info
+        });
     }
 
     public static synchronized AISettingsRegistry getInstance() {
