@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -42,15 +43,14 @@ public class AISettingsRegistry {
 
     public static final String AI_CONFIGURATION_JSON = "ai-configuration.json";
 
+
     private static AISettingsRegistry instance = null;
 
     private static final Gson readPropsGson = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .registerTypeAdapter(AISettings.class, new AIConfigurationSerDe())
         .create();
-    private static final Gson saveNonSecurePropsGson = PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
-        .registerTypeAdapter(AISettings.class, new AIConfigurationSerDe())
-        .create();
+    private static final Gson savePropsGson = savePropsGson();
 
     private final Set<AISettingsEventListener> settingsChangedListeners = Collections.synchronizedSet(new HashSet<>());
 
@@ -196,7 +196,10 @@ public class AISettingsRegistry {
                 settings = prepareDefaultSettings();
             } else {
                 settings = readPropsGson.fromJson(new StringReader(content), AISettings.class);
-                settings.resolveSecrets();
+
+                if (!saveSecretsAsPlainText()) {
+                    settings.resolveSecrets();
+                }
             }
         } catch (Exception e) {
             log.error("Error loading AI settings, falling back to defaults.", e);
@@ -222,7 +225,7 @@ public class AISettingsRegistry {
         Map<String, AIEngineSettings<?>> stringMap = getSerDes().stream()
             .collect(Collectors.toMap(
                 AIEngineSettingsSerDe::getId,
-                serDe -> serDe.deserialize(null)
+                serDe -> serDe.deserialize(null, readPropsGson)
             ));
 
         settings.setEngineConfigurations(stringMap);
@@ -237,8 +240,11 @@ public class AISettingsRegistry {
                 return;
             }
 
-            settings.saveSecrets();
-            String content = saveNonSecurePropsGson.toJson(settings, AISettings.class);
+            if (!saveSecretsAsPlainText()) {
+                settings.saveSecrets();
+            }
+            String content = savePropsGson.toJson(settings);
+
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_JSON, content);
             this.getSettingsHolder().setSettings(settings);
         } catch (Exception e) {
@@ -298,7 +304,7 @@ public class AISettingsRegistry {
             Map<String, AIEngineSettings<?>> engineConfigurationMap = engineSerDe.stream()
                 .collect(Collectors.toMap(
                     AIEngineSettingsSerDe::getId,
-                    serDe -> serDe.deserialize(ecRoot.getAsJsonObject(serDe.getId()))
+                    serDe -> serDe.deserialize(ecRoot.getAsJsonObject(serDe.getId()), savePropsGson())
                 ));
             aiSettings.setEngineConfigurations(engineConfigurationMap);
 
@@ -313,7 +319,7 @@ public class AISettingsRegistry {
 
             JsonObject engineConfigurations = new JsonObject();
             for (AIEngineSettingsSerDe<?> serDe : engineSerDe) {
-                engineConfigurations.add(serDe.getId(), serDe.serialize(src.getEngineConfiguration(serDe.getId())));
+                engineConfigurations.add(serDe.getId(), serDe.serialize(src.getEngineConfiguration(serDe.getId()), savePropsGson()));
             }
             json.add(ENGINE_CONFIGURATIONS_KEY, engineConfigurations);
 
@@ -333,5 +339,23 @@ public class AISettingsRegistry {
             }
         }
         return result;
+    }
+
+    private static boolean saveSecretsAsPlainText() {
+        DBPApplication application = DBWorkbench.getPlatform().getApplication();
+        return application.isMultiuser() || application.isDistributed();
+    }
+
+    private static Gson savePropsGson() {
+        if (saveSecretsAsPlainText()) {
+            return new GsonBuilder()
+                .setStrictness(Strictness.LENIENT)
+                .registerTypeAdapter(AISettings.class, new AIConfigurationSerDe())
+                .create();
+        } else {
+            return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
+                .registerTypeAdapter(AISettings.class, new AIConfigurationSerDe())
+                .create();
+        }
     }
 }

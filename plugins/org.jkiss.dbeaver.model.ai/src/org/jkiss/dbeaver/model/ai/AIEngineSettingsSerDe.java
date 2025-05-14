@@ -17,48 +17,24 @@
 package org.jkiss.dbeaver.model.ai;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import com.google.gson.Strictness;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.app.DBPApplication;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 
-public abstract class AIEngineSettingsSerDe<T extends AIEngineSettings<T>> {
-    private static final Gson ALL_PROPS_GSON = new GsonBuilder()
-        .setStrictness(Strictness.LENIENT)
-        .create();
-    private static final Gson NON_SECURE_PROPS_GSON = PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
-        .create();
-
+public interface AIEngineSettingsSerDe<T extends AIEngineSettings<T>> {
     @NotNull
-    public abstract String getId();
+    String getId();
 
     /**
      * Serializes the given AI engine configuration into a JSON object.
      */
     @NotNull
-    public abstract JsonObject serialize(@NotNull AIEngineSettings<T> configuration);
+    JsonObject serialize(@NotNull AIEngineSettings<T> configuration, Gson gson);
 
     /**
      * Deserializes the given JSON object into an AI engine configuration.
      * If the JSON object is null, a default configuration should be returned.
      */
     @NotNull
-    public abstract T deserialize(@Nullable JsonObject jsonObject);
-
-    protected Gson readPropsGson() {
-        return ALL_PROPS_GSON;
-    }
-
-    protected Gson savePropsGson() {
-        DBPApplication application = DBWorkbench.getPlatform().getApplication();
-        if (application.isMultiuser() || application.isDistributed()) {
-            return ALL_PROPS_GSON;
-        } else {
-            return NON_SECURE_PROPS_GSON;
-        }
-    }
+    T deserialize(@Nullable JsonObject jsonObject, Gson gson);
 }

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.copilot;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
@@ -26,7 +27,7 @@ import org.jkiss.dbeaver.model.ai.LegacyAISettings;
 
 import java.lang.reflect.Type;
 
-public class CopilotSettingsSerDe extends AIEngineSettingsSerDe<LegacyAISettings<CopilotProperties>> {
+public class CopilotSettingsSerDe implements AIEngineSettingsSerDe<LegacyAISettings<CopilotProperties>> {
     private static final Type TYPE = new TypeToken<LegacyAISettings<CopilotProperties>>() {
     }.getType();
 
@@ -38,17 +39,17 @@ public class CopilotSettingsSerDe extends AIEngineSettingsSerDe<LegacyAISettings
 
     @NotNull
     @Override
-    public JsonObject serialize(@NotNull AIEngineSettings configuration) {
-        return savePropsGson().toJsonTree(configuration, TYPE).getAsJsonObject();
+    public JsonObject serialize(@NotNull AIEngineSettings configuration, Gson gson) {
+        return gson.toJsonTree(configuration, TYPE).getAsJsonObject();
     }
 
     @NotNull
     @Override
-    public LegacyAISettings<CopilotProperties> deserialize(@Nullable JsonObject jsonObject) {
+    public LegacyAISettings<CopilotProperties> deserialize(@Nullable JsonObject jsonObject, Gson gson) {
         if (jsonObject == null) {
             return new LegacyAISettings<>(new CopilotProperties());
         }
 
-        return readPropsGson().fromJson(jsonObject, TYPE);
+        return gson.fromJson(jsonObject, TYPE);
     }
 }
