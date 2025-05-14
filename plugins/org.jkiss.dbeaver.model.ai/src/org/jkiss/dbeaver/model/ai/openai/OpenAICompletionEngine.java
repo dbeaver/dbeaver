@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.completion.*;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,6 +36,8 @@ import java.util.concurrent.Flow;
 public class OpenAICompletionEngine implements DAICompletionEngine {
     private static final Log log = Log.getLog(OpenAICompletionEngine.class);
     public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
+
+    private final AISettingsRegistry registry;
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @Override
@@ -48,9 +51,13 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
         }
     };
 
+    public OpenAICompletionEngine(AISettingsRegistry registry) {
+        this.registry = registry;
+    }
+
     @Override
     public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) {
-        return OpenAISettings.INSTANCE.model().getMaxTokens();
+        return OpenAIModel.getByName(getSettings().getModel()).getMaxTokens();
     }
 
     @Override
@@ -124,12 +131,12 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
 
     @Override
     public boolean hasValidConfiguration() {
-        return OpenAISettings.INSTANCE.isValidConfiguration();
+        return getSettings().isValidConfiguration();
     }
 
     @Override
     public boolean isLoggingEnabled() {
-        return OpenAISettings.INSTANCE.isLoggingEnabled();
+        return getSettings().isLoggingEnabled();
     }
 
     @NotNull
@@ -169,15 +176,20 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
     protected OpenAIClient createClient() throws DBException {
         return new OpenAIClient(
             OPENAI_ENDPOINT,
-            List.of(new OpenAIRequestFilter(OpenAISettings.INSTANCE.token()))
+            List.of(new OpenAIRequestFilter(getSettings().getToken()))
         );
     }
 
     protected String model() {
-        return OpenAISettings.INSTANCE.model().getName();
+        return OpenAIModel.getByName(getSettings().getModel()).getName();
     }
 
     protected double temperature() {
-        return OpenAISettings.INSTANCE.temperature();
+        return getSettings().getTemperature();
+    }
+
+    private OpenAIProperties getSettings() {
+        return registry.getSettings().<LegacyAISettings<OpenAIProperties>> getEngineConfiguration(AIConstants.OPENAI_ENGINE)
+            .getProperties();
     }
 }
