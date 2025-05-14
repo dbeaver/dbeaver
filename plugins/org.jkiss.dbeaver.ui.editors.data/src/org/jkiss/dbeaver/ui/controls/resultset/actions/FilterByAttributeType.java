@@ -44,7 +44,7 @@ public enum FilterByAttributeType {
                 return null;
             }
             Object cellValue = viewer.getModel().getCellValue(attribute, row);
-            if (operator.isWildcardOperator() && cellValue != null) {
+            if (operator == DBCLogicalOperator.LIKE && cellValue != null) {
                 cellValue = "%" + cellValue + "%";
             }
             return cellValue;
@@ -73,7 +73,7 @@ public enum FilterByAttributeType {
                 FilterValueEditDialog dialog = new FilterValueEditDialog(viewer, attribute, rows, operator);
                 if (dialog.open() == IDialogConstants.OK_ID) {
                     Object value = dialog.getValue();
-                    if (operator.isWildcardOperator() && value instanceof String && ((String) value).indexOf('%') < 0) {
+                    if (operator == DBCLogicalOperator.LIKE && value instanceof String && ((String) value).indexOf('%') < 0) {
                         return "%" + value + "%";
                     }
                     return value;
@@ -89,7 +89,7 @@ public enum FilterByAttributeType {
         {
             try {
                 Object value = ResultSetUtils.getAttributeValueFromClipboard(attribute);
-                if (operator.isWildcardOperator() && value instanceof String && ((String) value).indexOf('%') < 0) {
+                if (operator == DBCLogicalOperator.LIKE && value instanceof String && ((String) value).indexOf('%') < 0) {
                     return "%" + value + "%";
                 }
                 return value;

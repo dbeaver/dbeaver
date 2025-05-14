@@ -181,14 +181,6 @@ public enum DBCLogicalOperator {
         return argumentCount;
     }
 
-    /**
-     * Determines whether this operator supports wildcard pattern matching.
-     * @return {@code true} if the operator supports wildcards, {@code false} otherwise.
-     */
-    public boolean isWildcardOperator() {
-        return this == LIKE || this == ILIKE || this == NOT_LIKE;
-    }
-
     public abstract boolean evaluate(Object srcValue, Object[] arguments);
 
     private static int compare(Object srcValue, Object[] arguments) {

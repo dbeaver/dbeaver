@@ -141,8 +141,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             final TableColumn nameColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, SQLEditorMessages.dialog_sql_param_column_name);
             nameColumn.addListener(SWT.Selection, new TableColumnSortListener(paramTable, 1));
             nameColumn.setWidth(100);
-            final TableColumn valueColumn =
-                UIUtils.createTableColumn(paramTable, SWT.LEFT, SQLEditorMessages.dialog_sql_param_column_value);
+            final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, SQLEditorMessages.dialog_sql_param_column_value);
             valueColumn.setWidth(200);
 
             fillParameterList(isHideIfSet());
@@ -177,8 +176,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     button.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
-                            final String result = EditTextDialog.editText(parent.getShell(), UIMessages.edit_text_dialog_title_edit_value,
-                                editor.getText() == null ? "" : editor.getText());
+                            final String result = EditTextDialog.editText(parent.getShell(), UIMessages.edit_text_dialog_title_edit_value, editor.getText() == null ? "" : editor.getText());
                             if (result != null) {
                                 editor.setText(result);
                             }
@@ -245,28 +243,23 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             final Composite queryComposite = new Composite(sash, SWT.BORDER);
             queryComposite.setLayout(new FillLayout());
 
-            UIUtils.asyncExec(() -> {
-                    try {
-                        queryPreviewPanel = DBWorkbench.getService(UIServiceSQL.class).createSQLPanel(
-                            site,
-                            queryComposite,
-                            new DataSourceContextProvider(query.getDataSource()),
-                            "Query preview",
-                            false,
-                            getQueryWithFilledParameters()
-                        );
-                    } catch (Exception e) {
-                        log.error(e);
-                    }
-                }
-            );
+            try {
+                queryPreviewPanel = DBWorkbench.getService(UIServiceSQL.class).createSQLPanel(
+                    site,
+                    queryComposite,
+                    new DataSourceContextProvider(query.getDataSource()),
+                    "Query preview",
+                    false,
+                    query.getText());
+            } catch (Exception e) {
+                log.error(e);
+            }
         }
 
         sash.setWeights(600, 400);
 
         hideIfSetCheck = UIUtils.createCheckbox(composite,
-            SQLEditorMessages.dialog_sql_param_hide_checkbox,
-            SQLEditorMessages.dialog_sql_param_hide_checkbox_tip,
+            SQLEditorMessages.dialog_sql_param_hide_checkbox, SQLEditorMessages.dialog_sql_param_hide_checkbox_tip,
             isHideIfSet(),
             1);
         hideIfSetCheck.addSelectionListener(new SelectionAdapter() {
@@ -277,6 +270,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         });
 
         updateStatus(GeneralUtils.makeInfoStatus(SQLEditorMessages.dialog_sql_param_hint));
+
+        updateQueryPreview();
 
         return composite;
     }
@@ -303,19 +298,19 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
     }
 
-    private String getQueryWithFilledParameters() {
+    private void updateQueryPreview() {
         SQLQuery queryCopy = new SQLQuery(query.getDataSource(), query.getText(), query);
         List<SQLQueryParameter> setParams = new ArrayList<>(this.parameters);
         setParams.removeIf(parameter -> !parameter.isVariableSet());
         SQLUtils.fillQueryParameters(queryCopy, setParams);
-        return queryCopy.getText();
-    }
 
-    private void updateQueryPreview() {
-        UIUtils.asyncExec(() -> DBWorkbench.getService(UIServiceSQL.class).setSQLPanelText(
-            queryPreviewPanel,
-            getQueryWithFilledParameters()
-        ));
+        {
+            UIUtils.asyncExec(() -> {
+                DBWorkbench.getService(UIServiceSQL.class).setSQLPanelText(
+                    queryPreviewPanel,
+                    queryCopy.getText());
+            });
+        }
     }
 
     @Override
