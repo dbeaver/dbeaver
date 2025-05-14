@@ -59,10 +59,6 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         if (dataSource == null) {
             throw new DBException("Not connected to database");
         }
-        AISettings aiSettings = AISettingsRegistry.getInstance().getSettings();
-        if (aiSettings.isAiDisabled()) {
-            throw new DBException("AI services are disabled");
-        }
 
         String prompt = command.getParameter();
         if (CommonUtils.isEmptyTrimmed(prompt)) {

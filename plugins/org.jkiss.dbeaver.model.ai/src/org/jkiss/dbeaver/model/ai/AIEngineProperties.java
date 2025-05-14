@@ -16,11 +16,10 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import java.util.Map;
+import org.jkiss.dbeaver.DBException;
 
-public record AIAssistantSettings(
-    boolean aiDisabled,
-    String activeEngine,
-    Map<String, AIEngineSettings> engineConfigurations
-) {
+public interface AIEngineProperties {
+    void resolveSecrets() throws DBException;
+
+    void saveSecrets() throws DBException;
 }
