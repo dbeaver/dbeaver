@@ -89,6 +89,11 @@ public class PostgreConstants {
     public static final String PG_ARRAY_CLASS = "org.postgresql.jdbc.PgArray";
     public static final String PG_INTERVAL_CLASS = "org.postgresql.util.PGInterval";
     public static final String PG_GEOMETRY_CLASS = "org.postgis.PGgeometry";
+    
+    //Workaround for KingbaseES 
+    public static final String KB_OBJECT_CLASS = "com.kingbase8.util.KBobject";
+    public static final String KB_ARRAY_CLASS = "com.kingbase8.jdbc.KbArray";
+    public static final String KB_INTERVAL_CLASS = "com.kingbase8.util.KBInterval";
 
     // Workaround for Redshift 2.x
     public static final String RS_OBJECT_CLASS = "com.amazon.redshift.util.RedshiftObject";
