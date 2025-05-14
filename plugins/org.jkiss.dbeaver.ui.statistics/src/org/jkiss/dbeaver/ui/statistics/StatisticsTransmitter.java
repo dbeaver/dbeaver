@@ -50,11 +50,11 @@ public class StatisticsTransmitter {
     private static final Log log = Log.getLog(StatisticsTransmitter.class);
     public static final String STATS_STAGE_DBEAVER = "stats.stage.dbeaver.infra";
     public static final String STATS_DBEAVER_COM = "stats.dbeaver.com";
+    private static final String URL_TEMPLATE = "https://%s/send-statistics";
 
     private final String endpoint;
 
     private final String workspaceId;
-    private final String URL_TEMPLATE = "https://%s/send-statistics";
 
     public StatisticsTransmitter(String workspaceId) {
         this.workspaceId = workspaceId;
