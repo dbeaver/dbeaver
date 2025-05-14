@@ -24,10 +24,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AIEngineSettings;
+import org.jkiss.dbeaver.model.ai.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.openai.OpenAIModel;
+import org.jkiss.dbeaver.model.ai.openai.OpenAIProperties;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages;
@@ -35,11 +35,11 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
-public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> {
+public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAICompletionEngine, LegacyAISettings<OpenAIProperties>> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String token = "";
+    protected String model = "";
     private String temperature = "0.0";
-    private String model = "";
     private boolean logQuery = false;
 
     @Nullable
@@ -62,6 +62,28 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
 
         createAdditionalSettings(composite);
         UIUtils.syncExec(this::applySettings);
+    }
+
+    @Override
+    public void loadSettings(@NotNull LegacyAISettings<OpenAIProperties> configuration) {
+        token = CommonUtils.toString(configuration.getProperties().getToken());
+        model = readModel(configuration).getName();
+        temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
+        logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
+        applySettings();
+    }
+
+    @Override
+    public void saveSettings(@NotNull LegacyAISettings<OpenAIProperties> configuration) {
+        configuration.getProperties().setToken(token);
+        configuration.getProperties().setModel(model);
+        configuration.getProperties().setTemperature(Double.parseDouble(temperature));
+        configuration.getProperties().setLoggingEnabled(logQuery);
+    }
+
+    @Override
+    public void resetSettings(@NotNull LegacyAISettings<OpenAIProperties> openAIPropertiesLegacyAISettings) {
+
     }
 
     protected void createAdditionalSettings(@NotNull Composite parent) {
@@ -140,20 +162,8 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
         return API_KEY_URL;
     }
 
-    @Override
-    public void loadSettings(@NotNull AIEngineSettings aiSettings) {
-        token = CommonUtils.toString(aiSettings.getProperties().get(AIConstants.GPT_API_TOKEN), "");
-        model = isUsesModel() ? readModel(aiSettings).getName() : "";
-        temperature = CommonUtils.toString(aiSettings.getProperties().get(
-            AIConstants.AI_TEMPERATURE),
-            "0.0"
-        );
-        logQuery = CommonUtils.toBoolean(aiSettings.getProperties().get(AIConstants.AI_LOG_QUERY)) ;
-        applySettings();
-    }
-
-    private OpenAIModel readModel(@NotNull AIEngineSettings aiSettings) {
-        return OpenAIModel.getByName(CommonUtils.toString(aiSettings.getProperties().get(AIConstants.GPT_MODEL), getDefaultModel()));
+    private OpenAIModel readModel(@NotNull LegacyAISettings<OpenAIProperties> configuration) {
+        return OpenAIModel.getByName(CommonUtils.toString(configuration.getProperties().getModel(), getDefaultModel()));
     }
 
     protected String getDefaultModel() {
@@ -169,21 +179,6 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
         }
         temperatureText.setText(temperature);
         logQueryCheck.setSelection(logQuery);
-    }
-
-    @Override
-    public void saveSettings(@NotNull AIEngineSettings aiSettings) {
-        aiSettings.getProperties().put(AIConstants.GPT_API_TOKEN, token);
-        if (isUsesModel()) {
-            aiSettings.getProperties().put(AIConstants.GPT_MODEL, model);
-        }
-        aiSettings.getProperties().put(AIConstants.AI_TEMPERATURE, temperature);
-        aiSettings.getProperties().put(AIConstants.AI_LOG_QUERY, logQuery);
-    }
-
-    @Override
-    public void resetSettings(@NotNull AIEngineSettings aiSettings) {
-
     }
 
     protected boolean isUsesModel() {

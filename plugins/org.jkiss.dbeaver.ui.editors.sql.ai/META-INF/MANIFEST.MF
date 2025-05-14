@@ -11,7 +11,8 @@ Export-Package: org.jkiss.dbeaver.ui.editors.sql.ai,
  org.jkiss.dbeaver.ui.editors.sql.ai.format,
  org.jkiss.dbeaver.ui.editors.sql.ai.openai,
  org.jkiss.dbeaver.ui.editors.sql.ai.popup,
- org.jkiss.dbeaver.ui.editors.sql.ai.preferences
+ org.jkiss.dbeaver.ui.editors.sql.ai.preferences,
+ org.jkiss.dbeaver.ui.editors.sql.ai.internal
 Bundle-Release-Date: 20250602
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy

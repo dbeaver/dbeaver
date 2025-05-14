@@ -83,7 +83,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
             formatterConfigurator = new DefaultFormattingConfigurator();
         }
         this.settings = AISettingsRegistry.getInstance().getSettings();
-        String activeEngine = this.settings.getActiveEngine();
+        String activeEngine = this.settings.activeEngine();
         try {
             completionEngine = AIEngineRegistry.getInstance().getCompletionEngine(activeEngine);
         } catch (DBException e) {
@@ -165,7 +165,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
             if (completionEngines.get(i).isDefault()) {
                 defaultEngineSelection = i;
             }
-            if (completionEngines.get(i).getId().equals(this.settings.getActiveEngine())) {
+            if (completionEngines.get(i).getId().equals(this.settings.activeEngine())) {
                 serviceCombo.select(i);
             }
         }
@@ -176,7 +176,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         final Group engineGroup = UIUtils.createControlGroup(composite, "Engine Settings", 2, SWT.BORDER, 5);
         engineGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         if (completionEngine != null) {
-            drawConfiguratorComposite(this.settings.getActiveEngine(), engineGroup);
+            drawConfiguratorComposite(this.settings.activeEngine(), engineGroup);
         }
         serviceCombo.addSelectionListener(new SelectionAdapter() {
             @Override

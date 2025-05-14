@@ -199,7 +199,7 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     protected DAICompletionEngine getActiveEngine() throws DBException {
-        return engineRegistry.getCompletionEngine(settingsRegistry.getSettings().getActiveEngine());
+        return engineRegistry.getCompletionEngine(settingsRegistry.getSettings().activeEngine());
     }
 
     protected DAICompletionResponse requestCompletion(
@@ -277,9 +277,9 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull DAICompletionEngine engine,
         @Nullable DAICompletionContext context
     ) throws DBException {
-        PromptBuilder promptBuilder = PromptBuilder.createForDialect(
+        PromptBuilder promptBuilder = PromptBuilder.createForDataSource(
             context != null ?
-                context.getExecutionContext().getDataSource().getSQLDialect() :
+                context.getExecutionContext().getDataSource() :
                 null,
             formatter()
         );

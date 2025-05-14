@@ -18,9 +18,11 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
-import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -42,21 +44,21 @@ public class PromptBuilder {
     }
 
     @NotNull
-    public static PromptBuilder createForDialect(@Nullable SQLDialect dialect, @NotNull IAIFormatter formatter) {
-        return createForDialect0(dialect != null ? dialect : BasicSQLDialect.INSTANCE, formatter);
+    public static PromptBuilder createForDataSource(@Nullable DBPDataSource dataSource, @NotNull IAIFormatter formatter) {
+        return createForDataSource0(dataSource, formatter);
     }
 
     @NotNull
-    public static PromptBuilder createForDialect0(
-        @NotNull SQLDialect dialect,
+    public static PromptBuilder createForDataSource0(
+        @Nullable DBPDataSource dataSource,
         @NotNull IAIFormatter formatter
     ) {
         PromptBuilder promptBuilder = new PromptBuilder();
 
-        promptBuilder.addInstructions(createInstructionList(dialect));
+        promptBuilder.addInstructions(createInstructionList(dataSource));
         promptBuilder.addInstructions(formatter.getExtraInstructions().toArray(new String[0]));
 
-        promptBuilder.addContexts(describeContext(dialect));
+        promptBuilder.addContexts(describeContext(dataSource));
 
         return promptBuilder;
     }
@@ -118,7 +120,8 @@ public class PromptBuilder {
         return prompt.toString();
     }
 
-    private static String[] createInstructionList(@NotNull SQLDialect dialect) {
+    private static String[] createInstructionList(@Nullable DBPDataSource dataSource) {
+        SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
         return Stream.of(
                 "You are the DBeaver AI assistant.",
                 "Act as a database architect and SQL expert.",
@@ -133,12 +136,16 @@ public class PromptBuilder {
             .toArray(String[]::new);
     }
 
-    private static String[] describeContext(@NotNull SQLDialect dialect) {
-        return Stream.of(
-                "Current date and time: " + ZonedDateTime.now(),
-                "Current database: " + dialect.getDialectName()
-            )
-            .toArray(String[]::new);
+    private static String[] describeContext(@Nullable DBPDataSource dataSource) {
+        SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
+        List<String> lines = new ArrayList<>();
+        lines.add("Current date and time: " + ZonedDateTime.now());
+        lines.add("Current SQL dialect: " + dialect.getDialectName());
+        DBPDriver driver = dataSource == null ? null : dataSource.getContainer().getDriver();
+        if (driver != null) {
+            lines.add("Current Java driver: " + driver.getFullName());
+        }
+        return lines.toArray(String[]::new);
     }
 
     @Nullable

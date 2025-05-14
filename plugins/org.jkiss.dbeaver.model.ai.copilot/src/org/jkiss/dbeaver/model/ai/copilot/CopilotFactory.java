@@ -14,10 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.copilot;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.AIEngineFactory;
+import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 
-public interface AISettingsEventListener {
-    void onSettingsUpdate(@NotNull AISettingsRegistry registry);
+public class CopilotFactory implements AIEngineFactory<CopilotCompletionEngine> {
+    @NotNull
+    @Override
+    public CopilotCompletionEngine createEngine(@NotNull AISettingsRegistry registry) {
+        return new CopilotCompletionEngine(registry);
+    }
 }
