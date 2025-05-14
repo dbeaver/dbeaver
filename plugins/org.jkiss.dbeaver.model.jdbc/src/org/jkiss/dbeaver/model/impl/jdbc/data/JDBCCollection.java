@@ -455,9 +455,9 @@ public class JDBCCollection extends AbstractDatabaseList implements DBDValueClon
         return new JDBCCollection(session.getProgressMonitor(), elementType, elementValueHandler, contents);
     }
 
-    private static boolean isBoxedObjectArray(Object array, Class<?> type) {
-        if (array instanceof Object[] a) {
-            for (Object element : a) {
+    private static boolean isBoxedObjectArray(@Nullable Object array, @NotNull Class<?> type) {
+        if (array instanceof Object[] objectArray) {
+            for (Object element : objectArray) {
                 if (element != null) {
                     return type.isInstance(element);
                 }
