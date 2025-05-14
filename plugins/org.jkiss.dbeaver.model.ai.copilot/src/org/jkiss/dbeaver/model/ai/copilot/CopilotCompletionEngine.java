@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.completion.*;
 import org.jkiss.dbeaver.model.ai.copilot.dto.CopilotChatChunk;
 import org.jkiss.dbeaver.model.ai.copilot.dto.CopilotChatRequest;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.ai.copilot.dto.CopilotSessionToken;
 import org.jkiss.dbeaver.model.ai.openai.OpenAIModel;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.concurrent.Flow;
@@ -35,6 +37,7 @@ import java.util.concurrent.Flow;
 public class CopilotCompletionEngine implements DAICompletionEngine {
     private static final Log log = Log.getLog(CopilotCompletionEngine.class);
 
+    private final AISettingsRegistry registry;
     private final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
         @Override
         protected CopilotClient initialize() throws DBException {
@@ -49,9 +52,13 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
 
     private volatile CopilotSessionToken sessionToken;
 
+    public CopilotCompletionEngine(AISettingsRegistry registry) {
+        this.registry = registry;
+    }
+
     @Override
     public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) {
-        return OpenAIModel.getByName(CopilotSettings.INSTANCE.modelName()).getMaxTokens();
+        return OpenAIModel.getByName(getModelName()).getMaxTokens();
     }
 
     @Override
@@ -60,9 +67,9 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
         @NotNull DAICompletionRequest request
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
-            .withModel(CopilotSettings.INSTANCE.modelName())
+            .withModel(getModelName())
             .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
-            .withTemperature(CopilotSettings.INSTANCE.temperature())
+            .withTemperature(getProperties().getTemperature())
             .withStream(false)
             .withIntent(false)
             .withTopP(1)
@@ -84,9 +91,9 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
         @NotNull DAICompletionRequest request
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
-            .withModel(CopilotSettings.INSTANCE.modelName())
+            .withModel(getModelName())
             .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
-            .withTemperature(CopilotSettings.INSTANCE.temperature())
+            .withTemperature(getProperties().getTemperature())
             .withStream(true)
             .withIntent(false)
             .withTopP(1)
@@ -131,16 +138,16 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
 
     @Override
     public boolean hasValidConfiguration() {
-        return CopilotSettings.INSTANCE.isValidConfiguration();
+        return getProperties().isValidConfiguration();
     }
 
     @Override
     public boolean isLoggingEnabled() {
-        return CopilotSettings.INSTANCE.isLoggingEnabled();
+        return getProperties().isLoggingEnabled();
     }
 
     @Override
-    public void onSettingsUpdate(AISettingsRegistry registry) {
+    public void onSettingsUpdate(@NotNull AISettingsRegistry registry) {
 
         try {
             client.dispose();
@@ -163,7 +170,20 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
                 return sessionToken;
             }
 
-            return client.evaluate().sessionToken(monitor, CopilotSettings.INSTANCE.accessToken());
+            return client.evaluate().sessionToken(monitor, getProperties().getToken());
         }
+    }
+
+    public String getModelName() {
+        return CommonUtils.toString(
+            getProperties().getModel(),
+            OpenAIModel.GPT_TURBO.getName()
+        );
+    }
+
+    private CopilotProperties getProperties() {
+        return registry.getSettings().<LegacyAISettings<CopilotProperties>> getEngineConfiguration(
+            CopilotConstants.COPILOT_ENGINE
+        ).getProperties();
     }
 }
