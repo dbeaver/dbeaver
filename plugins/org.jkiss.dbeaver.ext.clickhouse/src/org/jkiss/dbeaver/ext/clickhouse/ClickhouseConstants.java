@@ -24,6 +24,7 @@ public class ClickhouseConstants {
     public static final String SSL_MODE = "sslmode"; //$NON-NLS-1$
 
     public static final String PROP_USE_SERVER_TIME_ZONE = "use_server_time_zone"; //$NON-NLS-1$
+    public static final String PROP_USE_TIME_ZONE = "use_time_zone"; //$NON-NLS-1$
 
     public static final String SSL_ROOT_CERTIFICATE = "sslrootcert"; //$NON-NLS-1$
 

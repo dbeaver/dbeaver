@@ -122,6 +122,18 @@ public abstract class TokenPredicateFactory {
         return new CaptureTokenPredicateNode(string, this.classifyToken(string), key);
     }
 
+    /**
+     * Create predicate node able to capture parts of the text by the key
+     *
+     * @param exampleString - the example value of the token for classification
+     * @param key - the key in the rule to capture token text
+     * @return new instance of CaptureTokenPredicateNode
+     */
+    @NotNull
+    public TokenPredicateNode captureTokenClassifiedAs(@NotNull String exampleString, @NotNull String key) {
+        return new CaptureTokenPredicateNode(null, this.classifyToken(exampleString), key);
+    }
+
     @NotNull
     public TokenPredicateNode sequence(@NotNull TokenPredicateNode ... nodes) {
         return new SequenceTokenPredicateNode(nodes);
