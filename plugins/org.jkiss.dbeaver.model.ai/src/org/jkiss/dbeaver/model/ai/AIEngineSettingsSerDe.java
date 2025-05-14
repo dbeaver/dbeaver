@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.Strictness;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 
@@ -53,7 +54,8 @@ public abstract class AIEngineSettingsSerDe<T extends AIEngineSettings<T>> {
     }
 
     protected Gson savePropsGson() {
-        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+        DBPApplication application = DBWorkbench.getPlatform().getApplication();
+        if (application.isMultiuser() || application.isDistributed()) {
             return ALL_PROPS_GSON;
         } else {
             return NON_SECURE_PROPS_GSON;
