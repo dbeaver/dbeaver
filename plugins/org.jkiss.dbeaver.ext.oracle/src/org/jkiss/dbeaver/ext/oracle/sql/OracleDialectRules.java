@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.text.parser.*;
 /**
 * Oracle dialect rules
 */
-class OracleDialectRules implements TPRuleProvider {
+public class OracleDialectRules implements TPRuleProvider {
 
     @NotNull
     @Override
