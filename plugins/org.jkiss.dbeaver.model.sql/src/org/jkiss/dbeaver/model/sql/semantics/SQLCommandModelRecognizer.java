@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.Pair;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLCommandModel;
@@ -51,7 +52,7 @@ public class SQLCommandModelRecognizer {
     public static SQLQueryModel recognizeCommand(
         @NotNull SQLQueryRecognitionContext recognitionContext,
         @NotNull String text,
-        @NotNull SQLScriptContext scriptContext
+        @Nullable SQLScriptContext scriptContext
     ) {
         Set<SQLQuerySymbolEntry> symbolEntries = new HashSet<>();
         String cmdPrefix = recognitionContext.getSyntaxManager().getControlCommandPrefix();
@@ -95,13 +96,13 @@ public class SQLCommandModelRecognizer {
     }
 
     private static void registerVariables(
-        @NotNull SQLScriptContext scriptContext,
+        @Nullable SQLScriptContext scriptContext,
         @NotNull String cmdText,
         int start,
         @NotNull Set<SQLQuerySymbolEntry> symbolEntries,
         @NotNull SQLCommandModel cmdModel
     ) {
-        ScriptVariablesResolver variablesResolver = scriptContext.getExecutionContext() == null
+        ScriptVariablesResolver variablesResolver = scriptContext == null || scriptContext.getExecutionContext() == null
             ? null
             : new ScriptVariablesResolver(scriptContext);
         List<GeneralUtils.VariableEntryInfo> vars = GeneralUtils.findAllVariableEntries(cmdText);
@@ -112,7 +113,6 @@ public class SQLCommandModelRecognizer {
                 SQLQuerySymbolClass.DBEAVER_VARIABLE
             );
             symbolEntries.add(symbolEntry);
-            scriptContext.getVariable(varEntry.name().toUpperCase(Locale.ENGLISH));
             cmdModel.addVariable(symbolEntry, variablesResolver == null ? "?" : variablesResolver.get(varEntry.name()));
         }
     }
