@@ -38,8 +38,7 @@ import java.util.List;
 /**
  * GenericCatalog
  */
-public class GenericCatalog extends GenericObjectContainer implements DBSCatalog, DBPSystemObject
-{
+public class GenericCatalog extends GenericObjectContainer implements DBSCatalog, DBPSystemObject {
     private final String catalogName;
     private List<GenericSchema> schemas;
     private boolean isInitialized = false;

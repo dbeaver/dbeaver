@@ -162,7 +162,7 @@ public class DuckMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public boolean isSystemSchema(GenericSchema schema) {
+    public boolean isSystemSchema(@NotNull GenericSchema schema) {
         return SYSTEM_SCHEMA_NAMES.contains(schema.getName());
     }
 

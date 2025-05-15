@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.duckdb.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 
@@ -28,7 +29,7 @@ public class DuckDBGenericCatalog extends GenericCatalog {
         "temp"
     );
 
-    public DuckDBGenericCatalog(GenericDataSource dataSource, String catalogName) {
+    public DuckDBGenericCatalog(@NotNull GenericDataSource dataSource, @NotNull String catalogName) {
         super(dataSource, catalogName);
     }
 
