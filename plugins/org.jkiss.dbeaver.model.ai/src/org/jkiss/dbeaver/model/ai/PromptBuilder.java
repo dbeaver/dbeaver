@@ -39,24 +39,28 @@ public class PromptBuilder {
     private final List<String> outputFormats = new ArrayList<>();
     private String useLanguage;
     private boolean showSummary;
+    private boolean useSqlGenerateInstructions = true;
 
     private PromptBuilder() {
     }
 
     @NotNull
     public static PromptBuilder createForDataSource(@Nullable DBPDataSource dataSource, @NotNull IAIFormatter formatter) {
-        return createForDataSource0(dataSource, formatter);
+        PromptBuilder promptBuilder = new PromptBuilder();
+
+        return createForDataSource0(promptBuilder, dataSource, formatter);
     }
 
     @NotNull
     private static PromptBuilder createForDataSource0(
+        @NotNull PromptBuilder promptBuilder,
         @Nullable DBPDataSource dataSource,
         @NotNull IAIFormatter formatter
     ) {
-        PromptBuilder promptBuilder = new PromptBuilder();
-
-        promptBuilder.addInstructions(promptBuilder.createInstructionList(dataSource));
-        promptBuilder.addInstructions(formatter.getExtraInstructions().toArray(new String[0]));
+        if (promptBuilder.isUseSqlGenerateInstructions()) {
+            promptBuilder.addInstructions(promptBuilder.createInstructionList(dataSource));
+            promptBuilder.addInstructions(formatter.getExtraInstructions().toArray(new String[0]));
+        }
 
         promptBuilder.addContexts(describeContext(dataSource));
 
@@ -70,6 +74,15 @@ public class PromptBuilder {
 
     public PromptBuilder useLanguage(String language) {
         this.useLanguage = language;
+        return this;
+    }
+
+    public boolean isUseSqlGenerateInstructions() {
+        return useSqlGenerateInstructions;
+    }
+
+    public PromptBuilder useSqlGenerateInstructions(boolean use) {
+        this.useSqlGenerateInstructions = use;
         return this;
     }
 
@@ -108,8 +121,10 @@ public class PromptBuilder {
         prompt.append("Goals:\n");
         goals.forEach(goal -> prompt.append("- ").append(goal).append("\n"));
 
-        prompt.append("\nInstructions:\n");
-        instructions.forEach(instruction -> prompt.append("- ").append(instruction).append("\n"));
+        if (!instructions.isEmpty()) {
+            prompt.append("\nInstructions:\n");
+            instructions.forEach(instruction -> prompt.append("- ").append(instruction).append("\n"));
+        }
 
         if (!examples.isEmpty()) {
             prompt.append("\nExamples:\n");
