@@ -304,8 +304,9 @@ public class AISettingsRegistry {
             Map<String, AIEngineSettings<?>> engineConfigurationMap = engineSerDe.stream()
                 .collect(Collectors.toMap(
                     AIEngineSettingsSerDe::getId,
-                    serDe -> serDe.deserialize(ecRoot.getAsJsonObject(serDe.getId()), savePropsGson())
-                ));
+                        serDe -> serDe.deserialize(ecRoot.getAsJsonObject(serDe.getId()), readPropsGson)
+                    )
+                );
             aiSettings.setEngineConfigurations(engineConfigurationMap);
 
             return aiSettings;

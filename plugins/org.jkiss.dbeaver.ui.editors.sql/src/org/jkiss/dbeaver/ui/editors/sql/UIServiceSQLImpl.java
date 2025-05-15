@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,6 +189,8 @@ public class UIServiceSQLImpl implements UIServiceSQL {
         textViewer.setData("editor", editor);
         TextEditorUtils.enableHostEditorKeyBindingsSupport(partSite, textViewer.getTextWidget());
 
+        editorPH.addDisposeListener(e -> editor.dispose());
+
         return textViewer;
     }
 
@@ -218,16 +220,6 @@ public class UIServiceSQLImpl implements UIServiceSQL {
             }
         }
         return null;
-    }
-
-    @Override
-    public void disposeSQLPanel(Object panelObject) {
-        if (panelObject instanceof TextViewer) {
-            Object editor = ((TextViewer) panelObject).getData("editor");
-            if (editor instanceof SQLEditorBase) {
-                ((SQLEditorBase) editor).dispose();
-            }
-        }
     }
 
     @Override

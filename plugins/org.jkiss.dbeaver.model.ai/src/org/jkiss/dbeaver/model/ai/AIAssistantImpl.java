@@ -257,13 +257,6 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
-    protected String getSystemPrompt() {
-        return """
-            You are a DBeaver AI assistant.
-            You help users write SQL queries based ONLY on the information below.
-            """;
-    }
-
     protected IAIFormatter formatter() throws DBException {
         return formatterRegistry.getFormatter(AIConstants.CORE_FORMATTER);
     }
@@ -284,6 +277,17 @@ public class AIAssistantImpl implements AIAssistant {
             formatter()
         );
 
+        describeDatabaseMetadata(monitor, engine, context, promptBuilder);
+
+        return promptBuilder;
+    }
+
+    protected void describeDatabaseMetadata(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionEngine engine,
+        @Nullable DAICompletionContext context,
+        PromptBuilder promptBuilder
+    ) throws DBException {
         if (context != null) {
             String description = metadataProcessor.describeContext(
                 monitor,
@@ -294,7 +298,5 @@ public class AIAssistantImpl implements AIAssistant {
 
             promptBuilder.addDatabaseSnapshot(description);
         }
-
-        return promptBuilder;
     }
 }
