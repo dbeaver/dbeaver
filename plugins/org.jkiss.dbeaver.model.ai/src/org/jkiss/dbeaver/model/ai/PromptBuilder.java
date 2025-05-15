@@ -45,14 +45,19 @@ public class PromptBuilder {
     }
 
     @NotNull
-    public static PromptBuilder createForDataSource(@Nullable DBPDataSource dataSource, @NotNull IAIFormatter formatter) {
-        PromptBuilder promptBuilder = new PromptBuilder();
-
-        return createForDataSource0(promptBuilder, dataSource, formatter);
+    public static PromptBuilder createEmpty() {
+        return new PromptBuilder();
     }
 
     @NotNull
-    private static PromptBuilder createForDataSource0(
+    public static PromptBuilder createForDataSource(@Nullable DBPDataSource dataSource, @NotNull IAIFormatter formatter) {
+        PromptBuilder promptBuilder = new PromptBuilder();
+
+        return fullForDataSource(promptBuilder, dataSource, formatter);
+    }
+
+    @NotNull
+    public static PromptBuilder fullForDataSource(
         @NotNull PromptBuilder promptBuilder,
         @Nullable DBPDataSource dataSource,
         @NotNull IAIFormatter formatter

@@ -277,6 +277,17 @@ public class AIAssistantImpl implements AIAssistant {
             formatter()
         );
 
+        describeDatabaseMetadata(monitor, engine, context, promptBuilder);
+
+        return promptBuilder;
+    }
+
+    protected void describeDatabaseMetadata(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionEngine engine,
+        @Nullable DAICompletionContext context,
+        PromptBuilder promptBuilder
+    ) throws DBException {
         if (context != null) {
             String description = metadataProcessor.describeContext(
                 monitor,
@@ -287,7 +298,5 @@ public class AIAssistantImpl implements AIAssistant {
 
             promptBuilder.addDatabaseSnapshot(description);
         }
-
-        return promptBuilder;
     }
 }
