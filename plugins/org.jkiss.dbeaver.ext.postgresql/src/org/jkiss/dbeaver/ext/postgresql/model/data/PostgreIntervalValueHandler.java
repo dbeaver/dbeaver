@@ -92,7 +92,9 @@ public class PostgreIntervalValueHandler extends JDBCStringValueHandler {
     @NotNull
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        if (value != null && value.getClass().getName().equals(PostgreConstants.PG_INTERVAL_CLASS)) {
+        if (value != null && (
+                value.getClass().getName().equals(PostgreConstants.PG_INTERVAL_CLASS) || 
+                value.getClass().getName().equals(PostgreConstants.KB_INTERVAL_CLASS))) {
             try {
                 Number years = (Number) BeanUtils.readObjectProperty(value, "years");
                 Number months = (Number) BeanUtils.readObjectProperty(value, "months");

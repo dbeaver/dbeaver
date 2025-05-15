@@ -95,6 +95,11 @@ public class PostgreConstants {
     public static final String RS_OBJECT_CLASS = "com.amazon.redshift.util.RedshiftObject";
     // Workaround for EnterpriseDB
     public static final String EDB_OBJECT_CLASS = "com.edb.util.PGobject";
+    
+    //Workaround for KingbaseES 
+    public static final String KB_OBJECT_CLASS = "com.kingbase8.util.KBobject";
+    public static final String KB_ARRAY_CLASS = "com.kingbase8.jdbc.KbArray";
+    public static final String KB_INTERVAL_CLASS = "com.kingbase8.util.KBInterval";
 
     public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(
         DBDPseudoAttributeType.ROWID,
