@@ -163,10 +163,6 @@ public class ErrorPresentation extends AbstractPresentation {
     @Override
     public void dispose() {
         super.dispose();
-        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-        if (serviceSQL != null) {
-            serviceSQL.disposeSQLPanel(editorPanel);
-        }
     }
 
 }
