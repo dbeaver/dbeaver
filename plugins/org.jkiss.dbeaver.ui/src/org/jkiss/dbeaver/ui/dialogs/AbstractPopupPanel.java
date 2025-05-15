@@ -21,9 +21,11 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -117,9 +119,7 @@ public abstract class AbstractPopupPanel extends BaseDialog {
             FocusAdapter focusListener = new FocusAdapter() {
                 @Override
                 public void focusLost(FocusEvent e) {
-                    UIUtils.asyncExec(() -> {
-                        handleFocusLost(e);
-                    });
+                    UIUtils.asyncExec(AbstractPopupPanel.this::handleFocusLost);
                 }
             };
             for (Control ctrl : controls) {
@@ -131,18 +131,26 @@ public abstract class AbstractPopupPanel extends BaseDialog {
 
     }
 
-    private void handleFocusLost(FocusEvent e) {
+    /**
+     * Installs a listener that will close the dialog if it loses focus.
+     *
+     * @param shell the shell to monitor
+     */
+    protected void closeOnFocusLost(@NotNull Shell shell) {
+        shell.addShellListener(ShellListener.shellDeactivatedAdapter(e -> UIUtils.asyncExec(this::handleFocusLost)));
+    }
+
+    private void handleFocusLost() {
         Shell shell = getShell();
         if (shell != null && !shell.isDisposed()) {
             Control focusControl = shell.getDisplay().getFocusControl();
             if (focusControl != null && !UIUtils.isParent(shell, focusControl)) {
                 Object dialogData = focusControl.getShell().getData();
-                if (dialogData instanceof MessageBox || dialogData instanceof MessageBoxModern) {
-                    return;
-                }
-                Object dialog = dialogData;
-                if (dialog instanceof BlockingPopupDialog || dialog instanceof ErrorDialog) {
-                    // It is an error popup
+                if (dialogData instanceof MessageBox ||
+                    dialogData instanceof MessageBoxModern ||
+                    dialogData instanceof BlockingPopupDialog ||
+                    dialogData instanceof ErrorDialog
+                ) {
                     return;
                 }
                 cancelPressed();

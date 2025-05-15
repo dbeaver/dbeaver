@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
-import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
 import java.util.List;
@@ -71,7 +70,7 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
 
     public static boolean isShowOnStartup() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        return CommonUtils.getBoolean(store.getString(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP), true);
+        return store.getBoolean(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP);
     }
 
     public static void setShowOnStartup(boolean showOnStartup) {
@@ -97,13 +96,14 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
     }
 
     @Override
+    protected void configureShell(Shell shell) {
+        super.configureShell(shell);
+        closeOnFocusLost(shell);
+    }
+
+    @Override
     protected Composite createDialogArea(Composite parent) {
         getShell().setText("Tip of the day");
-        setTitle("Tip of the day");
-
-        if (tips.isEmpty()) {
-            tips.add("Empty tip list");
-        }
 
         tipIndex = new Random(System.currentTimeMillis()).nextInt(tips.size());
 
@@ -134,7 +134,6 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
         //form.setData(FormToolkit.KEY_DRAW_BORDER, FormToolkit.TEXT_BORDER);
         form.getBody().setLayoutData(new GridData(GridData.FILL_BOTH));
         form.getBody().setLayout(new GridLayout(1, true));
-        closeOnFocusLost(form);
 
         scrolledFormText = new ScrolledFormText(form.getBody(), SWT.V_SCROLL, false);
         FormText formText = new FormText(scrolledFormText, SWT.WRAP | SWT.NO_FOCUS);
@@ -174,7 +173,6 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
             });
 
             form.getBody().setTabList(new Control[] { showTipButton });
-            closeOnFocusLost(showTipButton);
         }
 
         return dialogArea;
@@ -250,12 +248,6 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
             if (okButton != null) {
                 okButton.setFocus();
             }
-
-            closeOnFocusLost(
-                getButton(IDialogConstants.BACK_ID),
-                getButton(IDialogConstants.NEXT_ID),
-                getButton(IDialogConstants.OK_ID)
-            );
         });
     }
 

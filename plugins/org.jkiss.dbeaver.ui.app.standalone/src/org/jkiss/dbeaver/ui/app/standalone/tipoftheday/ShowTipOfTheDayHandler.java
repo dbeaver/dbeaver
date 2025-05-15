@@ -51,6 +51,9 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
     }
 
     private static void showTipOfTheDayDialog(List<String> tips, IWorkbenchWindow window) {
+        if (tips.isEmpty()) {
+            return;
+        }
         ShowTipOfTheDayDialog tipDialog = new ShowTipOfTheDayDialog(window.getShell(), tips);
         tipDialog.setDisplayShowOnStartup(true);
         tipDialog.open();
