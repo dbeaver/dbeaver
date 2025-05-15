@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -44,6 +45,22 @@ import java.util.Map;
 public final class AIUtils {
 
     private static final Log log = Log.getLog(AIUtils.class);
+
+    /**
+     * Retrieves a secret value from the global secret controller.
+     * If the secret value is empty, it returns the provided default value.
+     */
+    public static String getSecretValueOrDefault(
+        @NotNull String secretId,
+        @Nullable String defaultValue
+    ) throws DBException {
+        String secretValue = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(secretId);
+        if (CommonUtils.isEmpty(secretValue)) {
+            return defaultValue;
+        }
+
+        return secretValue;
+    }
 
     /**
      * Counts tokens in the given list of messages.

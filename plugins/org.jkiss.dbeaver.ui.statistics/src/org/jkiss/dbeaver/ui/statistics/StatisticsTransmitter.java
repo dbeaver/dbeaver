@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.statistics;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -47,13 +48,22 @@ import java.util.stream.Stream;
 public class StatisticsTransmitter {
 
     private static final Log log = Log.getLog(StatisticsTransmitter.class);
+    public static final String STATS_STAGE_DBEAVER = "stats.stage.dbeaver.infra";
+    public static final String STATS_DBEAVER_COM = "stats.dbeaver.com";
+    private static final String URL_TEMPLATE = "https://%s/send-statistics";
 
-    private static final String ENDPOINT = "https://stats.dbeaver.com/send-statistics";
+    private final String endpoint;
 
     private final String workspaceId;
 
     public StatisticsTransmitter(String workspaceId) {
         this.workspaceId = workspaceId;
+
+        if (System.getenv(DBConstants.LM_STAGE_MODE) != null) {
+            endpoint = URL_TEMPLATE.formatted(STATS_STAGE_DBEAVER);
+        } else {
+            endpoint = URL_TEMPLATE.formatted(STATS_DBEAVER_COM);
+        }
     }
 
     public void send(boolean detached) {
@@ -121,7 +131,7 @@ public class StatisticsTransmitter {
         //log.debug("Sending statistics file '" + logFile.toAbsolutePath() + "'");
         try {
             URLConnection urlConnection = WebUtils.openURLConnection(
-                ENDPOINT + "?session=" + sessionId + "&time=" + timestamp,
+                endpoint + "?session=" + sessionId + "&time=" + timestamp,
                 null,
                 workspaceId,
                 "POST",
@@ -136,8 +146,7 @@ public class StatisticsTransmitter {
                     "Application-Version", GeneralUtils.getProductVersion().toString(),
                     "OS", CommonUtils.notEmpty(System.getProperty(StandardConstants.ENV_OS_NAME))));
 
-            ((HttpURLConnection)urlConnection).setFixedLengthStreamingMode(Files.size(logFile));
-
+            ((HttpURLConnection) urlConnection).setFixedLengthStreamingMode(Files.size(logFile));
             try (OutputStream outputStream = urlConnection.getOutputStream()) {
                 Files.copy(logFile, outputStream);
             }
