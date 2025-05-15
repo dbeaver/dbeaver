@@ -257,13 +257,6 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
-    protected String getSystemPrompt() {
-        return """
-            You are a DBeaver AI assistant.
-            You help users write SQL queries based ONLY on the information below.
-            """;
-    }
-
     protected IAIFormatter formatter() throws DBException {
         return formatterRegistry.getFormatter(AIConstants.CORE_FORMATTER);
     }
