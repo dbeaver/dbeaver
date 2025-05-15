@@ -245,14 +245,13 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                     if (!(row[i] instanceof Number)) {
                         quote = true;
                     }
-                } else if (quoteStrategy == QuoteStrategy.ALL_BUT_NULLS) {
-                    if (!DBUtils.isNullValue(row[i])) {
-                        quote = true;
-                    }
                 }
+
                 if (DBUtils.isNullValue(row[i])) {
                     if (CommonUtils.isNotEmpty(nullString)) {
                         writeCellValue(nullString, quote);
+                    } else if (quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS) {
+                        writeCellValue("", true);
                     }
                 } else {
                     writeCellValue(stringValue, quote);
