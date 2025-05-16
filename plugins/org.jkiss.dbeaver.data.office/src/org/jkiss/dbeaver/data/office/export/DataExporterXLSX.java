@@ -90,6 +90,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private static final int ROW_WINDOW = 100;
     private static final Date EXCEL_MIN_DATE =
         new GregorianCalendar(1900, Calendar.JANUARY, 1).getTime();
+    private static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
 
     private String nullString;
     private String dateFormatString;
@@ -225,7 +226,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         this.rowCount = 0;
         this.sheetIndex = 0;
 
-        String df = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), "yyyy-MM-dd");
+        String df = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), DEFAULT_DATE_FORMAT);
         this.dateFormatString = df;
         if (CommonUtils.isEmpty(df)) {
             styleDate.setDataFormat((short) 14);
@@ -496,7 +497,6 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
                     SimpleDateFormat fmt = new SimpleDateFormat(dateFormatString);
                     String text = fmt.format(dateVal);
                     cell.setCellValue(text);
-                    cell.setCellType(CellType.STRING);
                 } else {
                     cell.setCellValue(dateVal);
                     cell.setCellStyle(styleDate);
