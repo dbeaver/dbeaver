@@ -9,10 +9,28 @@
 		<initializer class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencesInitializer"/>
 	</extension>
 
+	<extension point="org.eclipse.core.expressions.definitions">
+		<definition id="org.jkiss.dbeaver.ai.preferences">
+			<instanceof value="org.jkiss.dbeaver.model.ai.AISettings"/>
+		</definition>
+	</extension>
+
 	<extension point="org.eclipse.ui.preferencePages">
-		<page id="org.jkiss.dbeaver.preferences.ai" category="org.eclipse.ui.preferencePages.Workbench" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage" name="%pref.page.name.gpt">
+		<page id="org.jkiss.dbeaver.preferences.ai" category="org.eclipse.ui.preferencePages.Workbench" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.main.name">
 			<keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-			<keywordReference id="org.jkiss.dbeaver.ui.editors.ai.keyword.gtp"/>
+			<keywordReference id="org.jkiss.dbeaver.ui.editors.ai.keyword.engines"/>
+		</page>
+		<page id="org.jkiss.dbeaver.preferences.ai.config" category="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePageConfiguration" name="%pref.page.ai.config.name">
+			<keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+			<keywordReference id="org.jkiss.dbeaver.ui.editors.ai.keyword.engines"/>
+		</page>
+	</extension>
+	<extension point="org.eclipse.ui.propertyPages">
+		<page id="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.main.name">
+			<enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
+		</page>
+		<page id="org.jkiss.dbeaver.preferences.ai.config" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePageConfiguration" name="%pref.page.ai.config.name">
+			<enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
 		</page>
 	</extension>
 
