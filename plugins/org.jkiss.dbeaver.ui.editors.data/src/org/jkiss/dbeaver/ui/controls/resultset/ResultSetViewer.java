@@ -774,10 +774,7 @@ public class ResultSetViewer extends Viewer
 
     private void showErrorPresentation(String sqlText, String message, Throwable error) {
         activePresentationDescriptor = null;
-        setActivePresentation(
-            new ErrorPresentation(
-                sqlText,
-                GeneralUtils.makeErrorStatus(message, error), container instanceof IResultSetContainerExt ? (IResultSetContainerExt) container : null));
+        setActivePresentation(new ErrorPresentation(sqlText, GeneralUtils.makeErrorStatus(message, error), container));
         updatePresentationInToolbar();
         fireQueryExecuted(sqlText, null, error.getMessage());
     }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.commands;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 
 public class RefreshActiveSchemaHandler extends AbstractSchemaHandler {
 
@@ -25,12 +26,14 @@ public class RefreshActiveSchemaHandler extends AbstractSchemaHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         var sqlEditor = getEditor(event);
         if (sqlEditor != null) {
-            var contextDefaults = getExecutionContext(sqlEditor);
-            var schema = contextDefaults.getDefaultSchema();
-            if (schema != null) {
-                var node = getDatabaseNode(sqlEditor, schema);
-                if (node != null) {
-                    refreshNode(node);
+            var context = getExecutionContext(sqlEditor);
+            if (context instanceof DBCExecutionContextDefaults<?,?> ecd) {
+                var schema = ecd.getDefaultSchema();
+                if (schema != null) {
+                    var node = getDatabaseNode(sqlEditor, schema);
+                    if (node != null) {
+                        refreshNode(node);
+                    }
                 }
             }
         }
