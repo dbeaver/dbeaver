@@ -302,7 +302,7 @@ public final class RuntimeUtils {
                 StringBuilder out = new StringBuilder();
                 readStringToBuffer(p.getInputStream(), out);
 
-                if (out.length() == 0) {
+                if (out.isEmpty()) {
                     StringBuilder err = new StringBuilder();
                     readStringToBuffer(p.getErrorStream(), err);
                     return err.toString();
@@ -358,7 +358,7 @@ public final class RuntimeUtils {
                 if (line == null) {
                     break;
                 }
-                if (out.length() > 0) {
+                if (!out.isEmpty()) {
                     out.append("\n");
                 }
                 out.append(line);
@@ -554,21 +554,20 @@ public final class RuntimeUtils {
 
     @NotNull
     public static String getWorkingDirectory(String defaultWorkspaceLocation) {
-        String osName = (System.getProperty("os.name")).toUpperCase();
         String workingDirectory;
-        if (osName.contains("WIN")) {
+        if (isWindows()) {
             String appData = System.getenv("AppData");
             if (appData == null) {
-                appData = System.getProperty("user.home");
+                appData = System.getProperty(StandardConstants.ENV_USER_HOME);
             }
             workingDirectory = appData + "\\" + defaultWorkspaceLocation;
-        } else if (osName.contains("MAC")) {
-            workingDirectory = System.getProperty("user.home") + "/Library/" + defaultWorkspaceLocation;
+        } else if (isMacOS()) {
+            workingDirectory = System.getProperty(StandardConstants.ENV_USER_HOME) + "/Library/" + defaultWorkspaceLocation;
         } else {
             // Linux
             String dataHome = System.getProperty("XDG_DATA_HOME");
             if (dataHome == null) {
-                dataHome = System.getProperty("user.home") + "/.local/share";
+                dataHome = System.getProperty(StandardConstants.ENV_USER_HOME) + "/.local/share";
             }
             String badWorkingDir = dataHome + "/." + defaultWorkspaceLocation;
             String goodWorkingDir = dataHome + "/" + defaultWorkspaceLocation;
@@ -744,10 +743,6 @@ public final class RuntimeUtils {
 
         private MonitoringTask(DBRRunnableWithProgress task) {
             this.task = task;
-        }
-
-        public boolean isFinished() {
-            return finished;
         }
 
         @Override
