@@ -107,10 +107,6 @@ public class GeneralUtils {
         return UTF8_ENCODING;
     }
 
-    public static String getDefaultLocalFileEncoding() {
-        return System.getProperty(StandardConstants.ENV_FILE_ENCODING, getDefaultFileEncoding());
-    }
-
     public static String getDefaultConsoleEncoding() {
         String consoleEncoding = System.getProperty(StandardConstants.ENV_CONSOLE_ENCODING);
         if (CommonUtils.isEmpty(consoleEncoding)) {
@@ -447,20 +443,6 @@ public class GeneralUtils {
         boolean setParameter(String name, String value);
     }
 
-    public static class MapResolver implements IVariableResolver {
-        private final Map<String, Object> variables;
-
-        public MapResolver(Map<String, Object> variables) {
-            this.variables = variables;
-        }
-
-        @Override
-        public String get(String name) {
-            Object value = variables.get(name);
-            return value == null ? null : CommonUtils.toString(value);
-        }
-    }
-
     public static String replaceSystemPropertyVariables(String string) {
         if (string == null) {
             return null;
@@ -729,7 +711,7 @@ public class GeneralUtils {
     public static String getStatusText(IStatus status) {
         StringBuilder text = new StringBuilder(status.getMessage());
         IStatus[] children = status.getChildren();
-        if (children != null && children.length > 0) {
+        if (children != null) {
             for (IStatus child : children) {
                 text.append("\n").append(getStatusText(child));
             }
