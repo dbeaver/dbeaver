@@ -14,16 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.openai;
 
 /**
- * GPT preference constants
+ * OpenAI constants
  */
-public class AIConstants {
-    public static final String CORE_FORMATTER = "core";
-
-    public static final String AI_LOG_QUERY = "gpt.log.query";
-
-    public static final int MAX_RESPONSE_TOKENS = 2000;
+public class OpenAIConstants {
+    public static final String OPENAI_ENGINE = "openai";
+    public static final String GPT_API_TOKEN = "gpt.token";
+    public static final String GPT_MODEL = "gpt.model";
+    public static final String AI_TEMPERATURE = "gpt.model.temperature";
 }
 
