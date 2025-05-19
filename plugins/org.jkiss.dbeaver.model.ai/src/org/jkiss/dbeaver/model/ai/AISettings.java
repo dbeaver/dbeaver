@@ -45,8 +45,10 @@ public class AISettings implements IAdaptable {
     }
 
     @NotNull
-    public <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) {
-        return (T) engineConfigurations.get(engineId);
+    public <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) throws DBException {
+        AIEngineSettings<?> aiEngineSettings = engineConfigurations.get(engineId);
+        aiEngineSettings.resolveSecrets();
+        return (T) aiEngineSettings;
     }
 
     public void setEngineConfiguration(String engineId, AIEngineSettings<?> engineConfiguration) {
@@ -55,12 +57,6 @@ public class AISettings implements IAdaptable {
 
     public void setEngineConfigurations(Map<String, AIEngineSettings<?>> engineConfigurations) {
         this.engineConfigurations.putAll(engineConfigurations);
-    }
-
-    public void resolveSecrets() throws DBException {
-        for (AIEngineSettings<?> engineConfiguration : engineConfigurations.values()) {
-            engineConfiguration.resolveSecrets();
-        }
     }
 
     public void saveSecrets() throws DBException {

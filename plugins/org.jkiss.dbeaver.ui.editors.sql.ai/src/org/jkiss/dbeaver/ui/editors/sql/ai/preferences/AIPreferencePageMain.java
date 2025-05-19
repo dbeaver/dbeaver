@@ -111,8 +111,13 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         this.settings.setActiveEngine(serviceNameMappings.get(serviceCombo.getText()));
         if (!serviceCombo.getText().isEmpty()) {
             for (Map.Entry<String, EngineConfiguratorPage> entry : engineConfiguratorMapping.entrySet()) {
-                AIEngineSettings<?> engineConfiguration = this.settings.getEngineConfiguration(entry.getKey());
-                entry.getValue().saveSettings(engineConfiguration);
+                try {
+                    AIEngineSettings<?> engineConfiguration = this.settings.getEngineConfiguration(entry.getKey());
+                    entry.getValue().saveSettings(engineConfiguration);
+                } catch (DBException e) {
+                    log.error("Error saving engine settings", e);
+                    continue;
+                }
             }
         }
         AISettingsRegistry.getInstance().saveSettings(this.settings);
@@ -194,7 +199,11 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                 = createEngineConfigurator();
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
             activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
-            activeEngineConfiguratorPage.loadSettings(this.settings.getEngineConfiguration(id));
+            try {
+                activeEngineConfiguratorPage.loadSettings(this.settings.getEngineConfiguration(id));
+            } catch (DBException e) {
+                log.error("Error loading engine settings", e);
+            }
             engineConfiguratorMapping.put(id, activeEngineConfiguratorPage);
         } else {
             activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
