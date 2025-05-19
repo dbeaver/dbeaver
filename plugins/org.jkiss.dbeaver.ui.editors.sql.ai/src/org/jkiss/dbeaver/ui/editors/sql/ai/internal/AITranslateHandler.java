@@ -89,12 +89,7 @@ public class AITranslateHandler extends AbstractHandler {
             return null;
         }
 
-        AIAssistant aiAssistant;
-        try {
-            aiAssistant = AIAssistantRegistry.getInstance().getAssistant();
-        } catch (DBException e) {
-            throw new IllegalArgumentException("Cannot find AI assistant", e);
-        }
+        AIAssistant aiAssistant = AIAssistantRegistry.getInstance().getAssistant();
 
         try {
             if (!aiAssistant.hasValidConfiguration()) {

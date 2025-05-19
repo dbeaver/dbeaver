@@ -103,6 +103,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
+    public static final String DEFAULT_WORKSPACES_FILE = ".workspaces";
 
     private static final String PLUGINS_FOLDER = ".plugins";
     private static final String CORE_RESOURCES_PLUGIN_FOLDER = "org.eclipse.core.resources";
@@ -135,10 +136,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private long lastUserActivityTime = -1;
 
     public DBeaverApplication() {
-        this(DesktopPlatform.DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER);
+        this(DesktopPlatform.DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER, DEFAULT_WORKSPACES_FILE);
     }
 
-    protected DBeaverApplication(String defaultWorkspaceLocation, String defaultAppWorkspaceName) {
+    protected DBeaverApplication(String defaultWorkspaceLocation, String defaultAppWorkspaceName, String defaultWorkspacesFile) {
 
         // Explicitly set UTF-8 as default file encoding
         // In some places Eclipse reads this property directly.
@@ -154,7 +155,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Workspace dir
         WORKSPACE_DIR_6 = new File(workingDirectory, defaultAppWorkspaceName).getAbsolutePath();
         WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_6;
-        FILE_WITH_WORKSPACES = Paths.get(workingDirectory, ".workspaces"); //$NON-NLS-1$
+        FILE_WITH_WORKSPACES = Paths.get(workingDirectory, defaultWorkspacesFile); //$NON-NLS-1$
     }
 
     /**

@@ -28,8 +28,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 public class PromptBuilder {
     private final List<String> goals = new ArrayList<>();
@@ -39,28 +37,58 @@ public class PromptBuilder {
     @Nullable
     private String databaseSnapshot;
     private final List<String> outputFormats = new ArrayList<>();
+    private String useLanguage;
+    private boolean showSummary;
+    private boolean useSqlGenerateInstructions = true;
 
     private PromptBuilder() {
     }
 
     @NotNull
-    public static PromptBuilder createForDataSource(@Nullable DBPDataSource dataSource, @NotNull IAIFormatter formatter) {
-        return createForDataSource0(dataSource, formatter);
+    public static PromptBuilder createEmpty() {
+        return new PromptBuilder();
     }
 
     @NotNull
-    public static PromptBuilder createForDataSource0(
+    public static PromptBuilder createForDataSource(@Nullable DBPDataSource dataSource, @NotNull IAIFormatter formatter) {
+        PromptBuilder promptBuilder = new PromptBuilder();
+
+        return fullForDataSource(promptBuilder, dataSource, formatter);
+    }
+
+    @NotNull
+    public static PromptBuilder fullForDataSource(
+        @NotNull PromptBuilder promptBuilder,
         @Nullable DBPDataSource dataSource,
         @NotNull IAIFormatter formatter
     ) {
-        PromptBuilder promptBuilder = new PromptBuilder();
-
-        promptBuilder.addInstructions(createInstructionList(dataSource));
-        promptBuilder.addInstructions(formatter.getExtraInstructions().toArray(new String[0]));
+        if (promptBuilder.isUseSqlGenerateInstructions()) {
+            promptBuilder.addInstructions(promptBuilder.createInstructionList(dataSource));
+            promptBuilder.addInstructions(formatter.getExtraInstructions().toArray(new String[0]));
+        }
 
         promptBuilder.addContexts(describeContext(dataSource));
 
         return promptBuilder;
+    }
+
+    public PromptBuilder showSummary(boolean show) {
+        this.showSummary = show;
+        return this;
+    }
+
+    public PromptBuilder useLanguage(String language) {
+        this.useLanguage = language;
+        return this;
+    }
+
+    public boolean isUseSqlGenerateInstructions() {
+        return useSqlGenerateInstructions;
+    }
+
+    public PromptBuilder useSqlGenerateInstructions(boolean use) {
+        this.useSqlGenerateInstructions = use;
+        return this;
     }
 
     public PromptBuilder addGoals(@NotNull String... goals) {
@@ -98,8 +126,10 @@ public class PromptBuilder {
         prompt.append("Goals:\n");
         goals.forEach(goal -> prompt.append("- ").append(goal).append("\n"));
 
-        prompt.append("\nInstructions:\n");
-        instructions.forEach(instruction -> prompt.append("- ").append(instruction).append("\n"));
+        if (!instructions.isEmpty()) {
+            prompt.append("\nInstructions:\n");
+            instructions.forEach(instruction -> prompt.append("- ").append(instruction).append("\n"));
+        }
 
         if (!examples.isEmpty()) {
             prompt.append("\nExamples:\n");
@@ -120,20 +150,31 @@ public class PromptBuilder {
         return prompt.toString();
     }
 
-    private static String[] createInstructionList(@Nullable DBPDataSource dataSource) {
+    private String[] createInstructionList(@Nullable DBPDataSource dataSource) {
         SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
-        return Stream.of(
-                "You are the DBeaver AI assistant.",
-                "Act as a database architect and SQL expert.",
-                "Rely only on the schema information provided below.",
-                "Stick strictly to " + dialect.getDialectName() + " syntax.",
-                "Do not invent columns, tables, or data that aren’t explicitly defined.",
-                identifiersQuoteRule(dialect),
-                stringsQuoteRule(dialect),
-                "Use the same language as the user."
-            )
-            .filter(Objects::nonNull)
-            .toArray(String[]::new);
+        List<String> instructions = new ArrayList<>();
+        instructions.add("You are the DBeaver AI assistant.");
+        instructions.add("Act as a database architect and SQL expert.");
+        instructions.add("Rely only on the schema information provided below.");
+        instructions.add("Stick strictly to " + dialect.getDialectName() + " syntax.");
+        instructions.add("Do not invent columns, tables, or data that aren’t explicitly defined.");
+        String quoteRule = identifiersQuoteRule(dialect);
+        if (quoteRule != null) {
+            instructions.add(quoteRule);
+        }
+        String stringsQuoteRule = stringsQuoteRule(dialect);
+        if (stringsQuoteRule != null) {
+            instructions.add(stringsQuoteRule);
+        }
+        if (useLanguage != null) {
+            instructions.add("Use language '" + useLanguage + "'.");
+        } else {
+            instructions.add("Use the same language as the user.");
+        }
+        if (showSummary) {
+            instructions.add("Write a very short one-sentence summary of this conversation (for chat caption) in the end of response in xml tag <summary>.");
+        }
+        return instructions.toArray(new String[0]);
     }
 
     private static String[] describeContext(@Nullable DBPDataSource dataSource) {

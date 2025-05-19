@@ -15,17 +15,22 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ext.clickhouse;
 
-import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 
-/**
- * Result set execute processor
- */
-public interface IResultSetContainerExt extends IResultSetContainer {
+public class ClickhouseDataSourceInfo extends JDBCDataSourceInfo {
 
-    void handleExecuteResult(DBCExecutionResult result);
+    public ClickhouseDataSourceInfo(JDBCDatabaseMetaData metaData) {
+        super(metaData);
+    }
 
-    void showCurrentError();
+    @Override
+    public boolean supportsIndexes() {
+        // For now - Clickhouse driver return us empty list as indexInfo and we can't create Clickhouse indexes via DBeaver UI
+        // So far we turn off indexes
+        return false;
+    }
 
 }
