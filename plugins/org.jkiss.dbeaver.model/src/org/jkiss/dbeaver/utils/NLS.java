@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.utils;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +61,8 @@ public abstract class NLS {
      * @return the manipulated String
      * @throws IllegalArgumentException if the text appearing within curly braces in the given message does not map to an integer
      */
-    public static String bind(String message, Object binding) {
+    @NotNull
+    public static String bind(@NotNull String message, @NotNull Object binding) {
         return internalBind(message, null, String.valueOf(binding), null);
     }
 
@@ -72,7 +75,8 @@ public abstract class NLS {
      * @return the manipulated String
      * @throws IllegalArgumentException if the text appearing within curly braces in the given message does not map to an integer
      */
-    public static String bind(String message, Object binding1, Object binding2) {
+    @NotNull
+    public static String bind(@NotNull String message, @NotNull Object binding1, @NotNull Object binding2) {
         return internalBind(message, null, String.valueOf(binding1), String.valueOf(binding2));
     }
 
@@ -84,7 +88,8 @@ public abstract class NLS {
      * @return the manipulated String
      * @throws IllegalArgumentException if the text appearing within curly braces in the given message does not map to an integer
      */
-    public static String bind(String message, Object[] bindings) {
+    @NotNull
+    public static String bind(@NotNull String message, @NotNull Object[] bindings) {
         return internalBind(message, bindings, null, null);
     }
 
@@ -107,7 +112,7 @@ public abstract class NLS {
      * @param baseName the base name of a fully qualified message properties file.
      * @param clazz    the class where the constants will exist
      */
-    public static void initializeMessages(final String baseName, final Class<?> clazz) {
+    public static void initializeMessages(@NotNull String baseName, @NotNull Class<?> clazz) {
         load(baseName, clazz);
     }
 
@@ -115,6 +120,7 @@ public abstract class NLS {
      * Perform the string substitution on the given message with the specified args.
      * See the class comment for exact details.
      */
+    @NotNull
     private static String internalBind(String message, Object[] args, String argZero, String argOne) {
         if (message == null)
             return "No message available."; //$NON-NLS-1$
@@ -132,7 +138,7 @@ public abstract class NLS {
         for (int i = 0; i < length; i++) {
             char c = message.charAt(i);
             switch (c) {
-                case '{':
+                case '{': {
                     int index = message.indexOf('}', i);
                     // if we don't have a matching closing brace then...
                     if (index == -1) {
@@ -145,12 +151,7 @@ public abstract class NLS {
                         break;
                     }
                     // look for a substitution
-                    int number = -1;
-                    try {
-                        number = Integer.parseInt(message.substring(i, index));
-                    } catch (NumberFormatException e) {
-                        throw new IllegalArgumentException(e);
-                    }
+                    int number = CommonUtils.toInt(message.substring(i, index));
                     if (number == 0 && argZero != null)
                         buffer.append(argZero);
                     else if (number == 1 && argOne != null)
@@ -165,7 +166,8 @@ public abstract class NLS {
                     }
                     i = index;
                     break;
-                case '\'':
+                }
+                case '\'': {
                     // if a single quote is the last char on the line then skip it
                     int nextIndex = i + 1;
                     if (nextIndex >= length) {
@@ -180,7 +182,7 @@ public abstract class NLS {
                         break;
                     }
                     // otherwise we want to read until we get to the next single quote
-                    index = message.indexOf('\'', nextIndex);
+                    int index = message.indexOf('\'', nextIndex);
                     // if there are no more in the string, then skip it
                     if (index == -1) {
                         buffer.append(c);
@@ -190,6 +192,7 @@ public abstract class NLS {
                     buffer.append(message, nextIndex, index);
                     i = index;
                     break;
+                }
                 default:
                     buffer.append(c);
             }
@@ -222,7 +225,7 @@ public abstract class NLS {
             }
             // add the empty suffix last (most general)
             result.add(EXTENSION);
-            nlSuffixes = result.toArray(new String[result.size()]);
+            nlSuffixes = result.toArray(new String[0]);
         }
         root = root.replace('.', '/');
         String[] variants = new String[nlSuffixes.length];
@@ -250,7 +253,6 @@ public abstract class NLS {
 
     private static void computeMissingMessages(
         String bundleName,
-        Class<?> clazz,
         Map<Object, Object> fieldMap,
         Field[] fieldArray,
         boolean isAccessible
@@ -258,9 +260,7 @@ public abstract class NLS {
         // iterate over the fields in the class to make sure that there aren't any empty ones
         final int MOD_EXPECTED = Modifier.PUBLIC | Modifier.STATIC;
         final int MOD_MASK = MOD_EXPECTED | Modifier.FINAL;
-        final int numFields = fieldArray.length;
-        for (int i = 0; i < numFields; i++) {
-            Field field = fieldArray[i];
+        for (Field field : fieldArray) {
             if ((field.getModifiers() & MOD_MASK) != MOD_EXPECTED)
                 continue;
             // if the field has a a value assigned, there is nothing to do
@@ -318,7 +318,7 @@ public abstract class NLS {
             }
             // ignore
         }
-        computeMissingMessages(bundleName, clazz, fields, fieldArray, isAccessible);
+        computeMissingMessages(bundleName, fields, fieldArray, isAccessible);
     }
 
     /*

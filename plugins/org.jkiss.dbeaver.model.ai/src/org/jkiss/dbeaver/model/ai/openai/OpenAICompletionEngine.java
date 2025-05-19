@@ -189,7 +189,7 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
     }
 
     private OpenAIProperties getSettings() {
-        return registry.getSettings().<LegacyAISettings<OpenAIProperties>> getEngineConfiguration(AIConstants.OPENAI_ENGINE)
+        return registry.getSettings().<LegacyAISettings<OpenAIProperties>> getEngineConfiguration(OpenAIConstants.OPENAI_ENGINE)
             .getProperties();
     }
 }
