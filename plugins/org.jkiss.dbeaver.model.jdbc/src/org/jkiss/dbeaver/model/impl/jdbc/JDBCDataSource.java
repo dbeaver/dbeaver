@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
+import org.osgi.framework.Version;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -87,8 +88,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     @Nullable
     private JDBCRemoteInstance defaultRemoteInstance;
 
-    private int databaseMajorVersion = 0;
-    private int databaseMinorVersion = 0;
+    protected Version databaseVersion = null;
 
     private final transient List<Connection> closingConnections = new ArrayList<>();
     protected List<Path> tempFiles;
@@ -536,11 +536,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
-            readDatabaseServerVersion(metaData);
+            readDatabaseServerVersion(session, metaData);
 
-            if (this.sqlDialect instanceof JDBCSQLDialect sqlDialect) {
+            if (this.sqlDialect instanceof JDBCSQLDialect jdbcDialect) {
                 try {
-                    sqlDialect.initDriverSettings(session, this, metaData);
+                    jdbcDialect.initDriverSettings(session, this, metaData);
                 } catch (Throwable e) {
                     log.error("Error initializing dialect driver settings", e);
                 }
@@ -561,21 +561,28 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
-    protected void readDatabaseServerVersion(DatabaseMetaData metaData) {
-        if (databaseMajorVersion <= 0 && databaseMinorVersion <= 0) {
+    Version getDatabaseServerVersion() {
+        return databaseVersion;
+    }
+
+    protected synchronized void readDatabaseServerVersion(Connection session, DatabaseMetaData metaData) {
+        if (databaseVersion == null) {
             try {
-                databaseMajorVersion = metaData.getDatabaseMajorVersion();
-                databaseMinorVersion = metaData.getDatabaseMinorVersion();
+                databaseVersion = new Version(
+                    metaData.getDatabaseMajorVersion(),
+                    metaData.getDatabaseMinorVersion(),
+                    0);
             } catch (Throwable e) {
                 log.error("Error determining server version", e);
+                databaseVersion = new Version(0, 0, 0);
             }
         }
     }
 
     public boolean isServerVersionAtLeast(int major, int minor) {
-        if (databaseMajorVersion < major) {
+        if (databaseVersion.getMajor() < major) {
             return false;
-        } else if (databaseMajorVersion == major && databaseMinorVersion < minor) {
+        } else if (databaseVersion.getMajor() == major && databaseVersion.getMinor() < minor) {
             return false;
         }
         return true;

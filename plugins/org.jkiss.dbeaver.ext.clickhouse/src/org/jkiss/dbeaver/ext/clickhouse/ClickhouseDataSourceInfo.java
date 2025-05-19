@@ -14,28 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.oracle.model;
+
+package org.jkiss.dbeaver.ext.clickhouse;
 
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
-/**
- * OracleDataSourceInfo
- */
-class OracleDataSourceInfo extends JDBCDataSourceInfo {
+public class ClickhouseDataSourceInfo extends JDBCDataSourceInfo {
 
-    public OracleDataSourceInfo(JDBCDatabaseMetaData metaData) {
+    public ClickhouseDataSourceInfo(JDBCDatabaseMetaData metaData) {
         super(metaData);
     }
 
     @Override
-    public DBSObjectType[] getSupportedObjectTypes() {
-        return OracleObjectType.values();
-    }
-
-    @Override
-    public boolean needsTableMetaForColumnResolution() {
+    public boolean supportsIndexes() {
+        // For now - Clickhouse driver return us empty list as indexInfo and we can't create Clickhouse indexes via DBeaver UI
+        // So far we turn off indexes
         return false;
     }
 
