@@ -48,7 +48,7 @@ public class AISettings implements IAdaptable {
     }
 
     @NotNull
-    public <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) throws DBException {
+    public synchronized <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) throws DBException {
         AIEngineSettings<?> aiEngineSettings = engineConfigurations.get(engineId);
 
         if (!resolvedSecrets.contains(engineId)) {
