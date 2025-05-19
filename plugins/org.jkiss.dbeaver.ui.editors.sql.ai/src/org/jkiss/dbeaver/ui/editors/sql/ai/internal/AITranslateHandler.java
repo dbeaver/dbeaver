@@ -53,7 +53,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.ai.popup.AISuggestionPopup;
-import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage;
+import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePageMain;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -93,7 +93,11 @@ public class AITranslateHandler extends AbstractHandler {
 
         try {
             if (!aiAssistant.hasValidConfiguration()) {
-                UIUtils.showPreferencesFor(editor.getSite().getShell(), null, AIPreferencePage.PAGE_ID);
+                UIUtils.showPreferencesFor(
+                    editor.getSite().getShell(),
+                    AISettingsRegistry.getInstance().getSettings(),
+                    AIPreferencePageMain.PAGE_ID
+                );
                 return null;
             }
         } catch (Exception e) {
