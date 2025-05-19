@@ -65,7 +65,13 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         try {
             completionEngine = AIEngineRegistry.getInstance().getCompletionEngine(activeEngine);
         } catch (DBException e) {
-            log.error("Error getting engine configuration");
+            log.error("Error getting engine configuration", e);
+
+            DBWorkbench.getPlatformUI().showError(
+                "Error loading AI settings",
+                "Error loading AI settings for " + activeEngine,
+                e
+            );
         }
     }
 
@@ -116,7 +122,12 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                     entry.getValue().saveSettings(engineConfiguration);
                 } catch (DBException e) {
                     log.error("Error saving engine settings", e);
-                    continue;
+
+                    DBWorkbench.getPlatformUI().showError(
+                        "Error saving AI settings",
+                        "Error saving engine settings for " + entry.getKey(),
+                        e
+                    );
                 }
             }
         }
@@ -203,6 +214,12 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                 activeEngineConfiguratorPage.loadSettings(this.settings.getEngineConfiguration(id));
             } catch (DBException e) {
                 log.error("Error loading engine settings", e);
+
+                DBWorkbench.getPlatformUI().showError(
+                    "Error loading AI settings",
+                    "Error loading engine settings for " + id,
+                    e
+                );
             }
             engineConfiguratorMapping.put(id, activeEngineConfiguratorPage);
         } else {

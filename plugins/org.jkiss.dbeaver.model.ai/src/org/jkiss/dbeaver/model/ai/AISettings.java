@@ -21,12 +21,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class AISettings implements IAdaptable {
     private boolean aiDisabled;
     private String activeEngine;
     private final Map<String, AIEngineSettings<?>> engineConfigurations = new HashMap<>();
+    private final Set<String> resolvedSecrets = new HashSet<>();
 
     public boolean isAiDisabled() {
         return aiDisabled;
@@ -47,7 +50,12 @@ public class AISettings implements IAdaptable {
     @NotNull
     public <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) throws DBException {
         AIEngineSettings<?> aiEngineSettings = engineConfigurations.get(engineId);
-        aiEngineSettings.resolveSecrets();
+
+        if (!resolvedSecrets.contains(engineId)) {
+            aiEngineSettings.resolveSecrets();
+            resolvedSecrets.add(engineId);
+        }
+
         return (T) aiEngineSettings;
     }
 

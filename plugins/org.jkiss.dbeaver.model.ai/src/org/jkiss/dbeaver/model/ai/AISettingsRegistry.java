@@ -320,7 +320,6 @@ public class AISettingsRegistry {
                 try {
                     engineConfigurations.add(serDe.getId(), serDe.serialize(src.getEngineConfiguration(serDe.getId()), savePropsGson()));
                 } catch (DBException e) {
-                    log.error("Error serializing AI engine settings", e);
                     throw new JsonParseException("Error serializing AI engine settings: " + serDe.getId(), e);
                 }
             }
