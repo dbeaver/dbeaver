@@ -88,8 +88,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     enum FontStyleProp {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
 
     private static final int ROW_WINDOW = 100;
-    private static final Date EXCEL_MIN_DATE =
-        new GregorianCalendar(1900, Calendar.JANUARY, 1).getTime();
+    private static final Date EXCEL_MIN_DATE = new GregorianCalendar(1900, Calendar.JANUARY, 1).getTime();
     private static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
 
     private String nullString;
@@ -217,23 +216,12 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         styleDate.setBorderLeft(border);
         styleDate.setBorderRight(border);
 
-        if (CommonUtils.isEmpty(dateFormat)) {
-            styleDate.setDataFormat((short) 14);
-        } else {
-            styleDate.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(dateFormat));
-        }
-
         this.rowCount = 0;
         this.sheetIndex = 0;
 
         String df = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), DEFAULT_DATE_FORMAT);
         this.dateFormatString = df;
-        if (CommonUtils.isEmpty(df)) {
-            styleDate.setDataFormat((short) 14);
-        } else {
-            styleDate.setDataFormat(
-                wb.getCreationHelper().createDataFormat().getFormat(df));
-        }
+        styleDate.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(df));
 
         super.init(site);
     }
