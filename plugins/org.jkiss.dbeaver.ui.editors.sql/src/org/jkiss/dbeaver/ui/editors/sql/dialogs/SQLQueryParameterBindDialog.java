@@ -261,7 +261,7 @@ public class SQLQueryParameterBindDialog extends TrayDialog {
                     new DataSourceContextProvider(query.getDataSource()),
                     "Query preview",
                     false,
-                    getQueryWithFilledParameters()
+                    query.getText()
                 );
             } catch (Exception e) {
                 log.error(e);
