@@ -21,7 +21,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.AIEngineSettingsSerDe;
 import org.jkiss.dbeaver.model.ai.LegacyAISettings;
@@ -35,7 +34,7 @@ public class OpenAISettingsSerDe implements AIEngineSettingsSerDe<LegacyAISettin
     @NotNull
     @Override
     public String getId() {
-        return AIConstants.OPENAI_ENGINE;
+        return OpenAIConstants.OPENAI_ENGINE;
     }
 
     @NotNull

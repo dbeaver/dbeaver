@@ -14,16 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
 
-/**
- * GPT preference constants
- */
-public class AIConstants {
-    public static final String CORE_FORMATTER = "core";
+package org.jkiss.dbeaver.ext.clickhouse;
 
-    public static final String AI_LOG_QUERY = "gpt.log.query";
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 
-    public static final int MAX_RESPONSE_TOKENS = 2000;
+public class ClickhouseDataSourceInfo extends JDBCDataSourceInfo {
+
+    public ClickhouseDataSourceInfo(JDBCDatabaseMetaData metaData) {
+        super(metaData);
+    }
+
+    @Override
+    public boolean supportsIndexes() {
+        // For now - Clickhouse driver return us empty list as indexInfo and we can't create Clickhouse indexes via DBeaver UI
+        // So far we turn off indexes
+        return false;
+    }
+
 }
-

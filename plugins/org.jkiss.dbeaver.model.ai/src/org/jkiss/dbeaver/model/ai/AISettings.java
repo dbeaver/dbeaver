@@ -16,13 +16,14 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class AISettings {
+public class AISettings implements IAdaptable {
     private boolean aiDisabled;
     private String activeEngine;
     private final Map<String, AIEngineSettings<?>> engineConfigurations = new HashMap<>();
@@ -66,5 +67,10 @@ public class AISettings {
         for (AIEngineSettings<?> engineConfiguration : engineConfigurations.values()) {
             engineConfiguration.saveSecrets();
         }
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        return null;
     }
 }

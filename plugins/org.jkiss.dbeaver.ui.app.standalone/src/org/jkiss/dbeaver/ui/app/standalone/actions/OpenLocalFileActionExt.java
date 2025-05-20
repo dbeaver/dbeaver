@@ -60,10 +60,10 @@ public class OpenLocalFileActionExt extends AbstractHandler {
         Shell activeShell = HandlerUtil.getActiveShell(event);
 
         Set<String> extensions = new LinkedHashSet<>();
+        extensions.add("*.*");
         for (FileTypeHandlerDescriptor dhd : FileTypeHandlerRegistry.getInstance().getHandlers()) {
             extensions.add(Arrays.stream(dhd.getExtensions()).map(e -> "*." + e).collect(Collectors.joining(";")));
         }
-        extensions.add("*.*");
 
         FileDialog dialog = new FileDialog(activeShell, SWT.OPEN | SWT.MULTI | SWT.SHEET);
         dialog.setText(IDEWorkbenchMessages.OpenLocalFileAction_title);
