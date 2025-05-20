@@ -72,6 +72,10 @@ public abstract class ObjectAttributeDescriptor {
         this.id = id;
         if (CommonUtils.isEmpty(this.id)) {
             this.id = BeanUtils.getPropertyNameFromGetter(getter.getName());
+            String parentGroupId = parent == null ? null : parent.getGroupId();
+            if (CommonUtils.isNotEmpty(parentGroupId)) {
+                this.id = parentGroupId + "." + this.id;
+            }
         }
 
         declaringClass = parent == null ? getter.getDeclaringClass() : parent.getDeclaringClass();
