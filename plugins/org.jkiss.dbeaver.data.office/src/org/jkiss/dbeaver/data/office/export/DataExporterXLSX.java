@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.awt.*;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.Reader;
