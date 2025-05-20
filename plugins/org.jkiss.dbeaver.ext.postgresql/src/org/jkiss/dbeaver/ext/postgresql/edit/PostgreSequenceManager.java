@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,27 +105,27 @@ public class PostgreSequenceManager extends SQLObjectEditor<PostgreTableBase, Po
     }
 
     private void addSequenceOptions(StringBuilder ddl, Map<Object, Object> options) {
-        if (options.containsKey("additionalInfo.incrementBy")) {
-            ddl.append("\n\tINCREMENT BY ").append(options.get("additionalInfo.incrementBy"));
+        if (options.containsKey("incrementBy")) {
+            ddl.append("\n\tINCREMENT BY ").append(options.get("incrementBy"));
         }
-        if (options.containsKey("additionalInfo.minValue")) {
-            ddl.append("\n\tMINVALUE ").append(options.get("additionalInfo.minValue"));
+        if (options.containsKey("minValue")) {
+            ddl.append("\n\tMINVALUE ").append(options.get("minValue"));
         }
-        if (options.containsKey("additionalInfo.maxValue")) {
-            ddl.append("\n\tMAXVALUE ").append(options.get("additionalInfo.maxValue"));
+        if (options.containsKey("maxValue")) {
+            ddl.append("\n\tMAXVALUE ").append(options.get("maxValue"));
         }
-        if (options.containsKey("additionalInfo.startValue")) {
-            ddl.append("\n\tSTART ").append(options.get("additionalInfo.startValue"));
+        if (options.containsKey("startValue")) {
+            ddl.append("\n\tSTART ").append(options.get("startValue"));
         }
-        if (options.get("additionalInfo.lastValue") != null) {
-            ddl.append("\n\tRESTART ").append(options.get("additionalInfo.lastValue"));
+        if (options.get("lastValue") != null) {
+            ddl.append("\n\tRESTART ").append(options.get("lastValue"));
         }
-        if (options.containsKey("additionalInfo.cacheValue")) {
-            ddl.append("\n\tCACHE ").append(options.get("additionalInfo.cacheValue"));
+        if (options.containsKey("cacheValue")) {
+            ddl.append("\n\tCACHE ").append(options.get("cacheValue"));
         }
-        if (options.containsKey("additionalInfo.cycled")) {
+        if (options.containsKey("cycled")) {
             ddl.append("\n\t");
-            if (!CommonUtils.toBoolean(options.get("additionalInfo.cycled"))) {
+            if (!CommonUtils.toBoolean(options.get("cycled"))) {
                 ddl.append("NO ");
             }
             ddl.append("CYCLE");

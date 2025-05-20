@@ -118,9 +118,9 @@ import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddIn;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.ai.suggestion.AISuggestionTextPainter;
 import org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
-import org.jkiss.dbeaver.ui.editors.sql.ai.suggestion.AISuggestionTextPainter;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
@@ -137,7 +137,6 @@ import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
@@ -472,7 +471,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DBWorkbench.getPlatformUI().showError(
                     "Can't connect to database", "Connection to '" + container.getName() + "' cannot be established.", status);
             }
-            setFocus();
+//            setFocus();
         }));
         setPartName(getEditorName());
 
@@ -5796,8 +5795,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
 
             if (!stopped) {
-                Image image = DatabaseNavigatorTree.IMG_LOADING[tickCount % DatabaseNavigatorTree.IMG_LOADING.length];
-                setTitleImage(image);
+                setTitleImage(DBeaverIcons.getImage(UIIcon.LOADING.get(tickCount % UIIcon.LOADING.size())));
                 schedule(100);
             } else {
                 if (oldCursor != null) {

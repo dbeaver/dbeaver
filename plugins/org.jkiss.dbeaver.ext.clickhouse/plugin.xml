@@ -67,6 +67,7 @@
                     <file type="jar" path="drivers/clickhouse_com" bundle="drivers.clickhouse_com"/>
                     <!-- Disable server timezone as it confuses during timestamp edit -->
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
+                    <property name="use_server_time_zone" value="false"/>
 
                     <parameter name="omit-catalog" value="true"/>
                     <parameter name="supports-references" value="false"/>
