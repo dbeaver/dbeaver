@@ -115,25 +115,26 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
             try {
                 final MySQLDataSource dataSource = table.getDataSource();
                 final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
-                if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
+                if ((!table.isPersisted() || tableProps.getProperty("additionalInfo.engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
                     ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName()); //$NON-NLS-1$
                 }
                 if (dataSource.supportsCharsets() &&
-                    (!table.isPersisted() || tableProps.getProperty("charset") != null) && //$NON-NLS-1$
+                    (!table.isPersisted() || tableProps.getProperty("additionalInfo.charset") != null) && //$NON-NLS-1$
                     additionalInfo.getCharset() != null
                 ) {
                     ddl.append("\nDEFAULT CHARSET=").append(additionalInfo.getCharset().getName()); //$NON-NLS-1$
                 }
                 if (dataSource.supportsCollations() &&
-                    (!table.isPersisted() || tableProps.getProperty("collation") != null) && //$NON-NLS-1$
+                    (!table.isPersisted() || tableProps.getProperty("additionalInfo.collation") != null) && //$NON-NLS-1$
                     additionalInfo.getCollation() != null
                 ) {
                     ddl.append("\nCOLLATE=").append(additionalInfo.getCollation().getName()); //$NON-NLS-1$
                 }
-                if ((!table.isPersisted() && table.getDescription() != null) || tableProps.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
-                    ddl.append("\nCOMMENT=").append(SQLUtils.quoteString(table, CommonUtils.notEmpty(table.getDescription())));//$NON-NLS-1$
+                if ((!table.isPersisted() || table.getDescription() != null) && tableProps.hasProperty("additionalInfo." + DBConstants.PROP_ID_DESCRIPTION)) {
+                    ddl.append("\nCOMMENT=")
+                        .append(SQLUtils.quoteString(table, table.getDescription()));
                 }
-                if ((!table.isPersisted() || tableProps.getProperty("autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) { //$NON-NLS-1$
+                if ((!table.isPersisted() || tableProps.getProperty("additionalInfo.autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) { //$NON-NLS-1$
                     ddl.append("\nAUTO_INCREMENT=").append(additionalInfo.getAutoIncrement()); //$NON-NLS-1$
                 }
             } catch (DBCException e) {
