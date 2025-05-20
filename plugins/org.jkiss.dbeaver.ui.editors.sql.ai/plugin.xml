@@ -55,7 +55,7 @@
 				<visibleWhen checkEnabled="true"/>
 			</command>
 		</menuContribution>
-		<menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.top" >
+		<menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.top?after=ai" >
 			<command commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion">
 				<visibleWhen>
 				    <and>
