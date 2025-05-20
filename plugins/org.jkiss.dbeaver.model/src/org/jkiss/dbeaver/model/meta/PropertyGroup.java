@@ -32,6 +32,10 @@ public @interface PropertyGroup
 
     String id() default "";
 
+    /**
+     * ID of group.
+     * Adds prefix to the children prop ids if the value is not empty.
+     */
     String groupId() default "";
 
     String name() default "";

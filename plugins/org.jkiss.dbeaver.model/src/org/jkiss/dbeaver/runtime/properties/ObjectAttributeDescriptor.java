@@ -73,6 +73,8 @@ public abstract class ObjectAttributeDescriptor {
         if (CommonUtils.isEmpty(this.id)) {
             this.id = BeanUtils.getPropertyNameFromGetter(getter.getName());
             String parentGroupId = parent == null ? null : parent.getGroupId();
+            // cloudbeaver param
+            // defines id of property if parent group has group id
             if (CommonUtils.isNotEmpty(parentGroupId)) {
                 this.id = parentGroupId + "." + this.id;
             }
