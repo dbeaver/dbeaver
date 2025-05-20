@@ -332,15 +332,18 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             }
         }
 
-        if (quoteStrategy == QuoteStrategy.ALL || (useQuotes && value.isEmpty())) {
+        if (quoteStrategy == QuoteStrategy.ALL ||
+            quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS ||
+            (useQuotes && value.isEmpty())
+        ) {
             quote = true;
         } else if (!quote) {
             if (hasQuotes ||
                 value.contains(delimiter) ||
                 value.indexOf('\r') != -1 ||
                 value.indexOf('\n') != -1 ||
-                value.contains(rowDelimiter))
-            {
+                value.contains(rowDelimiter)
+            ) {
                 quote = true;
             }
         }
