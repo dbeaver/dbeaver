@@ -14,18 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.ui.controls.resultset;
-
-import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
+package org.jkiss.dbeaver.model.ai.openai;
 
 /**
- * Result set execute processor
+ * OpenAI constants
  */
-public interface IResultSetContainerExt extends IResultSetContainer {
-
-    void handleExecuteResult(DBCExecutionResult result);
-
-    void showCurrentError();
-
+public class OpenAIConstants {
+    public static final String OPENAI_ENGINE = "openai";
+    public static final String GPT_API_TOKEN = "gpt.token";
+    public static final String GPT_MODEL = "gpt.model";
+    public static final String AI_TEMPERATURE = "gpt.model.temperature";
 }
+

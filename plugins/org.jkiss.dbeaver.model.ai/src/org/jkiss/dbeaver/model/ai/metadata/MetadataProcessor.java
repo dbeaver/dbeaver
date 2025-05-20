@@ -58,7 +58,6 @@ public class MetadataProcessor {
         }
         StringBuilder description = new StringBuilder();
         if (object instanceof DBSEntity entity) {
-            description.append("\n-------------------------\n");
             String name = useFullyQualifiedName && context != null ? DBUtils.getObjectFullName(
                 context.getDataSource(),
                 object,

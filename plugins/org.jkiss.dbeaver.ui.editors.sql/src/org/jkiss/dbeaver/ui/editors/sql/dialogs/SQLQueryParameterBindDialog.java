@@ -140,8 +140,7 @@ public class SQLQueryParameterBindDialog extends TrayDialog {
             final TableColumn nameColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, SQLEditorMessages.dialog_sql_param_column_name);
             nameColumn.addListener(SWT.Selection, new TableColumnSortListener(paramTable, 1));
             nameColumn.setWidth(100);
-            final TableColumn valueColumn =
-                UIUtils.createTableColumn(paramTable, SWT.LEFT, SQLEditorMessages.dialog_sql_param_column_value);
+            final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, SQLEditorMessages.dialog_sql_param_column_value);
             valueColumn.setWidth(200);
 
             fillParameterList(isHideIfSet());
@@ -176,8 +175,7 @@ public class SQLQueryParameterBindDialog extends TrayDialog {
                     button.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
-                            final String result = EditTextDialog.editText(parent.getShell(), UIMessages.edit_text_dialog_title_edit_value,
-                                editor.getText() == null ? "" : editor.getText());
+                            final String result = EditTextDialog.editText(parent.getShell(), UIMessages.edit_text_dialog_title_edit_value, editor.getText() == null ? "" : editor.getText());
                             if (result != null) {
                                 editor.setText(result);
                             }
@@ -273,8 +271,7 @@ public class SQLQueryParameterBindDialog extends TrayDialog {
         sash.setWeights(600, 400);
 
         hideIfSetCheck = UIUtils.createCheckbox(composite,
-            SQLEditorMessages.dialog_sql_param_hide_checkbox,
-            SQLEditorMessages.dialog_sql_param_hide_checkbox_tip,
+            SQLEditorMessages.dialog_sql_param_hide_checkbox, SQLEditorMessages.dialog_sql_param_hide_checkbox_tip,
             isHideIfSet(),
             1);
         hideIfSetCheck.addSelectionListener(new SelectionAdapter() {
@@ -287,6 +284,8 @@ public class SQLQueryParameterBindDialog extends TrayDialog {
         UIUtils.createInfoLabel(composite, SQLEditorMessages.dialog_sql_param_hint);
         UIUtils.applyMainFont(composite);
         UIUtils.applyMonospaceFont(queryComposite);
+
+        updateQueryPreview();
 
         return composite;
     }
@@ -313,19 +312,19 @@ public class SQLQueryParameterBindDialog extends TrayDialog {
         }
     }
 
-    private String getQueryWithFilledParameters() {
+    private void updateQueryPreview() {
         SQLQuery queryCopy = new SQLQuery(query.getDataSource(), query.getText(), query);
         List<SQLQueryParameter> setParams = new ArrayList<>(this.parameters);
         setParams.removeIf(parameter -> !parameter.isVariableSet());
         SQLUtils.fillQueryParameters(queryCopy, setParams);
-        return queryCopy.getText();
-    }
 
-    private void updateQueryPreview() {
-        UIUtils.asyncExec(() -> DBWorkbench.getService(UIServiceSQL.class).setSQLPanelText(
-            queryPreviewPanel,
-            getQueryWithFilledParameters()
-        ));
+        {
+            UIUtils.asyncExec(() -> {
+                DBWorkbench.getService(UIServiceSQL.class).setSQLPanelText(
+                    queryPreviewPanel,
+                    queryCopy.getText());
+            });
+        }
     }
 
     @Override

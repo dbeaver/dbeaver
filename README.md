@@ -2,7 +2,6 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fa0bb9cf5a904c7d87424f8f6351ba92)](https://app.codacy.com/gh/dbeaver/dbeaver/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Apache 2.0](https://img.shields.io/github/license/cronn-de/jira-sync.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Tickets in review](https://img.shields.io/github/issues/dbeaver/dbeaver/wait%20for%20review)](https://github.com/dbeaver/dbeaver/issues?q=is%3Aissue+is%3Aopen+label%3A"wait%20for%20review")
-
 <img src="https://github.com/dbeaver/dbeaver/wiki/images/dbeaver-icon-64x64.png" align="right"/>
 
 # DBeaver
@@ -39,10 +38,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 * <a href="https://dbeaver.com/docs/dbeaver/">Full product documentation</a>
 * <a href="https://github.com/dbeaver/dbeaver/wiki">WIKI</a>
 * <a href="https://github.com/dbeaver/dbeaver/issues">Issue tracker</a>
-
-## Build from sources
-
-<a href="https://github.com/dbeaver/dbeaver/wiki/Build-from-sources">See this article.</a>
+* <a href="https://github.com/dbeaver/dbeaver/wiki/Build-from-sources">Building from sources</a>
 
 ## Feedback
 
@@ -52,7 +48,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 - For bug reports and feature requests - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
 - Pull requests are welcome. See our <a href="https://github.com/dbeaver/dbeaver/wiki/Contribute-your-code">guide for contributors</a>.
 - Visit https://dbeaver.com for more information.
-- Follow us on [Twitter](https://twitter.com/dbeaver_news/) and watch educational video on [YouTube](https://www.youtube.com/@DBeaver_video)
+- Follow us on [X](https://x.com/dbeaver_news/) and watch educational video on [YouTube](https://www.youtube.com/@DBeaver_video)
 - Thanks for using DBeaver! Star if you like it.
 
 ## Contribution: help the Beaver!
