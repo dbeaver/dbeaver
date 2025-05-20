@@ -133,7 +133,8 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
                 if ((!table.isPersisted() && table.getDescription() != null) || tableProps.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
                     ddl.append("\nCOMMENT=").append(SQLUtils.quoteString(table, CommonUtils.notEmpty(table.getDescription())));//$NON-NLS-1$
                 }
-                if ((!table.isPersisted() || tableProps.getProperty("autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) { //$NON-NLS-1$
+                if ((!table.isPersisted() || tableProps.getProperty("additionalInfo.autoIncrement") != null)
+                        && additionalInfo.getAutoIncrement() > 0) { //$NON-NLS-1$
                     ddl.append("\nAUTO_INCREMENT=").append(additionalInfo.getAutoIncrement()); //$NON-NLS-1$
                 }
             } catch (DBCException e) {
