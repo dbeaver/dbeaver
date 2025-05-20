@@ -28,13 +28,11 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * WorkbenchContextListener.
@@ -44,11 +42,8 @@ import java.util.function.Consumer;
  */
 public class WorkbenchContextListener implements IWindowListener, IPageListener, IPartListener {
 
-    //private static final Log log = Log.getLog(WorkbenchContextListener.class);
-
     public static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.ui.perspective";
 
-    private CommandExecutionListener commandExecutionListener;
     private final Set<IWorkbenchWindow> registeredWindows = new HashSet<>();
 
     public WorkbenchContextListener() {
@@ -63,7 +58,7 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
         {
             final ICommandService commandService = workbench.getService(ICommandService.class);
             if (commandService != null) {
-                commandExecutionListener = new CommandExecutionListener();
+                CommandExecutionListener commandExecutionListener = new CommandExecutionListener();
                 commandService.addExecutionListener(commandExecutionListener);
             }
         }
@@ -219,7 +214,6 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
                 "view", ((IViewPart) part).getViewSite().getId()
             ));
         }
-        fireOnNewSqlEditorListener(part);
     }
 
     static WorkbenchContextListener registerInWorkbench() {
@@ -249,25 +243,5 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
             }
         }
     }
-    
-    private static final Object editorListenersSyncRoot = new Object();
-    private static final Set<Consumer<SQLEditor>> editorListeners = new HashSet<>();
-    
-    public static void addOnNewSqlEditorListener(Consumer<SQLEditor> listener) {
-        synchronized (editorListenersSyncRoot) {
-            editorListeners.add(listener);
-        }
-    }
-    
-    private static void fireOnNewSqlEditorListener(IWorkbenchPart part) {
-        if (part instanceof SQLEditor) {
-            SQLEditor editor = (SQLEditor) part;
-            synchronized (editorListenersSyncRoot) {
-                for (Consumer<SQLEditor> consumer : editorListeners) {
-                    consumer.accept(editor);
-                }
-            }
-        }
-    }
-    
+
 }

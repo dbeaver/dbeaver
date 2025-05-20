@@ -144,6 +144,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         };
     }
 
+    public void readDatabaseServerVersion(JDBCSession session) throws SQLException {
+        super.readDatabaseServerVersion(session, session.getMetaData());
+    }
+
     @Override
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
@@ -184,7 +188,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         DBExecUtils.startContextInitiation(getContainer());
         try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
             // Read server version info here - it is needed during database metadata fetch (#8061)
-            readDatabaseServerVersion(bootstrapConnection.getMetaData());
+            readDatabaseServerVersion(bootstrapConnection, bootstrapConnection.getMetaData());
 
             // Get all databases
             try (PreparedStatement dbStat = prepareReadDatabaseListStatement(monitor, bootstrapConnection, configuration)) {

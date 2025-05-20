@@ -24,8 +24,6 @@ public enum DAIChatRole {
     SYSTEM(false),
     // User prompts
     USER(false),
-    // Automatically generated prompts
-    GENERATED(true),
     // Response from AI
     ASSISTANT(false),
     // Error messages

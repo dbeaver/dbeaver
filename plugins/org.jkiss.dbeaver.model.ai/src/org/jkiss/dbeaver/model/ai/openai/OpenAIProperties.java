@@ -46,7 +46,7 @@ public class OpenAIProperties implements AIEngineProperties {
 
     public String getModel() {
         if (fallbackToPrefStore()) {
-            return DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.GPT_MODEL);
+            return DBWorkbench.getPlatform().getPreferenceStore().getString(OpenAIConstants.GPT_MODEL);
         }
 
         return model;
@@ -54,7 +54,7 @@ public class OpenAIProperties implements AIEngineProperties {
 
     public double getTemperature() {
         if (fallbackToPrefStore()) {
-            return DBWorkbench.getPlatform().getPreferenceStore().getDouble(AIConstants.AI_TEMPERATURE);
+            return DBWorkbench.getPlatform().getPreferenceStore().getDouble(OpenAIConstants.AI_TEMPERATURE);
         }
 
         return temperature;
@@ -69,11 +69,11 @@ public class OpenAIProperties implements AIEngineProperties {
     }
 
     public void resolveSecrets() throws DBException {
-        token = AIUtils.getSecretValueOrDefault(AIConstants.GPT_API_TOKEN, token);
+        token = AIUtils.getSecretValueOrDefault(OpenAIConstants.GPT_API_TOKEN, token);
     }
 
     public void saveSecrets() throws DBException {
-        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(AIConstants.GPT_API_TOKEN, token);
+        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(OpenAIConstants.GPT_API_TOKEN, token);
     }
 
     public void setToken(String token) {
