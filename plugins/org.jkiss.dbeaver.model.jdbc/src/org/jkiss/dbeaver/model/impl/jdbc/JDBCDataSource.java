@@ -580,6 +580,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     public boolean isServerVersionAtLeast(int major, int minor) {
+        if (databaseVersion == null) {
+            log.warn(new DBException("Checking server version before connection initialization"));
+            return false;
+        }
         if (databaseVersion.getMajor() < major) {
             return false;
         } else if (databaseVersion.getMajor() == major && databaseVersion.getMinor() < minor) {

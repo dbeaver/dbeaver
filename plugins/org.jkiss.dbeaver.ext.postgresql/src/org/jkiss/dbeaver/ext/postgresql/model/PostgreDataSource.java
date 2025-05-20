@@ -144,6 +144,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         };
     }
 
+    public void readDatabaseServerVersion(JDBCSession session) throws SQLException {
+        super.readDatabaseServerVersion(session, session.getMetaData());
+    }
+
     @Override
     protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
