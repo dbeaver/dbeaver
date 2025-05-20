@@ -245,20 +245,19 @@ public class SQLQueryParameterBindDialog extends TrayDialog {
         queryComposite.setLayout(new FillLayout());
 
         UIUtils.asyncExec(() -> {
-                try {
-                    queryPreviewPanel = DBWorkbench.getService(UIServiceSQL.class).createSQLPanel(
-                        site,
-                        queryComposite,
-                        new DataSourceContextProvider(query.getDataSource()),
-                        "Query preview",
-                        false,
-                        getQueryWithFilledParameters()
-                    );
-                } catch (Exception e) {
-                    log.error(e);
-                }
+            try {
+                queryPreviewPanel = DBWorkbench.getService(UIServiceSQL.class).createSQLPanel(
+                    site,
+                    queryComposite,
+                    new DataSourceContextProvider(query.getDataSource()),
+                    "Query preview",
+                    false,
+                    getQueryWithFilledParameters()
+                );
+            } catch (Exception e) {
+                log.error(e);
             }
-        );
+        });
 
         sash.setWeights(600, 400);
 
