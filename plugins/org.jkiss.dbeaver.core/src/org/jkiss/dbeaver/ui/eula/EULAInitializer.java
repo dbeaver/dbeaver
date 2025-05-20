@@ -30,7 +30,7 @@ public class EULAInitializer implements IWorkbenchWindowInitializer {
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
         IWorkbenchWindow window = configurer.getWindow();
-        if (false || !DBWorkbench.getPlatform().getApplication().isStandalone() || !isEulaDialogNeeded() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
+        if (!DBWorkbench.getPlatform().getApplication().isStandalone() || !isEulaDialogNeeded() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
             return;
         }
         EULAUtils.showEula(window.getShell(), true);
