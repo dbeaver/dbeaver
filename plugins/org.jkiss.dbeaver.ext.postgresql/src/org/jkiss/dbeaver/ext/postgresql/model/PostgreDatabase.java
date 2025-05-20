@@ -183,7 +183,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
-        try (JDBCSession session = getMetaContext().openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+        PostgreExecutionContext context = getMetaContext();
+        try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+            ((PostgreDataSource) dataSource).readDatabaseServerVersion(session);
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE datname=?")) {
                 dbStat.setString(1, name);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -191,9 +193,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         loadInfo(dbResult);
                     }
                 }
-            } catch (SQLException e) {
-                throw new DBCException(e, session.getExecutionContext());
             }
+        } catch (SQLException e) {
+            throw new DBCException(e, context);
         }
     }
 

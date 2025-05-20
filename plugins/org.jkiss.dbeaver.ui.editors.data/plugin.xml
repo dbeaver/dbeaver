@@ -7,6 +7,7 @@
     <extension-point id="org.jkiss.dbeaver.dataManager" name="%extension-point.org.jkiss.dbeaver.dataManager.name" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="%extension-point.org.jkiss.dbeaver.resultset.presentation.name" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.panel" name="%extension-point.org.jkiss.dbeaver.resultset.panel.name" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resultset.error" name="%extension-point.org.jkiss.dbeaver.resultset.error.name" schema="schema/org.jkiss.dbeaver.resultset.error.exsd"/>
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsPreferencesInitializer"/>
@@ -165,6 +166,15 @@
             <!-- Show references always as we can define virtual foreign keys even if RI is not supported by database -->
 <!--            <supports if="context.supportsReferences()"/>-->
         </panel>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resultset.error">
+        <action
+            label="Go to Error"
+            description="Show the faulty query in the SQL editor"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/buttons/target_error.png"
+            class="org.jkiss.dbeaver.ui.controls.resultset.view.actions.GoToErrorAction"
+            order="10"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
