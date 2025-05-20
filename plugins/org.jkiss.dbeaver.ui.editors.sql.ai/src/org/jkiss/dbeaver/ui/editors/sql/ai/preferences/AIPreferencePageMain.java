@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.ai.preferences;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -23,14 +24,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
-import org.jkiss.dbeaver.model.ai.format.DefaultRequestFormatter;
-import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.ai.format.DefaultFormattingConfigurator;
 import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
@@ -47,41 +46,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
-    private static final Log log = Log.getLog(AIPreferencePage.class);
+public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
+    private static final Log log = Log.getLog(AIPreferencePageMain.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai";
     private final AISettings settings;
 
     private DAICompletionEngine completionEngine;
-    private IAIFormatter formatter;
-
-    private IObjectPropertyConfigurator<IAIFormatter, AISettings> formatterConfigurator;
     private Combo serviceCombo;
 
     private final Map<String, String> serviceNameMappings = new HashMap<>();
     private final Map<String, EngineConfiguratorPage> engineConfiguratorMapping = new HashMap<>();
-    EngineConfiguratorPage activeEngineConfiguratorPage;
+    private EngineConfiguratorPage activeEngineConfiguratorPage;
     private Button enableAICheck;
 
-    public AIPreferencePage() {
-        try {
-            formatter = AIFormatterRegistry.getInstance().getFormatter(AIConstants.CORE_FORMATTER);
-        } catch (DBException e) {
-            log.error("Formatter not found", e);
-            formatter = new DefaultRequestFormatter();
-        }
-        UIPropertyConfiguratorDescriptor cfgDescriptor =
-            UIPropertyConfiguratorRegistry.getInstance().getDescriptor(formatter.getClass().getName());
-        if (cfgDescriptor != null) {
-            try {
-                formatterConfigurator = cfgDescriptor.createConfigurator();
-            } catch (DBException e) {
-                log.error(e);
-            }
-        }
-        if (formatterConfigurator == null) {
-            formatterConfigurator = new DefaultFormattingConfigurator();
-        }
+    public AIPreferencePageMain() {
         this.settings = AISettingsRegistry.getInstance().getSettings();
         String activeEngine = this.settings.activeEngine();
         try {
@@ -91,8 +69,18 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         }
     }
 
+    @Override
+    public IAdaptable getElement() {
+        return this.settings;
+    }
+
+    @Override
+    public void setElement(IAdaptable element) {
+
+    }
+
     @Nullable
-    private IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> createEngineConfigurator() {
+    private IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings<?>> createEngineConfigurator() {
         UIPropertyConfiguratorDescriptor engineDescriptor =
             UIPropertyConfiguratorRegistry.getInstance().getDescriptor(completionEngine.getClass().getName());
         if (engineDescriptor != null) {
@@ -111,7 +99,6 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
             return;
         }
         enableAICheck.setSelection(!this.settings.isAiDisabled());
-        formatterConfigurator.loadSettings(this.settings);
     }
 
     @Override
@@ -124,11 +111,10 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         this.settings.setActiveEngine(serviceNameMappings.get(serviceCombo.getText()));
         if (!serviceCombo.getText().isEmpty()) {
             for (Map.Entry<String, EngineConfiguratorPage> entry : engineConfiguratorMapping.entrySet()) {
-                AIEngineSettings engineConfiguration = this.settings.getEngineConfiguration(entry.getKey());
+                AIEngineSettings<?> engineConfiguration = this.settings.getEngineConfiguration(entry.getKey());
                 entry.getValue().saveSettings(engineConfiguration);
             }
         }
-        formatterConfigurator.saveSettings(this.settings);
         AISettingsRegistry.getInstance().saveSettings(this.settings);
         try {
             store.save();
@@ -152,7 +138,6 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
 
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        formatterConfigurator.createControl(composite, formatter, () -> {});
         Composite serviceComposite = UIUtils.createComposite(composite, 2);
         serviceComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         serviceCombo = UIUtils.createLabelCombo(serviceComposite, "Engine", SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -205,7 +190,7 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
         activeEngineConfiguratorPage = engineConfiguratorMapping.get(id);
 
         if (activeEngineConfiguratorPage == null) {
-            IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> engineConfigurator
+            IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings<?>> engineConfigurator
                 = createEngineConfigurator();
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
             activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
@@ -222,10 +207,10 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
     }
 
     private static class EngineConfiguratorPage {
-        private final IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> configurator;
+        private final IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings<?>> configurator;
         private Composite composite;
 
-        EngineConfiguratorPage(IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings> configurator) {
+        EngineConfiguratorPage(IObjectPropertyConfigurator<DAICompletionEngine, AIEngineSettings<?>> configurator) {
             this.configurator = configurator;
         }
 
@@ -241,13 +226,13 @@ public class AIPreferencePage extends AbstractPrefPage implements IWorkbenchPref
             composite.dispose();
         }
 
-        private void loadSettings(AIEngineSettings settings) {
+        private void loadSettings(AIEngineSettings<?> settings) {
             if (configurator != null) {
                 configurator.loadSettings(settings);
             }
         }
 
-        private void saveSettings(AIEngineSettings settings) {
+        private void saveSettings(AIEngineSettings<?> settings) {
             if (configurator != null) {
                 configurator.saveSettings(settings);
             }
