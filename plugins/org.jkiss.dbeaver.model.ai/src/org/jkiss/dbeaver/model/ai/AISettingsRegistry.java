@@ -197,10 +197,6 @@ public class AISettingsRegistry {
                 settings = prepareDefaultSettings();
             } else {
                 settings = readPropsGson.fromJson(new StringReader(content), AISettings.class);
-
-                if (!saveSecretsAsPlainText()) {
-                    settings.resolveSecrets();
-                }
             }
         } catch (Exception e) {
             log.error("Error loading AI settings, falling back to defaults.", e);
@@ -321,7 +317,11 @@ public class AISettingsRegistry {
 
             JsonObject engineConfigurations = new JsonObject();
             for (AIEngineSettingsSerDe<?> serDe : engineSerDe) {
-                engineConfigurations.add(serDe.getId(), serDe.serialize(src.getEngineConfiguration(serDe.getId()), savePropsGson()));
+                try {
+                    engineConfigurations.add(serDe.getId(), serDe.serialize(src.getEngineConfiguration(serDe.getId()), savePropsGson()));
+                } catch (DBException e) {
+                    throw new JsonParseException("Error serializing AI engine settings: " + serDe.getId(), e);
+                }
             }
             json.add(ENGINE_CONFIGURATIONS_KEY, engineConfigurations);
 
