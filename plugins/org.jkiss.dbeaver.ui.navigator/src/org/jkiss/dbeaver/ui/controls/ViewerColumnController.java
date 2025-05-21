@@ -884,7 +884,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             if (e1 instanceof DBNDatabaseNode n1 && e2 instanceof DBNDatabaseNode n2) {
                 Object o1 = n1.getValueObject();
                 Object o2 = n2.getValueObject();
-                if(o1 instanceof DBPObjectWithOrdinalPosition c1 && o2 instanceof DBPObjectWithOrdinalPosition c2) {
+                if (o1 instanceof DBPObjectWithOrdinalPosition c1 && o2 instanceof DBPObjectWithOrdinalPosition c2) {
                     return Integer.compare(c1.getOrdinalPosition(), c2.getOrdinalPosition());
                 }
             }
