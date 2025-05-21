@@ -199,7 +199,7 @@ public final class AIUtils {
      * @param engine the completion engine
      * @param monitor the progress monitor
      */
-    public static int getMaxRequestTokens(@NotNull DAICompletionEngine engine, @NotNull DBRProgressMonitor monitor) {
+    public static int getMaxRequestTokens(@NotNull DAICompletionEngine engine, @NotNull DBRProgressMonitor monitor) throws DBException {
         return engine.getMaxContextSize(monitor) - AIConstants.MAX_RESPONSE_TOKENS;
     }
 

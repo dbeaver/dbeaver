@@ -36,7 +36,7 @@ public interface DAICompletionEngine extends AISettingsEventListener {
      * @param monitor progress monitor
      * @return the context window size
      */
-    int getMaxContextSize(@NotNull DBRProgressMonitor monitor);
+    int getMaxContextSize(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Requests completions from the completion engine.
@@ -71,7 +71,7 @@ public interface DAICompletionEngine extends AISettingsEventListener {
      *
      * @return true if the completion engine has a valid configuration
      */
-    boolean hasValidConfiguration();
+    boolean hasValidConfiguration() throws DBException;
 
-    boolean isLoggingEnabled();
+    boolean isLoggingEnabled() throws DBException;
 }
