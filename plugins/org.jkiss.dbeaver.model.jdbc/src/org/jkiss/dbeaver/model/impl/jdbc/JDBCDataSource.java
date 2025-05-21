@@ -86,7 +86,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected final SQLDialect sqlDialect;
     protected final JDBCFactory jdbcFactory;
     @Nullable
-    private JDBCRemoteInstance defaultRemoteInstance;
+    private volatile JDBCRemoteInstance defaultRemoteInstance;
 
     protected Version databaseVersion = null;
 

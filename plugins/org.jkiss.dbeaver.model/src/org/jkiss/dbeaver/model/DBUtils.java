@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryType;
@@ -2050,34 +2047,67 @@ public final class DBUtils {
             return null;
         }
         DBSInstance instance = getObjectOwnerInstance(object);
-        if (instance == null
-            || (instance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected())
-            || (instance.getDataSource() != null && instance.getDataSource().isConnectionRefreshing())) {
+
+        if (instance == null) {
+            log.debug("Can't get object owner instance for " + object);
             return null;
         }
 
-        return instance.getDefaultContext(new VoidProgressMonitor(), meta);
+        boolean isInstanceDisconnected = instance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected();
+        log.debug("Instance " + instance + " is disconnected: " + isInstanceDisconnected);
+        boolean isConnectionRefreshing = instance.getDataSource() != null && instance.getDataSource().isConnectionRefreshing();
+        log.debug("Instance " + instance + " is refreshing connection: " + isConnectionRefreshing);
+
+        if (isInstanceDisconnected || isConnectionRefreshing) {
+            return null;
+        }
+
+        DBCExecutionContext defaultContext = instance.getDefaultContext(new VoidProgressMonitor(), meta);
+        log.debug("Instance " + instance + " is default context: " + defaultContext);
+
+        return defaultContext;
     }
 
     public static DBCExecutionContext getOrOpenDefaultContext(DBSObject object, boolean meta) throws DBCException {
+        log.debug("Get default context for " + object);
         DBCExecutionContext context = DBUtils.getDefaultContext(object, meta);
+        log.debug("Default context for " + object + " is " + context);
+
         if (context == null) {
+            log.debug("No default context for " + object);
             // Not connected - try to connect
             DBSInstance ownerInstance = DBUtils.getObjectOwnerInstance(object);
             if (ownerInstance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected()) {
-                if (!RuntimeUtils.runTask(monitor -> {
-                        try {
-                            instanceLazy.checkInstanceConnection(monitor);
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    }, "Initiate instance connection",
-                    object.getDataSource().getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT))) {
+                DBRRunnableWithProgress runnableWithProgress = monitor -> {
+                    try {
+                        instanceLazy.checkInstanceConnection(monitor);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                };
+
+                int waitTime = object.getDataSource()
+                    .getContainer()
+                    .getPreferenceStore()
+                    .getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
+
+                log.debug("Waiting for " + waitTime + " ms before opening default context for " + object);
+                boolean initiateInstanceConnection = RuntimeUtils.runTask(
+                    runnableWithProgress, "Initiate instance connection",
+                    waitTime
+                );
+
+                if (!initiateInstanceConnection) {
                     throw new DBCException("Timeout while opening database connection");
                 }
+
+                log.debug("Get default context for " + object + " after connection");
                 context = DBUtils.getDefaultContext(object, meta);
+                log.debug("Default context for " + object + " is " + context);
             }
         }
+
+        log.debug("Returning context " + context);
         return context;
     }
 
