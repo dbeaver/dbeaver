@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.dto.AIEngineModelDTO;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -25,9 +26,9 @@ import java.util.List;
 /**
  * Client supports model discovery
  *
- * @param <MODEL> model class
+ * @param <MODEL> model DTO class
  */
-public interface AIModelDiscoverer<MODEL extends AIEngineModel> {
+public interface AIModelDiscoverer<MODEL extends AIEngineModelDTO> {
     /**
      * Loads model list from the server
      *

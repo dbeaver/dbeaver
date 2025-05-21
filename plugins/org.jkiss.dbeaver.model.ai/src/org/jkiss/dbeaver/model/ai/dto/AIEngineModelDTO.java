@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.dto;
 
 /**
- * Contains list of Model information DTOS
+ * Contains Model information DTO
  */
-public interface AIEngineModel {
+public interface AIEngineModelDTO {
 }
