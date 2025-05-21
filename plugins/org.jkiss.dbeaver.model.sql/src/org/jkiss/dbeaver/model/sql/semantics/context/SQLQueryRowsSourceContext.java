@@ -31,6 +31,7 @@ import org.jkiss.utils.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SQLQueryRowsSourceContext {
 
@@ -212,7 +213,7 @@ public class SQLQueryRowsSourceContext {
                     SQLQueryComplexName name = new SQLQueryComplexName(new SQLQueryQualifiedName(
                         alias.getSyntaxNode(), Collections.emptyList(), alias, 0, null
                     ));
-                    put(name, new KnownRowsSourceInfo(sourceModel, name, null, null));
+                    put(name, new KnownRowsSourceInfo(sourceModel, name, null, alias.getSymbol()));
                 }
             }
         });
@@ -264,7 +265,10 @@ public class SQLQueryRowsSourceContext {
         return new SQLQuerySourcesInfoCollection() {
 
             private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> resolutionResults =
-                new HashSet<>(rowsSources.values()).stream().collect(Collectors.toMap(s -> s.source, s -> s));
+                Stream.of(rowsSources.values(), dynamicTableSources.values())
+                  .flatMap(Collection::stream)
+                  .collect(Collectors.toSet())
+                  .stream().collect(Collectors.toMap(s -> s.source, s -> s));
 
             private final Set<DBSObject> referencedTables = rowsSources.values().stream().map(s -> s.tableOrNull)
                 .filter(Objects::nonNull)
