@@ -56,7 +56,7 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
     }
 
     @Override
-    public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) {
+    public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) throws DBException {
         return OpenAIModel.getByName(getSettings().getModel()).getMaxTokens();
     }
 
@@ -130,12 +130,12 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
     }
 
     @Override
-    public boolean hasValidConfiguration() {
+    public boolean hasValidConfiguration() throws DBException {
         return getSettings().isValidConfiguration();
     }
 
     @Override
-    public boolean isLoggingEnabled() {
+    public boolean isLoggingEnabled() throws DBException {
         return getSettings().isLoggingEnabled();
     }
 
@@ -180,15 +180,15 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
         );
     }
 
-    protected String model() {
+    protected String model() throws DBException {
         return OpenAIModel.getByName(getSettings().getModel()).getName();
     }
 
-    protected double temperature() {
+    protected double temperature() throws DBException {
         return getSettings().getTemperature();
     }
 
-    private OpenAIProperties getSettings() {
+    private OpenAIProperties getSettings() throws DBException {
         return registry.getSettings().<LegacyAISettings<OpenAIProperties>> getEngineConfiguration(OpenAIConstants.OPENAI_ENGINE)
             .getProperties();
     }
