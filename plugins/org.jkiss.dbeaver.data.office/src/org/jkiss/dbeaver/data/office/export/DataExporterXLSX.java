@@ -655,7 +655,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         }
     }
 
-    private String convertExcelFormatToJavaFormat(String excelFormat) {
+    private String convertExcelFormatToJavaFormat(@NotNull String excelFormat) {
         String javaFormat = excelFormat
             .replace("m/d/yy h:mm", "MM/dd/yy HH:mm")
             .replace("h:mm:ss AM/PM", "hh:mm:ss a")
