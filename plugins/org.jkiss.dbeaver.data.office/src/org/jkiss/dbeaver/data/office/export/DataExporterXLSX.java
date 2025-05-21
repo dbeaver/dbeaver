@@ -88,7 +88,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     private static final int ROW_WINDOW = 100;
     private static final Date EXCEL_MIN_DATE = new GregorianCalendar(1900, Calendar.JANUARY, 1).getTime();
-    private static final String DEFAULT_DATE_FORMAT = "mm/dd/yy";
+    private static final String DEFAULT_DATE_FORMAT = "MM/dd/yy";
 
     private String nullString;
     private String dateFormatString;
@@ -218,7 +218,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         this.sheetIndex = 0;
 
         String df = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), DEFAULT_DATE_FORMAT);
-        this.dateFormatString = convertExcelFormatToJavaFormat(df);
+        this.dateFormatString = df;
         styleDate.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(df));
 
         super.init(site);
@@ -653,20 +653,4 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             return this == DESCRIPTION || this == BOTH;
         }
     }
-
-    private String convertExcelFormatToJavaFormat(@NotNull String excelFormat) {
-        String javaFormat = excelFormat
-            .replace("m/d/yy h:mm", "MM/dd/yy HH:mm")
-            .replace("h:mm:ss AM/PM", "hh:mm:ss a")
-            .replace("h:mm AM/PM", "hh:mm a");
-
-        javaFormat = javaFormat
-            .replace("d-mmm-yy", "d-MMM-yy")
-            .replace("d-mmm", "d-MMM")
-            .replace("mmm-yy", "MMM-yy")
-            .replace("m/d/yy", "MM/dd/yy");
-
-        return javaFormat;
-    }
-
 }
