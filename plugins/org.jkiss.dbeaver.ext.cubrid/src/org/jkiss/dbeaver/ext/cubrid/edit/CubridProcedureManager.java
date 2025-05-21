@@ -56,7 +56,11 @@ public class CubridProcedureManager extends GenericProcedureManager {
     }
 
     @Override
-    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand objectChangeCommand, @NotNull Map<String, Object> options)
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actionList,
+            @NotNull ObjectChangeCommand objectChangeCommand,
+            @NotNull Map<String, Object> options)
     {
         CubridProcedure procedure = (CubridProcedure)objectChangeCommand.getObject();
         actionList.add(new SQLDatabasePersistAction("Modify Procedure", procedure.getSource()));

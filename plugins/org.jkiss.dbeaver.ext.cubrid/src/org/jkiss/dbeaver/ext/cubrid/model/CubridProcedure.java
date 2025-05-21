@@ -145,7 +145,7 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
                 this.source += (getProcedureType() == DBSProcedureType.FUNCTION) ? " RETURN int" : "";
                 this.source += "\nAS LANGUAGE JAVA NAME";
             } else {
-                this.source = "-- JAVA Procedure definition not available";
+                this.source = "-- Java procedure definition not available";
             }
         }
         return source;

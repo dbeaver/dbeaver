@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.ui.views;
 
+import java.util.Locale;
+
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -55,7 +57,7 @@ public class PrefPageCubrid extends TargetPrefPage
     protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dsContainer) {
         DBPPreferenceStore store = dsContainer.getPreferenceStore();
         return (store.contains(CubridConstants.PREF_DBMS_OUTPUT)
-				|| store.contains(CubridConstants.PREF_DBMS_OUTPUT_BUFFER_SIZE));
+                || store.contains(CubridConstants.PREF_DBMS_OUTPUT_BUFFER_SIZE));
     }
 
     @Override
@@ -152,12 +154,7 @@ public class PrefPageCubrid extends TargetPrefPage
             Group miscGroup = UIUtils.createControlGroup(composite, CubridMessages.pref_page_cubrid_group_dbms_output, 2, GridData.FILL_HORIZONTAL, 0);
             enableDbmsOutputCheck = UIUtils.createCheckbox(miscGroup, CubridMessages.pref_page_cubrid_checkbox_enable_dbms_output, "", true, 2);
             dbmsOutputBufferSize = UIUtils.createLabelText(miscGroup, CubridMessages.pref_page_cubrid_label_buffer_size, "");
-            dbmsOutputBufferSize.addVerifyListener(new VerifyListener() {
-                @Override
-                public void verifyText(VerifyEvent e) {
-                    e.doit = e.text.matches("[0-9]*");
-                }
-            });
+            dbmsOutputBufferSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
         }
         return composite;
     }

@@ -248,8 +248,9 @@ public class CubridDataSource extends GenericDataSource
     }
 
     @Override
-    protected void initializeContextState(
-            DBRProgressMonitor monitor, JDBCExecutionContext context, JDBCExecutionContext initFrom)
+    protected void initializeContextState(DBRProgressMonitor monitor,
+            JDBCExecutionContext context,
+            JDBCExecutionContext initFrom)
             throws DBException {
         super.initializeContextState(monitor, context, initFrom);
 
@@ -358,7 +359,6 @@ public class CubridDataSource extends GenericDataSource
 
     public boolean isSupportEnableDBMS() {
         boolean ret = getContainer().getPreferenceStore().getBoolean(CubridConstants.PREF_DBMS_OUTPUT);
-        System.out.println("isSupportEnableDBMS : " + ret);
         return ret;
     }
 
@@ -367,7 +367,8 @@ public class CubridDataSource extends GenericDataSource
     }
 
     private boolean checkSupportDBMSOutput(
-            @NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context)
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext context)
             throws DBException {
 
         try (JDBCSession session =
