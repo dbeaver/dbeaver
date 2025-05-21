@@ -16,8 +16,24 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.List;
+
 /**
- * Contains list of Model information DTOS
+ * Client supports model discovery
+ * @param <MODEL> model class
  */
-public interface IModel {
+public interface AIModelDiscoverer<MODEL extends DAIModel> {
+    /**
+     * Discover models
+     * @param monitor progress monitor
+     * @return list of models
+     * @throws DBException if an error occurs
+     */
+    List<MODEL> loadModels(@NotNull DBRProgressMonitor monitor) throws DBException;
+
+    List<MODEL> loadModels(@NotNull  DBRProgressMonitor monitor, @NotNull String token) throws DBException;
 }
