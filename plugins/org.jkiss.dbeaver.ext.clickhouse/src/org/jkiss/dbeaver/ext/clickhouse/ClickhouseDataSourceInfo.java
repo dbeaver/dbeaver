@@ -14,12 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.junit;
 
-import org.jkiss.junit.osgi.annotation.RunWithProduct;
+package org.jkiss.dbeaver.ext.clickhouse;
 
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 
-@RunWithProduct("DBeaverUnitTest.product")
-public abstract class DBeaverUnitTest extends ApplicationUnitTest {
+public class ClickhouseDataSourceInfo extends JDBCDataSourceInfo {
+
+    public ClickhouseDataSourceInfo(JDBCDatabaseMetaData metaData) {
+        super(metaData);
+    }
+
+    @Override
+    public boolean supportsIndexes() {
+        // For now - Clickhouse driver return us empty list as indexInfo and we can't create Clickhouse indexes via DBeaver UI
+        // So far we turn off indexes
+        return false;
+    }
 
 }
