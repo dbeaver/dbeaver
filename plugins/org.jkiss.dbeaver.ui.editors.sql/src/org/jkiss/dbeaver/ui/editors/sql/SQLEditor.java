@@ -151,8 +151,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -954,7 +954,7 @@ public class SQLEditor extends SQLEditorBase implements
         return super.getAdapter(required);
     }
 
-    protected boolean checkConnected(boolean forceConnect, DBRProgressListener onFinish)
+    public boolean checkConnected(boolean forceConnect, DBRProgressListener onFinish)
     {
         // Connect to datasource
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
@@ -1233,13 +1233,7 @@ public class SQLEditor extends SQLEditorBase implements
     public boolean validateEditorInputState() {
         boolean res = super.validateEditorInputState();
         if (res) {
-            SourceViewer viewer = getViewer();
-            if (viewer != null) {
-                StyledText textWidget = viewer.getTextWidget();
-                if (textWidget != null && !textWidget.isDisposed()) {
-                    textWidget.setFocus();
-                }
-            }
+            setFocusToTextControl();
         }
         return res;
     }
@@ -1973,11 +1967,9 @@ public class SQLEditor extends SQLEditorBase implements
         try {
             if (extraPresentationManager.activePresentation == null) {
                 stackLayout.topControl = presentationStack.getChildren()[0];
-                getEditorControlWrapper().setFocus();
                 getSite().setSelectionProvider(new DynamicSelectionProvider());
             } else {
                 stackLayout.topControl = extraPresentationManager.getActivePresentationControl();
-                extraPresentationManager.getActivePresentationControl().setFocus();
                 getSite().setSelectionProvider(extraPresentationManager.activePresentation.getSelectionProvider());
             }
 
@@ -2037,6 +2029,15 @@ public class SQLEditor extends SQLEditorBase implements
             }
 
             presentationStack.layout(true, true);
+
+            UIUtils.asyncExec(() -> {
+                if (extraPresentationManager.activePresentation == null) {
+                    setFocusToTextControl();
+                } else {
+                    extraPresentationManager.getActivePresentationControl().setFocus();
+                }
+            });
+
         } finally {
             resultsSash.setRedraw(true);
         }
@@ -5330,6 +5331,7 @@ public class SQLEditor extends SQLEditorBase implements
                     presentations.put(descriptor, activePresentation);
 
                     SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
+
                     return true;
                 }
             } else {
@@ -5343,6 +5345,7 @@ public class SQLEditor extends SQLEditorBase implements
                     activePresentation.showPresentation(SQLEditor.this, false);
 
                     SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
+
                     return true;
                 }
             }

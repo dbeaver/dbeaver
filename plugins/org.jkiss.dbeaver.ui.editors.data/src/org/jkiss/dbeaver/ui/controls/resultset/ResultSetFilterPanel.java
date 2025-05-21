@@ -726,7 +726,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         private Shell popup;
 
         ActiveObjectPanel(Composite addressBar) {
-            super(addressBar, SWT.NONE);
+            super(addressBar, SWT.NO_FOCUS);
             setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_open_console);
             //setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -1049,7 +1049,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         private final Image enabledImageCollapse, disabledImageCollapse;
 
         FilterExpandPanel(Composite addressBar) {
-            super(addressBar, SWT.NONE);
+            super(addressBar, SWT.NO_FOCUS);
             setToolTipText(ResultSetMessages.filter_panel_expand_panel_text);
             enabledImageExpand = DBeaverIcons.getImage(UIIcon.FIT_WINDOW);
             disabledImageExpand = new Image(enabledImageExpand.getDevice(), enabledImageExpand, SWT.IMAGE_GRAY);
