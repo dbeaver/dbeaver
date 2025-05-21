@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.awt.*;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.Reader;
@@ -88,7 +89,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     private static final int ROW_WINDOW = 100;
     private static final Date EXCEL_MIN_DATE = new GregorianCalendar(1900, Calendar.JANUARY, 1).getTime();
-    private static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
+    private static final String DEFAULT_DATE_FORMAT = "mm/dd/yy";
 
     private String nullString;
     private String dateFormatString;
@@ -157,7 +158,6 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         splitSqlText = CommonUtils.getBoolean(properties.get(PROP_SPLIT_SQLTEXT), false);
         splitByRowCount = CommonUtils.toInt(properties.get(PROP_SPLIT_BYROWCOUNT), EXCEL2007MAXROWS);
         splitByCol = CommonUtils.toInt(properties.get(PROP_SPLIT_BYCOL), 0);
-        String dateFormat = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), "");
         appendStrategy = AppendStrategy.of(CommonUtils.toString(properties.get(PROP_APPEND_STRATEGY)));
 
         if (wb == null) {
@@ -219,7 +219,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         this.sheetIndex = 0;
 
         String df = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), DEFAULT_DATE_FORMAT);
-        this.dateFormatString = df;
+        this.dateFormatString = convertExcelFormatToJavaFormat(df);
         styleDate.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(df));
 
         super.init(site);
@@ -654,4 +654,20 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             return this == DESCRIPTION || this == BOTH;
         }
     }
+
+    private String convertExcelFormatToJavaFormat(String excelFormat) {
+        String javaFormat = excelFormat
+            .replace("m/d/yy h:mm", "MM/dd/yy HH:mm")
+            .replace("h:mm:ss AM/PM", "hh:mm:ss a")
+            .replace("h:mm AM/PM", "hh:mm a");
+
+        javaFormat = javaFormat
+            .replace("d-mmm-yy", "d-MMM-yy")
+            .replace("d-mmm", "d-MMM")
+            .replace("mmm-yy", "MMM-yy")
+            .replace("m/d/yy", "MM/dd/yy");
+
+        return javaFormat;
+    }
+
 }
