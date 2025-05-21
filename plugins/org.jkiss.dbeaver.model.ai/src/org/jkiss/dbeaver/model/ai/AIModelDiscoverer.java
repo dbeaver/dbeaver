@@ -24,16 +24,26 @@ import java.util.List;
 
 /**
  * Client supports model discovery
+ *
  * @param <MODEL> model class
  */
 public interface AIModelDiscoverer<MODEL extends DAIModel> {
     /**
-     * Discover models
+     * Loads model list from the server
+     *
      * @param monitor progress monitor
      * @return list of models
      * @throws DBException if an error occurs
      */
     List<MODEL> loadModels(@NotNull DBRProgressMonitor monitor) throws DBException;
 
+    /**
+     * Loads model list from the server
+     *
+     * @param monitor progress monitor
+     * @param token   authentication token
+     * @return list of models
+     * @throws DBException if an error occurs
+     */
     List<MODEL> loadModels(@NotNull  DBRProgressMonitor monitor, @NotNull String token) throws DBException;
 }
