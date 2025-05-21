@@ -19,5 +19,5 @@ package org.jkiss.dbeaver.model.ai;
 /**
  * Contains list of Model information DTOS
  */
-public interface DAIModel {
+public interface AIEngineModel {
 }

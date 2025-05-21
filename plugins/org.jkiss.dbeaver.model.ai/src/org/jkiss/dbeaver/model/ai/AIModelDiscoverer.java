@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @param <MODEL> model class
  */
-public interface AIModelDiscoverer<MODEL extends DAIModel> {
+public interface AIModelDiscoverer<MODEL extends AIEngineModel> {
     /**
      * Loads model list from the server
      *
