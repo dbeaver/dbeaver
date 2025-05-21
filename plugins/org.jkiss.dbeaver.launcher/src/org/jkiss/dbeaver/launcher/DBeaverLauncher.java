@@ -703,7 +703,9 @@ public class DBeaverLauncher {
                 System.out.println(output);
             }
         } catch (Exception e) {
-            System.out.println("Error during calling DBeaver server: " + e.getMessage());
+            if (e.getMessage() != null) {
+                System.out.println("Error during calling DBeaver server: " + e.getMessage());
+            }
         } finally {
             httpExecutor.shutdown();
         }

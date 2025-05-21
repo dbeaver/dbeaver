@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.eula;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.utils.SystemVariablesResolver;
-import org.jkiss.utils.IOUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class EULAUtils {
     private static final Log log = Log.getLog(EULAUtils.class);
@@ -35,23 +36,26 @@ public class EULAUtils {
     //TODO change hardcoded eula version to something more flexible
     private static final String eulaVersion = "1.0";
 
-    //Only works for packaged version of dbeaver, will not find anything inside development environment
-    private static final String EULA_PATH = SystemVariablesResolver.getInstallPath() + File.separator + "licenses" + File.separator + "dbeaver_license.txt";
-
     @NotNull
     public static String getEulaVersion() {
         return eulaVersion;
     }
 
     public static String getPackageEula() {
-        String eula;
-        try (FileReader reader = new FileReader(EULA_PATH)) {
-            eula = IOUtils.readToString(reader);
+        try {
+            Path installPath = RuntimeUtils.getLocalPathFromURL(Platform.getInstallLocation().getURL());
+            Path eulaPath = installPath.resolve("eula.txt");
+            if (!Files.exists(eulaPath) && DBWorkbench.getPlatform().getApplication().isCommunity()) {
+                eulaPath = installPath.resolve("licenses/dbeaver-community-license.txt");
+            }
+            if (Files.exists(eulaPath)) {
+                return Files.readString(eulaPath);
+            }
         } catch (IOException e) {
-            log.error("Error reading End-user license agreement file", e);
-            return null;
+            log.debug(e);
         }
-        return eula;
+
+        return "EULA";
     }
 
     public static void showEula(@NotNull Shell shell, boolean needsConfirmation) {

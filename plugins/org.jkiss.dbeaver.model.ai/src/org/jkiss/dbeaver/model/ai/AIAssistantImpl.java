@@ -237,9 +237,10 @@ public class AIAssistantImpl implements AIAssistant {
     ) throws DBException {
         try {
             Flow.Publisher<DAICompletionChunk> publisher = callWithRetry(() -> engine.requestCompletionStream(monitor, request));
+            boolean loggingEnabled = engine.isLoggingEnabled();
 
             return subscriber -> {
-                if (engine.isLoggingEnabled()) {
+                if (loggingEnabled) {
                     log.debug("Requesting completion stream [request=" + request + "]");
                     publisher.subscribe(new LogSubscriber(log, subscriber));
                 } else {
