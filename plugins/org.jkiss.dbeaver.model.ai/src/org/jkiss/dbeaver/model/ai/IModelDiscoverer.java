@@ -19,18 +19,20 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.List;
+
 /**
  * Engine supports model discovery
  * @param <MODEL> model class
  */
-public interface IModelDiscoverer<MODEL extends IModelList> {
+public interface IModelDiscoverer<MODEL extends IModel> {
     /**
      * Discover models
      * @param monitor progress monitor
      * @return list of models
      * @throws DBException if an error occurs
      */
-    MODEL getModels(DBRProgressMonitor monitor) throws DBException;
+    List<MODEL> loadModels(DBRProgressMonitor monitor) throws DBException;
 
-    MODEL getModels(DBRProgressMonitor monitor, String credentials) throws DBException;
+    List<MODEL> loadModels(DBRProgressMonitor monitor, String credentials) throws DBException;
 }
