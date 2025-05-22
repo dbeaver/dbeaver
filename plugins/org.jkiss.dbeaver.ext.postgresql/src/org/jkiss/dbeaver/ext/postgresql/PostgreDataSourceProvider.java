@@ -109,13 +109,6 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         if (!CommonUtils.isEmpty(configToUse.getDatabaseName())) {
             url.append(configToUse.getDatabaseName());
         }
-        //        if (CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_USE_SSL))) {
-        //            url.append("?ssl=true");
-        //            if (CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_SSL_NON_VALIDATING))) {
-        //                url.append("&sslfactory=org.postgresql.ssl.NonValidatingFactory");
-        //            }
-        //        }
-
         return url.toString();
     }
 
