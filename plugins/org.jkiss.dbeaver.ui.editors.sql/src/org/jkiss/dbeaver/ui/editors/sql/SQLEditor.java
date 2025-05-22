@@ -3318,7 +3318,10 @@ public class SQLEditor extends SQLEditorBase implements
                                 // Active schema was changed? Update title and tooltip
                                 firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
                             }
-                            break;
+                            return;
+                        case BEFORE_CONNECT:
+                        case AFTER_CONNECT:
+                            return;
                         default:
                             break;
                     }

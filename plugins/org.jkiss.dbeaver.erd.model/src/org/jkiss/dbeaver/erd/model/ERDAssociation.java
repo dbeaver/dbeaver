@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -164,7 +166,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation> {
         if (sourceEntity != null && sourceAttributes != null) {
             if (expression instanceof BinaryExpression be) {
                 if (be.getLeftExpression() instanceof Column c) {
-                    String leftAttr = c.getColumnName();
+                    String leftAttr = DBUtils.getUnQuotedIdentifier(c.getColumnName(), BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES);
                     for (int i = 0; i < sourceAttributes.size(); i++) {
                         ERDEntityAttribute sourceAttribute = sourceAttributes.get(i);
                         if (CommonUtils.equalObjects(sourceAttribute.getName(), leftAttr)) {
