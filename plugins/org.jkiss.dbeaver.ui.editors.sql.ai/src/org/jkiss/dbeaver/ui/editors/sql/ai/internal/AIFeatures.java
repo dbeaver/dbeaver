@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,5 +27,6 @@ public interface AIFeatures {
 
     DBRFeature SQL_AI_POPUP = DBRFeature.createFeature(CATEGORY_SQL_AI, "Show AI popup");
     DBRFeature SQL_AI_GENERATE_PROPOSALS = DBRFeature.createFeature(CATEGORY_SQL_AI, "Generate AI proposal");
+    DBRFeature SQL_AI_COMMAND = DBRFeature.createFeature(CATEGORY_SQL_AI, "Generate AI SQL by @ai command");
 
 }
