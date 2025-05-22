@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,6 +72,8 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         DBAAuthModel<?> authModel = connectionInfo.getAuthModel();
+        String databaseName = connectionInfo.getDatabaseName();
+        connectionInfo.setDatabaseName(databaseName.replace("/", "%2F"));
         if (authModel instanceof DBPDataSourceURLProvider) {
             String connectionURL = ((DBPDataSourceURLProvider) authModel).getConnectionURL(driver, connectionInfo);
             if (CommonUtils.isNotEmpty(connectionURL)) {
