@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.model.qm.QMTranslationHistoryItem;
 import org.jkiss.dbeaver.model.qm.QMTranslationHistoryManager;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
@@ -209,7 +209,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         return scopeSelectorControl.getScope();
     }
 
-    public List<DBSEntity> getCustomEntities(@NotNull DBRProgressMonitor monitor) {
+    public List<DBSObject> getCustomEntities(@NotNull DBRProgressMonitor monitor) {
         return scopeSelectorControl.getCustomEntities(monitor);
     }
 
