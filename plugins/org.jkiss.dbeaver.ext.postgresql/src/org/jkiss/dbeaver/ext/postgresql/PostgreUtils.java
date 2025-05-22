@@ -55,8 +55,6 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.Array;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -1030,9 +1028,8 @@ public class PostgreUtils {
             Pattern pattern = Pattern.compile("jdbc:postgresql://[^/]+/([^?#]+)");
             Matcher matcher = pattern.matcher(url);
             if (matcher.find()) {
-                activeDatabaseName = URLDecoder.decode(matcher.group(1), StandardCharsets.UTF_8);
+                activeDatabaseName = matcher.group(1).replace("%2F", "/");
             }
-
         }
         return activeDatabaseName;
     }

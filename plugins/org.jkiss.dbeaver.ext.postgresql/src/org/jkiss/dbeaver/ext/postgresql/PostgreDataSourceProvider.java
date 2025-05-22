@@ -40,8 +40,6 @@ import org.jkiss.utils.IOUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
@@ -73,42 +71,54 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
 
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
-        DBAAuthModel<?> authModel = connectionInfo.getAuthModel();
+        DBPConnectionConfiguration configToUse = connectionInfo;
         String databaseName = connectionInfo.getDatabaseName();
-        String formattedDBName = URLEncoder.encode(databaseName, StandardCharsets.UTF_8);
+
+        if (databaseName != null && databaseName.contains("/")) {
+            configToUse = new DBPConnectionConfiguration(connectionInfo);
+            configToUse.setDatabaseName(databaseName.replace("/", "%2F"));
+        }
+
+        DBAAuthModel<?> authModel = configToUse.getAuthModel();
+
         if (authModel instanceof DBPDataSourceURLProvider sourceURLProvider) {
-            String connectionURL = sourceURLProvider.getConnectionURL(driver, connectionInfo);
+            String connectionURL = sourceURLProvider.getConnectionURL(driver, configToUse);
             if (CommonUtils.isNotEmpty(connectionURL)) {
-                return connectionURL.replace(databaseName, formattedDBName);
+                return connectionURL;
             }
         }
-        if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
-            return connectionInfo.getUrl();
+
+        if (configToUse.getConfigurationType() == DBPDriverConfigurationType.URL) {
+            return configToUse.getUrl();
         }
+
         PostgreServerType serverType = PostgreUtils.getServerType(driver);
         if (serverType.supportsCustomConnectionURL()) {
-            return DatabaseURL.generateUrlByTemplate(driver, connectionInfo).replace(databaseName, formattedDBName);
+            return DatabaseURL.generateUrlByTemplate(driver, configToUse);
         }
 
-        StringBuilder url = new StringBuilder();
-        url.append("jdbc:postgresql://");
+        StringBuilder url = new StringBuilder("jdbc:postgresql://");
+        url.append(configToUse.getHostName());
 
-        url.append(connectionInfo.getHostName());
-        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-            url.append(":").append(connectionInfo.getHostPort());
+        if (!CommonUtils.isEmpty(configToUse.getHostPort())) {
+            url.append(":").append(configToUse.getHostPort());
         }
+
         url.append("/");
-        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-            url.append(connectionInfo.getDatabaseName());
+
+        if (!CommonUtils.isEmpty(configToUse.getDatabaseName())) {
+            url.append(configToUse.getDatabaseName());
         }
-//        if (CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_USE_SSL))) {
-//            url.append("?ssl=true");
-//            if (CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_SSL_NON_VALIDATING))) {
-//                url.append("&sslfactory=org.postgresql.ssl.NonValidatingFactory");
-//            }
-//        }
+        //        if (CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_USE_SSL))) {
+        //            url.append("?ssl=true");
+        //            if (CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_SSL_NON_VALIDATING))) {
+        //                url.append("&sslfactory=org.postgresql.ssl.NonValidatingFactory");
+        //            }
+        //        }
+
         return url.toString();
     }
+
 
     @NotNull
     @Override
