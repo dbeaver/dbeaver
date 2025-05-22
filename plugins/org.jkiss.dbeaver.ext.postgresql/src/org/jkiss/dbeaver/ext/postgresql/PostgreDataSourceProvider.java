@@ -40,6 +40,8 @@ import org.jkiss.utils.IOUtils;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
@@ -73,11 +75,11 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         DBAAuthModel<?> authModel = connectionInfo.getAuthModel();
         String databaseName = connectionInfo.getDatabaseName();
-        connectionInfo.setDatabaseName(databaseName.replace("/", "%2F"));
-        if (authModel instanceof DBPDataSourceURLProvider) {
-            String connectionURL = ((DBPDataSourceURLProvider) authModel).getConnectionURL(driver, connectionInfo);
+        String formattedDBName = URLEncoder.encode(databaseName, StandardCharsets.UTF_8);
+        if (authModel instanceof DBPDataSourceURLProvider sourceURLProvider) {
+            String connectionURL = sourceURLProvider.getConnectionURL(driver, connectionInfo);
             if (CommonUtils.isNotEmpty(connectionURL)) {
-                return connectionURL;
+                return connectionURL.replace(databaseName, formattedDBName);
             }
         }
         if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
@@ -85,7 +87,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         }
         PostgreServerType serverType = PostgreUtils.getServerType(driver);
         if (serverType.supportsCustomConnectionURL()) {
-            return DatabaseURL.generateUrlByTemplate(driver, connectionInfo);
+            return DatabaseURL.generateUrlByTemplate(driver, connectionInfo).replace(databaseName, formattedDBName);
         }
 
         StringBuilder url = new StringBuilder();
