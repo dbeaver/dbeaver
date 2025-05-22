@@ -119,8 +119,9 @@ public class ConnectionNameResolver implements IVariableResolver {
         return newName;
     }
 
+    @Nullable
     @Override
-    public String get(String name) {
+    public String get(@NotNull String name) {
         if (configuration != null) {
             switch (name) {
                 case DBPConnectionConfiguration.VARIABLE_HOST:

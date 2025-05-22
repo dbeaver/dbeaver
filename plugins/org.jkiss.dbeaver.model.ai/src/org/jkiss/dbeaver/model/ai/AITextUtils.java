@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
@@ -138,7 +138,7 @@ public class AITextUtils {
     }
 
     @NotNull
-    public static List<DBSEntity> loadCustomEntities(
+    public static List<DBSObject> loadCustomEntities(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSource dataSource,
         @NotNull Set<String> ids
@@ -155,17 +155,15 @@ public class AITextUtils {
     }
 
     @NotNull
-    private static List<DBSEntity> loadCheckedEntitiesById(
+    private static List<DBSObject> loadCheckedEntitiesById(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPProject project,
         @NotNull Set<String> ids
     ) throws DBException {
-        final List<DBSEntity> output = new ArrayList<>();
+        final List<DBSObject> output = new ArrayList<>();
 
         for (String id : ids) {
-            if (DBUtils.findObjectById(monitor, project, id) instanceof DBSEntity entity) {
-                output.add(entity);
-            }
+            output.add(DBUtils.findObjectById(monitor, project, id));
             monitor.worked(1);
         }
 

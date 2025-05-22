@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,16 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Set;
 
 public class DuckMetaModel extends GenericMetaModel {
 
     private static final Log log = Log.getLog(DuckMetaModel.class);
+
+    private static final Set<String> SYSTEM_SCHEMA_NAMES = Set.of(
+        "information_schema",
+        "pg_catalog"
+    );
 
     @Override
     public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(
@@ -153,5 +159,15 @@ public class DuckMetaModel extends GenericMetaModel {
     @Override
     public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         return new DuckDBDataSource(monitor, container, this);
+    }
+
+    @Override
+    public boolean isSystemSchema(@NotNull GenericSchema schema) {
+        return SYSTEM_SCHEMA_NAMES.contains(schema.getName());
+    }
+
+    @Override
+    public GenericCatalog createCatalogImpl(@NotNull GenericDataSource dataSource, @NotNull String catalogName) {
+        return new DuckDBGenericCatalog(dataSource, catalogName);
     }
 }

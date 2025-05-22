@@ -22,7 +22,7 @@ public enum QuoteStrategy {
     ALL("all"),
     STRINGS("strings"),
     ALL_BUT_NUMBERS("all but numbers"),
-    ALL_BUT_NULLS("all but nulls");
+    ALL_INCLUDING_NULLS("all including nulls");
 
     private final String value;
 
