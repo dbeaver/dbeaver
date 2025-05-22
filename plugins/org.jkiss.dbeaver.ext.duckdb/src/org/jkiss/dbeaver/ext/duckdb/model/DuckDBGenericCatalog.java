@@ -14,12 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.junit;
+package org.jkiss.dbeaver.ext.duckdb.model;
 
-import org.jkiss.junit.osgi.annotation.RunWithProduct;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 
+import java.util.Set;
 
-@RunWithProduct("DBeaverUnitTest.product")
-public abstract class DBeaverUnitTest extends ApplicationUnitTest {
+public class DuckDBGenericCatalog extends GenericCatalog {
 
+    private static final Set<String> SYSTEM_CATALOG_NAMES = Set.of(
+        "system",
+        "temp"
+    );
+
+    public DuckDBGenericCatalog(@NotNull GenericDataSource dataSource, @NotNull String catalogName) {
+        super(dataSource, catalogName);
+    }
+
+    @Override
+    public boolean isSystem() {
+        return SYSTEM_CATALOG_NAMES.contains(this.getName());
+    }
 }
