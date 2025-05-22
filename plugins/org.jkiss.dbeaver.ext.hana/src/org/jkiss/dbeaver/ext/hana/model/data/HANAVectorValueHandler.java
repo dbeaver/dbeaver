@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.hana.model.data;
 
-import java.sql.SQLException;
-import java.sql.Types;
-
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -29,10 +26,15 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.sql.SQLException;
+import java.sql.Types;
+
 public abstract class HANAVectorValueHandler extends JDBCArrayValueHandler {
 
-    private static DBCLogicalOperator[] SUPPORTED_OPERATORS = { DBCLogicalOperator.IS_NOT_NULL,
-            DBCLogicalOperator.IS_NULL };
+    private static DBCLogicalOperator[] SUPPORTED_OPERATORS = {
+        DBCLogicalOperator.IS_NOT_NULL,
+        DBCLogicalOperator.IS_NULL
+    };
 
     @Override
     protected boolean useGetArray(DBCSession session, DBSTypedObject type) {
@@ -58,7 +60,8 @@ public abstract class HANAVectorValueHandler extends JDBCArrayValueHandler {
         }
     }
 
-    protected abstract void bindVectorParameter(JDBCPreparedStatement statement, int paramIndex, JDBCCollection collection)
+    protected abstract void bindVectorParameter(JDBCPreparedStatement statement, int paramIndex,
+            JDBCCollection collection)
             throws DBCException, SQLException;
 
     @Override

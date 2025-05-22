@@ -19,10 +19,6 @@
  */
 package org.jkiss.dbeaver.ext.hana.model.data;
 
-import java.sql.Array;
-import java.sql.SQLException;
-import java.sql.Types;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.hana.model.HANAConstants;
@@ -38,44 +34,48 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.sql.Array;
+import java.sql.SQLException;
+import java.sql.Types;
+
 public class HANAHalfVectorValueHandler extends HANAVectorValueHandler {
 
     public static final HANAHalfVectorValueHandler INSTANCE = new HANAHalfVectorValueHandler();
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
-    {
-        if (object != null && object instanceof Array array)
-            if (type.getTypeName().equals(HANAConstants.DATA_TYPE_NAME_HALF_VECTOR)) {
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object,
+            boolean copy, boolean validateValue) throws DBCException {
+        if (object != null && object instanceof Array array
+                && type.getTypeName().equals(HANAConstants.DATA_TYPE_NAME_HALF_VECTOR)) {
+            try {
+                JDBCSession jdbcSession = (JDBCSession) session;
+                DBRProgressMonitor monitor = jdbcSession.getProgressMonitor();
+                JDBCDataSource dataSource = jdbcSession.getDataSource();
+                String baseTypeName = "REAL";
+                DBSDataType elementType = null;
                 try {
-                    JDBCSession jdbcSession = (JDBCSession) session;
-                    DBRProgressMonitor monitor = jdbcSession.getProgressMonitor();
-                    JDBCDataSource dataSource = jdbcSession.getDataSource();
-                    String baseTypeName = "REAL";
-                    DBSDataType elementType = null;
-                    try {
-                        elementType = dataSource.resolveDataType(monitor, baseTypeName);
-                    } catch (DBException e) {
-                        throw new DBCException("Error resolving data type", e);
-                    }
-                    final DBDValueHandler elementValueHandler = DBUtils.findValueHandler(session, elementType);
-                    Object arrObject = array.getArray();
-                    int arrLength = java.lang.reflect.Array.getLength(arrObject);
-                    if (arrLength == 0) {
-                        throw new DBCException("Non-NULL HALF_VECTOR cannot have 0 dimension");
-                    }
-                    Object[] contents = new Object[arrLength];
-                    for (int i = 0; i < arrLength; i++) {
-                        Object item = java.lang.reflect.Array.get(arrObject, i);
-                        if (item == null) {
-                            throw new DBCException("HALF_VECTOR cannot have NULL element");
-                        }
-                        contents[i] = elementValueHandler.getValueFromObject(jdbcSession, elementType, item, false, true);
-                    }
-                    return new JDBCCollection(monitor, elementType, elementValueHandler, contents);
-                } catch (SQLException e) {
+                    elementType = dataSource.resolveDataType(monitor, baseTypeName);
+                } catch (DBException e) {
+                    throw new DBCException("Error resolving data type", e);
                 }
+                final DBDValueHandler elementValueHandler = DBUtils.findValueHandler(session, elementType);
+                Object arrObject = array.getArray();
+                int arrLength = java.lang.reflect.Array.getLength(arrObject);
+                if (arrLength == 0) {
+                    throw new DBCException("Non-NULL HALF_VECTOR cannot have 0 dimension");
+                }
+                Object[] contents = new Object[arrLength];
+                for (int i = 0; i < arrLength; i++) {
+                    Object item = java.lang.reflect.Array.get(arrObject, i);
+                    if (item == null) {
+                        throw new DBCException("HALF_VECTOR cannot have NULL element");
+                    }
+                    contents[i] = elementValueHandler.getValueFromObject(jdbcSession, elementType, item, false, true);
+                }
+                return new JDBCCollection(monitor, elementType, elementValueHandler, contents);
+            } catch (SQLException e) {
             }
+        }
         return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 
