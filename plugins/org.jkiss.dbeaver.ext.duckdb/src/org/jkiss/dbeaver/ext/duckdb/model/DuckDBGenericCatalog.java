@@ -16,10 +16,25 @@
  */
 package org.jkiss.dbeaver.ext.duckdb.model;
 
-public class DuckDBConstants {
-    public static final String TYPE_GEOMETRY = "GEOMETRY";
-    public static final String TYPE_BLOB = "BLOB";
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 
-    private DuckDBConstants() {
+import java.util.Set;
+
+public class DuckDBGenericCatalog extends GenericCatalog {
+
+    private static final Set<String> SYSTEM_CATALOG_NAMES = Set.of(
+        "system",
+        "temp"
+    );
+
+    public DuckDBGenericCatalog(@NotNull GenericDataSource dataSource, @NotNull String catalogName) {
+        super(dataSource, catalogName);
+    }
+
+    @Override
+    public boolean isSystem() {
+        return SYSTEM_CATALOG_NAMES.contains(this.getName());
     }
 }
