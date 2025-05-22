@@ -385,7 +385,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
     @Override
     public String getDisplayName()
     {
-        if (labelProvider != null) {
+        if (labelProvider != null && getSource() != null) {
             Object editableValue = getSource().getEditableValue();
             if (editableValue == null) {
                 if (getSource() instanceof DBNNodeReference nodeReference &&
