@@ -1453,6 +1453,10 @@ public abstract class SQLQueryCompletionContext {
 
                 LSMInspections inspections = new LSMInspections(dialect, syntaxNode);
                 LSMInspections.SyntaxInspectionResult syntaxInspectionResult = inspections.prepareAbstractSyntaxInspection(position);
+                if (syntaxInspectionResult == null) {
+                    return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
+                }
+
                 SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(
                     Math.min(position, model.getSyntaxNode().getRealInterval().b + 1)
                 );
