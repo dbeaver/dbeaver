@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.erd.model;
 
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.schema.Column;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -157,9 +160,23 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation> {
 		this.sourceEntity = sourceForeignKey;
 	}
 
-    protected void resetConnections() {
-        this.sourceAttributes = null;
-        this.targetAttributes = null;
+    protected void resetConnections(Expression expression) {
+        if (sourceEntity != null && sourceAttributes != null) {
+            if (expression instanceof BinaryExpression be) {
+                if (be.getLeftExpression() instanceof Column c) {
+                    String leftAttr = c.getColumnName();
+                    for (int i = 0; i < sourceAttributes.size(); i++) {
+                        ERDEntityAttribute sourceAttribute = sourceAttributes.get(i);
+                        if (CommonUtils.equalObjects(sourceAttribute.getName(), leftAttr)) {
+                            sourceAttributes.remove(i);
+                            targetAttributes.remove(i);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        log.warn("Cannot find columns corresponding to expression [" + expression + "]");
     }
 
     @NotNull
