@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -268,7 +269,7 @@ public class SQLQueryRowsSourceContext {
                 Stream.of(rowsSources.values(), dynamicTableSources.values())
                   .flatMap(Collection::stream)
                   .collect(Collectors.toSet())
-                  .stream().collect(Collectors.toMap(s -> s.source, s -> s));
+                  .stream().collect(Collectors.toMap(s -> s.source, Function.identity()));
 
             private final Set<DBSObject> referencedTables = rowsSources.values().stream().map(s -> s.tableOrNull)
                 .filter(Objects::nonNull)
