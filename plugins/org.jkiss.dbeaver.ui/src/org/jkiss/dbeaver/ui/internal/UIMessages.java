@@ -58,6 +58,7 @@ public class UIMessages extends NLS {
     public static String button_clear;
     public static String button_reset_to_defaults;
     public static String button_start;
+    public static String button_finish;
     public static String button_skip_all;
     public static String browse_button_choose;
     public static String browse_button_choose_tooltip;

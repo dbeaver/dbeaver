@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
@@ -247,6 +248,20 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
             Button finishButton = getButton(IDialogConstants.OK_ID);
             if (finishButton != null && !finishButton.isDisposed()) {
                 getShell().setDefaultButton(finishButton);
+            }
+
+            IWizardPage currentPage = getCurrentPage();
+            if (currentPage != null) {
+                Button nextButton = getButton(IDialogConstants.NEXT_ID);
+                boolean isLogPage = currentPage.getClass().getName().contains("Log");
+                if (currentPage.isPageComplete() && isLogPage) {
+                    nextButton.setText(UIMessages.button_finish);
+                    nextButton.setEnabled(true);
+                    nextButton.setSelection(true);
+                    getShell().setDefaultButton(nextButton);
+                } else {
+                    nextButton.setText(IDialogConstants.NEXT_LABEL);
+                }
             }
         }
     }

@@ -226,6 +226,8 @@ public abstract class AbstractNativeToolWizard<SETTINGS extends AbstractNativeTo
 
         showLogPage();
 
+        getContainer().updateButtons();
+
         try {
             // Execute directly - without task serialize/deserialize
             // We need it because some data producers cannot be serialized properly (e.g. ResultSetDatacontainer - see #7342)

@@ -645,7 +645,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     protected void finishPressed() {
- 
+        close();
     }
 
     public void nextPressed() {
@@ -657,6 +657,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         IWizardPage nextPage = wizard.getNextPage(currentPage);
         if (nextPage != null) {
             showPage(nextPage);
+        } else {
+            finishPressed();
         }
     }
 
