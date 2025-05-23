@@ -591,10 +591,10 @@ public class DBeaverLauncher {
         processConfiguration();
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
-        if (processCommandLineAsClient(args, dbeaverDataDir)) {
-            System.setProperty(PROP_EXITCODE, Integer.toString(0));
-            return;
-        }
+//        if (processCommandLineAsClient(args, dbeaverDataDir)) {
+//            System.setProperty(PROP_EXITCODE, Integer.toString(0));
+//            return;
+//        }
         Path secretStoragePath = useCustomSecretStorage(dbeaverDataDir);
         if (secretStoragePath != null) {
             String[] keyringParams =  { ARG_ECLIPSE_KEYRING, secretStoragePath.toString() };
@@ -646,6 +646,11 @@ public class DBeaverLauncher {
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
         if (serverPort == null) {
+            return false;
+        }
+//        check that port is not available, and server running to avoid redundant
+//        http request and trust store initialization
+        if (isPortFree(serverPort)) {
             return false;
         }
         //TODO auto-closable after full 21 java migration
@@ -710,6 +715,14 @@ public class DBeaverLauncher {
             httpExecutor.shutdown();
         }
         return shutdownApplication;
+    }
+
+    private static boolean isPortFree(int port) throws IllegalStateException {
+        try (Socket socket = new Socket("localhost", port)) {
+            return false;
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     private Path detectWorkspace(String[] args, Path dbeaverDataDir) {
