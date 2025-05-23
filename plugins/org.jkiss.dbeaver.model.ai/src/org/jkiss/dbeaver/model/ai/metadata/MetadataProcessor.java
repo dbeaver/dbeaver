@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
@@ -33,9 +34,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class MetadataProcessor {
@@ -73,7 +72,7 @@ public class MetadataProcessor {
             formatter.addExtraDescription(monitor, entity, description, firstAttr);
             description.append(");");
             if (object instanceof DBSDataContainer dataContainer) {
-                formatter.addDataSample(monitor, dataContainer, context, description);
+                formatter.addDataSample(monitor, dataContainer, description);
             }
 
         } else if (object instanceof DBSObjectContainer objectContainer) {
@@ -125,21 +124,10 @@ public class MetadataProcessor {
         final int remainingRequestTokens = maxRequestTokens - sb.length() - 20;
 
         if (context.getScope() == DAICompletionScope.CUSTOM) {
-            Set<Map.Entry<DBSObjectContainer, Long>> objectContainers = context.getCustomEntities().stream()
-                .map(it -> (DBSObjectContainer) it.getParentObject())
-                .collect(Collectors.groupingBy(it -> it, Collectors.counting()))
-                .entrySet();
+            List<DBSObject> normalizeCustomEntities = normalizeCustomEntities(context.getCustomEntities());
+            cacheStructuresForCustomEntities(monitor, normalizeCustomEntities);
 
-            for (Map.Entry<DBSObjectContainer, Long> entry : objectContainers) {
-                if (entry.getValue() > 1) {
-                    entry.getKey().cacheStructure(
-                        monitor,
-                        DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
-                    );
-                }
-            }
-
-            for (DBSEntity entity : context.getCustomEntities()) {
+            for (DBSObject entity : normalizeCustomEntities) {
                 sb.append(generateObjectDescription(
                     monitor,
                     entity,
@@ -204,5 +192,57 @@ public class MetadataProcessor {
 
     private MetadataProcessor() {
 
+    }
+
+    /**
+     * Normalizes the given list by removing a DBSObject if any of its ancestors
+     * (database, schema, container, etc.) are already present in the same list.
+     * The result therefore contains only the highest-level objects, with no
+     * duplicates, ordered alphabetically by name.
+     *
+     * @param customEntities list that may contain databases, schemas, tables, etc.
+     * @return normalized, alphabetically sorted list of top-level objects
+     */
+    private List<DBSObject> normalizeCustomEntities(@NotNull List<DBSObject> customEntities) {
+        Set<DBSObject> input = new HashSet<>(customEntities);
+
+        return input.stream()
+            // skip the object if any ancestor is also present in the input
+            .filter(obj -> {
+                DBSObject parent = obj.getParentObject();
+                while (parent != null) {
+                    if (input.contains(parent)) {
+                        return false;
+                    }
+                    parent = parent.getParentObject();
+                }
+                return true;
+            })
+            .sorted(Comparator.comparing(DBPNamedObject::getName, String.CASE_INSENSITIVE_ORDER))
+            .toList();
+    }
+
+    /**
+     * Caches for custom entities if there are multiple entities in the same container.
+     * This is needed to avoid multiple calls to the same container.
+     */
+    private void cacheStructuresForCustomEntities(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<DBSObject> customEntities
+    ) throws DBException {
+        Set<Map.Entry<DBSObjectContainer, Long>> objectContainers = customEntities.stream()
+            .filter(it -> it instanceof DBSEntity)
+            .map(it -> (DBSObjectContainer) it.getParentObject())
+            .collect(Collectors.groupingBy(it -> it, Collectors.counting()))
+            .entrySet();
+
+        for (Map.Entry<DBSObjectContainer, Long> entry : objectContainers) {
+            if (entry.getValue() > 1) {
+                entry.getKey().cacheStructure(
+                    monitor,
+                    DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
+                );
+            }
+        }
     }
 }

@@ -47,18 +47,22 @@ public class AIAssistantRegistry {
         this.customDescriptor = customAssistantDescriptor;
     }
 
-    public AIAssistant getAssistant() throws DBException {
+    public <T extends AIAssistant> T getAssistant() {
         if (globalAssistant == null) {
             synchronized (this) {
                 if (globalAssistant == null) {
                     if (customDescriptor != null) {
-                        globalAssistant = customDescriptor.createInstance();
+                        try {
+                            globalAssistant = customDescriptor.createInstance();
+                        } catch (DBException e) {
+                            throw new IllegalStateException(e);
+                        }
                     } else {
                         globalAssistant = new AIAssistantImpl();
                     }
                 }
             }
         }
-        return globalAssistant;
+        return (T)globalAssistant;
     }
 }

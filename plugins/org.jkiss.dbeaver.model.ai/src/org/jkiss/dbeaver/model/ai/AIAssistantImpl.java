@@ -237,9 +237,10 @@ public class AIAssistantImpl implements AIAssistant {
     ) throws DBException {
         try {
             Flow.Publisher<DAICompletionChunk> publisher = callWithRetry(() -> engine.requestCompletionStream(monitor, request));
+            boolean loggingEnabled = engine.isLoggingEnabled();
 
             return subscriber -> {
-                if (engine.isLoggingEnabled()) {
+                if (loggingEnabled) {
                     log.debug("Requesting completion stream [request=" + request + "]");
                     publisher.subscribe(new LogSubscriber(log, subscriber));
                 } else {
@@ -255,13 +256,6 @@ public class AIAssistantImpl implements AIAssistant {
                 throw new DBException("Error requesting completion stream", e);
             }
         }
-    }
-
-    protected String getSystemPrompt() {
-        return """
-            You are a DBeaver AI assistant.
-            You help users write SQL queries based ONLY on the information below.
-            """;
     }
 
     protected IAIFormatter formatter() throws DBException {
@@ -284,6 +278,17 @@ public class AIAssistantImpl implements AIAssistant {
             formatter()
         );
 
+        describeDatabaseMetadata(monitor, engine, context, promptBuilder);
+
+        return promptBuilder;
+    }
+
+    protected void describeDatabaseMetadata(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionEngine engine,
+        @Nullable DAICompletionContext context,
+        PromptBuilder promptBuilder
+    ) throws DBException {
         if (context != null) {
             String description = metadataProcessor.describeContext(
                 monitor,
@@ -294,7 +299,5 @@ public class AIAssistantImpl implements AIAssistant {
 
             promptBuilder.addDatabaseSnapshot(description);
         }
-
-        return promptBuilder;
     }
 }

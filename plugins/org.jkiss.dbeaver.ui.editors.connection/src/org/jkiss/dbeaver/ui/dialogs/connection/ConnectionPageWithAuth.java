@@ -104,7 +104,9 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
             }
         }
 
-        authModelSelector.loadSettings(dataSource, selectedAuthModel, getDefaultAuthModelId(dataSource));
+        if (authModelSelector != null) {
+            authModelSelector.loadSettings(dataSource, selectedAuthModel, getDefaultAuthModelId(dataSource));
+        }
 
         if (serviceConnectionEditor != null) {
             serviceConnectionEditor.loadSettings(dataSource);
