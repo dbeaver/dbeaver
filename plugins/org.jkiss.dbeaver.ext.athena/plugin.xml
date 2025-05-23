@@ -50,7 +50,7 @@
 
                 <main-properties drivers="*">
                     <propertyGroup label="Settings">
-                        <property id="server" label="Host" type="string"/>
+                        <property id="host" label="Host" type="string"/>
                     </propertyGroup>
                 </main-properties>
                 <provider-properties drivers="*">
