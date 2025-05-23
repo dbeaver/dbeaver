@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.ai.format;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.ai.AICompletionConstants;
@@ -88,7 +87,6 @@ public class DefaultRequestFormatter implements IAIFormatter {
     public void addDataSample(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSDataContainer dataContainer,
-        @NotNull DBCExecutionContext executionContext,
         @NotNull StringBuilder description
     ) throws DBException {
         // nothing to do
