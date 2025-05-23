@@ -517,11 +517,11 @@ public final class DBStructUtils {
         return !(parent instanceof DBSInstanceLazy il) || il.isInstanceConnected();
     }
 
-    public static List<DBSEntity> getRelatedDBSEntities(
+    public static List<DBSObject> getRelatedDBSEntities(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSObject dbsObject
     ) throws DBException {
-        var result = new HashSet<DBSEntity>();
+        var result = new HashSet<DBSObject>();
         if (dbsObject instanceof DBSEntity mainEntity) {
             result.add(mainEntity);
             try {

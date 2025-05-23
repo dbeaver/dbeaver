@@ -57,7 +57,7 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
     }
 
     @Override
-    public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) {
+    public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) throws DBException {
         return OpenAIModel.getByName(getModelName()).getMaxTokens();
     }
 
@@ -137,12 +137,12 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
     }
 
     @Override
-    public boolean hasValidConfiguration() {
+    public boolean hasValidConfiguration() throws DBException {
         return getProperties().isValidConfiguration();
     }
 
     @Override
-    public boolean isLoggingEnabled() {
+    public boolean isLoggingEnabled() throws DBException {
         return getProperties().isLoggingEnabled();
     }
 
@@ -174,14 +174,14 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
         }
     }
 
-    public String getModelName() {
+    public String getModelName() throws DBException {
         return CommonUtils.toString(
             getProperties().getModel(),
             OpenAIModel.GPT_TURBO.getName()
         );
     }
 
-    private CopilotProperties getProperties() {
+    private CopilotProperties getProperties() throws DBException {
         return registry.getSettings().<LegacyAISettings<CopilotProperties>> getEngineConfiguration(
             CopilotConstants.COPILOT_ENGINE
         ).getProperties();
