@@ -118,6 +118,7 @@ import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddIn;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.ai.suggestion.AISuggestionTextPainter;
 import org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation;
@@ -136,7 +137,6 @@ import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.ResourceUtils;
@@ -151,8 +151,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -172,7 +172,6 @@ public class SQLEditor extends SQLEditorBase implements
     IStatefulEditor
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
-    private static final int MAX_PARALLEL_QUERIES_NO_WARN = 1;
 
     private static final int QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION = 100;
 
@@ -258,6 +257,12 @@ public class SQLEditor extends SQLEditorBase implements
     private volatile boolean isPartControlInitialized = false;
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
+
+    private AISuggestionTextPainter AISuggestionTextPainter;
+
+    public AISuggestionTextPainter getSuggestionTextPainter() {
+        return AISuggestionTextPainter;
+    }
 
     private static class ServerOutputInfo {
         private final DBCServerOutputReader outputReader;
@@ -466,7 +471,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DBWorkbench.getPlatformUI().showError(
                     "Can't connect to database", "Connection to '" + container.getName() + "' cannot be established.", status);
             }
-            setFocus();
+//            setFocus();
         }));
         setPartName(getEditorName());
 
@@ -1064,6 +1069,25 @@ public class SQLEditor extends SQLEditorBase implements
                 });
             }
         }
+        AISuggestionTextPainter = new AISuggestionTextPainter(getViewer());
+        AISuggestionTextPainter.enable();
+
+        StyledText textWidget = getViewer().getTextWidget();
+        textWidget.addVerifyKeyListener(e -> {
+            if (e.keyCode == SWT.ARROW_RIGHT && AISuggestionTextPainter.hasContentToShow()) {
+                e.doit = false;
+                AISuggestionTextPainter.applyHint();
+            }
+        });
+        textWidget.addCaretListener(event -> {
+            if (AISuggestionTextPainter.hasContentToShow()) {
+                int caretOffset = event.caretOffset;
+                int suggestionOffset = AISuggestionTextPainter.getCurrentPosition();
+                if (caretOffset != suggestionOffset) {
+                    AISuggestionTextPainter.removeHint();
+                }
+            }
+        });
 
         // Start output reader
         new ServerOutputReader().schedule();
@@ -1109,6 +1133,9 @@ public class SQLEditor extends SQLEditorBase implements
     private void onTextChange(ModifyEvent e) {
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE)) {
             doScriptAutoSave();
+        }
+        if (AISuggestionTextPainter != null) {
+            AISuggestionTextPainter.removeHint();
         }
     }
 
@@ -2787,15 +2814,6 @@ public class SQLEditor extends SQLEditorBase implements
                 ) {
                     return false;
                 }
-            }
-        } else if (newTab && queries.size() > MAX_PARALLEL_QUERIES_NO_WARN) {
-            if (ConfirmationDialog.confirmAction(
-                getSite().getShell(),
-                ConfirmationDialog.WARNING, SQLPreferenceConstants.CONFIRM_MASS_PARALLEL_SQL,
-                ConfirmationDialog.CONFIRM,
-                queries.size()) != IDialogConstants.OK_ID
-            ) {
-                return false;
             }
         }
 
@@ -5777,8 +5795,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
 
             if (!stopped) {
-                Image image = DatabaseNavigatorTree.IMG_LOADING[tickCount % DatabaseNavigatorTree.IMG_LOADING.length];
-                setTitleImage(image);
+                setTitleImage(DBeaverIcons.getImage(UIIcon.LOADING.get(tickCount % UIIcon.LOADING.size())));
                 schedule(100);
             } else {
                 if (oldCursor != null) {

@@ -17,10 +17,19 @@
 
 package org.jkiss.dbeaver.model.ai.completion;
 
+import org.jkiss.code.NotNull;
+
+import java.util.List;
+
 /**
  * Completion request
  */
 public record DAICompletionResponse(
-    String text
+    @NotNull List<DAICompletionChoice> choices
 ) {
+    @Override
+    public String toString() {
+        return "AI response " + choices;
+    }
+
 }

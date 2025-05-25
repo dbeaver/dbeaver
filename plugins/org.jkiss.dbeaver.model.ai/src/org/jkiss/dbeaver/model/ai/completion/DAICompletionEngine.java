@@ -36,7 +36,7 @@ public interface DAICompletionEngine extends AISettingsEventListener {
      * @param monitor progress monitor
      * @return the context window size
      */
-    int getMaxContextSize(@NotNull DBRProgressMonitor monitor);
+    int getMaxContextSize(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Requests completions from the completion engine.
@@ -61,42 +61,17 @@ public interface DAICompletionEngine extends AISettingsEventListener {
      * @throws TooManyRequestsException if the request limit is exceeded and the request can be retried
      * @throws DBException if an error occurs
      */
-    default Flow.Publisher<DAICompletionChunk> requestCompletionStream(
+    Flow.Publisher<DAICompletionChunk> requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionRequest request
-    ) throws DBException {
-        DAICompletionResponse completionResponse = requestCompletion(monitor, request);
-        return subscriber -> {
-            subscriber.onSubscribe(new Flow.Subscription() {
-                private boolean isCompleted = false;
-
-                @Override
-                public void request(long n) {
-                    if (n <= 0) {
-                        subscriber.onError(new IllegalArgumentException("Invalid request size: " + n));
-                    } else if (isCompleted) {
-                        subscriber.onError(new IllegalStateException("Completion stream is already completed"));
-                    } else {
-                        subscriber.onNext(new DAICompletionChunk(completionResponse.text()));
-                        subscriber.onComplete();
-                        isCompleted = true;
-                    }
-                }
-
-                @Override
-                public void cancel() {
-                    // No action needed
-                }
-            });
-        };
-    }
+    ) throws DBException;
 
     /**
      * Checks if the completion engine has a valid configuration.
      *
      * @return true if the completion engine has a valid configuration
      */
-    boolean hasValidConfiguration();
+    boolean hasValidConfiguration() throws DBException;
 
-    boolean isLoggingEnabled();
+    boolean isLoggingEnabled() throws DBException;
 }

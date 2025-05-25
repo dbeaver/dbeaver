@@ -291,8 +291,8 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             return syncDpiDependencies(application);
         }
 
-        boolean downloadOk = downloadDriverLibraries(monitor, resetVersions);
-        if (!downloadOk) {
+        // don't download driver libraries in web application
+        if (!application.isMultiuser() && !downloadDriverLibraries(monitor, resetVersions)) {
             return Collections.emptyList();
         }
 

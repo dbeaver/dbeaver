@@ -13,6 +13,8 @@
       %copyright
    </copyright>
 
+   <includes id="org.eclipse.pde.spies" version="0.0.0" />
+
    <plugin id="org.jkiss.dbeaver.ui.app.devtools" version="0.0.0" />
 
 </feature>

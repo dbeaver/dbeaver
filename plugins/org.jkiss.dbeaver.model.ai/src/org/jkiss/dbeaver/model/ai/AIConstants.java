@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,6 @@ package org.jkiss.dbeaver.model.ai;
 public class AIConstants {
     public static final String CORE_FORMATTER = "core";
 
-    public static final String OPENAI_ENGINE = "openai";
-
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String AI_TEMPERATURE = "gpt.model.temperature";
     public static final String AI_LOG_QUERY = "gpt.log.query";
 
     public static final int MAX_RESPONSE_TOKENS = 2000;

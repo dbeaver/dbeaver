@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.completion.*;
@@ -29,7 +30,6 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.util.List;
 import java.util.concurrent.Flow;
-import java.util.stream.Stream;
 
 public class AIAssistantImpl implements AIAssistant {
     private static final Log log = Log.getLog(AIAssistantImpl.class);
@@ -39,53 +39,8 @@ public class AIAssistantImpl implements AIAssistant {
     private final AISettingsRegistry settingsRegistry = AISettingsRegistry.getInstance();
     private final AIEngineRegistry engineRegistry = AIEngineRegistry.getInstance();
     private final AIFormatterRegistry formatterRegistry = AIFormatterRegistry.getInstance();
-    private final MetadataProcessor metadataProcessor = MetadataProcessor.INSTANCE;
-
-    /**
-     * Chat with the AI assistant.
-     *
-     * @param monitor the progress monitor
-     * @param chatCompletionRequest the chat completion request
-     * @throws DBException if an error occurs
-     */
-    @NotNull
-    @Override
-    public Flow.Publisher<DAICompletionChunk> chat(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DAIChatRequest chatCompletionRequest
-    ) throws DBException {
-        DAICompletionEngine engine = chatCompletionRequest.engine() != null ?
-            chatCompletionRequest.engine() :
-            getActiveEngine();
-
-        List<DAIChatMessage> chatMessages = Stream.concat(
-            Stream.of(
-                DAIChatMessage.systemMessage(
-                    getSystemPrompt() + System.lineSeparator() + metadataProcessor.describeContext(
-                        monitor,
-                        chatCompletionRequest.context(),
-                        formatter(),
-                        engine.getMaxContextSize(monitor) -  AIConstants.MAX_RESPONSE_TOKENS
-                    )
-                )
-            ),
-            chatCompletionRequest.messages().stream()
-        ).toList();
-
-        List<DAIChatMessage> truncatedMessages = AIUtils.truncateMessages(
-            true,
-            chatMessages,
-            engine.getMaxContextSize(monitor)
-        );
-
-        return requestCompletionStream(
-            engine,
-            monitor,
-            new DAICompletionRequest(
-                truncatedMessages
-            )
-        );
-    }
+    private final AIAssistantRegistry assistantRegistry = AIAssistantRegistry.getInstance();
+    private static final MetadataProcessor metadataProcessor = MetadataProcessor.INSTANCE;
 
     /**
      * Translate the specified text to SQL.
@@ -107,15 +62,19 @@ public class AIAssistantImpl implements AIAssistant {
 
         DAIChatMessage userMessage = new DAIChatMessage(DAIChatRole.USER, request.text());
 
+        String prompt = buildPrompt(
+            monitor,
+            engine,
+            request.context()
+        ).addGoals(
+            "Translate natural language text to SQL."
+        ).addOutputFormats(
+            "Place any explanation or comments before the SQL code block.",
+            "Provide the SQL query in a fenced Markdown code block."
+        ).build();
+
         List<DAIChatMessage> chatMessages = List.of(
-            DAIChatMessage.systemMessage(
-                getSystemPrompt() + System.lineSeparator() + metadataProcessor.describeContext(
-                    monitor,
-                    request.context(),
-                    formatter(),
-                    engine.getMaxContextSize(monitor) -  AIConstants.MAX_RESPONSE_TOKENS
-                )
-            ),
+            DAIChatMessage.systemMessage(prompt),
             userMessage
         );
 
@@ -128,7 +87,7 @@ public class AIAssistantImpl implements AIAssistant {
         MessageChunk[] messageChunks = processAndSplitCompletion(
             monitor,
             request.context(),
-            completionResponse.text()
+            completionResponse.choices().get(0).text()
         );
 
         return AITextUtils.convertToSQL(
@@ -156,15 +115,19 @@ public class AIAssistantImpl implements AIAssistant {
             request.engine() :
             getActiveEngine();
 
+        String prompt = buildPrompt(
+            monitor,
+            engine,
+            request.context()
+        ).addGoals(
+            "Translate natural language text to SQL."
+        ).addOutputFormats(
+            "Place any explanation or comments before the SQL code block.",
+            "Provide the SQL query in a fenced Markdown code block."
+        ).build();
+
         List<DAIChatMessage> chatMessages = List.of(
-            DAIChatMessage.systemMessage(
-                getSystemPrompt() + System.lineSeparator() + metadataProcessor.describeContext(
-                    monitor,
-                    request.context(),
-                    formatter(),
-                    engine.getMaxContextSize(monitor) -  AIConstants.MAX_RESPONSE_TOKENS
-                )
-            ),
+            DAIChatMessage.systemMessage(prompt),
             DAIChatMessage.userMessage(request.text())
         );
 
@@ -174,7 +137,11 @@ public class AIAssistantImpl implements AIAssistant {
 
         DAICompletionResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
 
-        MessageChunk[] messageChunks = processAndSplitCompletion(monitor, request.context(), completionResponse.text());
+        MessageChunk[] messageChunks = processAndSplitCompletion(
+            monitor,
+            request.context(),
+            completionResponse.choices().get(0).text()
+        );
 
         String finalSQL = null;
         StringBuilder messages = new StringBuilder();
@@ -199,7 +166,7 @@ public class AIAssistantImpl implements AIAssistant {
         return getActiveEngine().hasValidConfiguration();
     }
 
-    private MessageChunk[] processAndSplitCompletion(
+    protected MessageChunk[] processAndSplitCompletion(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionContext context,
         @NotNull String completion
@@ -231,11 +198,11 @@ public class AIAssistantImpl implements AIAssistant {
         throw new DBException("Request failed after " + MAX_RETRIES + " attempts");
     }
 
-    private DAICompletionEngine getActiveEngine() throws DBException {
-        return engineRegistry.getCompletionEngine(settingsRegistry.getSettings().getActiveEngine());
+    protected DAICompletionEngine getActiveEngine() throws DBException {
+        return engineRegistry.getCompletionEngine(settingsRegistry.getSettings().activeEngine());
     }
 
-    private DAICompletionResponse requestCompletion(
+    protected DAICompletionResponse requestCompletion(
         @NotNull DAICompletionEngine engine,
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionRequest request
@@ -263,16 +230,17 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
-    private Flow.Publisher<DAICompletionChunk> requestCompletionStream(
+    protected Flow.Publisher<DAICompletionChunk> requestCompletionStream(
         @NotNull DAICompletionEngine engine,
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICompletionRequest request
     ) throws DBException {
         try {
             Flow.Publisher<DAICompletionChunk> publisher = callWithRetry(() -> engine.requestCompletionStream(monitor, request));
+            boolean loggingEnabled = engine.isLoggingEnabled();
 
             return subscriber -> {
-                if (engine.isLoggingEnabled()) {
+                if (loggingEnabled) {
                     log.debug("Requesting completion stream [request=" + request + "]");
                     publisher.subscribe(new LogSubscriber(log, subscriber));
                 } else {
@@ -290,17 +258,46 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
-    protected String getSystemPrompt() {
-        return """
-            You are SQL assistant. You must produce SQL code for given prompt.
-            You must produce valid SQL statement enclosed with Markdown code block and terminated with semicolon.
-            All database object names should be properly escaped according to the SQL dialect.
-            All comments MUST be placed before query outside markdown code block.
-            Be polite.
-            """;
+    protected IAIFormatter formatter() throws DBException {
+        return formatterRegistry.getFormatter(AIConstants.CORE_FORMATTER);
     }
 
-    private IAIFormatter formatter() throws DBException {
-        return formatterRegistry.getFormatter(AIConstants.CORE_FORMATTER);
+    protected AIAssistant assistant() throws DBException {
+        return assistantRegistry.getAssistant();
+    }
+
+    protected PromptBuilder buildPrompt(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionEngine engine,
+        @Nullable DAICompletionContext context
+    ) throws DBException {
+        PromptBuilder promptBuilder = PromptBuilder.createForDataSource(
+            context != null ?
+                context.getExecutionContext().getDataSource() :
+                null,
+            formatter()
+        );
+
+        describeDatabaseMetadata(monitor, engine, context, promptBuilder);
+
+        return promptBuilder;
+    }
+
+    protected void describeDatabaseMetadata(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DAICompletionEngine engine,
+        @Nullable DAICompletionContext context,
+        PromptBuilder promptBuilder
+    ) throws DBException {
+        if (context != null) {
+            String description = metadataProcessor.describeContext(
+                monitor,
+                context,
+                formatter(),
+                AIUtils.getMaxRequestTokens(engine, monitor)
+            );
+
+            promptBuilder.addDatabaseSnapshot(description);
+        }
     }
 }

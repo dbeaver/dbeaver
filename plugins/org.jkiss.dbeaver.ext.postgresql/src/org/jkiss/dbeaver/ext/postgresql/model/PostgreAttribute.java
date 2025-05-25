@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -402,7 +402,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Property(viewable = true, editableExpr = "!object.table.view", order = 30, listProvider = CollationListProvider.class)
     public PostgreCollation getCollation(DBRProgressMonitor monitor) throws DBException {
-        if (collationId <= 0) {
+        if (collationId <= 0 || !getDataSource().getServerType().supportsCollations()) {
             return null;
         } else {
             return getDatabase().getCollation(monitor, collationId);
@@ -548,7 +548,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         @Override
         public Object[] getPossibleValues(PostgreAttribute object) {
             try {
-                return object.getDatabase().getCollations(new VoidProgressMonitor()).toArray();
+                Collection<PostgreCollation> collations = object.getDatabase().getCollations(new VoidProgressMonitor());
+                if (collations == null) {
+                    return new Object[0];
+                }
+                return collations.toArray();
             } catch (DBException e) {
                 log.error(e);
                 return new Object[0];

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -36,12 +37,12 @@ import org.jkiss.dbeaver.model.qm.QMTranslationHistoryItem;
 import org.jkiss.dbeaver.model.qm.QMTranslationHistoryManager;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.editors.sql.ai.controls.ScopeSelectorControl;
-import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage;
+import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePageMain;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -105,7 +106,11 @@ public class AISuggestionPopup extends AbstractPopupPanel {
             scopeSelectorControl.getToolBar(),
             "Settings",
             UIIcon.CONFIGURATION,
-            SelectionListener.widgetSelectedAdapter(e -> UIUtils.showPreferencesFor(getShell(), null, AIPreferencePage.PAGE_ID))
+            SelectionListener.widgetSelectedAdapter(e -> UIUtils.showPreferencesFor(
+                getShell(),
+                AISettingsRegistry.getInstance().getSettings(),
+                AIPreferencePageMain.PAGE_ID
+            ))
         );
 
         inputField = new Text(placeholder, SWT.BORDER | SWT.MULTI);
@@ -127,14 +132,15 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         Composite miscPanel = UIUtils.createComposite(placeholder, 2);
         miscPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        UIUtils.createControlLabel(miscPanel, "History");
+        UIUtils.createControlLabel(miscPanel, "&History");
         Combo historyCombo = new Combo(miscPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
         historyCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Button applyButton = UIUtils.createDialogButton(placeholder, "Translate",
+        Button applyButton = UIUtils.createDialogButton(placeholder, "&Translate",
             SelectionListener.widgetSelectedAdapter(selectionEvent -> okPressed()));
         ((GridData)applyButton.getLayoutData()).grabExcessHorizontalSpace = false;
         ((GridData)applyButton.getLayoutData()).horizontalAlignment = GridData.END;
+        parent.getShell().setDefaultButton(applyButton);
 
         closeOnFocusLost(
             inputField,
@@ -203,7 +209,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         return scopeSelectorControl.getScope();
     }
 
-    public List<DBSEntity> getCustomEntities(@NotNull DBRProgressMonitor monitor) {
+    public List<DBSObject> getCustomEntities(@NotNull DBRProgressMonitor monitor) {
         return scopeSelectorControl.getCustomEntities(monitor);
     }
 

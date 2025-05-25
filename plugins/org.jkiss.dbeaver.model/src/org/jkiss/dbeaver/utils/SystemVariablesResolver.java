@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
@@ -53,8 +55,9 @@ public class SystemVariablesResolver implements IVariableResolver {
         return true;
     }
 
+    @Nullable
     @Override
-    public String get(String name) {
+    public String get(@NotNull String name) {
         //name = name.toLowerCase(Locale.ENGLISH);
         switch (name) {
             case VAR_APP_NAME:
@@ -89,6 +92,7 @@ public class SystemVariablesResolver implements IVariableResolver {
         }
     }
 
+    @NotNull
     public static String getInstallPath() {
         if (installPath == null) {
             installPath = getPlainPath(Platform.getInstallLocation().getURL());
@@ -96,6 +100,7 @@ public class SystemVariablesResolver implements IVariableResolver {
         return installPath;
     }
 
+    @NotNull
     public static String getWorkspacePath() {
         if (DBWorkbench.isPlatformStarted()) {
             return DBFUtils.convertPathToString(DBWorkbench.getPlatform().getWorkspace().getAbsolutePath());
@@ -104,11 +109,13 @@ public class SystemVariablesResolver implements IVariableResolver {
         }
     }
 
+    @NotNull
     public static String getUserHome() {
         return System.getProperty(StandardConstants.ENV_USER_HOME);
     }
 
-    private static String getPlainPath(URL url) {
+    @NotNull
+    private static String getPlainPath(@NotNull URL url) {
         try {
             File file = RuntimeUtils.getLocalFileFromURL(url);
             return file.getAbsolutePath();

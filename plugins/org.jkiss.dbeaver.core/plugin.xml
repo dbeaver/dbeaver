@@ -297,7 +297,15 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.txn.autocommit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceAutoCommitHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/></enabledWhen>
+            <enabledWhen>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.editor.transactional"/>
+                    <or>
+                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="admin"/>
+                        <test property="org.jkiss.dbeaver.core.global.hasPermission" value="database-developer"/>
+                    </or>
+                </and>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.connection.readonly" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceReadonlyHandler">
             <enabledWhen>

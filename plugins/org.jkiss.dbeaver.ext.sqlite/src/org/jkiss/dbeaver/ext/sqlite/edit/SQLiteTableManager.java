@@ -157,6 +157,19 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
         return false;
     }
 
+    @Override
+    protected void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        GenericTableBase table,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter
+    ) {
+        if (table instanceof SQLiteTable sqliteTable && sqliteTable.isHasStrictTyping()) {
+            ddl.append(" STRICT"); //$NON-NLS-1$
+        }
+    }
+
     public void addRecreateCommand(DBECommandContext commandContext, SQLiteTable table, Map<String, Object> options, DBECommand sourceCommand) {
         commandContext.addCommand(
             new TableRecreateCommand(table, ModelMessages.model_jdbc_create_new_object, options, sourceCommand),
@@ -212,6 +225,5 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
         public void undoCommand(TableRecreateCommand command) {
             DBUtils.fireObjectUpdate(command.getObject(), true);
         }
-
     }
 }

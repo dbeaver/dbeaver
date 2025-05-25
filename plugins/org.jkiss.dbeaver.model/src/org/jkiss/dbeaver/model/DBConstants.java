@@ -145,6 +145,8 @@ public class DBConstants {
     public static final String PROP_FEATURE_HREF = "href";
     public static final String PROP_FEATURE_VIEWABLE = "viewable";
 
+    public static final String PRODUCT_FEATURE_DISTRIBUTED = "distributed";
+
     public static final String LOCAL_DOMAIN_NAME = "local";
 
     public static final String HOST_LOCALHOST = "localhost";
@@ -166,4 +168,5 @@ public class DBConstants {
     public static final String PROP_ORIGINAL_FILE_PATH = "originalFilePath";
 
     public static final String CERTIFICATE_STORAGE_FOLDER = "security";
+    public static final String LM_STAGE_MODE = "LM_STAGE_MODE";
 }
