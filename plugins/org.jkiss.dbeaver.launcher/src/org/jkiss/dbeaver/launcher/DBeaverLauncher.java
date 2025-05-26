@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
+import java.security.KeyStore;
 import java.security.ProtectionDomain;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +42,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 
 /**
@@ -580,8 +583,6 @@ public class DBeaverLauncher {
      * @throws Exception thrown if a problem occurs during the launch
      */
     protected void basicRun(String[] args) throws Exception {
-        System.out.println(Arrays.toString(args));
-        System.out.println("Root dir" + Path.of("").toAbsolutePath());
         System.setProperty("eclipse.startTime", Long.toString(System.currentTimeMillis())); //$NON-NLS-1$
         commands = args;
         String[] passThruArgs = processCommandLine(args);
@@ -593,10 +594,10 @@ public class DBeaverLauncher {
         processConfiguration();
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
-//        if (processCommandLineAsClient(args, dbeaverDataDir)) {
-//            System.setProperty(PROP_EXITCODE, Integer.toString(0));
-//            return;
-//        }
+        if (processCommandLineAsClient(args, dbeaverDataDir)) {
+            System.setProperty(PROP_EXITCODE, Integer.toString(0));
+            return;
+        }
         Path secretStoragePath = useCustomSecretStorage(dbeaverDataDir);
         if (secretStoragePath != null) {
             String[] keyringParams =  { ARG_ECLIPSE_KEYRING, secretStoragePath.toString() };
@@ -638,7 +639,7 @@ public class DBeaverLauncher {
     }
 
 
-    private boolean processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws IOException {
+    private boolean processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
         if (args == null || args.length == 0) {
             return false;
         }
@@ -650,16 +651,16 @@ public class DBeaverLauncher {
         if (serverPort == null) {
             return false;
         }
-//        check that port is not available, and server running to avoid redundant
-//        http request and trust store initialization
-        if (isPortFree(serverPort)) {
-            return false;
-        }
         //TODO auto-closable after full 21 java migration
         ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
+        var factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        factory.init(KeyStore.getInstance(KeyStore.getDefaultType()));
+        var ssl = SSLContext.getInstance("TLS");
+        ssl.init(null, factory.getTrustManagers(), null);
         HttpClient client = HttpClient.newBuilder()
             .executor(httpExecutor)
             .cookieHandler(new CookieManager())
+            .sslContext(ssl)
             .build();
         boolean shutdownApplication = false;
         try {
@@ -719,22 +720,16 @@ public class DBeaverLauncher {
         return shutdownApplication;
     }
 
-    private static boolean isPortFree(int port) throws IllegalStateException {
-        try (Socket socket = new Socket("localhost", port)) {
-            return false;
-        } catch (Exception e) {
-            return true;
-        }
-    }
-
     private Path detectWorkspace(String[] args, Path dbeaverDataDir) {
         boolean isCloudBeaver = false;
+        boolean isTeamEdition = false;
         String customWorkspacePath = null;
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             if ("-product".equals(arg)) {
                 String productName = args[++i];
                 isCloudBeaver = productName.startsWith("io.cloudbeaver");
+                isTeamEdition = productName.equalsIgnoreCase("com.dbeaver.app.team.product");
             }
             if (ARG_DATA.equals(arg)) {
                 customWorkspacePath = args[++i];
@@ -745,6 +740,9 @@ public class DBeaverLauncher {
         }
         if (isCloudBeaver) {
             return Path.of("workspace");
+        }
+        if (isTeamEdition) {
+            return dbeaverDataDir.resolve("team-workspace");
         }
         return dbeaverDataDir.resolve(Constants.WORKSPACE6);
     }
