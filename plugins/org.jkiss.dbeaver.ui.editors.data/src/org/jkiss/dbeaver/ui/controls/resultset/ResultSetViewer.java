@@ -275,7 +275,7 @@ public class ResultSetViewer extends Viewer
         boolean supportsPanels = (decoratorFeatures & IResultSetDecorator.FEATURE_PANELS) != 0;
 
         this.mainPanel = UIUtils.createPlaceholder(parent, supportsPanels ? 3 : 2);
-        CSSUtils.setCSSClass(this.mainPanel, CSS_CLASS_RESULT_SET_VIEWER);
+        CSSUtils.setCSSClass(this.mainPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         this.autoRefreshControl = new AutoRefreshControl(
             this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
@@ -302,7 +302,7 @@ public class ResultSetViewer extends Viewer
             this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel,
                 (decoratorFeatures & IResultSetDecorator.FEATURE_COMPACT_FILTERS) != 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = ((GridLayout)mainPanel.getLayout()).numColumns;
+            gd.horizontalSpan = ((GridLayout) mainPanel.getLayout()).numColumns;
             this.filtersPanel.setLayoutData(gd);
         }
 
@@ -335,6 +335,7 @@ public class ResultSetViewer extends Viewer
             this.viewerSash = new SashForm(this.viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
             this.viewerSash.setSashWidth(5);
             this.viewerSash.setLayoutData(new GridData(GridData.FILL_BOTH));
+            CSSUtils.setCSSClass(this.viewerSash, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             this.presentationPanel = UIUtils.createPlaceholder(this.viewerSash, 1);
             this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -362,6 +363,7 @@ public class ResultSetViewer extends Viewer
                 Composite trControl = new Composite(panelFolder, SWT.NONE);
                 trControl.setLayout(new FillLayout());
                 ToolBar panelToolbarControl = this.panelToolBar.createControl(trControl);
+                trControl.setBackgroundMode(SWT.INHERIT_FORCE);
                 this.panelFolder.setTopRight(trControl, SWT.RIGHT | SWT.WRAP);
                 this.panelFolder.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -1871,20 +1873,20 @@ public class ResultSetViewer extends Viewer
         }
 
         {
-            ToolBarManager addToolbBarManagerar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            ToolBarManager addToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             if (!ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
-                menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_EXPORT_CONTRIBUTION_ID);
+                menuService.populateContributionManager(addToolBarManager, TOOLBAR_EXPORT_CONTRIBUTION_ID);
             }
 
-            addToolbBarManagerar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
-            addToolbBarManagerar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
+            addToolBarManager.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
+            addToolBarManager.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
 
             if (menuService != null) {
-                menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_CONTRIBUTION_ID);
+                menuService.populateContributionManager(addToolBarManager, TOOLBAR_CONTRIBUTION_ID);
             }
-            ToolBar addToolBar = addToolbBarManagerar.createControl(statusBar);
+            ToolBar addToolBar = addToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(addToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-            toolbarList.add(addToolbBarManagerar);
+            toolbarList.add(addToolBarManager);
         }
 
         {
