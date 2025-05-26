@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIFeatures;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
