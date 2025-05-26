@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
+import com.google.gson.ToNumberPolicy;
 import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -30,6 +31,7 @@ import java.util.Map;
 public class LegacyAISettings<P extends AIEngineProperties> implements AIEngineSettings<LegacyAISettings<P>> {
     private static final Gson GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
+        .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
         .create();
 
     @NotNull
