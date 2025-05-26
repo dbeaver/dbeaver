@@ -874,9 +874,6 @@ public abstract class SQLQueryCompletionContext {
                                 placeholderInterval.a,
                                 placeholder.getTextContent()
                             );
-                            String columnPrefix = placeholderEntry.string.endsWith("*")
-                                ? placeholderEntry.string.substring(0, placeholderEntry.string.length() - 1)
-                                : "";
 
                             SQLQueryCompletionTextProvider formatter = new SQLQueryCompletionTextProvider(
                                 request,
@@ -889,7 +886,7 @@ public abstract class SQLQueryCompletionContext {
                                 null,
                                 true
                             ).stream()
-                                .map(c -> columnPrefix + c.apply(formatter))
+                                .map(c -> c.apply(formatter))
                                 .collect(Collectors.joining(", "));
                             request.setWordPart(SQLConstants.ASTERISK);
 
