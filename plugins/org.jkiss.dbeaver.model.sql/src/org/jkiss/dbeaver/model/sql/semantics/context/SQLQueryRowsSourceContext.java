@@ -270,6 +270,7 @@ public class SQLQueryRowsSourceContext {
             private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> resolutionResults =
                 Stream.of(rowsSources.values(), dynamicTableSources.values())
                     .flatMap(Collection::stream)
+                    .distinct()
                     .collect(Collectors.toMap(s -> s.source, Function.identity()));
 
             private final Set<DBSObject> referencedTables = rowsSources.values().stream().map(s -> s.tableOrNull)
