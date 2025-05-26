@@ -30,9 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SQLQueryRowsSourceContext {
 
@@ -266,10 +264,11 @@ public class SQLQueryRowsSourceContext {
         return new SQLQuerySourcesInfoCollection() {
 
             private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> resolutionResults =
-                Stream.of(rowsSources.values(), dynamicTableSources.values())
-                  .flatMap(Collection::stream)
-                  .collect(Collectors.toSet())
-                  .stream().collect(Collectors.toMap(s -> s.source, Function.identity()));
+                new HashSet<SourceResolutionResult>(){{
+                    // combine inferred sources (from the underlying query expression) and dynamically provided (from the enclosing CTE)
+                    addAll(rowsSources.values());
+                    addAll(dynamicTableSources.values());
+                }}.stream().collect(Collectors.toMap(s -> s.source, s -> s));
 
             private final Set<DBSObject> referencedTables = rowsSources.values().stream().map(s -> s.tableOrNull)
                 .filter(Objects::nonNull)
