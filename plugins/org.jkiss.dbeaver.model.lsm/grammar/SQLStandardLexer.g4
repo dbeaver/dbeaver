@@ -404,6 +404,9 @@ WORK: W O R K ;
 WRITE: W R I T E ;
 YEAR: Y E A R ;
 ZONE: Z O N E ;
+TOP: T O P ;
+PERCENT: P E R C E N T ;
+TIES: T I E S ;
 
 
 // symbols
