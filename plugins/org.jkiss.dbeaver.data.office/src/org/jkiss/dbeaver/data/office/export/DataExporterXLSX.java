@@ -1,8 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
- * Copyright (C) 2017 Adolfo Suarez  (agustavo@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +46,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Export XLSX with Apache POI
@@ -91,8 +87,11 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     enum FontStyleProp {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
 
     private static final int ROW_WINDOW = 100;
+    private static final Date EXCEL_MIN_DATE = new GregorianCalendar(1900, Calendar.JANUARY, 1).getTime();
+    private static final String DEFAULT_DATE_FORMAT = "MM/dd/yy";
 
     private String nullString;
+    private String dateFormatString;
 
     private DBDAttributeBinding[] columns;
     private DBDAttributeDecorator decorator;
@@ -158,7 +157,6 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         splitSqlText = CommonUtils.getBoolean(properties.get(PROP_SPLIT_SQLTEXT), false);
         splitByRowCount = CommonUtils.toInt(properties.get(PROP_SPLIT_BYROWCOUNT), EXCEL2007MAXROWS);
         splitByCol = CommonUtils.toInt(properties.get(PROP_SPLIT_BYCOL), 0);
-        String dateFormat = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), "");
         appendStrategy = AppendStrategy.of(CommonUtils.toString(properties.get(PROP_APPEND_STRATEGY)));
 
         if (wb == null) {
@@ -216,14 +214,11 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         styleDate.setBorderLeft(border);
         styleDate.setBorderRight(border);
 
-        if (CommonUtils.isEmpty(dateFormat)) {
-            styleDate.setDataFormat((short) 14);
-        } else {
-            styleDate.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(dateFormat));
-        }
-
         this.rowCount = 0;
         this.sheetIndex = 0;
+
+        this.dateFormatString = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), DEFAULT_DATE_FORMAT);
+        styleDate.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(dateFormatString));
 
         super.init(site);
     }
@@ -482,10 +477,15 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
                 cell.setCellValue(((Number) row[i]).doubleValue());
 
-            } else if (row[i] instanceof Date) {
-
-                cell.setCellValue((Date) row[i]);
-                cell.setCellStyle(styleDate);
+            } else if (row[i] instanceof Date dateVal) {
+                if (dateVal.before(EXCEL_MIN_DATE)) {
+                    SimpleDateFormat fmt = new SimpleDateFormat(dateFormatString);
+                    String text = fmt.format(dateVal);
+                    cell.setCellValue(text);
+                } else {
+                    cell.setCellValue(dateVal);
+                    cell.setCellStyle(styleDate);
+                }
 
             } else {
                 String stringValue = super.getValueDisplayString(column, row[i]);
