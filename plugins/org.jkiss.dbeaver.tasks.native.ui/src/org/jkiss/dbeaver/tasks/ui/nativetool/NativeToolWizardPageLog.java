@@ -123,6 +123,11 @@ public class NativeToolWizardPageLog extends WizardPage implements IWizardPageNa
         return true;
     }
 
+    @Override
+    public boolean isLastPage() {
+        return true;
+    }
+
     private class LogReaderJob extends Thread {
         private final ProcessBuilder processBuilder;
         private final InputStream input;
