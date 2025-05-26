@@ -414,8 +414,13 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
                 );
             }
         } else if (this.referencedSource != null) {
-            SQLQueryRowsDataContext referencedData = this.referencedSource.getRowsDataContext();
-            result = this.getRowsSources().makeTuple(this, referencedData.getColumnsList(), Collections.emptyList());
+            if (this.referencedSource.isResolved()) {
+                SQLQueryRowsDataContext referencedData = this.referencedSource.getRowsDataContext();
+                result = this.getRowsSources().makeTuple(this, referencedData.getColumnsList(), Collections.emptyList());
+            } else {
+                statistics.appendError(this.name.getSyntaxNode(), "Circular dependency detected at " + this.name.toIdentifierString());
+                result = this.getRowsSources().makeTuple(this, Collections.emptyList(), Collections.emptyList());
+            }
         } else {
             result = this.getRowsSources().makeEmptyTuple();
         }
