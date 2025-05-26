@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.awt.*;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.Reader;
@@ -217,9 +218,8 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         this.rowCount = 0;
         this.sheetIndex = 0;
 
-        String df = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), DEFAULT_DATE_FORMAT);
-        this.dateFormatString = df;
-        styleDate.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(df));
+        this.dateFormatString = CommonUtils.toString(properties.get(PROP_DATE_FORMAT), DEFAULT_DATE_FORMAT);
+        styleDate.setDataFormat(wb.getCreationHelper().createDataFormat().getFormat(dateFormatString));
 
         super.init(site);
     }
