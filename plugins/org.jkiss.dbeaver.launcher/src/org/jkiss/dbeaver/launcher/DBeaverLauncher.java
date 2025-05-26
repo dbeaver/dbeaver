@@ -163,6 +163,7 @@ public class DBeaverLauncher {
     private static final String EXITDATA = "-exitdata"; //$NON-NLS-1$
     private static final String NAME = "-name"; //$NON-NLS-1$
     private static final String LAUNCHER = "-launcher"; //$NON-NLS-1$
+    private static final String PRODUCT = "-product"; //$NON-NLS-1$
 
     private static final String PROTECT = "-protect"; //$NON-NLS-1$
     //currently the only level of protection we care about.
@@ -643,7 +644,7 @@ public class DBeaverLauncher {
         if (args == null || args.length == 0) {
             return false;
         }
-        Path workspacePath = detectWorkspace(args, dbeaverDataDir);
+        Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
         if (Files.notExists(workspacePath)) {
             return false;
         }
@@ -653,14 +654,10 @@ public class DBeaverLauncher {
         }
         //TODO auto-closable after full 21 java migration
         ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
-        var factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        factory.init(KeyStore.getInstance(KeyStore.getDefaultType()));
-        var ssl = SSLContext.getInstance("TLS");
-        ssl.init(null, factory.getTrustManagers(), null);
         HttpClient client = HttpClient.newBuilder()
             .executor(httpExecutor)
             .cookieHandler(new CookieManager())
-            .sslContext(ssl)
+            .sslContext(initCustomSslContext())
             .build();
         boolean shutdownApplication = false;
         try {
@@ -720,29 +717,36 @@ public class DBeaverLauncher {
         return shutdownApplication;
     }
 
-    private Path detectWorkspace(String[] args, Path dbeaverDataDir) {
-        boolean isCloudBeaver = false;
-        boolean isTeamEdition = false;
+    /**
+     * init custom ssl context to avoid default trust store initialization before an application starts
+     */
+    private SSLContext initCustomSslContext() throws Exception {
+        var factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        factory.init(KeyStore.getInstance(KeyStore.getDefaultType()));
+        var ssl = SSLContext.getInstance("TLS");
+        ssl.init(null, factory.getTrustManagers(), null);
+        return ssl;
+    }
+
+    private Path detectDefaultWorkspaceLocation(String[] args, Path dbeaverDataDir) {
+        String productName = "";
         String customWorkspacePath = null;
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
-            if ("-product".equals(arg)) {
-                String productName = args[++i];
-                isCloudBeaver = productName.startsWith("io.cloudbeaver");
-                isTeamEdition = productName.equalsIgnoreCase("com.dbeaver.app.team.product");
+            if (PRODUCT.equals(arg)) {
+                productName = args[++i];
             }
             if (ARG_DATA.equals(arg)) {
                 customWorkspacePath = args[++i];
+                break;
             }
         }
         if (customWorkspacePath != null) {
             return Path.of(customWorkspacePath);
-        }
-        if (isCloudBeaver) {
-            return Path.of("workspace");
-        }
-        if (isTeamEdition) {
-            return dbeaverDataDir.resolve("team-workspace");
+        } else if (productName.startsWith(Constants.PRODUCT_CLOUDBEAVER)) {
+            return Path.of(Constants.WORKSPACE);
+        } else if (productName.startsWith(Constants.PRODUCT_TEAM)) {
+            return dbeaverDataDir.resolve(Constants.TEAM_WORKSPACE);
         }
         return dbeaverDataDir.resolve(Constants.WORKSPACE6);
     }
