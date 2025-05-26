@@ -17,10 +17,23 @@
 package org.jkiss.dbeaver.ext.duckdb.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 
-public class DuckDBSQLDialect extends GenericSQLDialect {
+import java.util.List;
 
-    public static final DuckDBSQLDialect INSTANCE = new DuckDBSQLDialect();
+public final class DuckDBSQLDialect extends GenericSQLDialect {
+    private static final List<String> DUCKDB_KEYWORDS = List.of(
+        "INSTALL",
+        "LOAD"
+    );
+
+    @Override
+    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(session, dataSource, metaData);
+        addSQLKeywords(DUCKDB_KEYWORDS);
+    }
 
     @Override
     public boolean supportsAliasInSelect() {
