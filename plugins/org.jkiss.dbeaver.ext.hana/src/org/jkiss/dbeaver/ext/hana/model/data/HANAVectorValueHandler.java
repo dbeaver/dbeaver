@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.hana.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -61,7 +62,7 @@ public abstract class HANAVectorValueHandler extends JDBCArrayValueHandler {
     }
 
     protected abstract void bindVectorParameter(JDBCPreparedStatement statement, int paramIndex,
-            JDBCCollection collection)
+            @NotNull JDBCCollection collection)
             throws DBCException, SQLException;
 
     @Override

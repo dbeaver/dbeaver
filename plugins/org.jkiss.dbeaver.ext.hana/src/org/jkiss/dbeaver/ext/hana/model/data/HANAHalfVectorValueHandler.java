@@ -21,7 +21,9 @@ package org.jkiss.dbeaver.ext.hana.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.hana.model.HANAConstants;
+import org.jkiss.dbeaver.ext.hana.model.HANADataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -39,6 +41,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 public class HANAHalfVectorValueHandler extends HANAVectorValueHandler {
+
+    private static final Log log = Log.getLog(HANAVectorValueHandler.class);
 
     public static final HANAHalfVectorValueHandler INSTANCE = new HANAHalfVectorValueHandler();
 
@@ -74,13 +78,15 @@ public class HANAHalfVectorValueHandler extends HANAVectorValueHandler {
                 }
                 return new JDBCCollection(monitor, elementType, elementValueHandler, contents);
             } catch (SQLException e) {
+                log.warn("Cannot display HALF_VECTOR, using default handling", e);
             }
         }
         return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 
     @Override
-    protected void bindVectorParameter(JDBCPreparedStatement statement, int paramIndex, JDBCCollection collection)
+    protected void bindVectorParameter(JDBCPreparedStatement statement, int paramIndex,
+            @NotNull JDBCCollection collection)
             throws DBCException, SQLException {
         if (collection.getComponentType().getTypeID() != Types.REAL) {
             throw new DBCException("Only REAL numbers are allowed in HALF_VECTOR as ARRAY");

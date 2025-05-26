@@ -20,19 +20,21 @@
  */
 package org.jkiss.dbeaver.ext.hana.model.data;
 
-import java.sql.SQLException;
-import java.sql.Types;
-
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
+
+import java.sql.SQLException;
+import java.sql.Types;
 
 public class HANARealVectorValueHandler extends HANAVectorValueHandler {
 
     public static final HANARealVectorValueHandler INSTANCE = new HANARealVectorValueHandler();
 
     @Override
-    protected void bindVectorParameter(JDBCPreparedStatement statement, int paramIndex, JDBCCollection collection)
+    protected void bindVectorParameter(JDBCPreparedStatement statement, int paramIndex,
+            @NotNull JDBCCollection collection)
             throws DBCException, SQLException {
         if (collection.getComponentType().getTypeID() != Types.REAL) {
             throw new DBCException("Only REAL numbers are allowed in REAL_VECTOR");
