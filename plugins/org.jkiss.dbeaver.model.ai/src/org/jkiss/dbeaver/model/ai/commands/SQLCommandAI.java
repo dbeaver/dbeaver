@@ -67,7 +67,6 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         if (CommonUtils.isEmptyTrimmed(prompt)) {
             throw new DBException("Empty AI prompt");
         }
-        AIFeatures.SQL_AI_COMMAND.use();
 
         final DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(
             command.getDataSourceContainer(), "AI logical wrapper", null);
