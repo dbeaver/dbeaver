@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.ui.editors.sql.ai.internal.AIFeatures;
 
 import java.util.List;
 import java.util.concurrent.Flow;
@@ -111,6 +112,7 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DAICommandRequest request
     ) throws DBException {
+        AIFeatures.SQL_AI_COMMAND.use();
         DAICompletionEngine engine = request.engine() != null ?
             request.engine() :
             getActiveEngine();
