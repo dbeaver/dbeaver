@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
 import org.jkiss.dbeaver.model.ai.completion.DAITranslateRequest;
+import org.jkiss.dbeaver.model.ai.internal.AIFeatures;
 import org.jkiss.dbeaver.model.ai.utils.InMemoryHistoryManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
