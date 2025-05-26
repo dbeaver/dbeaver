@@ -61,7 +61,7 @@ public abstract class HANAVectorValueHandler extends JDBCArrayValueHandler {
         }
     }
 
-    protected abstract void bindVectorParameter(JDBCPreparedStatement statement, int paramIndex,
+    protected abstract void bindVectorParameter(@NotNull JDBCPreparedStatement statement, int paramIndex,
             @NotNull JDBCCollection collection)
             throws DBCException, SQLException;
 

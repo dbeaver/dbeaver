@@ -33,7 +33,7 @@ public class HANARealVectorValueHandler extends HANAVectorValueHandler {
     public static final HANARealVectorValueHandler INSTANCE = new HANARealVectorValueHandler();
 
     @Override
-    protected void bindVectorParameter(JDBCPreparedStatement statement, int paramIndex,
+    protected void bindVectorParameter(@NotNull JDBCPreparedStatement statement, int paramIndex,
             @NotNull JDBCCollection collection)
             throws DBCException, SQLException {
         if (collection.getComponentType().getTypeID() != Types.REAL) {

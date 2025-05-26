@@ -85,7 +85,7 @@ public class HANAHalfVectorValueHandler extends HANAVectorValueHandler {
     }
 
     @Override
-    protected void bindVectorParameter(JDBCPreparedStatement statement, int paramIndex,
+    protected void bindVectorParameter(@NotNull JDBCPreparedStatement statement, int paramIndex,
             @NotNull JDBCCollection collection)
             throws DBCException, SQLException {
         if (collection.getComponentType().getTypeID() != Types.REAL) {
