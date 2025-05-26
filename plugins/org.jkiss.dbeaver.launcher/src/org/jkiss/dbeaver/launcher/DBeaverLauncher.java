@@ -580,6 +580,8 @@ public class DBeaverLauncher {
      * @throws Exception thrown if a problem occurs during the launch
      */
     protected void basicRun(String[] args) throws Exception {
+        System.out.println(Arrays.toString(args));
+        System.out.println("Root dir" + Path.of("").toAbsolutePath());
         System.setProperty("eclipse.startTime", Long.toString(System.currentTimeMillis())); //$NON-NLS-1$
         commands = args;
         String[] passThruArgs = processCommandLine(args);
