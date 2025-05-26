@@ -117,7 +117,7 @@ public class SQLServerSessionManager implements DBAServerSessionManager<SQLServe
         }
         sql.append("c.connection_id,(select text from sys.dm_exec_sql_text(c.most_recent_sql_handle)) as sql_text\n")
             .append("FROM sys.dm_exec_sessions s\n");
-        if (onlyConnections) {
+        if (!onlyConnections) {
             sql.append("LEFT OUTER ");
         }
         sql.append("JOIN sys.dm_exec_connections c ON c.session_id=s.session_id\n");
