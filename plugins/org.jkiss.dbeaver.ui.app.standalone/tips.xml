@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <tips>
 	<!--        Tips below were reviewed on 28th of November 2023   -->
-	<tip>DBeaver can be customized to suit your needs. Learn detailed information about optional extensions <a href="https://dbeaver.com/docs/wiki/Optional-extensions"> here</a>.</tip>
+	<tip>DBeaver can be customized to suit your needs. Learn detailed information about optional extensions <a href="https://dbeaver.com/docs/dbeaver/Optional-extensions"> here</a>.</tip>
 	<tip>You can <a href="prefs://org.eclipse.ui.window.customizePerspective">customize the menu bar and the list of menu items displayed</a> in the <b>Menu Visibility</b> tab.</tip>
 	<tip>You can <a href="prefs://org.eclipse.ui.window.customizePerspective">customize the toolbar </a> in the <b>Toolbar Visibility</b> tab.</tip>
 	<tip>You can create a keyboard shortcut for most commands in DBeaver. <a href="prefs://org.eclipse.ui.preferencePages.Keys">Existing shortcuts can also be changed</a></tip>
@@ -13,7 +13,7 @@
 		 Use <a href="https://dbeaver.com/2022/03/10/how-to-create-network-profiles/"> Network profiles</a>.</tip>
 	<tip>When adding a new dependency for your driver, use Maven or Gradle scripts by switching to the <b>Dependency Declaration</b> tab.</tip>
 	<tip>To securely pass external variables into DBeaver, you can use the -vars command-line parameter to specify the file containing variables.
-		 Read more about Admin variables <a href="https://dbeaver.com/docs/wiki/Admin-Variables#declare-external-variables-in-a-file"> here</a>.</tip>
+		 Read more about Admin variables <a href="https://dbeaver.com/docs/dbeaver/Admin-Variables#declare-external-variables-in-a-file"> here</a>.</tip>
 	<tip>You can easily change a DBeaver file’s location. Just go to <b>File –> Switch Workspace</b> and set a new path.</tip>
 	<tip> <a href="https://dbeaver.com/2022/06/02/keep-calm-and-use-connection-types/">Highlight your connection types</a>
 		 – Test or Production – to specify their colors in your <b>Navigation Tree, Data Editor, and SQL Editor</b>.
@@ -26,7 +26,7 @@
 	<tip>You can convert the selected text into uppercase using the command <commandRef commandId="org.eclipse.ui.edit.text.upperCase"/>.</tip>
 	<tip>You can convert the selected text into lowercase using the <commandRef commandId="org.eclipse.ui.edit.text.lowerCase"/> command.</tip>
 	<tip>To refresh query results in <a href="https://dbeaver.com/2022/04/14/your-first-queries-in-the-sql-editor/">SQL Editor</a>, use <commandRef commandId="org.eclipse.ui.file.refresh"/> command.</tip>
-	<tip>To see available <a href="https://dbeaver.com/docs/wiki/SQL-Templates">templates</a> of SQL statements, use the <commandRef commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation"/> command.</tip>
+	<tip>To see available <a href="https://dbeaver.com/docs/dbeaver/SQL-Templates">templates</a> of SQL statements, use the <commandRef commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation"/> command.</tip>
 	<tip>Based on selected rows, you can generate <b>SQL statements (SELECT/INSERT/UPDATE/DELETE)</b>.
 		 To generate SQL, right-click the selected rows, click <b>Generate SQL</b> and select one of the SQL commands you see.</tip>
 	<tip>To see the execution plan for the current query, use <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/> command.</tip>
@@ -83,16 +83,16 @@
 	<tip>Instead of constantly switching between all these tables to add or edit data,
 		 use <a href="https://dbeaver.com/2022/05/19/think-about-the-content-not-about-the-structure/">the References Panel</a>.
 		 It lets you quickly view which tables the selected table is associated with.</tip>
-	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.eclipse.ui.edit.rename"/> command to rename the selected element.</tip>
-	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.jkiss.dbeaver.core.object.open"/> command to edit the selected element's properties.</tip>
-	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.eclipse.ui.file.refresh"/> command to refresh the selected element.</tip>
-	<tip>In <a href="https://dbeaver.com/docs/wiki/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/> command to add
-		 the selected elements to your <a href="https://dbeaver.com/docs/wiki/Bookmarks">bookmarks</a>.</tip>
+	<tip>In <a href="https://dbeaver.com/docs/dbeaver/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.eclipse.ui.edit.rename"/> command to rename the selected element.</tip>
+	<tip>In <a href="https://dbeaver.com/docs/dbeaver/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.jkiss.dbeaver.core.object.open"/> command to edit the selected element's properties.</tip>
+	<tip>In <a href="https://dbeaver.com/docs/dbeaver/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.eclipse.ui.file.refresh"/> command to refresh the selected element.</tip>
+	<tip>In <a href="https://dbeaver.com/docs/dbeaver/Database-Navigator">Database Navigator</a>, use <commandRef commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/> command to add
+		 the selected elements to your <a href="https://dbeaver.com/docs/dbeaver/Bookmarks">bookmarks</a>.</tip>
 	<tip>Customize your Database Navigator tree to suit your needs. Learn more about Navigation tree customization
 		 <a href="https://dbeaver.com/2022/08/25/how-to-customize-your-navigation-tree/"> here</a>.</tip>
 	<tip>Choose a Simple or Advanced navigation tree view according to your needs. Learn more about how to set it up
 		 <a href="https://dbeaver.com/2022/08/18/simple-or-advanced-choose-your-navigation-tree-view/">here</a>.</tip>
-	<tip>Use <a href="https://dbeaver.com/docs/wiki/Bookmarks">bookmarks</a> as quick access links to objects of a database.</tip>
+	<tip>Use <a href="https://dbeaver.com/docs/dbeaver/Bookmarks">bookmarks</a> as quick access links to objects of a database.</tip>
 	<tip>If the Projects tab is closed, go to <b>Main menu -> Window -> Show view -> Projects</b> to open it.</tip>
 	<tip>You can make your project default, and its content will be displayed in the <b>Database Navigator</b>.
 		 To do this, right-click on it and choose <b>“Set Active Project."</b></tip>
@@ -107,7 +107,7 @@
 	<tip>You can <a href="https://dbeaver.com/2022/09/22/database-tasks-view-all-your-tasks-in-one-place/">customize</a> the displayed columns in Database tasks.
 		 For example, show the execution time of a particular task. To do this, you must right-click on any area of the list and go to <b>Configure columns</b>.
 		 Check the appropriate boxes and <b>click OK</b>.</tip>
-	<tip>You can ignore the PK validation constraint when <a href="https://dbeaver.com/docs/wiki/Data-Import-and-Replace">importing data</a> into a
+	<tip>You can ignore the PK validation constraint when <a href="https://dbeaver.com/docs/dbeaver/Data-Import-and-Replace">importing data</a> into a
 		 table by selecting the Replace method in the data load settings. Supported by Oracle, MySQL, PostgreSQL, Firebird, and SQLite.</tip>
 	<tip>You can improve data import performance by enabling <b>Use multi-row value</b> insert in the data transfer settings.
 		 Additionally, you can increase the rows count in the <b>multi-insert batch</b>.</tip>
@@ -120,7 +120,7 @@
 	<tip>If you need the high contrast theme, enable it in your operating system, and DBeaver's high contrast theme will be activated.</tip>
 
 	<tip product="ce">DBeaver PRO is fully integrated with the
-		 <a href="https://dbeaver.com/docs/wiki/Project-team-work/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Git version control system</a>.
+		 <a href="https://dbeaver.com/docs/dbeaver/Project-team-work/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Git version control system</a>.
 		 Upgrade your DBeaver to keep your project configuration, scripts, diagrams, bookmarks, and other artifacts in a Git repository.</tip>
 	<tip product="ce,le,ee">With DBeaver Ultimate, you can work with databases accessible via AWS, Google Cloud, and Microsoft Azure simultaneously and easily switch between their configurations.
 		Learn more about how to easily work with hybrid clouds in DBeaver Ultimate
@@ -146,25 +146,25 @@
 		 in the data grid, Panels, or result set in SQL editor.</tip>
 	<tip product="ce">DBeaver PRO allows you to directly change the database schema with ERD edit mode. Learn more about database development in DBeaver PRO
 		 <a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
-	<tip product="ce">Get <a href="https://dbeaver.com/docs/wiki/Mock-Data-Generation-in-DBeaver?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Mock Data Generator</a>
+	<tip product="ce">Get <a href="https://dbeaver.com/docs/dbeaver/Mock-Data-Generation-in-DBeaver?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Mock Data Generator</a>
 		 in DBeaver PRO when you need to create huge quantities of realistic sample data for testing purposes and want to avoid the tedious and time-consuming work of entering test data by hand.</tip>
-	<tip product="ce">Get <a href="https://dbeaver.com/docs/wiki/Query-Execution-Plan/?utm_source=ce&amp;utm_&amp;edium=cpc&amp;utm_campaign=tips">Query Execution plan</a>
+	<tip product="ce">Get <a href="https://dbeaver.com/docs/dbeaver/Query-Execution-Plan/?utm_source=ce&amp;utm_&amp;edium=cpc&amp;utm_campaign=tips">Query Execution plan</a>
 		 graph mode in DBeaver PRO to view and estimate the speed of the query or script execution and to define the most expensive plan nodes.</tip>
 	<tip product="ce">With DBeaver PRO, you can <a href="https://dbeaver.com/2022/06/23/import-data-with-dbeaver/?utm_source=ce&amp;utm&amp;medium=cpc&amp;utm_campaign=tips">import
 		 and export files</a> in any format - XLS, XLSL, XML, and more.</tip>
 	<tip product="ce">In DBeaver PRO, you can get advanced options to compare data from two similar tables to navigate the differences. Learn more about Data comparison in DBeaver PRO
-		 <a href="https://dbeaver.com/docs/wiki/Data-compare?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+		 <a href="https://dbeaver.com/docs/dbeaver/Data-compare?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
 	<tip product="ce">With DBeaver PRO, you can <a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">schedule
 		 your tasks</a> to execute with the specified recurrence without opening DBeaver.</tip>
 	<tip product="ce">With DBeaver PRO, you can group several tasks into
 		 <a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">one composite task</a>
 		 to easily execute a set of actions in one click.</tip>
 	<tip product="ce">In DBeaver PRO, you can create a database schema backup by using the
-		 <a href="https://dbeaver.com/docs/wiki/Schema-compare/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Schema Compare/Migrate feature</a>
+		 <a href="https://dbeaver.com/docs/dbeaver/Schema-compare/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">Schema Compare/Migrate feature</a>
 		 and save it as a task. In addition, you can execute this task automatically with Task Scheduler in DBeaver PRO.</tip>
 	<tip product="ce">With DBeaver PRO, you can compare schemas, including all metadata objects, in one or different databases.
 		 Learn more about the powerful schema comparison in DBeaver PRO
-		 <a href="https://dbeaver.com/docs/wiki/Schema-compare/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+		 <a href="https://dbeaver.com/docs/dbeaver/Schema-compare/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
 	<tip product="ce">To switch ER Diagram notation, right-click on a diagram, go to the <b>Notation</b> item, and select the one you need — for example, Crow's Foot.</tip>
 	<tip product="ce,le,ee,ue">DBeaver PRO offers a convenient way to configure Kubernetes settings for connecting to databases in a Kubernetes cluster.<br/>
 		Learn more about Kubernetes configuration <a href="https://dbeaver.com/docs/dbeaver/Kubernetes-configuration/">here</a>.</tip>
@@ -185,7 +185,7 @@
 	<tip product="le">Get a powerful AI Assistant in DBeaver Enterprise to automatically create complex queries with joins. Watch how it works
 		 <a href="https://youtu.be/MOaEpDa5GP0">in our tutorial video</a>.</tip>
 	<tip product="le">In DBeaver Enterprise, you can get advanced options to compare data from two similar tables to navigate the differences.
-		 Learn more about Data comparison in DBeaver Enterprise <a href="https://dbeaver.com/docs/wiki/Data-compare?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+		 Learn more about Data comparison in DBeaver Enterprise <a href="https://dbeaver.com/docs/dbeaver/Data-compare?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
 	<tip product="le">With DBeaver Enterprise, you can <a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ce&amp;utm_medium=cpc&amp;utm_campaign=tips">schedule
 		 your tasks</a> to execute with the specified recurrence without opening DBeaver.</tip>
 	<tip product="le">With DBeaver Enterprise, you can group several tasks into
@@ -197,7 +197,7 @@
 		<a href="https://dbeaver.com/docs/dbeaver/Database-driver-Salesforce/">Salesforce driver</a> created by the DBeaver team.</tip>
 	<tip product="le,ee,ue">To switch ER Diagram notation, right-click on a diagram, go to the <b>Notation</b> item, and select the one you need — Crow's Foot or Bachman.</tip>
 
-	<tip product="ee">DBeaver Enterprise is fully integrated with the <a href="https://dbeaver.com/docs/wiki/Project-team-work/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Git
+	<tip product="ee">DBeaver Enterprise is fully integrated with the <a href="https://dbeaver.com/docs/dbeaver/Project-team-work/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Git
 		 version control system</a>. Keep your project configuration, scripts, diagrams, bookmarks, and other artifacts in a Git repository.</tip>
 	<tip product="ee,ue">If you want a convenient data collaboration tool for your team, try
 		 <a href="https://dbeaver.com/dbeaver-team-edition/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Team Edition</a>.
@@ -210,26 +210,26 @@
 		 in the data grid, Panels, or result set in SQL editor.</tip>
 	<tip product="ee">DBeaver Enterprise allows you to directly change the database schema with ERD edit mode. Learn more about database development in DBeaver Enterprise
 		 <a href="https://dbeaver.com/2022/07/07/forward-engineering-with-erd/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
-	<tip product="ee,ue">Use <a href="https://dbeaver.com/docs/wiki/Mock-Data-Generation-in-DBeaver?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Mock Data Generator</a>
+	<tip product="ee,ue">Use <a href="https://dbeaver.com/docs/dbeaver/Mock-Data-Generation-in-DBeaver?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Mock Data Generator</a>
 		 when you need to create huge quantities of realistic sample data for testing purposes and want to avoid the tedious and time-consuming work of entering test data by hand.</tip>
-	<tip product="ee,ue">Use <a href="https://dbeaver.com/docs/wiki/Query-Execution-Plan/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Query Execution plan</a>
+	<tip product="ee,ue">Use <a href="https://dbeaver.com/docs/dbeaver/Query-Execution-Plan/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Query Execution plan</a>
 		 graph mode to view and estimate the speed of the query or script execution and to define the most expensive plan nodes.</tip>
 	<tip product="ee,ue"><a href="https://dbeaver.com/2022/06/23/import-data-with-dbeaver/?utm_source=ce&amp;utm&amp;medium=cpc&amp;utm_campaign=tips">Import
 		 and export files</a> in any format - XLS, XLSL, XML, and more.</tip>
 	<tip product="ee,ue">Use advanced options to compare data from two similar tables to navigate the differences. Learn more about Data comparison in DBeaver PRO
-		 <a href="https://dbeaver.com/docs/wiki/Data-compare?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+		 <a href="https://dbeaver.com/docs/dbeaver/Data-compare?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
 	<tip product="ee,ue"> <a href="https://dbeaver.com/2022/10/27/how-to-use-scheduler-for-your-tasks/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Schedule your tasks</a>
 		 to execute with the specified recurrence without opening DBeaver.</tip>
 	<tip product="ee">Group several tasks into one composite task to easily execute a set of actions in one click. Learn more about advanced task management in DBeaver PRO
 		 <a href="https://dbeaver.com/2022/10/07/composite-tasks-and-how-to-create-them/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>. </tip>
 	<tip product="ee,ue">You can create a database schema backup by using the
-		 <a href="https://dbeaver.com/docs/wiki/Schema-compare/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Schema Compare/Migrate feature</a>
+		 <a href="https://dbeaver.com/docs/dbeaver/Schema-compare/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">Schema Compare/Migrate feature</a>
 		 and save it as a task. In addition, you can execute this task automatically with Task Scheduler.</tip>
 	<tip product="ee,ue">Compare schemas, including all metadata objects, in one or different databases. Learn more about the powerful schema comparison in DBeaver PRO
-		 <a href="https://dbeaver.com/docs/wiki/Schema-compare/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
+		 <a href="https://dbeaver.com/docs/dbeaver/Schema-compare/?utm_source=ee&amp;utm_medium=cpc&amp;utm_campaign=tips">here</a>.</tip>
 	<!--        Tips for UE   -->
 	<tip product="ue">DBeaver Ultimate is fully integrated with the
-		 <a href="https://dbeaver.com/docs/wiki/Project-team-work/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">Git version control system</a>.
+		 <a href="https://dbeaver.com/docs/dbeaver/Project-team-work/?utm_source=ue&amp;utm_medium=cpc&amp;utm_campaign=tips">Git version control system</a>.
 		 Keep your project configuration, scripts, diagrams, bookmarks, and other artifacts in a Git repository.</tip>
 	<tip product="ue">Work with databases accessible via AWS, Google Cloud, and Microsoft Azure simultaneously and easily switch between their configurations.
 		 Learn more about how to easily work with hybrid clouds in DBeaver Ultimate
