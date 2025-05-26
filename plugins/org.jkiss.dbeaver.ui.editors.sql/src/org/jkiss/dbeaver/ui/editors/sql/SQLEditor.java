@@ -3036,9 +3036,7 @@ public class SQLEditor extends SQLEditorBase implements
         return createScriptContext().fillQueryParameters(query, () -> null, false);
     }
 
-    private boolean checkSession(DBRProgressListener onFinish)
-        throws DBException
-    {
+    public boolean checkSession(DBRProgressListener onFinish) throws DBException {
         DBPDataSourceContainer ds = getDataSourceContainer();
         if (ds == null) {
             throw new DBException("No active connection");
