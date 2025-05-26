@@ -21,9 +21,13 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.sql.SQLException;
-
 
 public class DuckDBGeometryValueHandler extends GISGeometryValueHandler {
     public static final DuckDBGeometryValueHandler INSTANCE = new DuckDBGeometryValueHandler();
@@ -35,6 +39,21 @@ public class DuckDBGeometryValueHandler extends GISGeometryValueHandler {
         DBSTypedObject type,
         int index
     ) throws DBCException, SQLException {
-        return getValueFromObject(session, type, resultSet.getObject(index), false, false);
+        try {
+            return getValueFromObject(session, type, resultSet.getBytes(index), false, false);
+        } catch (Exception e) {
+            return getValueFromObject(session, type, resultSet.getString(index), false, false);
+        }
+    }
+
+    @Override
+    protected Geometry convertGeometryFromBinaryFormat(DBCSession session, byte[] object) throws DBCException {
+        try {
+            var buffer = ByteBuffer.wrap(object).order(ByteOrder.LITTLE_ENDIAN);
+            var factory = new GeometryFactory(new PrecisionModel());
+            return DuckDBGeometryConverter.deserialize(buffer, factory);
+        } catch (Exception e) {
+            return super.convertGeometryFromBinaryFormat(session, object);
+        }
     }
 }
