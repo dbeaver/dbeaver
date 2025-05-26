@@ -59,7 +59,7 @@ public abstract class ObjectAttributeDescriptor {
     private final Class<?> declaringClass;
 
     public ObjectAttributeDescriptor(
-        DBPPropertySource source,
+        @Nullable DBPPropertySource source,
         ObjectPropertyGroupDescriptor parent,
         Method getter,
         String id,
@@ -102,8 +102,8 @@ public abstract class ObjectAttributeDescriptor {
         return declaringClass;
     }
 
-    public DBPPropertySource getSource()
-    {
+    @Nullable
+    public DBPPropertySource getSource() {
         return source;
     }
 
