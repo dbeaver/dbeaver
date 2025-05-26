@@ -502,7 +502,7 @@ public class SQLBackgroundParsingJob {
                 log.debug("discovering " + workOffset + "+" + workLength);
             }
             {
-                SQLScriptElement firstElement = SQLScriptParser.extractQueryAtPos(parserContext, workOffset);
+                SQLScriptElement firstElement = SQLScriptParser.extractQueryAtPos(parserContext, workOffset, false);
                 if (firstElement != null) {
                     workLength = Math.max(workOffset + workLength, firstElement.getOffset() + firstElement.getLength());
                     workOffset = Math.min(workOffset, firstElement.getOffset());
@@ -519,14 +519,14 @@ public class SQLBackgroundParsingJob {
                 this.accomplishWork(workOffset, workLength);
                 return;
             } else {
-                SQLScriptElement element = SQLScriptParser.extractQueryAtPos(parserContext, elements.get(0).getOffset());
+                SQLScriptElement element = SQLScriptParser.extractQueryAtPos(parserContext, elements.get(0).getOffset(), false);
                 if (element != null && element.getOffset() < elements.get(0).getOffset()) {
                     elements.set(0, element);
                 }
                 int lastElementIndex = elements.size() - 1;
                 SQLScriptElement lastElement = elements.get(lastElementIndex);
                 if (elements.size() > 1) {
-                    element = SQLScriptParser.extractQueryAtPos(parserContext, lastElement.getOffset());
+                    element = SQLScriptParser.extractQueryAtPos(parserContext, lastElement.getOffset(), false);
                     if (element != null) {
                         elements.set(lastElementIndex, element);
                         lastElement = element;

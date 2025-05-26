@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,8 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             }
             return this.childrenByName;
         }
-        
+
+        @NotNull
         private List<DummyDbObject> getChildrenListImpl() {
             return this.children != null ? this.children : (this.children = new ArrayList<>(this.getChildrenMapImpl().values()));
         }
@@ -442,6 +443,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
     public List<SQLQueryResultColumn> getColumnsList() {
         return Collections.emptyList();
     }
+
     @Override
     public boolean hasUnresolvedSource() {
         return false;
@@ -488,13 +490,13 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
     @Nullable
     @Override
-    public SQLQueryResultPseudoColumn resolvePseudoColumn(DBRProgressMonitor monitor, @NotNull String name) {
+    public SQLQueryResultPseudoColumn resolvePseudoColumn(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
         return null;
     }
 
     @Nullable
     @Override
-    public SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(DBRProgressMonitor monitor, @NotNull String name) {
+    public SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
         return null;
     }
 
@@ -543,7 +545,28 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             }
             return context;
         }
-        
+
+        @Override
+        protected SQLQueryRowsDataContext resolveRowDataImpl(
+            @NotNull SQLQueryRowsDataContext context,
+            @NotNull SQLQueryRecognitionContext statistics
+        ) {
+            if (super.referencedSource != null) {
+                return this.referencedSource.getRowsDataContext();
+            } else {
+                try {
+                    var columnLists = this.prepareResultColumnsList(
+                        this.getName().entityName, context.getConnection().dialect, statistics,
+                        defaultDummyTable.getAttributes(statistics.getMonitor())
+                    );
+                    return this.getRowsSources().makeTuple(columnLists.getFirst(), columnLists.getSecond());
+                } catch (DBException ex) {
+                    statistics.appendError(this.getName().entityName, "Failed to resolve table " + this.getName().toIdentifierString(), ex);
+                    return this.getRowsSources().makeEmptyTuple();
+                }
+            }
+        }
+
         @Override
         protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
             return visitor.visitDummyTableRowsSource(this, node);

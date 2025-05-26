@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.List;
@@ -44,7 +46,7 @@ public class SQLQueryRowsCteSubqueryModel extends SQLQueryRowsSourceModel {
         @NotNull List<SQLQuerySymbolEntry> columNames,
         @Nullable SQLQueryRowsSourceModel source
     ) {
-        super(syntaxNode);
+        super(syntaxNode, source);
         this.subqueryName = subqueryName;
         this.columNames = columNames;
         this.source = source;
@@ -69,6 +71,41 @@ public class SQLQueryRowsCteSubqueryModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         return context; // just apply given context
+    }
+
+    @Override
+    protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        if (this.subqueryName != null) {
+            if (this.subqueryName.isNotClassified()) {
+                this.subqueryName.getSymbol().setDefinition(this.subqueryName);
+                if (this.subqueryName.isNotClassified()) {
+                    this.subqueryName.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
+                }
+            }
+        }
+        if (this.source != null) {
+            this.source.resolveRowSources(context, statistics);
+        }
+        return context.reset();
+    }
+
+    @Override
+    protected SQLQueryRowsDataContext resolveRowDataImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        if (this.source != null) {
+            if (!this.columNames.isEmpty()) {
+                return SQLQueryRowsCorrelatedSourceModel.prepareColumnsCorrelation(this.source.getRowsDataContext(), this.columNames, this);
+            } else {
+                return this.source.getRowsDataContext();
+            }
+        } else {
+            return context.getRowsSources().makeEmptyTuple();
+        }
     }
 
     @Nullable

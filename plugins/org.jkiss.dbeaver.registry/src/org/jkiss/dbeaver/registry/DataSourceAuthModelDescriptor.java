@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentialsForm;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -182,11 +183,9 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     @NotNull
     @Override
     public DBPPropertySource createCredentialsSource(DBPDataSourceContainer dataSource, DBPConnectionConfiguration configuration) {
-        DBAAuthModel<?> instance = getInstance();
-        DBAAuthCredentials credentials = dataSource == null || configuration == null ?
-            instance.createCredentials() :
-            instance.loadCredentials(dataSource, configuration);
-        PropertyCollector propertyCollector = new PropertyCollector(credentials, false);
+        DBAAuthModel<DBAAuthCredentials> instance = getInstance();
+        DBAAuthCredentialsForm credentialsForm = instance.createCredentialsForm(dataSource, configuration);
+        PropertyCollector propertyCollector = new PropertyCollector(credentialsForm, false);
         propertyCollector.collectProperties();
         return propertyCollector;
     }

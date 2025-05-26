@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.LinkedList;
@@ -52,9 +53,15 @@ public abstract class SQLQuerySelectionResultSublistSpec extends SQLQueryNodeMod
         return resultModel.getResultDataContext();
     }
 
-    @NotNull
     protected abstract void collectColumns(
         @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull LinkedList<SQLQueryResultColumn> resultColumns
+    );
+
+    protected abstract void collectColumns(
+        @NotNull SQLQueryRowsDataContext knownValues,
         @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
         @NotNull SQLQueryRecognitionContext statistics,
         @NotNull LinkedList<SQLQueryResultColumn> resultColumns
@@ -66,7 +73,9 @@ public abstract class SQLQuerySelectionResultSublistSpec extends SQLQueryNodeMod
         @NotNull LinkedList<SQLQueryResultColumn> resultColumns
     ) {
         for (SQLQueryResultColumn c : foreignColumns) {
-            resultColumns.addLast(new SQLQueryResultColumn(resultColumns.size(), c.symbol, rowsSourceModel, c.realSource, c.realAttr, c.type));
+            resultColumns.addLast(
+                new SQLQueryResultColumn(resultColumns.size(), c.symbol, rowsSourceModel, c.realSource, c.realAttr, c.type)
+            );
         }
     }
 }

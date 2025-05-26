@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -149,7 +150,7 @@ public class ScopeSelectorControl extends Composite {
     }
 
     @NotNull
-    public List<DBSEntity> getCustomEntities(@NotNull DBRProgressMonitor monitor) {
+    public List<DBSObject> getCustomEntities(@NotNull DBRProgressMonitor monitor) {
         return AITextUtils.loadCustomEntities(monitor, executionContext.getDataSource(), checkedObjectIds);
     }
 
@@ -205,7 +206,7 @@ public class ScopeSelectorControl extends Composite {
         try {
             // Find nodes of already selected objects
             context.run(true, true, monitor -> {
-                for (DBSEntity entity : AITextUtils.loadCustomEntities(monitor, dataSource, ids)) {
+                for (DBSObject entity : AITextUtils.loadCustomEntities(monitor, dataSource, ids)) {
                     DBNDatabaseNode node = navigator.getNodeByObject(monitor, entity, true);
                     if (node != null) {
                         nodes.add(node);
@@ -223,7 +224,7 @@ public class ScopeSelectorControl extends Composite {
             navigator.getNodeByObject(dataSource),
             nodes,
             new Class[]{DBSInstance.class, DBSObjectContainer.class, DBSEntity.class},
-            new Class[]{DBSEntity.class},
+            new Class[] {DBSObjectContainer.class, DBSEntity.class},
             new Class[]{DBSEntity.class}
         );
 
@@ -234,12 +235,14 @@ public class ScopeSelectorControl extends Composite {
         return selected.stream()
             .map(DBNDatabaseNode.class::cast)
             .map(DBNDatabaseNode::getValueObject)
-            .map(DBSEntity.class::cast)
+            .map(DBSObject.class::cast)
             .map(DBUtils::getObjectFullId)
             .collect(Collectors.toSet());
     }
 
     public void changeScope(@NotNull DAICompletionScope scope) {
+        checkedObjectIds.clear();
+
         if (scope == DAICompletionScope.CUSTOM) {
             Set<String> ids = chooseCustomEntities(
                 getShell(),
@@ -252,7 +255,6 @@ public class ScopeSelectorControl extends Composite {
                 return;
             }
 
-            checkedObjectIds.clear();
             checkedObjectIds.addAll(ids);
         }
 

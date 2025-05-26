@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverLibraryMavenArtifact;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.WebUtils;
@@ -41,14 +43,15 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import javax.net.ssl.SSLHandshakeException;
 
 class DriverDownloadAutoPage extends DriverDownloadPage {
 
@@ -91,7 +94,13 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         }
 
         {
-            Group filesGroup = UIUtils.createControlGroup(composite, UIConnectionMessages.dialog_driver_download_auto_page_required_files, 1, -1, -1);
+            Group filesGroup = UIUtils.createControlGroup(
+                composite,
+                UIConnectionMessages.dialog_driver_download_auto_page_required_files,
+                1,
+                GridData.FILL_BOTH,
+                SWT.DEFAULT
+            );
             filesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             depsTree = new DriverDependenciesTree(
@@ -102,17 +111,34 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 driver.getDriverLibraries(),
                 true)
             {
-                protected void setLibraryVersion(final DBPDriverLibrary library, final String version) {
+                protected void setLibraryVersion(DriverLibraryMavenArtifact library, final String version) {
                     String curVersion = library.getVersion();
                     if (CommonUtils.equalObjects(curVersion, version)) {
                         return;
                     }
                     library.setPreferredVersion(version);
+                    library.setForcedVersion(true);
                     resolveLibraries();
                 }
 
             };
-            new Label(filesGroup, SWT.NONE).setText(UIConnectionMessages.dialog_driver_download_auto_page_change_driver_version_text);
+            Composite infoPanel = UIUtils.createComposite(filesGroup, 2);
+            infoPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Label label = new Label(infoPanel, SWT.NONE);
+            label.setText(UIConnectionMessages.dialog_driver_download_auto_page_change_driver_version_text);
+            label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Button rtdButton = UIUtils.createDialogButton(infoPanel, UIMessages.button_reset_to_defaults,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                    for (DBPDriverLibrary lib : depsTree.getLibraries()) {
+                        if (lib instanceof DriverLibraryMavenArtifact mavenArtifact) {
+                            mavenArtifact.setForcedVersion(false);
+                            mavenArtifact.resetVersion();
+                        }
+                    }
+                    this.resolveLibraries();
+                })
+            );
+            rtdButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }
 
         if (!wizard.isForceDownload()) {
@@ -209,7 +235,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                             } else {
                                 message = UIConnectionMessages.dialog_driver_download_auto_page_download_failed_msg;
                             }
-                            DownloadErrorDialog dialog = new DownloadErrorDialog(null, lib.getDisplayName(), message, e);
+                            DownloadErrorDialog dialog = new DownloadErrorDialog(UIUtils.getActiveWorkbenchShell(), lib.getDisplayName(), message, e);
                             return dialog.open();
                         }
                     }.execute();

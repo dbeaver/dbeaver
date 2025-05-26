@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
@@ -171,22 +173,30 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
 
         SQLQueryDataContext filtersContext = unresolvedResult.combine(resolvedResult);
         if (this.filterExprs.whereClause != null) {
-            SQLQueryDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.WHERE) ? filtersContext : unresolvedResult;
+            SQLQueryDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.WHERE)
+                ? filtersContext
+                : unresolvedResult;
             this.filterExprs.whereClause.propagateContext(clauseCtx, statistics);
             this.filterScopes.whereClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.ValueRefFromContext(clauseCtx));
         }
         if (this.filterExprs.havingClause != null) {
-            SQLQueryDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.HAVING) ? filtersContext : unresolvedResult;
+            SQLQueryDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.HAVING)
+                ? filtersContext
+                : unresolvedResult;
             this.filterExprs.havingClause.propagateContext(clauseCtx, statistics);
             this.filterScopes.havingClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.ValueRefFromContext(clauseCtx));
         }
         if (this.filterExprs.groupByClause != null) { // TODO consider dropping certain pseudocolumns
-            SQLQueryDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.GROUP_BY) ? filtersContext : unresolvedResult;
+            SQLQueryDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.GROUP_BY)
+                ? filtersContext
+                : unresolvedResult;
             this.filterExprs.groupByClause.propagateContext(clauseCtx, statistics);
             this.filterScopes.groupByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.ValueRefFromContext(clauseCtx));
         }
         if (this.filterExprs.orderByClause != null) {
-            SQLQueryDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.ORDER_BY) ? filtersContext : unresolvedResult;
+            SQLQueryDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.ORDER_BY)
+                ? filtersContext
+                : unresolvedResult;
             this.filterExprs.orderByClause.propagateContext(clauseCtx, statistics);
             this.filterScopes.orderByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.ValueRefFromContext(clauseCtx));
         }
@@ -196,6 +206,83 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         }
 
         return resolvedResult.hideSources();
+    }
+
+    @Override
+    protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        if (this.fromScope != null) {
+            this.fromScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsSourceRef(context));
+        }
+
+        context = this.fromSource.resolveRowSources(context, statistics);
+
+        if (this.filterExprs.whereClause != null) {
+            this.filterExprs.whereClause.resolveRowSources(context, statistics);
+        }
+        if (this.filterExprs.havingClause != null) {
+            this.filterExprs.havingClause.resolveRowSources(context, statistics);
+        }
+        if (this.filterExprs.groupByClause != null) {
+            this.filterExprs.groupByClause.resolveRowSources(context, statistics);
+        }
+        if (this.filterExprs.orderByClause != null) {
+            this.filterExprs.orderByClause.resolveRowSources(context, statistics);
+        }
+        return context.reset();
+    }
+
+    @Override
+    protected SQLQueryRowsDataContext resolveRowDataImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        SQLQueryRowsDataContext unresolvedResult = this.fromSource.getRowsDataContext();
+        this.selectListScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(unresolvedResult));
+        EnumSet<ProjectionAliasVisibilityScope> aliasVisibilities = this.getRowsSources().getDialect().getProjectionAliasVisibilityScope();
+
+        List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);
+        List<SQLQueryResultPseudoColumn> resultPseudoColumns = unresolvedResult.getPseudoColumnsList().stream()
+            .filter(s -> s.propagationPolicy.projected).toList();
+        SQLQueryRowsDataContext resolvedResult = this.getRowsSources().makeTuple(resultColumns, resultPseudoColumns);
+
+        SQLQueryRowsDataContext filtersContext = unresolvedResult.combine(resolvedResult);
+        if (this.filterExprs.whereClause != null) {
+            SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.WHERE)
+                ? filtersContext
+                : unresolvedResult;
+            this.filterExprs.whereClause.resolveValueRelations(clauseCtx, statistics);
+            this.filterScopes.whereClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
+        }
+        if (this.filterExprs.havingClause != null) {
+            SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.HAVING)
+                ? filtersContext
+                : unresolvedResult;
+            this.filterExprs.havingClause.resolveValueRelations(clauseCtx, statistics);
+            this.filterScopes.havingClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
+        }
+        if (this.filterExprs.groupByClause != null) { // TODO consider dropping certain pseudocolumns
+            SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.GROUP_BY)
+                ? filtersContext
+                : unresolvedResult;
+            this.filterExprs.groupByClause.resolveValueRelations(clauseCtx, statistics);
+            this.filterScopes.groupByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
+        }
+        if (this.filterExprs.orderByClause != null) {
+            SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.ORDER_BY)
+                ? filtersContext
+                : unresolvedResult;
+            this.filterExprs.orderByClause.resolveValueRelations(clauseCtx, statistics);
+            this.filterScopes.orderByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
+        }
+
+        if (this.tailScope != null) {
+            this.setTailOrigin(this.tailScope.getSymbolsOrigin());
+        }
+
+        return resolvedResult;
     }
 
     @Override

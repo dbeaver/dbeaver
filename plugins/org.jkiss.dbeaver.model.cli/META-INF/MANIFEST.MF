@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver Command Line Model
+Bundle-SymbolicName: org.jkiss.dbeaver.model.cli;singleton:=true
+Bundle-Version: 1.0.1.qualifier
+Bundle-Release-Date: 20250602
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ActivationPolicy: lazy
+Export-Package: org.jkiss.dbeaver.model.cli
+Bundle-ClassPath: .
+Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
+ org.apache.commons.cli;visibility:=reexport
+Automatic-Module-Name: org.jkiss.dbeaver.model.cli
