@@ -595,9 +595,13 @@ public class DBeaverLauncher {
         processConfiguration();
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
-        if (processCommandLineAsClient(args, dbeaverDataDir)) {
-            System.setProperty(PROP_EXITCODE, Integer.toString(0));
-            return;
+        try {
+            if (processCommandLineAsClient(args, dbeaverDataDir)) {
+                System.setProperty(PROP_EXITCODE, Integer.toString(0));
+                return;
+            }
+        } catch (Exception e) {
+            log.write(e.getMessage());
         }
         Path secretStoragePath = useCustomSecretStorage(dbeaverDataDir);
         if (secretStoragePath != null) {
