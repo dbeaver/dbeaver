@@ -414,11 +414,16 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
                 );
             }
         } else if (this.referencedSource != null) {
-            SQLQueryRowsDataContext referencedData = this.referencedSource.getRowsDataContext();
-            List<SQLQueryResultColumn> resultColumns = referencedData.getColumnsList().stream()
-                .map(c -> c.withNewSource(this))
-                .toList();
-            result = this.getRowsSources().makeTuple(this, resultColumns, Collections.emptyList());
+            if (this.referencedSource.isResolved()) {
+                SQLQueryRowsDataContext referencedData = this.referencedSource.getRowsDataContext();
+                List<SQLQueryResultColumn> resultColumns = referencedData.getColumnsList().stream()
+                    .map(c -> c.withNewSource(this))
+                    .toList();
+                result = this.getRowsSources().makeTuple(this, resultColumns, Collections.emptyList());
+            } else {
+                statistics.appendError(this.name.getSyntaxNode(), "Circular dependency detected at " + this.name.toIdentifierString());
+                result = this.getRowsSources().makeTuple(this, Collections.emptyList(), Collections.emptyList());
+            }
         } else {
             result = this.getRowsSources().makeEmptyTuple();
         }
