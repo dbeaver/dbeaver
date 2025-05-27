@@ -39,10 +39,7 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class StatisticsTransmitter {
@@ -62,7 +59,7 @@ public class StatisticsTransmitter {
         if (System.getenv(DBConstants.LM_STAGE_MODE) != null) {
             endpoint = URL_TEMPLATE.formatted(STATS_STAGE_DBEAVER);
         } else {
-            endpoint = URL_TEMPLATE.formatted(STATS_DBEAVER_COM);
+            endpoint = URL_TEMPLATE.formatted(STATS_DBEAVER_COM);;
         }
     }
 
@@ -130,6 +127,18 @@ public class StatisticsTransmitter {
         }
         //log.debug("Sending statistics file '" + logFile.toAbsolutePath() + "'");
         try {
+            Map<String, String> parametersMap = new HashMap<>();
+            parametersMap.put("Content-Type", "text/plain");
+            parametersMap.put("Locale", Locale.getDefault().toString());
+            parametersMap.put("Country", Locale.getDefault().getISO3Country());
+            parametersMap.put("Timezone", TimeZone.getDefault().getID());
+            parametersMap.put("Application-Name", GeneralUtils.getProductName());
+            parametersMap.put("Application-Version", GeneralUtils.getProductVersion().toString());
+            parametersMap.put("OS", CommonUtils.notEmpty(System.getProperty(StandardConstants.ENV_OS_NAME)));
+            if (DBWorkbench.isPlatformStarted()) {
+                parametersMap.putAll(DBWorkbench.getPlatform().getApplication()
+                    .getAdditionalApplicationProperties());
+            }
             URLConnection urlConnection = WebUtils.openURLConnection(
                 endpoint + "?session=" + sessionId + "&time=" + timestamp,
                 null,
@@ -137,14 +146,8 @@ public class StatisticsTransmitter {
                 "POST",
                 0,
                 5000,
-                Map.of(
-                    "Content-Type", "text/plain",
-                    "Locale", Locale.getDefault().toString(),
-                    "Country", Locale.getDefault().getISO3Country(),
-                    "Timezone", TimeZone.getDefault().getID(),
-                    "Application-Name", GeneralUtils.getProductName(),
-                    "Application-Version", GeneralUtils.getProductVersion().toString(),
-                    "OS", CommonUtils.notEmpty(System.getProperty(StandardConstants.ENV_OS_NAME))));
+                parametersMap
+                );
 
             ((HttpURLConnection) urlConnection).setFixedLengthStreamingMode(Files.size(logFile));
             try (OutputStream outputStream = urlConnection.getOutputStream()) {
