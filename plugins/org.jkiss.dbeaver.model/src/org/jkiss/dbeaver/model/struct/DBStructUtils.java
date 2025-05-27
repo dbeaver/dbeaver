@@ -128,6 +128,7 @@ public final class DBStructUtils {
         Map<String, Object> options,
         boolean addComments
     ) throws DBException {
+
         if (table instanceof DBPScriptObject scriptObject) {
             String definitionText = scriptObject.getObjectDefinitionText(monitor, options);
             if (!CommonUtils.isEmpty(definitionText)) {
