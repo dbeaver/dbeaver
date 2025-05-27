@@ -162,6 +162,7 @@ public class SQLPreferenceConstants {
     public static final String SHOW_COLUMN_PROCEDURES                  = "SQLEditor.ContentAssistant.show.column.procedures";
     public static final String SHOW_SERVER_HELP_TOPICS                 = "SQLEditor.ContentAssistant.show.helpTopics";
     public static final String SHOW_VALUES                             = "SQLEditor.ContentAssistant.show.values";
+    public static final String QUALIFIED_COLUMN_NAMES                  = "SQLEditor.ContentAssistant.qualified.column.names";
 
     public static final String MARK_OCCURRENCES_UNDER_CURSOR           = "SQLEditor.markOccurrences";
     public static final String MARK_OCCURRENCES_FOR_SELECTION          = "SQLEditor.markOccurrences.forSelection";

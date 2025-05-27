@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.osgi.framework.BundleReference;
 import org.osgi.framework.FrameworkUtil;
 
 import java.lang.reflect.Constructor;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -67,6 +68,12 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
             INSTANCE = instance;
         }
         return INSTANCE;
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getAdditionalApplicationProperties() {
+        return Map.of();
     }
 
     public boolean isStandalone() {
