@@ -50,6 +50,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     ) {
         settingsPanel = UIUtils.createComposite(parent, 2);
         settingsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
         Group completionComposite = UIUtils.createControlGroup(settingsPanel, "SQL Completion", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
         UIUtils.createControlLabel(completionComposite, AIUIMessages.gpt_preference_page_advanced_appearance_group, 2);
         Composite appearanceSettings = UIUtils.createComposite(completionComposite, 2);
@@ -60,8 +61,15 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         Composite completionGroup = UIUtils.createComposite(completionComposite, 2);
         completionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createCompletionSettings(completionGroup, propertyChangeListener);
+
+        Composite rightPanel = UIUtils.createComposite(settingsPanel, 1);
+        rightPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        createRightPanel(rightPanel);
+    }
+
+    protected void createRightPanel(Composite rightPanel) {
         Group schemaGroup = UIUtils.createControlGroup(
-            settingsPanel,
+            rightPanel,
             AIUIMessages.gpt_preference_page_schema_group,
             2,
             SWT.NONE,
