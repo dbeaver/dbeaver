@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.ai.completion.DAICommandRequest;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
-import org.jkiss.dbeaver.model.ai.internal.AIFeatures;
+import org.jkiss.dbeaver.model.ai.internal.AIBaseFeatures;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -68,7 +68,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             throw new DBException("Empty AI prompt");
         }
 
-        AIFeatures.SQL_AI_COMMAND.use();
+        AIBaseFeatures.SQL_AI_COMMAND.use();
 
         final DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(
             command.getDataSourceContainer(), "AI logical wrapper", null);
