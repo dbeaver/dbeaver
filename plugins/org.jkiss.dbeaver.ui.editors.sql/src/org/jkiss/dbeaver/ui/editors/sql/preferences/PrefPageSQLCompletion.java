@@ -58,6 +58,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     private Button csSortAlphabetically;
     private Button csShowServerHelpTopics;
     private Button csShowValues;
+    private Button csQualifiedColumnNames;
     private Combo csInsertTableAlias;
 
     private Button csMatchContains;
@@ -95,7 +96,8 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.contains(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT) ||
             store.contains(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES) ||
             store.contains(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS) ||
-            store.contains(SQLPreferenceConstants.SHOW_VALUES)
+            store.contains(SQLPreferenceConstants.SHOW_VALUES) ||
+            store.contains(SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES)
         ;
     }
 
@@ -184,6 +186,13 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csSortAlphabetically = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_sort_alphabetically, null, false, 2);
             csShowServerHelpTopics = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_show_server_help_topics, SQLEditorMessages.pref_page_sql_completion_label_show_server_help_topics_tip, false, 2);
             csShowValues = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_show_values, SQLEditorMessages.pref_page_sql_completion_label_show_values_tip, false, 2);
+            csQualifiedColumnNames = UIUtils.createCheckbox(
+                assistGroup,
+                SQLEditorMessages.pref_page_sql_completion_label_qualified_column_names,
+                SQLEditorMessages.pref_page_sql_completion_label_qualified_column_names_tip,
+                false,
+                2
+            );
             csInsertTableAlias = UIUtils.createLabelCombo(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_insert_table_alias, SWT.READ_ONLY | SWT.DROP_DOWN);
             for (SQLTableAliasInsertMode mode : SQLTableAliasInsertMode.values()) {
                 csInsertTableAlias.add(mode.getText());
@@ -225,6 +234,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csSortAlphabetically.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY));
             csShowServerHelpTopics.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS));
             csShowValues.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_VALUES));
+            csQualifiedColumnNames.setSelection(store.getBoolean(SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES));
             csInsertTableAlias.select(SQLTableAliasInsertMode.fromPreferences(store).ordinal());
 
             csMatchContains.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS));
@@ -255,6 +265,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY, csSortAlphabetically.getSelection());
             store.setValue(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS, csShowServerHelpTopics.getSelection());
             store.setValue(SQLPreferenceConstants.SHOW_VALUES, csShowValues.getSelection());
+            store.setValue(SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES, csQualifiedColumnNames.getSelection());
             store.setValue(SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS, SQLTableAliasInsertMode.values()[csInsertTableAlias.getSelectionIndex()].name());
 
             store.setValue(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS, csMatchContains.getSelection());
@@ -285,6 +296,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY);
         store.setToDefault(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS);
         store.setToDefault(SQLPreferenceConstants.SHOW_VALUES);
+        store.setToDefault(SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES);
         store.setToDefault(SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS);
 
         store.setToDefault(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
@@ -308,6 +320,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         csSortAlphabetically.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY));
         csShowServerHelpTopics.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS));
         csShowValues.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SHOW_VALUES));
+        csQualifiedColumnNames.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES));
         csInsertTableAlias.select(store.getDefaultInt(SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS));
         csMatchContains.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS));
         csUseGlobalSearch.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT));
