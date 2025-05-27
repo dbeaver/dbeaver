@@ -70,6 +70,7 @@ public abstract class AbstractApplication implements IApplication, DBPApplicatio
         return INSTANCE;
     }
 
+    @NotNull
     @Override
     public Map<String, String> getAdditionalApplicationProperties() {
         return Map.of();

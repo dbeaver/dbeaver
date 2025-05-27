@@ -67,6 +67,7 @@ public interface DBPApplication {
 
     boolean isDetachedProcess();
 
+    @NotNull
     Map<String, String> getAdditionalApplicationProperties();
 
     /**
