@@ -96,12 +96,6 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
     }
 
     @Override
-    protected void configureShell(Shell shell) {
-        super.configureShell(shell);
-        closeOnFocusLost(shell);
-    }
-
-    @Override
     protected Composite createDialogArea(Composite parent) {
         getShell().setText("Tip of the day");
 

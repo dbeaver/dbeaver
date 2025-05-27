@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.xml.sax.SAXException;
 
@@ -44,6 +45,9 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
     private static final Log log = Log.getLog(ShowTipOfTheDayHandler.class);
 
     static void showTipOfTheDay(IWorkbenchWindow window) {
+        if (UIUtils.isWindowVisible(window.getShell().getDisplay(), ShowTipOfTheDayDialog.class)) {
+            return;
+        }
         List<String> tips = loadTips();
         if (!CommonUtils.isEmpty(tips)) {
             showTipOfTheDayDialog(tips, window);
