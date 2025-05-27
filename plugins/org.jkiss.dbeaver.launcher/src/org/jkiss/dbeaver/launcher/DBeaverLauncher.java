@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
+import java.security.KeyStore;
 import java.security.ProtectionDomain;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +42,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 
 /**
@@ -160,6 +163,7 @@ public class DBeaverLauncher {
     private static final String EXITDATA = "-exitdata"; //$NON-NLS-1$
     private static final String NAME = "-name"; //$NON-NLS-1$
     private static final String LAUNCHER = "-launcher"; //$NON-NLS-1$
+    private static final String PRODUCT = "-product"; //$NON-NLS-1$
 
     private static final String PROTECT = "-protect"; //$NON-NLS-1$
     //currently the only level of protection we care about.
@@ -591,9 +595,13 @@ public class DBeaverLauncher {
         processConfiguration();
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
-        if (processCommandLineAsClient(args, dbeaverDataDir)) {
-            System.setProperty(PROP_EXITCODE, Integer.toString(0));
-            return;
+        try {
+            if (processCommandLineAsClient(args, dbeaverDataDir)) {
+                System.setProperty(PROP_EXITCODE, Integer.toString(0));
+                return;
+            }
+        } catch (Exception e) {
+            log.write(e.getMessage());
         }
         Path secretStoragePath = useCustomSecretStorage(dbeaverDataDir);
         if (secretStoragePath != null) {
@@ -636,11 +644,11 @@ public class DBeaverLauncher {
     }
 
 
-    private boolean processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws IOException {
+    private boolean processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
         if (args == null || args.length == 0) {
             return false;
         }
-        Path workspacePath = detectWorkspace(args, dbeaverDataDir);
+        Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
         if (Files.notExists(workspacePath)) {
             return false;
         }
@@ -653,6 +661,7 @@ public class DBeaverLauncher {
         HttpClient client = HttpClient.newBuilder()
             .executor(httpExecutor)
             .cookieHandler(new CookieManager())
+            .sslContext(initCustomSslContext())
             .build();
         boolean shutdownApplication = false;
         try {
@@ -712,24 +721,36 @@ public class DBeaverLauncher {
         return shutdownApplication;
     }
 
-    private Path detectWorkspace(String[] args, Path dbeaverDataDir) {
-        boolean isCloudBeaver = false;
+    /**
+     * init custom ssl context to avoid default trust store initialization before an application starts
+     */
+    private SSLContext initCustomSslContext() throws Exception {
+        var factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        factory.init(KeyStore.getInstance(KeyStore.getDefaultType()));
+        var ssl = SSLContext.getInstance("TLS");
+        ssl.init(null, factory.getTrustManagers(), null);
+        return ssl;
+    }
+
+    private Path detectDefaultWorkspaceLocation(String[] args, Path dbeaverDataDir) {
+        String productName = "";
         String customWorkspacePath = null;
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
-            if ("-product".equals(arg)) {
-                String productName = args[++i];
-                isCloudBeaver = productName.startsWith("io.cloudbeaver");
+            if (PRODUCT.equals(arg)) {
+                productName = args[++i];
             }
             if (ARG_DATA.equals(arg)) {
                 customWorkspacePath = args[++i];
+                break;
             }
         }
         if (customWorkspacePath != null) {
             return Path.of(customWorkspacePath);
-        }
-        if (isCloudBeaver) {
-            return Path.of("workspace");
+        } else if (productName.startsWith(Constants.PRODUCT_CLOUDBEAVER)) {
+            return Path.of(Constants.WORKSPACE);
+        } else if (productName.startsWith(Constants.PRODUCT_TEAM)) {
+            return dbeaverDataDir.resolve(Constants.TEAM_WORKSPACE);
         }
         return dbeaverDataDir.resolve(Constants.WORKSPACE6);
     }
