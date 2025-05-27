@@ -23,6 +23,6 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
  */
 public interface AIBaseFeatures {
 
-    DBRFeature CATEGORY_SQL_AI = DBRFeature.createCategory("SQL AI", "SQL AI features");
-    DBRFeature SQL_AI_COMMAND = DBRFeature.createFeature(CATEGORY_SQL_AI, "Generate AI SQL by @ai command");
+    DBRFeature CATEGORY_BASE_SQL_AI = DBRFeature.createCategory("SQL AI", "Base SQL AI features");
+    DBRFeature SQL_AI_COMMAND = DBRFeature.createFeature(CATEGORY_BASE_SQL_AI, "Generate AI SQL by @ai command");
 }

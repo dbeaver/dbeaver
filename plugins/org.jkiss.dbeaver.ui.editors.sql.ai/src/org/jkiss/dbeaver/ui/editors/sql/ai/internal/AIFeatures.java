@@ -24,6 +24,6 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
  */
 public interface AIFeatures {
 
-    DBRFeature SQL_AI_POPUP = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_SQL_AI, "Show AI popup");
-    DBRFeature SQL_AI_GENERATE_PROPOSALS = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_SQL_AI, "Generate AI proposal");
+    DBRFeature SQL_AI_POPUP = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_BASE_SQL_AI, "Show AI popup");
+    DBRFeature SQL_AI_GENERATE_PROPOSALS = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_BASE_SQL_AI, "Generate AI proposal");
 }
