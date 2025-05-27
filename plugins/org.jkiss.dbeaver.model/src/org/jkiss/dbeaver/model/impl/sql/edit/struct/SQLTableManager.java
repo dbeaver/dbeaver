@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
@@ -74,6 +75,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
         // Make options modifiable
         options = new HashMap<>(options);
+
         final OBJECT_TYPE table = command.getObject();
 
         final NestedObjectCommand<?,?> tableProps = command.getObjectCommands().get(table);
@@ -83,7 +85,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
         final String tableName = DBUtils.getEntityScriptName(table, options);
 
-        final String slComment = SQLUtils.getDialectFromObject(table).getSingleLineComments()[0];
+        final SQLDialect sqlDialect = SQLUtils.getDialectFromObject(table);
+        final String slComment = sqlDialect.getSingleLineComments()[0];
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
         createQuery.append(beginCreateTableStatement(monitor, table, tableName, options));
@@ -137,7 +140,12 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
 
         appendTableModifiers(monitor, table, tableProps, createQuery, false);
-        actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
+        String query = createQuery.toString();
+        boolean isCompact = Boolean.TRUE.equals(options.get(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT));
+        if (isCompact) {
+            query = SQLUtils.compact(query, sqlDialect);
+        }
+        actions.add(0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, query));
     }
 
     @Override

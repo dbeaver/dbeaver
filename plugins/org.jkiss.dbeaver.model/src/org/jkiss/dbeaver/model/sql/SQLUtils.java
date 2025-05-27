@@ -1207,4 +1207,57 @@ public final class SQLUtils {
         actualIdentifierString = forceUnquotted ? unquottedIdentifier : dialect.getQuotedIdentifier(unquottedIdentifier, true, false);
         return actualIdentifierString;
     }
+
+    public static String compact(String sql, SQLDialect sqlDialect) {
+
+        String res = removeComments(sql, sqlDialect);
+
+        final String dl = getScriptLineDelimiter(sqlDialect);
+        final String ls = GeneralUtils.getDefaultLineSeparator();
+
+        StringBuilder buffer = new StringBuilder();
+        List<String> result = new ArrayList<>();
+
+        String[] lines = res.split("\\R");
+
+        for (String line : lines) {
+            if (line.trim().isEmpty()) {
+                if (!buffer.isEmpty()) {
+                    result.add(buffer.toString().strip());
+                    buffer.setLength(0);
+                }
+                result.add("");
+                continue;
+            }
+
+            String trimmed = line.strip();
+
+            buffer.append(trimmed);
+            if (trimmed.endsWith(dl)) {
+                result.add(buffer.toString().strip());
+                buffer.setLength(0);
+            } else {
+                buffer.append(" ");
+            }
+        }
+
+        if (!buffer.isEmpty()) {
+            result.add(buffer.toString().strip());
+        }
+
+        return String.join(ls, result);
+
+    }
+
+    public static String removeComments(String sql, SQLDialect sqlDialect) {
+        Pair<String, String> mc = sqlDialect.getMultiLineComments();
+        Pattern pattern = Pattern.compile(Pattern.quote(mc.getFirst()) + ".*?" + Pattern.quote(mc.getSecond()), Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(sql);
+        String res = matcher.replaceAll(" ");
+
+        for (String slc : sqlDialect.getSingleLineComments()) {
+            res = res.replaceAll("(?m)" + slc + ".*$", " ");
+        }
+        return res;
+    }
 }
