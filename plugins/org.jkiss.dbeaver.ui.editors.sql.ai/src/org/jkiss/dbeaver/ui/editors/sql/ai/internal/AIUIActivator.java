@@ -26,8 +26,8 @@ public class AIUIActivator extends Plugin {
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
-        // Trigger pref defaults
         DBRFeatureRegistry.getInstance().registerFeatures(AIFeatures.class);
+        // Trigger pref defaults
         new BundlePreferenceStore(getBundle());
     }
 
