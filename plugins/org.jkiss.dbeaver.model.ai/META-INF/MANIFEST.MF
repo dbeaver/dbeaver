@@ -1,6 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
+Bundle-Activator: org.jkiss.dbeaver.model.ai.AIActivator
 Bundle-Name: DBeaver AI Model
 Bundle-SymbolicName: org.jkiss.dbeaver.model.ai;singleton:=true
 Bundle-Version: 1.0.58.qualifier
