@@ -244,11 +244,15 @@ public abstract class SQLQueryCompletionContext {
             private final Set<DBSObjectContainer> exposedContexts = SQLQueryCompletionContext.obtainExposedContexts(dbcExecutionContext);
             private final Map<String, Boolean> columnNameConflicts = (
                 // use data context from symbols origin if presented (correctly derived from tail lexical scope when provided by the model)
+                // first try handle it from the new resolution logic, then try from the old one,
                 // otherwise, try context provided by the deepest model node (legacy and may be incorrect sometimes)
-                context.symbolsOrigin() instanceof SQLQuerySymbolOrigin.DataContextSymbolOrigin o && !o.isChained()
+                context.symbolsOrigin() instanceof SQLQuerySymbolOrigin.RowsDataRef rd && !rd.isChained()
+                ? rd.getRowsDataContext().getColumnsList() : (
+                    context.symbolsOrigin() instanceof SQLQuerySymbolOrigin.DataContextSymbolOrigin o && !o.isChained()
                     ? CommonUtils.notNull(o.getDataContext(), scriptItem.item.getQueryModel().getGivenDataContext())
                     : context.deepestContext()
-            ).getColumnsList().stream()
+                ).getColumnsList()
+            ).stream()
                 .collect(Collectors.groupingBy(c -> c.symbol.getName())).entrySet().stream()
                 .collect(Collectors.toMap(kv -> kv.getKey(), kv -> kv.getValue().size() > 1));
 
@@ -870,9 +874,6 @@ public abstract class SQLQueryCompletionContext {
                                 placeholderInterval.a,
                                 placeholder.getTextContent()
                             );
-                            String columnPrefix = placeholderEntry.string.endsWith("*")
-                                ? placeholderEntry.string.substring(0, placeholderEntry.string.length() - 1)
-                                : "";
 
                             SQLQueryCompletionTextProvider formatter = new SQLQueryCompletionTextProvider(
                                 request,
@@ -883,9 +884,9 @@ public abstract class SQLQueryCompletionContext {
                                 tupleSource.getKnownSources(),
                                 tupleSource.getColumnsList(),
                                 null,
-                                false
+                                true
                             ).stream()
-                                .map(c -> columnPrefix + c.apply(formatter))
+                                .map(c -> c.apply(formatter))
                                 .collect(Collectors.joining(", "));
                             request.setWordPart(SQLConstants.ASTERISK);
 
@@ -907,7 +908,7 @@ public abstract class SQLQueryCompletionContext {
                     public void visitRowsDataRef(@NotNull SQLQuerySymbolOrigin.RowsDataRef rowsDataRef) {
                         SQLQuerySourcesInfoCollection knownSources = rowsDataRef.getRowsDataContext().getRowsSources().getKnownSources();
                         List<SQLQueryResultColumn> knownColumns = rowsDataRef.getRowsDataContext().getColumnsList();
-                        makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(knownSources, knownColumns, filterOrNull, false), results);
+                        makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(knownSources, knownColumns, filterOrNull, true), results);
                     }
                 });
             }
@@ -1126,12 +1127,8 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull SQLQuerySourcesInfoCollection knownSources,
                 @NotNull List<SQLQueryResultColumn> knownColumns,
                 @Nullable SQLQueryWordEntry filterOrNull,
-                boolean absolute
+                boolean useAbsoluteName
             ) {
-                boolean useAbsoluteName = absolute & (
-                    knownSources.getResolutionResults().size() > 1 ||
-                    knownSources.getAliasesInUse().size() > 0
-                );
                 Stream<? extends SQLQueryCompletionItem> subsetColumns = knownColumns.stream()
                     .map(rc -> {
                         SQLQueryWordEntry filterKey = makeFilterInfo(filterOrNull, rc.symbol.getName());
