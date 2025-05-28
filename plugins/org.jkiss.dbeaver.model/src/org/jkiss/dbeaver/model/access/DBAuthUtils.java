@@ -73,6 +73,9 @@ public class DBAuthUtils {
                 ) {
                     actualConnectionConfiguration.setUserPassword(newPassword);
                     connectionInfo.setUserPassword(newPassword);
+                    if (!dataSourceContainer.isTemporary()) {
+                        dataSourceContainer.persistConfiguration();
+                    }
                     return true;
                 }
             } catch (DBException e) {
