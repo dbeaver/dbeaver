@@ -31,12 +31,5 @@ public interface IWizardPageNavigable {
      * Non-applicable pages are not visible in navigation tree.
      */
     boolean isPageApplicable();
-
-    /**
-     * Indicates if page is the last step in the wizard.
-     * Set to false by default, needs to be overridden by implementation if necessary.
-     */
-    default boolean isLastPage() {
-        return false;
-    }
+    
 }

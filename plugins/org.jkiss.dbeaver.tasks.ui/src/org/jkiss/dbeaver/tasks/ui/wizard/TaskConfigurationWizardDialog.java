@@ -251,10 +251,10 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
             }
 
             IWizardPage currentPage = getCurrentPage();
-            if (currentPage instanceof IWizardPageNavigable) {
+            if (currentPage != null) {
                 Button nextButton = getButton(IDialogConstants.NEXT_ID);
-                boolean isLastPage = ((IWizardPageNavigable) currentPage).isLastPage();
-                if (currentPage.isPageComplete() && isLastPage) {
+                boolean isLogPage = currentPage.getClass().getName().contains("Log");
+                if (currentPage.isPageComplete() && isLogPage) {
                     nextButton.setText(UIMessages.button_finish);
                     nextButton.setEnabled(true);
                     nextButton.setSelection(true);
