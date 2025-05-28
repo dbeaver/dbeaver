@@ -28,6 +28,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -36,12 +37,12 @@ import org.jkiss.dbeaver.model.qm.QMTranslationHistoryItem;
 import org.jkiss.dbeaver.model.qm.QMTranslationHistoryManager;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.editors.sql.ai.controls.ScopeSelectorControl;
-import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage;
+import org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePageMain;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -105,7 +106,11 @@ public class AISuggestionPopup extends AbstractPopupPanel {
             scopeSelectorControl.getToolBar(),
             "Settings",
             UIIcon.CONFIGURATION,
-            SelectionListener.widgetSelectedAdapter(e -> UIUtils.showPreferencesFor(getShell(), null, AIPreferencePage.PAGE_ID))
+            SelectionListener.widgetSelectedAdapter(e -> UIUtils.showPreferencesFor(
+                getShell(),
+                AISettingsRegistry.getInstance().getSettings(),
+                AIPreferencePageMain.PAGE_ID
+            ))
         );
 
         inputField = new Text(placeholder, SWT.BORDER | SWT.MULTI);
@@ -204,7 +209,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         return scopeSelectorControl.getScope();
     }
 
-    public List<DBSEntity> getCustomEntities(@NotNull DBRProgressMonitor monitor) {
+    public List<DBSObject> getCustomEntities(@NotNull DBRProgressMonitor monitor) {
         return scopeSelectorControl.getCustomEntities(monitor);
     }
 

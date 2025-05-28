@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -517,11 +519,11 @@ public final class DBStructUtils {
         return !(parent instanceof DBSInstanceLazy il) || il.isInstanceConnected();
     }
 
-    public static List<DBSEntity> getRelatedDBSEntities(
+    public static List<DBSObject> getRelatedDBSEntities(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSObject dbsObject
     ) throws DBException {
-        var result = new HashSet<DBSEntity>();
+        var result = new HashSet<DBSObject>();
         if (dbsObject instanceof DBSEntity mainEntity) {
             result.add(mainEntity);
             try {
@@ -552,5 +554,20 @@ public final class DBStructUtils {
         }
 
         return result.stream().toList();
+    }
+
+    public static boolean isSchemasSupported(DBPDataSourceContainer dataSourceContainer) {
+        DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSourceContainer, false);
+        if (defaultContext != null) {
+            DBCExecutionContextDefaults<?,?> contextDefaults = defaultContext.getContextDefaults();
+            if (contextDefaults != null) {
+                if (contextDefaults.getDefaultSchema() != null || contextDefaults.getDefaultCatalog() != null ||
+                    contextDefaults.supportsSchemaChange() || contextDefaults.supportsCatalogChange()
+                ) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

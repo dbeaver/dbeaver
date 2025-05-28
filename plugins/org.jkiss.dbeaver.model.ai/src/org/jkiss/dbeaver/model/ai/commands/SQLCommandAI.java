@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.AIBaseFeatures;
+import org.jkiss.dbeaver.model.ai.AITextUtils;
+import org.jkiss.dbeaver.model.ai.CommandResult;
 import org.jkiss.dbeaver.model.ai.completion.DAICommandRequest;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
 import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
@@ -59,15 +62,13 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         if (dataSource == null) {
             throw new DBException("Not connected to database");
         }
-        AISettings aiSettings = AISettingsRegistry.getInstance().getSettings();
-        if (aiSettings.isAiDisabled()) {
-            throw new DBException("AI services are disabled");
-        }
 
         String prompt = command.getParameter();
         if (CommonUtils.isEmptyTrimmed(prompt)) {
             throw new DBException("Empty AI prompt");
         }
+
+        AIBaseFeatures.SQL_AI_COMMAND.use();
 
         final DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(
             command.getDataSourceContainer(), "AI logical wrapper", null);

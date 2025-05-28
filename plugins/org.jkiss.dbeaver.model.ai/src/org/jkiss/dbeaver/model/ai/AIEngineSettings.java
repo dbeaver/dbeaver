@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,37 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import java.util.LinkedHashMap;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+
 import java.util.Map;
 
 /**
  * AI engine settings
  */
-public class AIEngineSettings {
+public interface AIEngineSettings<S extends AIEngineSettings<S>> {
+    /**
+     * Resolve secrets in the settings.
+     */
+    void resolveSecrets() throws DBException;
 
-    private boolean engineEnabled;
-    private final Map<String, Object> properties = new LinkedHashMap<>();
+    /**
+     * Save secrets in the settings.
+     */
+    void saveSecrets() throws DBException;
 
-    public boolean isEngineEnabled() {
-        return engineEnabled;
-    }
+    /**
+     * Returns a map representation of the settings.
+     */
+    @NotNull
+    Map<String, Object> toMap();
 
-    public void setEngineEnabled(boolean engineEnabled) {
-        this.engineEnabled = engineEnabled;
-    }
-
-    public Map<String, Object> getProperties() {
-        return properties;
-    }
+    /**
+     * Merges the given map into the settings.
+     *
+     * @param map the map to merge
+     * @return the updated settings
+     */
+    @NotNull
+    S merge(@NotNull Map<String, Object> map);
 }
-

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,59 +46,57 @@ import java.util.List;
 public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExecutionContext> {
     private final GenericDataSource dataSource;
 
-    GenericStructureAssistant(GenericDataSource dataSource)
-    {
+    GenericStructureAssistant(GenericDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Override
-    protected GenericDataSource getDataSource()
-    {
+    protected GenericDataSource getDataSource() {
         return dataSource;
     }
 
     @NotNull
     @Override
     public DBSObjectType[] getSupportedObjectTypes() {
+        List<DBSObjectType> types = new ArrayList<>();
+        types.add(RelationalObjectType.TYPE_TABLE);
         if (dataSource.getInfo().supportsStoredCode()) {
-            return new DBSObjectType[]{
-                RelationalObjectType.TYPE_TABLE,
-                RelationalObjectType.TYPE_PROCEDURE,
-                RelationalObjectType.TYPE_SCHEMA
-            };
-        } else {
-            return new DBSObjectType[]{RelationalObjectType.TYPE_TABLE,
-                RelationalObjectType.TYPE_SCHEMA
-            };
+            types.add(RelationalObjectType.TYPE_PROCEDURE);
         }
+        if (DBStructUtils.isSchemasSupported(dataSource.getContainer())) {
+            types.add(RelationalObjectType.TYPE_SCHEMA);
+        }
+        return types.toArray(new DBSObjectType[0]);
     }
 
     @NotNull
-    public DBSObjectType[] getHyperlinkObjectTypes()
-    {
+    public DBSObjectType[] getHyperlinkObjectTypes() {
         return getSupportedObjectTypes();
     }
 
     @NotNull
     @Override
-    public DBSObjectType[] getAutoCompleteObjectTypes()
-    {
+    public DBSObjectType[] getAutoCompleteObjectTypes() {
         return getSupportedObjectTypes();
     }
 
     @Override
-    protected void findObjectsByMask(@NotNull GenericExecutionContext executionContext, @NotNull JDBCSession session,
-                                     @NotNull DBSObjectType objectType, @NotNull ObjectsSearchParams params,
-                                     @NotNull List<DBSObjectReference> references) throws DBException, SQLException {
+    protected void findObjectsByMask(
+        @NotNull GenericExecutionContext executionContext, @NotNull JDBCSession session,
+        @NotNull DBSObjectType objectType, @NotNull ObjectsSearchParams params,
+        @NotNull List<DBSObjectReference> references
+    ) throws DBException, SQLException {
         DBSObject parentObject = params.getParentObject();
         boolean globalSearch = params.isGlobalSearch();
         String objectNameMask = params.getMask();
-        GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : (params.isGlobalSearch() ? null : executionContext.getDefaultSchema());
-        GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog)parentObject :
-                schema == null ? (globalSearch ? null : executionContext.getDefaultCatalog()) : schema.getCatalog();
+        GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema) parentObject
+            : (params.isGlobalSearch() ? null : executionContext.getDefaultSchema());
+        GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog) parentObject :
+            schema == null ? (globalSearch ? null : executionContext.getDefaultCatalog()) : schema.getCatalog();
 
         final GenericDataSource dataSource = getDataSource();
-        DBPIdentifierCase convertCase = params.isCaseSensitive() ? dataSource.getSQLDialect().storesQuotedCase() : dataSource.getSQLDialect().storesUnquotedCase();
+        DBPIdentifierCase convertCase = params.isCaseSensitive() ? dataSource.getSQLDialect().storesQuotedCase()
+            : dataSource.getSQLDialect().storesUnquotedCase();
         objectNameMask = convertCase.transform(objectNameMask);
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {
@@ -108,16 +108,25 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         }
     }
 
-    private void findTablesByMask(JDBCSession session, GenericCatalog catalog, GenericSchema schema, String tableNameMask, int maxResults, List<DBSObjectReference> objects)
-        throws SQLException, DBException
-    {
+    private void findTablesByMask(
+        JDBCSession session,
+        GenericCatalog catalog,
+        GenericSchema schema,
+        String tableNameMask,
+        int maxResults,
+        List<DBSObjectReference> objects
+    )
+    throws SQLException, DBException {
         final GenericMetaObject tableObject = getDataSource().getMetaObject(GenericConstants.OBJECT_TABLE);
         final DBRProgressMonitor monitor = session.getProgressMonitor();
-        try (JDBCResultSet dbResult = session.getMetaData().getTables(
-            catalog == null ? null : catalog.getName(),
-            schema == null ? null : schema.getName(),
-            tableNameMask,
-            null)) {
+        try (
+            JDBCResultSet dbResult = session.getMetaData().getTables(
+                catalog == null ? null : catalog.getName(),
+                schema == null ? null : schema.getName(),
+                tableNameMask,
+                null
+            )
+        ) {
             while (dbResult.next()) {
                 if (monitor.isCanceled()) {
                     break;
@@ -131,7 +140,8 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
                 objects.add(new TableReference(
                     findContainer(session.getProgressMonitor(), catalog, schema, catalogName, schemaName),
                     tableName,
-                    GenericUtils.safeGetString(tableObject, dbResult, JDBCConstants.REMARKS)));
+                    GenericUtils.safeGetString(tableObject, dbResult, JDBCConstants.REMARKS)
+                ));
                 if (objects.size() >= maxResults) {
                     break;
                 }
@@ -139,10 +149,11 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         }
     }
 
-    private void findSchemasByMask(JDBCSession session,
-                                   GenericCatalog catalog,
-                                   ObjectsSearchParams params,
-                                   List<DBSObjectReference> objects
+    private void findSchemasByMask(
+        JDBCSession session,
+        GenericCatalog catalog,
+        ObjectsSearchParams params,
+        List<DBSObjectReference> objects
     ) throws SQLException, DBException {
         final GenericMetaObject schemaObject = getDataSource().getMetaObject(GenericConstants.OBJECT_SCHEMA);
         final DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -160,7 +171,8 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
                 objects.add(new SchemaReference(
                     catalog != null ? catalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName),
                     schemaName,
-                    GenericUtils.safeGetString(schemaObject, dbResult, JDBCConstants.REMARKS)));
+                    GenericUtils.safeGetString(schemaObject, dbResult, JDBCConstants.REMARKS)
+                ));
                 if (objects.size() >= params.getMaxResults()) {
                     break;
                 }
@@ -168,15 +180,24 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         }
     }
 
-    private void findProceduresByMask(JDBCSession session, GenericCatalog catalog, GenericSchema schema, String procNameMask, int maxResults, List<DBSObjectReference> objects)
-        throws SQLException, DBException
-    {
+    private void findProceduresByMask(
+        JDBCSession session,
+        GenericCatalog catalog,
+        GenericSchema schema,
+        String procNameMask,
+        int maxResults,
+        List<DBSObjectReference> objects
+    )
+    throws SQLException, DBException {
         final GenericMetaObject procObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         DBRProgressMonitor monitor = session.getProgressMonitor();
-        try (JDBCResultSet dbResult = session.getMetaData().getProcedures(
-            catalog == null ? null : catalog.getName(),
-            schema == null ? null : JDBCUtils.escapeWildCards(session, schema.getName()),
-            procNameMask)) {
+        try (
+            JDBCResultSet dbResult = session.getMetaData().getProcedures(
+                catalog == null ? null : catalog.getName(),
+                schema == null ? null : JDBCUtils.escapeWildCards(session, schema.getName()),
+                procNameMask
+            )
+        ) {
             while (dbResult.next()) {
                 if (monitor.isCanceled()) {
                     break;
@@ -198,7 +219,8 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
                     findContainer(session.getProgressMonitor(), catalog, schema, catalogName, schemaName),
                     catalogName,
                     procName,
-                    uniqueName));
+                    uniqueName
+                ));
                 if (objects.size() >= maxResults) {
                     break;
                 }
@@ -206,10 +228,17 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         }
     }
 
-    private GenericStructContainer findContainer(DBRProgressMonitor monitor, GenericCatalog parentCatalog, GenericSchema parentSchema, String catalogName, String schemaName) throws DBException
-    {
-        GenericCatalog tableCatalog = parentCatalog != null ? parentCatalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
-        if (tableCatalog == null && CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(dataSource.getCatalogs()) && dataSource.getCatalogs().size() == 1) {
+    private GenericStructContainer findContainer(
+        DBRProgressMonitor monitor,
+        GenericCatalog parentCatalog,
+        GenericSchema parentSchema,
+        String catalogName,
+        String schemaName
+    ) throws DBException {
+        GenericCatalog tableCatalog = parentCatalog != null ? parentCatalog
+            : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
+        if (tableCatalog == null && CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(dataSource.getCatalogs())
+            && dataSource.getCatalogs().size() == 1) {
             // there is only one catalog - let's use it (PostgreSQL)
             tableCatalog = dataSource.getCatalogs().iterator().next();
         }
@@ -222,31 +251,28 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
 
     private abstract static class ObjectReference extends AbstractObjectReference<DBSObject> {
 
-        ObjectReference(GenericStructContainer container, String name, String description, Class<?> objectClass, DBSObjectType type)
-        {
+        ObjectReference(GenericStructContainer container, String name, String description, Class<?> objectClass, DBSObjectType type) {
             super(name, container, description, objectClass, type);
         }
 
         @Override
-        public GenericStructContainer getContainer()
-        {
-            return (GenericStructContainer)super.getContainer();
+        public GenericStructContainer getContainer() {
+            return (GenericStructContainer) super.getContainer();
         }
     }
 
     private class TableReference extends ObjectReference {
 
-        private TableReference(GenericStructContainer container, String tableName, String description)
-        {
+        private TableReference(GenericStructContainer container, String tableName, String description) {
             super(container, tableName, description, GenericTable.class, RelationalObjectType.TYPE_TABLE);
         }
 
         @Override
-        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
-        {
+        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
             GenericTableBase table = getContainer().getTable(monitor, getName());
             if (table == null) {
-                throw new DBException("Can't find table '" + getName() + "' in '" + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
+                throw new DBException(
+                    "Can't find table '" + getName() + "' in '" + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
             }
             return table;
         }
@@ -262,7 +288,8 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
             GenericSchema schema = getContainer().getCatalog().getSchema(monitor, getName());
             if (schema == null) {
-                throw new DBException("Can't find schema '" + getName() + "' in '" + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
+                throw new DBException(
+                    "Can't find schema '" + getName() + "' in '" + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
             }
             return schema;
         }
@@ -272,21 +299,20 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
 
         private final String catalogName;
         private String uniqueName;
-        private ProcedureReference(GenericStructContainer container, String catalogName, String procedureName, String uniqueName)
-        {
+
+        private ProcedureReference(GenericStructContainer container, String catalogName, String procedureName, String uniqueName) {
             super(container, procedureName, null, GenericProcedure.class, RelationalObjectType.TYPE_PROCEDURE);
             this.catalogName = catalogName;
             this.uniqueName = uniqueName;
         }
 
         @Override
-        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
-        {
+        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
             GenericProcedure procedure = null;
             if (getContainer() instanceof GenericSchema) {
                 // Try to use catalog name as package name (Oracle)
                 if (!CommonUtils.isEmpty(catalogName)) {
-                    GenericPackage procPackage = ((GenericSchema)getContainer()).getPackage(monitor, catalogName);
+                    GenericPackage procPackage = ((GenericSchema) getContainer()).getPackage(monitor, catalogName);
                     if (procPackage != null) {
                         procedure = procPackage.getProcedure(monitor, uniqueName);
                     }
@@ -296,7 +322,11 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
                 procedure = getContainer().getProcedure(monitor, uniqueName);
             }
             if (procedure == null) {
-                throw new DBException("Can't find procedure '" + getName() + "' (" + uniqueName + ")" + "' in '" + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
+                throw new DBException(
+                    "Can't find procedure '" + getName() + "' (" + uniqueName + ")" + "' in '" + DBUtils.getFullQualifiedName(
+                        dataSource,
+                        getContainer()
+                    ) + "'");
             }
             return procedure;
         }

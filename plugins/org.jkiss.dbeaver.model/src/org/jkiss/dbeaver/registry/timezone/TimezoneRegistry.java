@@ -73,7 +73,7 @@ public class TimezoneRegistry {
             TimeZone currentTimeZone = TimeZone.getTimeZone(customTimeZone);
             if (!GMT_TIMEZONE.equals(customTimeZone) && GMT_TIMEZONE.equals(currentTimeZone.getID())) {
                 log.debug("Time zone '" + customTimeZone + "' no recognized, falling back to GMT");
-            } else if (Objects.equals(currentTimeZone.getID(), customTimeZone)) {
+            } else if (!Objects.equals(currentTimeZone.getID(), customTimeZone)) {
                 log.debug("Time zone '" + customTimeZone + "' differs from current '" + currentTimeZone.getID() + "'");
             }
             TimeZone.setDefault(currentTimeZone);
