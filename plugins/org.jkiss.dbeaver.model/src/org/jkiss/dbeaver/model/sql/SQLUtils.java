@@ -1208,15 +1208,15 @@ public final class SQLUtils {
         return actualIdentifierString;
     }
 
-    public static String compact(String sql, SQLDialect sqlDialect) {
+    public static String compact(@NotNull String sql, @NotNull SQLDialect sqlDialect) {
 
-        String res = removeComments(sql, sqlDialect);
+        String res = stripComments(sqlDialect, sql);
 
         final String dl = getScriptLineDelimiter(sqlDialect);
         final String ls = GeneralUtils.getDefaultLineSeparator();
 
         StringBuilder buffer = new StringBuilder();
-        List<String> result = new ArrayList<>();
+        StringJoiner result = new StringJoiner(ls);
 
         String[] lines = res.split("\\R");
 
@@ -1245,19 +1245,8 @@ public final class SQLUtils {
             result.add(buffer.toString().strip());
         }
 
-        return String.join(ls, result);
+        return result.toString();
 
     }
 
-    public static String removeComments(String sql, SQLDialect sqlDialect) {
-        Pair<String, String> mc = sqlDialect.getMultiLineComments();
-        Pattern pattern = Pattern.compile(Pattern.quote(mc.getFirst()) + ".*?" + Pattern.quote(mc.getSecond()), Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(sql);
-        String res = matcher.replaceAll(" ");
-
-        for (String slc : sqlDialect.getSingleLineComments()) {
-            res = res.replaceAll("(?m)" + slc + ".*$", " ");
-        }
-        return res;
-    }
 }
