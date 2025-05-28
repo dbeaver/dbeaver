@@ -116,6 +116,7 @@
                     <property id="extension" label="%dataTransfer.processor.json.property.extension.label" defaultValue="json"/>
                 </propertyGroup>
             </processor>
+            
             <processor
                     id="stream.html"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterHTML"
@@ -235,6 +236,17 @@
                     <property id="extension" label="%dataTransfer.processor.source.code.property.extension.label" defaultValue="php"/>
                     <property id="quoteChar" label="%dataTransfer.processor.source.code.property.quoteChar.name" type="string" description="%dataTransfer.processor.source.code.property.quoteChar.description" defaultValue="&quot;" validValues="&quot;,&#39;"/>
                     <property id="rowDelimiter" label="%dataTransfer.processor.source.code.property.rowDelimiter.name" type="string" description="%dataTransfer.processor.source.code.property.rowDelimiter.description" defaultValue="default" validValues="default,\n,\r,\r\n,\n\r"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                id="stream.geojson"
+                class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterGeoJSON"
+                description="Export data as GeoJSON"
+                icon="icons/formats/json.png"
+                label="GeoJSON"
+                contentType="application/geo+json">
+                <propertyGroup label="General">
+                    <property id="extension" label="File extension" defaultValue="geojson"/>
                 </propertyGroup>
             </processor>
         </node>
