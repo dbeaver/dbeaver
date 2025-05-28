@@ -41,7 +41,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
