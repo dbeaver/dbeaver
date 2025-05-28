@@ -1360,5 +1360,4 @@ public final class SQLUtils {
             result.append(line);
         }
     }
-
 }

@@ -128,14 +128,13 @@ public final class DBStructUtils {
         Map<String, Object> options,
         boolean addComments
     ) throws DBException {
-
         if (table instanceof DBPScriptObject scriptObject) {
             String definitionText = scriptObject.getObjectDefinitionText(monitor, options);
             if (!CommonUtils.isEmpty(definitionText)) {
                 boolean isCompact = Boolean.TRUE.equals(options.get(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT));
-                if (isCompact) {
-                    definitionText = SQLUtils.compact(definitionText, table.getDataSource().getSQLDialect());
-                }
+//                if (isCompact) {
+//                    definitionText = SQLUtils.compact(definitionText, table.getDataSource().getSQLDialect());
+//                }
                 return definitionText;
             }
         }

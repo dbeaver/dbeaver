@@ -53,7 +53,7 @@ public class SQLServerExternalTableManager extends SQLServerBaseTableManager<SQL
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, SQLServerExternalTable table, SQLObjectEditor.NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
+    protected void appendTableModifiers(DBRProgressMonitor monitor, SQLServerExternalTable table, SQLObjectEditor.NestedObjectCommand tableProps, StringBuilder ddl, boolean alter, Map<String, Object> options) {
         try {
             final SQLServerExternalTable.AdditionalInfo info = table.getAdditionalInfo(monitor);
             ddl.append(" WITH (\n\tLOCATION = ").append(SQLUtils.quoteString(table, info.getExternalLocation()));

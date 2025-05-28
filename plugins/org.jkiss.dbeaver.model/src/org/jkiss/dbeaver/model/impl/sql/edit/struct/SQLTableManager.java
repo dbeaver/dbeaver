@@ -64,7 +64,11 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
     
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName, Map<String, Object> options) throws DBException {
-        return "CREATE " + getCreateTableType(table) + " " + tableName + " (" + GeneralUtils.getDefaultLineSeparator(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        String queryPart = "CREATE " + getCreateTableType(table) + " " + tableName + " (";
+        if (!Boolean.TRUE.equals(options.get(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT))) {
+            queryPart += GeneralUtils.getDefaultLineSeparator();
+        }
+        return queryPart; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
     
     protected boolean hasAttrDeclarations(OBJECT_TYPE table) {
@@ -77,8 +81,10 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         options = new HashMap<>(options);
 
         final OBJECT_TYPE table = command.getObject();
+        final boolean isCompact = Boolean.TRUE.equals(options.get(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT));
 
-        final NestedObjectCommand<?,?> tableProps = command.getObjectCommands().get(table);
+
+        final NestedObjectCommand<?, ?> tableProps = command.getObjectCommands().get(table);
         if (tableProps == null) {
             log.warn("Object change command not found"); //$NON-NLS-1$
             return;
@@ -114,16 +120,21 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                         }
                     }
                     if (lastCommentPos < 0 || lastCommentPos < lastLFPos) {
-                          createQuery.append(","); //$NON-NLS-1$
+                        createQuery.append(","); //$NON-NLS-1$
                     } else {
-                           createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
+                        createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
                     }
-                    createQuery.append(lineSeparator);
+                    if (!isCompact) {
+                        createQuery.append(lineSeparator);
+                    }
                 }
                 if (!hasNestedDeclarations && !hasAttrDeclarations(table)) {
-                    createQuery.append("(\n\t").append(nestedDeclaration); //$NON-NLS-1$  
+                    createQuery.append('(')
+                        .append(isCompact ? " " : "\n\t")
+                        .append(nestedDeclaration); //$NON-NLS-1$
                 } else {
-                 createQuery.append("\t").append(nestedDeclaration); //$NON-NLS-1$
+                    createQuery.append(isCompact ? " " : "\t")
+                        .append(nestedDeclaration); //$NON-NLS-1$
                 }
                 hasNestedDeclarations = true;
             } else {
@@ -135,17 +146,13 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             }
         }
         if (hasAttrDeclarations(table) || hasNestedDeclarations) {
-            createQuery.append(lineSeparator);
+            if (!isCompact) {
+                createQuery.append(lineSeparator);
+            }
             createQuery.append(")"); //$NON-NLS-1$
         }
-
-        appendTableModifiers(monitor, table, tableProps, createQuery, false);
-        String query = createQuery.toString();
-        boolean isCompact = Boolean.TRUE.equals(options.get(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT));
-        if (isCompact) {
-            query = SQLUtils.compact(query, sqlDialect);
-        }
-        actions.add(0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, query));
+        appendTableModifiers(monitor, table, tableProps, createQuery, false, options);
+        actions.add(0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()));
     }
 
     @Override
@@ -188,7 +195,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         OBJECT_TYPE table,
         NestedObjectCommand tableProps,
         StringBuilder ddl,
-        boolean alter
+        boolean alter,
+        Map<String, Object> options
     ) throws DBException {
 
     }

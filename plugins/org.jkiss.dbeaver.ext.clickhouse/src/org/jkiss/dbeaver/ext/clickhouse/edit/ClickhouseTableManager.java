@@ -50,7 +50,7 @@ public class ClickhouseTableManager extends GenericTableManager {
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, GenericTableBase table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
+    protected void appendTableModifiers(DBRProgressMonitor monitor, GenericTableBase table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter, Map<String, Object> options) {
         if (table instanceof ClickhouseTable) {
             ClickhouseTable clickhouseTable = (ClickhouseTable) table;
             if (clickhouseTable.getEngine() != null) {

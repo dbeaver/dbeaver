@@ -97,7 +97,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void appendTableModifiers(DBRProgressMonitor monitor, DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
+    public void appendTableModifiers(DBRProgressMonitor monitor, DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter, Map<String, Object> options) {
 
         try {
             // Add Tablespaces infos
@@ -156,7 +156,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
             sb.append(db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
             sb.append(" ");
 
-            appendTableModifiers(monitor, command.getObject(), command, sb, true);
+            appendTableModifiers(monitor, command.getObject(), command, sb, true, options);
 
             actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
         }
