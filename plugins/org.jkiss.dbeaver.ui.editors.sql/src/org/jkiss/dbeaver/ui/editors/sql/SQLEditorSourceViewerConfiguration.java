@@ -306,7 +306,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         // rule for multiline comments
         // We just need a scanner that does nothing but returns a token with
         // the corresponding text attributes
-        addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
+        addContentTypeDamageRepairer(reconciler , SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
         // Add a "damager-repairer" for changes within one-line SQL comments.
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT, SQLConstants.CONFIG_COLOR_COMMENT);
         SQLEditorBase sqlEditor = this.getSQLEditor();
