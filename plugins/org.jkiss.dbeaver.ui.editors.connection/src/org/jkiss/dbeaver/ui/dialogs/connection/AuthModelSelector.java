@@ -22,7 +22,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -172,8 +171,8 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
     public void handleDataSourceEvent(DBPEvent event) {
         if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
             event.getData() instanceof DBPConnectionConfiguration newConfig &&
-            event.getObject() == activeDataSource) {
-
+            event.getObject() == activeDataSource
+        ) {
             UIUtils.asyncExec(() -> {
                 DBPConnectionConfiguration currentConfig = activeDataSource.getConnectionConfiguration();
                 currentConfig.setUserName(newConfig.getUserName());
