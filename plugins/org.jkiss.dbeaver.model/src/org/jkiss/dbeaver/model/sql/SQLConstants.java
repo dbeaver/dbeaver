@@ -684,16 +684,6 @@ public class SQLConstants {
     };
 
     public static final char STRUCT_SEPARATOR = '.'; //$NON-NLS-1$
-    public static final String CONFIG_COLOR_KEYWORD = "org.jkiss.dbeaver.sql.editor.color.keyword.foreground";
-    public static final String CONFIG_COLOR_DATATYPE = "org.jkiss.dbeaver.sql.editor.color.datatype.foreground";
-    public static final String CONFIG_COLOR_FUNCTION = "org.jkiss.dbeaver.sql.editor.color.function.foreground";
-    public static final String CONFIG_COLOR_STRING = "org.jkiss.dbeaver.sql.editor.color.string.foreground";
-    public static final String CONFIG_COLOR_TABLE = "org.jkiss.dbeaver.sql.editor.color.table.foreground";
-    public static final String CONFIG_COLOR_TABLE_ALIAS = "org.jkiss.dbeaver.sql.editor.color.table.alias.foreground";
-    public static final String CONFIG_COLOR_COLUMN = "org.jkiss.dbeaver.sql.editor.color.column.foreground";
-    public static final String CONFIG_COLOR_COLUMN_DERIVED = "org.jkiss.dbeaver.sql.editor.color.column.derived.foreground";
-    public static final String CONFIG_COLOR_COMPOSITE_FIELD = "org.jkiss.dbeaver.sql.editor.color.composite.field.foreground";
-    public static final String CONFIG_COLOR_COMMENT = "org.jkiss.dbeaver.sql.editor.color.comment.foreground";
 
     public static final char DEFAULT_PARAMETER_MARK = '?';
     public static final char DEFAULT_PARAMETER_PREFIX = ':';
