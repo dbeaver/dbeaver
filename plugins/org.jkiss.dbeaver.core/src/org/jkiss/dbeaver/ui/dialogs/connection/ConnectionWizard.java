@@ -268,6 +268,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         } finally {
             if (activeDataSource != targetDataSource) {
                 targetDataSource.dispose();
+                targetDataSource.getRegistry().removeDataSource(targetDataSource);
             }
         }
     }
