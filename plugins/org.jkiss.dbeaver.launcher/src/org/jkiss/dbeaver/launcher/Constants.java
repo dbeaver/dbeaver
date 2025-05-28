@@ -148,9 +148,16 @@ public class Constants {
      */
     public static final String WS_UNKNOWN = "unknown";//$NON-NLS-1$
 
+    public static final String WORKSPACE = "workspace";
     public static final String WORKSPACE6 = "workspace6";
+    public static final String TEAM_WORKSPACE = "team-workspace";
     public static final String METADATA = ".metadata";
     public static final String DBEAVER_INSTANCE_PROPS = "dbeaver-instance.properties";
     public static final String PROPERTY_PORT = "port";
+
+    public static final String PRODUCT_TEAM = "com.dbeaver.app.team";
+    public static final String PRODUCT_CLOUDBEAVER   = "io.cloudbeaver";
+
+
 
 }

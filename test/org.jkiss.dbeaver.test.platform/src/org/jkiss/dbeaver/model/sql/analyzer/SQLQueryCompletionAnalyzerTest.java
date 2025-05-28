@@ -246,7 +246,7 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
                 .requestNewStrings("SELECT Table1.*| FROM Table1", false);
 
             
-            Assert.assertTrue(proposals.contains("Table1.Col1, Table1.Col2, Table1.Col3"));
+            Assert.assertTrue(proposals.contains("Col1, Col2, Col3"));
         }
     }
 

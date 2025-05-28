@@ -54,10 +54,13 @@ import java.io.Reader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 /**
  * DBeaver instance controller.
@@ -115,6 +118,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
 
         final IInstanceController instance = RestClient
             .builder(URI.create("http://localhost:" + port), IInstanceController.class)
+            .setSslContext(initCustomSslContext())
             .create();
 
         try {
@@ -130,6 +134,23 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
         }
 
         return instance;
+    }
+
+    /**
+     * init custom ssl context to avoid default trust store initialization before an application starts
+     */
+    @Nullable
+    private static SSLContext initCustomSslContext() {
+        try {
+            var factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            factory.init(KeyStore.getInstance(KeyStore.getDefaultType()));
+            var ssl = SSLContext.getInstance("TLS");
+            ssl.init(null, factory.getTrustManagers(), null);
+            return ssl;
+        } catch (Exception e) {
+            log.error("Error init custom ssl context: " + e.getMessage(), e);
+            return null;
+        }
     }
 
     @NotNull
