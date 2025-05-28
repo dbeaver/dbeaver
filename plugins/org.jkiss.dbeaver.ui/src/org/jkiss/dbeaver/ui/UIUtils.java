@@ -44,6 +44,7 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
+import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -2581,5 +2582,17 @@ public class UIUtils {
     public static DBPCloseableObject disableRedraw(@NotNull Control control) {
         control.setRedraw(false);
         return () -> control.setRedraw(true);
+    }
+
+    /**
+     * Checks if the window that is instance of the given class is visible in the current display.
+     * @param display the current display
+     * @param clazz the class of the window to check
+     * @return {@code true} if a window of the given class is visible
+     */
+    public static boolean isWindowVisible(@NotNull Display display, @NotNull Class<? extends Window> clazz) {
+        return Arrays.stream(display.getShells())
+            .map(Widget::getData)
+            .anyMatch(data -> data != null && clazz.isAssignableFrom(data.getClass()));
     }
 }
