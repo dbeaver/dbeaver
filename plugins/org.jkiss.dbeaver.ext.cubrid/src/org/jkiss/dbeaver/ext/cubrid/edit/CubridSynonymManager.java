@@ -6,7 +6,9 @@ import java.util.Map;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSynonym;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
@@ -113,6 +115,28 @@ public class CubridSynonymManager extends SQLObjectEditor<GenericSynonym, Generi
             @NotNull GenericSynonym object,
             @NotNull Map<String, Object> options,
             @NotNull String newName) throws DBException {
-        processObjectRename(commandContext, object, options, newName);
+        if (!((CubridDataSource) object.getDataSource()).isShard()) {
+            processObjectRename(commandContext, object, options, newName);
+        }
+    }
+
+    @Override
+    public boolean canCreateObject(@NotNull Object container) {
+        return !((CubridTable) container).getDataSource().isShard();
+    }
+
+    @Override
+    public boolean canEditObject(GenericSynonym object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericSynonym object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canRenameObject(GenericSynonym object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
     }
 }

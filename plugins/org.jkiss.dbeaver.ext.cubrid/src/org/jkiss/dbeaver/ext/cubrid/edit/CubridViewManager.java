@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridView;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.edit.GenericViewManager;
@@ -128,7 +130,9 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
             @NotNull Map<String, Object> options,
             @NotNull String newName)
             throws DBException {
-        processObjectRename(commandContext, object, options, newName);
+        if (!((CubridDataSource) object.getDataSource()).isShard()) {
+            processObjectRename(commandContext, object, options, newName);
+        }
     }
 
     @Override
@@ -144,5 +148,27 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
                     "Change Owner",
                     "ALTER VIEW " + view.getContainer() + "." + view.getName() + " OWNER TO " + view.getSchema()));
         }
+    }
+
+    @Override
+    public boolean canCreateObject(@NotNull Object container) {
+        CubridUser user = (CubridUser) container;
+        CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
+        return !dataSource.isShard();
+    }
+
+    @Override
+    public boolean canRenameObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canEditObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
     }
 }

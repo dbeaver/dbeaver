@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -46,11 +48,13 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
             CubridTableColumn.class,
             GenericUniqueKey.class,
             GenericTableForeignKey.class,
-            GenericTableIndex.class);
+            CubridTableIndex.class);
 
     @Override
     public boolean canCreateObject(@NotNull Object container) {
-        return !(container instanceof CubridTable);
+        CubridUser user = (CubridUser) container;
+        CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
+        return !dataSource.isShard();
     }
 
     @NotNull
@@ -146,6 +150,23 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
             @NotNull Map<String, Object> options,
             @NotNull String newName)
             throws DBException {
-        processObjectRename(commandContext, object, options, newName);
+        if (!((CubridDataSource) object.getDataSource()).isShard()) {
+            processObjectRename(commandContext, object, options, newName);
+        }
+    }
+
+    @Override
+    public boolean canRenameObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canEditObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
     }
 }

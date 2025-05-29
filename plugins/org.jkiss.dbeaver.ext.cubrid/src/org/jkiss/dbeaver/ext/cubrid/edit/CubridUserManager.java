@@ -166,4 +166,17 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
 
     }
 
+    public boolean canCreateObject(@NotNull Object container) {
+        return !((CubridDataSource) container).isShard();
+    }
+
+    @Override
+    public boolean canEditObject(CubridPrivilage object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(CubridPrivilage object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
 }

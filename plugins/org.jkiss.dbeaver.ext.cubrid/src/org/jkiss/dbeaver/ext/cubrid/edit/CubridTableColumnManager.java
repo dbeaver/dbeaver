@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
@@ -157,7 +158,9 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             @NotNull Map<String, Object> options,
             @NotNull String newName)
             throws DBException {
-        processObjectRename(commandContext, object, options, newName);
+        if (!((CubridDataSource) object.getDataSource()).isShard()) {
+            processObjectRename(commandContext, object, options, newName);
+        }
     }
 
     @NotNull
@@ -174,4 +177,8 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         }
     }
 
+    @Override
+    public boolean canRenameObject(GenericTableColumn object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
 }

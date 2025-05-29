@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSequence;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.generic.edit.GenericSequenceManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -43,7 +45,17 @@ public class CubridSequenceManager extends GenericSequenceManager {
     @NotNull
     @Override
     public boolean canCreateObject(@NotNull Object container) {
-        return true;
+        return !((CubridTable) container).getDataSource().isShard();
+    }
+
+    @Override
+    public boolean canEditObject(GenericSequence object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericSequence object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
     @NotNull

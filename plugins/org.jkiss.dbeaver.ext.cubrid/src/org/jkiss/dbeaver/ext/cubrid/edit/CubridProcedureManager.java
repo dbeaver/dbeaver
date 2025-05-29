@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 import java.util.List;
 import java.util.Map;
 
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -35,7 +37,17 @@ public class CubridProcedureManager extends GenericProcedureManager {
 
     @Override
     public boolean canCreateObject(Object container) {
-        return true;
+        return !((CubridTable) container).getDataSource().isShard();
+    }
+
+    @Override
+    public boolean canEditObject(GenericProcedure object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericProcedure object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
     @Override

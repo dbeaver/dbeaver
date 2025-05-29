@@ -178,7 +178,28 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
             @NotNull CubridServer object,
             @NotNull Map<String, Object> options,
             @NotNull String newName) throws DBException {
-        processObjectRename(commandContext, object, options, newName);
-    }
+         if (!object.getDataSource().isShard()) {
+             processObjectRename(commandContext, object, options, newName);
+         }
+     }
 
+     @Override
+     public boolean canCreateObject(@NotNull Object container) {
+         return !((CubridDataSource) container).isShard();
+     }
+
+     @Override
+     public boolean canEditObject(CubridServer object) {
+         return !object.getDataSource().isShard();
+     }
+
+     @Override
+     public boolean canDeleteObject(CubridServer object) {
+         return !object.getDataSource().isShard();
+     }
+
+     @Override
+     public boolean canRenameObject(CubridServer object) {
+         return !object.getDataSource().isShard();
+     }
 }
