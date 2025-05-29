@@ -16,11 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.duckdb.model.data;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.sql.Struct;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -28,6 +23,10 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeMap;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.BeanUtils;
+
+import java.sql.Struct;
+import java.util.Map;
 
 public class DuckDBStructValueHandler extends JDBCStructValueHandler {
 
@@ -35,28 +34,35 @@ public class DuckDBStructValueHandler extends JDBCStructValueHandler {
 
     private static final Log log = Log.getLog(DuckDBStructValueHandler.class);
 
-
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
-        try {
-            if (object instanceof Struct) {
-                return new JDBCCompositeMap(session, null, getMap(object));
-            } else {
-                log.warn("Incorrect use of handler: " + DuckDBStructValueHandler.class.getSimpleName());
+    public Object getValueFromObject(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        Object object,
+        boolean copy,
+        boolean validateValue
+    ) throws DBCException {
+        if (object instanceof Struct) {
+            try {
+                Map<String, Object> map = getMap(object);
+                return new JDBCCompositeMap(session, null, map);
+            } catch (DBCException e) {
+                log.warn(e);
             }
-        } catch (Exception e) {
-            log.warn("Can't get structure as map", e);
+        } else {
+            log.warn("Incorrect use of handler: " + this.getClass().getSimpleName());
         }
 
         return super.getValueFromObject(session, type, object, copy, validateValue);
-
     }
 
-
-    private Map<String, Object> getMap(@NotNull Object object) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        Method method = object.getClass().getDeclaredMethod("getMap");
-        return (Map<String, Object>) method.invoke(object);
-
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> getMap(@NotNull Object object) throws DBCException {
+        try {
+            return (Map<String, Object>) BeanUtils.invokeObjectDeclaredMethod(object, "getMap", new Class[0], new Object[0]);
+        } catch (Throwable e) {
+            throw new DBCException("Can't get structure as map", e);
+        }
     }
 
 }
