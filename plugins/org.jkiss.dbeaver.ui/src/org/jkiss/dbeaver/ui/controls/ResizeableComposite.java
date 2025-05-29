@@ -201,4 +201,14 @@ public final class ResizeableComposite extends Composite {
             layout(true, true);
         }
     }
+
+    @Override
+    public Point computeSize(int wHint, int hHint, boolean changed) {
+        if (content != null) {
+            Point contentSize = super.computeSize(wHint, hHint, changed);
+            //contentSize.y += 20;
+            return contentSize;
+        }
+        return super.computeSize(wHint, hHint, changed);
+    }
 }

@@ -48,8 +48,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * CustomFormEditor
@@ -314,7 +314,7 @@ public class CustomFormEditor {
 
                 int editorHeight = UIUtils.getTextHeight(editor);
                 editorHost.setMinSize(new Point(0, editorHeight));
-                editorHost.setPrefSize(new Point(0, editorHeight * 4));
+                editorHost.setPrefSize(new Point(0, editorHeight * 3));
                 editorHost.setContent(editor);
 
                 return editor;
