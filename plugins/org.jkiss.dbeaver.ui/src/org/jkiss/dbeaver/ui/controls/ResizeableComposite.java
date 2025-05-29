@@ -146,7 +146,9 @@ public final class ResizeableComposite extends Composite {
         Point size = content.getSize();
         Control control = (Control) e.widget;
 
-        Rectangle rectangle = new Rectangle(0, 0, 0, 0);
+        Point offset = getLocation(); // relative to the parent
+        Rectangle rectangle = new Rectangle(offset.x, offset.y, 0, 0);
+
         if (horizontal) {
             rectangle.width = control.getLocation().x + e.x;
             rectangle.height = size.y;
@@ -155,7 +157,7 @@ public final class ResizeableComposite extends Composite {
             rectangle.height = control.getLocation().y + e.y;
         }
 
-        Tracker tracker = new Tracker(this, SWT.RESIZE | (horizontal ? SWT.RIGHT : SWT.DOWN));
+        Tracker tracker = new Tracker(getParent(), SWT.RESIZE | (horizontal ? SWT.RIGHT : SWT.DOWN));
         tracker.setStippled(true);
         tracker.setRectangles(new Rectangle[]{rectangle});
 
