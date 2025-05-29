@@ -723,9 +723,20 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 // Skip schemas in merge entities mode
                 continue;
             }
-            if (filter != null && !filter.matches(((DBSObject) childItem).getName())) {
-                // Doesn't match filter
-                continue;
+            if (filter != null) {
+                String objectName = ((DBSObject) childItem).getName();
+                boolean isMatchingFilter;
+                if (childItem instanceof DBPOverloadedObject overloadedObject) {
+                    isMatchingFilter = filter.matches(
+                        objectName,
+                        overloadedObject.getOverloadedName()
+                    );
+                } else {
+                    isMatchingFilter = filter.matches(objectName);
+                }
+                if (!isMatchingFilter) {
+                    continue;
+                }
             }
             DBSObject object = (DBSObject) childItem;
             boolean added = false;

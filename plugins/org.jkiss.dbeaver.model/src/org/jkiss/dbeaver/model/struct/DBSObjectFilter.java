@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -149,7 +150,7 @@ public class DBSObjectFilter {
         return !CommonUtils.isEmpty(include) ? include.get(0) : null;
     }
 
-    public synchronized boolean matches(String name) {
+    public synchronized boolean matches(String... names) {
         if (includePatterns == null && !CommonUtils.isEmpty(include)) {
             includePatterns = new ArrayList<>(include.size());
             for (String inc : include) {
@@ -159,10 +160,9 @@ public class DBSObjectFilter {
             }
         }
         if (includePatterns != null) {
-            // Match includes (at least one should match)
             boolean matched = false;
             for (Object pattern : includePatterns) {
-                if (matchesPattern(pattern, name)) {
+                if (atLeastOneNameMatchesPattern(pattern, names)) {
                     matched = true;
                     break;
                 }
@@ -181,15 +181,19 @@ public class DBSObjectFilter {
             }
         }
         if (excludePatterns != null) {
-            // Match excludes
             for (Object pattern : excludePatterns) {
-                if (matchesPattern(pattern, name)) {
+                if (atLeastOneNameMatchesPattern(pattern, names)) {
                     return false;
                 }
             }
         }
         // Done
         return true;
+    }
+
+    private static boolean atLeastOneNameMatchesPattern(Object pattern, String[] names) {
+        return Arrays.stream(names)
+            .anyMatch(name -> matchesPattern(pattern, name));
     }
 
     private static boolean matchesPattern(Object pattern, String name) {
