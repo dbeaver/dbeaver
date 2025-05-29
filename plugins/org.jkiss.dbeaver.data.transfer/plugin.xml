@@ -14,35 +14,35 @@
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings"
               advanced="true">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-<!--            <sourceType type="org.jkiss.dbeaver.model.struct.DBSObjectContainer"/>-->
+            <!--            <sourceType type="org.jkiss.dbeaver.model.struct.DBSObjectContainer"/>-->
         </node>
 
         <node type="consumer"
-            id="database_consumer"
-            class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
-            icon="icons/formats/table.png"
-            label="%dataTransfer.consumer.database.name"
-            description="%dataTransfer.consumer.database.description"
-            settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings"
-            advanced="true">
+              id="database_consumer"
+              class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
+              icon="icons/formats/table.png"
+              label="%dataTransfer.consumer.database.name"
+              description="%dataTransfer.consumer.database.description"
+              settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings"
+              advanced="true">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </node>
 
         <node type="producer"
-            id="stream_producer"
-            class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer"
-            icon="icons/formats/file.png"
-            label="%dataTransfer.producer.stream.name"
-            description="%dataTransfer.producer.stream.description"
-            settings="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings">
+              id="stream_producer"
+              class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer"
+              icon="icons/formats/file.png"
+              label="%dataTransfer.producer.stream.name"
+              description="%dataTransfer.producer.stream.description"
+              settings="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings">
 
             <processor
-                id="stream.csv"
-                class="org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV"
-                description="%dataTransfer.producer.stream.processor.csv.description"
-                icon="icons/formats/csv.png"
-                label="%dataTransfer.producer.stream.processor.csv.name"
-                contentType="text/plain">
+                    id="stream.csv"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV"
+                    description="%dataTransfer.producer.stream.processor.csv.description"
+                    icon="icons/formats/csv.png"
+                    label="%dataTransfer.producer.stream.processor.csv.name"
+                    contentType="text/plain">
                 <propertyGroup label="%dataTransfer.producer.stream.processor.csv.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.producer.stream.processor.csv.property.extension.label" defaultValue="csv,tsv,txt"/>
                     <property id="encoding" label="%dataTransfer.producer.stream.processor.csv.property.encoding.label" defaultValue="utf-8"/>
@@ -116,7 +116,7 @@
                     <property id="extension" label="%dataTransfer.processor.json.property.extension.label" defaultValue="json"/>
                 </propertyGroup>
             </processor>
-            
+
             <processor
                     id="stream.html"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterHTML"
@@ -165,7 +165,7 @@
                     description="%dataTransfer.processor.markdownTable.description"
                     icon="icons/formats/markdown.png"
                     label="%dataTransfer.processor.markdownTable.name"
-                contentType="text/plain">
+                    contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.markdownTable.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.processor.markdownTable.property.extension.label" defaultValue="md"/>
                     <property id="nullString" label="%dataTransfer.processor.markdownTable.property.nullString.name" type="string" description="%dataTransfer.processor.markdownTable.property.nullString.description" defaultValue="" required="false"/>
@@ -180,7 +180,7 @@
                     description="%dataTransfer.processor.sql.description"
                     icon="icons/formats/sql.png"
                     label="%dataTransfer.processor.sql.name"
-                contentType="text/sql">
+                    contentType="text/sql">
                 <propertyGroup label="%dataTransfer.processor.sql.propertyGroup.general.label">
                     <property id="includeAutoGenerated" label="%dataTransfer.processor.sql.property.includeAutoGenerated.label" description="%dataTransfer.processor.sql.property.includeAutoGenerated.description" type="boolean" defaultValue="false"/>
                     <property id="extension" label="%dataTransfer.processor.sql.property.extension.label" type="string" defaultValue="sql"/>
@@ -239,12 +239,12 @@
                 </propertyGroup>
             </processor>
             <processor
-                id="stream.geojson"
-                class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterGeoJSON"
-                description="Export data as GeoJSON"
-                icon="icons/formats/json.png"
-                label="GeoJSON"
-                contentType="application/geo+json">
+                    id="stream.geojson"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterGeoJSON"
+                    description="Export data as GeoJSON"
+                    icon="icons/formats/json.png"
+                    label="GeoJSON"
+                    contentType="application/geo+json">
                 <propertyGroup label="General">
                     <property id="extension" label="File extension" defaultValue="geojson"/>
                 </propertyGroup>
@@ -252,7 +252,7 @@
         </node>
 
 
-<!--        <transformer id="none" label="" description="PAss value as is" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerNull"/>-->
+        <!--        <transformer id="none" label="" description="PAss value as is" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerNull"/>-->
         <transformer id="null" label="Set to NULL" description="Set column value to NULL" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerNull"/>
 
         <transformer id="constant" label="Constant" description="Set column value to a constant value" class="org.jkiss.dbeaver.tools.transfer.transformers.DataTransferTransformerConstant">
