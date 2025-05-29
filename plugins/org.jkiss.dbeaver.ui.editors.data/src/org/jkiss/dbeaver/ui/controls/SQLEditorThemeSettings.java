@@ -19,51 +19,51 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.ui.ThemeColor;
 import org.jkiss.dbeaver.ui.ThemeListener;
-import org.jkiss.dbeaver.ui.controls.resultset.SQLEditorThemeConstants;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 
-public class SQLThemeSettings extends ThemeListener {
+public class SQLEditorThemeSettings extends ThemeListener {
 
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_KEYWORD)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_KEYWORD)
     public Color editorKeywordColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_DATATYPE)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_DATATYPE)
     public Color editorDatatypeColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_FUNCTION)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_FUNCTION)
     public Color editorFunctionColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_STRING)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_STRING)
     public Color editorStringColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_TABLE)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_TABLE)
     public Color editorTableColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_TABLE_ALIAS)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_TABLE_ALIAS)
     public Color editorTableAliasColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_COLUMN)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_COLUMN)
     public Color editorColumnColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_COLUMN_DERIVED)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_COLUMN_DERIVED)
     public Color editorColumnDerivedColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_SCHEMA)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_SCHEMA)
     public Color editorSchemaColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_COMPOSITE_FIELD)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_COMPOSITE_FIELD)
     public Color editorCompositeFieldColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_SQL_VARIABLE)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_SQL_VARIABLE)
     public Color editorSqlVariableColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_SEMANTIC_ERROR)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_SEMANTIC_ERROR)
     public Color editorSemanticErrorColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_NUMBER)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_NUMBER)
     public Color editorNumberColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_COMMENT)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_COMMENT)
     public Color editorCommentColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_DELIMITER)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_DELIMITER)
     public Color editorDelimiterColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_PARAMETER)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_PARAMETER)
     public Color editorParameterColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_COMMAND)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_COMMAND)
     public Color editorCommandColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_TEXT)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_TEXT)
     public Color editorTextColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_BACKGROUND)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_BACKGROUND)
     public Color editorBackgroundColor;
-    @ThemeColor(SQLEditorThemeConstants.SQL_EDITOR_COLOR_DISABLED)
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_DISABLED)
     public Color editorDisabledColor;
 
-    public static final SQLThemeSettings instance = new SQLThemeSettings();
+    public static final SQLEditorThemeSettings instance = new SQLEditorThemeSettings();
 
 }

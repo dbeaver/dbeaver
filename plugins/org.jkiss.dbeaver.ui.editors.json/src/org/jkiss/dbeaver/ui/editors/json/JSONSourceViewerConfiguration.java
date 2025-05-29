@@ -29,7 +29,7 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.SQLThemeSettings;
+import org.jkiss.dbeaver.ui.controls.SQLEditorThemeSettings;
 import org.jkiss.dbeaver.ui.editors.text.NonRuleBasedDamagerRepairer;
 
 /**
@@ -72,7 +72,7 @@ public class JSONSourceViewerConfiguration extends SourceViewerConfiguration {
 
         NonRuleBasedDamagerRepairer ndr =
             new NonRuleBasedDamagerRepairer(
-                new TextAttribute(SQLThemeSettings.instance.editorStringColor));
+                new TextAttribute(SQLEditorThemeSettings.instance.editorStringColor));
         reconciler.setDamager(ndr, JSONPartitionScanner.JSON_STRING);
         reconciler.setRepairer(ndr, JSONPartitionScanner.JSON_STRING);
         return reconciler;

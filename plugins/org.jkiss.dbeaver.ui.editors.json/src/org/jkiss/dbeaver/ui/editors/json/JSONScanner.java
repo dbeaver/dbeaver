@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ui.editors.json;
 
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.rules.*;
-import org.jkiss.dbeaver.ui.controls.SQLThemeSettings;
+import org.jkiss.dbeaver.ui.controls.SQLEditorThemeSettings;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -38,9 +38,9 @@ public class JSONScanner extends RuleBasedScanner {
     }
 
     private void initScanner() {
-        IToken string = new Token(new TextAttribute(SQLThemeSettings.instance.editorKeywordColor));
-        IToken value = new Token(new TextAttribute(SQLThemeSettings.instance.editorNumberColor));
-        IToken defaultText = new Token(new TextAttribute(SQLThemeSettings.instance.editorStringColor));
+        IToken string = new Token(new TextAttribute(SQLEditorThemeSettings.instance.editorKeywordColor));
+        IToken value = new Token(new TextAttribute(SQLEditorThemeSettings.instance.editorNumberColor));
+        IToken defaultText = new Token(new TextAttribute(SQLEditorThemeSettings.instance.editorStringColor));
         //IToken nullValue = new Token(new TextAttribute(colorKey));
 
         List<IRule> rules = new LinkedList<>();

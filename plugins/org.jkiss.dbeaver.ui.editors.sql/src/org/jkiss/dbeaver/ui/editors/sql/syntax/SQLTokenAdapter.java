@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.controls.SQLThemeSettings;
+import org.jkiss.dbeaver.ui.controls.SQLEditorThemeSettings;
 
 /**
  * SQLTokenAdapter
@@ -51,7 +51,7 @@ public class SQLTokenAdapter extends Token {
         Color color;
         int style;
         if (token instanceof TPTokenDefault && token.getData() instanceof SQLTokenType tokenType) {
-            SQLThemeSettings themeSettings = SQLThemeSettings.instance;
+            SQLEditorThemeSettings themeSettings = SQLEditorThemeSettings.instance;
             switch (tokenType) {
                 case T_KEYWORD:
                 case T_BLOCK_BEGIN:
@@ -137,12 +137,12 @@ public class SQLTokenAdapter extends Token {
                     break;
             }
         } else {
-            color = SQLThemeSettings.instance.editorTextColor;
+            color = SQLEditorThemeSettings.instance.editorTextColor;
             style = SWT.NORMAL;
         }
 
         if (UIStyles.isDarkHighContrastTheme()) {
-            if (color == SQLThemeSettings.instance.editorTextColor) {
+            if (color == SQLEditorThemeSettings.instance.editorTextColor) {
                 color = UIStyles.COLOR_WHITE;
             } else {
                 color = UIStyles.getInvertedColor(color);

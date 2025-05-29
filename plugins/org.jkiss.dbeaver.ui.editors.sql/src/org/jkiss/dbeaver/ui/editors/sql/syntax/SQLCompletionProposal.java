@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.SQLEditorThemeConstants;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.SuggestionInformationControlCreator;
 import org.jkiss.utils.CommonUtils;
@@ -259,14 +259,14 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
         if (getProposalType() == DBPKeywordType.LITERAL) {
             StyledString styledString = new StyledString();
             styledString.append(getDisplayString(),
-                StyledString.createColorRegistryStyler(SQLEditorThemeConstants.SQL_EDITOR_COLOR_STRING, null));
+                StyledString.createColorRegistryStyler(ThemeConstants.SQL_EDITOR_COLOR_STRING, null));
             return styledString;
         } else if (getProposalType() == DBPKeywordType.KEYWORD) {
             return new StyledString(getDisplayString(),
-                StyledString.createColorRegistryStyler(SQLEditorThemeConstants.SQL_EDITOR_COLOR_KEYWORD, null));
+                StyledString.createColorRegistryStyler(ThemeConstants.SQL_EDITOR_COLOR_KEYWORD, null));
         } else if (getProposalType() == DBPKeywordType.FUNCTION) {
             return new StyledString(getDisplayString(),
-                StyledString.createColorRegistryStyler(SQLEditorThemeConstants.SQL_EDITOR_COLOR_FUNCTION, null));
+                StyledString.createColorRegistryStyler(ThemeConstants.SQL_EDITOR_COLOR_FUNCTION, null));
         } else {
             return new StyledString(getDisplayString());
         }
