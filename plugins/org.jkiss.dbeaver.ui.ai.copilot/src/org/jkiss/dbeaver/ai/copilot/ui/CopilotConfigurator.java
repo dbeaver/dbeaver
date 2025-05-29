@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.ai.engine.AICompletionEngine;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotClient;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties;
@@ -55,7 +55,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class CopilotConfigurator implements IObjectPropertyConfigurator<AICompletionEngine, LegacyAISettings<CopilotProperties>> {
+public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine, LegacyAISettings<CopilotProperties>> {
 
     @Nullable
     protected Text tokenText;
@@ -73,7 +73,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIComple
     @Override
     public void createControl(
         @NotNull Composite parent,
-        AICompletionEngine object,
+        AIEngine object,
         @NotNull Runnable propertyChangeListener
     ) {
         Composite authorizeComposite = UIUtils.createComposite(parent, 3);

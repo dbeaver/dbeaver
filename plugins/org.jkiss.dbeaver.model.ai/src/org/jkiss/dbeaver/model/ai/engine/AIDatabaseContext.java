@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine;
 import org.eclipse.core.runtime.Assert;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AICompletionScope;
+import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -29,13 +29,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class AICompletionContext {
-    private final AICompletionScope scope;
+public class AIDatabaseContext {
+    private final AIDatabaseScope scope;
     private final List<DBSObject> customEntities;
     private final DBCExecutionContext executionContext;
 
-    private AICompletionContext(
-        @NotNull AICompletionScope scope,
+    private AIDatabaseContext(
+        @NotNull AIDatabaseScope scope,
         @Nullable List<DBSObject> customEntities,
         @NotNull DBCExecutionContext executionContext
     ) {
@@ -45,7 +45,7 @@ public class AICompletionContext {
     }
 
     @NotNull
-    public AICompletionScope getScope() {
+    public AIDatabaseScope getScope() {
         return scope;
     }
 
@@ -60,12 +60,12 @@ public class AICompletionContext {
     }
 
     public static class Builder {
-        private AICompletionScope scope;
+        private AIDatabaseScope scope;
         private List<DBSObject> customEntities;
         private DBCExecutionContext executionContext;
 
         @NotNull
-        public Builder setScope(@NotNull AICompletionScope scope) {
+        public Builder setScope(@NotNull AIDatabaseScope scope) {
             this.scope = scope;
             return this;
         }
@@ -83,13 +83,13 @@ public class AICompletionContext {
         }
 
         @NotNull
-        public AICompletionContext build() {
+        public AIDatabaseContext build() {
             Assert.isLegal(
                 scope != null,
                 "Scope must be specified"
             );
             Assert.isLegal(
-                scope != AICompletionScope.CUSTOM || customEntities != null,
+                scope != AIDatabaseScope.CUSTOM || customEntities != null,
                 "Custom entities must be specified when using custom scope"
             );
             Assert.isLegal(
@@ -97,7 +97,7 @@ public class AICompletionContext {
                 "Execution context must be specified"
             );
 
-            return new AICompletionContext(scope, customEntities, executionContext);
+            return new AIDatabaseContext(scope, customEntities, executionContext);
         }
     }
 

@@ -33,7 +33,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.concurrent.Flow;
 
-public class CopilotCompletionEngine implements AICompletionEngine {
+public class CopilotCompletionEngine implements AIEngine {
     private static final Log log = Log.getLog(CopilotCompletionEngine.class);
 
     private final AISettingsRegistry registry;
@@ -62,9 +62,9 @@ public class CopilotCompletionEngine implements AICompletionEngine {
 
     @NotNull
     @Override
-    public AICompletionResponse requestCompletion(
+    public AIEngineResponse requestCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AICompletionRequest request
+        @NotNull AIEngineRequest request
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
             .withModel(getModelName())
@@ -76,20 +76,20 @@ public class CopilotCompletionEngine implements AICompletionEngine {
             .withN(1)
             .build();
 
-        List<AICompletionChoice> choices = client.evaluate().chat(monitor, requestSessionToken(monitor).token(), chatRequest)
+        List<String> choices = client.evaluate().chat(monitor, requestSessionToken(monitor).token(), chatRequest)
             .choices()
             .stream()
-            .map(it -> new AICompletionChoice(it.message().content(), null))
+            .map(it -> it.message().content())
             .toList();
 
-        return new AICompletionResponse(choices);
+        return new AIEngineResponse(choices);
     }
 
     @NotNull
     @Override
-    public Flow.Publisher<AICompletionChunk> requestCompletionStream(
+    public Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AICompletionRequest request
+        @NotNull AIEngineRequest request
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
             .withModel(getModelName())
@@ -117,11 +117,11 @@ public class CopilotCompletionEngine implements AICompletionEngine {
 
                 @Override
                 public void onNext(CopilotChatChunk chunk) {
-                    List<AICompletionChoice> choices = chunk.choices().stream()
+                    List<String> choices = chunk.choices().stream()
                         .takeWhile(it -> it.delta().content() != null)
-                        .map(it -> new AICompletionChoice(it.delta().content(), null))
+                        .map(it -> it.delta().content())
                         .toList();
-                    subscriber.onNext(new AICompletionChunk(choices));
+                    subscriber.onNext(new AIEngineResponseChunk(choices));
                 }
 
                 @Override

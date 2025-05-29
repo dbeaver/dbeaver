@@ -62,11 +62,11 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull DBRProgressMonitor monitor,
         @NotNull AITranslateRequest request
     ) throws DBException {
-        AICompletionEngine engine = request.engine() != null ?
+        AIEngine engine = request.engine() != null ?
             request.engine() :
             getActiveEngine();
 
-        AIChatMessage userMessage = new AIChatMessage(AIChatRole.USER, request.text());
+        AIMessage userMessage = new AIMessage(AIMessageType.USER, request.text());
 
         String prompt = buildPrompt(
             monitor,
@@ -79,21 +79,21 @@ public class AIAssistantImpl implements AIAssistant {
             "Provide the SQL query in a fenced Markdown code block."
         ).build();
 
-        List<AIChatMessage> chatMessages = List.of(
-            AIChatMessage.systemMessage(prompt),
+        List<AIMessage> chatMessages = List.of(
+            AIMessage.systemMessage(prompt),
             userMessage
         );
 
-        AICompletionRequest completionRequest = new AICompletionRequest(
+        AIEngineRequest completionRequest = new AIEngineRequest(
             AIUtils.truncateMessages(true, chatMessages, engine.getMaxContextSize(monitor))
         );
 
-        AICompletionResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
+        AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
 
         MessageChunk[] messageChunks = processAndSplitCompletion(
             monitor,
             request.context(),
-            completionResponse.choices().get(0).text()
+            completionResponse.variants().get(0)
         );
 
         return AITextUtils.convertToSQL(
@@ -117,7 +117,7 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull DBRProgressMonitor monitor,
         @NotNull AICommandRequest request
     ) throws DBException {
-        AICompletionEngine engine = request.engine() != null ?
+        AIEngine engine = request.engine() != null ?
             request.engine() :
             getActiveEngine();
 
@@ -132,21 +132,21 @@ public class AIAssistantImpl implements AIAssistant {
             "Provide the SQL query in a fenced Markdown code block."
         ).build();
 
-        List<AIChatMessage> chatMessages = List.of(
-            AIChatMessage.systemMessage(prompt),
-            AIChatMessage.userMessage(request.text())
+        List<AIMessage> chatMessages = List.of(
+            AIMessage.systemMessage(prompt),
+            AIMessage.userMessage(request.text())
         );
 
-        AICompletionRequest completionRequest = new AICompletionRequest(
+        AIEngineRequest completionRequest = new AIEngineRequest(
             AIUtils.truncateMessages(true, chatMessages, engine.getMaxContextSize(monitor))
         );
 
-        AICompletionResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
+        AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
 
         MessageChunk[] messageChunks = processAndSplitCompletion(
             monitor,
             request.context(),
-            completionResponse.choices().get(0).text()
+            completionResponse.variants().get(0)
         );
 
         String finalSQL = null;
@@ -174,7 +174,7 @@ public class AIAssistantImpl implements AIAssistant {
 
     protected MessageChunk[] processAndSplitCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AICompletionContext context,
+        @NotNull AIDatabaseContext context,
         @NotNull String completion
     ) throws DBException {
         String processedCompletion = AIUtils.processCompletion(
@@ -204,21 +204,21 @@ public class AIAssistantImpl implements AIAssistant {
         throw new DBException("Request failed after " + MAX_RETRIES + " attempts");
     }
 
-    protected AICompletionEngine getActiveEngine() throws DBException {
+    protected AIEngine getActiveEngine() throws DBException {
         return engineRegistry.getCompletionEngine(settingsRegistry.getSettings().activeEngine());
     }
 
-    protected AICompletionResponse requestCompletion(
-        @NotNull AICompletionEngine engine,
+    protected AIEngineResponse requestCompletion(
+        @NotNull AIEngine engine,
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AICompletionRequest request
+        @NotNull AIEngineRequest request
     ) throws DBException {
         try {
             if (engine.isLoggingEnabled()) {
                 log.debug("Requesting completion [request=" + request + "]");
             }
 
-            AICompletionResponse completionResponse = callWithRetry(() -> engine.requestCompletion(monitor, request));
+            AIEngineResponse completionResponse = callWithRetry(() -> engine.requestCompletion(monitor, request));
 
             if (engine.isLoggingEnabled()) {
                 log.debug("Received completion [response=" + completionResponse + "]");
@@ -236,13 +236,13 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
-    protected Flow.Publisher<AICompletionChunk> requestCompletionStream(
-        @NotNull AICompletionEngine engine,
+    protected Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
+        @NotNull AIEngine engine,
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AICompletionRequest request
+        @NotNull AIEngineRequest request
     ) throws DBException {
         try {
-            Flow.Publisher<AICompletionChunk> publisher = callWithRetry(() -> engine.requestCompletionStream(monitor, request));
+            Flow.Publisher<AIEngineResponseChunk> publisher = callWithRetry(() -> engine.requestCompletionStream(monitor, request));
             boolean loggingEnabled = engine.isLoggingEnabled();
 
             return subscriber -> {
@@ -274,8 +274,8 @@ public class AIAssistantImpl implements AIAssistant {
 
     protected AIPromptBuilder buildPrompt(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AICompletionEngine engine,
-        @Nullable AICompletionContext context
+        @NotNull AIEngine engine,
+        @Nullable AIDatabaseContext context
     ) throws DBException {
         AIPromptBuilder promptBuilder = AIPromptBuilder.createForDataSource(
             context != null ?
@@ -291,8 +291,8 @@ public class AIAssistantImpl implements AIAssistant {
 
     protected void describeDatabaseMetadata(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AICompletionEngine engine,
-        @Nullable AICompletionContext context,
+        @NotNull AIEngine engine,
+        @Nullable AIDatabaseContext context,
         AIPromptBuilder promptBuilder
     ) throws DBException {
         if (context != null) {

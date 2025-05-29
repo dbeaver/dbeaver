@@ -27,7 +27,7 @@ import java.util.concurrent.Flow;
 /**
  * Completion engine
  */
-public interface AICompletionEngine extends AISettingsEventListener {
+public interface AIEngine extends AISettingsEventListener {
 
     /**
      * Returns the context size for the completion engine.
@@ -47,9 +47,9 @@ public interface AICompletionEngine extends AISettingsEventListener {
      * @throws DBException if an error occurs
      */
     @NotNull
-    AICompletionResponse requestCompletion(
+    AIEngineResponse requestCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AICompletionRequest request
+        @NotNull AIEngineRequest request
     ) throws DBException;
 
     /**
@@ -62,9 +62,9 @@ public interface AICompletionEngine extends AISettingsEventListener {
      * @throws DBException if an error occurs
      */
     @NotNull
-    Flow.Publisher<AICompletionChunk> requestCompletionStream(
+    Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AICompletionRequest request
+        @NotNull AIEngineRequest request
     ) throws DBException;
 
     /**

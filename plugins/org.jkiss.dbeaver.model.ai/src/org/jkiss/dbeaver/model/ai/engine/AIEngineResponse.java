@@ -14,19 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.ai.AIChatMessage;
 
 import java.util.List;
 
-public record AICompletionRequest(
-    @NotNull List<AIChatMessage> messages
+/**
+ * Completion request
+ */
+public record AIEngineResponse(
+    @NotNull List<String> variants
 ) {
     @Override
     public String toString() {
-        return "AI request " + messages;
+        return "AI response " + variants;
     }
 
 }

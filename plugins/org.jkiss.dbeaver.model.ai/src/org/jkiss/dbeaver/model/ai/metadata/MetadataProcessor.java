@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.AICompletionScope;
-import org.jkiss.dbeaver.model.ai.engine.AICompletionContext;
+import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -108,7 +108,7 @@ public class MetadataProcessor {
     @NotNull
     public String describeContext(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AICompletionContext context,
+        @NotNull AIDatabaseContext context,
         @NotNull AIPromptFormatter formatter,
         int maxRequestTokens
     ) throws DBException {
@@ -123,7 +123,7 @@ public class MetadataProcessor {
 
         final int remainingRequestTokens = maxRequestTokens - sb.length() - 20;
 
-        if (context.getScope() == AICompletionScope.CUSTOM) {
+        if (context.getScope() == AIDatabaseScope.CUSTOM) {
             List<DBSObject> normalizeCustomEntities = normalizeCustomEntities(context.getCustomEntities());
             cacheStructuresForCustomEntities(monitor, normalizeCustomEntities);
 

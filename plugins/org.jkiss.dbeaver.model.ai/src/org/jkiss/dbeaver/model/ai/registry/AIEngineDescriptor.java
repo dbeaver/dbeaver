@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.ai.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AICompletionEngine;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineFactory;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
@@ -63,7 +63,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         return properties;
     }
 
-    public AICompletionEngine createInstance() throws DBException {
+    public AIEngine createInstance() throws DBException {
         ObjectType objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
         AIEngineFactory<?> instance = objectType.createInstance(AIEngineFactory.class);
         return instance.createEngine(AISettingsRegistry.getInstance());

@@ -18,15 +18,15 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.engine.AICompletionContext;
-import org.jkiss.dbeaver.model.ai.engine.AICompletionEngine;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 
 public record AICommandRequest(
     @NotNull String text,
-    @NotNull AICompletionContext context,
-    @Nullable AICompletionEngine engine
+    @NotNull AIDatabaseContext context,
+    @Nullable AIEngine engine
 ) {
-    public AICommandRequest(@NotNull String text, @NotNull AICompletionContext context) {
+    public AICommandRequest(@NotNull String text, @NotNull AIDatabaseContext context) {
         this(text, context, null);
     }
 }

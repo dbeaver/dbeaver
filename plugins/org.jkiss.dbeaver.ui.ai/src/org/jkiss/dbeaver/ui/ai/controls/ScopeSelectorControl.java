@@ -28,8 +28,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.AICompletionScope;
 import org.jkiss.dbeaver.model.ai.AICompletionSettings;
+import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AITextUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
@@ -65,7 +65,7 @@ public class ScopeSelectorControl extends Composite {
     private final ToolBar toolBar;
 
     private final Set<String> checkedObjectIds;
-    private AICompletionScope currentScope;
+    private AIDatabaseScope currentScope;
 
     public ScopeSelectorControl(
         @NotNull Composite parent,
@@ -87,7 +87,7 @@ public class ScopeSelectorControl extends Composite {
         }
 
         scopeCombo = new Combo(this, SWT.DROP_DOWN | SWT.READ_ONLY);
-        for (AICompletionScope scope : AICompletionScope.values()) {
+        for (AIDatabaseScope scope : AIDatabaseScope.values()) {
             scopeCombo.add(scope.getTitle());
             if (currentScope == scope) {
                 scopeCombo.select(scopeCombo.getItemCount() - 1);
@@ -97,7 +97,7 @@ public class ScopeSelectorControl extends Composite {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                changeScope(CommonUtils.fromOrdinal(AICompletionScope.class, scopeCombo.getSelectionIndex()));
+                changeScope(CommonUtils.fromOrdinal(AIDatabaseScope.class, scopeCombo.getSelectionIndex()));
             }
         });
 
@@ -112,7 +112,7 @@ public class ScopeSelectorControl extends Composite {
             toolBar,
             "Customize",
             UIIcon.RS_DETAILS,
-            SelectionListener.widgetSelectedAdapter(e -> changeScope(AICompletionScope.CUSTOM))
+            SelectionListener.widgetSelectedAdapter(e -> changeScope(AIDatabaseScope.CUSTOM))
         );
 
         showScopeSettings(currentScope);
@@ -145,7 +145,7 @@ public class ScopeSelectorControl extends Composite {
     }
 
     @NotNull
-    public AICompletionScope getScope() {
+    public AIDatabaseScope getScope() {
         return currentScope;
     }
 
@@ -164,7 +164,7 @@ public class ScopeSelectorControl extends Composite {
         return executionContext;
     }
 
-    private void showScopeSettings(@NotNull AICompletionScope scope) {
+    private void showScopeSettings(@NotNull AIDatabaseScope scope) {
         final String text = switch (scope) {
             case CURRENT_SCHEMA -> {
                 if (CommonUtils.isNotEmpty(dataSource.getCurrentSchema())) {
@@ -186,7 +186,7 @@ public class ScopeSelectorControl extends Composite {
             default -> checkedObjectIds.size() + " object(s)";
         };
 
-        scopeConfigItem.setEnabled(scope == AICompletionScope.CUSTOM);
+        scopeConfigItem.setEnabled(scope == AIDatabaseScope.CUSTOM);
         scopeText.setText(CommonUtils.toString(text, "N/A"));
 
         requestLayout();
@@ -240,10 +240,10 @@ public class ScopeSelectorControl extends Composite {
             .collect(Collectors.toSet());
     }
 
-    public void changeScope(@NotNull AICompletionScope scope) {
+    public void changeScope(@NotNull AIDatabaseScope scope) {
         checkedObjectIds.clear();
 
-        if (scope == AICompletionScope.CUSTOM) {
+        if (scope == AIDatabaseScope.CUSTOM) {
             Set<String> ids = chooseCustomEntities(
                 getShell(),
                 UIUtils.getDefaultRunnableContext(),

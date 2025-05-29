@@ -30,7 +30,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.engine.AICompletionEngine;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
@@ -55,7 +55,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai";
     private final AISettings settings;
 
-    private AICompletionEngine completionEngine;
+    private AIEngine completionEngine;
     private Combo serviceCombo;
 
     private final Map<String, String> serviceNameMappings = new HashMap<>();
@@ -90,7 +90,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     }
 
     @Nullable
-    private IObjectPropertyConfigurator<AICompletionEngine, AIEngineSettings<?>> createEngineConfigurator() {
+    private IObjectPropertyConfigurator<AIEngine, AIEngineSettings<?>> createEngineConfigurator() {
         UIPropertyConfiguratorDescriptor engineDescriptor =
             UIPropertyConfiguratorRegistry.getInstance().getDescriptor(completionEngine.getClass().getName());
         if (engineDescriptor != null) {
@@ -210,7 +210,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         activeEngineConfiguratorPage = engineConfiguratorMapping.get(id);
 
         if (activeEngineConfiguratorPage == null) {
-            IObjectPropertyConfigurator<AICompletionEngine, AIEngineSettings<?>> engineConfigurator
+            IObjectPropertyConfigurator<AIEngine, AIEngineSettings<?>> engineConfigurator
                 = createEngineConfigurator();
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
             activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
@@ -237,14 +237,14 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     }
 
     private static class EngineConfiguratorPage {
-        private final IObjectPropertyConfigurator<AICompletionEngine, AIEngineSettings<?>> configurator;
+        private final IObjectPropertyConfigurator<AIEngine, AIEngineSettings<?>> configurator;
         private Composite composite;
 
-        EngineConfiguratorPage(IObjectPropertyConfigurator<AICompletionEngine, AIEngineSettings<?>> configurator) {
+        EngineConfiguratorPage(IObjectPropertyConfigurator<AIEngine, AIEngineSettings<?>> configurator) {
             this.configurator = configurator;
         }
 
-        private void createControl(Composite parent, AICompletionEngine engine) {
+        private void createControl(Composite parent, AIEngine engine) {
             composite = UIUtils.createComposite(parent, 1);
             composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (configurator != null) {

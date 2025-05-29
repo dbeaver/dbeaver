@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 /**
  * Completion scope
  */
-public enum AICompletionScope {
+public enum AIDatabaseScope {
     CURRENT_SCHEMA(AIMessages.ai_scope_current_schema),
     CURRENT_DATABASE(AIMessages.ai_scope_current_database),
     CURRENT_DATASOURCE(AIMessages.ai_scope_current_datasource),
@@ -30,7 +30,7 @@ public enum AICompletionScope {
 
     private final String title;
 
-    AICompletionScope(String title) {
+    AIDatabaseScope(String title) {
         this.title = title;
     }
 

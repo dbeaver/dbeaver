@@ -28,8 +28,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.ai.AICompletionScope;
 import org.jkiss.dbeaver.model.ai.AICompletionSettings;
+import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
@@ -205,7 +205,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         return inputText;
     }
 
-    public AICompletionScope getScope() {
+    public AIDatabaseScope getScope() {
         return scopeSelectorControl.getScope();
     }
 

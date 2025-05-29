@@ -22,10 +22,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.ai.AIChatMessage;
-import org.jkiss.dbeaver.model.ai.AIChatRole;
 import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.engine.AICompletionEngine;
+import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -68,9 +68,9 @@ public final class AIUtils {
      * @param messages list of messages
      * @return number of tokens
      */
-    public static int countTokens(@NotNull List<AIChatMessage> messages) {
+    public static int countTokens(@NotNull List<AIMessage> messages) {
         int count = 0;
-        for (AIChatMessage message : messages) {
+        for (AIMessage message : messages) {
             count += countContentTokens(message.content());
         }
         return count;
@@ -85,26 +85,26 @@ public final class AIUtils {
      * @return list of truncated messages
      */
     @NotNull
-    public static List<AIChatMessage> truncateMessages(
+    public static List<AIMessage> truncateMessages(
         boolean chatMode,
-        @NotNull List<AIChatMessage> messages,
+        @NotNull List<AIMessage> messages,
         int maxTokens
     ) {
-        final List<AIChatMessage> pending = new ArrayList<>(messages);
-        final List<AIChatMessage> truncated = new ArrayList<>();
+        final List<AIMessage> pending = new ArrayList<>(messages);
+        final List<AIMessage> truncated = new ArrayList<>();
         int remainingTokens = maxTokens - 20; // Just to be sure
 
         if (!pending.isEmpty()) {
-            if (pending.get(0).role() == AIChatRole.SYSTEM) {
+            if (pending.get(0).role() == AIMessageType.SYSTEM) {
                 // Always append main system message and leave space for the next one
-                AIChatMessage msg = pending.remove(0);
-                AIChatMessage truncatedMessage = truncateMessage(msg, remainingTokens - 50);
+                AIMessage msg = pending.remove(0);
+                AIMessage truncatedMessage = truncateMessage(msg, remainingTokens - 50);
                 remainingTokens -= countContentTokens(truncatedMessage.content());
                 truncated.add(msg);
             }
         }
 
-        for (AIChatMessage message : pending) {
+        for (AIMessage message : pending) {
             final int messageTokens = message.content().length();
 
             if (remainingTokens < 0 || messageTokens > remainingTokens) {
@@ -116,7 +116,7 @@ public final class AIUtils {
                 }
             }
 
-            AIChatMessage truncatedMessage = truncateMessage(message, remainingTokens);
+            AIMessage truncatedMessage = truncateMessage(message, remainingTokens);
             remainingTokens -= countContentTokens(truncatedMessage.content());
             truncated.add(truncatedMessage);
         }
@@ -129,7 +129,7 @@ public final class AIUtils {
      * It is sooooo approximately
      * We should use https://github.com/knuddelsgmbh/jtokkit/ or something similar
      */
-    private static AIChatMessage truncateMessage(AIChatMessage message, int remainingTokens) {
+    private static AIMessage truncateMessage(AIMessage message, int remainingTokens) {
         String content = message.content();
         int contentTokens = countContentTokens(content);
         if (remainingTokens > contentTokens) {
@@ -137,7 +137,7 @@ public final class AIUtils {
         }
 
         String truncatedContent = removeContentTokens(content, contentTokens - remainingTokens);
-        return new AIChatMessage(message.role(), truncatedContent);
+        return new AIMessage(message.role(), truncatedContent);
     }
 
     private static String removeContentTokens(String content, int tokensToRemove) {
@@ -199,7 +199,7 @@ public final class AIUtils {
      * @param engine the completion engine
      * @param monitor the progress monitor
      */
-    public static int getMaxRequestTokens(@NotNull AICompletionEngine engine, @NotNull DBRProgressMonitor monitor) throws DBException {
+    public static int getMaxRequestTokens(@NotNull AIEngine engine, @NotNull DBRProgressMonitor monitor) throws DBException {
         return engine.getMaxContextSize(monitor) - AIConstants.MAX_RESPONSE_TOKENS;
     }
 

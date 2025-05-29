@@ -17,16 +17,16 @@
 package org.jkiss.dbeaver.model.ai.impl;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.engine.AICompletionChunk;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 
 import java.util.concurrent.Flow;
 
-class LogSubscriber implements Flow.Subscriber<AICompletionChunk> {
+class LogSubscriber implements Flow.Subscriber<AIEngineResponseChunk> {
     private final Log log;
 
-    private final Flow.Subscriber<? super AICompletionChunk> subscriber;
+    private final Flow.Subscriber<? super AIEngineResponseChunk> subscriber;
 
-    public LogSubscriber(Log log, Flow.Subscriber<? super AICompletionChunk> subscriber) {
+    public LogSubscriber(Log log, Flow.Subscriber<? super AIEngineResponseChunk> subscriber) {
         this.log = log;
         this.subscriber = subscriber;
     }
@@ -37,7 +37,7 @@ class LogSubscriber implements Flow.Subscriber<AICompletionChunk> {
     }
 
     @Override
-    public void onNext(AICompletionChunk item) {
+    public void onNext(AIEngineResponseChunk item) {
         log.debug("Response chunk: " + item);
 
         subscriber.onNext(item);

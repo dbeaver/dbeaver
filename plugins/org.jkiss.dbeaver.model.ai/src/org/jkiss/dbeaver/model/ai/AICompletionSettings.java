@@ -38,7 +38,7 @@ public final class AICompletionSettings {
     private final DBPDataSourceContainer dataSourceContainer;
     private boolean metaTransferConfirmed;
     private boolean allowMetaTransfer;
-    private AICompletionScope scope;
+    private AIDatabaseScope scope;
     private String[] customObjectIds;
 
     public AICompletionSettings(DBPDataSourceContainer dataSourceContainer) {
@@ -67,11 +67,11 @@ public final class AICompletionSettings {
         this.allowMetaTransfer = allowMetaTransfer;
     }
 
-    public AICompletionScope getScope() {
+    public AIDatabaseScope getScope() {
         return scope;
     }
 
-    public void setScope(AICompletionScope scope) {
+    public void setScope(AIDatabaseScope scope) {
         this.scope = scope;
     }
 
@@ -93,9 +93,9 @@ public final class AICompletionSettings {
         String prefix = "ai-" + dataSourceContainer.getId() + ".";
         metaTransferConfirmed = preferenceStore.getBoolean(prefix + AIConstants.AI_META_TRANSFER_CONFIRMED);
         scope = CommonUtils.valueOf(
-            AICompletionScope.class,
+            AIDatabaseScope.class,
             preferenceStore.getString(prefix + AIConstants.AI_META_SCOPE),
-            AICompletionScope.CURRENT_SCHEMA);
+            AIDatabaseScope.CURRENT_SCHEMA);
         String csString = preferenceStore.getString(prefix + AIConstants.AI_META_CUSTOM);
         customObjectIds = csString == null ? new String[0] : csString.split(",");
     }

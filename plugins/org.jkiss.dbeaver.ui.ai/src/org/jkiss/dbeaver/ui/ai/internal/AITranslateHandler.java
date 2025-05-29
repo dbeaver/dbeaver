@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.ai.AIAssistant;
 import org.jkiss.dbeaver.model.ai.AICompletionSettings;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AITranslateRequest;
-import org.jkiss.dbeaver.model.ai.engine.AICompletionContext;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.utils.InMemoryHistoryManager;
@@ -209,7 +209,7 @@ public class AITranslateHandler extends AbstractHandler {
         AtomicReference<String> sql = new AtomicReference<>();
         UIUtils.runInProgressDialog(monitor -> {
             try {
-                final AICompletionContext context = new AICompletionContext.Builder()
+                final AIDatabaseContext context = new AIDatabaseContext.Builder()
                     .setScope(popup.getScope())
                     .setCustomEntities(popup.getCustomEntities(monitor))
                     .setExecutionContext(executionContext)

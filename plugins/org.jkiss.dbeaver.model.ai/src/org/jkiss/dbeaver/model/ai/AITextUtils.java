@@ -48,7 +48,7 @@ public class AITextUtils {
 
     @NotNull
     public static String convertToSQL(
-        @NotNull AIChatMessage prompt,
+        @NotNull AIMessage prompt,
         @NotNull MessageChunk[] response,
         @Nullable DBPDataSource dataSource
     ) {

@@ -25,33 +25,33 @@ import java.time.LocalDateTime;
 /**
  * Represents a single completion message
  */
-public record AIChatMessage(
-    @NotNull AIChatRole role,
+public record AIMessage(
+    @NotNull AIMessageType role,
     @NotNull String content,
     @Nullable String displayMessage,
     @NotNull LocalDateTime time
 ) {
-    public static AIChatMessage systemMessage(String message) {
-        return new AIChatMessage(AIChatRole.SYSTEM, message);
+    public static AIMessage systemMessage(String message) {
+        return new AIMessage(AIMessageType.SYSTEM, message);
     }
 
-    public static AIChatMessage userMessage(String message) {
-        return new AIChatMessage(AIChatRole.USER, message);
+    public static AIMessage userMessage(String message) {
+        return new AIMessage(AIMessageType.USER, message);
     }
 
-    public static AIChatMessage assistantMessage(String message) {
-        return new AIChatMessage(AIChatRole.ASSISTANT, message);
+    public static AIMessage assistantMessage(String message) {
+        return new AIMessage(AIMessageType.ASSISTANT, message);
     }
 
-    public static AIChatMessage errorMessage(Throwable throwable)  {
-        return new AIChatMessage(AIChatRole.ERROR, CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"));
+    public static AIMessage errorMessage(Throwable throwable)  {
+        return new AIMessage(AIMessageType.ERROR, CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"));
     }
 
-    public static AIChatMessage userAutoMessage(String prompt, String uiMessage) {
-        return new AIChatMessage(AIChatRole.USER, prompt, uiMessage, LocalDateTime.now());
+    public static AIMessage userAutoMessage(String prompt, String uiMessage) {
+        return new AIMessage(AIMessageType.USER, prompt, uiMessage, LocalDateTime.now());
     }
 
-    public AIChatMessage(@NotNull AIChatRole role, @NotNull String content) {
+    public AIMessage(@NotNull AIMessageType role, @NotNull String content) {
         this(role, content, content, LocalDateTime.now());
     }
 

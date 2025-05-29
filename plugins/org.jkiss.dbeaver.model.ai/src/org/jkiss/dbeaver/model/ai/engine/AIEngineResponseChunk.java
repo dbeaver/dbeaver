@@ -20,8 +20,8 @@ import org.jkiss.code.NotNull;
 
 import java.util.List;
 
-public record AICompletionChunk(
-    @NotNull List<AICompletionChoice> choices
+public record AIEngineResponseChunk(
+    @NotNull List<String> choices
 ) {
     @Override
     public String toString() {

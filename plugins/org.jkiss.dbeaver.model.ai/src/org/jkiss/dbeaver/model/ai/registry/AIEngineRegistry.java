@@ -21,7 +21,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.engine.AICompletionEngine;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -80,7 +80,7 @@ public class AIEngineRegistry {
         return getCompletionEngines().stream().filter(AIEngineDescriptor::isDefault).findFirst().orElse(null);
     }
 
-    public AICompletionEngine getCompletionEngine(String id) throws DBException {
+    public AIEngine getCompletionEngine(String id) throws DBException {
         AIEngineDescriptor descriptor = getEngineDescriptor(id);
         if (descriptor == null) {
             log.trace("Active engine is not present in the configuration, switching to default active engine");

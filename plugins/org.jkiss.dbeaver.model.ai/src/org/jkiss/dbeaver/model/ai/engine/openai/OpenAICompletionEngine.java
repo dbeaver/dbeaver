@@ -23,9 +23,9 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIChatMessage;
-import org.jkiss.dbeaver.model.ai.AIChatRole;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.List;
 import java.util.concurrent.Flow;
 
-public class OpenAICompletionEngine implements AICompletionEngine {
+public class OpenAICompletionEngine implements AIEngine {
     private static final Log log = Log.getLog(OpenAICompletionEngine.class);
     public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
 
@@ -63,23 +63,23 @@ public class OpenAICompletionEngine implements AICompletionEngine {
 
     @NotNull
     @Override
-    public AICompletionResponse requestCompletion(
+    public AIEngineResponse requestCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AICompletionRequest request
+        @NotNull AIEngineRequest request
     ) throws DBException {
-        ChatCompletionResult completionResult = complete(monitor, request.messages(), getMaxContextSize(monitor));
-        List<AICompletionChoice> choices = completionResult.getChoices().stream()
-            .map(it -> new AICompletionChoice(it.getMessage().getContent(), it.getFinishReason()))
+        ChatCompletionResult completionResult = complete(monitor, request.messages());
+        List<String> choices = completionResult.getChoices().stream()
+            .map(it -> it.getMessage().getContent())
             .toList();
 
-        return new AICompletionResponse(choices);
+        return new AIEngineResponse(choices);
     }
 
     @NotNull
     @Override
-    public Flow.Publisher<AICompletionChunk> requestCompletionStream(
+    public Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AICompletionRequest request
+        @NotNull AIEngineRequest request
     ) throws DBException {
         Flow.Publisher<ChatCompletionChunk> publisher = openAiService.evaluate()
             .createChatCompletionStream(monitor, ChatCompletionRequest.builder()
@@ -102,13 +102,13 @@ public class OpenAICompletionEngine implements AICompletionEngine {
 
             @Override
             public void onNext(ChatCompletionChunk item) {
-                List<AICompletionChoice> choices = item.getChoices().stream()
+                List<String> choices = item.getChoices().stream()
                     .filter(it -> it.getMessage() != null)
                     .takeWhile(it -> it.getMessage().getContent() != null)
-                    .map(it -> new AICompletionChoice(it.getMessage().getContent(), it.getFinishReason()))
+                    .map(it -> it.getMessage().getContent())
                     .toList();
 
-                subscriber.onNext(new AICompletionChunk(choices));
+                subscriber.onNext(new AIEngineResponseChunk(choices));
             }
 
             @Override
@@ -145,8 +145,7 @@ public class OpenAICompletionEngine implements AICompletionEngine {
     @NotNull
     protected ChatCompletionResult complete(
         @NotNull DBRProgressMonitor monitor,
-        List<AIChatMessage> messages,
-        int maxTokens
+        @NotNull List<AIMessage> messages
     ) throws DBException {
         ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()
             .messages(fromMessages(messages))
@@ -161,13 +160,14 @@ public class OpenAICompletionEngine implements AICompletionEngine {
         return openAiService.evaluate().createChatCompletion(monitor, completionRequest);
     }
 
-    private static List<ChatMessage> fromMessages(List<AIChatMessage> messages) {
+    @NotNull
+    private static List<ChatMessage> fromMessages(@NotNull List<AIMessage> messages) {
         return messages.stream()
             .map(m -> new ChatMessage(mapRole(m.role()), m.content()))
             .toList();
     }
 
-    private static String mapRole(AIChatRole role) {
+    private static String mapRole(AIMessageType role) {
         return switch (role) {
             case SYSTEM -> "system";
             case USER -> "user";

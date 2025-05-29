@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.model.ai;
 
 /**
- * Role of the message
+ * Type of the message
  */
-public enum AIChatRole {
+public enum AIMessageType {
     // System messages like context description
     SYSTEM(false),
     // User prompts
@@ -31,7 +31,7 @@ public enum AIChatRole {
 
     private final boolean isLocal;
 
-    AIChatRole(boolean isLocal) {
+    AIMessageType(boolean isLocal) {
         this.isLocal = isLocal;
     }
 

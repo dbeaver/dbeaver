@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
-import org.jkiss.dbeaver.model.ai.engine.AICompletionContext;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
@@ -80,11 +80,11 @@ public class SQLCommandAI implements SQLControlCommandHandler {
                 throw new DBException("AI services restricted for '" + dataSourceContainer.getName() + "'");
             }
         }
-        AICompletionScope scope = completionSettings.getScope();
-        AICompletionContext.Builder contextBuilder = new AICompletionContext.Builder()
+        AIDatabaseScope scope = completionSettings.getScope();
+        AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder()
             .setScope(scope)
             .setExecutionContext(scriptContext.getExecutionContext());
-        if (scope == AICompletionScope.CUSTOM) {
+        if (scope == AIDatabaseScope.CUSTOM) {
             contextBuilder.setCustomEntities(
                 AITextUtils.loadCustomEntities(
                     monitor,
@@ -92,7 +92,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
                     Arrays.stream(completionSettings.getCustomObjectIds()).collect(Collectors.toSet()))
             );
         }
-        final AICompletionContext aiContext = contextBuilder.build();
+        final AIDatabaseContext aiContext = contextBuilder.build();
 
         AICommandResult result = AIAssistantRegistry.getInstance()
             .getAssistant()

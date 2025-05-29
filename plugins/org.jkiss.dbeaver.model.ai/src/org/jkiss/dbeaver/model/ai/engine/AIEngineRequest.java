@@ -14,22 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.AIMessage;
 
 import java.util.List;
 
-/**
- * Completion request
- */
-public record AICompletionResponse(
-    @NotNull List<AICompletionChoice> choices
+public record AIEngineRequest(
+    @NotNull List<AIMessage> messages
 ) {
     @Override
     public String toString() {
-        return "AI response " + choices;
+        return "AI request " + messages;
     }
 
 }

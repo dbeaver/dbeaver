@@ -16,18 +16,18 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
-import org.jkiss.dbeaver.model.ai.AIChatMessage;
-import org.jkiss.dbeaver.model.ai.AIChatRole;
+import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
 
 public record CopilotMessage(
     String role,
     String content
 ) {
-    public static CopilotMessage from(AIChatMessage message) {
+    public static CopilotMessage from(AIMessage message) {
         return new CopilotMessage(mapRole(message.role()), message.content());
     }
 
-    private static String mapRole(AIChatRole role) {
+    private static String mapRole(AIMessageType role) {
         return switch (role) {
             case USER -> "user";
             case ASSISTANT -> "assistant";
