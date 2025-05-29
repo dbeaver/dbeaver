@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.ai;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
+import org.jkiss.dbeaver.model.ai.AICompletionSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 
@@ -28,7 +28,7 @@ public class AIUIUtils {
         // prevents instantiation
     }
 
-    public static boolean confirmMetaTransfer(@NotNull DAICompletionSettings settings) {
+    public static boolean confirmMetaTransfer(@NotNull AICompletionSettings settings) {
         if (settings.isMetaTransferConfirmed()) {
             return true;
         }

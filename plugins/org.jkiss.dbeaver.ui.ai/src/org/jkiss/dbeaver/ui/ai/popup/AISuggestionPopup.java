@@ -28,9 +28,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
+import org.jkiss.dbeaver.model.ai.AICompletionScope;
+import org.jkiss.dbeaver.model.ai.AICompletionSettings;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.qm.QMTranslationHistoryItem;
@@ -59,7 +59,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
     private final DBSLogicalDataSource dataSource;
     @NotNull
     private final DBCExecutionContext executionContext;
-    private final DAICompletionSettings settings;
+    private final AICompletionSettings settings;
 
     private Text inputField;
     private String inputText;
@@ -71,7 +71,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         @NotNull QMTranslationHistoryManager historyManager,
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull DBCExecutionContext executionContext,
-        @NotNull DAICompletionSettings settings) {
+        @NotNull AICompletionSettings settings) {
         super(parentShell, title);
         this.historyManager = historyManager;
         this.dataSource = dataSource;
@@ -205,7 +205,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         return inputText;
     }
 
-    public DAICompletionScope getScope() {
+    public AICompletionScope getScope() {
         return scopeSelectorControl.getScope();
     }
 

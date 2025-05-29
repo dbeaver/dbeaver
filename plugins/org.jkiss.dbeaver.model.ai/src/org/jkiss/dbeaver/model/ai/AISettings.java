@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineSettings;
 
 import java.util.HashMap;
 import java.util.HashSet;

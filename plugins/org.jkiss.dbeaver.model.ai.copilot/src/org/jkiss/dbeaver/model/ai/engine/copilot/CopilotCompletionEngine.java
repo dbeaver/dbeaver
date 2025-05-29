@@ -19,14 +19,13 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
-import org.jkiss.dbeaver.model.ai.LegacyAISettings;
-import org.jkiss.dbeaver.model.ai.completion.*;
+import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatChunk;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotMessage;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModel;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -34,7 +33,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.concurrent.Flow;
 
-public class CopilotCompletionEngine implements DAICompletionEngine {
+public class CopilotCompletionEngine implements AICompletionEngine {
     private static final Log log = Log.getLog(CopilotCompletionEngine.class);
 
     private final AISettingsRegistry registry;
@@ -61,10 +60,11 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
         return OpenAIModel.getByName(getModelName()).getMaxTokens();
     }
 
+    @NotNull
     @Override
-    public DAICompletionResponse requestCompletion(
+    public AICompletionResponse requestCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionRequest request
+        @NotNull AICompletionRequest request
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
             .withModel(getModelName())
@@ -76,19 +76,20 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
             .withN(1)
             .build();
 
-        List<DAICompletionChoice> choices = client.evaluate().chat(monitor, requestSessionToken(monitor).token(), chatRequest)
+        List<AICompletionChoice> choices = client.evaluate().chat(monitor, requestSessionToken(monitor).token(), chatRequest)
             .choices()
             .stream()
-            .map(it -> new DAICompletionChoice(it.message().content(), null))
+            .map(it -> new AICompletionChoice(it.message().content(), null))
             .toList();
 
-        return new DAICompletionResponse(choices);
+        return new AICompletionResponse(choices);
     }
 
+    @NotNull
     @Override
-    public Flow.Publisher<DAICompletionChunk> requestCompletionStream(
+    public Flow.Publisher<AICompletionChunk> requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionRequest request
+        @NotNull AICompletionRequest request
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
             .withModel(getModelName())
@@ -116,11 +117,11 @@ public class CopilotCompletionEngine implements DAICompletionEngine {
 
                 @Override
                 public void onNext(CopilotChatChunk chunk) {
-                    List<DAICompletionChoice> choices = chunk.choices().stream()
+                    List<AICompletionChoice> choices = chunk.choices().stream()
                         .takeWhile(it -> it.delta().content() != null)
-                        .map(it -> new DAICompletionChoice(it.delta().content(), null))
+                        .map(it -> new AICompletionChoice(it.delta().content(), null))
                         .toList();
-                    subscriber.onNext(new DAICompletionChunk(choices));
+                    subscriber.onNext(new AICompletionChunk(choices));
                 }
 
                 @Override

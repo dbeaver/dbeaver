@@ -28,9 +28,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.ai.AICompletionScope;
+import org.jkiss.dbeaver.model.ai.AICompletionSettings;
 import org.jkiss.dbeaver.model.ai.AITextUtils;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -65,13 +65,13 @@ public class ScopeSelectorControl extends Composite {
     private final ToolBar toolBar;
 
     private final Set<String> checkedObjectIds;
-    private DAICompletionScope currentScope;
+    private AICompletionScope currentScope;
 
     public ScopeSelectorControl(
         @NotNull Composite parent,
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull DBCExecutionContext executionContext,
-        @NotNull DAICompletionSettings settings
+        @NotNull AICompletionSettings settings
     ) {
         super(parent, SWT.NONE);
 
@@ -87,7 +87,7 @@ public class ScopeSelectorControl extends Composite {
         }
 
         scopeCombo = new Combo(this, SWT.DROP_DOWN | SWT.READ_ONLY);
-        for (DAICompletionScope scope : DAICompletionScope.values()) {
+        for (AICompletionScope scope : AICompletionScope.values()) {
             scopeCombo.add(scope.getTitle());
             if (currentScope == scope) {
                 scopeCombo.select(scopeCombo.getItemCount() - 1);
@@ -97,7 +97,7 @@ public class ScopeSelectorControl extends Composite {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                changeScope(CommonUtils.fromOrdinal(DAICompletionScope.class, scopeCombo.getSelectionIndex()));
+                changeScope(CommonUtils.fromOrdinal(AICompletionScope.class, scopeCombo.getSelectionIndex()));
             }
         });
 
@@ -112,7 +112,7 @@ public class ScopeSelectorControl extends Composite {
             toolBar,
             "Customize",
             UIIcon.RS_DETAILS,
-            SelectionListener.widgetSelectedAdapter(e -> changeScope(DAICompletionScope.CUSTOM))
+            SelectionListener.widgetSelectedAdapter(e -> changeScope(AICompletionScope.CUSTOM))
         );
 
         showScopeSettings(currentScope);
@@ -145,7 +145,7 @@ public class ScopeSelectorControl extends Composite {
     }
 
     @NotNull
-    public DAICompletionScope getScope() {
+    public AICompletionScope getScope() {
         return currentScope;
     }
 
@@ -164,7 +164,7 @@ public class ScopeSelectorControl extends Composite {
         return executionContext;
     }
 
-    private void showScopeSettings(@NotNull DAICompletionScope scope) {
+    private void showScopeSettings(@NotNull AICompletionScope scope) {
         final String text = switch (scope) {
             case CURRENT_SCHEMA -> {
                 if (CommonUtils.isNotEmpty(dataSource.getCurrentSchema())) {
@@ -186,7 +186,7 @@ public class ScopeSelectorControl extends Composite {
             default -> checkedObjectIds.size() + " object(s)";
         };
 
-        scopeConfigItem.setEnabled(scope == DAICompletionScope.CUSTOM);
+        scopeConfigItem.setEnabled(scope == AICompletionScope.CUSTOM);
         scopeText.setText(CommonUtils.toString(text, "N/A"));
 
         requestLayout();
@@ -240,10 +240,10 @@ public class ScopeSelectorControl extends Composite {
             .collect(Collectors.toSet());
     }
 
-    public void changeScope(@NotNull DAICompletionScope scope) {
+    public void changeScope(@NotNull AICompletionScope scope) {
         checkedObjectIds.clear();
 
-        if (scope == DAICompletionScope.CUSTOM) {
+        if (scope == AICompletionScope.CUSTOM) {
             Set<String> ids = chooseCustomEntities(
                 getShell(),
                 UIUtils.getDefaultRunnableContext(),

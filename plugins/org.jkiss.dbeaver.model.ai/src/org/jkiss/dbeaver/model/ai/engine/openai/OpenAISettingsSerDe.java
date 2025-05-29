@@ -21,9 +21,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AIEngineSettings;
-import org.jkiss.dbeaver.model.ai.AIEngineSettingsSerDe;
-import org.jkiss.dbeaver.model.ai.LegacyAISettings;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineSettings;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineSettingsSerDe;
+import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 
 import java.lang.reflect.Type;
 

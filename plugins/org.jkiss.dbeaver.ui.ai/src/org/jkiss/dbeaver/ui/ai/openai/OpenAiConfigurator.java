@@ -24,8 +24,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.LegacyAISettings;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
+import org.jkiss.dbeaver.model.ai.engine.AICompletionEngine;
+import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -35,7 +35,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
-public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAICompletionEngine, LegacyAISettings<OpenAIProperties>> {
+public class OpenAiConfigurator implements IObjectPropertyConfigurator<AICompletionEngine, LegacyAISettings<OpenAIProperties>> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String token = "";
     protected String model = "";
@@ -51,7 +51,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<DAIComple
     @Override
     public void createControl(
         @NotNull Composite parent,
-        DAICompletionEngine object,
+        AICompletionEngine object,
         @NotNull Runnable propertyChangeListener
     ) {
         Composite composite = UIUtils.createComposite(parent, 2);

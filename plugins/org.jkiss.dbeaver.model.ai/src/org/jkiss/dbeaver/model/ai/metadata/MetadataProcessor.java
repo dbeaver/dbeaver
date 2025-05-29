@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
-import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
+import org.jkiss.dbeaver.model.ai.AICompletionScope;
+import org.jkiss.dbeaver.model.ai.engine.AICompletionContext;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -47,7 +47,7 @@ public class MetadataProcessor {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSObject object,
         @Nullable DBCExecutionContext context,
-        @NotNull IAIFormatter formatter,
+        @NotNull AIPromptFormatter formatter,
         int maxRequestLength,
         boolean useFullyQualifiedName
     ) throws DBException {
@@ -108,8 +108,8 @@ public class MetadataProcessor {
     @NotNull
     public String describeContext(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionContext context,
-        @NotNull IAIFormatter formatter,
+        @NotNull AICompletionContext context,
+        @NotNull AIPromptFormatter formatter,
         int maxRequestTokens
     ) throws DBException {
         DBSObjectContainer mainObject = context.getScopeObject();
@@ -123,7 +123,7 @@ public class MetadataProcessor {
 
         final int remainingRequestTokens = maxRequestTokens - sb.length() - 20;
 
-        if (context.getScope() == DAICompletionScope.CUSTOM) {
+        if (context.getScope() == AICompletionScope.CUSTOM) {
             List<DBSObject> normalizeCustomEntities = normalizeCustomEntities(context.getCustomEntities());
             cacheStructuresForCustomEntities(monitor, normalizeCustomEntities);
 
@@ -156,7 +156,7 @@ public class MetadataProcessor {
         DBRProgressMonitor monitor,
         DBSEntity entity,
         StringBuilder prompt,
-        IAIFormatter formatter
+        AIPromptFormatter formatter
     ) throws DBException {
         DBSEntityAttribute prevAttribute = null;
         if (SUPPORTS_ATTRS) {

@@ -23,7 +23,7 @@
     </extension>
 
     <extension point="com.dbeaver.ai.formatter">
-        <formatter id="core" class="org.jkiss.dbeaver.model.ai.format.DefaultRequestFormatter"/>
+        <formatter id="core" class="org.jkiss.dbeaver.model.ai.prompt.DefaultPromptFormatter"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">

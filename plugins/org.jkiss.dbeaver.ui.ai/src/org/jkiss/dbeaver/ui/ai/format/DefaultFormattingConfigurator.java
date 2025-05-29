@@ -22,16 +22,16 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.ai.AICompletionConstants;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 
-public class DefaultFormattingConfigurator implements IObjectPropertyConfigurator<IAIFormatter, AISettings> {
+public class DefaultFormattingConfigurator implements IObjectPropertyConfigurator<AIPromptFormatter, AISettings> {
     private Button includeSourceTextInCommentCheck;
     private Button executeQueryImmediatelyCheck;
 
@@ -45,7 +45,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     @Override
     public void createControl(
         @NotNull Composite parent,
-        IAIFormatter object,
+        AIPromptFormatter object,
         @NotNull Runnable propertyChangeListener
     ) {
         settingsPanel = UIUtils.createComposite(parent, 2);
@@ -118,19 +118,19 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     @Override
     public void loadSettings(@NotNull AISettings aiSettings) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        includeSourceTextInCommentCheck.setSelection(store.getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT));
-        executeQueryImmediatelyCheck.setSelection(store.getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY));
-        sendTypeInfoCheck.setSelection(store.getBoolean(AICompletionConstants.AI_SEND_TYPE_INFO));
-        sendDescriptionCheck.setSelection(store.getBoolean(AICompletionConstants.AI_SEND_DESCRIPTION));
+        includeSourceTextInCommentCheck.setSelection(store.getBoolean(AIConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT));
+        executeQueryImmediatelyCheck.setSelection(store.getBoolean(AIConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY));
+        sendTypeInfoCheck.setSelection(store.getBoolean(AIConstants.AI_SEND_TYPE_INFO));
+        sendDescriptionCheck.setSelection(store.getBoolean(AIConstants.AI_SEND_DESCRIPTION));
     }
 
     @Override
     public void saveSettings(@NotNull AISettings aiSettings) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.setValue(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, includeSourceTextInCommentCheck.getSelection());
-        store.setValue(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, executeQueryImmediatelyCheck.getSelection());
-        store.setValue(AICompletionConstants.AI_SEND_TYPE_INFO, sendTypeInfoCheck.getSelection());
-        store.setValue(AICompletionConstants.AI_SEND_DESCRIPTION, sendDescriptionCheck.getSelection());
+        store.setValue(AIConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, includeSourceTextInCommentCheck.getSelection());
+        store.setValue(AIConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, executeQueryImmediatelyCheck.getSelection());
+        store.setValue(AIConstants.AI_SEND_TYPE_INFO, sendTypeInfoCheck.getSelection());
+        store.setValue(AIConstants.AI_SEND_DESCRIPTION, sendDescriptionCheck.getSelection());
     }
 
     @Override

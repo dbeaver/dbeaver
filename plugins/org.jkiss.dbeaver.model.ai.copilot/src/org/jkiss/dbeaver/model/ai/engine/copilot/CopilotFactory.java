@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.ai.AIEngineFactory;
-import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineFactory;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 
 public class CopilotFactory implements AIEngineFactory<CopilotCompletionEngine> {
     @NotNull

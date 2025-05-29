@@ -23,17 +23,18 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIChatMessage;
+import org.jkiss.dbeaver.model.ai.AIChatRole;
 import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
-import org.jkiss.dbeaver.model.ai.LegacyAISettings;
-import org.jkiss.dbeaver.model.ai.completion.*;
+import org.jkiss.dbeaver.model.ai.engine.*;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 import java.util.concurrent.Flow;
 
-public class OpenAICompletionEngine implements DAICompletionEngine {
+public class OpenAICompletionEngine implements AICompletionEngine {
     private static final Log log = Log.getLog(OpenAICompletionEngine.class);
     public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
 
@@ -60,23 +61,25 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
         return OpenAIModel.getByName(getSettings().getModel()).getMaxTokens();
     }
 
+    @NotNull
     @Override
-    public DAICompletionResponse requestCompletion(
+    public AICompletionResponse requestCompletion(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionRequest request
+        @NotNull AICompletionRequest request
     ) throws DBException {
         ChatCompletionResult completionResult = complete(monitor, request.messages(), getMaxContextSize(monitor));
-        List<DAICompletionChoice> choices = completionResult.getChoices().stream()
-            .map(it -> new DAICompletionChoice(it.getMessage().getContent(), it.getFinishReason()))
+        List<AICompletionChoice> choices = completionResult.getChoices().stream()
+            .map(it -> new AICompletionChoice(it.getMessage().getContent(), it.getFinishReason()))
             .toList();
 
-        return new DAICompletionResponse(choices);
+        return new AICompletionResponse(choices);
     }
 
+    @NotNull
     @Override
-    public Flow.Publisher<DAICompletionChunk> requestCompletionStream(
+    public Flow.Publisher<AICompletionChunk> requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionRequest request
+        @NotNull AICompletionRequest request
     ) throws DBException {
         Flow.Publisher<ChatCompletionChunk> publisher = openAiService.evaluate()
             .createChatCompletionStream(monitor, ChatCompletionRequest.builder()
@@ -99,13 +102,13 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
 
             @Override
             public void onNext(ChatCompletionChunk item) {
-                List<DAICompletionChoice> choices = item.getChoices().stream()
+                List<AICompletionChoice> choices = item.getChoices().stream()
                     .filter(it -> it.getMessage() != null)
                     .takeWhile(it -> it.getMessage().getContent() != null)
-                    .map(it -> new DAICompletionChoice(it.getMessage().getContent(), it.getFinishReason()))
+                    .map(it -> new AICompletionChoice(it.getMessage().getContent(), it.getFinishReason()))
                     .toList();
 
-                subscriber.onNext(new DAICompletionChunk(choices));
+                subscriber.onNext(new AICompletionChunk(choices));
             }
 
             @Override
@@ -121,7 +124,7 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
     }
 
     @Override
-    public void onSettingsUpdate(AISettingsRegistry registry) {
+    public void onSettingsUpdate(@NotNull AISettingsRegistry registry) {
         try {
             openAiService.dispose();
         } catch (DBException e) {
@@ -142,7 +145,7 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
     @NotNull
     protected ChatCompletionResult complete(
         @NotNull DBRProgressMonitor monitor,
-        List<DAIChatMessage> messages,
+        List<AIChatMessage> messages,
         int maxTokens
     ) throws DBException {
         ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()
@@ -158,13 +161,13 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
         return openAiService.evaluate().createChatCompletion(monitor, completionRequest);
     }
 
-    private static List<ChatMessage> fromMessages(List<DAIChatMessage> messages) {
+    private static List<ChatMessage> fromMessages(List<AIChatMessage> messages) {
         return messages.stream()
             .map(m -> new ChatMessage(mapRole(m.role()), m.content()))
             .toList();
     }
 
-    private static String mapRole(DAIChatRole role) {
+    private static String mapRole(AIChatRole role) {
         return switch (role) {
             case SYSTEM -> "system";
             case USER -> "user";

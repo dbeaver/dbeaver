@@ -22,11 +22,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.ai.AIChatMessage;
+import org.jkiss.dbeaver.model.ai.AIChatRole;
 import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatMessage;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatRole;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
-import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
+import org.jkiss.dbeaver.model.ai.engine.AICompletionEngine;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -68,9 +68,9 @@ public final class AIUtils {
      * @param messages list of messages
      * @return number of tokens
      */
-    public static int countTokens(@NotNull List<DAIChatMessage> messages) {
+    public static int countTokens(@NotNull List<AIChatMessage> messages) {
         int count = 0;
-        for (DAIChatMessage message : messages) {
+        for (AIChatMessage message : messages) {
             count += countContentTokens(message.content());
         }
         return count;
@@ -85,26 +85,26 @@ public final class AIUtils {
      * @return list of truncated messages
      */
     @NotNull
-    public static List<DAIChatMessage> truncateMessages(
+    public static List<AIChatMessage> truncateMessages(
         boolean chatMode,
-        @NotNull List<DAIChatMessage> messages,
+        @NotNull List<AIChatMessage> messages,
         int maxTokens
     ) {
-        final List<DAIChatMessage> pending = new ArrayList<>(messages);
-        final List<DAIChatMessage> truncated = new ArrayList<>();
+        final List<AIChatMessage> pending = new ArrayList<>(messages);
+        final List<AIChatMessage> truncated = new ArrayList<>();
         int remainingTokens = maxTokens - 20; // Just to be sure
 
         if (!pending.isEmpty()) {
-            if (pending.get(0).role() == DAIChatRole.SYSTEM) {
+            if (pending.get(0).role() == AIChatRole.SYSTEM) {
                 // Always append main system message and leave space for the next one
-                DAIChatMessage msg = pending.remove(0);
-                DAIChatMessage truncatedMessage = truncateMessage(msg, remainingTokens - 50);
+                AIChatMessage msg = pending.remove(0);
+                AIChatMessage truncatedMessage = truncateMessage(msg, remainingTokens - 50);
                 remainingTokens -= countContentTokens(truncatedMessage.content());
                 truncated.add(msg);
             }
         }
 
-        for (DAIChatMessage message : pending) {
+        for (AIChatMessage message : pending) {
             final int messageTokens = message.content().length();
 
             if (remainingTokens < 0 || messageTokens > remainingTokens) {
@@ -116,7 +116,7 @@ public final class AIUtils {
                 }
             }
 
-            DAIChatMessage truncatedMessage = truncateMessage(message, remainingTokens);
+            AIChatMessage truncatedMessage = truncateMessage(message, remainingTokens);
             remainingTokens -= countContentTokens(truncatedMessage.content());
             truncated.add(truncatedMessage);
         }
@@ -129,7 +129,7 @@ public final class AIUtils {
      * It is sooooo approximately
      * We should use https://github.com/knuddelsgmbh/jtokkit/ or something similar
      */
-    private static DAIChatMessage truncateMessage(DAIChatMessage message, int remainingTokens) {
+    private static AIChatMessage truncateMessage(AIChatMessage message, int remainingTokens) {
         String content = message.content();
         int contentTokens = countContentTokens(content);
         if (remainingTokens > contentTokens) {
@@ -137,7 +137,7 @@ public final class AIUtils {
         }
 
         String truncatedContent = removeContentTokens(content, contentTokens - remainingTokens);
-        return new DAIChatMessage(message.role(), truncatedContent);
+        return new AIChatMessage(message.role(), truncatedContent);
     }
 
     private static String removeContentTokens(String content, int tokensToRemove) {
@@ -161,7 +161,7 @@ public final class AIUtils {
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer mainObject,
         @NotNull String completionText,
-        @NotNull IAIFormatter formatter,
+        @NotNull AIPromptFormatter formatter,
         boolean isChatAPI
     ) {
         if (CommonUtils.isEmpty(completionText)) {
@@ -199,7 +199,7 @@ public final class AIUtils {
      * @param engine the completion engine
      * @param monitor the progress monitor
      */
-    public static int getMaxRequestTokens(@NotNull DAICompletionEngine engine, @NotNull DBRProgressMonitor monitor) throws DBException {
+    public static int getMaxRequestTokens(@NotNull AICompletionEngine engine, @NotNull DBRProgressMonitor monitor) throws DBException {
         return engine.getMaxContextSize(monitor) - AIConstants.MAX_RESPONSE_TOKENS;
     }
 

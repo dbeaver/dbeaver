@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.completion.DAICommandRequest;
-import org.jkiss.dbeaver.model.ai.completion.DAITranslateRequest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -33,16 +31,16 @@ public interface AIAssistant {
     @NotNull
     String translateTextToSql(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAITranslateRequest request
+        @NotNull AITranslateRequest request
     ) throws DBException;
 
     /**
      * Translates a user command to SQL. The active completion engine is used.
      */
     @NotNull
-    CommandResult command(
+    AICommandResult command(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICommandRequest request
+        @NotNull AICommandRequest request
     ) throws DBException;
 
     /**

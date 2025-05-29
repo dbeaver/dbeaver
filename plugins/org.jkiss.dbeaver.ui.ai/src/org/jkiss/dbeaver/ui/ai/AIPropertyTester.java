@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ui.ai;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.jkiss.dbeaver.model.ai.AISettingsEventListener;
-import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsEventListener;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 

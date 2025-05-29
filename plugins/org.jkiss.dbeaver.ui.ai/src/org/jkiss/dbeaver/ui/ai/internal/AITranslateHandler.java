@@ -32,12 +32,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AIAssistant;
-import org.jkiss.dbeaver.model.ai.AIAssistantRegistry;
-import org.jkiss.dbeaver.model.ai.AICompletionConstants;
-import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
-import org.jkiss.dbeaver.model.ai.completion.DAITranslateRequest;
+import org.jkiss.dbeaver.model.ai.AICompletionSettings;
+import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.AITranslateRequest;
+import org.jkiss.dbeaver.model.ai.engine.AICompletionContext;
+import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.utils.InMemoryHistoryManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -111,7 +111,7 @@ public class AITranslateHandler extends AbstractHandler {
             return null;
         }
 
-        DAICompletionSettings settings = new DAICompletionSettings(dataSourceContainer);
+        AICompletionSettings settings = new AICompletionSettings(dataSourceContainer);
 
         // Show info transfer warning
         if (!AIUIUtils.confirmMetaTransfer(settings)) {
@@ -191,7 +191,7 @@ public class AITranslateHandler extends AbstractHandler {
             "scope", popup.getScope().name()
         ));
 
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY)) {
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY)) {
             editor.processSQL(false, false);
         }
     }
@@ -209,13 +209,13 @@ public class AITranslateHandler extends AbstractHandler {
         AtomicReference<String> sql = new AtomicReference<>();
         UIUtils.runInProgressDialog(monitor -> {
             try {
-                final DAICompletionContext context = new DAICompletionContext.Builder()
+                final AICompletionContext context = new AICompletionContext.Builder()
                     .setScope(popup.getScope())
                     .setCustomEntities(popup.getCustomEntities(monitor))
                     .setExecutionContext(executionContext)
                     .build();
 
-                DAITranslateRequest daiTranslateRequest = new DAITranslateRequest(userInput, context);
+                AITranslateRequest daiTranslateRequest = new AITranslateRequest(userInput, context);
                 AIAssistant aiAssistant = AIAssistantRegistry.getInstance().getAssistant();
                 sql.set(aiAssistant.translateTextToSql(monitor, daiTranslateRequest));
             } catch (Exception e) {
