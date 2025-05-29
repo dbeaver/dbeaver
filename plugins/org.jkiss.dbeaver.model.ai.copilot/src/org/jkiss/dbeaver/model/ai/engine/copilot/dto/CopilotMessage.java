@@ -24,7 +24,7 @@ public record CopilotMessage(
     String content
 ) {
     public static CopilotMessage from(AIMessage message) {
-        return new CopilotMessage(mapRole(message.role()), message.content());
+        return new CopilotMessage(mapRole(message.getRole()), message.getContent());
     }
 
     private static String mapRole(AIMessageType role) {

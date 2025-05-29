@@ -71,7 +71,7 @@ public final class AIUtils {
     public static int countTokens(@NotNull List<AIMessage> messages) {
         int count = 0;
         for (AIMessage message : messages) {
-            count += countContentTokens(message.content());
+            count += countContentTokens(message.getContent());
         }
         return count;
     }
@@ -95,17 +95,17 @@ public final class AIUtils {
         int remainingTokens = maxTokens - 20; // Just to be sure
 
         if (!pending.isEmpty()) {
-            if (pending.get(0).role() == AIMessageType.SYSTEM) {
+            if (pending.get(0).getRole() == AIMessageType.SYSTEM) {
                 // Always append main system message and leave space for the next one
                 AIMessage msg = pending.remove(0);
                 AIMessage truncatedMessage = truncateMessage(msg, remainingTokens - 50);
-                remainingTokens -= countContentTokens(truncatedMessage.content());
+                remainingTokens -= countContentTokens(truncatedMessage.getContent());
                 truncated.add(msg);
             }
         }
 
         for (AIMessage message : pending) {
-            final int messageTokens = message.content().length();
+            final int messageTokens = message.getContent().length();
 
             if (remainingTokens < 0 || messageTokens > remainingTokens) {
                 // Exclude old messages that don't fit into given number of tokens
@@ -117,7 +117,7 @@ public final class AIUtils {
             }
 
             AIMessage truncatedMessage = truncateMessage(message, remainingTokens);
-            remainingTokens -= countContentTokens(truncatedMessage.content());
+            remainingTokens -= countContentTokens(truncatedMessage.getContent());
             truncated.add(truncatedMessage);
         }
 
@@ -130,14 +130,14 @@ public final class AIUtils {
      * We should use https://github.com/knuddelsgmbh/jtokkit/ or something similar
      */
     private static AIMessage truncateMessage(AIMessage message, int remainingTokens) {
-        String content = message.content();
+        String content = message.getContent();
         int contentTokens = countContentTokens(content);
         if (remainingTokens > contentTokens) {
             return message;
         }
 
         String truncatedContent = removeContentTokens(content, contentTokens - remainingTokens);
-        return new AIMessage(message.role(), truncatedContent);
+        return new AIMessage(message.getRole(), truncatedContent);
     }
 
     private static String removeContentTokens(String content, int tokensToRemove) {

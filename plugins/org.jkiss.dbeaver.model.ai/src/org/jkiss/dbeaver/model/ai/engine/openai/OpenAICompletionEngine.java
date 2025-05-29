@@ -163,7 +163,7 @@ public class OpenAICompletionEngine implements AIEngine {
     @NotNull
     private static List<ChatMessage> fromMessages(@NotNull List<AIMessage> messages) {
         return messages.stream()
-            .map(m -> new ChatMessage(mapRole(m.role()), m.content()))
+            .map(m -> new ChatMessage(mapRole(m.getRole()), m.getContent()))
             .toList();
     }
 

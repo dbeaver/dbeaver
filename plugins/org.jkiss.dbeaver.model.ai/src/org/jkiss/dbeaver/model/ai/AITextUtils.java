@@ -55,7 +55,7 @@ public class AITextUtils {
         final StringBuilder builder = new StringBuilder();
 
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
-            builder.append(SQLUtils.generateCommentLine(dataSource, prompt.content()));
+            builder.append(SQLUtils.generateCommentLine(dataSource, prompt.getContent()));
         }
 
         for (MessageChunk chunk : response) {

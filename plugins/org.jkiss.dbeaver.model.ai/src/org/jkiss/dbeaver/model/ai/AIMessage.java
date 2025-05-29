@@ -23,14 +23,33 @@ import org.jkiss.utils.CommonUtils;
 import java.time.LocalDateTime;
 
 /**
- * Represents a single completion message
+ * Represents a single AI message
  */
-public record AIMessage(
-    @NotNull AIMessageType role,
-    @NotNull String content,
-    @Nullable String displayMessage,
-    @NotNull LocalDateTime time
-) {
+public class AIMessage {
+    @NotNull
+    private final AIMessageType role;
+    @NotNull
+    private final String content;
+    @Nullable
+    private final String displayMessage;
+    @NotNull
+    private final LocalDateTime time;
+
+    /**
+     *
+     */
+    public AIMessage(
+        @NotNull AIMessageType role,
+        @NotNull String content,
+        @Nullable String displayMessage,
+        @NotNull LocalDateTime time
+    ) {
+        this.role = role;
+        this.content = content;
+        this.displayMessage = displayMessage;
+        this.time = time;
+    }
+
     public static AIMessage systemMessage(String message) {
         return new AIMessage(AIMessageType.SYSTEM, message);
     }
@@ -43,7 +62,7 @@ public record AIMessage(
         return new AIMessage(AIMessageType.ASSISTANT, message);
     }
 
-    public static AIMessage errorMessage(Throwable throwable)  {
+    public static AIMessage errorMessage(Throwable throwable) {
         return new AIMessage(AIMessageType.ERROR, CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"));
     }
 
@@ -67,4 +86,20 @@ public record AIMessage(
     public String getDisplayMessage() {
         return displayMessage != null ? displayMessage : content;
     }
+
+    @NotNull
+    public AIMessageType getRole() {
+        return role;
+    }
+
+    @NotNull
+    public String getContent() {
+        return content;
+    }
+
+    @NotNull
+    public LocalDateTime getTime() {
+        return time;
+    }
+
 }
