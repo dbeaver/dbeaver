@@ -3047,8 +3047,7 @@ public class SQLEditor extends SQLEditorBase implements
         } else {
             checkSession(status -> {
                 if (status.isOK() && getExecutionContext() == null) {
-                    status = new Status(IStatus.ERROR, SQLEditorActivator.PLUGIN_ID,
-                        "Failed to create execution context after session check");
+                    status = GeneralUtils.makeErrorStatus("Failed to create execution context after session check");
                 }
 
                 if (onFinish != null) {
