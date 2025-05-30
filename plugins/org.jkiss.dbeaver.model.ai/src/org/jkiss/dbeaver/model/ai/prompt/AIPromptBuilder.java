@@ -19,9 +19,14 @@ package org.jkiss.dbeaver.model.ai.prompt;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -49,7 +54,7 @@ public class AIPromptBuilder {
     }
 
     @NotNull
-    public static AIPromptBuilder createForDataSource(@Nullable DBPDataSource dataSource, @NotNull AIPromptFormatter formatter) {
+    public static AIPromptBuilder createForDataSource(@Nullable DBSLogicalDataSource dataSource, @NotNull AIPromptFormatter formatter) {
         AIPromptBuilder promptBuilder = new AIPromptBuilder();
 
         return fullForDataSource(promptBuilder, dataSource, formatter);
@@ -58,7 +63,7 @@ public class AIPromptBuilder {
     @NotNull
     public static AIPromptBuilder fullForDataSource(
         @NotNull AIPromptBuilder promptBuilder,
-        @Nullable DBPDataSource dataSource,
+        @Nullable DBSLogicalDataSource dataSource,
         @NotNull AIPromptFormatter formatter
     ) {
         if (promptBuilder.isUseSqlGenerateInstructions()) {
@@ -149,8 +154,9 @@ public class AIPromptBuilder {
         return prompt.toString();
     }
 
-    private String[] createInstructionList(@Nullable DBPDataSource dataSource) {
-        SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
+    private String[] createInstructionList(@Nullable DBSLogicalDataSource dataSource) {
+        SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
+            SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
         List<String> instructions = new ArrayList<>();
         instructions.add("You are the DBeaver AI assistant.");
         instructions.add("Act as a database architect and SQL expert.");
@@ -176,14 +182,32 @@ public class AIPromptBuilder {
         return instructions.toArray(new String[0]);
     }
 
-    private static String[] describeContext(@Nullable DBPDataSource dataSource) {
-        SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
+    private static String[] describeContext(@Nullable DBSLogicalDataSource dataSource) {
+        SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
+            SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
         List<String> lines = new ArrayList<>();
         lines.add("Current date and time: " + ZonedDateTime.now());
         lines.add("Current SQL dialect: " + dialect.getDialectName());
-        DBPDriver driver = dataSource == null ? null : dataSource.getContainer().getDriver();
-        if (driver != null) {
-            lines.add("Current Java driver: " + driver.getFullName());
+        if (dataSource != null) {
+            DBPDataSource ds = dataSource.getDataSourceContainer().getDataSource();
+            DBPDataSourceInfo dsInfo = ds == null ? null : ds.getInfo();
+
+/*
+            String currentCatalog = dataSource.getCurrentCatalog();
+            if (!CommonUtils.isEmpty(currentCatalog)) {
+                lines.add("Current " + (dsInfo == null ? "catalog" : dsInfo.getCatalogTerm()) + ": " + currentCatalog);
+            }
+*/
+            String currentSchema = dataSource.getCurrentSchema();
+            if (!CommonUtils.isEmpty(currentSchema)) {
+                lines.add("Current " + (dsInfo == null ? "schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);
+            }
+            DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
+            if (ds instanceof JDBCDataSource) {
+                lines.add("Current JDBC driver: " + dsInfo.getDriverName() + " (" + dsInfo.getDriverVersion() + ")");
+            } else {
+                lines.add("Current Java driver: " + driver.getFullName() + ")");
+            }
         }
         return lines.toArray(String[]::new);
     }

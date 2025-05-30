@@ -278,9 +278,7 @@ public class AIAssistantImpl implements AIAssistant {
         @Nullable AIDatabaseContext context
     ) throws DBException {
         AIPromptBuilder promptBuilder = AIPromptBuilder.createForDataSource(
-            context != null ?
-                context.getExecutionContext().getDataSource() :
-                null,
+            context != null ? context.getDataSource() : null,
             formatter()
         );
 
