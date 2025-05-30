@@ -18,12 +18,18 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * AI Assistant interface. Provides methods for AI-based operations.
  */
 public interface AIAssistant {
+
+    /**
+     * Initializes assistant
+     */
+    void initialize(@NotNull DBPWorkspace workspace);
 
     /**
      * Translates text to SQL.

@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.utils.InMemoryHistoryManager;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
@@ -89,9 +90,9 @@ public class AITranslateHandler extends AbstractHandler {
             return null;
         }
 
-        AIAssistant aiAssistant = AIAssistantRegistry.getInstance().getAssistant();
-
+        AIAssistant aiAssistant;
         try {
+            aiAssistant = AIAssistantRegistry.getInstance().createAssistant(dataSourceContainer.getProject().getWorkspace());
             if (!aiAssistant.hasValidConfiguration()) {
                 UIUtils.showPreferencesFor(
                     editor.getSite().getShell(),
@@ -198,8 +199,8 @@ public class AITranslateHandler extends AbstractHandler {
 
     @Nullable
     private String translateUserInputIntoSql(
-        String userInput,
-        DBCExecutionContext executionContext,
+        @NotNull String userInput,
+        @NotNull DBCExecutionContext executionContext,
         @NotNull AISuggestionPopup popup
     ) throws InvocationTargetException {
         if (CommonUtils.isEmptyTrimmed(userInput)) {
@@ -216,7 +217,8 @@ public class AITranslateHandler extends AbstractHandler {
                     .build();
 
                 AITranslateRequest daiTranslateRequest = new AITranslateRequest(userInput, context);
-                AIAssistant aiAssistant = AIAssistantRegistry.getInstance().getAssistant();
+                DBPWorkspace workspace = executionContext.getDataSource().getContainer().getProject().getWorkspace();
+                AIAssistant aiAssistant = AIAssistantRegistry.getInstance().createAssistant(workspace);
                 sql.set(aiAssistant.translateTextToSql(monitor, daiTranslateRequest));
             } catch (Exception e) {
                 throw new InvocationTargetException(e);

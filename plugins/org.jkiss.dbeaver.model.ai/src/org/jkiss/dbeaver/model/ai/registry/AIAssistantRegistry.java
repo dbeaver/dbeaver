@@ -19,16 +19,17 @@ package org.jkiss.dbeaver.model.ai.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIAssistant;
 import org.jkiss.dbeaver.model.ai.impl.AIAssistantImpl;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 
 public class AIAssistantRegistry {
 
     private static AIAssistantRegistry instance = null;
 
     private final AIAssistantDescriptor customDescriptor;
-    private AIAssistant globalAssistant;
 
     public synchronized static AIAssistantRegistry getInstance() {
         if (instance == null) {
@@ -49,22 +50,16 @@ public class AIAssistantRegistry {
         this.customDescriptor = customAssistantDescriptor;
     }
 
-    public <T extends AIAssistant> T getAssistant() {
-        if (globalAssistant == null) {
-            synchronized (this) {
-                if (globalAssistant == null) {
-                    if (customDescriptor != null) {
-                        try {
-                            globalAssistant = customDescriptor.createInstance();
-                        } catch (DBException e) {
-                            throw new IllegalStateException(e);
-                        }
-                    } else {
-                        globalAssistant = new AIAssistantImpl();
-                    }
-                }
-            }
+    @NotNull
+    public <T extends AIAssistant> T createAssistant(@NotNull DBPWorkspace workspace) throws DBException {
+        AIAssistant assistant;
+        if (customDescriptor != null) {
+            assistant = customDescriptor.createInstance();
+        } else {
+            assistant = new AIAssistantImpl();
         }
-        return (T)globalAssistant;
+        assistant.initialize(workspace);
+        return (T) assistant;
     }
+
 }

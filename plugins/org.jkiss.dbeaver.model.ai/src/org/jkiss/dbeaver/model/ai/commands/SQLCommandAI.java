@@ -95,7 +95,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         final AIDatabaseContext aiContext = contextBuilder.build();
 
         AICommandResult result = AIAssistantRegistry.getInstance()
-            .getAssistant()
+            .createAssistant(dataSourceContainer.getProject().getWorkspace())
             .command(monitor, new AICommandRequest(prompt, aiContext));
 
         if (result.sql() == null && result.message() != null) {

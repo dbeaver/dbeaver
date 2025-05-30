@@ -25,12 +25,12 @@ import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.metadata.MetadataProcessor;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptBuilder;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptFormatter;
-import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AIFormatterRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
@@ -45,8 +45,12 @@ public class AIAssistantImpl implements AIAssistant {
     private final AISettingsRegistry settingsRegistry = AISettingsRegistry.getInstance();
     private final AIEngineRegistry engineRegistry = AIEngineRegistry.getInstance();
     private final AIFormatterRegistry formatterRegistry = AIFormatterRegistry.getInstance();
-    private final AIAssistantRegistry assistantRegistry = AIAssistantRegistry.getInstance();
     private static final MetadataProcessor metadataProcessor = MetadataProcessor.INSTANCE;
+
+    @Override
+    public void initialize(@NotNull DBPWorkspace workspace) {
+        // no-op
+    }
 
     /**
      * Translate the specified text to SQL.
@@ -266,10 +270,6 @@ public class AIAssistantImpl implements AIAssistant {
 
     protected AIPromptFormatter formatter() throws DBException {
         return formatterRegistry.getFormatter(AIConstants.CORE_FORMATTER);
-    }
-
-    protected AIAssistant assistant() throws DBException {
-        return assistantRegistry.getAssistant();
     }
 
     protected AIPromptBuilder buildPrompt(
