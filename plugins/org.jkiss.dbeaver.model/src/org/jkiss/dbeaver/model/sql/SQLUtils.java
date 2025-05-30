@@ -38,6 +38,9 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1218,35 +1221,41 @@ public final class SQLUtils {
         StringBuilder buffer = new StringBuilder();
         StringJoiner result = new StringJoiner(ls);
 
-        String[] lines = res.split("\\R");
 
-        for (String line : lines) {
-            if (line.trim().isEmpty()) {
-                if (!buffer.isEmpty()) {
+        try (BufferedReader reader = new BufferedReader(new StringReader(res))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.isBlank()) {
+                    if (!buffer.isEmpty()) {
+                        result.add(buffer.toString().strip());
+                        buffer.setLength(0);
+                    }
+                    result.add("");
+                    continue;
+                }
+
+                String trimmed = line.strip();
+
+                buffer.append(trimmed);
+                if (trimmed.endsWith(dl)) {
                     result.add(buffer.toString().strip());
                     buffer.setLength(0);
+                } else {
+                    buffer.append(" ");
                 }
-                result.add("");
-                continue;
             }
 
-            String trimmed = line.strip();
-
-            buffer.append(trimmed);
-            if (trimmed.endsWith(dl)) {
-                result.add(buffer.toString().strip());
-                buffer.setLength(0);
-            } else {
-                buffer.append(" ");
+            String tail = buffer.toString().strip();
+            if (!tail.isEmpty()) {
+                result.add(tail);
             }
+
+            return result.toString();
+        } catch (IOException e) {
+            log.warn("Can't compact sql: ", e);
         }
 
-        if (!buffer.isEmpty()) {
-            result.add(buffer.toString().strip());
-        }
-
-        return result.toString();
-
+        return sql;
     }
 
 }
