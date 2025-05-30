@@ -21,12 +21,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class AISettings implements IAdaptable {
     private boolean aiDisabled;
     private String activeEngine;
     private final Map<String, AIEngineSettings<?>> engineConfigurations = new HashMap<>();
+    private final Set<String> resolvedSecrets = new HashSet<>();
 
     public boolean isAiDisabled() {
         return aiDisabled;
@@ -45,8 +48,15 @@ public class AISettings implements IAdaptable {
     }
 
     @NotNull
-    public <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) {
-        return (T) engineConfigurations.get(engineId);
+    public synchronized <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) throws DBException {
+        AIEngineSettings<?> aiEngineSettings = engineConfigurations.get(engineId);
+
+        if (!resolvedSecrets.contains(engineId)) {
+            aiEngineSettings.resolveSecrets();
+            resolvedSecrets.add(engineId);
+        }
+
+        return (T) aiEngineSettings;
     }
 
     public void setEngineConfiguration(String engineId, AIEngineSettings<?> engineConfiguration) {
@@ -55,12 +65,6 @@ public class AISettings implements IAdaptable {
 
     public void setEngineConfigurations(Map<String, AIEngineSettings<?>> engineConfigurations) {
         this.engineConfigurations.putAll(engineConfigurations);
-    }
-
-    public void resolveSecrets() throws DBException {
-        for (AIEngineSettings<?> engineConfiguration : engineConfigurations.values()) {
-            engineConfiguration.resolveSecrets();
-        }
     }
 
     public void saveSecrets() throws DBException {

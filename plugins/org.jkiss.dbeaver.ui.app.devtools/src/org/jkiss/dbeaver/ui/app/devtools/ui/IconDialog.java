@@ -21,9 +21,12 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -33,19 +36,18 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ShellUtils;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.devtools.handlers.ShowIconsHandler;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 
 import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class IconDialog extends TrayDialog {
@@ -74,40 +76,65 @@ public class IconDialog extends TrayDialog {
 
         UIUtils.configureScrolledComposite(viewport, container);
 
-        Map<Rectangle, List<DBPImage>> icons = collectIcons().stream()
-            .collect(Collectors.groupingBy(icon -> DBeaverIcons.getImage(icon).getBounds()))
-            .entrySet().stream()
-            .sorted(Map.Entry.<Rectangle, List<DBPImage>>comparingByValue(Comparator.comparingInt(List::size)).reversed())
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
-
-        icons.forEach((bounds, images) -> {
-            Composite header = new Composite(container, SWT.NONE);
-            header.setLayout(new GridLayout(2, false));
-            header.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            UIUtils.createLabel(header, "%s x %s (%s)".formatted(bounds.width, bounds.height, images.size()));
-            UIUtils.createLabelSeparator(header, SWT.HORIZONTAL);
-
-            Composite group = new Composite(container, SWT.NONE);
-            group.setLayout(new RowLayout());
-            group.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            for (DBPImage image : images) {
-                Label label = new Label(group, SWT.NONE);
-                label.setImage(DBeaverIcons.getImage(image));
-                label.setToolTipText(image.getLocation());
-                label.addMouseListener(MouseListener.mouseUpAdapter(e -> {
-                    try {
-                        var url = FileLocator.toFileURL(new URL(image.getLocation()));
-                        ShellUtils.showInSystemExplorer(new File(url.toURI()));
-                    } catch (Exception ex) {
-                        log.error("Error accessing icon " + image.getLocation(), ex);
-                    }
-                }));
+        List<ImageLocation> images = new ArrayList<>();
+        collectIcons((bundle, path) -> {
+            if (path.contains("@2x")) {
+                // Skip @2x variations for now
+                return;
+            }
+            try {
+                var url = bundle.getEntry(path);
+                var image = ImageDescriptor.createFromURL(url).createImage(true);
+                images.add(new ImageLocation(bundle, path, url, image));
+            } catch (SWTException e) {
+                log.debug("Failed to create image for " + bundle.getSymbolicName() + " - " + path + ": " + e.getMessage());
             }
         });
 
-        return container;
+        Map<Rectangle, List<ImageLocation>> categories = images.stream()
+            .sorted(Comparator.comparing(ImageLocation::path))
+            .collect(Collectors.groupingBy(image -> image.image().getBounds())).entrySet().stream()
+            .sorted(Map.Entry.<Rectangle, List<ImageLocation>> comparingByValue(Comparator.comparingInt(List::size)).reversed())
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
+
+        for (Map.Entry<Rectangle, List<ImageLocation>> entry : categories.entrySet()) {
+            createCategory(container, entry.getKey(), entry.getValue());
+        }
+
+        viewport.addDisposeListener(e -> {
+            for (ImageLocation location : images) {
+                location.image().dispose();
+            }
+        });
+
+        return composite;
+    }
+
+    private static void createCategory(@NotNull Composite parent, @NotNull Rectangle bounds, @NotNull List<ImageLocation> images) {
+        Composite header = new Composite(parent, SWT.NONE);
+        header.setLayout(new GridLayout(2, false));
+        header.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        UIUtils.createLabel(header, "%s x %s (%s)".formatted(bounds.width, bounds.height, images.size()));
+        UIUtils.createLabelSeparator(header, SWT.HORIZONTAL);
+
+        Composite group = new Composite(parent, SWT.NONE);
+        group.setLayout(new RowLayout());
+        group.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        for (ImageLocation image : images) {
+            Label label = new Label(group, SWT.NONE);
+            label.setImage(image.image());
+            label.setToolTipText("%s - %s".formatted(image.bundle().getSymbolicName(), image.path()));
+            label.addMouseListener(MouseListener.mouseUpAdapter(e -> {
+                try {
+                    var url = FileLocator.toFileURL(image.url());
+                    ShellUtils.showInSystemExplorer(new File(url.toURI()));
+                } catch (Exception ex) {
+                    log.error("Error accessing icon " + image.url(), ex);
+                }
+            }));
+        }
     }
 
     @Override
@@ -120,23 +147,36 @@ public class IconDialog extends TrayDialog {
         return true;
     }
 
-    @NotNull
-    private static Collection<DBPImage> collectIcons() {
-        List<DBPImage> icons = new ArrayList<>();
-        List<Class<?>> classes = List.of(DBIcon.class, UIIcon.class);
+    private void collectIcons(@NotNull BiConsumer<Bundle, String> consumer) {
+        BundleContext context = FrameworkUtil.getBundle(getClass()).getBundleContext();
+        for (Bundle bundle : context.getBundles()) {
+            String name = bundle.getSymbolicName();
+            if (!name.startsWith("org.jkiss.dbeaver") && !name.startsWith("com.dbeaver")) {
+                continue;
+            }
+            collectIcons(bundle, path -> consumer.accept(bundle, path));
+        }
+    }
 
-        for (Class<?> cls : classes) {
-            for (Field field : cls.getFields()) {
-                if (Modifier.isStatic(field.getModifiers()) && DBPImage.class.isAssignableFrom(field.getType())) {
-                    try {
-                        icons.add((DBPImage) field.get(null));
-                    } catch (IllegalAccessException e) {
-                        log.error("Error accessing icon " + field.getDeclaringClass().getSimpleName() + '.' + field.getName(), e);
-                    }
-                }
+    private static void collectIcons(@NotNull Bundle bundle, @NotNull Consumer<String> consumer) {
+        collectIcons(bundle, "icons", consumer);
+    }
+
+    private static void collectIcons(@NotNull Bundle bundle, @NotNull String root, @NotNull Consumer<String> consumer) {
+        Enumeration<String> paths = bundle.getEntryPaths(root);
+        if (paths == null) {
+            return;
+        }
+        while (paths.hasMoreElements()) {
+            String path = paths.nextElement();
+            if (path.endsWith("/")) {
+                collectIcons(bundle, path, consumer);
+            } else {
+                consumer.accept(path);
             }
         }
+    }
 
-        return icons;
+    private record ImageLocation(Bundle bundle, String path, URL url, Image image) {
     }
 }

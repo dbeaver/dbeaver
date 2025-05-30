@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,23 @@
 package org.jkiss.dbeaver.ext.duckdb.model;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 
-public class DuckDBSQLDialect extends GenericSQLDialect {
+import java.util.List;
 
-    public static final DuckDBSQLDialect INSTANCE = new DuckDBSQLDialect();
+public final class DuckDBSQLDialect extends GenericSQLDialect {
+    private static final List<String> DUCKDB_KEYWORDS = List.of(
+        "INSTALL",
+        "LOAD"
+    );
+
+    @Override
+    public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
+        super.initDriverSettings(session, dataSource, metaData);
+        addSQLKeywords(DUCKDB_KEYWORDS);
+    }
 
     @Override
     public boolean supportsAliasInSelect() {

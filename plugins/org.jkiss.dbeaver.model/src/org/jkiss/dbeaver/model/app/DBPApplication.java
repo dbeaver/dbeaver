@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 import java.nio.file.Path;
+import java.util.Map;
 
 /**
  * DB application.
@@ -65,6 +66,9 @@ public interface DBPApplication {
     boolean isDistributed();
 
     boolean isDetachedProcess();
+
+    @NotNull
+    Map<String, String> getAdditionalApplicationProperties();
 
     /**
      * Application information details.

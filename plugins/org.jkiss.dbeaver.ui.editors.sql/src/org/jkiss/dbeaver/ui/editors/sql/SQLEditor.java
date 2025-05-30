@@ -993,6 +993,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         Composite editorContainer;
         sqlEditorPanel = UIUtils.createPlaceholder(resultsSash, 3, 0);
+        CSSUtils.setCSSClass(sqlEditorPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         // Create left vertical toolbar
         createControlsBar(sqlEditorPanel);
@@ -1140,7 +1141,13 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void createControlsBar(Composite sqlEditorPanel) {
-        Composite leftToolPanel = new Composite(sqlEditorPanel, SWT.LEFT);
+        Composite leftToolPanel = new Composite(sqlEditorPanel, SWT.LEFT) {
+            // hack to prevent eclipse from overriding this Composite's class
+            @Override
+            public void setBackground(Color color) {
+                super.setBackground(color);
+            }
+        };
         GridLayout panelsLayout = new GridLayout(1, true);
         panelsLayout.marginHeight = 2;
         panelsLayout.marginWidth = 1;
@@ -1302,7 +1309,19 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void createResultTabs() {
-        resultTabs = new CTabFolder(resultsSash, SWT.TOP | SWT.FLAT);
+        resultTabs = new CTabFolder(resultsSash, SWT.TOP | SWT.FLAT) {
+            // prevent eclipse from overriding this CTabFolder's css class
+            @Override
+            public void setBackground(Color color) {
+                DBPDataSourceContainer dsContainer = getDataSourceContainer();
+                Color bgColor = dsContainer != null ? UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration()) : null;
+                if (bgColor != null && !bgColor.equals(color)) {
+                    UIUtils.asyncExec(() -> CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE));
+                } else {
+                    super.setBackground(color);
+                }
+            }
+        };
         CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE);
         resultTabsReorder = new TabFolderReorder(resultTabs);
         resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -3062,12 +3081,12 @@ public class SQLEditor extends SQLEditorBase implements
 
         DBPDataSourceContainer dsContainer = getDataSourceContainer();
 
+        if (sqlEditorPanel != null) {
+            DatabaseEditorUtils.setPartBackground(this, sqlEditorPanel);
+        }
+
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
-            Color bgColor = dsContainer == null ? null : UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration());
-            resultsSash.setBackground(bgColor);
-            topBarMan.getControl().setBackground(bgColor);
-            bottomBarMan.getControl().setBackground(bgColor);
         }
 
         DBCExecutionContext executionContext = getExecutionContext();

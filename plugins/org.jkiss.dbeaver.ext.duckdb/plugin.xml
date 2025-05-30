@@ -7,7 +7,16 @@
         <meta id="duckdb_jdbc"
               class="org.jkiss.dbeaver.ext.duckdb.model.DuckMetaModel"
               driverClass="org.duckdb.DuckDBDriver"
-              dialect="generic"/>
+              dialect="duckdb"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="duckdb"
+                 parent="generic"
+                 class="org.jkiss.dbeaver.ext.duckdb.model.DuckDBSQLDialect"
+                 label="DuckDB"
+                 description="DuckDB dialect"
+                 icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/duckdb_icon.png"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.objectManager">
