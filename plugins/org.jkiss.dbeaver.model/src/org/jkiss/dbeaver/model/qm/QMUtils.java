@@ -205,7 +205,7 @@ public class QMUtils {
      */
     public static String getQmSessionId(DBCExecutionContext executionContext) throws DBException {
         if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider provider) {
-            return provider.getQmSessionId();
+            return provider.getQueryManagerSessionId();
         }
         return getQmSessionId(executionContext.getDataSource());
     }
