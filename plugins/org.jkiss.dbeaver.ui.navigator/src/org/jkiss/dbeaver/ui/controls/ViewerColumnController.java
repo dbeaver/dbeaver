@@ -879,6 +879,8 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 return cat1 - cat2;
             }
 
+            // NOTE: In tree viewers, only parent elements (present in input) should be sorted.
+            // If both e1 and e2 are not in the input collection, they are children — skip sorting.
             Object input = viewer.getInput();
             if (input instanceof Collection<?> list && !list.contains(e1) && !list.contains(e2)) {
                 return 0;
