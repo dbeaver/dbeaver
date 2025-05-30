@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.metadata;
+package org.jkiss.dbeaver.model.ai.utils;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -37,13 +37,12 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class MetadataProcessor {
-    public static final MetadataProcessor INSTANCE = new MetadataProcessor();
-    private static final Log log = Log.getLog(MetadataProcessor.class);
+public class DatabaseMetadataUtils {
+    private static final Log log = Log.getLog(DatabaseMetadataUtils.class);
 
     private static final boolean SUPPORTS_ATTRS = true;
 
-    public String generateObjectDescription(
+    public static String generateObjectDescription(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSObject object,
         @Nullable DBCExecutionContext context,
@@ -106,7 +105,7 @@ public class MetadataProcessor {
      * Creates a new message containing completion metadata for the request
      */
     @NotNull
-    public String describeContext(
+    public static String describeContext(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIDatabaseContext context,
         @NotNull AIPromptFormatter formatter,
@@ -152,7 +151,7 @@ public class MetadataProcessor {
         return sb.toString();
     }
 
-    protected DBSEntityAttribute addPromptAttributes(
+    protected static DBSEntityAttribute addPromptAttributes(
         DBRProgressMonitor monitor,
         DBSEntity entity,
         StringBuilder prompt,
@@ -180,7 +179,7 @@ public class MetadataProcessor {
         return prevAttribute;
     }
 
-    private boolean isRequiresFullyQualifiedName(@NotNull DBSObject object, @Nullable DBCExecutionContext context) {
+    private static boolean isRequiresFullyQualifiedName(@NotNull DBSObject object, @Nullable DBCExecutionContext context) {
         if (context == null || context.getContextDefaults() == null) {
             return false;
         }
@@ -190,7 +189,7 @@ public class MetadataProcessor {
             || parent.equals(contextDefaults.getDefaultSchema()));
     }
 
-    private MetadataProcessor() {
+    private DatabaseMetadataUtils() {
 
     }
 
@@ -203,7 +202,7 @@ public class MetadataProcessor {
      * @param customEntities list that may contain databases, schemas, tables, etc.
      * @return normalized, alphabetically sorted list of top-level objects
      */
-    private List<DBSObject> normalizeCustomEntities(@NotNull List<DBSObject> customEntities) {
+    private static List<DBSObject> normalizeCustomEntities(@NotNull List<DBSObject> customEntities) {
         Set<DBSObject> input = new HashSet<>(customEntities);
 
         return input.stream()
@@ -226,7 +225,7 @@ public class MetadataProcessor {
      * Caches for custom entities if there are multiple entities in the same container.
      * This is needed to avoid multiple calls to the same container.
      */
-    private void cacheStructuresForCustomEntities(
+    private static void cacheStructuresForCustomEntities(
         @NotNull DBRProgressMonitor monitor,
         @NotNull List<DBSObject> customEntities
     ) throws DBException {

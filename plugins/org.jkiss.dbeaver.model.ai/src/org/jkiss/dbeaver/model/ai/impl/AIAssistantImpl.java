@@ -22,17 +22,18 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.metadata.MetadataProcessor;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptBuilder;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptFormatter;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AIFormatterRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.ai.utils.DatabaseMetadataUtils;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.List;
 import java.util.concurrent.Flow;
@@ -40,12 +41,12 @@ import java.util.concurrent.Flow;
 public class AIAssistantImpl implements AIAssistant {
     private static final Log log = Log.getLog(AIAssistantImpl.class);
 
-    private static final int MAX_RETRIES = 3;
+    private static final int MANY_REQUESTS_RETRIES = 3;
+    private static final int MANY_REQUESTS_TIMEOUT = 500;
 
     private final AISettingsRegistry settingsRegistry = AISettingsRegistry.getInstance();
     private final AIEngineRegistry engineRegistry = AIEngineRegistry.getInstance();
     private final AIFormatterRegistry formatterRegistry = AIFormatterRegistry.getInstance();
-    private static final MetadataProcessor metadataProcessor = MetadataProcessor.INSTANCE;
 
     @Override
     public void initialize(@NotNull DBPWorkspace workspace) {
@@ -198,14 +199,18 @@ public class AIAssistantImpl implements AIAssistant {
 
     private static <T> T callWithRetry(ThrowableSupplier<T, DBException> supplier) throws DBException {
         int retry = 0;
-        while (retry < MAX_RETRIES) {
+        while (retry < MANY_REQUESTS_RETRIES) {
             try {
                 return supplier.get();
             } catch (TooManyRequestsException e) {
                 retry++;
+                if (retry < MANY_REQUESTS_RETRIES) {
+                    log.debug("Too many engine requests. Retry after " + MANY_REQUESTS_TIMEOUT + "ms");
+                    RuntimeUtils.pause(MANY_REQUESTS_TIMEOUT);
+                }
             }
         }
-        throw new DBException("Request failed after " + MAX_RETRIES + " attempts");
+        throw new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
     }
 
     protected AIEngine getActiveEngine() throws DBException {
@@ -294,7 +299,7 @@ public class AIAssistantImpl implements AIAssistant {
         AIPromptBuilder promptBuilder
     ) throws DBException {
         if (context != null) {
-            String description = metadataProcessor.describeContext(
+            String description = DatabaseMetadataUtils.describeContext(
                 monitor,
                 context,
                 formatter(),
