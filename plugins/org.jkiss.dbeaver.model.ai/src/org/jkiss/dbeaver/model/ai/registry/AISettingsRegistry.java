@@ -81,7 +81,7 @@ public class AISettingsRegistry {
         }
 
         public static AISettingsHolder getForSession(SMSessionPersistent session) {
-            return holderBySession.computeIfAbsent(session, s -> new AISettingsSessionHolder(s));
+            return holderBySession.computeIfAbsent(session, AISettingsSessionHolder::new);
         }
 
         public static void resetAll() {

@@ -76,7 +76,7 @@ public class CopilotCompletionEngine implements AIEngine {
             .withN(1)
             .build();
 
-        List<String> choices = client.evaluate().chat(monitor, requestSessionToken(monitor).token(), chatRequest)
+        List<String> choices = client.getInstance().chat(monitor, requestSessionToken(monitor).token(), chatRequest)
             .choices()
             .stream()
             .map(it -> it.message().content())
@@ -101,7 +101,7 @@ public class CopilotCompletionEngine implements AIEngine {
             .withN(1)
             .build();
 
-        Flow.Publisher<CopilotChatChunk> chunkPublisher = client.evaluate().createChatCompletionStream(
+        Flow.Publisher<CopilotChatChunk> chunkPublisher = client.getInstance().createChatCompletionStream(
             monitor,
             requestSessionToken(monitor).token(),
             chatRequest
@@ -171,7 +171,7 @@ public class CopilotCompletionEngine implements AIEngine {
                 return sessionToken;
             }
 
-            return client.evaluate().sessionToken(monitor, getProperties().getToken());
+            return client.getInstance().sessionToken(monitor, getProperties().getToken());
         }
     }
 

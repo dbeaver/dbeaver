@@ -50,23 +50,28 @@ public class AIMessage {
         this.time = time;
     }
 
-    public static AIMessage systemMessage(String message) {
+    @NotNull
+    public static AIMessage systemMessage(@NotNull String message) {
         return new AIMessage(AIMessageType.SYSTEM, message);
     }
 
-    public static AIMessage userMessage(String message) {
+    @NotNull
+    public static AIMessage userMessage(@NotNull String message) {
         return new AIMessage(AIMessageType.USER, message);
     }
 
-    public static AIMessage assistantMessage(String message) {
+    @NotNull
+    public static AIMessage assistantMessage(@NotNull String message) {
         return new AIMessage(AIMessageType.ASSISTANT, message);
     }
 
-    public static AIMessage errorMessage(Throwable throwable) {
+    @NotNull
+    public static AIMessage errorMessage(@NotNull Throwable throwable) {
         return new AIMessage(AIMessageType.ERROR, CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"));
     }
 
-    public static AIMessage userAutoMessage(String prompt, String uiMessage) {
+    @NotNull
+    public static AIMessage userAutoMessage(@NotNull String prompt, @NotNull String uiMessage) {
         return new AIMessage(AIMessageType.USER, prompt, uiMessage, LocalDateTime.now());
     }
 

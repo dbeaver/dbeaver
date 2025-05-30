@@ -41,13 +41,14 @@ public class OpenAICompletionEngine implements AIEngine {
     private final AISettingsRegistry registry;
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
+        @NotNull
         @Override
         protected OpenAIClient initialize() throws DBException {
             return createClient();
         }
 
         @Override
-        protected void onDispose(OpenAIClient disposedValue) throws DBException {
+        protected void onDispose(OpenAIClient disposedValue) {
             disposedValue.close();
         }
     };
@@ -81,7 +82,7 @@ public class OpenAICompletionEngine implements AIEngine {
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        Flow.Publisher<ChatCompletionChunk> publisher = openAiService.evaluate()
+        Flow.Publisher<ChatCompletionChunk> publisher = openAiService.getInstance()
             .createChatCompletionStream(monitor, ChatCompletionRequest.builder()
                 .messages(fromMessages(request.messages()))
                 .temperature(temperature())
@@ -157,7 +158,7 @@ public class OpenAICompletionEngine implements AIEngine {
             .model(model())
             .build();
 
-        return openAiService.evaluate().createChatCompletion(monitor, completionRequest);
+        return openAiService.getInstance().createChatCompletion(monitor, completionRequest);
     }
 
     @NotNull

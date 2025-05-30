@@ -29,7 +29,7 @@ public abstract class LazyValue<T, E extends Exception> {
      * @throws E if an exception occurred during initialization.
      */
     @NotNull
-    public synchronized T evaluate() throws E {
+    public synchronized T getInstance() throws E {
         if (value == null) {
             try {
                 value = initialize();
