@@ -8,7 +8,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridSynonym;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
@@ -122,7 +122,9 @@ public class CubridSynonymManager extends SQLObjectEditor<GenericSynonym, Generi
 
     @Override
     public boolean canCreateObject(@NotNull Object container) {
-        return !((CubridTable) container).getDataSource().isShard();
+        CubridUser user = (CubridUser) container;
+        CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
+        return dataSource.isShard();
     }
 
     @Override

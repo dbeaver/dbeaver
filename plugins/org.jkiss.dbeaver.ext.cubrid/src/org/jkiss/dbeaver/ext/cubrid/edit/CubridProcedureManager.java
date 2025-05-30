@@ -21,7 +21,7 @@ import java.util.Map;
 
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -37,7 +37,9 @@ public class CubridProcedureManager extends GenericProcedureManager {
 
     @Override
     public boolean canCreateObject(Object container) {
-        return !((CubridTable) container).getDataSource().isShard();
+        CubridUser user = (CubridUser) container;
+        CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
+        return dataSource.isShard();
     }
 
     @Override
