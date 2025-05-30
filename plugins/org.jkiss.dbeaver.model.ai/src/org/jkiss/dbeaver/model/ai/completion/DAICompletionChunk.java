@@ -23,4 +23,8 @@ import java.util.List;
 public record DAICompletionChunk(
     @NotNull List<DAICompletionChoice> choices
 ) {
+    @Override
+    public String toString() {
+        return choices.toString();
+    }
 }

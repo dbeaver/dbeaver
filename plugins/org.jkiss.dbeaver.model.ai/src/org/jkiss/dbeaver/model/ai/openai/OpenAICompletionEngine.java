@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.completion.*;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -34,6 +35,9 @@ import java.util.concurrent.Flow;
 
 public class OpenAICompletionEngine implements DAICompletionEngine {
     private static final Log log = Log.getLog(OpenAICompletionEngine.class);
+    public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
+
+    private final AISettingsRegistry registry;
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @Override
@@ -47,9 +51,13 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
         }
     };
 
+    public OpenAICompletionEngine(AISettingsRegistry registry) {
+        this.registry = registry;
+    }
+
     @Override
-    public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) {
-        return OpenAISettings.INSTANCE.model().getMaxTokens();
+    public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return OpenAIModel.getByName(getSettings().getModel()).getMaxTokens();
     }
 
     @Override
@@ -122,13 +130,13 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
     }
 
     @Override
-    public boolean hasValidConfiguration() {
-        return OpenAISettings.INSTANCE.isValidConfiguration();
+    public boolean hasValidConfiguration() throws DBException {
+        return getSettings().isValidConfiguration();
     }
 
     @Override
-    public boolean isLoggingEnabled() {
-        return OpenAISettings.INSTANCE.isLoggingEnabled();
+    public boolean isLoggingEnabled() throws DBException {
+        return getSettings().isLoggingEnabled();
     }
 
     @NotNull
@@ -161,21 +169,27 @@ public class OpenAICompletionEngine implements DAICompletionEngine {
             case SYSTEM -> "system";
             case USER -> "user";
             case ASSISTANT -> "assistant";
+            default -> null;
         };
     }
 
     protected OpenAIClient createClient() throws DBException {
         return new OpenAIClient(
-            "https://api.openai.com/v1/",
-            List.of(new OpenAIRequestFilter(OpenAISettings.INSTANCE.token()))
+            OPENAI_ENDPOINT,
+            List.of(new OpenAIRequestFilter(getSettings().getToken()))
         );
     }
 
-    protected String model() {
-        return OpenAISettings.INSTANCE.model().getName();
+    protected String model() throws DBException {
+        return OpenAIModel.getByName(getSettings().getModel()).getName();
     }
 
-    protected double temperature() {
-        return OpenAISettings.INSTANCE.temperature();
+    protected double temperature() throws DBException {
+        return getSettings().getTemperature();
+    }
+
+    private OpenAIProperties getSettings() throws DBException {
+        return registry.getSettings().<LegacyAISettings<OpenAIProperties>> getEngineConfiguration(OpenAIConstants.OPENAI_ENGINE)
+            .getProperties();
     }
 }

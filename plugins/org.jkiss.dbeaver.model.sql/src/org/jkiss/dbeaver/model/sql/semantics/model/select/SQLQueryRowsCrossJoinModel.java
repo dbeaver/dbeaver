@@ -75,7 +75,7 @@ public class SQLQueryRowsCrossJoinModel extends SQLQueryRowsSetOperationModel
         @NotNull SQLQueryRowsSourceModel child,
         @Nullable SQLQueryRowsDataContext defaultContext
     ) {
-        return child == this.right ? this.left.getRowsDataContext() : defaultContext;
+        return this.isLateral && child == this.right ? this.left.getRowsDataContext() : defaultContext;
     }
 
     @Override

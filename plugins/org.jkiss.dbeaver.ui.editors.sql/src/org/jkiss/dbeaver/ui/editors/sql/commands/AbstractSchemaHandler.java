@@ -20,7 +20,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -36,8 +36,8 @@ public abstract class AbstractSchemaHandler extends AbstractHandler {
         return RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
     }
 
-    protected DBCExecutionContextDefaults<?, ?> getExecutionContext(SQLEditor editor) {
-        return (DBCExecutionContextDefaults<?, ?>) editor.getExecutionContext();
+    protected DBCExecutionContext getExecutionContext(SQLEditor editor) {
+        return editor.getExecutionContext();
     }
 
     protected DBNModel getNavigatorModel(DBPProject project) {

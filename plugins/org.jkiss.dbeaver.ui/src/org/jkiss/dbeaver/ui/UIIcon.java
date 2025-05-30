@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.controls.decorations.HolidayDecorations;
 
+import java.util.List;
+
 /**
  * UI Icons
  */
@@ -39,6 +41,7 @@ public class UIIcon {
     public static final DBIcon LOADING5 = new DBIcon("loading5", "animation/loading05.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LOADING6 = new DBIcon("loading6", "animation/loading06.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LOADING7 = new DBIcon("loading7", "animation/loading07.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final List<DBIcon> LOADING = List.of(LOADING0, LOADING1, LOADING2, LOADING3, LOADING4, LOADING5, LOADING6, LOADING7);
 
     public static final DBIcon PROGRESS0 = new DBIcon("progress0", "animation/progress_0.gif"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PROGRESS1 = new DBIcon("progress1", "animation/progress_1.gif"); //$NON-NLS-1$ //$NON-NLS-2$

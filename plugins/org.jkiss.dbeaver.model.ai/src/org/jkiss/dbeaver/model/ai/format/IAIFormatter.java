@@ -17,14 +17,16 @@
 package org.jkiss.dbeaver.model.ai.format;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+
+import java.util.List;
 
 public interface IAIFormatter {
     String postProcessGeneratedQuery(
@@ -34,11 +36,8 @@ public interface IAIFormatter {
         String completionText
     );
 
-    @Nullable
-    String getExtraInstructions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSObjectContainer mainObject,
-        @NotNull DBCExecutionContext executionContext);
+    @NotNull
+    List<String> getExtraInstructions();
 
     void addExtraDescription(
         DBRProgressMonitor monitor,
@@ -64,8 +63,7 @@ public interface IAIFormatter {
      */
     void addDataSample(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSEntity object,
-        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSDataContainer dataContainer,
         @NotNull StringBuilder description
     ) throws DBException;
 }

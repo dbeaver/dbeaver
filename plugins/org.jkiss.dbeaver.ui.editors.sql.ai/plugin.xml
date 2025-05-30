@@ -9,10 +9,29 @@
 		<initializer class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencesInitializer"/>
 	</extension>
 
+	<extension point="org.eclipse.core.expressions.definitions">
+		<definition id="org.jkiss.dbeaver.ai.preferences">
+			<instanceof value="org.jkiss.dbeaver.model.ai.AISettings"/>
+		</definition>
+	</extension>
+
 	<extension point="org.eclipse.ui.preferencePages">
-		<page id="org.jkiss.dbeaver.preferences.ai" category="org.eclipse.ui.preferencePages.Workbench" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePage" name="%pref.page.name.gpt">
+		<page id="org.jkiss.dbeaver.preferences.ai" category="org.eclipse.ui.preferencePages.Workbench" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.main.name">
 			<keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
-			<keywordReference id="org.jkiss.dbeaver.ui.editors.ai.keyword.gtp"/>
+			<keywordReference id="dbeaver.ai.pref"/>
+		</page>
+		<page id="org.jkiss.dbeaver.preferences.ai.config" category="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePageConfiguration" name="%pref.page.ai.config.name">
+			<keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+			<keywordReference id="dbeaver.ai.pref"/>
+			<keywordReference id="dbeaver.ai.config"/>
+		</page>
+	</extension>
+	<extension point="org.eclipse.ui.propertyPages">
+		<page id="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.engines.name">
+			<enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
+		</page>
+		<page id="org.jkiss.dbeaver.preferences.ai.config" class="org.jkiss.dbeaver.ui.editors.sql.ai.preferences.AIPreferencePageConfiguration" name="%pref.page.ai.config.name">
+			<enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
 		</page>
 	</extension>
 
@@ -79,4 +98,10 @@
             <item commandId="org.jkiss.dbeaver.ui.editors.sql.ai.showCompletion" defaultVisibility="true"/>
         </toolBar>
     </extension>
+
+	<extension point="org.eclipse.ui.keywords">
+		<keyword id="dbeaver.ai.pref" label="%keyword.org.jkiss.dbeaver.ai.pref"/>
+		<keyword id="dbeaver.ai.config" label="%keyword.org.jkiss.dbeaver.ai.config"/>
+	</extension>
+
 </plugin>
