@@ -118,7 +118,7 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
     public void refreshStyles() {
         Font outputFont = BaseThemeSettings.instance.monospaceFont;
         StyledText textWidget = getTextWidget();
-        if (textWidget != null) {
+        if (textWidget != null && !textWidget.isDisposed()) {
             if (outputFont != null) {
                 textWidget.setFont(outputFont);
             }
@@ -144,7 +144,7 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
         MenuManager menuMgr = new MenuManager();
         menuMgr.addMenuListener(manager -> {
             StyledText textWidget = getTextWidget();
-            if (textWidget != null) {
+            if (textWidget != null && !textWidget.isDisposed()) {
                 StyledTextUtils.fillDefaultStyledTextContextMenu(manager, textWidget);
             }
             manager.add(new Separator());
@@ -157,7 +157,7 @@ public class SQLEditorOutputConsoleViewer extends TextConsoleViewer {
         });
         menuMgr.setRemoveAllWhenShown(true);
         StyledText textWidget = getTextWidget();
-        if (textWidget != null) {
+        if (textWidget != null && !textWidget.isDisposed()) {
             textWidget.setMenu(menuMgr.createContextMenu(textWidget));
             textWidget.addDisposeListener(e -> menuMgr.dispose());
         }
