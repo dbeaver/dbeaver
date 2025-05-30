@@ -274,6 +274,10 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
 
     private void expandFolders(DatabaseNavigatorTree dataSourceTree, DBNNode node) {
         if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNProject || node instanceof DBNRoot) {
+            if (node instanceof DBNProject p && !p.getProject().isOpen()) {
+                // Don't try to expand unloaded projects - let the user do it
+                return;
+            }
             dataSourceTree.getViewer().expandToLevel(node, 1);
             DBNNode[] childNodes;
             try {
