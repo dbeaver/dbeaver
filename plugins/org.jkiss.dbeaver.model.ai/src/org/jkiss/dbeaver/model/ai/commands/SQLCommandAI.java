@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -81,9 +82,12 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             }
         }
         AIDatabaseScope scope = completionSettings.getScope();
-        AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder()
-            .setScope(scope)
-            .setExecutionContext(scriptContext.getExecutionContext());
+        AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(lDataSource)
+            .setScope(scope);
+        DBCExecutionContext executionContext = scriptContext.getExecutionContext();
+        if (executionContext != null) {
+            contextBuilder.setExecutionContext(executionContext);
+        }
         if (scope == AIDatabaseScope.CUSTOM) {
             contextBuilder.setCustomEntities(
                 AITextUtils.loadCustomEntities(
@@ -98,10 +102,8 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             .createAssistant(dataSourceContainer.getProject().getWorkspace())
             .command(monitor, new AICommandRequest(prompt, aiContext));
 
-        if (result.sql() == null && result.message() != null) {
-            throw new DBException(result.message());
-        } else if (result.sql() == null) {
-            throw new DBException("Empty AI completion for '" + prompt + "'");
+        if (result.sql() == null) {
+            throw new DBException("Empty AI response for '" + prompt + "'");
         }
 
         SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);

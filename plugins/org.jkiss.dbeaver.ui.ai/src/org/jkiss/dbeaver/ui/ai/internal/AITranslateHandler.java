@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.ai.internal;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -44,8 +42,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.qm.QMTranslationHistoryManager;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -154,14 +150,13 @@ public class AITranslateHandler extends AbstractHandler {
                 return null;
             }
 
-            doAutoCompletion(executionContext, historyManager, lDataSource, editor, aiCompletionPopup);
+            doAutoCompletion(executionContext, lDataSource, editor, aiCompletionPopup);
         }
         return null;
     }
 
     private void doAutoCompletion(
         @NotNull DBCExecutionContext executionContext,
-        @NotNull QMTranslationHistoryManager historyManager,
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull SQLEditor editor,
         @NotNull AISuggestionPopup popup
@@ -171,6 +166,7 @@ public class AITranslateHandler extends AbstractHandler {
         try {
             String sql = translateUserInputIntoSql(
                 userInput,
+                dataSource,
                 executionContext,
                 popup
             );
@@ -180,7 +176,6 @@ public class AITranslateHandler extends AbstractHandler {
                 return;
             }
 
-            saveToHistory(historyManager, dataSource, executionContext, userInput, sql);
             insertSqlCompletion(editor, sql);
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError("Auto completion error", null, e.getTargetException());
@@ -200,6 +195,7 @@ public class AITranslateHandler extends AbstractHandler {
     @Nullable
     private String translateUserInputIntoSql(
         @NotNull String userInput,
+        @NotNull DBSLogicalDataSource dataSource,
         @NotNull DBCExecutionContext executionContext,
         @NotNull AISuggestionPopup popup
     ) throws InvocationTargetException {
@@ -210,7 +206,7 @@ public class AITranslateHandler extends AbstractHandler {
         AtomicReference<String> sql = new AtomicReference<>();
         UIUtils.runInProgressDialog(monitor -> {
             try {
-                final AIDatabaseContext context = new AIDatabaseContext.Builder()
+                final AIDatabaseContext context = new AIDatabaseContext.Builder(dataSource)
                     .setScope(popup.getScope())
                     .setCustomEntities(popup.getCustomEntities(monitor))
                     .setExecutionContext(executionContext)
@@ -226,32 +222,6 @@ public class AITranslateHandler extends AbstractHandler {
         });
 
         return sql.get();
-    }
-
-    private void saveToHistory(
-        @NotNull QMTranslationHistoryManager historyManager,
-        @NotNull DBSLogicalDataSource dataSource,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull String userInput,
-        @NotNull String completion
-    ) {
-        new AbstractJob("Save smart completion history") {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                try {
-                    historyManager.saveTranslationHistory(
-                        monitor,
-                        dataSource,
-                        executionContext,
-                        userInput,
-                        completion
-                    );
-                } catch (DBException e) {
-                    return GeneralUtils.makeExceptionStatus(e);
-                }
-                return Status.OK_STATUS;
-            }
-        }.schedule();
     }
 
     private void insertSqlCompletion(

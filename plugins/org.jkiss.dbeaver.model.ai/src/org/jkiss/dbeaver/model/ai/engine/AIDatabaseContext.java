@@ -22,26 +22,37 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class AIDatabaseContext {
+    private final DBSLogicalDataSource dataSource;
     private final AIDatabaseScope scope;
     private final List<DBSObject> customEntities;
     private final DBCExecutionContext executionContext;
 
     private AIDatabaseContext(
+        @NotNull DBSLogicalDataSource dataSource,
         @NotNull AIDatabaseScope scope,
         @Nullable List<DBSObject> customEntities,
         @NotNull DBCExecutionContext executionContext
     ) {
+        this.dataSource = dataSource;
         this.scope = scope;
         this.customEntities = customEntities;
         this.executionContext = executionContext;
+    }
+
+    @NotNull
+    public DBSLogicalDataSource getDataSource() {
+        return dataSource;
     }
 
     @NotNull
@@ -60,9 +71,14 @@ public class AIDatabaseContext {
     }
 
     public static class Builder {
+        private DBSLogicalDataSource dataSource;
         private AIDatabaseScope scope;
         private List<DBSObject> customEntities;
         private DBCExecutionContext executionContext;
+
+        public Builder(@NotNull DBSLogicalDataSource dataSource) {
+            this.dataSource = dataSource;
+        }
 
         @NotNull
         public Builder setScope(@NotNull AIDatabaseScope scope) {
@@ -96,8 +112,17 @@ public class AIDatabaseContext {
                 executionContext != null,
                 "Execution context must be specified"
             );
+            DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+            if (dataSource.getCurrentCatalog() == null && contextDefaults != null) {
+                DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+                dataSource.setCurrentCatalog(defaultCatalog == null ? null : defaultCatalog.getName());
+            }
+            if (dataSource.getCurrentSchema() == null && contextDefaults != null) {
+                DBSSchema defaultSchema = contextDefaults.getDefaultSchema();
+                dataSource.setCurrentSchema(defaultSchema == null ? null : defaultSchema.getName());
+            }
 
-            return new AIDatabaseContext(scope, customEntities, executionContext);
+            return new AIDatabaseContext(dataSource, scope, customEntities, executionContext);
         }
     }
 

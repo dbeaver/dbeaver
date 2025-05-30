@@ -40,14 +40,4 @@ public interface QMTranslationHistoryManager {
         @NotNull DBCExecutionContext executionContext,
         int maxCount) throws DBException;
 
-    /**
-     * Saves translated query info
-     */
-    void saveTranslationHistory(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSLogicalDataSource dataSource,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull String naturalText,
-        @NotNull String sqlText) throws DBException;
-
 }

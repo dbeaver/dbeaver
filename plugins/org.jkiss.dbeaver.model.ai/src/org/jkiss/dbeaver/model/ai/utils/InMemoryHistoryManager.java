@@ -44,17 +44,4 @@ public class InMemoryHistoryManager implements QMTranslationHistoryManager {
         return Collections.emptyList();
     }
 
-    @Override
-    public void saveTranslationHistory(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSLogicalDataSource dataSource,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull String natualText,
-        @NotNull String sqlText
-    ) {
-        List<QMTranslationHistoryItem> queries = queryHistory.computeIfAbsent(dataSource.getDataSourceContainer().getId(), k -> new ArrayList<>());
-        QMTranslationHistoryItem item = new QMTranslationHistoryItem(natualText, sqlText);
-        item.setTime(new Date());
-        queries.add(item);
-    }
 }
