@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -64,7 +65,7 @@ public class DefaultPromptFormatter implements AIPromptFormatter {
         @NotNull DBRProgressMonitor monitor
     ) {
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_SEND_DESCRIPTION)
-            && object.getDescription() != null) {
+            && !CommonUtils.isEmptyTrimmed(object.getDescription())) {
             boolean attribute = object instanceof DBSEntityAttribute;
             String objectComment = object.getDescription().replace("\n", attribute ? "\n\t" : "\n");
             if (attribute) {

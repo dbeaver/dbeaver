@@ -388,8 +388,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
             this.filterExpandPanel.setVisible(enable);
             historyPanel.setVisible(enable);
-            filtersText.setEditable(viewer.supportsDataFilter());
-            filtersText.setEnabled(enable);
+            filtersText.setEditable(viewer.supportsDataFilter() && enable);
+            //filtersText.setEnabled(enable);
             //filtersText.setVisible(enable);
             executePanel.setVisible(enable);
         } finally {
