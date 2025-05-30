@@ -159,10 +159,10 @@ public class AITranslateHandler extends AbstractHandler {
     }
 
     private void doAutoCompletion(
-        DBCExecutionContext executionContext,
-        QMTranslationHistoryManager historyManager,
-        DBSLogicalDataSource dataSource,
-        SQLEditor editor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull QMTranslationHistoryManager historyManager,
+        @NotNull DBSLogicalDataSource dataSource,
+        @NotNull SQLEditor editor,
         @NotNull AISuggestionPopup popup
     ) {
         String userInput = popup.getInputText();
@@ -227,11 +227,11 @@ public class AITranslateHandler extends AbstractHandler {
     }
 
     private void saveToHistory(
-        QMTranslationHistoryManager historyManager,
-        DBSLogicalDataSource dataSource,
-        DBCExecutionContext executionContext,
-        String userInput,
-        String completion
+        @NotNull QMTranslationHistoryManager historyManager,
+        @NotNull DBSLogicalDataSource dataSource,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull String userInput,
+        @NotNull String completion
     ) {
         new AbstractJob("Save smart completion history") {
             @Override
