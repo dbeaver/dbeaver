@@ -25,7 +25,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.AIAssistant;
 import org.jkiss.dbeaver.model.ai.AICompletionSettings;
@@ -57,26 +56,28 @@ public class AILegacyTranslator {
 
     public void performAiTranslation(ExecutionEvent event) {
         // CE legacy popup
-        SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
-        if (editor == null) {
-            return;
-        }
-
         AIFeatures.SQL_AI_POPUP.use();
 
         if (AISettingsRegistry.getInstance().getSettings().isAiDisabled()) {
             return;
         }
-
+        SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
+        if (editor == null) {
+            return;
+        }
         DBPDataSourceContainer dataSourceContainer = editor.getDataSourceContainer();
         if (dataSourceContainer == null) {
             DBWorkbench.getPlatformUI().showError("No datasource", "Connection must be associated with the SQL script");
             return;
         }
+        DBCExecutionContext executionContext = editor.getExecutionContext();
+        if (executionContext == null) {
+            DBWorkbench.getPlatformUI().showError("No connection", "You must connect to the database before performing completion");
+            return;
+        }
 
-        AIAssistant aiAssistant;
         try {
-            aiAssistant = AIAssistantRegistry.getInstance().createAssistant(dataSourceContainer.getProject().getWorkspace());
+            AIAssistant aiAssistant = AIAssistantRegistry.getInstance().createAssistant(dataSourceContainer.getProject().getWorkspace());
             if (!aiAssistant.hasValidConfiguration()) {
                 UIUtils.showPreferencesFor(
                     editor.getSite().getShell(),
@@ -85,24 +86,36 @@ public class AILegacyTranslator {
                 );
                 return;
             }
+
+            AICompletionSettings settings = new AICompletionSettings(dataSourceContainer);
+
+            // Show info transfer warning
+            if (!AIUIUtils.confirmMetaTransfer(settings)) {
+                return;
+            }
+
+            DBSLogicalDataSource lDataSource = createLogicalDataSource(dataSourceContainer, executionContext);
+
+            AISuggestionPopup aiCompletionPopup = new AISuggestionPopup(
+                HandlerUtil.getActiveShell(event),
+                "AI smart completion",
+                lDataSource,
+                executionContext,
+                settings
+            );
+            if (aiCompletionPopup.open() == IDialogConstants.OK_ID) {
+                doAutoCompletion(executionContext, lDataSource, editor, aiCompletionPopup);
+            }
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
-            return;
         }
+    }
 
-        DBCExecutionContext executionContext = editor.getExecutionContext();
-        if (executionContext == null) {
-            DBWorkbench.getPlatformUI().showError("No connection", "You must connect to the database before performing completion");
-            return;
-        }
-
-        AICompletionSettings settings = new AICompletionSettings(dataSourceContainer);
-
-        // Show info transfer warning
-        if (!AIUIUtils.confirmMetaTransfer(settings)) {
-            return;
-        }
-
+    @NotNull
+    private static DBSLogicalDataSource createLogicalDataSource(
+        DBPDataSourceContainer dataSourceContainer,
+        DBCExecutionContext executionContext
+    ) {
         DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(dataSourceContainer, "AI logical wrapper", null);
         DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
         if (contextDefaults != null) {
@@ -113,28 +126,7 @@ public class AILegacyTranslator {
                 lDataSource.setCurrentSchema(contextDefaults.getDefaultSchema().getName());
             }
         }
-
-        AISuggestionPopup aiCompletionPopup = new AISuggestionPopup(
-            HandlerUtil.getActiveShell(event),
-            "AI smart completion",
-            lDataSource,
-            executionContext,
-            settings
-        );
-        if (aiCompletionPopup.open() == IDialogConstants.OK_ID) {
-            try {
-                if (!aiAssistant.hasValidConfiguration()) {
-                    DBWorkbench.getPlatformUI()
-                        .showError("Bad AI engine configuration", "You must specify OpenAI API token in preferences");
-                    return;
-                }
-            } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
-                return;
-            }
-
-            doAutoCompletion(executionContext, lDataSource, editor, aiCompletionPopup);
-        }
+        return lDataSource;
     }
 
     private void doAutoCompletion(
