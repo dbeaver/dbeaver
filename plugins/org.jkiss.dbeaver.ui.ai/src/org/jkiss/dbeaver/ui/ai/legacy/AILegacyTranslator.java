@@ -117,7 +117,7 @@ public class AILegacyTranslator {
         DBCExecutionContext executionContext
     ) {
         DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(dataSourceContainer, "AI logical wrapper", null);
-        DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+        DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
         if (contextDefaults != null) {
             if (contextDefaults.getDefaultCatalog() != null) {
                 lDataSource.setCurrentCatalog(contextDefaults.getDefaultCatalog().getName());
