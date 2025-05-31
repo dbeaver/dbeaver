@@ -3,8 +3,10 @@
 
 <plugin>
 	<extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
-		<propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine" uiClass="org.jkiss.dbeaver.ui.ai.openai.OpenAiConfigurator"/>
+		<propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.openai.OpenAiConfigurator"/>
+		<propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.copilot.CopilotConfigurator"/>
 	</extension>
+
 	<extension point="org.eclipse.core.runtime.preferences">
 		<initializer class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencesInitializer"/>
 	</extension>
@@ -43,9 +45,6 @@
 						type="java.lang.Object"/>
 	</extension>
 
-	<extension point="org.eclipse.ui.bindings">
-		<key commandId="org.jkiss.dbeaver.ui.ai.showCompletion" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+I"/>
-	</extension>
 	<extension point="org.eclipse.ui.commands">
 		<command id="org.jkiss.dbeaver.ui.ai.showCompletion" name="%command.org.jkiss.dbeaver.ui.ai.showCompletion.name" description="%command.org.jkiss.dbeaver.ui.ai.showCompletion.description" categoryId="org.jkiss.dbeaver.core.sql"/>
 	</extension>
@@ -92,7 +91,12 @@
 	<extension point="org.eclipse.ui.handlers">
 		<handler commandId="org.jkiss.dbeaver.ui.ai.showCompletion" class="org.jkiss.dbeaver.ui.ai.internal.AITranslateHandler"/>
 	</extension>
-	
+
+	<extension point="org.eclipse.ui.bindings">
+		<key commandId="org.jkiss.dbeaver.ui.ai.showCompletion" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+I"/>
+	</extension>
+
+
     <extension point="org.jkiss.dbeaver.toolBarConfiguration">
         <toolBar key="sqlEditor.side.top">
             <item commandId="org.jkiss.dbeaver.ui.ai.showCompletion" defaultVisibility="true"/>

@@ -14,34 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.utils;
+package org.jkiss.dbeaver.ui.ai.legacy;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.qm.QMTranslationHistoryItem;
-import org.jkiss.dbeaver.model.qm.QMTranslationHistoryManager;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class InMemoryHistoryManager implements QMTranslationHistoryManager {
+public class InMemoryHistoryManager {
     private static final Map<String, List<QMTranslationHistoryItem>> queryHistory = new HashMap<>();
 
     @NotNull
-    @Override
-    public List<QMTranslationHistoryItem> readTranslationHistory(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSLogicalDataSource dataSource,
-        @NotNull DBCExecutionContext executionContext,
-        int maxCount
-    ) {
+    public static List<QMTranslationHistoryItem> readTranslationHistory(@NotNull DBSLogicalDataSource dataSource) {
         List<QMTranslationHistoryItem> queries = queryHistory.get(dataSource.getDataSourceContainer().getId());
         if (!CommonUtils.isEmpty(queries)) {
             return new ArrayList<>(queries);
         }
         return Collections.emptyList();
+    }
+
+    public static void saveTranslationHistory(
+        @NotNull DBSLogicalDataSource dataSource,
+        @NotNull QMTranslationHistoryItem item
+    ) {
+        queryHistory.computeIfAbsent(
+            dataSource.getDataSourceContainer().getId(), s -> new ArrayList<>())
+            .add(item);
     }
 
 }

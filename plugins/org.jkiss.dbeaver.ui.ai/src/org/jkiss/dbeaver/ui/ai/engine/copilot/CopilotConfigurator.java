@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.ai.copilot;
+package org.jkiss.dbeaver.ui.ai.engine.copilot;
 
 
 import org.eclipse.core.runtime.IStatus;
@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
@@ -46,6 +45,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.browser.BrowserPopup;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.ui.preferences.UIPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -207,7 +207,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
                                     DBIcon.STATUS_INFO
                                 );
                                 copyYourCode.open();
-                                if (ModelPreferences.getPreferences().getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH)) {
+                                if (ModelPreferences.getPreferences().getBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH)) {
                                     try {
                                         popupOauth.set(BrowserPopup.openBrowser("OAuth", new URL(responseData.verification_uri())));
                                     } catch (MalformedURLException ex) {

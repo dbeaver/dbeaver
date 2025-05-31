@@ -8,9 +8,8 @@ Import-Package: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model.ai.internal
 Export-Package: org.jkiss.dbeaver.ui.ai,
  org.jkiss.dbeaver.ui.ai.controls,
+ org.jkiss.dbeaver.ui.ai.engine.openai,
  org.jkiss.dbeaver.ui.ai.format,
- org.jkiss.dbeaver.ui.ai.openai,
- org.jkiss.dbeaver.ui.ai.popup,
  org.jkiss.dbeaver.ui.ai.preferences,
  org.jkiss.dbeaver.ui.ai.internal
 Bundle-Release-Date: 20250616

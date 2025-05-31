@@ -8,6 +8,7 @@ Bundle-Version: 2.0.0.qualifier
 Export-Package: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model.ai.commands,
  org.jkiss.dbeaver.model.ai.engine,
+ org.jkiss.dbeaver.model.ai.engine.copilot,
  org.jkiss.dbeaver.model.ai.engine.openai,
  org.jkiss.dbeaver.model.ai.impl,
  org.jkiss.dbeaver.model.ai.internal,
@@ -19,11 +20,11 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.model.ai
-Require-Bundle: org.jkiss.dbeaver.model,
+Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
- org.jkiss.bundle.gpt3,
+ org.jkiss.bundle.gpt3;visibility:=reexport,
  com.google.gson
 
 

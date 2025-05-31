@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -85,7 +85,7 @@ public class BrowserPopup extends AbstractPopupPanel {
     @Override
     protected void createButtonsForButtonBar(@NotNull Composite parent, int alignment) {
         if (alignment == SWT.LEFT) {
-            createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.popup_open_browser_open_external_browser, false);
+            createButton(parent, IDialogConstants.DETAILS_ID, UIMessages.popup_open_browser_open_external_browser, false);
         }
     }
 

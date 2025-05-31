@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.ai.popup;
+package org.jkiss.dbeaver.ui.ai.legacy;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,8 +25,6 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.ai.AICompletionSettings;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
@@ -34,7 +32,6 @@ import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.qm.QMTranslationHistoryItem;
-import org.jkiss.dbeaver.model.qm.QMTranslationHistoryManager;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -50,11 +47,6 @@ import java.util.List;
 
 public class AISuggestionPopup extends AbstractPopupPanel {
 
-    private static final Log log = Log.getLog(AISuggestionPopup.class);
-
-    @NotNull
-    private final QMTranslationHistoryManager historyManager;
-
     @NotNull
     private final DBSLogicalDataSource dataSource;
     @NotNull
@@ -68,12 +60,11 @@ public class AISuggestionPopup extends AbstractPopupPanel {
     public AISuggestionPopup(
         @NotNull Shell parentShell,
         @NotNull String title,
-        @NotNull QMTranslationHistoryManager historyManager,
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull DBCExecutionContext executionContext,
-        @NotNull AICompletionSettings settings) {
+        @NotNull AICompletionSettings settings
+    ) {
         super(parentShell, title);
-        this.historyManager = historyManager;
         this.dataSource = dataSource;
         this.executionContext = executionContext;
         this.settings = settings;
@@ -154,24 +145,20 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         AbstractJob completionJob = new AbstractJob("Read completion history") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
-                try {
-                    List<QMTranslationHistoryItem> queries = historyManager.readTranslationHistory(monitor, dataSource, executionContext, 100);
-                    UIUtils.syncExec(() -> {
-                        if (!CommonUtils.isEmpty(queries)) {
-                            for (QMTranslationHistoryItem query : queries) {
-                                historyCombo.add(query.getNaturalText());
-                            }
-                            historyCombo.select(0);
-                            inputField.setText(queries.get(0).getNaturalText());
-                            inputField.selectAll();
-                            historyCombo.setEnabled(true);
-                        } else {
-                            historyCombo.setEnabled(false);
+                List<QMTranslationHistoryItem> queries = InMemoryHistoryManager.readTranslationHistory(dataSource);
+                UIUtils.syncExec(() -> {
+                    if (!CommonUtils.isEmpty(queries)) {
+                        for (QMTranslationHistoryItem query : queries) {
+                            historyCombo.add(query.getNaturalText());
                         }
-                    });
-                } catch (DBException e) {
-                    log.error("Error reading completion history", e);
-                }
+                        historyCombo.select(0);
+                        inputField.setText(queries.get(0).getNaturalText());
+                        inputField.selectAll();
+                        historyCombo.setEnabled(true);
+                    } else {
+                        historyCombo.setEnabled(false);
+                    }
+                });
                 return Status.OK_STATUS;
             }
         };

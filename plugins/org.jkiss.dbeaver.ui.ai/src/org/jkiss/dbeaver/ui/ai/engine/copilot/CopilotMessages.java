@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.ai.copilot;
+package org.jkiss.dbeaver.ui.ai.engine.copilot;
 
 import org.jkiss.dbeaver.utils.NLS;
 
 public class CopilotMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.copilot.CopilotMessages"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.engine.copilot.CopilotMessages"; //$NON-NLS-1$
 
     public static String gpt_preference_page_advanced_copilot_copy_button;
     public static String copilot_preference_page_token_info;
