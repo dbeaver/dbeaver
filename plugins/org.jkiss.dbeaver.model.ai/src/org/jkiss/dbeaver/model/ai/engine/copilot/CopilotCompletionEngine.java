@@ -33,18 +33,18 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.concurrent.Flow;
 
-public class CopilotCompletionEngine implements AIEngine {
+public class CopilotCompletionEngine extends BaseCompletionEngine {
     private static final Log log = Log.getLog(CopilotCompletionEngine.class);
 
-    private final AISettingsRegistry registry;
     private final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
+        @NotNull
         @Override
-        protected CopilotClient initialize() throws DBException {
+        protected CopilotClient initialize() {
             return new CopilotClient();
         }
 
         @Override
-        protected void onDispose(CopilotClient disposedValue) throws DBException {
+        protected void onDispose(CopilotClient disposedValue) {
             disposedValue.close();
         }
     };
@@ -52,7 +52,7 @@ public class CopilotCompletionEngine implements AIEngine {
     private volatile CopilotSessionToken sessionToken;
 
     public CopilotCompletionEngine(AISettingsRegistry registry) {
-        this.registry = registry;
+        super(registry);
     }
 
     @Override
@@ -138,16 +138,6 @@ public class CopilotCompletionEngine implements AIEngine {
     }
 
     @Override
-    public boolean hasValidConfiguration() throws DBException {
-        return getProperties().isValidConfiguration();
-    }
-
-    @Override
-    public boolean isLoggingEnabled() throws DBException {
-        return getProperties().isLoggingEnabled();
-    }
-
-    @Override
     public void onSettingsUpdate(@NotNull AISettingsRegistry registry) {
 
         try {
@@ -182,7 +172,8 @@ public class CopilotCompletionEngine implements AIEngine {
         );
     }
 
-    private CopilotProperties getProperties() throws DBException {
+    @Override
+    protected CopilotProperties getProperties() throws DBException {
         return registry.getSettings().<LegacyAISettings<CopilotProperties>> getEngineConfiguration(
             CopilotConstants.COPILOT_ENGINE
         ).getProperties();

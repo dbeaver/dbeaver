@@ -17,15 +17,26 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 
-public interface AIEngineProperties {
+public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> implements AIEngine {
 
-    // Checks that properties have all required values
-    boolean isValidConfiguration();
+    protected final AISettingsRegistry registry;
 
-    boolean isLoggingEnabled();
+    protected BaseCompletionEngine(AISettingsRegistry registry) {
+        this.registry = registry;
+    }
 
-    void resolveSecrets() throws DBException;
+    @Override
+    public boolean hasValidConfiguration() throws DBException {
+        return getProperties().isValidConfiguration();
+    }
 
-    void saveSecrets() throws DBException;
+    @Override
+    public boolean isLoggingEnabled() throws DBException {
+        return getProperties().isLoggingEnabled();
+    }
+
+    protected abstract PROPS getProperties() throws DBException;
+
 }

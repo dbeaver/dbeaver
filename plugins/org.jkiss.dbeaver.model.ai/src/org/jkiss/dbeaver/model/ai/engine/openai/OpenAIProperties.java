@@ -19,14 +19,12 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
 
-public class OpenAIProperties implements AIEngineProperties {
+public class OpenAIProperties implements OpenAIBaseProperties {
     @SecureProperty
     @SerializedName("gpt.token")
     private String token;
@@ -40,10 +38,12 @@ public class OpenAIProperties implements AIEngineProperties {
     @SerializedName("gpt.log.query")
     private boolean loggingEnabled;
 
+    @Override
     public String getToken() {
         return token;
     }
 
+    @Override
     public String getModel() {
         if (fallbackToPrefStore()) {
             return DBWorkbench.getPlatform().getPreferenceStore().getString(OpenAIConstants.GPT_MODEL);
@@ -52,6 +52,7 @@ public class OpenAIProperties implements AIEngineProperties {
         return model;
     }
 
+    @Override
     public double getTemperature() {
         if (fallbackToPrefStore()) {
             return DBWorkbench.getPlatform().getPreferenceStore().getDouble(OpenAIConstants.AI_TEMPERATURE);
@@ -60,6 +61,7 @@ public class OpenAIProperties implements AIEngineProperties {
         return temperature;
     }
 
+    @Override
     public boolean isLoggingEnabled() {
         if (fallbackToPrefStore()) {
             return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_LOG_QUERY);
@@ -68,10 +70,12 @@ public class OpenAIProperties implements AIEngineProperties {
         return loggingEnabled;
     }
 
+    @Override
     public void resolveSecrets() throws DBException {
         token = AIUtils.getSecretValueOrDefault(OpenAIConstants.GPT_API_TOKEN, token);
     }
 
+    @Override
     public void saveSecrets() throws DBException {
         DBSSecretController.getGlobalSecretController().setPrivateSecretValue(OpenAIConstants.GPT_API_TOKEN, token);
     }
@@ -90,10 +94,6 @@ public class OpenAIProperties implements AIEngineProperties {
 
     public void setLoggingEnabled(boolean loggingEnabled) {
         this.loggingEnabled = loggingEnabled;
-    }
-
-    public boolean isValidConfiguration() {
-        return !CommonUtils.isEmpty(getToken());
     }
 
     private boolean fallbackToPrefStore() {

@@ -112,7 +112,7 @@ public class AIDatabaseContext {
                 executionContext != null,
                 "Execution context must be specified"
             );
-            DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
             if (dataSource.getCurrentCatalog() == null && contextDefaults != null) {
                 DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
                 dataSource.setCurrentCatalog(defaultCatalog == null ? null : defaultCatalog.getName());

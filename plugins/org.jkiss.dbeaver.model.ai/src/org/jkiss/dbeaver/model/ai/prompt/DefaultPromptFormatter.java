@@ -79,7 +79,11 @@ public class DefaultPromptFormatter implements AIPromptFormatter {
     }
 
     @Override
-    public void addColumnTypeIfNeeded(@NotNull StringBuilder description, @NotNull DBSEntityAttribute attribute, @NotNull DBRProgressMonitor monitor) {
+    public void addColumnTypeIfNeeded(
+        @NotNull StringBuilder description,
+        @NotNull DBSEntityAttribute attribute,
+        @NotNull DBRProgressMonitor monitor
+    ) {
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_SEND_TYPE_INFO)) {
             description.append(" ").append(attribute.getTypeName());
         }

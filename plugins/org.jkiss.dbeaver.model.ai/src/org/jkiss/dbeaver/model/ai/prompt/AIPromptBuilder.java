@@ -192,12 +192,6 @@ public class AIPromptBuilder {
             DBPDataSource ds = dataSource.getDataSourceContainer().getDataSource();
             DBPDataSourceInfo dsInfo = ds == null ? null : ds.getInfo();
 
-/*
-            String currentCatalog = dataSource.getCurrentCatalog();
-            if (!CommonUtils.isEmpty(currentCatalog)) {
-                lines.add("Current " + (dsInfo == null ? "catalog" : dsInfo.getCatalogTerm()) + ": " + currentCatalog);
-            }
-*/
             String currentSchema = dataSource.getCurrentSchema();
             if (!CommonUtils.isEmpty(currentSchema)) {
                 lines.add("Current " + (dsInfo == null ? "schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);

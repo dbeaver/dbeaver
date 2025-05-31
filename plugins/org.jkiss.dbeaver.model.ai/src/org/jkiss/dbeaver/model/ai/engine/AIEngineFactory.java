@@ -20,6 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 
 public interface AIEngineFactory<T extends AIEngine> {
+    /**
+     * Creates new engine
+     */
     @NotNull
     T createEngine(@NotNull AISettingsRegistry registry);
 }

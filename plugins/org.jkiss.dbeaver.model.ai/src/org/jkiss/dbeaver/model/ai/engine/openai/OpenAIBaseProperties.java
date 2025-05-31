@@ -14,18 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine;
+package org.jkiss.dbeaver.model.ai.engine.openai;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.utils.CommonUtils;
 
-public interface AIEngineProperties {
+public interface OpenAIBaseProperties extends AIEngineProperties {
 
-    // Checks that properties have all required values
-    boolean isValidConfiguration();
+    String getToken();
+
+    String getModel();
+
+    double getTemperature();
 
     boolean isLoggingEnabled();
 
-    void resolveSecrets() throws DBException;
+    @Override
+    default boolean isValidConfiguration() {
+        return !CommonUtils.isEmpty(getToken());
+    }
 
-    void saveSecrets() throws DBException;
 }

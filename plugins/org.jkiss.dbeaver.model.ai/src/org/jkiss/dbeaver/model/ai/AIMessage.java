@@ -36,7 +36,7 @@ public class AIMessage {
     private final LocalDateTime time;
 
     /**
-     *
+     * Creates AI message
      */
     public AIMessage(
         @NotNull AIMessageType role,

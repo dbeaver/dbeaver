@@ -31,10 +31,12 @@ import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.ai.utils.DatabaseMetadataUtils;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.Flow;
 
@@ -287,7 +289,17 @@ public class AIAssistantImpl implements AIAssistant {
             formatter()
         );
 
-        describeDatabaseMetadata(monitor, engine, context, promptBuilder);
+        if (context != null) {
+            DBExecUtils.tryExecuteRecover(monitor, context.getExecutionContext().getDataSource(), param -> {
+                try {
+                    describeDatabaseMetadata(monitor, engine, context, promptBuilder);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } else {
+            describeDatabaseMetadata(monitor, engine, context, promptBuilder);
+        }
 
         return promptBuilder;
     }

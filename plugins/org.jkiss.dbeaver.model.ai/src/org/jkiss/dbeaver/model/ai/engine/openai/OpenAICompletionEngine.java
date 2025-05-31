@@ -34,11 +34,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.List;
 import java.util.concurrent.Flow;
 
-public class OpenAICompletionEngine implements AIEngine {
+public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
     private static final Log log = Log.getLog(OpenAICompletionEngine.class);
     public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
-
-    private final AISettingsRegistry registry;
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
@@ -54,12 +52,12 @@ public class OpenAICompletionEngine implements AIEngine {
     };
 
     public OpenAICompletionEngine(AISettingsRegistry registry) {
-        this.registry = registry;
+        super(registry);
     }
 
     @Override
     public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return OpenAIModel.getByName(getSettings().getModel()).getMaxTokens();
+        return OpenAIModel.getByName(getProperties().getModel()).getMaxTokens();
     }
 
     @NotNull
@@ -133,16 +131,6 @@ public class OpenAICompletionEngine implements AIEngine {
         }
     }
 
-    @Override
-    public boolean hasValidConfiguration() throws DBException {
-        return getSettings().isValidConfiguration();
-    }
-
-    @Override
-    public boolean isLoggingEnabled() throws DBException {
-        return getSettings().isLoggingEnabled();
-    }
-
     @NotNull
     protected ChatCompletionResult complete(
         @NotNull DBRProgressMonitor monitor,
@@ -180,20 +168,21 @@ public class OpenAICompletionEngine implements AIEngine {
     protected OpenAIClient createClient() throws DBException {
         return new OpenAIClient(
             OPENAI_ENDPOINT,
-            List.of(new OpenAIRequestFilter(getSettings().getToken()))
+            List.of(new OpenAIRequestFilter(getProperties().getToken()))
         );
     }
 
     protected String model() throws DBException {
-        return OpenAIModel.getByName(getSettings().getModel()).getName();
+        return OpenAIModel.getByName(getProperties().getModel()).getName();
     }
 
     protected double temperature() throws DBException {
-        return getSettings().getTemperature();
+        return getProperties().getTemperature();
     }
 
-    private OpenAIProperties getSettings() throws DBException {
-        return registry.getSettings().<LegacyAISettings<OpenAIProperties>> getEngineConfiguration(OpenAIConstants.OPENAI_ENGINE)
+    @Override
+    protected PROPS getProperties() throws DBException {
+        return registry.getSettings().<LegacyAISettings<PROPS>> getEngineConfiguration(OpenAIConstants.OPENAI_ENGINE)
             .getProperties();
     }
 }

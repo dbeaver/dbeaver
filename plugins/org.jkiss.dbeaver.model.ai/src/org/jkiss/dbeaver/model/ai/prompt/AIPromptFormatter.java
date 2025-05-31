@@ -30,6 +30,9 @@ import java.util.List;
 
 public interface AIPromptFormatter {
 
+    /**
+     * Does additional translation of generated SQL query
+     */
     @NotNull
     String postProcessGeneratedQuery(
         @NotNull DBRProgressMonitor monitor,
