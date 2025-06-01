@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -186,7 +187,7 @@ public class AIPromptBuilder {
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
             SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
         List<String> lines = new ArrayList<>();
-        lines.add("Current date and time: " + ZonedDateTime.now());
+        lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
         lines.add("Current SQL dialect: " + dialect.getDialectName());
         if (dataSource != null) {
             DBPDataSource ds = dataSource.getDataSourceContainer().getDataSource();
