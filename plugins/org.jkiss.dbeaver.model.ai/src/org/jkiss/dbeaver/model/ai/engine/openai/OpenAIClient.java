@@ -81,8 +81,6 @@ public class OpenAIClient {
         } else if (response.statusCode() == 429) {
             throw new TooManyRequestsException("Too many requests: " + response.body());
         } else {
-            log.error("Request failed [status=" + response.statusCode() + ", body=" + response.body() + "]");
-
             throw new DBException("Request failed: " + response.statusCode() + ", body=" + response.body());
         }
     }
