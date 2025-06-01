@@ -237,8 +237,6 @@ public class AIAssistantImpl implements AIAssistant {
 
             return completionResponse;
         } catch (Exception e) {
-            log.error("Error requesting completion", e);
-
             if (e instanceof DBException) {
                 throw (DBException) e;
             } else {

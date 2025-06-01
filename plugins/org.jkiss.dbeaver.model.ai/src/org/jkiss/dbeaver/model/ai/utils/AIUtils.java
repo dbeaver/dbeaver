@@ -217,7 +217,12 @@ public final class AIUtils {
         ) {
             if (object instanceof DBPScriptObject scriptObject) {
                 try {
-                    return scriptObject.getObjectDefinitionText(monitor, Map.of());
+                    return scriptObject.getObjectDefinitionText(monitor, Map.of(
+                        DBPScriptObject.OPTION_INCLUDE_COMMENTS, false,
+                        DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, false,
+                        DBPScriptObject.OPTION_SKIP_INDEXES, true, // Exclude indexes
+                        DBPScriptObject.OPTION_SKIP_DROPS, true // Exclude --DROP
+                    ));
                 } catch (DBException e) {
                     log.debug(e);
                 }

@@ -69,7 +69,7 @@ public class DatabaseMetadataUtils {
             description.append(" ").append(name).append("(");
             DBSEntityAttribute firstAttr = addPromptAttributes(monitor, entity, description, formatter);
             formatter.addExtraDescription(monitor, entity, description, firstAttr);
-            description.append(");");
+            description.append(");\n");
             if (object instanceof DBSDataContainer dataContainer) {
                 formatter.addDataSample(monitor, dataContainer, description);
             }
