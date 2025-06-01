@@ -214,20 +214,19 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                 = createEngineConfigurator();
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
             activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
-            try {
-                activeEngineConfiguratorPage.loadSettings(this.settings.getEngineConfiguration(id));
-            } catch (DBException e) {
-                log.error("Error loading engine settings", e);
-
-                DBWorkbench.getPlatformUI().showError(
-                    "Error loading AI settings",
-                    "Error loading engine settings for " + id,
-                    e
-                );
-            }
             engineConfiguratorMapping.put(id, activeEngineConfiguratorPage);
         } else {
             activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
+        }
+
+        try {
+            activeEngineConfiguratorPage.loadSettings(this.settings.getEngineConfiguration(id));
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(
+                "Error loading AI settings",
+                "Error loading engine settings for " + id,
+                e
+            );
         }
     }
 
