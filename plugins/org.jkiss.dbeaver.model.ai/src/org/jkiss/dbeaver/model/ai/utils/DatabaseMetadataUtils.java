@@ -61,7 +61,7 @@ public class DatabaseMetadataUtils {
                 object,
                 DBPEvaluationContext.DDL
             ) : DBUtils.getQuotedIdentifier(object);
-            description.append('\n');
+            //description.append('\n');
             formatter.addObjectDescriptionIfNeeded(description, object, monitor);
             if (object instanceof DBSTable table) {
                 description.append(table.isView() ? "CREATE VIEW" : "CREATE TABLE");
