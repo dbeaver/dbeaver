@@ -1211,16 +1211,37 @@ public final class SQLUtils {
         return actualIdentifierString;
     }
 
-    public static String compact(@NotNull String sql, @NotNull SQLDialect sqlDialect) {
-
-        String res = stripComments(sqlDialect, sql);
-
-        final String dl = getScriptLineDelimiter(sqlDialect);
+    /**
+     * Compacts the given SQL script by removing comments and joining logical SQL statements
+     * into single lines, while preserving block structure and readability.
+     * <p>
+     * This method performs the following steps:
+     * <ul>
+     *     <li>Removes multi-line comments defined by the SQL dialect</li>
+     *     <li>Strips trailing single-line comments while preserving lines that are comments entirely</li>
+     *     <li>Compacts logical SQL blocks (terminated by the script line delimiter) into single lines</li>
+     *     <li>Preserves empty lines as block separators</li>
+     * </ul>
+     *
+     * @param sql        the raw SQL script to compact
+     * @param sqlDialect the dialect-specific rules for parsing SQL comments and delimiters
+     * @return the compacted SQL script as a string, with comments removed and statements flattened
+     */
+    public static String compact(
+        @NotNull String sql,
+        @NotNull SQLDialect sqlDialect
+    ) {
+        final String ld = getScriptLineDelimiter(sqlDialect);
         final String ls = GeneralUtils.getDefaultLineSeparator();
+
+        String res = removeMlComments(sql,
+            sqlDialect.getMultiLineComments().getFirst(),
+            sqlDialect.getMultiLineComments().getSecond());
+
+        res = stripTrailingComments(res, sqlDialect.getSingleLineComments(), ls);
 
         StringBuilder buffer = new StringBuilder();
         StringJoiner result = new StringJoiner(ls);
-
 
         try (BufferedReader reader = new BufferedReader(new StringReader(res))) {
             String line;
@@ -1237,7 +1258,7 @@ public final class SQLUtils {
                 String trimmed = line.strip();
 
                 buffer.append(trimmed);
-                if (trimmed.endsWith(dl)) {
+                if (trimmed.endsWith(ld)) {
                     result.add(buffer.toString().strip());
                     buffer.setLength(0);
                 } else {
@@ -1253,6 +1274,89 @@ public final class SQLUtils {
             return result.toString();
         } catch (IOException e) {
             log.warn("Can't compact sql: ", e);
+        }
+
+        return sql;
+    }
+
+    /**
+     * Removes trailing single-line comments from SQL script lines, preserving dedicated comment lines.
+     * <p>
+     * For each line in the SQL script:
+     * <ul>
+     *     <li>If the line starts with a comment marker (e.g., "--" or "#"), it is left unchanged</li>
+     *     <li>If a comment marker appears after SQL code (outside of string literals), the comment is stripped</li>
+     *     <li>String literals (delimited by single quotes) are respected — markers inside them are ignored</li>
+     * </ul>
+     * <p>
+     * This method is typically used to simplify SQL formatting before compacting or parsing,
+     * while preserving important block-level comment lines for readability or debugging.
+     *
+     * @param sql               the input SQL script
+     * @param singleLineMarkers array of comment markers (e.g., {@code "--"}, {@code "#"})
+     * @param lineSeparator     the system or dialect-specific line separator (e.g., {@code "\n"} or {@code "\r\n"})
+     * @return SQL script with inline trailing comments removed, preserving formatting and comment lines
+     */
+    public static String stripTrailingComments(
+        @NotNull String sql,
+        @NotNull String[] singleLineMarkers,
+        @NotNull String lineSeparator
+    ) {
+        var result = new StringBuilder();
+
+        try (BufferedReader reader = new BufferedReader(new StringReader(sql))) {
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                String trimmed = line.stripLeading();
+
+                boolean isPureCommentLine = false;
+                for (String marker : singleLineMarkers) {
+                    if (trimmed.startsWith(marker)) {
+                        isPureCommentLine = true;
+                        break;
+                    }
+                }
+
+                if (isPureCommentLine) {
+                    result.append(line).append("\n");
+                    continue;
+                }
+
+                int commentStart = -1;
+                boolean inString = false;
+
+                for (int i = 0; i < line.length(); i++) {
+                    char c = line.charAt(i);
+
+                    if (c == '\'') {
+                        inString = !inString;
+                    }
+
+                    if (!inString) {
+                        for (String marker : singleLineMarkers) {
+                            if (line.startsWith(marker, i)) {
+                                commentStart = i;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (commentStart != -1) {
+                        break;
+                    }
+                }
+
+                if (commentStart != -1) {
+                    result.append(line.substring(0, commentStart).stripTrailing());
+                } else {
+                    result.append(line);
+                }
+                result.append(lineSeparator);
+            }
+            return result.toString().strip();
+        } catch (IOException e) {
+            log.warn("Can't remove trailing comments: ", e);
         }
 
         return sql;
