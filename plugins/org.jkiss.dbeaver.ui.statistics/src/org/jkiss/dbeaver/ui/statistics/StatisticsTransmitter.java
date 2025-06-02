@@ -56,7 +56,7 @@ public class StatisticsTransmitter {
     public StatisticsTransmitter(String workspaceId) {
         this.workspaceId = workspaceId;
 
-        if (System.getenv(DBConstants.LM_STAGE_MODE) != null) {
+        if (System.getProperty(DBConstants.LM_STAGE_MODE) != null) {
             endpoint = URL_TEMPLATE.formatted(STATS_STAGE_DBEAVER);
         } else {
             endpoint = URL_TEMPLATE.formatted(STATS_DBEAVER_COM);;
