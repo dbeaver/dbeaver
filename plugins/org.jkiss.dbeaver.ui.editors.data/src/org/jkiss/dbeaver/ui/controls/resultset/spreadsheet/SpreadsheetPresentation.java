@@ -3041,11 +3041,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @NotNull
         private String getAttributeText(DBDAttributeBinding binding) {
-            if (CommonUtils.isEmpty(binding.getLabel())) {
-                return binding.getName();
-            } else {
-                return binding.getLabel();
-            }
+            String label = CommonUtils.isEmpty(binding.getLabel()) ? binding.getName() : binding.getLabel();
+            return label + " (" + (binding.getOrdinalPosition() + 1) + ")";
         }
 
         @Nullable
