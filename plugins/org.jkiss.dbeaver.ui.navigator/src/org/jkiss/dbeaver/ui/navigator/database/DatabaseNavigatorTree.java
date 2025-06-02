@@ -437,7 +437,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 break;
             }
             case UPDATE:
-                if (!treeViewer.getControl().isDisposed()) {
+                if (!treeViewer.getControl().isDisposed() && !treeViewer.isBusy()) {
                     switch (event.getNodeChange()) {
                         case BEFORE_LOAD:
                             startNodeLoadingVisualization(event.getNode());
@@ -450,21 +450,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                             expandNodeOnLoad(event.getNode());
                             break;
                         case UNLOAD:
-                            if (treeViewer.isBusy()) {
-                                UIUtils.asyncExec(() -> {
-                                    while (treeViewer.isBusy()) {
-                                        try {
-                                            Thread.sleep(100);
-                                        } catch (InterruptedException e) {
-                                            log.debug("Error while waiting for tree to be free", e);
-                                        }
-                                    }
-
-                                    handleUnloadEvent(event);
-                                });
-                            } else {
-                                handleUnloadEvent(event);
-                            }
+                            stopNodeLoadingVisualization(event.getNode());
+                            treeViewer.collapseToLevel(event.getNode(), -1);
+                            treeViewer.update(getViewerObject(event.getNode()), null);
+                            treeViewer.collapseToLevel(event.getNode(), -1);
                             break;
                         case REFRESH:
 //                                Widget item = treeViewer.testFindItem(event.getNode());
@@ -484,13 +473,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             default:
                 break;
         }
-    }
-
-    private void handleUnloadEvent(DBNEvent event) {
-        stopNodeLoadingVisualization(event.getNode());
-        treeViewer.collapseToLevel(event.getNode(), -1);
-        treeViewer.update(getViewerObject(event.getNode()), null);
-        treeViewer.collapseToLevel(event.getNode(), -1);
     }
 
     private void startNodeLoadingVisualization(DBNNode node) {
