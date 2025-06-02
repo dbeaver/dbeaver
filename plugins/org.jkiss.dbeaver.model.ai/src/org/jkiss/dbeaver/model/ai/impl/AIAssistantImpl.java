@@ -290,11 +290,11 @@ public class AIAssistantImpl implements AIAssistant {
         );
     }
 
-    protected PromptBuilder buildPrompt(
+    protected AIPromptBuilder buildPrompt(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICompletionEngine engine,
-        @NotNull IAIFormatter formatter,
-        @Nullable DAICompletionContext context
+        @NotNull AIEngine engine,
+        @NotNull AIPromptFormatter formatter,
+        @Nullable AIDatabaseContext context
     ) throws DBException {
         AIPromptBuilder promptBuilder = AIPromptBuilder.createForDataSource(
             context != null ? context.getDataSource() : null,
@@ -334,7 +334,7 @@ public class AIAssistantImpl implements AIAssistant {
     protected void describeDatabaseMetadata(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngine engine,
-        @NotNull IAIFormatter formatter,
+        @NotNull AIPromptFormatter formatter,
         @Nullable AIDatabaseContext context,
         @NotNull AIPromptBuilder promptBuilder
     ) throws DBException {
