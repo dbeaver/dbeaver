@@ -1319,20 +1319,17 @@ public final class SQLUtils {
                 }
 
                 if (isPureCommentLine) {
-                    result.append(line).append("\n");
+                    result.append(line).append(lineSeparator);
                     continue;
                 }
 
                 int commentStart = -1;
                 boolean inString = false;
-
                 for (int i = 0; i < line.length(); i++) {
                     char c = line.charAt(i);
-
                     if (c == '\'') {
                         inString = !inString;
                     }
-
                     if (!inString) {
                         for (String marker : singleLineMarkers) {
                             if (line.startsWith(marker, i)) {
@@ -1341,17 +1338,11 @@ public final class SQLUtils {
                             }
                         }
                     }
-
                     if (commentStart != -1) {
                         break;
                     }
                 }
-
-                if (commentStart != -1) {
-                    result.append(line.substring(0, commentStart).stripTrailing());
-                } else {
-                    result.append(line);
-                }
+                appendLine(commentStart, result, line);
                 result.append(lineSeparator);
             }
             return result.toString().strip();
@@ -1360,6 +1351,14 @@ public final class SQLUtils {
         }
 
         return sql;
+    }
+
+    private static void appendLine(int commentStart, StringBuilder result, String line) {
+        if (commentStart != -1) {
+            result.append(line.substring(0, commentStart).stripTrailing());
+        } else {
+            result.append(line);
+        }
     }
 
 }
