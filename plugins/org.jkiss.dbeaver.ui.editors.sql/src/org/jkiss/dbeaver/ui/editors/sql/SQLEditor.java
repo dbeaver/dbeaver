@@ -118,7 +118,6 @@ import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddIn;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
-import org.jkiss.dbeaver.ui.editors.sql.ai.suggestion.AISuggestionTextPainter;
 import org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation;
@@ -132,6 +131,7 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.editors.sql.suggestion.SQLSuggestionTextPainter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
 import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
@@ -151,8 +151,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -258,10 +258,10 @@ public class SQLEditor extends SQLEditorBase implements
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
-    private AISuggestionTextPainter AISuggestionTextPainter;
+    private SQLSuggestionTextPainter suggestionTextPainter;
 
-    public AISuggestionTextPainter getSuggestionTextPainter() {
-        return AISuggestionTextPainter;
+    public SQLSuggestionTextPainter getSuggestionTextPainter() {
+        return suggestionTextPainter;
     }
 
     private static class ServerOutputInfo {
@@ -993,6 +993,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         Composite editorContainer;
         sqlEditorPanel = UIUtils.createPlaceholder(resultsSash, 3, 0);
+        CSSUtils.setCSSClass(sqlEditorPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         // Create left vertical toolbar
         createControlsBar(sqlEditorPanel);
@@ -1069,22 +1070,22 @@ public class SQLEditor extends SQLEditorBase implements
                 });
             }
         }
-        AISuggestionTextPainter = new AISuggestionTextPainter(getViewer());
-        AISuggestionTextPainter.enable();
+        suggestionTextPainter = new SQLSuggestionTextPainter(getViewer());
+        suggestionTextPainter.enable();
 
         StyledText textWidget = getViewer().getTextWidget();
         textWidget.addVerifyKeyListener(e -> {
-            if (e.keyCode == SWT.ARROW_RIGHT && AISuggestionTextPainter.hasContentToShow()) {
+            if (e.keyCode == SWT.ARROW_RIGHT && suggestionTextPainter.hasContentToShow()) {
                 e.doit = false;
-                AISuggestionTextPainter.applyHint();
+                suggestionTextPainter.applyHint();
             }
         });
         textWidget.addCaretListener(event -> {
-            if (AISuggestionTextPainter.hasContentToShow()) {
+            if (suggestionTextPainter.hasContentToShow()) {
                 int caretOffset = event.caretOffset;
-                int suggestionOffset = AISuggestionTextPainter.getCurrentPosition();
+                int suggestionOffset = suggestionTextPainter.getCurrentPosition();
                 if (caretOffset != suggestionOffset) {
-                    AISuggestionTextPainter.removeHint();
+                    suggestionTextPainter.removeHint();
                 }
             }
         });
@@ -1134,13 +1135,19 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE)) {
             doScriptAutoSave();
         }
-        if (AISuggestionTextPainter != null) {
-            AISuggestionTextPainter.removeHint();
+        if (suggestionTextPainter != null) {
+            suggestionTextPainter.removeHint();
         }
     }
 
     private void createControlsBar(Composite sqlEditorPanel) {
-        Composite leftToolPanel = new Composite(sqlEditorPanel, SWT.LEFT);
+        Composite leftToolPanel = new Composite(sqlEditorPanel, SWT.LEFT) {
+            // hack to prevent eclipse from overriding this Composite's class
+            @Override
+            public void setBackground(Color color) {
+                super.setBackground(color);
+            }
+        };
         GridLayout panelsLayout = new GridLayout(1, true);
         panelsLayout.marginHeight = 2;
         panelsLayout.marginWidth = 1;
@@ -1302,7 +1309,19 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void createResultTabs() {
-        resultTabs = new CTabFolder(resultsSash, SWT.TOP | SWT.FLAT);
+        resultTabs = new CTabFolder(resultsSash, SWT.TOP | SWT.FLAT) {
+            // prevent eclipse from overriding this CTabFolder's css class
+            @Override
+            public void setBackground(Color color) {
+                DBPDataSourceContainer dsContainer = getDataSourceContainer();
+                Color bgColor = dsContainer != null ? UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration()) : null;
+                if (bgColor != null && !bgColor.equals(color)) {
+                    UIUtils.asyncExec(() -> CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE));
+                } else {
+                    super.setBackground(color);
+                }
+            }
+        };
         CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE);
         resultTabsReorder = new TabFolderReorder(resultTabs);
         resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -3062,12 +3081,12 @@ public class SQLEditor extends SQLEditorBase implements
 
         DBPDataSourceContainer dsContainer = getDataSourceContainer();
 
+        if (sqlEditorPanel != null) {
+            DatabaseEditorUtils.setPartBackground(this, sqlEditorPanel);
+        }
+
         if (resultTabs != null) {
             DatabaseEditorUtils.setPartBackground(this, resultTabs);
-            Color bgColor = dsContainer == null ? null : UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration());
-            resultsSash.setBackground(bgColor);
-            topBarMan.getControl().setBackground(bgColor);
-            bottomBarMan.getControl().setBackground(bgColor);
         }
 
         DBCExecutionContext executionContext = getExecutionContext();

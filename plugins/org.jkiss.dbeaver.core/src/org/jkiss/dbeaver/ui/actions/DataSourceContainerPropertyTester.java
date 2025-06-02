@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 
 import java.util.Objects;
 
@@ -46,7 +46,7 @@ public class DataSourceContainerPropertyTester extends PropertyTester
             case PROP_DRIVER_CLASS -> Objects.equals(container.getDriver().getDriverClassName(), expectedValue);
             case PROP_CONNECTED -> container.isConnected();
             case PROP_CONNECTING -> container.isConnecting();
-            case PROP_SUPPORTS_SCHEMAS -> DataSourceToolbarUtils.isSchemasSupported(container);
+            case PROP_SUPPORTS_SCHEMAS -> DBStructUtils.isSchemasSupported(container);
             default -> false;
         };
     }

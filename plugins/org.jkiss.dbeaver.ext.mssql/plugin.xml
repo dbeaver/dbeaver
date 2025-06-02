@@ -203,7 +203,7 @@
                 <driver
                         id="azure"
                         label="Azure SQL Server"
-                        icon="icons/azure_icon.png"
+                        icon="icons/azure_sql_server_icon.png"
                         iconBig="icons/azure_sql_server_icon_big.png"
                         category="Azure"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
@@ -230,8 +230,8 @@
                 <driver
                         id="babelfish"
                         label="Babelfish via TDS (beta)"
-                        icon="icons/bbfsh_icon.png"
-                        iconBig="icons/bbfsh_icon_big.png"
+                        icon="icons/babelfish_icon.png"
+                        iconBig="icons/babelfish_icon_big.png"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host};databaseName={database}"
                         useURL="false"
@@ -334,8 +334,8 @@
                 <driver
                         id="mssql_jdbc_azure"
                         label="Azure SQL Server (Deprecated)"
-                        icon="icons/azure_icon.png"
-                        iconBig="icons/azure_icon_big.png"
+                        icon="icons/azure_sql_server_icon.png"
+                        iconBig="icons/azure_sql_server_icon_big.png"
                         category="Azure"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host};databaseName={database}"

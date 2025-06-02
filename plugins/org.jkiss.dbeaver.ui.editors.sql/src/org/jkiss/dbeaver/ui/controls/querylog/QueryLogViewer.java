@@ -1244,13 +1244,13 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 String qmSessionId = null;
                 if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider provider) {
                     int tries = 0;
-                    qmSessionId = provider.getQmSessionId();
+                    qmSessionId = provider.getQueryManagerSessionId();
                     while (qmSessionId == null && tries < RETRIES_QM_WAITING) {
                         if (DBWorkbench.getPlatform().isShuttingDown()) {
                             break;
                         }
                         RuntimeUtils.pause(WAITING_QM_SESSION_SECONDS_PER_TRY * 1000);
-                        qmSessionId = provider.getQmSessionId();
+                        qmSessionId = provider.getQueryManagerSessionId();
                         tries++;
                     }
                 }

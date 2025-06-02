@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
 
     public SQLServerConnectionPage() {
         LOGO_AZURE = createImage("icons/azure_logo.png");
-        LOGO_BABELFISH = createImage("icons/bbfsh_logo.png");
+        LOGO_BABELFISH = createImage("icons/babelfish_logo.png");
         LOGO_SQLSERVER = createImage("icons/mssql_logo.png");
         LOGO_SYBASE = createImage("icons/sybase_logo.png");
     }
