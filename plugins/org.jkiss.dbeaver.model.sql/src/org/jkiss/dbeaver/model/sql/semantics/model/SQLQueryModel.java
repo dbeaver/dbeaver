@@ -172,6 +172,7 @@ public class SQLQueryModel extends SQLQueryNodeModel {
 
         SQLQueryLexicalScopeItem lexicalItem = null;
         SQLQueryLexicalScope scope = null;
+        SQLQuerySymbolOrigin deepestTailOrigin = null;
 
         // walk up till the lexical scope covering given position
         // TODO consider corner-cases with adjacent scopes, maybe better use condition on lexicalItem!=null instead of the scope?
@@ -180,6 +181,9 @@ public class SQLQueryModel extends SQLQueryNodeModel {
             scope = node.findLexicalScope(textOffset);
             if (scope != null) {
                 lexicalItem = scope.findNearestItem(textOffset);
+            }
+            if (deepestTailOrigin == null && node.getTailOrigin() != null) {
+                deepestTailOrigin = node.getTailOrigin();
             }
             stack = stack.next;
         }
@@ -203,6 +207,9 @@ public class SQLQueryModel extends SQLQueryNodeModel {
         SQLQuerySymbolOrigin symbolsOrigin = lexicalItem == null ? null : lexicalItem.getOrigin();
         if (symbolsOrigin == null && textOffset > this.getInterval().b) {
             symbolsOrigin = this.getTailOrigin();
+            if (symbolsOrigin == null) {
+                symbolsOrigin = deepestTailOrigin;
+            }
         }
         if (symbolsOrigin == null && scope != null) {
             symbolsOrigin = scope.getSymbolsOrigin();

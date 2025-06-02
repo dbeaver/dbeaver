@@ -22,10 +22,7 @@ import org.eclipse.e4.ui.css.swt.helpers.SWTElementHelpers;
 import org.eclipse.e4.ui.css.swt.properties.css2.CSSPropertyBackgroundSWTHandler;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Canvas;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Widget;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.w3c.dom.Element;
@@ -95,6 +92,10 @@ public class CustomCompositeElementHandler extends CSSPropertyBackgroundSWTHandl
                 }
             } else {
                 colorByConnectionType = DBStyles.COLORED_BY_CONNECTION_TYPE.equals(CSSUtils.getCSSClass(widget));
+                // sometimes eclipse overrides css class of the controls, so let's check for the toolbar's css class too
+                if (!colorByConnectionType && widget instanceof Composite c && c.getParent() instanceof ToolBar tb) {
+                    colorByConnectionType = DBStyles.COLORED_BY_CONNECTION_TYPE.equals(CSSUtils.getCSSClass(tb));
+                }
             }
 
             if (colorByConnectionType) {

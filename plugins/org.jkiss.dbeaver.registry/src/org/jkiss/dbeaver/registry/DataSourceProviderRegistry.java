@@ -263,7 +263,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    private void readDriversConfig() {
+    public void readDriversConfig() {
         String providedDriversConfig = System.getProperty("dbeaver.drivers.configuration-file");
         if (!CommonUtils.isEmpty(providedDriversConfig)) {
             Path configFile = Path.of(providedDriversConfig);
