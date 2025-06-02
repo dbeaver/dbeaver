@@ -103,6 +103,9 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             .command(monitor, new AICommandRequest(prompt, aiContext));
 
         if (result.sql() == null) {
+            if (!CommonUtils.isEmpty(result.message())) {
+                throw new DBException(result.message());
+            }
             throw new DBException("Empty AI response for '" + prompt + "'");
         }
 
