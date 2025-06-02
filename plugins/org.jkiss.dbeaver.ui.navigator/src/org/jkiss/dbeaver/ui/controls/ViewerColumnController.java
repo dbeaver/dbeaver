@@ -31,8 +31,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
@@ -879,14 +877,6 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
             if (cat1 != cat2) {
                 return cat1 - cat2;
-            }
-
-            if (e1 instanceof DBNDatabaseNode n1 && e2 instanceof DBNDatabaseNode n2) {
-                Object o1 = n1.getValueObject();
-                Object o2 = n2.getValueObject();
-                if (o1 instanceof DBPObjectWithOrdinalPosition c1 && o2 instanceof DBPObjectWithOrdinalPosition c2) {
-                    return Integer.compare(c1.getOrdinalPosition(), c2.getOrdinalPosition());
-                }
             }
 
             final String name1 = getLabel(viewer, e1);

@@ -268,7 +268,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
             }
-            useEmbeddedBrowserAuth.setSelection(store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+            useEmbeddedBrowserAuth.setSelection(store.getBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH));
         }
         final String timezone = store.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (clientTimezone != null) {
@@ -290,7 +290,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (isStandalone) {
-            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH));
             if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
             }
@@ -324,7 +324,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         if (isStandalone) {
-            store.setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
+            store.setValue(UIPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
             if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
             } else {
