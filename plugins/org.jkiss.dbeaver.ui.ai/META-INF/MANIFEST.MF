@@ -13,7 +13,7 @@ Export-Package: org.jkiss.dbeaver.ui.ai,
  org.jkiss.dbeaver.ui.ai.preferences,
  org.jkiss.dbeaver.ui.ai.internal
 Bundle-Release-Date: 20250616
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.bundle.gpt3,
  org.jkiss.dbeaver.model.ai,
