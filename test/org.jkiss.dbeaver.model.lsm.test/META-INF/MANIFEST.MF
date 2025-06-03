@@ -14,6 +14,6 @@ Require-Bundle: org.jkiss.dbeaver.model.sql,
  net.bytebuddy.byte-buddy,
  net.bytebuddy.byte-buddy-agent
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Automatic-Module-Name: org.jkiss.dbeaver.model.lsm.test

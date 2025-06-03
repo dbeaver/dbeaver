@@ -23,7 +23,7 @@ Require-Bundle: org.jkiss.dbeaver.ui.config.migration,
  org.jkiss.dbeaver.tasks.native.ui,
  org.jkiss.dbeaver.tasks.ui
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Import-Package: com.google.gson
