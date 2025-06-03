@@ -3042,7 +3042,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
         @NotNull
         private String getAttributeText(DBDAttributeBinding binding) {
             String label = CommonUtils.isEmpty(binding.getLabel()) ? binding.getName() : binding.getLabel();
-            return label + " (" + (binding.getOrdinalPosition() + 1) + ")";
+            // get show column position configuration
+            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+            if (store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_COLUMN_POS)) {
+                label = label + " (" + (binding.getOrdinalPosition() + 1) + ")";
+            }
+            return label;
         }
 
         @Nullable
