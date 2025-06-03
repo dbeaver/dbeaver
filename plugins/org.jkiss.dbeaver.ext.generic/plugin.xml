@@ -1489,10 +1489,10 @@
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.timestream.reason"/>
                 </driver>
                 <driver
-                        id="neo4j-ce"
+                        id="neo4j-stub"
                         label="Neo4j"
                         description="Driver for Neo4j"
-                        iconBig="icons/neo4jf_icon_big.png"
+                        iconBig="icons/neo4j_icon_big.png"
                         supportsDistributedMode="false"
                         categories="graph">
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.neo4j.reason"/>
