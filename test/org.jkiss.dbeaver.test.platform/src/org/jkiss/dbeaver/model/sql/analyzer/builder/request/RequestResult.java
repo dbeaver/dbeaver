@@ -295,6 +295,9 @@ public class RequestResult {
         }
 
         @Override
+        public boolean isForceQualifiedColumnNames() { return false; }
+
+        @Override
         public SQLCompletionProposalBase createProposal(@NotNull SQLCompletionRequest request, @NotNull String displayString, @NotNull String replacementString, int cursorPosition, @Nullable DBPImage image, @NotNull DBPKeywordType proposalType, @Nullable String description, @Nullable DBPNamedObject object, @NotNull Map<String, Object> params) {
             return new SQLCompletionProposalBase(request, displayString, replacementString, cursorPosition, image, proposalType, description, object, params);
         }
