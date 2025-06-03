@@ -3036,9 +3036,28 @@ public class SQLEditor extends SQLEditorBase implements
         return createScriptContext().fillQueryParameters(query, () -> null, false);
     }
 
-    private boolean checkSession(DBRProgressListener onFinish)
-        throws DBException
-    {
+    public void checkSessionAndConnect(DBRProgressListener onFinish) throws DBException {
+        if (getDataSourceContainer() != null
+            && getDataSourceContainer().isConnected()
+            && getExecutionContext() != null
+        ) {
+            if (onFinish != null) {
+                onFinish.onTaskFinished(Status.OK_STATUS);
+            }
+        } else {
+            checkSession(status -> {
+                if (status.isOK() && getExecutionContext() == null) {
+                    status = GeneralUtils.makeErrorStatus("Failed to create execution context after session check");
+                }
+
+                if (onFinish != null) {
+                    onFinish.onTaskFinished(status);
+                }
+            });
+        }
+    }
+
+    private boolean checkSession(DBRProgressListener onFinish) throws DBException {
         DBPDataSourceContainer ds = getDataSourceContainer();
         if (ds == null) {
             throw new DBException("No active connection");

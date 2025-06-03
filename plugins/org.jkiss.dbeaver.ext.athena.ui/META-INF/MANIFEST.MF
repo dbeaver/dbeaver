@@ -10,7 +10,7 @@ Require-Bundle: org.jkiss.dbeaver.ext.athena,
  org.jkiss.dbeaver.ui.editors.connection,
  org.jkiss.dbeaver.ui.navigator
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.athena.ui
