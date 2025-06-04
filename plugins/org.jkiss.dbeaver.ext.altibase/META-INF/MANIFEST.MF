@@ -12,7 +12,7 @@ Require-Bundle: org.eclipse.core.runtime,
  com.google.gson,
  org.jkiss.dbeaver.tasks.native
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.altibase

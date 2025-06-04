@@ -16,7 +16,6 @@
         <module>org.jkiss.dbeaver.launcher</module>
         <module>org.jkiss.dbeaver.model</module>
         <module>org.jkiss.dbeaver.model.ai</module>
-        <module>org.jkiss.dbeaver.model.ai.copilot</module>
         <module>org.jkiss.dbeaver.model.cli</module>
         <module>org.jkiss.dbeaver.model.event</module>
         <module>org.jkiss.dbeaver.model.dashboard</module>
@@ -108,7 +107,6 @@
                 <module>org.jkiss.dbeaver.ui.app.standalone</module>
                 <module>org.jkiss.dbeaver.ui.app.eclipse</module>
                 <module>org.jkiss.dbeaver.ui.app.winstore</module>
-                <module>org.jkiss.dbeaver.ai.copilot.ui</module>
                 <module>org.jkiss.dbeaver.ext.athena.ui</module>
                 <module>org.jkiss.dbeaver.ext.bigquery.ui</module>
                 <module>org.jkiss.dbeaver.ext.clickhouse.ui</module>
@@ -148,7 +146,7 @@
                 <module>org.jkiss.dbeaver.ui.editors.json</module>
                 <module>org.jkiss.dbeaver.ui.editors.locks</module>
                 <module>org.jkiss.dbeaver.ui.editors.sql</module>
-                <module>org.jkiss.dbeaver.ui.editors.sql.ai</module>
+                <module>org.jkiss.dbeaver.ui.ai</module>
                 <module>org.jkiss.dbeaver.ui.editors.sql.terminal</module>
                 <module>org.jkiss.dbeaver.ui.editors.session</module>
                 <module>org.jkiss.dbeaver.ui.editors.xml</module>
