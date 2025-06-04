@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,9 +114,12 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                         : null;
                     boolean isInComment;
                     if (partitioner != null) {
-                        String partitionTypeId = partitioner.getContentType(command.offset);
-                        isInComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitionTypeId)
-                            || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitionTypeId);
+                        String partitionTypeAtCursor = partitioner.getContentType(command.offset);
+                        String partitionTypeBeforeCursor = command.offset > 0 ? partitioner.getContentType(command.offset - 1) : null;
+                        isInComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitionTypeAtCursor)
+                            || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitionTypeAtCursor)
+                            || SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitionTypeBeforeCursor)
+                            || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitionTypeBeforeCursor);
                     } else {
                         isInComment = SQLUtils.isCommentLine(syntaxManager.getDialect(), line);
                     }
