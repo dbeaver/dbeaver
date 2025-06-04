@@ -7,7 +7,7 @@ Bundle-Version: 25.1.1.qualifier
 Bundle-Release-Date: 20250616
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.core.ui.services,
