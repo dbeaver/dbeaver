@@ -65,7 +65,7 @@ public class CubridSequenceManager extends GenericSequenceManager {
     }
 
     @NotNull
-    public String buildStatement(@NotNull CubridSequence sequence, @NotNull boolean forUpdate, boolean hasComment) {
+    public String buildStatement(@NotNull CubridSequence sequence, boolean forUpdate, boolean hasComment) {
 
         StringBuilder sb = new StringBuilder();
         if (forUpdate) {
@@ -94,7 +94,7 @@ public class CubridSequenceManager extends GenericSequenceManager {
         }
     }
 
-    public void buildOtherValue(@NotNull CubridSequence sequence, @NotNull StringBuilder sb, @NotNull boolean hasComment) {
+    public void buildOtherValue(@NotNull CubridSequence sequence, @NotNull StringBuilder sb, boolean hasComment) {
         if (sequence.getCycle()) {
             sb.append(" CYCLE");
         }
