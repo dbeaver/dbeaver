@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
 
     protected DBPProject activeProject;
 
-    protected BaseWorkspaceImpl(DBPPlatform platform, Path workspacePath) {
+    protected BaseWorkspaceImpl(@NotNull DBPPlatform platform, @NotNull Path workspacePath) {
         this.platform = platform;
         this.workspacePath = workspacePath;
         this.workspaceAuthContext = new SessionContextImpl(null);
@@ -79,6 +79,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
         return new LocalWorkspaceSession(this);
     }
 
+    @Override
     public abstract void initializeProjects();
 
     public void initializeWorkspaceSession() {

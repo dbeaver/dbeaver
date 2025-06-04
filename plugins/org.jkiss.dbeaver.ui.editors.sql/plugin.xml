@@ -1246,6 +1246,7 @@
                     <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,org.jkiss.dbeaver.ui.editors.sql.export.data"/>
                 </visibleWhen>
             </command>
+            <separator name="tools" visible="false"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.bottom" >
