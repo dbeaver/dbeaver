@@ -23,6 +23,7 @@
     </url>
 
     <includes id="org.jkiss.dbeaver.app.base.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.app.local.feature" version="0.0.0"/>
 
     <!-- Additional plugins for standalone version -->
 
