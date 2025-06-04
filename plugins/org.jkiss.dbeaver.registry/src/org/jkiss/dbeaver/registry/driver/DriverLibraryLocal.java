@@ -156,8 +156,6 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             return DriverDescriptor.getProvidedDriversStorageFolder();
         }
         if (DBWorkbench.isDistributed() || isCustom()) {
-            // we do not have any provided drivers in distributed mode
-            // and custom drivers stored in the workspace
             return DriverDescriptor.getExternalDriversStorageFolder();
         }
 
