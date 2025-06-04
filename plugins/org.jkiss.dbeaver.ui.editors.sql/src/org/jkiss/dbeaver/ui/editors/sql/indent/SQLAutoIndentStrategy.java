@@ -105,12 +105,22 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                 boolean isQuote = isIdentifierQuoteString(command.text);
                 if (command.offset > 1 && isPrevLetter && !isQuote &&
                     (lineDelimiter || (command.text.length() == 1 && !Character.isJavaIdentifierPart(command.text.charAt(0)))) &&
-                    syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO))
-                {
+                    syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO)
+                ) {
                     IRegion lineRegion = document.getLineInformationOfOffset(command.offset);
                     String line = document.get(lineRegion.getOffset(), lineRegion.getLength()).trim();
-
-                    if (!SQLUtils.isCommentLine(syntaxManager.getDialect(), line)) {
+                    IDocumentPartitioner partitioner = document instanceof IDocumentExtension3 doc
+                        ? doc.getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING)
+                        : null;
+                    boolean isInComment;
+                    if (partitioner != null) {
+                        String partitionTypeId = partitioner.getContentType(command.offset);
+                        isInComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitionTypeId)
+                            || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitionTypeId);
+                    } else {
+                        isInComment = SQLUtils.isCommentLine(syntaxManager.getDialect(), line);
+                    }
+                    if (!isInComment) {
                         isKeywordCaseUpdated = updateKeywordCase(document, command);
                     }
                 }
