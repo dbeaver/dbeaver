@@ -8,7 +8,7 @@ Bundle-Activator: org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeUIActivat
 Require-Bundle: org.jkiss.dbeaver.ext.generic.ui,
  org.jkiss.dbeaver.ext.snowflake
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
 Export-Package: org.jkiss.dbeaver.ext.snowflake.ui,
