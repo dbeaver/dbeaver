@@ -114,6 +114,7 @@ public class UIMessages extends NLS {
 
     public static String preference_page_no_access;
     public static String preference_page_no_edit_access;
+    public static String preference_page_disabled_secret_management;
 
     public static String notification_popup_context_message;
 
