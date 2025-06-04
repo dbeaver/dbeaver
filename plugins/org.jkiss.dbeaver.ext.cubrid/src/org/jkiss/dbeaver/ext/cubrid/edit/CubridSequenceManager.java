@@ -65,7 +65,8 @@ public class CubridSequenceManager extends GenericSequenceManager {
     }
 
     @NotNull
-    public String buildStatement(@NotNull CubridSequence sequence, @NotNull boolean forUpdate, @NotNull boolean hasComment) {
+    public String buildStatement(@NotNull CubridSequence sequence, @NotNull boolean forUpdate, boolean hasComment) {
+
         StringBuilder sb = new StringBuilder();
         if (forUpdate) {
             sb.append("ALTER SERIAL ");
