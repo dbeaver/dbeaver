@@ -601,6 +601,9 @@ public class DBeaverLauncher {
                 return;
             }
         } catch (Exception e) {
+            if (log == null) {
+                openLogFile();
+            }
             log.write(e.getMessage());
         }
         Path secretStoragePath = useCustomSecretStorage(dbeaverDataDir);
