@@ -200,7 +200,7 @@ class ClickhouseDataTypeCache extends GenericDataTypeCache {
             knownTypeEntries.get(0).toSelectStatement(true) + " UNION ALL " +
             knownTypeEntries.stream().skip(1).map(e -> e.toSelectStatement(false)).collect(Collectors.joining(" UNION ALL ")) +
             """
-            ) as attrs ON (dt.name = attrs.c1); -- WHERE dt.alias_to = ''; <- this was in the driver's query, but we decided we want aliased types with aliases
+            ) as attrs ON (dt.name = attrs.c1 or dt.alias_to = attrs.c1) -- WHERE dt.alias_to = ''; <- this was in the driver's query, but we decided we want aliased types with aliases
             """;
         return session.prepareStatement(sql);
     }
