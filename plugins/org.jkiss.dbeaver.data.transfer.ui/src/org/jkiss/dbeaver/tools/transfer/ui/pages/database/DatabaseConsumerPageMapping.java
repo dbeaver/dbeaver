@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.ControlEditor;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
@@ -175,25 +176,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             Composite buttonsPanel = UIUtils.createComposite(mappingsGroup, 1);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-            final Button mapTableButton = UIUtils.createDialogButton(buttonsPanel,
-                DTMessages.data_transfer_db_consumer_existing_table,
-                DBIcon.TREE_TABLE,
-                DTMessages.data_transfer_db_consumer_existing_table_description,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        mapExistingTables(getSelectedMappingContainers());
-                    }
-                });
-            mapTableButton.setEnabled(false);
-
-            UIUtils.createLabelSeparator(buttonsPanel, SWT.HORIZONTAL);
-
             final Button configureButton = UIUtils.createDialogButton(buttonsPanel,
-                DTMessages.data_transfer_db_consumer_button_configure,
+                DTMessages.data_transfer_db_consumer_button_customise,
                 DBIcon.TREE_COLUMNS,
-                DTMessages.data_transfer_db_consumer_button_configure_description,
+                DTMessages.data_transfer_db_consumer_button_customise_description,
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -361,7 +347,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             });
             mappingViewer.addSelectionChangedListener(event -> {
                 DatabaseMappingObject mapping = getSelectedMapping();
-                mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
                 //createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
                 final boolean hasMappings = settings.getContainer() != null &&
                     ((mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified) ||
@@ -774,12 +759,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             SWT.DROP_DOWN | SWT.READ_ONLY);
     }
 
-    private CellEditor createTargetEditor(Object element) throws DBException
-    {
+    private CellEditor createTargetEditor(Object element) throws DBException {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         boolean allowsCreate = true;
         List<String> items = new ArrayList<>();
-        if (element instanceof DatabaseMappingContainer) {
+        boolean isContainer = element instanceof DatabaseMappingContainer;
+
+        if (isContainer) {
             if (settings.getContainer() == null) {
                 allowsCreate = false;
             }
@@ -793,35 +779,105 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             ((DatabaseMappingContainer) element).getMappingType()));
                     }
                 }
-
             }
             items.add(TARGET_NAME_BROWSE);
         } else {
             DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) element;
-            switch (mapping.getParent().getMappingType()) {
-                case skip:
-                case unspecified:
-                    allowsCreate = false;
-                    break;
-            }
+            allowsCreate = switch (mapping.getParent().getMappingType()) {
+                case skip, unspecified -> false;
+                default -> true;
+            };
             DBSDataManipulator target = mapping.getParent().getTarget();
             if (target instanceof DBSEntity parentEntity) {
                 for (DBSEntityAttribute attr : parentEntity.getAttributes(new LoggingProgressMonitor(log))) {
                     items.add(transformTargetName(DBUtils.getQuotedIdentifier(attr), mapping.getMappingType()));
                 }
-            } else if (target == null) {
-                // New table?
+            } else if (target == null && mapping.getSource() != null) {
                 items.add(transformTargetName(DBUtils.getQuotedIdentifier(mapping.getSource()), mapping.getMappingType()));
             }
-
         }
         items.add(DatabaseMappingAttribute.TARGET_NAME_SKIP);
-        CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
-            mappingViewer,
-            mappingViewer.getTree(),
-            items.toArray(new String[0]),
-            SWT.DROP_DOWN | (allowsCreate ? SWT.NONE : SWT.READ_ONLY));
-        return editor;
+
+        boolean finalAllowsCreate = allowsCreate;
+        return new DialogCellEditor(mappingViewer.getTree()) {
+            private CCombo combo;
+
+            @Override
+            protected Control createContents(Composite cell) {
+                combo = new CCombo(cell, SWT.DROP_DOWN | (finalAllowsCreate ? SWT.NONE : SWT.READ_ONLY));
+                combo.setVisibleItemCount(15);
+                combo.setFont(cell.getFont());
+                combo.setBackground(cell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+                combo.setItems(items.toArray(new String[0]));
+
+                combo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        String selected = combo.getText();
+                        if (TARGET_NAME_BROWSE.equals(selected) && isContainer) {
+                            doSetValue(doGetValue());
+                            openDialogBox(cell);
+                        } else {
+                            markDirty();
+                            doSetValue(selected);
+                            fireApplyEditorValue();
+                        }
+                    }
+                });
+
+                combo.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(org.eclipse.swt.events.FocusEvent e) {
+                        markDirty();
+                        fireApplyEditorValue();
+                    }
+                });
+
+                return combo;
+            }
+
+            @Override
+            protected Button createButton(Composite parent) {
+                if (isContainer) {
+                    Button button = new Button(parent, SWT.PUSH | SWT.NO_FOCUS);
+                    button.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
+                    return button;
+                }
+                return null;
+            }
+
+            @Override
+            protected Object openDialogBox(Control cellEditorWindow) {
+                if (isContainer) {
+                    mapExistingTables(new DatabaseMappingContainer[]{(DatabaseMappingContainer) element});
+                    mappingViewer.refresh(element);
+                }
+                return doGetValue();
+            }
+
+            @Override
+            protected void updateContents(Object value) {
+                if (combo != null && !combo.isDisposed()) {
+                    if (value == null) {
+                        combo.setText("");
+                    } else {
+                        combo.setText(value.toString());
+                    }
+                }
+            }
+
+            @Override
+            protected Object doGetValue() {
+                return combo != null && !combo.isDisposed() ? combo.getText() : "";
+            }
+
+            @Override
+            protected void doSetValue(Object value) {
+                if (combo != null && !combo.isDisposed()) {
+                    combo.setText(CommonUtils.toString(value));
+                }
+            }
+        };
     }
 
     private void setMappingTarget(DBRProgressMonitor monitor, DatabaseMappingObject mapping, String name, boolean forceRefresh, boolean updateAttributesNames) {
