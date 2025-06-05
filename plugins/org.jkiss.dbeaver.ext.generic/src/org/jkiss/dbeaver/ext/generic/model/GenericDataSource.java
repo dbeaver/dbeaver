@@ -472,7 +472,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
             try {
                 dataTypeCache.getAllObjects(monitor, this);
             } catch (Exception e) {
-                log.debug("Can't fetch database data types: " + e.getMessage());
+                log.error("Can't fetch database data types: " + e.getMessage(), e);
             }
             if (CommonUtils.isEmpty(dataTypeCache.getCachedObjects())) {
                 // Use basic data types
