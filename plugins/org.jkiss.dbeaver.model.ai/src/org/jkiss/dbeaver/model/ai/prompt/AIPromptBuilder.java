@@ -58,21 +58,22 @@ public class AIPromptBuilder {
     public static AIPromptBuilder createForDataSource(@Nullable DBSLogicalDataSource dataSource, @NotNull AIPromptFormatter formatter) {
         AIPromptBuilder promptBuilder = new AIPromptBuilder();
 
-        return fullForDataSource(promptBuilder, dataSource, formatter);
+        return fullForDataSource(promptBuilder, dataSource, formatter, null);
     }
 
     @NotNull
     public static AIPromptBuilder fullForDataSource(
         @NotNull AIPromptBuilder promptBuilder,
         @Nullable DBSLogicalDataSource dataSource,
-        @NotNull AIPromptFormatter formatter
+        @NotNull AIPromptFormatter formatter,
+        @Nullable String customSchema
     ) {
         if (promptBuilder.isUseSqlGenerateInstructions()) {
             promptBuilder.addInstructions(promptBuilder.createInstructionList(dataSource));
             promptBuilder.addInstructions(formatter.getExtraInstructions().toArray(new String[0]));
         }
 
-        promptBuilder.addContexts(describeContext(dataSource));
+        promptBuilder.addContexts(describeContext(dataSource, customSchema));
 
         return promptBuilder;
     }
@@ -184,6 +185,10 @@ public class AIPromptBuilder {
     }
 
     private static String[] describeContext(@Nullable DBSLogicalDataSource dataSource) {
+        return describeContext(dataSource, null);
+    }
+
+    private static String[] describeContext(@Nullable DBSLogicalDataSource dataSource, @Nullable String customSchema) {
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
             SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
         List<String> lines = new ArrayList<>();
@@ -193,9 +198,10 @@ public class AIPromptBuilder {
             DBPDataSource ds = dataSource.getDataSourceContainer().getDataSource();
             DBPDataSourceInfo dsInfo = ds == null ? null : ds.getInfo();
 
-            String currentSchema = dataSource.getCurrentSchema();
+            String currentSchema = customSchema != null ? customSchema : dataSource.getCurrentSchema();
             if (!CommonUtils.isEmpty(currentSchema)) {
                 lines.add("Current " + (dsInfo == null ? "schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);
+                System.out.println("Current schema: " + currentSchema);
             }
             DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
             if (ds instanceof JDBCDataSource) {
