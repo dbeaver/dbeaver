@@ -70,6 +70,11 @@ class ClickhouseDataTypeCache extends GenericDataTypeCache {
     }
 
 
+    /**
+     * The query the clickhouse-0.8.5 driver sends to the database is written with syntax unsupported for old server versions.
+     * We took the query and rewrote it without using this new ClickHouse syntax.
+     * Also, we added data kinds for data types - attrs.c6, otherwise we can't know the data kind by the type name
+     */
     @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(
@@ -172,30 +177,30 @@ class ClickhouseDataTypeCache extends GenericDataTypeCache {
 
         String sql = """
             SELECT
-                name AS TYPE_NAME,
-                -- if(empty(alias_to), name, alias_to) AS DATA_TYPE, -- that's written in driver, it's wrong, we add attrs.c6 instead
+                dt.name AS TYPE_NAME,
+                dt.alias_to AS TYPE_ALIAS, -- in driver, it was if(empty(alias_to), name, alias_to) AS DATA_TYPE
                 attrs.c2 AS PRECISION,
                 NULL AS LITERAL_PREFIX,
                 NULL AS LITERAL_SUFFIX,
                 NULL AS CREATE_PARAMS,
-                name AS NULLABLE,
+                dt.name AS NULLABLE,
                 not(dt.case_insensitive)::Boolean AS CASE_SENSITIVE,
                 3 AS SEARCHABLE,
                 not(attrs.c3)::Boolean AS UNSIGNED_ATTRIBUTE,
                 false AS FIXED_PREC_SCALE,
                 false AS AUTO_INCREMENT,
-                name AS LOCAL_TYPE_NAME,
+                dt.name AS LOCAL_TYPE_NAME,
                 attrs.c4 AS MINIMUM_SCALE,
                 attrs.c5 AS MAXIMUM_SCALE,
-                attrs.c6 AS DATA_TYPE,
+                attrs.c6 AS DATA_TYPE, -- it's our attribute with data kind information
                 0 AS SQL_DATETIME_SUB,
                 0 AS NUM_PREC_RADIX
             FROM system.data_type_families dt
             LEFT JOIN (""" +
-            knownTypeEntries.getFirst().toSelectStatement(true) + " UNION ALL " +
+            knownTypeEntries.get(0).toSelectStatement(true) + " UNION ALL " +
             knownTypeEntries.stream().skip(1).map(e -> e.toSelectStatement(false)).collect(Collectors.joining(" UNION ALL ")) +
             """
-            ) as attrs ON (dt.name = attrs.c1) WHERE alias_to = '';
+            ) as attrs ON (dt.name = attrs.c1); -- WHERE dt.alias_to = ''; <- this was in the driver's query, but we decided we want aliased types with aliases
             """;
         return session.prepareStatement(sql);
     }
