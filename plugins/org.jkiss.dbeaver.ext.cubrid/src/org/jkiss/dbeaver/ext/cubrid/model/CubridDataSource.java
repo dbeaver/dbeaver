@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -58,7 +57,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class CubridDataSource extends GenericDataSource
 {
     private final CubridMetaModel metaModel;
@@ -82,7 +80,6 @@ public class CubridDataSource extends GenericDataSource
         this.serverCache = new CubridServerCache();
     }
 
-    @DPIContainer
     @NotNull
     @Override
     public CubridDataSource getDataSource() {
@@ -375,9 +372,7 @@ public class CubridDataSource extends GenericDataSource
                 (JDBCSession)
                         context.openSession(
                                 monitor, DBCExecutionPurpose.UTIL, "Read Database Version")) {
-            JDBCDatabaseMetaData metaData;
-            metaData = session.getMetaData();
-            readDatabaseServerVersion(metaData);
+            readDatabaseServerVersion(session, session.getMetaData());
         } catch (SQLException e) {
             throw new DBException("Check Support DBMSOutput failed", e);
         }
