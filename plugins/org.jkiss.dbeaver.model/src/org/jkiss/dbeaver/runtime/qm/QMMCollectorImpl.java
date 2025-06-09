@@ -163,7 +163,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                 if (workspace == null) {
                     continue;
                 }
-                var sessionId = qmSessionProvider.getQmSessionId();
+                var sessionId = qmSessionProvider.getQueryManagerSessionId();
                 if (sessionId == null) {
                     return Collections.emptyList();
                 }
