@@ -94,7 +94,7 @@ dateLiteral: DATE StringLiteralContent;
 timeLiteral: TIME StringLiteralContent;
 timestampLiteral: TIMESTAMP StringLiteralContent;
 // intervalLiteral: INTERVAL sign? StringLiteralContent intervalQualifier;
-intervalLiteral: INTERVAL sign? valueExpressionPrimary intervalQualifier;
+intervalLiteral: INTERVAL sign? valueExpressionPrimary intervalQualifier?;
 
 // identifiers
 characterSetSpecification: qualifiedName;

@@ -118,7 +118,6 @@ import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddIn;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
-import org.jkiss.dbeaver.ui.editors.sql.ai.suggestion.AISuggestionTextPainter;
 import org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPresentation;
@@ -132,6 +131,7 @@ import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.scripts.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.editors.sql.suggestion.SQLSuggestionTextPainter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLEditorCompletionContext;
 import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
@@ -151,8 +151,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -258,10 +258,10 @@ public class SQLEditor extends SQLEditorBase implements
 
     private final ArrayList<SQLEditorAddIn> addIns = new ArrayList<>();
 
-    private AISuggestionTextPainter AISuggestionTextPainter;
+    private SQLSuggestionTextPainter suggestionTextPainter;
 
-    public AISuggestionTextPainter getSuggestionTextPainter() {
-        return AISuggestionTextPainter;
+    public SQLSuggestionTextPainter getSuggestionTextPainter() {
+        return suggestionTextPainter;
     }
 
     private static class ServerOutputInfo {
@@ -954,7 +954,7 @@ public class SQLEditor extends SQLEditorBase implements
         return super.getAdapter(required);
     }
 
-    protected boolean checkConnected(boolean forceConnect, DBRProgressListener onFinish)
+    public boolean checkConnected(boolean forceConnect, DBRProgressListener onFinish)
     {
         // Connect to datasource
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
@@ -967,6 +967,8 @@ public class SQLEditor extends SQLEditorBase implements
                     // Start connect visualizer
                     ConnectVisualizer connectVisualizer = new ConnectVisualizer();
                     serviceConnections.connectDataSource(dataSourceContainer, status -> {
+                        // We must reload syntax to refresh context
+                        UIUtils.syncExec(this::reloadSyntaxRules);
                         if (onFinish != null) onFinish.onTaskFinished(status);
                         connectVisualizer.stop();
                     });
@@ -1070,22 +1072,22 @@ public class SQLEditor extends SQLEditorBase implements
                 });
             }
         }
-        AISuggestionTextPainter = new AISuggestionTextPainter(getViewer());
-        AISuggestionTextPainter.enable();
+        suggestionTextPainter = new SQLSuggestionTextPainter(getViewer());
+        suggestionTextPainter.enable();
 
         StyledText textWidget = getViewer().getTextWidget();
         textWidget.addVerifyKeyListener(e -> {
-            if (e.keyCode == SWT.ARROW_RIGHT && AISuggestionTextPainter.hasContentToShow()) {
+            if (e.keyCode == SWT.ARROW_RIGHT && suggestionTextPainter.hasContentToShow()) {
                 e.doit = false;
-                AISuggestionTextPainter.applyHint();
+                suggestionTextPainter.applyHint();
             }
         });
         textWidget.addCaretListener(event -> {
-            if (AISuggestionTextPainter.hasContentToShow()) {
+            if (suggestionTextPainter.hasContentToShow()) {
                 int caretOffset = event.caretOffset;
-                int suggestionOffset = AISuggestionTextPainter.getCurrentPosition();
+                int suggestionOffset = suggestionTextPainter.getCurrentPosition();
                 if (caretOffset != suggestionOffset) {
-                    AISuggestionTextPainter.removeHint();
+                    suggestionTextPainter.removeHint();
                 }
             }
         });
@@ -1135,8 +1137,8 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CHANGE)) {
             doScriptAutoSave();
         }
-        if (AISuggestionTextPainter != null) {
-            AISuggestionTextPainter.removeHint();
+        if (suggestionTextPainter != null) {
+            suggestionTextPainter.removeHint();
         }
     }
 
@@ -1240,13 +1242,7 @@ public class SQLEditor extends SQLEditorBase implements
     public boolean validateEditorInputState() {
         boolean res = super.validateEditorInputState();
         if (res) {
-            SourceViewer viewer = getViewer();
-            if (viewer != null) {
-                StyledText textWidget = viewer.getTextWidget();
-                if (textWidget != null && !textWidget.isDisposed()) {
-                    textWidget.setFocus();
-                }
-            }
+            setFocusToTextControl();
         }
         return res;
     }
@@ -1992,11 +1988,9 @@ public class SQLEditor extends SQLEditorBase implements
         try {
             if (extraPresentationManager.activePresentation == null) {
                 stackLayout.topControl = presentationStack.getChildren()[0];
-                getEditorControlWrapper().setFocus();
                 getSite().setSelectionProvider(new DynamicSelectionProvider());
             } else {
                 stackLayout.topControl = extraPresentationManager.getActivePresentationControl();
-                extraPresentationManager.getActivePresentationControl().setFocus();
                 getSite().setSelectionProvider(extraPresentationManager.activePresentation.getSelectionProvider());
             }
 
@@ -2056,6 +2050,15 @@ public class SQLEditor extends SQLEditorBase implements
             }
 
             presentationStack.layout(true, true);
+
+            UIUtils.asyncExec(() -> {
+                if (extraPresentationManager.activePresentation == null) {
+                    setFocusToTextControl();
+                } else {
+                    extraPresentationManager.getActivePresentationControl().setFocus();
+                }
+            });
+
         } finally {
             resultsSash.setRedraw(true);
         }
@@ -3036,9 +3039,28 @@ public class SQLEditor extends SQLEditorBase implements
         return createScriptContext().fillQueryParameters(query, () -> null, false);
     }
 
-    private boolean checkSession(DBRProgressListener onFinish)
-        throws DBException
-    {
+    public void checkSessionAndConnect(DBRProgressListener onFinish) throws DBException {
+        if (getDataSourceContainer() != null
+            && getDataSourceContainer().isConnected()
+            && getExecutionContext() != null
+        ) {
+            if (onFinish != null) {
+                onFinish.onTaskFinished(Status.OK_STATUS);
+            }
+        } else {
+            checkSession(status -> {
+                if (status.isOK() && getExecutionContext() == null) {
+                    status = GeneralUtils.makeErrorStatus("Failed to create execution context after session check");
+                }
+
+                if (onFinish != null) {
+                    onFinish.onTaskFinished(status);
+                }
+            });
+        }
+    }
+
+    private boolean checkSession(DBRProgressListener onFinish) throws DBException {
         DBPDataSourceContainer ds = getDataSourceContainer();
         if (ds == null) {
             throw new DBException("No active connection");
@@ -3336,7 +3358,10 @@ public class SQLEditor extends SQLEditorBase implements
                                 // Active schema was changed? Update title and tooltip
                                 firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
                             }
-                            break;
+                            return;
+                        case BEFORE_CONNECT:
+                        case AFTER_CONNECT:
+                            return;
                         default:
                             break;
                     }
@@ -5349,6 +5374,7 @@ public class SQLEditor extends SQLEditorBase implements
                     presentations.put(descriptor, activePresentation);
 
                     SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
+
                     return true;
                 }
             } else {
@@ -5362,6 +5388,7 @@ public class SQLEditor extends SQLEditorBase implements
                     activePresentation.showPresentation(SQLEditor.this, false);
 
                     SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE);
+
                     return true;
                 }
             }

@@ -23,10 +23,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatMessage;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatRole;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
-import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
+import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -68,10 +68,10 @@ public final class AIUtils {
      * @param messages list of messages
      * @return number of tokens
      */
-    public static int countTokens(@NotNull List<DAIChatMessage> messages) {
+    public static int countTokens(@NotNull List<AIMessage> messages) {
         int count = 0;
-        for (DAIChatMessage message : messages) {
-            count += countContentTokens(message.content());
+        for (AIMessage message : messages) {
+            count += countContentTokens(message.getContent());
         }
         return count;
     }
@@ -85,27 +85,27 @@ public final class AIUtils {
      * @return list of truncated messages
      */
     @NotNull
-    public static List<DAIChatMessage> truncateMessages(
+    public static List<AIMessage> truncateMessages(
         boolean chatMode,
-        @NotNull List<DAIChatMessage> messages,
+        @NotNull List<AIMessage> messages,
         int maxTokens
     ) {
-        final List<DAIChatMessage> pending = new ArrayList<>(messages);
-        final List<DAIChatMessage> truncated = new ArrayList<>();
+        final List<AIMessage> pending = new ArrayList<>(messages);
+        final List<AIMessage> truncated = new ArrayList<>();
         int remainingTokens = maxTokens - 20; // Just to be sure
 
         if (!pending.isEmpty()) {
-            if (pending.get(0).role() == DAIChatRole.SYSTEM) {
+            if (pending.get(0).getRole() == AIMessageType.SYSTEM) {
                 // Always append main system message and leave space for the next one
-                DAIChatMessage msg = pending.remove(0);
-                DAIChatMessage truncatedMessage = truncateMessage(msg, remainingTokens - 50);
-                remainingTokens -= countContentTokens(truncatedMessage.content());
+                AIMessage msg = pending.remove(0);
+                AIMessage truncatedMessage = truncateMessage(msg, remainingTokens - 50);
+                remainingTokens -= countContentTokens(truncatedMessage.getContent());
                 truncated.add(msg);
             }
         }
 
-        for (DAIChatMessage message : pending) {
-            final int messageTokens = message.content().length();
+        for (AIMessage message : pending) {
+            final int messageTokens = message.getContent().length();
 
             if (remainingTokens < 0 || messageTokens > remainingTokens) {
                 // Exclude old messages that don't fit into given number of tokens
@@ -116,8 +116,8 @@ public final class AIUtils {
                 }
             }
 
-            DAIChatMessage truncatedMessage = truncateMessage(message, remainingTokens);
-            remainingTokens -= countContentTokens(truncatedMessage.content());
+            AIMessage truncatedMessage = truncateMessage(message, remainingTokens);
+            remainingTokens -= countContentTokens(truncatedMessage.getContent());
             truncated.add(truncatedMessage);
         }
 
@@ -129,15 +129,15 @@ public final class AIUtils {
      * It is sooooo approximately
      * We should use https://github.com/knuddelsgmbh/jtokkit/ or something similar
      */
-    private static DAIChatMessage truncateMessage(DAIChatMessage message, int remainingTokens) {
-        String content = message.content();
+    private static AIMessage truncateMessage(AIMessage message, int remainingTokens) {
+        String content = message.getContent();
         int contentTokens = countContentTokens(content);
         if (remainingTokens > contentTokens) {
             return message;
         }
 
         String truncatedContent = removeContentTokens(content, contentTokens - remainingTokens);
-        return new DAIChatMessage(message.role(), truncatedContent);
+        return new AIMessage(message.getRole(), truncatedContent);
     }
 
     private static String removeContentTokens(String content, int tokensToRemove) {
@@ -161,7 +161,7 @@ public final class AIUtils {
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer mainObject,
         @NotNull String completionText,
-        @NotNull IAIFormatter formatter,
+        @NotNull AIPromptFormatter formatter,
         boolean isChatAPI
     ) {
         if (CommonUtils.isEmpty(completionText)) {
@@ -199,7 +199,7 @@ public final class AIUtils {
      * @param engine the completion engine
      * @param monitor the progress monitor
      */
-    public static int getMaxRequestTokens(@NotNull DAICompletionEngine engine, @NotNull DBRProgressMonitor monitor) throws DBException {
+    public static int getMaxRequestTokens(@NotNull AIEngine engine, @NotNull DBRProgressMonitor monitor) throws DBException {
         return engine.getMaxContextSize(monitor) - AIConstants.MAX_RESPONSE_TOKENS;
     }
 
@@ -217,7 +217,12 @@ public final class AIUtils {
         ) {
             if (object instanceof DBPScriptObject scriptObject) {
                 try {
-                    return scriptObject.getObjectDefinitionText(monitor, Map.of());
+                    return scriptObject.getObjectDefinitionText(monitor, Map.of(
+                        DBPScriptObject.OPTION_INCLUDE_COMMENTS, false,
+                        DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, false,
+                        DBPScriptObject.OPTION_SKIP_INDEXES, true, // Exclude indexes
+                        DBPScriptObject.OPTION_SKIP_DROPS, true // Exclude --DROP
+                    ));
                 } catch (DBException e) {
                     log.debug(e);
                 }
