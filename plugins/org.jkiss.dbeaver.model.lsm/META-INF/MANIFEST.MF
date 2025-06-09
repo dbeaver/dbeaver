@@ -10,7 +10,7 @@ Require-Bundle: org.jkiss.bundle.antlr4;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.utils,
  org.eclipse.core.runtime
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.jkiss.dbeaver.model.lsm,
  org.jkiss.dbeaver.model.lsm.sql,
  org.jkiss.dbeaver.model.lsm.sql.dialect,

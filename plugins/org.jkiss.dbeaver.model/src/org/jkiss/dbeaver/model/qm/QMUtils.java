@@ -205,7 +205,7 @@ public class QMUtils {
      */
     public static String getQmSessionId(DBCExecutionContext executionContext) throws DBException {
         if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider provider) {
-            return provider.getQmSessionId();
+            return provider.getQueryManagerSessionId();
         }
         return getQmSessionId(executionContext.getDataSource());
     }
@@ -215,7 +215,14 @@ public class QMUtils {
      */
     @Nullable
     public static String getQmSessionId(@NotNull DBPDataSource dataSource) throws DBException {
-        DBPProject project = dataSource.getContainer().getProject();
+        return getQmSessionId(dataSource.getContainer().getProject());
+    }
+
+    /**
+     * Extract QM session id from project
+     */
+    @Nullable
+    public static String getQmSessionId(@NotNull DBPProject project) throws DBException {
         SMSessionContext projectAuthContext = project.getSessionContext();
         SMAuthSpace projectPrimaryAuthSpace = projectAuthContext.getPrimaryAuthSpace();
 

@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai.utils;
 
+import org.jkiss.code.NotNull;
+
 public abstract class LazyValue<T, E extends Exception> {
     protected T value;
     protected E exception;
@@ -26,7 +28,8 @@ public abstract class LazyValue<T, E extends Exception> {
      * @return the value
      * @throws E if an exception occurred during initialization.
      */
-    public synchronized T evaluate() throws E {
+    @NotNull
+    public synchronized T getInstance() throws E {
         if (value == null) {
             try {
                 value = initialize();
@@ -47,5 +50,6 @@ public abstract class LazyValue<T, E extends Exception> {
      * @return the initialized value.
      * @throws E if an exception occurred during initialization.
      */
+    @NotNull
     protected abstract T initialize() throws E;
 }
