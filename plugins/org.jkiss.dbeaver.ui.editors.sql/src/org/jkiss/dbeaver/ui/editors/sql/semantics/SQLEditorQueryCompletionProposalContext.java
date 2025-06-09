@@ -21,10 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionProposalContext;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 
 import java.util.EnumMap;
@@ -33,14 +33,14 @@ public class SQLEditorQueryCompletionProposalContext extends SQLQueryCompletionP
 
     // static one-time initialized
     private static final EnumMap<SQLQueryCompletionItemKind, String> registryStyleByItemKind = new EnumMap<>(SQLQueryCompletionItemKind.class) {{
-        put(SQLQueryCompletionItemKind.RESERVED, SQLConstants.CONFIG_COLOR_KEYWORD);
-        put(SQLQueryCompletionItemKind.SUBQUERY_ALIAS, SQLConstants.CONFIG_COLOR_TABLE_ALIAS);
-        put(SQLQueryCompletionItemKind.DERIVED_COLUMN_NAME, SQLConstants.CONFIG_COLOR_COLUMN_DERIVED);
-        put(SQLQueryCompletionItemKind.NEW_TABLE_NAME, SQLConstants.CONFIG_COLOR_TABLE);
-        put(SQLQueryCompletionItemKind.USED_TABLE_NAME, SQLConstants.CONFIG_COLOR_TABLE);
-        put(SQLQueryCompletionItemKind.TABLE_COLUMN_NAME, SQLConstants.CONFIG_COLOR_COLUMN);
-        put(SQLQueryCompletionItemKind.PROCEDURE, SQLConstants.CONFIG_COLOR_FUNCTION);
-        put(SQLQueryCompletionItemKind.COMPOSITE_FIELD_NAME, SQLConstants.CONFIG_COLOR_COMPOSITE_FIELD);
+        put(SQLQueryCompletionItemKind.RESERVED, ThemeConstants.SQL_EDITOR_COLOR_KEYWORD);
+        put(SQLQueryCompletionItemKind.SUBQUERY_ALIAS, ThemeConstants.SQL_EDITOR_COLOR_TABLE_ALIAS);
+        put(SQLQueryCompletionItemKind.DERIVED_COLUMN_NAME, ThemeConstants.SQL_EDITOR_COLOR_COLUMN_DERIVED);
+        put(SQLQueryCompletionItemKind.NEW_TABLE_NAME, ThemeConstants.SQL_EDITOR_COLOR_TABLE);
+        put(SQLQueryCompletionItemKind.USED_TABLE_NAME, ThemeConstants.SQL_EDITOR_COLOR_TABLE);
+        put(SQLQueryCompletionItemKind.TABLE_COLUMN_NAME, ThemeConstants.SQL_EDITOR_COLOR_COLUMN);
+        put(SQLQueryCompletionItemKind.PROCEDURE, ThemeConstants.SQL_EDITOR_COLOR_FUNCTION);
+        put(SQLQueryCompletionItemKind.COMPOSITE_FIELD_NAME, ThemeConstants.SQL_EDITOR_COLOR_COMPOSITE_FIELD);
     }};
 
     // per completion request initialized to be in sync with actual preferences, consider listening for preference event
