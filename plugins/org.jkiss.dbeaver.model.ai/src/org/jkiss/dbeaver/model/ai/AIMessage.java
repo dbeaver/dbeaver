@@ -21,11 +21,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * Represents a single AI message
  */
 public class AIMessage {
+    @NotNull
+    private final UUID uuid;
     @NotNull
     private final AIMessageType role;
     @NotNull
@@ -44,6 +47,7 @@ public class AIMessage {
         @Nullable String displayMessage,
         @NotNull LocalDateTime time
     ) {
+        this.uuid = UUID.randomUUID();
         this.role = role;
         this.content = content;
         this.displayMessage = displayMessage;
@@ -107,4 +111,8 @@ public class AIMessage {
         return time;
     }
 
+    @NotNull
+    public UUID getId() {
+        return uuid;
+    }
 }
