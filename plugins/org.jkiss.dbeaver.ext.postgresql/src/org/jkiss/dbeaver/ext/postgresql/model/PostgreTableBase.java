@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.dpi.DPIContainer;
-import org.jkiss.dbeaver.model.dpi.DPIElement;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -184,7 +182,6 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             this);
     }
 
-    @DPIContainer
     @NotNull
     public PostgreSchema getSchema() {
         final DBSObject parentObject = super.getParentObject();
@@ -277,8 +274,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return getDataSource().getServerType().readObjectPermissions(monitor, this, includeNestedObjects);
     }
 
-    @DPIElement(cache = true)
-	public boolean isPartition() {
+    public boolean isPartition() {
 		return isPartition;
 	}
 
@@ -286,7 +282,6 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         isPartition = partition;
     }
 
-    @DPIElement(cache = true)
     @NotNull
     public PostgreTablePersistence getPersistence() {
         return persistence;
