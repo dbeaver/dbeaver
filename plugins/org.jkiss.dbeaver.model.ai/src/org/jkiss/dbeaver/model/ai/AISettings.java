@@ -51,9 +51,11 @@ public class AISettings implements IAdaptable {
     public synchronized <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) throws DBException {
         AIEngineSettings<?> aiEngineSettings = engineConfigurations.get(engineId);
 
-        if (!resolvedSecrets.contains(engineId)) {
-            aiEngineSettings.resolveSecrets();
-            resolvedSecrets.add(engineId);
+        if (!AISettingsRegistry.saveSecretsAsPlainText()) {
+            if (!resolvedSecrets.contains(engineId)) {
+                aiEngineSettings.resolveSecrets();
+                resolvedSecrets.add(engineId);
+            }
         }
 
         return (T) aiEngineSettings;
