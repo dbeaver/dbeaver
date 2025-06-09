@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,12 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.jkiss.dbeaver.model.dpi.DPIFactory;
 
 /**
  * Adaptable object
  */
 public interface DBPAdaptable extends IAdaptable  {
 
-    @DPIFactory
     @Override
     <T> T getAdapter(Class<T> adapter);
 }
