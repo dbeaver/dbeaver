@@ -10,7 +10,7 @@ Require-Bundle: org.jkiss.dbeaver.ui.editors.connection,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ext.spanner
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.spanner.ui

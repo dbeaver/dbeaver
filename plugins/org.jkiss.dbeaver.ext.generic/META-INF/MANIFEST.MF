@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.apache.commons.commons-logging;visibility:=reexport,
  slf4j.api;visibility:=reexport
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Export-Package: org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.generic.edit,

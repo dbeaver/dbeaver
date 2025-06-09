@@ -9,7 +9,7 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.data.gis,
  org.jkiss.dbeaver.model.sql
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ext.h2.model,

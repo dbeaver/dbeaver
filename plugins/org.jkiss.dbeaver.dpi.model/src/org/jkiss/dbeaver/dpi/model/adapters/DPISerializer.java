@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,18 +29,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
 import org.jkiss.dbeaver.dpi.model.client.DPIClientProxy;
-import org.jkiss.dbeaver.dpi.model.client.DPISmartObjectWrapper;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.dpi.*;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.utils.BeanUtils;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -82,14 +76,6 @@ public class DPISerializer {
 
     private static Map<Class<?>, AdapterCreator> getCommonAdapters() {
         Map<Class<?>, AdapterCreator> common = new HashMap<>();
-        common.put(DBRProgressMonitor.class, (context, gson) -> new DPIProgressMonitorAdapter(context));
-        common.put(DPIClientObject.class, (context, gson) -> new DPIObjectRefAdapter(context));
-        common.put(Throwable.class, (context, gson) -> new DPIThrowableAdapter(context));
-        common.put(SQLDialect.class, (context, gson) -> new SQLDialectAdapter(context));
-        common.put(TimeZone.class, (context, gson) -> new TimeZoneAdapter(context));
-        common.put(DBCResultSet.class, DPIResultSetAdapter::new);
-        common.put(DBDDataReceiver.class, SQLDataReceiverAdapter::new);
-        common.put(DPISmartObjectWrapper.class, DPIServerSmartObjectsAdapter::new);
         return common;
     }
 
@@ -121,36 +107,10 @@ public class DPISerializer {
                         return (TypeAdapter<T>) entry.getValue().createAdapter(context, gson);
                     }
                 }
-
-                if (getClassAnnotation(theClass, DPILocalObject.class) != null) {
-                    return new DPILocalObjectAdapter<>(context);
-                }
-
-                DPIObject annotation = getDPIAnno(theClass);
-                if (annotation != null) {
-                    return new DPIObjectTypeAdapter<>(context, typeToken.getType());
-                }
-            } else if (typeToken.getType() instanceof WildcardType) {
-                Type[] upperBounds = ((WildcardType) typeToken.getType()).getUpperBounds();
-                if (upperBounds.length > 0 && upperBounds[0] instanceof Class) {
-                    DPIObject annotation = getDPIAnno((Class<?>) upperBounds[0]);
-                    if (annotation != null) {
-                        return new DPIObjectTypeAdapter<>(context, typeToken.getType());
-                    }
-                }
             }
             return null;
         }
 
-    }
-
-    @Nullable
-    public static DPIObject getDPIAnno(@NotNull Class<?> type) {
-        return getClassAnnotation(type, DPIObject.class);
-    }
-
-    public static boolean isSmartObject(@NotNull Class<?> type) {
-        return getClassAnnotation(type, DPISmartObject.class) != null;
     }
 
     @Nullable
@@ -190,42 +150,12 @@ public class DPISerializer {
         Class<?> methodClass
     ) {
         for (Class<?> mi : methodClass.getInterfaces()) {
-            if (mi.getAnnotation(DPIObject.class) != null) {
-                try {
-                    Method iMethod = mi.getMethod(method.getName(), method.getParameterTypes());
-                    T anno = iMethod.getAnnotation(annoType);
-                    if (anno != null) {
-                        return anno;
-                    }
-                } catch (NoSuchMethodException e) {
-                    // ignore
-                }
-            }
             T anno = getMethodAnno(method, annoType, mi);
             if (anno != null) {
                 return anno;
             }
         }
         return null;
-    }
-
-    static class DPIObjectRefAdapter extends AbstractTypeAdapter<DPIClientObject> {
-        public DPIObjectRefAdapter(DPIContext context) {
-            super(context);
-        }
-
-        @Override
-        public void write(JsonWriter jsonWriter, DPIClientObject object) throws IOException {
-            jsonWriter.beginObject();
-            jsonWriter.name(ATTR_OBJECT_ID);
-            jsonWriter.value(object.dpiObjectId());
-            jsonWriter.endObject();
-        }
-
-        @Override
-        public DPIClientObject read(JsonReader jsonReader) throws IOException {
-            throw new IOException("DPI object reference deserialization is not supported");
-        }
     }
 
     static class DPIClassAdapter extends AbstractTypeAdapter<Class> {
@@ -365,7 +295,6 @@ public class DPISerializer {
             jsonWriter.value(context.getOrCreateObjectId(t));
             if (!oldObject) {
                 serializeObjectInfo(jsonWriter, t);
-                serializeContainers(jsonWriter, t);
                 serializeProperties(jsonWriter, t);
             }
             jsonWriter.endObject();
@@ -400,61 +329,8 @@ public class DPISerializer {
                     props.put(prop.getId(), pc.getPropertyValue(null, prop.getId()));
                 }
             }
-            for (Method m : t.getClass().getMethods()) {
-                if (m.getParameterTypes().length == 0 && !m.isAnnotationPresent(Property.class)) {
-                    DPIElement elemAnno = DPISerializer.getMethodAnno(m, DPIElement.class);
-                    if (elemAnno != null && elemAnno.cache()) {
-                        try {
-                            Object propValue = m.invoke(t);
-                            props.put(BeanUtils.getPropertyNameFromGetter(m.getName()), propValue);
-                        } catch (Throwable e) {
-                            log.debug("Error reading object element " + m);
-                        }
-                    }
-                }
-            }
             if (!props.isEmpty()) {
                 JSONUtils.serializeProperties(jsonWriter, ATTR_PROPS, props);
-            }
-        }
-
-        private void serializeContainers(JsonWriter jsonWriter, Object t) throws IOException {
-            // Save containers references
-            Set<String> collectedContainers = null;
-            boolean hasContainers = false;
-            for (Method method : t.getClass().getMethods()) {
-                if (collectedContainers != null && collectedContainers.contains(method.getName())) {
-                    continue;
-                }
-                DPIContainer anno = getMethodAnno(method, DPIContainer.class);
-                if (anno != null && !anno.root() && method.getParameterTypes().length == 0) {
-                    Object container;
-                    try {
-                        container = method.invoke(t);
-                    } catch (Throwable e) {
-                        log.warn("Error reading DPI container", e);
-                        continue;
-                    }
-                    if (container != null) {
-                        if (collectedContainers == null) {
-                            collectedContainers = new HashSet<>();
-                        }
-                        collectedContainers.add(method.getName());
-                        String containerId = context.getObjectId(container);
-                        if (containerId != null) {
-                            if (!hasContainers) {
-                                jsonWriter.name(ATTR_CONTAINERS);
-                                jsonWriter.beginObject();
-                                hasContainers = true;
-                            }
-                            jsonWriter.name(method.getName());
-                            jsonWriter.value(containerId);
-                        }
-                    }
-                }
-            }
-            if (hasContainers) {
-                jsonWriter.endObject();
             }
         }
 
@@ -587,7 +463,6 @@ public class DPISerializer {
                 objectType,
                 objectToString,
                 objectHashCode,
-                objectContainers,
                 objectProperties);
             object = objectHandler.getObjectInstance();
             context.addObject(objectId, object);

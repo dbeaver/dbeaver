@@ -13,7 +13,7 @@
 
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions
-            -Dosgi.requiredJavaVersion=17
+            -Dosgi.requiredJavaVersion=21
             -Dfile.encoding=UTF-8
             --add-modules=ALL-SYSTEM
             --add-opens=java.base/java.io=ALL-UNNAMED
