@@ -159,4 +159,19 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
+
+    @NotNull
+    protected String getNewColumnName(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBECommandContext context,
+            @NotNull CubridTable parent) throws DBException {
+        int suffix = 1;
+        while (true) {
+            String name = "column" + suffix++;
+            if (parent.getAttribute(monitor, name) == null) {
+                return name;
+            }
+        }
+    }
+
 }

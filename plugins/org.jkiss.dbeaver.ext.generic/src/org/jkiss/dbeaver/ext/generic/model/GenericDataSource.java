@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
-import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -135,7 +134,6 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         this.tableTypeCache = new TableTypeCache();
     }
 
-    @DPIContainer
     @NotNull
     @Override
     public GenericDataSource getDataSource() {
@@ -474,7 +472,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
             try {
                 dataTypeCache.getAllObjects(monitor, this);
             } catch (Exception e) {
-                log.warn("Can't fetch database data types: " + e.getMessage());
+                log.debug("Can't fetch database data types: " + e.getMessage());
             }
             if (CommonUtils.isEmpty(dataTypeCache.getCachedObjects())) {
                 // Use basic data types

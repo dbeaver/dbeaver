@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
-import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -51,7 +51,7 @@ public class BaseAuthDialog extends BaseDialog implements BlockingPopupDialog {
         super(parentShell, title, DBIcon.TREE_USER);
         this.passwordOnly = passwordOnly;
         this.showSavePassword = showSavePassword &&
-            !BasePolicyDataProvider.getInstance()
+            !ApplicationPolicyProvider.getInstance()
                 .isPolicyEnabled(DBConnectionConstants.POLICY_RESTRICT_PASSWORD_SAVE);
     }
 

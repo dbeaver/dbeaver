@@ -59,7 +59,7 @@ public abstract class ObjectAttributeDescriptor {
     private final Class<?> declaringClass;
 
     public ObjectAttributeDescriptor(
-        DBPPropertySource source,
+        @Nullable DBPPropertySource source,
         ObjectPropertyGroupDescriptor parent,
         Method getter,
         String id,
@@ -72,9 +72,11 @@ public abstract class ObjectAttributeDescriptor {
         this.id = id;
         if (CommonUtils.isEmpty(this.id)) {
             this.id = BeanUtils.getPropertyNameFromGetter(getter.getName());
-            String parentId = parent == null ? null : CommonUtils.notEmpty(parent.getId());
-            if (parentId != null) {
-                this.id = parentId + "." + this.id;
+            String parentGroupId = parent == null ? null : parent.getGroupId();
+            // cloudbeaver param
+            // defines id of property if parent group has group id
+            if (CommonUtils.isNotEmpty(parentGroupId)) {
+                this.id = parentGroupId + "." + this.id;
             }
         }
 
@@ -100,8 +102,8 @@ public abstract class ObjectAttributeDescriptor {
         return declaringClass;
     }
 
-    public DBPPropertySource getSource()
-    {
+    @Nullable
+    public DBPPropertySource getSource() {
         return source;
     }
 

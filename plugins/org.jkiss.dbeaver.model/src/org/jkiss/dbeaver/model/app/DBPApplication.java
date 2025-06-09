@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.cli.ApplicationInstanceController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 import java.nio.file.Path;
+import java.util.Map;
 
 /**
  * DB application.
@@ -64,6 +66,9 @@ public interface DBPApplication {
     boolean isDistributed();
 
     boolean isDetachedProcess();
+
+    @NotNull
+    Map<String, String> getAdditionalApplicationProperties();
 
     /**
      * Application information details.
@@ -157,6 +162,14 @@ public interface DBPApplication {
 
     @Nullable
     default String defaultDistributedDriversFolderName() {
+        return null;
+    }
+
+    /**
+     * @return internal cli server
+     */
+    @Nullable
+    default ApplicationInstanceController getInstanceServer() {
         return null;
     }
 

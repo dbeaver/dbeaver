@@ -103,7 +103,7 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void parseQueryWithCommentsBeforeBlockDeclaration() throws DBException {
+    public void parseQueryBeforeBlockDeclaration() throws DBException {
         SQLDialect hanaDialect = setDialect("sap_hana");
         Assert.assertTrue(hanaDialect.isStripCommentsBeforeBlocks());
         {

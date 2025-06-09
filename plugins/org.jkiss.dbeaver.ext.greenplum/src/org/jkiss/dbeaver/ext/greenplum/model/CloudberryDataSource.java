@@ -41,9 +41,10 @@ public class CloudberryDataSource extends GreenplumDataSource {
         super.initialize(monitor);
         // Read server version
         if (serverVersion != null) {
-            Matcher matcher = Pattern.compile("Cloudberry Database ([0-9\\.]+)").matcher(serverVersion);
+            Matcher matcher = Pattern.compile("(Cloudberry Database|Apache Cloudberry) ([0-9\\.]+)").matcher(serverVersion);
             if (matcher.find()) {
-                cbVersion = new Version(matcher.group(1));
+                // Read version from group 2
+                cbVersion = new Version(matcher.group(2));
             }
             gpVersion = new Version(7, 0, 0);
         }

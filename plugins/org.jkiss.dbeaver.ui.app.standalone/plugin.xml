@@ -38,7 +38,7 @@
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
-            <property name="tipsFile" value="tips.xml"/>
+            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ui.app.standalone/tips.xml"/>
         </product>
     </extension>
 
@@ -60,7 +60,7 @@
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
-            <property name="tipsFile" value="tips.xml"/>
+            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ui.app.standalone/tips.xml"/>
         </product>
     </extension>
 
@@ -456,8 +456,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.WorkbenchInitializerNewConnection" priority="2"/>
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.tipoftheday.TipOfTheDayInitializer" priority="3"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.tipoftheday.TipOfTheDayInitializer" order="4"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.standalone.update.WorkbenchInitializerUpdateCheck" order="5"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">

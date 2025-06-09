@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.core.ui.services;
 import org.eclipse.core.commands.Command;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.registry.BasePolicyDataProvider;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 
 public class ApplicationPolicyService {
 
@@ -50,11 +50,11 @@ public class ApplicationPolicyService {
      * @param commandService - service
      */
     public void disableStandardProductModification(@NotNull ICommandService commandService) {
-        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_INSTALL_DISABLED)) {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_INSTALL_DISABLED)) {
             disableCommand(commandService, INSTALL_NEW_SOFTWARE_COMMAND);
             disableCommand(commandService, SHOW_MARKETPLACE_COMMAND); 
         }
-        if (BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_UPDATE_DISABLED)) {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_UPDATE_DISABLED)) {
             disableCommand(commandService, UPDATE_SOFTWARE_COMMAND);
         }
     }
@@ -71,7 +71,7 @@ public class ApplicationPolicyService {
      * Return true, if software install/update policy enabled
      */
     public boolean isInstallUpdateDisabled() {
-        return BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_INSTALL_DISABLED)
-            || BasePolicyDataProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_UPDATE_DISABLED);
+        return ApplicationPolicyProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_INSTALL_DISABLED)
+            || ApplicationPolicyProvider.getInstance().isPolicyEnabled(POLICY_SOFTWARE_UPDATE_DISABLED);
     }
 }

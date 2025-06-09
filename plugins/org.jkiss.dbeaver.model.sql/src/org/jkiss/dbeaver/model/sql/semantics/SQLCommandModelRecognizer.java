@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.Pair;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLCommandModel;
@@ -51,7 +52,7 @@ public class SQLCommandModelRecognizer {
     public static SQLQueryModel recognizeCommand(
         @NotNull SQLQueryRecognitionContext recognitionContext,
         @NotNull String text,
-        @NotNull SQLScriptContext scriptContext
+        @Nullable SQLScriptContext scriptContext
     ) {
         Set<SQLQuerySymbolEntry> symbolEntries = new HashSet<>();
         String cmdPrefix = recognitionContext.getSyntaxManager().getControlCommandPrefix();
@@ -87,11 +88,23 @@ public class SQLCommandModelRecognizer {
                 SQLQuerySymbolClass.DBEAVER_COMMAND
             ));
         }
-
         STMTreeNode fakeTree = new STMTreeRuleNode();
         SQLCommandModel cmdModel = new SQLCommandModel(fakeTree, text);
+        registerVariables(scriptContext, cmdText, start, symbolEntries, cmdModel);
+        registerCommandParameter(text, symbolEntries);
+        return new SQLQueryModel(fakeTree, cmdModel, symbolEntries, Collections.emptyList());
+    }
 
-        ScriptVariablesResolver variablesResolver = scriptContext.getExecutionContext() == null ? null : new ScriptVariablesResolver(scriptContext);
+    private static void registerVariables(
+        @Nullable SQLScriptContext scriptContext,
+        @NotNull String cmdText,
+        int start,
+        @NotNull Set<SQLQuerySymbolEntry> symbolEntries,
+        @NotNull SQLCommandModel cmdModel
+    ) {
+        ScriptVariablesResolver variablesResolver = scriptContext == null || scriptContext.getExecutionContext() == null
+            ? null
+            : new ScriptVariablesResolver(scriptContext);
         List<GeneralUtils.VariableEntryInfo> vars = GeneralUtils.findAllVariableEntries(cmdText);
         for (GeneralUtils.VariableEntryInfo varEntry : vars) {
             SQLQuerySymbolEntry symbolEntry = makeSymbol(
@@ -100,11 +113,25 @@ public class SQLCommandModelRecognizer {
                 SQLQuerySymbolClass.DBEAVER_VARIABLE
             );
             symbolEntries.add(symbolEntry);
-            scriptContext.getVariable(varEntry.name().toUpperCase(Locale.ENGLISH));
             cmdModel.addVariable(symbolEntry, variablesResolver == null ? "?" : variablesResolver.get(varEntry.name()));
         }
+    }
 
-        return new SQLQueryModel(fakeTree, cmdModel, symbolEntries, Collections.emptyList());
+    private static void registerCommandParameter(@NotNull String text, @NotNull Set<SQLQuerySymbolEntry> symbolEntries) {
+        List<SQLQuerySymbolEntry> alreadyHighlighted = symbolEntries.stream()
+            .sorted(Comparator.comparingInt(e -> e.getInterval().a))
+            .toList();
+        int prevPos = 0;
+        for (SQLQuerySymbolEntry entry : alreadyHighlighted) {
+            int entryPos = entry.getInterval().a;
+            if (prevPos < entryPos) {
+                symbolEntries.add(makeSymbol(prevPos, entryPos - prevPos, text.substring(prevPos, entryPos), SQLQuerySymbolClass.UNKNOWN));
+            }
+            prevPos = entry.getInterval().b + 1; // because interval here is inclusive
+        }
+        if (prevPos < text.length()) {
+            symbolEntries.add(makeSymbol(prevPos, text.length() - prevPos, text.substring(prevPos), SQLQuerySymbolClass.UNKNOWN));
+        }
     }
 
 

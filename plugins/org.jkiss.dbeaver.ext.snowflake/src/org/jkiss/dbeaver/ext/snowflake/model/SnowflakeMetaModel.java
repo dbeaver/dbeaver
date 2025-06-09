@@ -191,6 +191,10 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
 
     private boolean supportsWildcards(@NotNull JDBCSession session, @NotNull GenericStructContainer owner) throws SQLException {
         // Snowflake driver do not recognize wild cards patterns before version 3.13.19 - and 19 here is the number of patch, not minor
+        if (owner.getDataSource().isDriverVersionAtLeast(3, 14)) {
+            // Shouldn't check patch if the driver is newer than 3.14 or newer.
+            return true;
+        }        
         if (owner.getDataSource().isDriverVersionAtLeast(3, 13)) {
             String driverVersion = session.getMetaData().getDriverVersion();
             if (CommonUtils.isNotEmpty(driverVersion) && driverVersion.contains(".")) {

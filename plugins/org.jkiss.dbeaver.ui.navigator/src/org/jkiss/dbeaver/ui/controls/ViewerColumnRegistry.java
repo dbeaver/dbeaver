@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,30 +134,34 @@ class ViewerColumnRegistry {
         }
 
         private void flushConfig() {
-
             Path configFile = DBWorkbench.getPlatform().getLocalConfigurationFile(COLUMNS_CONFIG_FILE);
-            try (OutputStream out = Files.newOutputStream(configFile)) {
-                XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
-                xml.setButify(true);
-                try (final XMLBuilder.Element e = xml.startElement("items")) {
-                    for (Map.Entry<String, List<ColumnState>> entry : columnsConfig.entrySet()) {
-                        try (final XMLBuilder.Element e2 = xml.startElement("item")) {
-                            xml.addAttribute("id", entry.getKey());
-                            for (ColumnState column : entry.getValue()) {
-                                if (column.width == 0) {
-                                    continue;
-                                }
-                                try (final XMLBuilder.Element e3 = xml.startElement("column")) {
-                                    xml.addAttribute("name", column.name);
-                                    xml.addAttribute("visible", column.visible);
-                                    xml.addAttribute("order", column.order);
-                                    xml.addAttribute("width", column.width);
+            try {
+                if (Files.notExists(configFile.getParent())) {
+                    Files.createDirectories(configFile.getParent());
+                }
+                try (OutputStream out = Files.newOutputStream(configFile)) {
+                    XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
+                    xml.setButify(true);
+                    try (final XMLBuilder.Element e = xml.startElement("items")) {
+                        for (Map.Entry<String, List<ColumnState>> entry : columnsConfig.entrySet()) {
+                            try (final XMLBuilder.Element e2 = xml.startElement("item")) {
+                                xml.addAttribute("id", entry.getKey());
+                                for (ColumnState column : entry.getValue()) {
+                                    if (column.width == 0) {
+                                        continue;
+                                    }
+                                    try (final XMLBuilder.Element e3 = xml.startElement("column")) {
+                                        xml.addAttribute("name", column.name);
+                                        xml.addAttribute("visible", column.visible);
+                                        xml.addAttribute("order", column.order);
+                                        xml.addAttribute("width", column.width);
+                                    }
                                 }
                             }
                         }
                     }
+                    xml.flush();
                 }
-                xml.flush();
             } catch (Exception e) {
                 log.error("Error saving columns configuration", e);
             }

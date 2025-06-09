@@ -307,7 +307,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 BlobFileConflictBehavior.OVERWRITE
             }[response.choiceIndex];
             
-            runtimeParameters.blobFileConflictPreviousChoice = response.choiceIndex;
+            runtimeParameters.blobFileConflictPreviousChoice = (Integer) response.choiceIndex;
             if (response.forAllChoiceIndex != null) {
                 runtimeParameters.blobFileConflictBehavior = behavior;
                 runtimeParameters.dontDropBlobFileConflictBehavior = response.forAllChoiceIndex == 0;
@@ -444,7 +444,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 DataFileConflictBehavior.OVERWRITE
             }[response.choiceIndex];
             
-            runtimeParameters.dataFileConflictPreviousChoice = response.choiceIndex;
+            runtimeParameters.dataFileConflictPreviousChoice = (Integer) response.choiceIndex;
             if (response.forAllChoiceIndex != null || settings.isUseSingleFile()) {
                 runtimeParameters.dataFileConflictBehavior = behavior;
             }
