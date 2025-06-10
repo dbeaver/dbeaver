@@ -1,22 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.jkiss.dbeaver.ext.ai.feature"
-      label="%featureName"
+      label="DBeaver AI Support"
       version="1.0.59.qualifier"
-      provider-name="%providerName"
+      provider-name="DBeaver Corp"
       plugin="org.jkiss.dbeaver.ui.ai">
 
-   <description>
-      %description
-   </description>
-
-   <copyright>
-      %copyright
-   </copyright>
-
-   <license url="%licenseURL">
-      %license
-   </license>
+   <copyright>DBeaver Corp and others</copyright>
+   <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
    <requires>
       <import feature="org.jkiss.dbeaver.ui.feature" version="7.0.0" match="greaterOrEqual"/>
@@ -26,5 +17,5 @@
    <plugin id="org.jkiss.dbeaver.ui.ai" version="0.0.0" />
    <plugin id="org.jkiss.bundle.jackson" version="0.0.0" />
    <plugin id="org.jkiss.bundle.okhttp" version="0.0.0" />
-   <plugin id="org.jkiss.bundle.gpt3" version="0.0.0" />
+   <plugin id="org.jkiss.bundle.openai" version="0.0.0" />
 </feature>
