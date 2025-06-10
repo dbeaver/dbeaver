@@ -42,12 +42,13 @@ public class AIMessage {
      * Creates AI message
      */
     public AIMessage(
+        @NotNull UUID uuid,
         @NotNull AIMessageType role,
         @NotNull String content,
         @Nullable String displayMessage,
         @NotNull LocalDateTime time
     ) {
-        this.uuid = UUID.randomUUID();
+        this.uuid = uuid;
         this.role = role;
         this.content = content;
         this.displayMessage = displayMessage;
@@ -70,17 +71,22 @@ public class AIMessage {
     }
 
     @NotNull
+    public static AIMessage assistantMessage(@NotNull UUID uuid, @NotNull String message) {
+        return new AIMessage(uuid, AIMessageType.ASSISTANT, message, message, LocalDateTime.now());
+    }
+
+    @NotNull
     public static AIMessage errorMessage(@NotNull Throwable throwable) {
         return new AIMessage(AIMessageType.ERROR, CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"));
     }
 
     @NotNull
     public static AIMessage userAutoMessage(@NotNull String prompt, @NotNull String uiMessage) {
-        return new AIMessage(AIMessageType.USER, prompt, uiMessage, LocalDateTime.now());
+        return new AIMessage(UUID.randomUUID(), AIMessageType.USER, prompt, uiMessage, LocalDateTime.now());
     }
 
     public AIMessage(@NotNull AIMessageType role, @NotNull String content) {
-        this(role, content, content, LocalDateTime.now());
+        this(UUID.randomUUID(), role, content, content, LocalDateTime.now());
     }
 
     @Override
