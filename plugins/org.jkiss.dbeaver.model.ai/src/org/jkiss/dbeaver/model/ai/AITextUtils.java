@@ -74,7 +74,7 @@ public class AITextUtils {
     }
 
 
-        @NotNull
+    @NotNull
     public static String convertToSQL(
         @NotNull AIMessage prompt,
         @NotNull MessageChunk[] response,

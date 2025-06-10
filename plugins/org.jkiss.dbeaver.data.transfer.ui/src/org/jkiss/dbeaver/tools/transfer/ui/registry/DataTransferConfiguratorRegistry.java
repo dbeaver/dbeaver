@@ -74,7 +74,10 @@ public class DataTransferConfiguratorRegistry {
             if (replaced != null) {
                 log.info("Data transfer configurator '" + replaced.getId() + "' is replaced by '" + replacement.getValue().getId() + "'");
             } else {
-                log.debug("No configurator with id '" + replacement.getKey() + "' found to replace, adding new one: " + replacement.getValue().getId());
+                log.debug(
+                    "No configurator with id '" + replacement.getKey()
+                        + "' found to replace, adding new one: " + replacement.getValue().getId()
+                );
             }
         });
 
