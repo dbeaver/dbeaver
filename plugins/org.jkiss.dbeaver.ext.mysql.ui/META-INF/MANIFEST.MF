@@ -23,7 +23,7 @@ Require-Bundle: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.tasks.ui,
  com.google.gson
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.mysql.ui

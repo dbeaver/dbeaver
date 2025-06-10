@@ -28,7 +28,7 @@ Export-Package: org.jkiss.dbeaver.ext.oracle,
  org.jkiss.dbeaver.ext.oracle.sql,
  org.jkiss.dbeaver.ext.oracle.tasks
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Bundle-ClassPath: .
 Import-Package: com.google.gson
