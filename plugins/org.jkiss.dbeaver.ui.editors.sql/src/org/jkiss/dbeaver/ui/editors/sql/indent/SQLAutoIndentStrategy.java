@@ -107,23 +107,14 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                     (lineDelimiter || (command.text.length() == 1 && !Character.isJavaIdentifierPart(command.text.charAt(0)))) &&
                     syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO)
                 ) {
-                    IRegion lineRegion = document.getLineInformationOfOffset(command.offset);
-                    String line = document.get(lineRegion.getOffset(), lineRegion.getLength()).trim();
-                    IDocumentPartitioner partitioner = document instanceof IDocumentExtension3 doc
-                        ? doc.getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING)
-                        : null;
-                    boolean isInComment;
-                    if (partitioner != null) {
-                        String partitionTypeAtCursor = partitioner.getContentType(command.offset);
-                        String partitionTypeBeforeCursor = command.offset > 0 ? partitioner.getContentType(command.offset - 1) : null;
-                        isInComment = SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitionTypeAtCursor)
-                            || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitionTypeAtCursor)
-                            || SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(partitionTypeBeforeCursor)
-                            || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitionTypeBeforeCursor);
-                    } else {
-                        isInComment = SQLUtils.isCommentLine(syntaxManager.getDialect(), line);
-                    }
-                    if (!isInComment) {
+                    String typeAtLine = TextUtilities.getContentType(
+                        document,
+                        SQLParserPartitions.SQL_PARTITIONING,
+                        command.offset - 1,
+                        true
+                    );
+                    // we are in the nonempty line and previous position doesn't belong to the comment, string literal or command
+                    if (IDocument.DEFAULT_CONTENT_TYPE.equals(typeAtLine)) {
                         isKeywordCaseUpdated = updateKeywordCase(document, command);
                     }
                 }
