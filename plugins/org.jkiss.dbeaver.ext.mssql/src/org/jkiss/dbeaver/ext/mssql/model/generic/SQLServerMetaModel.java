@@ -421,7 +421,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                         continue;
                     }
                     name = name.trim();
-                    if (schemaFilters != null && !schemaFilters.matches(name)) {
+                    if (schemaFilters != null && !schemaFilters.matchesAny(name)) {
                         // Doesn't match filter
                         continue;
                     }

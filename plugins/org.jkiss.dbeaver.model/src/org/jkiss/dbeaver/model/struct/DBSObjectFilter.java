@@ -150,7 +150,7 @@ public class DBSObjectFilter {
         return !CommonUtils.isEmpty(include) ? include.get(0) : null;
     }
 
-    public synchronized boolean matches(String... names) {
+    public synchronized boolean matchesAny(String... names) {
         if (includePatterns == null && !CommonUtils.isEmpty(include)) {
             includePatterns = new ArrayList<>(include.size());
             for (String inc : include) {

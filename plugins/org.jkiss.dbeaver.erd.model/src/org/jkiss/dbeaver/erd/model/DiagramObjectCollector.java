@@ -119,7 +119,7 @@ public class DiagramObjectCollector {
                 if (monitor.isCanceled()) {
                     break;
                 }
-                if (objectFilter != null && !objectFilter.matches(entity.getName())) {
+                if (objectFilter != null && !objectFilter.matchesAny(entity.getName())) {
                     continue;
                 }
                 if (entity instanceof DBSEntity) {

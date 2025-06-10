@@ -236,7 +236,7 @@ public class GenericMetaModel {
                             continue;
                         }
                     }
-                    if (schemaFilters != null && !schemaFilters.matches(schemaName)) {
+                    if (schemaFilters != null && !schemaFilters.matchesAny(schemaName)) {
                         // Doesn't match filter
                         schemasFiltered = true;
                         continue;

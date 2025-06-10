@@ -723,22 +723,21 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 // Skip schemas in merge entities mode
                 continue;
             }
+            DBSObject object = (DBSObject) childItem;
             if (filter != null) {
-                String objectName = ((DBSObject) childItem).getName();
                 boolean isMatchingFilter;
                 if (childItem instanceof DBPOverloadedObject overloadedObject) {
-                    isMatchingFilter = filter.matches(
-                        objectName,
+                    isMatchingFilter = filter.matchesAny(
+                        object.getName(),
                         overloadedObject.getOverloadedName()
                     );
                 } else {
-                    isMatchingFilter = filter.matches(objectName);
+                    isMatchingFilter = filter.matchesAny(object.getName());
                 }
                 if (!isMatchingFilter) {
                     continue;
                 }
             }
-            DBSObject object = (DBSObject) childItem;
             boolean added = false;
             if (!oldList.isEmpty()) {
                 // Check that new object is a replacement of old one
