@@ -298,19 +298,19 @@ public class AIAssistantImpl implements AIAssistant {
     ) throws DBException {
         AIPromptBuilder promptBuilder = AIPromptBuilder.createForDataSource(
             context != null ? context.getDataSource() : null,
-            formatter()
+            formatter
         );
 
         if (context != null) {
             DBExecUtils.tryExecuteRecover(monitor, context.getExecutionContext().getDataSource(), param -> {
                 try {
-                    describeDatabaseMetadata(monitor, engine, context, promptBuilder);
+                    describeDatabaseMetadata(monitor, engine, formatter, context, promptBuilder);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
             });
         } else {
-            describeDatabaseMetadata(monitor, engine, context, promptBuilder);
+            describeDatabaseMetadata(monitor, engine, formatter, context, promptBuilder);
         }
 
         return promptBuilder;

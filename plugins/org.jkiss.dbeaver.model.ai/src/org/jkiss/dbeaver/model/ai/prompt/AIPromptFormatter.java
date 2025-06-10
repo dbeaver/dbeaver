@@ -30,6 +30,8 @@ import java.util.List;
 
 public interface AIPromptFormatter {
 
+    boolean filterHiddenObjects();
+
     /**
      * Does additional translation of generated SQL query
      */
@@ -71,5 +73,7 @@ public interface AIPromptFormatter {
         @NotNull DBSDataContainer dataContainer,
         @NotNull StringBuilder description
     ) throws DBException;
+
+    boolean isDataSampleNeeded();
 }
 

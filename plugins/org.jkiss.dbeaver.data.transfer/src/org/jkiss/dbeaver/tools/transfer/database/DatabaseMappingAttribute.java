@@ -345,9 +345,11 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
     public void setTargetType(String targetType) {
         this.targetType = targetType;
+        this.targetTypeWithModifiers = targetType;
     }
 
-    public void setTargetTypeWithModifiers(String targetTypeWithModifiers) {
+    public void setTargetType(String targetType, String targetTypeWithModifiers) {
+        this.targetType = targetType;
         this.targetTypeWithModifiers = targetTypeWithModifiers;
     }
 

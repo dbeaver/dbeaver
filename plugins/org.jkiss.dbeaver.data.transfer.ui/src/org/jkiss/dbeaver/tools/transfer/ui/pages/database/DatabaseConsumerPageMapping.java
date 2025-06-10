@@ -1116,7 +1116,7 @@ public abstract class DatabaseConsumerPageMapping extends DataTransferPageNodeSe
     }
 
     @Nullable
-    private DataTransferPipe getPipe(DatabaseMappingContainer mappingContainer) {
+    protected DataTransferPipe getPipe(DatabaseMappingContainer mappingContainer) {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
             if (pipe.getProducer() == null) {

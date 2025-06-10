@@ -50,10 +50,13 @@ public class DatabaseMetadataUtils {
         int maxRequestLength,
         boolean useFullyQualifiedName
     ) throws DBException {
-        if (DBNUtils.getNodeByObject(monitor, object, false) == null) {
+        if (formatter.filterHiddenObjects()
+            && DBNUtils.getNodeByObject(monitor, object, false) == null
+        ) {
             // Skip hidden objects
             return "";
         }
+
         StringBuilder description = new StringBuilder();
         if (object instanceof DBSEntity entity) {
             String name = useFullyQualifiedName && context != null ? DBUtils.getObjectFullName(
