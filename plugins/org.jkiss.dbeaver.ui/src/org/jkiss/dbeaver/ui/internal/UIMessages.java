@@ -126,6 +126,8 @@ public class UIMessages extends NLS {
     public static String dialog_policy_data_copy_title;
     public static String dialog_policy_data_copy_msg;
 
+    public static String popup_open_browser_open_external_browser;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);
