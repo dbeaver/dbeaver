@@ -474,19 +474,23 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     private boolean unselectProfile(boolean resultOfHandlerRemoval) {
-        Set<DBWHandlerDescriptor> handlerstoRemove = new HashSet<>();
+        if (getActiveProfile() == null) {
+            return true;
+        }
+
+        Set<DBWHandlerDescriptor> handlersToRemove = new HashSet<>();
         for (CTabItem item : tabFolder.getItems()) {
             if (item.getData() instanceof ConnectionPageNetworkHandler page) {
-                handlerstoRemove.add(page.getHandlerDescriptor());
+                handlersToRemove.add(page.getHandlerDescriptor());
             }
         }
 
-        if (handlerstoRemove.size() > (resultOfHandlerRemoval ? 1 : 0)) {
+        if (handlersToRemove.size() > (resultOfHandlerRemoval ? 1 : 0)) {
             Reply reply = MessageBoxBuilder.builder()
                 .setTitle("Change profile")
                 .setMessage(NLS.bind(
                     "Do you want to keep {0} after unselecting the active profile?",
-                    handlerstoRemove.stream().map(DBWHandlerDescriptor::getCodeName).collect(Collectors.joining(", "))
+                    handlersToRemove.stream().map(DBWHandlerDescriptor::getCodeName).collect(Collectors.joining(", "))
                 ))
                 .setPrimaryImage(DBIcon.STATUS_QUESTION)
                 .setReplies(REPLY_KEEP, REPLY_REMOVE, Reply.CANCEL)
@@ -494,7 +498,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 .showMessageBox();
 
             if (reply == REPLY_KEEP) {
-                handlerstoRemove.clear();
+                handlersToRemove.clear();
             } else if (reply == REPLY_REMOVE) {
                 // do nothing
             } else {
@@ -503,7 +507,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         selectProfile0(null);
-        handlerstoRemove.forEach(this::disableHandler);
+
+        for (DBWHandlerDescriptor descriptor : handlersToRemove) {
+            removeHandler(descriptor, null);
+        }
 
         return true;
     }
@@ -538,29 +545,31 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
         }
 
-        handlersToRemove.forEach(this::disableHandler);
-        handlersToAdd.forEach(this::enableHandler);
+        for (DBWHandlerDescriptor descriptor : handlersToRemove) {
+            removeHandler(descriptor, null);
+        }
 
         selectProfile0(profile);
+
+        for (DBWHandlerDescriptor descriptor : handlersToAdd) {
+            addHandler(descriptor, profile);
+        }
+
+        for (CTabItem item : tabFolder.getItems()) {
+            if (item.getData() instanceof ConnectionPageNetworkHandler page) {
+                refreshHandler(page.getHandlerDescriptor(), profile);
+            }
+        }
+
         return true;
     }
 
     private void selectProfile0(@Nullable DBWNetworkProfile profile) {
         getActiveDataSource().getConnectionConfiguration().setConfigProfile(profile);
         updateProfileItem();
-
-        for (CTabItem item : tabFolder.getItems()) {
-            if (item.getData() instanceof ConnectionPageNetworkHandler page) {
-                // TODO: Stop activating pages
-                tabFolder.setSelection(item);
-                activateCurrentItem();
-
-                page.refreshConfiguration();
-            }
-        }
     }
 
-    private void enableHandler(@NotNull DBWHandlerDescriptor descriptor) {
+    private void addHandler(@NotNull DBWHandlerDescriptor descriptor, @Nullable DBWNetworkProfile profile) {
         if (findHandlerItem(descriptor) != null) {
             log.error("Handler " + descriptor + " is already enabled");
             return;
@@ -576,27 +585,36 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         var item = createPageTab(page, index);
 
         // TODO: Stop activating pages
-        tabFolder.setSelection(item);
-        activateCurrentItem();
-
-        page.setHandlerEnabled(true);
+        activateItem(item);
+        page.getHandlerConfiguration().setEnabled(true);
     }
 
-    private void disableHandler(@NotNull DBWHandlerDescriptor descriptor) {
+    private void removeHandler(@NotNull DBWHandlerDescriptor descriptor, @Nullable DBWNetworkProfile profile) {
         var item = findHandlerItem(descriptor);
-
         if (item == null) {
             log.error("Can't find page item for handler " + descriptor);
             return;
         }
 
-        tabFolder.setSelection(item);
-        activateCurrentItem();
+        var page = (ConnectionPageNetworkHandler) item.getData();
+
+        // TODO: Stop activating pages
+        activateItem(item);
+        page.getHandlerConfiguration().setEnabled(false);
+        item.dispose();
+    }
+
+    private void refreshHandler(@NotNull DBWHandlerDescriptor descriptor, @Nullable DBWNetworkProfile profile) {
+        var item = findHandlerItem(descriptor);
+        if (item == null) {
+            log.error("Can't find page item for handler " + descriptor);
+            return;
+        }
+
+        activateItem(item);
 
         var page = (ConnectionPageNetworkHandler) item.getData();
-        page.setHandlerEnabled(false);
-
-        item.dispose();
+        page.refreshConfiguration(profile);
     }
 
     @Nullable
@@ -627,7 +645,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             var page = (ConnectionPageNetworkHandler) item.getData();
             var descriptor = page.getHandlerDescriptor();
             if (unselectProfile(true)) {
-                disableHandler(descriptor);
+                removeHandler(descriptor, null);
                 return true;
             }
         }
@@ -693,6 +711,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         return item;
+    }
+
+    private void activateItem(@NotNull CTabItem item) {
+        tabFolder.setSelection(item);
+        activateCurrentItem();
     }
 
     private void activateCurrentItem() {
@@ -976,8 +999,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         CTabItem selection = tabFolder.getSelection();
         for (CTabItem pageTab : tabFolder.getItems()) {
             if (pageTab.getData() == subPage) {
-                tabFolder.setSelection(pageTab);
-                activateCurrentItem();
+                activateItem(pageTab);
                 if (selection != null && selection.getData() != subPage && selection.getData() instanceof ActiveWizardPage) {
                     ((ActiveWizardPage<?>) selection.getData()).deactivatePage();
                 }
@@ -996,6 +1018,19 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return selection != null ? (IDialogPage) selection.getData() : null;
     }
 
+    @Nullable
+    private DBWNetworkProfile getActiveProfile() {
+        DBPDataSourceContainer dataSource = getActiveDataSource();
+        DBPConnectionConfiguration configuration = dataSource.getConnectionConfiguration();
+        if (CommonUtils.isEmpty(configuration.getConfigProfileName())) {
+            return null;
+        }
+        return dataSource.getRegistry().getNetworkProfile(
+            configuration.getConfigProfileSource(),
+            configuration.getConfigProfileName()
+        );
+    }
+
     private class AddHandlerAction extends Action {
         private final DBWHandlerDescriptor descriptor;
 
@@ -1007,7 +1042,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         @Override
         public void run() {
             if (unselectProfile(false)) {
-                enableHandler(descriptor);
+                addHandler(descriptor, null);
+                refreshHandler(descriptor, null);
             }
         }
     }

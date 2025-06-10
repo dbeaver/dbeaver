@@ -51,9 +51,11 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
     private final NetworkHandlerDescriptor handlerDescriptor;
 
     private IObjectPropertyConfigurator<Object, DBWHandlerConfiguration> configurator;
-    private ControlEnableState blockEnableState;
+    private Composite configuratorPlaceholder;
+    private ControlEnableState configuratorEnableState;
+
+    // Handler configuration. If null, no configuration is saved nor updated.
     private DBWHandlerConfiguration handlerConfiguration;
-    private Composite handlerComposite;
 
     // Shown when a handler is provided by a profile
     private Link profileProvidedHint;
@@ -91,13 +93,13 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
             () -> PrefPageProjectNetworkProfiles.open(getShell(), site.getProject(), getActiveProfile())
         );
 
-        handlerComposite = UIUtils.createComposite(composite, 1);
-        handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        configuratorPlaceholder = UIUtils.createComposite(composite, 1);
+        configuratorPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        configurator.createControl(handlerComposite, handlerDescriptor, this::updatePageCompletion);
+        configurator.createControl(configuratorPlaceholder, handlerDescriptor, this::updatePageCompletion);
 
         setControl(composite);
-        refreshConfiguration();
+        refreshConfiguration(getActiveProfile());
     }
 
     @Override
@@ -118,57 +120,41 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource) {
+        DBPConnectionConfiguration configuration = dataSource.getConnectionConfiguration();
         if (handlerConfiguration == null) {
             return;
         }
-
-        DBPConnectionConfiguration configuration = dataSource.getConnectionConfiguration();
-        DBWNetworkProfile profile = getActiveProfile();
-
-        if (profile == null) {
+        configuration.setConfigProfile(getActiveProfile());
+        if (handlerConfiguration.isEnabled()) {
             configurator.saveSettings(handlerConfiguration);
-            configuration.setConfigProfile(null);
             configuration.updateHandler(handlerConfiguration);
         } else {
-            configuration.setConfigProfile(profile);
-            configuration.updateHandler(handlerConfiguration);
+            configuration.removeHandler(handlerConfiguration.getId());
         }
-    }
-
-    public void setHandlerEnabled(boolean enabled) {
-        var handlerConfig = handlerConfiguration;
-        if (handlerConfig == null) {
-            handlerConfig = site.getActiveDataSource().getConnectionConfiguration().getHandler(handlerDescriptor.getId());
-        }
-        if (handlerConfig != null) {
-            handlerConfig.setEnabled(enabled);
-        }
-        refreshConfiguration();
     }
 
     /**
      * Refreshes the configuration for this page, reverting all modifications made after page is loaded.
      * <p>
-     * If an active profile is set, then the page's controls are disabled,
+     * If a {@code profile} is present, then the page's controls are disabled,
      * and configuration is loaded from that profile.
      * <p>
      * Otherwise, page's controls are enabled, and configuration is loaded
      * from the connection configuration, if present.
      */
-    public void refreshConfiguration() {
-        DBWNetworkProfile profile = getActiveProfile();
+    public void refreshConfiguration(@Nullable DBWNetworkProfile profile) {
         DBWHandlerConfiguration profileConfiguration = profile != null ? profile.getConfiguration(handlerDescriptor) : null;
 
         if (profileConfiguration != null && profileConfiguration.isEnabled()) {
-            if (blockEnableState == null) {
-                blockEnableState = ControlEnableState.disable(handlerComposite);
+            if (configuratorEnableState == null) {
+                configuratorEnableState = ControlEnableState.disable(configuratorPlaceholder);
             }
             profileProvidedHint.setText(NLS.bind("Using configuration from profile ''<a href=\"#\">{0}</a>''", profile.getProfileName()));
             UIUtils.setControlVisible(profileProvidedHint.getParent(), true);
         } else {
-            if (blockEnableState != null) {
-                blockEnableState.restore();
-                blockEnableState = null;
+            if (configuratorEnableState != null) {
+                configuratorEnableState.restore();
+                configuratorEnableState = null;
             }
             UIUtils.setControlVisible(profileProvidedHint.getParent(), false);
         }
@@ -195,9 +181,17 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
         }
 
         configurator.loadSettings(handlerConfiguration);
-        handlerComposite.layout(true, true);
+        configuratorPlaceholder.layout(true, true);
 
         updatePageCompletion();
+    }
+
+    /**
+     * Returns the handler configuration. It is guaranteed to be {@code null} if the page is not yet loaded.
+     */
+    @Nullable
+    public DBWHandlerConfiguration getHandlerConfiguration() {
+        return handlerConfiguration;
     }
 
     @NotNull
