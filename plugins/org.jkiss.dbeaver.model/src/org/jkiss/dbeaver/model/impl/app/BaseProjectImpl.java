@@ -206,6 +206,10 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return dataSourceRegistry;
     }
 
+    public DBPDataSourceRegistry getDataSourceRegistryOrNull() {
+        return dataSourceRegistry;
+    }
+
     @NotNull
     protected abstract DBPDataSourceRegistry createDataSourceRegistry();
 

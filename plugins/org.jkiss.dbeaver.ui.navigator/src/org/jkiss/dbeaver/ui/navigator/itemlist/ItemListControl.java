@@ -22,18 +22,20 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.IWorkbenchSite;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectStatisticsCollector;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
+import org.jkiss.dbeaver.model.impl.app.BaseProjectImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -77,6 +79,8 @@ public class ItemListControl extends NodeListControl
     private final Map<DBNNode, Map<String, Object>> changedProperties = new HashMap<>();
     private CommandContributionItem createObjectCommand;
 
+    private final DBPProjectListener projectListener;
+
     public ItemListControl(
         Composite parent,
         int style,
@@ -90,6 +94,14 @@ public class ItemListControl extends NodeListControl
             UIFonts.DBEAVER_FONTS_MAIN_FONT,
             s -> super.getItemsViewer().refresh(),
             this);
+
+        projectListener = new DBPProjectListener() {
+            @Override
+            public void handleProjectRemove(@NotNull DBPProject project) {
+                handleRemoveProject();
+            }
+        };
+        DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
 
         this.searcher = new SearcherFilter();
         this.searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
@@ -249,7 +261,8 @@ public class ItemListControl extends NodeListControl
     {
         return LoadingJob.createService(
             new ItemLoadService(getNodeMeta()),
-            new ObjectsLoadVisualizer(forUpdate));
+            new ObjectsLoadVisualizer(forUpdate)
+        );
     }
 
     @Override
@@ -262,6 +275,27 @@ public class ItemListControl extends NodeListControl
     protected CellLabelProvider getColumnLabelProvider(ObjectColumn objectColumn)
     {
         return new ItemColorProvider(objectColumn);
+    }
+
+    @Override
+    public void dispose() {
+        DBPPlatformDesktop.getInstance().getWorkspace().removeProjectListener(projectListener);
+        super.dispose();
+    }
+
+    private void handleRemoveProject() {
+        UIUtils.asyncExec(this::closeOpenEditors);
+        dispose();
+    }
+
+    private void closeOpenEditors() {
+        IWorkbenchPage editorPage = getWorkbenchSite().getPage();
+        String editorName = getRootNode().getName();
+        Arrays.stream(editorPage.getEditorReferences())
+            .filter(editorReference -> Objects.equals(editorReference.getName(), editorName))
+            .forEach(editorReference -> editorPage.closeEditor(
+                editorReference.getEditor(false), false)
+            );
     }
 
     private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {
@@ -281,6 +315,14 @@ public class ItemListControl extends NodeListControl
             try {
                 List<DBNNode> items = new ArrayList<>();
                 DBNNode parentNode = getRootNode();
+
+                parentNode.getOwnerProject().getDataSourceRegistry(); // lazy init data source registry
+                if (parentNode.getOwnerProject() instanceof BaseProjectImpl baseProject) {
+                    if (baseProject.getDataSourceRegistryOrNull() == null) {
+                        return Collections.emptyList();
+                    }
+                }
+
                 DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, parentNode, false);
                 if (ArrayUtils.isEmpty(children)) {
                     return items;
