@@ -77,7 +77,19 @@ public class AIMessage {
 
     @NotNull
     public static AIMessage errorMessage(@NotNull Throwable throwable) {
-        return new AIMessage(AIMessageType.ERROR, CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"));
+        return errorMessage(UUID.randomUUID(), throwable);
+    }
+
+    @NotNull
+    public static AIMessage errorMessage(@NotNull UUID uuid, @NotNull Throwable throwable) {
+        String errorMessage = CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error");
+        return new AIMessage(
+            uuid,
+            AIMessageType.ERROR,
+            errorMessage,
+            errorMessage,
+            LocalDateTime.now()
+        );
     }
 
     @NotNull
