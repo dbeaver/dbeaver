@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceAuth;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
-import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.CommonUtils;
@@ -216,17 +215,15 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
 
     @NotNull
     private String acquireAccessToken(@NotNull DBRProgressMonitor monitor, @NotNull CompletableFuture<Void> future) throws DBException {
+        var service = DBWorkbench.getService(UIServiceAuth.class);
+        if (service == null) {
+            throw new DBException("No authentication service available");
+        }
         try (var client = new CopilotClient()) {
             monitor.subTask("Requesting device code");
             var deviceCodeResponse = client.requestDeviceCode(monitor);
 
-            var service = DBWorkbench.getService(UIServiceAuth.class);
-            if (service != null) {
-                service.showCodePopup(URI.create(deviceCodeResponse.verificationUri()), deviceCodeResponse.userCode(), future);
-            } else {
-                // TODO: ModelPreferences.getPreferences().getBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH)
-                ShellUtils.launchProgram(deviceCodeResponse.verificationUri());
-            }
+            service.showCodePopup(URI.create(deviceCodeResponse.verificationUri()), deviceCodeResponse.userCode(), future);
 
             monitor.subTask("Awaiting access token");
             return client.requestAccessToken(monitor, deviceCodeResponse);
