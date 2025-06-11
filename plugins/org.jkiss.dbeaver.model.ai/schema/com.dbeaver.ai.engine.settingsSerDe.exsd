@@ -31,7 +31,7 @@
 
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIEngineSettingsSerDe"/>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.engine.AIEngineSettingsSerDe"/>
                </appInfo>
             </annotation>
          </attribute>

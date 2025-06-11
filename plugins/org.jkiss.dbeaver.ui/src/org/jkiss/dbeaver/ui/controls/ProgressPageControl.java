@@ -48,6 +48,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -215,6 +217,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         }
 
         Composite infoGroup = new Composite(container, SWT.NONE);
+        CSSUtils.setCSSClass(infoGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        infoGroup.setBackgroundMode(SWT.INHERIT_FORCE);
+
         infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         GridLayout gl = new GridLayout(3, false);
         gl.marginHeight = 0;
@@ -223,6 +228,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
         customControlsComposite = new Composite(infoGroup, SWT.NONE);
         customControlsComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        CSSUtils.setCSSClass(customControlsComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        customControlsComposite.setBackgroundMode(SWT.INHERIT_FORCE);
+
         gl = new GridLayout(1, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
@@ -234,6 +242,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
         searchControlsComposite = UIUtils.createPlaceholder(infoGroup, 1);
         searchControlsComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        CSSUtils.setCSSClass(searchControlsComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        searchControlsComposite.setBackgroundMode(SWT.INHERIT_FORCE);
+
         // Placeholder toolbar (need to set initial height of search composite)
         new ToolBar(searchControlsComposite, SWT.NONE);
 
@@ -296,6 +307,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 fillCustomActions(customToolbarManager);
                 if (!customToolbarManager.isEmpty()) {
                     ToolBar toolbar = customToolbarManager.createControl(customControlsComposite);
+                    CSSUtils.setCSSClass(toolbar, DBStyles.COLORED_BY_CONNECTION_TYPE);
                     toolbar.setFont(BaseThemeSettings.instance.baseFont);
                     toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
                     populateCustomActions(customToolbarManager);

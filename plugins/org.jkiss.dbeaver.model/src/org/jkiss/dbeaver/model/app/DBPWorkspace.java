@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,11 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * DBPWorkspace
+ * User workspace.
+ * *
+ * Operates with projects, resources and user session.
  */
-public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
-{
+public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm {
     String METADATA_FOLDER = ".metadata";
 
     @NotNull
@@ -70,8 +71,16 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm
     @NotNull
     SMSessionContext getAuthContext();
 
+    /**
+     * Initializes workspace state.
+     * Called once during workspace instantiation. Mustn't be called directly by user.
+     */
     void initializeProjects();
 
+    /**
+     * Disposes workspace caches.
+     * Mustn't be called directly by user.
+     */
     void dispose();
 
     @Nullable

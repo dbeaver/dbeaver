@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver UI Editors - SQL
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.editors.sql;singleton:=true
-Bundle-Version: 1.0.156.qualifier
-Bundle-Release-Date: 20250602
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Version: 1.0.157.qualifier
+Bundle-Release-Date: 20250616
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator
 Require-Bundle: org.jkiss.dbeaver.model.sql;visibility:=reexport,
@@ -43,7 +43,7 @@ Export-Package: org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.editors.sql.syntax,
  org.jkiss.dbeaver.ui.editors.sql.templates,
  org.jkiss.dbeaver.ui.editors.sql.util,
- org.jkiss.dbeaver.ui.editors.sql.ai.suggestion,
+ org.jkiss.dbeaver.ui.editors.sql.suggestion,
  org.jkiss.dbeaver.ui.editors.sql.commands
 Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.sql
