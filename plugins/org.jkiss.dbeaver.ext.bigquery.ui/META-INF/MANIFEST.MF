@@ -11,7 +11,7 @@ Require-Bundle: org.jkiss.dbeaver.ui,
 Export-Package: org.jkiss.dbeaver.ext.bigquery.ui.config,
  org.jkiss.dbeaver.ext.bigquery.ui.views
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.bigquery.ui

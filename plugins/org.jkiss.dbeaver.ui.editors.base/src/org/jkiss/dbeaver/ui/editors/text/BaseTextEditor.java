@@ -309,4 +309,14 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         return getEditorInput() instanceof INonPersistentEditorInput;
     }
 
+    protected void setFocusToTextControl() {
+        SourceViewer viewer = getViewer();
+        if (viewer != null) {
+            StyledText textWidget = viewer.getTextWidget();
+            if (textWidget != null && !textWidget.isDisposed()) {
+                textWidget.setFocus();
+            }
+        }
+    }
+
 }

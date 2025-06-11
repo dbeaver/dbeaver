@@ -11,7 +11,7 @@ Require-Bundle: org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.net.ssh,
  org.jkiss.dbeaver.net.ssh.jsch
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Export-Package: org.jkiss.dbeaver.ui.config.migration.wizards,
  org.jkiss.dbeaver.ui.config.migration
