@@ -21,12 +21,6 @@
                 <artifactId>tycho-p2-director-plugin</artifactId>
                 <version>${tycho-version}</version>
                 <configuration>
-                    <formats>
-                        <win32>zip</win32>
-                        <linux>tar.gz</linux>
-                        <macosx>tar.gz</macosx>
-                        <solaris>tar.gz</solaris>
-                    </formats>
                     <products>
                         <product>
                             <id>org.jkiss.dbeaver.core.product</id>
@@ -48,29 +42,12 @@
                             <goal>materialize-products</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>archive-products</id>
-                        <goals>
-                            <!--<goal>archive-products</goal>-->
-                        </goals>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>target-platform-configuration</artifactId>
                 <version>${tycho-version}</version>
-                <configuration>
-                    <filters>
-                        <filter>
-                            <type>eclipse-plugin</type>
-                            <id>org.apache.ant</id>
-                            <restrictTo>
-                                <version>1.10.0</version>
-                            </restrictTo>
-                        </filter>
-                    </filters>
-                </configuration>
             </plugin>
             <!-- Disable P2 repository generation -->
             <plugin>
