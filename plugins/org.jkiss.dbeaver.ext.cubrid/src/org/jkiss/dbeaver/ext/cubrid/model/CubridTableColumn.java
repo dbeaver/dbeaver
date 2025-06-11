@@ -61,7 +61,7 @@ public class CubridTableColumn extends GenericTableColumn
 
     @Override
     public void setName(String name) {
-        super.setName(name.toLowerCase());
+        super.setName(name != null ? name.toLowerCase() : null);
     }
 
     @NotNull

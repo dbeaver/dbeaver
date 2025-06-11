@@ -44,7 +44,7 @@ public class CubridTableIndex extends GenericTableIndex {
 
     @Override
     public void setName(String name) {
-        super.setName(name.toLowerCase());
+        super.setName(name != null ? name.toLowerCase() : null);
     }
 
 }

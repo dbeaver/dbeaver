@@ -77,7 +77,7 @@ public class CubridTable extends GenericTable
 
     @Override
     public void setName(String name) {
-        super.setName(name.toLowerCase());
+        super.setName(name != null ? name.toLowerCase() : null);
     }
 
     @NotNull

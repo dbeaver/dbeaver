@@ -49,7 +49,7 @@ public class CubridView extends GenericView
 
     @Override
     public void setName(String name) {
-        super.setName(name.toLowerCase());
+        super.setName(name != null ? name.toLowerCase() : null);
     }
 
     public void setSchema(@NotNull CubridUser owner) {
