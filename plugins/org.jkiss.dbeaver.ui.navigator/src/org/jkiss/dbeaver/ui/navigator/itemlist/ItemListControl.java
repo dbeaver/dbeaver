@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.navigator.itemlist;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -23,6 +24,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
@@ -41,6 +43,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.rcp.DesktopProjectImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -50,6 +53,7 @@ import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
+import org.jkiss.dbeaver.ui.editors.NodeEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
@@ -289,13 +293,23 @@ public class ItemListControl extends NodeListControl
     }
 
     private void closeOpenEditors() {
-        IWorkbenchPage editorPage = getWorkbenchSite().getPage();
-        String editorName = getRootNode().getName();
-        Arrays.stream(editorPage.getEditorReferences())
-            .filter(editorReference -> Objects.equals(editorReference.getName(), editorName))
-            .forEach(editorReference -> editorPage.closeEditor(
-                editorReference.getEditor(false), false)
-            );
+        IWorkbenchPage page = getWorkbenchSite().getPage();
+        DBPProject ownerProject = getRootNode().getOwnerProject();
+        for (IEditorReference editorReference : page.getEditorReferences()) {
+            IEditorInput input = null;
+            try {
+                input = editorReference.getEditorInput();
+            } catch (PartInitException e) {
+                log.debug(e.getMessage(), e);
+            }
+
+            if (input instanceof NodeEditorInput nodeEditorInput) {
+                DBPProject editorProject = nodeEditorInput.getNavigatorNode().getOwnerProject();
+                if (Objects.equals(ownerProject, editorProject)) {
+                    page.closeEditor(editorReference.getEditor(false), false);
+                }
+            }
+        }
     }
 
     private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {
