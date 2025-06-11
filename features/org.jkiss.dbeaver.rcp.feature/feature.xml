@@ -1,21 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
         id="org.jkiss.dbeaver.rcp.feature"
-        label="%featureName"
+        label="DBeaver RCP"
         version="3.0.36.qualifier"
-        provider-name="%providerName">
+        provider-name="DBeaver Corp">
 
-    <description>
-        %description
-    </description>
+    <description>Universal Database Manager RCP</description>
 
-    <copyright>
-        %copyright
-    </copyright>
-
-    <license url="%licenseURL">
-        %license
-    </license>
+    <copyright>DBeaver Corp and others</copyright>
+    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <includes id="org.eclipse.rcp" version="0.0.0"/>
 
@@ -25,16 +18,10 @@
     <!-- Network -->
     <plugin id="org.eclipse.ui.net" version="0.0.0"/>
     <plugin id="org.eclipse.core.net" version="0.0.0"/>
-<!--    <plugin id="org.eclipse.core.net.linux" os="linux" version="0.0.0"/>-->
-<!--    <plugin id="org.eclipse.core.net.win32" os="win32" version="0.0.0"/>-->
+
     <!-- Filesystem -->
     <plugin id="org.eclipse.core.filesystem.linux.x86_64" os="linux" arch="x86_64" version="0.0.0"/>
     <plugin id="org.eclipse.core.filesystem.linux.aarch64" os="linux" arch="aarch64" version="0.0.0"/>
     <plugin id="org.eclipse.core.filesystem.macosx" os="macosx" version="0.0.0"/>
-<!--    <plugin id="org.eclipse.core.filesystem.win32.x86_64" os="win32" arch="x86_64" version="0.0.0"/>-->
-<!--    <plugin id="org.eclipse.core.resources.win32.x86_64" os="win32" arch="x86_64" version="0.0.0"/>-->
-
-    <plugin id="org.apache.commons.jxpath" version="1.4.0"/>
-
 
 </feature>

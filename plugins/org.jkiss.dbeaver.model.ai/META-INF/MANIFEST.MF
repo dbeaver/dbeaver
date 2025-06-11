@@ -24,7 +24,7 @@ Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
- org.jkiss.bundle.gpt3;visibility:=reexport,
+ org.jkiss.bundle.openai;visibility:=reexport,
  com.google.gson
 
 

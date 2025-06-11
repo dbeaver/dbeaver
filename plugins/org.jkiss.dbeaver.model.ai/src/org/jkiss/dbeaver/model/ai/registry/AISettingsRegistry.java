@@ -347,7 +347,7 @@ public class AISettingsRegistry {
         return result;
     }
 
-    private static boolean saveSecretsAsPlainText() {
+    public static boolean saveSecretsAsPlainText() {
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
         return application.isMultiuser() || application.isDistributed();
     }
