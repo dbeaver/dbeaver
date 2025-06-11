@@ -24,6 +24,7 @@ import org.eclipse.jface.widgets.LabelFactory;
 import org.eclipse.jface.widgets.LinkFactory;
 import org.eclipse.jface.widgets.TextFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -31,6 +32,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ShellUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.net.URI;
@@ -93,7 +95,18 @@ public class CodeAuthDialog extends Dialog implements BlockingPopupDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
+        createButton(parent, IDialogConstants.OPEN_ID, UIMessages.dialog_auth_code_copy_and_open_label, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+    }
+
+    @Override
+    protected void buttonPressed(int buttonId) {
+        if (buttonId == IDialogConstants.OPEN_ID) {
+            UIUtils.setClipboardContents(getShell().getDisplay(), TextTransfer.getInstance(), userCode);
+            ShellUtils.launchProgram(browserUrl.toString());
+        } else {
+            super.buttonPressed(buttonId);
+        }
     }
 
     @Override
