@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -296,7 +296,7 @@ public class SQLQuery implements SQLScriptElement {
             return CommonUtils.isEmpty(plainSelect.getIntoTables()) &&
                 plainSelect.getLimit() == null &&
                 plainSelect.getTop() == null &&
-                plainSelect.getForUpdateTable() == null;
+                plainSelect.getForMode() == null;
         }
         return false;
     }
@@ -515,7 +515,7 @@ public class SQLQuery implements SQLScriptElement {
             return false;
         }
         if (statement instanceof PlainSelect plainSelect) {
-            return plainSelect.getForUpdateTable() != null || plainSelect.getIntoTables() != null;
+            return plainSelect.getForMode() != null || plainSelect.getIntoTables() != null;
         } else {
             return true;
         }

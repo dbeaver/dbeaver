@@ -31,11 +31,9 @@ import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.struct.DBStructUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -73,7 +71,7 @@ public class DataSourceToolbarUtils {
             if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
                 // Show schema selector only for active connections which
                 // support schema read or write
-                showSchemaSelector = isSchemasSupported(dataSourceContainer);
+                showSchemaSelector = DBStructUtils.isSchemasSupported(dataSourceContainer);
             }
             DBPProject resourceProj = activeEditor == null ? null : EditorUtils.getFileProject(activeEditor.getEditorInput());
             boolean canChangeConn = resourceProj == null || resourceProj.hasRealmPermission(RMConstants.PERMISSION_PROJECT_RESOURCE_EDIT);
@@ -117,21 +115,6 @@ public class DataSourceToolbarUtils {
         }
         // By some reason we can't locate the toolbar (#5712?). Let's just refresh elements then - its better than nothing
         updateCommandsUI();
-    }
-
-    public static boolean isSchemasSupported(DBPDataSourceContainer dataSourceContainer) {
-        DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSourceContainer, false);
-        if (defaultContext != null) {
-            DBCExecutionContextDefaults<?,?> contextDefaults = defaultContext.getContextDefaults();
-            if (contextDefaults != null) {
-                if (contextDefaults.getDefaultSchema() != null || contextDefaults.getDefaultCatalog() != null ||
-                    contextDefaults.supportsSchemaChange() || contextDefaults.supportsCatalogChange()
-                ) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     public static void updateCommandsUI() {

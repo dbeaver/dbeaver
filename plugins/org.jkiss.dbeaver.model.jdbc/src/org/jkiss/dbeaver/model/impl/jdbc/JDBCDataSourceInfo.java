@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,14 +34,14 @@ import java.util.List;
 /**
  * JDBCDataSourceInfo
  */
-public class JDBCDataSourceInfo extends AbstractDataSourceInfo
-{
+public class JDBCDataSourceInfo extends AbstractDataSourceInfo {
     private static final Log log = Log.getLog(JDBCDataSourceInfo.class);
 
     public static final String TERM_SCHEMA = ModelMessages.model_jdbc_Schema;
     public static final String TERM_PROCEDURE = ModelMessages.model_jdbc_Procedure;
     public static final String TERM_CATALOG = ModelMessages.model_jdbc_Database;
 
+    private final JDBCDataSource dataSource;
     private boolean readOnly;
     private boolean readOnlyData;
     private boolean readOnlyMetaData;
@@ -49,13 +49,12 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     private String databaseProductVersion;
     private String driverName;
     private String driverVersion;
-    private Version databaseVersion;
     private String schemaTerm;
     private String procedureTerm;
     private String catalogTerm;
 
     private boolean supportsTransactions;
-    private List<DBPTransactionIsolation> supportedIsolations;
+    private final List<DBPTransactionIsolation> supportedIsolations;
 
     private boolean supportsReferences = true;
     private boolean supportsIndexes = true;
@@ -64,14 +63,13 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     private boolean supportsScroll;
     private boolean supportsViews = true;
 
-    public JDBCDataSourceInfo(DBPDataSourceContainer container)
-    {
+    public JDBCDataSourceInfo(DBPDataSourceContainer container) {
+        this.dataSource = (JDBCDataSource) container.getDataSource();
         this.readOnly = false;
         this.databaseProductName = "?"; //$NON-NLS-1$
-        this.databaseProductVersion = "?"; //$NON-NLS-1$
+        this.databaseProductVersion = ""; //$NON-NLS-1$
         this.driverName = container.getDriver().getName(); //$NON-NLS-1$
         this.driverVersion = "?"; //$NON-NLS-1$
-        this.databaseVersion = new Version(0, 0, 0);
         this.schemaTerm = TERM_SCHEMA;
         this.procedureTerm = TERM_PROCEDURE;
         this.catalogTerm = TERM_CATALOG;
@@ -83,8 +81,9 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         this.supportsScroll = true;
     }
 
-    public JDBCDataSourceInfo(JDBCDatabaseMetaData metaData)
-    {
+    public JDBCDataSourceInfo(JDBCDatabaseMetaData metaData) {
+        this.dataSource = metaData.getDataSource();
+
         if (!isIgnoreReadOnlyFlag()) {
             try {
                 this.readOnly = metaData.isReadOnly();
@@ -105,7 +104,6 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
             this.databaseProductVersion = metaData.getDatabaseProductVersion();
         } catch (Throwable e) {
             debugError(e);
-            this.databaseProductVersion = "?"; //$NON-NLS-1$
         }
         try {
             String name = metaData.getDriverName();
@@ -121,16 +119,6 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         } catch (Throwable e) {
             debugError(e);
             this.driverVersion = "?"; //$NON-NLS-1$
-        }
-        try {
-            databaseVersion = new Version(metaData.getDatabaseMajorVersion(), metaData.getDatabaseMinorVersion(), 0);
-        } catch (Throwable e) {
-            try {
-                databaseVersion = new Version(databaseProductVersion);
-            } catch (IllegalArgumentException e1) {
-                log.debug("Can't determine database version. Use default");
-                databaseVersion = new Version(0, 0, 0);
-            }
         }
         try {
             this.schemaTerm = makeTermString(metaData.getSchemaTerm(), TERM_SCHEMA);
@@ -192,14 +180,12 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         return true;
     }
 
-    private String makeTermString(String term, String defTerm)
-    {
+    private String makeTermString(String term, String defTerm) {
         return CommonUtils.isEmpty(term) ? defTerm : CommonUtils.capitalizeWord(term.toLowerCase());
     }
 
     @Override
-    public boolean isReadOnlyData()
-    {
+    public boolean isReadOnlyData() {
         return readOnly || readOnlyData;
     }
 
@@ -208,8 +194,7 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     }
 
     @Override
-    public boolean isReadOnlyMetaData()
-    {
+    public boolean isReadOnlyMetaData() {
         return readOnly || readOnlyMetaData;
     }
 
@@ -218,83 +203,76 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     }
 
     @Override
-    public String getDatabaseProductName()
-    {
+    public String getDatabaseProductName() {
         return databaseProductName;
     }
 
     @Override
-    public String getDatabaseProductVersion()
-    {
+    public String getDatabaseProductVersion() {
+        if (CommonUtils.isEmpty(databaseProductVersion)) {
+            Version databaseVersion = getDatabaseVersion();
+            if (databaseVersion != null) {
+                return databaseVersion.toString();
+            }
+        }
         return databaseProductVersion;
     }
 
     @Override
     public Version getDatabaseVersion() {
-        return databaseVersion;
+        return dataSource.getDatabaseServerVersion();
     }
 
     @Override
-    public String getDriverName()
-    {
+    public String getDriverName() {
         return driverName;
     }
 
     @Override
-    public String getDriverVersion()
-    {
+    public String getDriverVersion() {
         return driverVersion;
     }
 
     @Override
-    public String getSchemaTerm()
-    {
+    public String getSchemaTerm() {
         return schemaTerm;
     }
 
     @Override
-    public String getProcedureTerm()
-    {
+    public String getProcedureTerm() {
         return procedureTerm;
     }
 
     @Override
-    public String getCatalogTerm()
-    {
+    public String getCatalogTerm() {
         return catalogTerm;
     }
 
     @Override
-    public boolean supportsTransactions()
-    {
+    public boolean supportsTransactions() {
         return supportsTransactions;
     }
 
     @Override
-    public boolean supportsSavepoints()
-    {
+    public boolean supportsSavepoints() {
         return false;
     }
 
     @Override
-    public boolean supportsReferentialIntegrity()
-    {
+    public boolean supportsReferentialIntegrity() {
         return supportsReferences;
     }
 
-    public void setSupportsReferences(boolean supportsReferences)
-    {
+    public void setSupportsReferences(boolean supportsReferences) {
         this.supportsReferences = supportsReferences;
     }
 
     @Override
-    public boolean supportsIndexes()
-    {
+    public boolean supportsIndexes() {
         return supportsIndexes;
     }
 
-    public void setSupportsIndexes(boolean supportsIndexes)
-    {
+    public void setSupportsIndexes(boolean supportsIndexes) {
         this.supportsIndexes = supportsIndexes;
     }
 
@@ -317,8 +295,7 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     }
 
     @Override
-    public Collection<DBPTransactionIsolation> getSupportedTransactionsIsolation()
-    {
+    public Collection<DBPTransactionIsolation> getSupportedTransactionsIsolation() {
         return supportedIsolations;
     }
 
@@ -328,8 +305,7 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
     }
 
     @Override
-    public boolean supportsResultSetScroll()
-    {
+    public boolean supportsResultSetScroll() {
         return supportsScroll;
     }
 
@@ -369,14 +345,12 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo
         return true;
     }
 
-    public void setSupportsResultSetScroll(boolean supportsScroll)
-    {
+    public void setSupportsResultSetScroll(boolean supportsScroll) {
         this.supportsScroll = supportsScroll;
     }
 
     @Override
-    public boolean supportsBatchUpdates()
-    {
+    public boolean supportsBatchUpdates() {
         return supportsBatchUpdates;
     }
 

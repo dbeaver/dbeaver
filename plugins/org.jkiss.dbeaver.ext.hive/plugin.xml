@@ -33,9 +33,10 @@
                         class="org.apache.hive.jdbc.HiveDriver"
                         sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                         defaultPort="10000"
-                        description="Apache Hive JDBC"
+                        description="Apache Hive JDBC (Legacy)"
                         webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                         databaseDocumentationSuffixURL="Apache-Hive"
+                        supportedConfigurationTypes="MANUAL,URL"
                         category="Hadoop"
                         categories="hadoop">
                     <replace provider="generic" driver="apache_hive2"/>
@@ -44,7 +45,7 @@
                           path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar"
                           bundle="!drivers.hive"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
-                    <file type="jar" path="drivers/hive" bundle="drivers.hive"/>
+                    <file type="jar" path="drivers/hive_legacy" bundle="drivers.hive"/>
 
                     <parameter name="supports-delimiter-in-views" value="false"/>
                     <parameter name="supports-limits" value="false"/>
@@ -64,6 +65,7 @@
                         description="Apache Hive JDBC"
                         webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                         databaseDocumentationSuffixURL="Apache-Hive"
+                        supportedConfigurationTypes="MANUAL,URL"
                         category="Hadoop"
                         categories="hadoop">
                     <replace provider="generic" driver="apache_hive2"/>

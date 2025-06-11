@@ -84,8 +84,20 @@ public class SQLScriptParser {
         final boolean scriptMode,
         final boolean keepDelimiters
     ) {
-        return tryExpandElement(parseQueryImpl(context, startPos, endPos, currentPos, scriptMode, keepDelimiters), context);
+        return tryExpandElement(parseQueryImpl(context, startPos, endPos, currentPos, scriptMode, keepDelimiters, false), context);
     }
+
+    public static SQLScriptElement parseQuery(
+        DBPDataSource dataSource,
+        SQLDialect dialect,
+        DBPPreferenceStore preferenceStore,
+        String sqlScriptContent,
+        int cursorPosition
+    ) {
+        SQLParserContext parserContext = prepareSqlParserContext(dataSource, dialect, preferenceStore, sqlScriptContent);
+        return SQLScriptParser.extractQueryAtPos(parserContext, cursorPosition, true);
+    }
+
 
     private static SQLScriptElement parseQueryImpl(
         @NotNull final SQLParserContext context,
@@ -93,7 +105,8 @@ public class SQLScriptParser {
         final int endPos,
         final int currentPos,
         final boolean scriptMode,
-        final boolean keepDelimiters
+        final boolean keepDelimiters,
+        boolean forceExtractComments
     ) {
         int length = endPos - startPos;
         IDocument document = context.getDocument();
@@ -107,7 +120,9 @@ public class SQLScriptParser {
 
         // Parse range
         TPRuleBasedScanner ruleScanner = context.getScanner();
-        boolean useBlankLines = !scriptMode && context.getSyntaxManager().getStatementDelimiterMode().useBlankLine;
+        boolean useBlankLines = scriptMode
+            ? context.getSyntaxManager().getStatementDelimiterMode().useSmart // respect blank lines in script mode if smart mode is on
+            : context.getSyntaxManager().getStatementDelimiterMode().useBlankLine; // respect blank lines always in single query exec if set
         boolean lineFeedIsDelimiter = ArrayUtils.contains(context.getSyntaxManager().getStatementDelimiters(), "\n");
         ruleScanner.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
@@ -383,7 +398,7 @@ public class SQLScriptParser {
                 }
                 if (!hasValuableTokens && !token.isWhitespace() && !isControl) {
                     if (tokenType == SQLTokenType.T_COMMENT) {
-                        hasValuableTokens = dialect.supportsCommentQuery();
+                        hasValuableTokens = dialect.supportsCommentQuery() || forceExtractComments;
                     } else {
                         hasValuableTokens = true;
                     }
@@ -415,10 +430,11 @@ public class SQLScriptParser {
         SQLDialect dialect,
         DBPPreferenceStore preferenceStore,
         String sqlScriptContent,
-        int cursorPosition
+        int cursorPosition,
+        boolean forceExtractComments
     ) {
         SQLParserContext parserContext = prepareSqlParserContext(dataSource, dialect, preferenceStore, sqlScriptContent);
-        return SQLScriptParser.extractQueryAtPos(parserContext, cursorPosition);
+        return SQLScriptParser.extractQueryAtPos(parserContext, cursorPosition, forceExtractComments);
     }
 
     private static boolean needsDelimiterAfterBlock(String firstKeyword, String lastKeyword, SQLDialect dialect) {
@@ -464,11 +480,11 @@ public class SQLScriptParser {
         return lfCount;
     }
 
-    public static SQLScriptElement extractQueryAtPos(SQLParserContext context, int currentPos) {
-        return tryExpandElement(extractQueryAtPosImpl(context, currentPos), context);
+    public static SQLScriptElement extractQueryAtPos(SQLParserContext context, int currentPos, boolean forceExtractComments) {
+        return tryExpandElement(extractQueryAtPosImpl(context, currentPos, forceExtractComments), context);
     }
     
-    private static SQLScriptElement extractQueryAtPosImpl(SQLParserContext context, int currentPos) {
+    private static SQLScriptElement extractQueryAtPosImpl(SQLParserContext context, int currentPos, boolean forceExtractComments) {
         IDocument document = context.getDocument();
         if (document.getLength() == 0) {
             return null;
@@ -609,7 +625,7 @@ public class SQLScriptParser {
         } catch (BadLocationException e) {
             log.warn(e);
         }
-        return parseQueryImpl(context, startPos, document.getLength(), currentPos, false, false);
+        return parseQueryImpl(context, startPos, document.getLength(), currentPos, false, false, forceExtractComments);
     }
 
     private static boolean isDefaultPartition(IDocumentPartitioner partitioner, int currentPos) {
@@ -621,7 +637,7 @@ public class SQLScriptParser {
     }
 
     public static SQLScriptElement extractNextQuery(@NotNull SQLParserContext context, int offset, boolean next) {
-        SQLScriptElement curElement = extractQueryAtPos(context, offset);
+        SQLScriptElement curElement = extractQueryAtPos(context, offset, false);
         return tryExpandElement(extractNextQueryImpl(context, curElement, next), context);
     }
 
@@ -684,7 +700,7 @@ public class SQLScriptParser {
             if (curPos <= 0 || curPos >= docLength) {
                 return null;
             }
-            return extractQueryAtPosImpl(context, curPos);
+            return extractQueryAtPosImpl(context, curPos, false);
         } catch (BadLocationException e) {
             log.warn(e);
             return null;
@@ -761,7 +777,7 @@ public class SQLScriptParser {
                 element = new SQLQuery(context.getDataSource(), selText, region.getOffset(), region.getLength());
             }
         } else if (region.getOffset() >= 0) {
-            element = extractQueryAtPos(context, region.getOffset());
+            element = extractQueryAtPos(context, region.getOffset(), false);
         } else {
             element = null;
         }
@@ -972,7 +988,7 @@ public class SQLScriptParser {
         parserContext.startScriptEvaluation();
         try {
             for (int queryOffset = startOffset; ; ) {
-                SQLScriptElement query = parseQueryImpl(parserContext, queryOffset, startOffset + length, queryOffset, scriptMode, keepDelimiters);
+                SQLScriptElement query = parseQueryImpl(parserContext, queryOffset, startOffset + length, queryOffset, scriptMode, keepDelimiters, false);
                 if (query == null) {
                     break;
                 }

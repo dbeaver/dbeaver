@@ -22,8 +22,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,13 +33,16 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * OracleUser
  */
-public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<OracleDataSource>, DBPSaveableObject, DBPRefreshableObject
+public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<OracleDataSource>, DBPSaveableObject, DBPRefreshableObject,
+    DBPScriptObject
 {
     private static final Log log = Log.getLog(OracleUser.class);
 
@@ -45,6 +50,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     private String name;
     private String externalName;
     private String status;
+    private boolean isLocked;
     private Timestamp createDate;
     private Timestamp lockDate;
     private Timestamp expiryDate;
@@ -67,6 +73,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
             this.name = JDBCUtils.safeGetString(resultSet, "USERNAME");
             this.externalName = JDBCUtils.safeGetString(resultSet, "EXTERNAL_NAME");
             this.status = JDBCUtils.safeGetString(resultSet, "ACCOUNT_STATUS");
+            this.isLocked = status != null && status.contains("LOCKED");
 
             this.createDate = JDBCUtils.safeGetTimestamp(resultSet, "CREATED");
             this.lockDate = JDBCUtils.safeGetTimestamp(resultSet, "LOCK_DATE");
@@ -174,7 +181,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
      * Passwords are never read from database. It is used to create/alter schema/user
      * @return password or null
      */
-    @Property(visibleIf = OracleUserPasswordValueValidator.class, editable = true, updatable = true, order = 12, password = true)
+    @Property(visibleIf = OracleUserModifyValueValidator.class, editable = true, updatable = true, order = 12, password = true)
     public String getPassword() {
         return password;
     }
@@ -183,13 +190,22 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         this.password = password;
     }
 
-    @Property(visibleIf = OracleUserPasswordValueValidator.class, editable = true, updatable = true, order = 13, password = true)
+    @Property(visibleIf = OracleUserModifyValueValidator.class, editable = true, updatable = true, order = 13, password = true)
     public String getConfirmPassword() {
         return confirmPassword;
     }
 
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
+    }
+
+    @Property(visibleIf = OracleUserModifyValueValidator.class, editable = true, updatable = true, order = 14)
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public void setLocked(boolean locked) {
+        isLocked = locked;
     }
 
     @Override
@@ -203,6 +219,33 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         return super.refreshObject(monitor);
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("-- DROP USER ").append(DBUtils.getQuotedIdentifier(this)).append(";\n\n");
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load definition for USER '" + this.name + "'")) {
+            String userDDL = OracleUtils.fetchDDL(session, "USER", DBUtils.getQuotedIdentifier(this));
+            OracleUtils.addDDLLine(sql, userDDL);
+            if (getDataSource().isAtLeastV10()) {
+                OracleUtils.addDDLLine(
+                    sql,
+                    OracleUtils.invokeDBMSMetadataGetGrantedDDL(session, this, OracleUtils.DBMSMetaGrantedObjectType.SYSTEM_GRANT)
+                );
+                OracleUtils.addDDLLine(
+                    sql,
+                    OracleUtils.invokeDBMSMetadataGetGrantedDDL(session, this, OracleUtils.DBMSMetaGrantedObjectType.ROLE_GRANT)
+                );
+                OracleUtils.addDDLLine(
+                    sql,
+                    OracleUtils.invokeDBMSMetadataGetGrantedDDL(session, this, OracleUtils.DBMSMetaGrantedObjectType.OBJECT_GRANT)
+                );
+            }
+        } catch (SQLException e) {
+            throw new DBException("Failed of getting Oracle user definition", e);
+        }
+        return sql.toString();
     }
 
 
@@ -227,10 +270,10 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         this.persisted = persisted;
     }
 
-    public static class OracleUserPasswordValueValidator implements IPropertyValueValidator<OracleUser, Object> {
+    public static class OracleUserModifyValueValidator implements IPropertyValueValidator<OracleUser, Object> {
         @Override
         public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
-            return object.getDataSource().supportsUserPasswordEdit();
+            return object.getDataSource().supportsUserEdit();
         }
     }
 

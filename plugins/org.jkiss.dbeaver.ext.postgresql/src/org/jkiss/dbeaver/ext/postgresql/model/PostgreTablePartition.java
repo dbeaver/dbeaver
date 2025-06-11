@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.sql.ResultSet;
+import java.util.HashMap;
 import java.util.Map;
 
 public class PostgreTablePartition extends PostgreTable implements DBSTablePartition {
@@ -77,6 +78,7 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        options = new HashMap<>(options);
         options.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
         options.put(OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, false);
         options.put(OPTION_INCLUDE_NESTED_OBJECTS, false);

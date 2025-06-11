@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.LinkedList;
@@ -44,7 +45,6 @@ public class SQLQuerySelectionResultCompleteTupleSpec extends SQLQuerySelectionR
         this.tupleRefEntry = tupleRefEntry;
     }
 
-    @NotNull
     @Override
     protected void collectColumns(
         @NotNull SQLQueryDataContext context,
@@ -54,6 +54,17 @@ public class SQLQuerySelectionResultCompleteTupleSpec extends SQLQuerySelectionR
     ) {
         this.tupleRefEntry.setOrigin(new SQLQuerySymbolOrigin.ExpandableTupleRef(this.tupleRefEntry.getSyntaxNode(), context, null));
         this.collectForeignColumns(context.getColumnsList(), rowsSourceModel, resultColumns);
+    }
+
+    @Override
+    protected void collectColumns(
+        @NotNull SQLQueryRowsDataContext knownValues,
+        @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull LinkedList<SQLQueryResultColumn> resultColumns
+    ) {
+        // TODO this.tupleRefEntry.setOrigin(new SQLQuerySymbolOrigin.RowsDataRef(knownValues));
+        this.collectForeignColumns(knownValues.getColumnsList(), rowsSourceModel, resultColumns);
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,39 +19,37 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.cubrid.model.meta.CubridMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.dpi.DPIContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 
 public class CubridDataSource extends GenericDataSource
 {
     private final CubridMetaModel metaModel;
-    private boolean supportMultiSchema;
-    private boolean isEOLVersion;
     private final CubridPrivilageCache privilageCache;
     private final CubridServerCache serverCache;
+    private boolean supportMultiSchema;
+    private boolean isEOLVersion;
     private ArrayList<CubridCharset> charsets;
     private Map<String, CubridCollation> collations;
 
@@ -66,7 +64,6 @@ public class CubridDataSource extends GenericDataSource
         this.serverCache = new CubridServerCache();
     }
 
-    @DPIContainer
     @NotNull
     @Override
     public CubridDataSource getDataSource() {
@@ -77,7 +74,7 @@ public class CubridDataSource extends GenericDataSource
     public List<GenericSchema> getCubridUsers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return this.getSchemas();
     }
-    
+
     @NotNull
     public List<CubridPrivilage> getCubridPrivilages(@NotNull DBRProgressMonitor monitor) throws DBException {
         return privilageCache.getAllObjects(monitor, this);
@@ -101,7 +98,7 @@ public class CubridDataSource extends GenericDataSource
     public boolean supportsServer() {
         return getSupportMultiSchema();
     }
-    
+
     @NotNull
     public CubridPrivilageCache getCubridPrivilageCache() {
         return privilageCache;
@@ -219,6 +216,7 @@ public class CubridDataSource extends GenericDataSource
         } else {
             DBWorkbench.getPlatformUI().showMessageBox("Connected CUBRID Info", "The connected CUBRID is an EOL version. Limited features are available.", false);
         }
+        setTracking(monitor);
     }
 
     @NotNull
@@ -247,6 +245,28 @@ public class CubridDataSource extends GenericDataSource
         this.isEOLVersion = isEOLVersion;
     }
 
+    @NotNull
+    @Override
+    public boolean splitProceduresAndFunctions() {
+        return true;
+    }
+
+    private void setTracking(@NotNull DBRProgressMonitor monitor) throws DBException {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "set trace")) {
+            try (JDBCStatement st = session.createStatement()) {
+                if (store.getBoolean(CubridConstants.STATISTIC_TRACE))
+                    st.execute("SET TRACE ON;");
+                if (!CommonUtils.isEmpty(store.getString(CubridConstants.STATISTIC)))
+                    st.execute("set @collect_exec_stats = 1");
+            }
+        } catch (SQLException e) {
+            throw new DBException("Can't set trace", e);
+
+        }
+
+    }
+
     public class CubridServerCache extends JDBCObjectCache<CubridDataSource, CubridServer> {
         @NotNull
         @Override
@@ -269,7 +289,7 @@ public class CubridDataSource extends GenericDataSource
             return new CubridServer(container, dbResult);
         }
     }
-    
+
     public class CubridPrivilageCache extends JDBCObjectCache<CubridDataSource, CubridPrivilage> {
         @NotNull
         @Override
@@ -290,14 +310,8 @@ public class CubridDataSource extends GenericDataSource
                 @NotNull JDBCResultSet dbResult)
                 throws SQLException, DBException {
             String name = JDBCUtils.safeGetString(dbResult, "name");
-            return new CubridPrivilage(container,name, dbResult);
+            return new CubridPrivilage(container, name, dbResult);
         }
-    }
-
-    @NotNull
-    @Override
-    public boolean splitProceduresAndFunctions() {
-        return true;
     }
 
 }

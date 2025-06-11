@@ -309,6 +309,12 @@
             </drivers>
 
             <nativeClients>
+                <client id="mariadb_client" label="MariaDB Binaries">
+                    <dist os="win32" targetPath="clients/mariadb/win" remotePath="repo:/drivers/mariadb/client/win" resourcePath="clients/mariadb/win">
+                        <file type="exec" name="mariadb.exe"/>
+                        <file type="exec" name="mariadb-dump.exe"/>
+                    </dist>
+                </client>
                 <client id="mysql_client" label="MySQL Binaries">
                     <dist os="win32" targetPath="clients/mysql_8/win" remotePath="repo:/drivers/mysql/client_8/win" resourcePath="clients/mysql_8/win">
                         <file type="exec" name="mysql.exe"/>
@@ -481,7 +487,7 @@
 
         <task id="mysqlDatabaseBackup" name="%task.mysqlDatabaseBackup.name" description="%task.mysqlDatabaseBackup.description"
               icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="mysql"
-              handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler">
+              handler="org.jkiss.dbeaver.ext.mysql.tasks.MySQLDatabaseExportHandler" requiresExportPrivileges="true">
             <datasource id="mysql"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" if="object.dataSource.supportsNativeClients()"/>
             <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase" if="object.dataSource.supportsNativeClients()"/>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ class HiveDataSourceInfo extends JDBCDataSourceInfo {
             log.debug("Error reading Hive version: " + e.getMessage());
         }
         try {
-            ClassLoader classLoader = dataSource.getContainer().getDriver().getClassLoader();
+            ClassLoader classLoader = dataSource.getContainer().getDriver().getDriverLoader(dataSource.getContainer()).getClassLoader();
             if (classLoader != null) {
                 InputStream propsStream = classLoader.getResourceAsStream("common-version-info.properties");
                 if (propsStream != null) {

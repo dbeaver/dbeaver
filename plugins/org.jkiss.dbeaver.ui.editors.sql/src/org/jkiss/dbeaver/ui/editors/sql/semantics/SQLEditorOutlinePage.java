@@ -952,8 +952,8 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                     if (naturalJoin.getCondition() != null) {
                         // TODO add expression text to the ON node and remove its immediate and only child with the same text
                         this.makeNode(node, naturalJoin.getCondition(), SQLConstants.KEYWORD_ON + " ", DBIcon.TREE_UNIQUE_KEY, naturalJoin.getCondition());
-                    } else if (naturalJoin.getColumsToJoin() != null && naturalJoin.getColumsToJoin().size() > 0) {
-                        String suffix = naturalJoin.getColumsToJoin().stream()
+                    } else if (naturalJoin.getColumnsToJoin() != null && !naturalJoin.getColumnsToJoin().isEmpty()) {
+                        String suffix = naturalJoin.getColumnsToJoin().stream()
                             .map(SQLQuerySymbolEntry::getRawName)
                             .collect(Collectors.joining(", ", "(", ")"));
                         this.makeNode(node, naturalJoin, SQLConstants.KEYWORD_USING + " " + suffix, DBIcon.TREE_UNIQUE_KEY);
@@ -1016,7 +1016,11 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             @Nullable SQLQuerySelectIntoModel.SQLQuerySelectIntoTargetsList targetsList
         ) {
             if (node.kind == OutlineQueryNodeKind.PROJECTION_SUBROOT || node instanceof OutlineScriptElementNode) {
-                String suffix = projection.getResultDataContext().getColumnsList().stream()
+                String suffix = (
+                    projection.getGivenDataContext() != null
+                        ? projection.getResultDataContext().getColumnsList()
+                        : projection.getRowsDataContext().getColumnsList()
+                ).stream()
                     .map(c -> c.symbol.getName())
                     .collect(Collectors.joining(", ", "(", ")"));
                 this.makeNode(

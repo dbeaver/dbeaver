@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -354,9 +354,12 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
             }
             DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(taskType);
             TaskConfigurationWizard<?> configWizard = configurator.createTaskConfigWizard(task);
-
-            TaskConfigurationWizardDialog dialog = configWizard.createWizardDialog(window, selection);
-            return dialog.open();
+            if (configWizard != null) {
+                TaskConfigurationWizardDialog dialog = configWizard.createWizardDialog(window, selection);
+                return dialog.open();
+            } else {
+                return IDialogConstants.ABORT_ID;
+            }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Task create error", "Error creating task '" + taskTypeId + "'", e);
             return IDialogConstants.CANCEL_ID;

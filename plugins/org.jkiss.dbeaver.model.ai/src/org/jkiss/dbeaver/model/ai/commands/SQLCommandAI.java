@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
-import org.jkiss.dbeaver.model.ai.completion.*;
-import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
@@ -30,13 +32,24 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * Control command handler
  */
 public class SQLCommandAI implements SQLControlCommandHandler {
+    private static final DBCOutputSeverity AI_OUTPUT_SEVERITY = new DBCOutputSeverity() {
+        @NotNull
+        @Override
+        public String getName() {
+            return "AI";
+        }
+
+        @Override
+        public boolean isForced() {
+            return true;
+        }
+    };
 
     @NotNull
     @Override
@@ -45,25 +58,19 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         if (dataSource == null) {
             throw new DBException("Not connected to database");
         }
-        AISettings aiSettings = AISettingsRegistry.getInstance().getSettings();
-        if (aiSettings.isAiDisabled()) {
-            throw new DBException("AI services are disabled");
-        }
-        DAICompletionEngine<?> engine = AIEngineRegistry.getInstance().getCompletionEngine(
-            aiSettings.getActiveEngine());
 
         String prompt = command.getParameter();
         if (CommonUtils.isEmptyTrimmed(prompt)) {
             throw new DBException("Empty AI prompt");
         }
 
-        IAIFormatter formatter = AIFormatterRegistry.getInstance().getFormatter(AIConstants.CORE_FORMATTER);
+        AIBaseFeatures.SQL_AI_COMMAND.use();
 
         final DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(
             command.getDataSourceContainer(), "AI logical wrapper", null);
 
         DBPDataSourceContainer dataSourceContainer = lDataSource.getDataSourceContainer();
-        DAICompletionSettings completionSettings = new DAICompletionSettings(dataSourceContainer);
+        AICompletionSettings completionSettings = new AICompletionSettings(dataSourceContainer);
         if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode() && !completionSettings.isMetaTransferConfirmed()) {
             if (DBWorkbench.getPlatformUI().confirmAction("Do you confirm AI usage",
                 "Do you confirm AI usage for '" + dataSourceContainer.getName() + "'?"
@@ -74,12 +81,14 @@ public class SQLCommandAI implements SQLControlCommandHandler {
                 throw new DBException("AI services restricted for '" + dataSourceContainer.getName() + "'");
             }
         }
-        DAICompletionScope scope = completionSettings.getScope();
-        DAICompletionContext.Builder contextBuilder = new DAICompletionContext.Builder()
-            .setScope(scope)
-            .setDataSource(lDataSource)
-            .setExecutionContext(scriptContext.getExecutionContext());
-        if (scope == DAICompletionScope.CUSTOM) {
+        AIDatabaseScope scope = completionSettings.getScope();
+        AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(lDataSource)
+            .setScope(scope);
+        DBCExecutionContext executionContext = scriptContext.getExecutionContext();
+        if (executionContext != null) {
+            contextBuilder.setExecutionContext(executionContext);
+        }
+        if (scope == AIDatabaseScope.CUSTOM) {
             contextBuilder.setCustomEntities(
                 AITextUtils.loadCustomEntities(
                     monitor,
@@ -87,47 +96,26 @@ public class SQLCommandAI implements SQLControlCommandHandler {
                     Arrays.stream(completionSettings.getCustomObjectIds()).collect(Collectors.toSet()))
             );
         }
-        final DAICompletionContext aiContext = contextBuilder.build();
+        final AIDatabaseContext aiContext = contextBuilder.build();
 
-        DAICompletionSession aiSession = new DAICompletionSession();
-        aiSession.add(new DAICompletionMessage(DAICompletionMessage.Role.USER, prompt));
+        AICommandResult result = AIAssistantRegistry.getInstance()
+            .createAssistant(dataSourceContainer.getProject().getWorkspace())
+            .command(monitor, new AICommandRequest(prompt, aiContext));
 
-        List<DAICompletionResponse> responses = engine.performSessionCompletion(
-            monitor,
-            aiContext,
-            aiSession,
-            formatter,
-            true);
-
-        DAICompletionResponse response = responses.get(0);
-        MessageChunk[] messageChunks = AITextUtils.splitIntoChunks(
-            dataSource.getSQLDialect(),
-            CommonUtils.notEmpty(response.getResultCompletion()));
-
-        String finalSQL = null;
-        StringBuilder messages = new StringBuilder();
-        for (MessageChunk chunk : messageChunks) {
-            if (chunk instanceof MessageChunk.Code code) {
-                finalSQL = code.text();
-            } else if (chunk instanceof MessageChunk.Text text) {
-                messages.append(text.text());
+        if (result.sql() == null) {
+            if (!CommonUtils.isEmpty(result.message())) {
+                throw new DBException(result.message());
             }
-        }
-        if (finalSQL == null) {
-            if (!messages.isEmpty()) {
-                throw new DBException(messages.toString());
-            }
-            throw new DBException("Empty AI completion for '" + prompt + "'");
+            throw new DBException("Empty AI response for '" + prompt + "'");
         }
 
         SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);
-        if (!finalSQL.contains("\n") && SQLUtils.isCommentLine(dialect, finalSQL)) {
-            throw new DBException(finalSQL);
+        if (!result.sql().contains("\n") && SQLUtils.isCommentLine(dialect, result.sql())) {
+            throw new DBException(result.sql());
         }
 
-        scriptContext.getOutputWriter().println(AIOutputSeverity.PROMPT, prompt + " ==> " + finalSQL + "\n");
-        return SQLControlResult.transform(
-            new SQLQuery(dataSource, finalSQL));
-    }
+        scriptContext.getOutputWriter().println(AI_OUTPUT_SEVERITY, prompt + " ==> " + result.sql() + "\n");
 
+        return SQLControlResult.transform(new SQLQuery(dataSource, result.sql()));
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
@@ -237,6 +238,72 @@ public class OracleUtils {
                 "' for '" + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "': " + e.getMessage());
         }
         return ddl;
+    }
+
+    /**
+     * Enumeration of granted object types supported by Oracle's DBMS_METADATA.GET_GRANTED_DDL function.
+     * These represent different categories of privileges that can be extracted as DDL statements.
+     *
+     * <ul>
+     *     <li><b>SYSTEM_GRANT</b> - System-level privileges granted to a user or role (e.g., CREATE SESSION).</li>
+     *     <li><b>ROLE_GRANT</b> - Roles granted to a user or another role.</li>
+     *     <li><b>OBJECT_GRANT</b> - Object-level privileges (e.g., SELECT, INSERT on specific tables or views).</li>
+     * </ul>
+     */
+    public enum DBMSMetaGrantedObjectType {
+        SYSTEM_GRANT,
+        ROLE_GRANT,
+        OBJECT_GRANT
+    }
+
+    /**
+     * Retrieves the granted DDL for a specific grantee and object type
+     * using Oracle's DBMS_METADATA.GET_GRANTED_DDL function.
+     *
+     * @param session              the active JDBC session connected to the Oracle database
+     * @param grantee              the grantee (user or role) whose granted privileges are to be fetched
+     * @param dependentObjectType  the type of granted object (e.g., SYSTEM_GRANT, ROLE_GRANT, OBJECT_GRANT)
+     * @return the DDL string representing the granted privileges, or an empty string if none found or an error occurs
+     */
+    @NotNull
+    public static String invokeDBMSMetadataGetGrantedDDL(
+        @NotNull JDBCSession session,
+        @NotNull OracleGrantee grantee,
+        @NotNull DBMSMetaGrantedObjectType dependentObjectType
+    ) {
+        String ddl = "";
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT DBMS_METADATA.GET_GRANTED_DDL(?,?) TXT FROM DUAL")) {
+            dbStat.setString(1, dependentObjectType.name());
+            dbStat.setString(2, grantee.getName());
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                if (dbResult.next()) {
+                    ddl = dbResult.getString(1).trim();
+                }
+            }
+        } catch (Exception e) {
+            // No dependent index DDL or something went wrong
+            log.debug("Error reading dependent DDL '" + dependentObjectType +
+                "' for '" + grantee.getName() + "': " + e.getMessage());
+        }
+        return ddl;
+    }
+
+    /**
+     * Appends the provided DDL statement to the given SQL buffer with proper formatting.
+     * Adds a semicolon at the end if it's not already present.
+     *
+     * @param sql the StringBuilder to append the DDL to
+     * @param ddl the DDL string to append; if null or empty, nothing is added
+     */
+    public static void addDDLLine(@NotNull StringBuilder sql, @Nullable String ddl) {
+        if (CommonUtils.isNotEmpty(ddl)) {
+            sql.append("\n").append(ddl);
+            if (!ddl.endsWith(";")) {
+                sql.append(";");
+            }
+            sql.append("\n");
+        }
     }
 
     private static String addCommentsToDDL(DBRProgressMonitor monitor, OracleTableBase object, String ddl) {

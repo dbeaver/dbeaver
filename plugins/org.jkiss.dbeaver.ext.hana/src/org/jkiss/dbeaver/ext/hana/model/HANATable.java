@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,23 +19,24 @@ package org.jkiss.dbeaver.ext.hana.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.utils.ByteNumberFormat;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -69,7 +70,7 @@ public class HANATable extends GenericTable implements DBPObjectStatistics {
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 1, visibleIf = HANANotPartitionedTable.class)
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1, visibleIf = HANANotPartitionedTable.class)
     public String getName() {
         return super.getName();
     }
@@ -82,13 +83,13 @@ public class HANATable extends GenericTable implements DBPObjectStatistics {
 
     @Override
     @NotNull
-    @Property(viewable = true, order = 3, visibleIf = HANANotPartitionedTable.class)
+    @Property(viewable = true, optional = true, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 4, visibleIf = HANANotPartitionedTable.class)
     public GenericSchema getSchema() {
         return super.getSchema();
     }
 
     @Override
-    @Property(viewable = true, order = 13, visibleIf = HANANotPartitionedTable.class)
+    @Property(viewable = true, length = PropertyLength.MULTILINE, order = 13, visibleIf = HANANotPartitionedTable.class)
     public String getDescription() {
         return super.getDescription();
     }

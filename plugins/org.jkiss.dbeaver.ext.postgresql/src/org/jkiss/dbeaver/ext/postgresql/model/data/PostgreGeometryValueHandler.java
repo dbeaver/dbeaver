@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         } else if (object.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
             return makeGeometryFromPGGeometry(session, object);
         } else if (PostgreUtils.isPGObject(object)) {
-            return makeGeometryFromWKB(CommonUtils.toString(PostgreUtils.extractPGObjectValue(object)));
+            return makeGeometryFromWKT(session, CommonUtils.toString(PostgreUtils.extractPGObjectValue(object)));
         } else {
             return makeGeometryFromWKT(session, object.toString());
         }
@@ -148,7 +148,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
     protected DBGeometry makeGeometryFromWKB(byte[] binary) throws DBCException {
         try {
             return new DBGeometry(new WKBReader().read(binary));
-        } catch (ParseException e) {
+        } catch (Exception e) {
             throw new DBCException("Error parsing WKB value", e);
         }
     }

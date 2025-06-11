@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.model.websocket.event.session;
 import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSSessionExpiredEvent extends WSAbstractSessionEvent {
+    public static final String ID = "cb_session_expired";
+
     public WSSessionExpiredEvent() {
-        super("cb_session_expired", WSConstants.TOPIC_SESSION);
+        super(ID, WSConstants.TOPIC_SESSION);
     }
 }

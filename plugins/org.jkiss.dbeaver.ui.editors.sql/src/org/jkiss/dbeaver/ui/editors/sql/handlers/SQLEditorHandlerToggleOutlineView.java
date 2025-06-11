@@ -69,6 +69,8 @@ public class SQLEditorHandlerToggleOutlineView extends AbstractHandler implement
 
     public static void refreshCommandState(@NotNull IServiceLocator serviceLocator) {
         ICommandService commandService = serviceLocator.getService(ICommandService.class);
-        commandService.refreshElements(SQLEditorCommands.CMD_SQL_SHOW_OUTLINE, null);  
+        if (commandService != null) {
+            commandService.refreshElements(SQLEditorCommands.CMD_SQL_SHOW_OUTLINE, null);
+        }
     }
 }

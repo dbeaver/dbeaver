@@ -47,11 +47,13 @@ import java.util.Map;
 public class PostgreSessionEditor extends AbstractSessionEditor
 {
     private KillSessionAction terminateQueryAction;
+    private CancelQueryAction cancelQueryAction;
     private boolean showIdle = true;
 
     @Override
     public void createEditorControl(Composite parent) {
         terminateQueryAction = new KillSessionAction();
+        cancelQueryAction = new CancelQueryAction();
         super.createEditorControl(parent);
     }
 
@@ -65,6 +67,7 @@ public class PostgreSessionEditor extends AbstractSessionEditor
                 contributionManager.add(new ShowIdleAction());
                 contributionManager.add(new Separator());
                 contributionManager.add(terminateQueryAction);
+                contributionManager.add(cancelQueryAction);
                 contributionManager.add(new Separator());
             }
 
@@ -72,6 +75,7 @@ public class PostgreSessionEditor extends AbstractSessionEditor
             protected void onSessionSelect(DBAServerSession session) {
                 super.onSessionSelect(session);
                 terminateQueryAction.setEnabled(session != null);
+                cancelQueryAction.setEnabled(session != null);
             }
             
             @Override
@@ -111,6 +115,29 @@ public class PostgreSessionEditor extends AbstractSessionEditor
         public void run() {
             showIdle = isChecked();
             refreshPart(PostgreSessionEditor.this, true);
+        }
+    }
+    private class CancelQueryAction extends Action {
+        CancelQueryAction() {
+            super(
+                "Cancel query",
+                UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP));
+            setToolTipText("Cancel query");
+        }
+        @Override
+        public void run() {
+            final List<DBAServerSession> sessions = getSessionsViewer().getSelectedSessions();
+            if (sessions != null && UIUtils.confirmAction(
+                getSite().getShell(),
+                this.getText(),
+                NLS.bind("Cancel query of session {0}?", sessions)))
+            {
+                Map<String, Object> options = new HashMap<String,Object>();
+                options.put(PostgreSessionManager.OPTION_QUERY_CANCEL, true);
+                getSessionsViewer().alterSessions(
+                    sessions,
+                    options);
+            }
         }
     }
 

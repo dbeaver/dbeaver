@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreFeatures;
 import org.jkiss.dbeaver.core.DesktopPlatform;
-import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
@@ -62,13 +61,13 @@ import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.OperationSystemState;
+import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
-import org.jkiss.dbeaver.ui.app.standalone.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
@@ -267,11 +266,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         filterWizards();
         patchJFaceIcons();
 
-        if (!application.isDistributed() &&
-            !ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
-            startVersionChecker();
-        }
-        if (!GraphicsEnvironment.isHeadless() && Desktop.isDesktopSupported()) {
+        if (AWTUtils.isDesktopSupported()) {
             // System events
             Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {
@@ -365,11 +360,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         }
     }
 
-    private void startVersionChecker() {
-        DBeaverVersionChecker checker = new DBeaverVersionChecker(false);
-        checker.schedule(3000);
-    }
-
     ///////////////////////
     // Shutdown
 
@@ -389,7 +379,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public void postShutdown() {
         super.postShutdown();
-        if (!GraphicsEnvironment.isHeadless() && Desktop.isDesktopSupported()) {
+        if (AWTUtils.isDesktopSupported()) {
             // System events
             Desktop desktop = Desktop.getDesktop();
             if (desktop.isSupported(Desktop.Action.APP_EVENT_SYSTEM_SLEEP)) {

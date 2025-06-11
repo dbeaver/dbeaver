@@ -18,7 +18,8 @@ package org.jkiss.dbeaver.ui.config.sample;
 
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -50,7 +51,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
     private static final Log log = Log.getLog(WorkbenchInitializerCreateSampleDatabase.class);
 
     @Override
-    public void initializeWorkbenchWindow(IWorkbenchWindow window) {
+    public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PROP_SAMPLE_DB_CANCELED)) {
             // Create was canceled
             return;
@@ -69,11 +70,11 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             // Already exist
             return;
         }
-        if (!showCreateSampleDatabasePrompt(window.getShell())) {
+        if (!showCreateSampleDatabasePrompt(configurer.getWindow().getShell())) {
             DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_SAMPLE_DB_CANCELED, true);
-            return;
+        } else {
+            createSampleDatabase(registry);
         }
-        createSampleDatabase(registry);
     }
 
     static boolean isSampleDatabaseExists(DBPDataSourceRegistry registry) {
