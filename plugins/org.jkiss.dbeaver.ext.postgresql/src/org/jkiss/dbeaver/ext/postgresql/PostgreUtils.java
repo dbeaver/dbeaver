@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1025,10 +1025,10 @@ public class PostgreUtils {
             }
         } else {
             String url = configuration.getUrl();
-            int divPos = url.lastIndexOf('/');
-            if (divPos > 0) {
-                int lastPos = getLastNonDatabaseCharPos(divPos, url);
-                activeDatabaseName = url.substring(divPos + 1, lastPos);
+            Pattern pattern = Pattern.compile("jdbc:postgresql://[^/]+/([^?#]+)");
+            Matcher matcher = pattern.matcher(url);
+            if (matcher.find()) {
+                activeDatabaseName = matcher.group(1).replace("%2F", "/");
             }
         }
         return activeDatabaseName;
