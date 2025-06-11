@@ -30,8 +30,6 @@ import java.util.List;
 
 public interface AIPromptFormatter {
 
-    boolean filterHiddenObjects();
-
     /**
      * Does additional translation of generated SQL query
      */

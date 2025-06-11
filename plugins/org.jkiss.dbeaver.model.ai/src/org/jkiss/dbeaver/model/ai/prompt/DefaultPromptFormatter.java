@@ -32,10 +32,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 
 public class DefaultPromptFormatter implements AIPromptFormatter {
-    @Override
-    public boolean filterHiddenObjects() {
-        return true;
-    }
 
     @NotNull
     @Override
