@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.AlphanumericComparator;
 import org.jkiss.utils.ArrayUtils;
@@ -139,6 +140,10 @@ public class DBNUtils {
         }
 
         if (firstChild instanceof DBNContainer) {
+            return;
+        }
+
+        if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBSTableIndexColumn) {
             return;
         }
 
