@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ public interface DBPScriptObject extends DBPObject {
     String OPTION_DDL_ONLY_PERSISTED_ATTRIBUTES = "ddl.onlyPersistedAttributes"; //$NON-NLS-1$
     String OPTION_SKIP_UNIQUE_KEYS = "ddl.skipUniqueKeys"; //$NON-NLS-1$
     String OPTION_SKIP_INDEXES = "ddl.skipIndexes"; //$NON-NLS-1$
+    String OPTION_SKIP_DROPS = "ddl.skipDrops"; //$NON-NLS-1$
 
     String OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS = "ddl.separateForeignKeys"; //$NON-NLS-1$
 

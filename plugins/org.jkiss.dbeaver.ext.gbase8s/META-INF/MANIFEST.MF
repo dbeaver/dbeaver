@@ -7,7 +7,7 @@ Bundle-Release-Date: 20250616
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Bundle-Authors: Chao Tian
 Bundle-Localization: OSGI-INF/l10n/bundle

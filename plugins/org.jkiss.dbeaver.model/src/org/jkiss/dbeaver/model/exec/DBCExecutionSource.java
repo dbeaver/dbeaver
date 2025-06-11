@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,12 @@
 package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.dpi.DPILocalObject;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 /**
  * Execution source.
  * The thing which initiates statement execution
  */
-@DPILocalObject
 public interface DBCExecutionSource
 {
     @Nullable
