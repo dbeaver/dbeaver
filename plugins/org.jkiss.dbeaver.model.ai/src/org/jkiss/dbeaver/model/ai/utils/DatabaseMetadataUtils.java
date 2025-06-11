@@ -50,9 +50,7 @@ public class DatabaseMetadataUtils {
         int maxRequestLength,
         boolean useFullyQualifiedName
     ) throws DBException {
-        if (formatter.filterHiddenObjects()
-            && DBNUtils.getNodeByObject(monitor, object, false) == null
-        ) {
+        if (DBNUtils.getNodeByObject(monitor, object, false) == null) {
             // Skip hidden objects
             return "";
         }

@@ -381,6 +381,9 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         if (targetType != null) {
             settings.put("targetType", targetType);
         }
+        if (targetTypeWithModifiers != null) {
+            settings.put("targetTypeWithModifiers", targetTypeWithModifiers);
+        }
         if (mappingType != null) {
             settings.put("mappingType", mappingType.name());
 
@@ -395,6 +398,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
     public void loadSettings(Map<String, Object> settings) {
         targetName = CommonUtils.toString(settings.get("targetName"));
         targetType = CommonUtils.toString(settings.get("targetType"));
+        targetTypeWithModifiers = CommonUtils.toString(settings.get("targetTypeWithModifiers"));
         if (settings.get("mappingType") != null) {
             try {
                 DatabaseMappingType newMappingType = DatabaseMappingType.valueOf((String) settings.get("mappingType"));
