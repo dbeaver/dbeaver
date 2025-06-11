@@ -37,6 +37,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Flow;
+import java.util.concurrent.Future;
 import java.util.concurrent.SubmissionPublisher;
 
 public class CopilotClient implements AutoCloseable {
@@ -82,9 +83,11 @@ public class CopilotClient implements AutoCloseable {
     /**
      * Request access token
      */
+    @NotNull
     public String requestAccessToken(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DeviceCodeResponse deviceCodeResponse
+        @NotNull DeviceCodeResponse deviceCodeResponse,
+        @NotNull Future<?> cancellationToken
     ) throws DBException, InterruptedException {
         AccessTokenRequest accessTokenRequest = new AccessTokenRequest(
             DBEAVER_OAUTH_APP,
@@ -103,7 +106,7 @@ public class CopilotClient implements AutoCloseable {
         Duration interval = Duration.ofSeconds(deviceCodeResponse.interval());
         Instant start = Instant.now();
 
-        while (Instant.now().isBefore(start.plus(expiresIn)) && !monitor.isCanceled()) {
+        while (Instant.now().isBefore(start.plus(expiresIn)) && !monitor.isCanceled() && !cancellationToken.isCancelled()) {
             var response = client.send(monitor, request);
             if (response.statusCode() != 200) {
                 throw mapHttpError(response);
@@ -120,7 +123,11 @@ public class CopilotClient implements AutoCloseable {
             }
         }
 
-        throw new DBException("Access token request timed out after " + expiresIn.toSeconds() + " seconds.");
+        if (monitor.isCanceled() || cancellationToken.isCancelled()) {
+            throw new DBException("Access token request was canceled by the user");
+        } else {
+            throw new DBException("Access token request timed out");
+        }
     }
 
     /**

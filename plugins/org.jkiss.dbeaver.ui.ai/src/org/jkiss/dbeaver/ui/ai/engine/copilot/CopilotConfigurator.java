@@ -226,7 +226,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
             service.showCodePopup(URI.create(deviceCodeResponse.verificationUri()), deviceCodeResponse.userCode(), future);
 
             monitor.subTask("Awaiting access token");
-            return client.requestAccessToken(monitor, deviceCodeResponse);
+            return client.requestAccessToken(monitor, deviceCodeResponse, future);
         } catch (InterruptedException e) {
             throw new DBException("Authorization was interrupted", e);
         }

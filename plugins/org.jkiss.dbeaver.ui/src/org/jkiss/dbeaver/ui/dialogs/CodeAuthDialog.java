@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
 import java.net.URI;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 /**
  * A simple dialog showing the browser url of the authorization page and the code the user is supposed to enter there.
@@ -44,13 +44,13 @@ import java.util.concurrent.CompletableFuture;
 public class CodeAuthDialog extends Dialog implements BlockingPopupDialog {
     private final URI browserUrl;
     private final String userCode;
-    private final CompletableFuture<Void> future;
+    private final Future<Void> future;
 
     public CodeAuthDialog(
         @NotNull Shell shell,
         @NotNull URI browserUrl,
         @NotNull String userCode,
-        @NotNull CompletableFuture<Void> future
+        @NotNull Future<Void> future
     ) {
         super(shell);
         this.browserUrl = browserUrl;
