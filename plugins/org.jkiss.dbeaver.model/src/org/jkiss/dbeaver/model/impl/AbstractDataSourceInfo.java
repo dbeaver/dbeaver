@@ -49,6 +49,11 @@ public abstract class AbstractDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
+    public boolean supportsVirtualKeys() {
+        return true;
+    }
+
+    @Override
     public boolean supportsIndexes() {
         return false;
     }
