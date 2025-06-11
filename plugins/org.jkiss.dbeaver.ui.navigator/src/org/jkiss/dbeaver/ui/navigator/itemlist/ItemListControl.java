@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.navigator.itemlist;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -24,7 +23,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
-import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
@@ -43,7 +41,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
-import org.jkiss.dbeaver.model.rcp.DesktopProjectImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -102,7 +99,7 @@ public class ItemListControl extends NodeListControl
         projectListener = new DBPProjectListener() {
             @Override
             public void handleProjectRemove(@NotNull DBPProject project) {
-                handleRemoveProject();
+                handleRemoveProject(project);
             }
         };
         DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
@@ -287,25 +284,27 @@ public class ItemListControl extends NodeListControl
         super.dispose();
     }
 
-    private void handleRemoveProject() {
-        UIUtils.asyncExec(this::closeOpenEditors);
+    private void handleRemoveProject(DBPProject project) {
+        UIUtils.asyncExec(() -> closeOpenEditors(project));
         dispose();
     }
 
-    private void closeOpenEditors() {
+    private void closeOpenEditors(DBPProject project) {
         IWorkbenchPage page = getWorkbenchSite().getPage();
-        DBPProject ownerProject = getRootNode().getOwnerProject();
+        if (page == null) return;
+
         for (IEditorReference editorReference : page.getEditorReferences()) {
-            IEditorInput input = null;
+            IEditorInput input;
             try {
                 input = editorReference.getEditorInput();
             } catch (PartInitException e) {
                 log.debug(e.getMessage(), e);
+                return;
             }
 
             if (input instanceof NodeEditorInput nodeEditorInput) {
                 DBPProject editorProject = nodeEditorInput.getNavigatorNode().getOwnerProject();
-                if (Objects.equals(ownerProject, editorProject)) {
+                if (Objects.equals(project, editorProject)) {
                     page.closeEditor(editorReference.getEditor(false), false);
                 }
             }
