@@ -3202,9 +3202,9 @@ public class ResultSetViewer extends Viewer
             possibleActions.add(new VirtualAttributeDeleteAction(this, attr));
         }
 
-        if (dataSource.getInfo().supportsReferentialIntegrity()) {
+        DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
+        if (dataSourceInfo.supportsReferentialIntegrity() || dataSourceInfo.supportsVirtualKeys()) {
             possibleActions.add(new VirtualForeignKeyEditAction(this));
-
             possibleActions.add(new VirtualUniqueKeyEditAction(this, true));
             possibleActions.add(new VirtualUniqueKeyEditAction(this, false));
         }
