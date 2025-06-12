@@ -6,7 +6,7 @@ Bundle-Version: 2.0.127.qualifier
 Bundle-Release-Date: 20250616
 Require-Bundle: org.jkiss.dbeaver.model
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Export-Package: org.slf4j.impl
 Fragment-Host: slf4j.api
