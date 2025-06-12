@@ -69,7 +69,6 @@
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <property name="use_server_time_zone" value="false"/>
 
-                    <parameter name="omit-catalog" value="true"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="alter-table-add-column" value="true"/>
