@@ -29,16 +29,14 @@ import java.util.*;
 /**
  * DataTransferNodeDescriptor
  */
-public class DataTransferNodeConfiguratorDescriptor extends AbstractDescriptor
-{
+public class DataTransferNodeConfiguratorDescriptor extends AbstractDescriptor {
     private static final Log log = Log.getLog(DataTransferNodeConfiguratorDescriptor.class);
 
     @NotNull
     private final String id;
     private final List<DataTransferPageDescriptor> pageTypes = new ArrayList<>();
 
-    DataTransferNodeConfiguratorDescriptor(IConfigurationElement config)
-    {
+    DataTransferNodeConfiguratorDescriptor(IConfigurationElement config) {
         super(config);
 
         this.id = config.getAttribute("node");
@@ -54,7 +52,7 @@ public class DataTransferNodeConfiguratorDescriptor extends AbstractDescriptor
         for (IConfigurationElement pageCfg : ArrayUtils.safeArray(config.getChildren("page"))) {
             String id = pageCfg.getAttribute("id");
             if (id == null || id.isEmpty()) {
-                continue;                       // skip broken config
+                log.warn("Page descriptor without id: " + config.getContributor().getName());
             }
 
             DataTransferPageDescriptor descriptor = new DataTransferPageDescriptor(pageCfg);
