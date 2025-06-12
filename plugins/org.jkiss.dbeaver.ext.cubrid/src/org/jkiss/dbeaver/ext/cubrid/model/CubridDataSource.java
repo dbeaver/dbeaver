@@ -94,6 +94,11 @@ public class CubridDataSource extends GenericDataSource
         return serverCache.getObject(monitor, this, name);
     }
 
+    @Override
+    public GenericSchema getSchema(String name) {
+        return super.getSchema(name != null ? name.toUpperCase() : name);
+    }
+
     @NotNull
     public boolean supportsServer() {
         return getSupportMultiSchema();
