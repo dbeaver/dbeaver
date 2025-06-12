@@ -16,16 +16,22 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineSettings;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
-public class AISettings {
+public class AISettings implements IAdaptable {
     private boolean aiDisabled;
     private String activeEngine;
     private final Map<String, AIEngineSettings<?>> engineConfigurations = new HashMap<>();
+    private final Set<String> resolvedSecrets = new HashSet<>();
 
     public boolean isAiDisabled() {
         return aiDisabled;
@@ -44,8 +50,17 @@ public class AISettings {
     }
 
     @NotNull
-    public <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) {
-        return (T) engineConfigurations.get(engineId);
+    public synchronized <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) throws DBException {
+        AIEngineSettings<?> aiEngineSettings = engineConfigurations.get(engineId);
+
+        if (!AISettingsRegistry.saveSecretsAsPlainText()) {
+            if (!resolvedSecrets.contains(engineId)) {
+                aiEngineSettings.resolveSecrets();
+                resolvedSecrets.add(engineId);
+            }
+        }
+
+        return (T) aiEngineSettings;
     }
 
     public void setEngineConfiguration(String engineId, AIEngineSettings<?> engineConfiguration) {
@@ -56,15 +71,14 @@ public class AISettings {
         this.engineConfigurations.putAll(engineConfigurations);
     }
 
-    public void resolveSecrets() throws DBException {
-        for (AIEngineSettings<?> engineConfiguration : engineConfigurations.values()) {
-            engineConfiguration.resolveSecrets();
-        }
-    }
-
     public void saveSecrets() throws DBException {
         for (AIEngineSettings<?> engineConfiguration : engineConfigurations.values()) {
             engineConfiguration.saveSecrets();
         }
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        return null;
     }
 }

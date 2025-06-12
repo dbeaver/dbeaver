@@ -34,7 +34,7 @@
     </extension>
     
     <extension point="org.eclipse.ui.menus">
-        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.top" >
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side.top?after=tools" >
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView">
                 <visibleWhen checkEnabled="false">
                     <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="sqlEditor.side.top,org.jkiss.dbeaver.ui.editors.sql.show.terminalView"/>

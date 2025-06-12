@@ -54,6 +54,8 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CustomFormEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
@@ -106,7 +108,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
         propertiesGroup = new Composite(parent, SWT.NONE);
 
-        //CSSUtils.setCSSClass(propertiesGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.setCSSClass(propertiesGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         curPropertySource = input.getPropertySource();
 
@@ -337,6 +339,9 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             if (!firstInit) {
                 propertiesGroup.layout(true, true);
             }
+        }
+        for (Control x : propertiesGroup.getChildren()) {
+            CSSUtils.setCSSClass(x, DBStyles.COLORED_BY_CONNECTION_TYPE);
         }
 
         UIUtils.installAndUpdateMainFont(propertiesGroup);

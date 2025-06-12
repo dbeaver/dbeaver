@@ -22,16 +22,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseConstants;
+import org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataSourceInfo;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseTypeParser;
 import org.jkiss.dbeaver.ext.clickhouse.model.jdbc.ClickhouseJdbcFactory;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSourceInfo;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -47,8 +44,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -162,6 +162,23 @@ public class ClickhouseDataSource extends GenericDataSource {
         }
     }
 
+    @Override
+    protected synchronized void readDatabaseServerVersion(Connection session, DatabaseMetaData metaData) {
+        if (databaseVersion == null) {
+            try {
+                String version = JDBCUtils.executeQuery(session, "SELECT VERSION()");
+                if (version != null) {
+                    databaseVersion = new Version(version);
+                }
+            } catch (Throwable e) {
+                log.error("Error determining server version", e);
+            }
+            if (databaseVersion == null) {
+                super.readDatabaseServerVersion(session, metaData);
+            }
+        }
+    }
+
     @Nullable
     @Override
     public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
@@ -179,12 +196,18 @@ public class ClickhouseDataSource extends GenericDataSource {
     }
 
     @Override
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
+        switch (dataKind) {
+            case STRING:
+                return ClickhouseConstants.DATA_TYPE_STRING;
+            default:
+                return super.getDefaultDataTypeName(dataKind);
+        }
+    }
+
+    @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
-        GenericDataSourceInfo info = (GenericDataSourceInfo) super.createDataSourceInfo(monitor, metaData);
-        // For now - Clickhouse driver return us empty list as indexInfo and we can't create Clickhouse indexes via DBeaver UI
-        // So far we turn off indexes
-        info.setSupportsIndexes(false);
-        return info;
+        return new ClickhouseDataSourceInfo(metaData);
     }
 
     @Override
