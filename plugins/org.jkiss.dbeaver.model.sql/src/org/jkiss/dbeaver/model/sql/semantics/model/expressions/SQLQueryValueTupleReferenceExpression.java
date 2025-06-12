@@ -130,7 +130,7 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
                         this.memberAccessEntry.setOrigin(new SQLQuerySymbolOrigin.ColumnRefFromReferencedContext(rr));
                     }
                     if (this.tupleRefEntry != null) {
-                        this.tupleRefEntry.setOrigin(new SQLQuerySymbolOrigin.ExpandableTupleRef(this.getSyntaxNode(), null, rr));
+                        this.tupleRefEntry.setOrigin(new SQLQuerySymbolOrigin.ExpandableRowsTupleRef(this.getSyntaxNode(), context, rr));
                     }
                 } else {
                     this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);

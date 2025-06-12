@@ -35,6 +35,7 @@
             <datasource class="org.jkiss.dbeaver.ext.duckdb.model.DuckDBDataSource"/>
             <type name="GEOMETRY"/>
             <type name="BLOB"/>
+            <type kind="STRUCT"/>
         </provider>
     </extension>
 
