@@ -9,7 +9,7 @@ Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.data.gis,
  org.jkiss.bundle.gis,
  org.jkiss.dbeaver.model.lsm,
- org.jkiss.bundle.antlr4,
+ org.antlr.antlr4-runtime,
  com.dbeaver.jdbc.driver.libsql;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ext.sqlite,
  org.jkiss.dbeaver.ext.sqlite.model,

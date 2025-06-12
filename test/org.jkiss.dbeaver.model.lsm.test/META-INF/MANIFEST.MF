@@ -6,7 +6,6 @@ Bundle-Version: 1.0.18.qualifier
 Bundle-Release-Date: 20250616
 Require-Bundle: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model.lsm,
- org.jkiss.bundle.antlr4,
  org.junit,
  org.mockito.mockito-core,
  org.apache.felix.scr,

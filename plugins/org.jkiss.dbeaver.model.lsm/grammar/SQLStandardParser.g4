@@ -211,7 +211,7 @@ nonJoinQueryTerm: queryPrimary intersectTerm*;
 intersectTerm: (INTERSECT (ALL)? (correspondingSpec)? queryPrimary);
 nonJoinQueryPrimary: (simpleTable|LeftParen nonJoinQueryExpression RightParen);
 simpleTable: (querySpecification|tableValueConstructor|explicitTable);
-querySpecification: SELECT (setQuantifier)? selectList tableExpression?;
+querySpecification: SELECT (setQuantifier)? (topExpression)? selectList tableExpression?;
 setQuantifier: DISTINCT | ALL | UNIQUE;
 selectList: selectSublist (Comma selectSublist)*; // (Comma selectSublist)* contains any quantifier for error recovery;
 selectSublist: (Asterisk|derivedColumn)? anyUnexpected??; // (.*?) for whole rule to handle select fields autocompletion when from immediately after select
@@ -397,13 +397,14 @@ dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
 ifExistsSpec: IF EXISTS ;
 
 // data statements
-selectStatementSingleRow: SELECT (setQuantifier)? selectList INTO selectTargetList tableExpression;
+selectStatementSingleRow: SELECT (setQuantifier)? (topExpression)? selectList INTO selectTargetList tableExpression;
 selectTargetList: selectTargetItem (Comma selectTargetItem)* Comma*;
 selectTargetItem: parameterSpecification|tableName|anyUnexpected??;
 deleteStatement: DELETE FROM tableName? ((AS)? correlationName)? whereClause?;
 insertStatement: INSERT INTO (tableName insertColumnsAndSource?)?;
 insertColumnsAndSource: LeftParen (insertColumnList? | Asterisk) (RightParen (queryExpression | DEFAULT VALUES)?)?;
 insertColumnList: columnNameList;
+topExpression: TOP anyValue PERCENT? (WITH TIES)?;
 
 // UPDATE
 updateStatement: UPDATE anyWordsWithProperty?? tableReference? (SET setClauseList? fromClause? whereClause? orderByClause? limitClause? anyWordsWithProperty??)?;
@@ -469,5 +470,5 @@ nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
     EXTRACT | FULL | GLOBAL | LOCAL | INDICATOR | INITIALLY | INTERVAL | ISOLATION | KEY | LEVEL |
     NAMES | NO | NULLIF| ONLY | OVERLAPS| PARTIAL | PRESERVE | READ | RESTRICT | ROLLBACK | SCHEMA |
     SESSION | SET | TEMPORARY | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE | TRANSACTION |
-    VIEW | WORK | WRITE | ARRAY | REPLACE
+    VIEW | WORK | WRITE | ARRAY | REPLACE | TOP | PERCENT | TIES
 ;

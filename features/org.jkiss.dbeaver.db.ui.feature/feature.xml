@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.jkiss.dbeaver.db.ui.feature"
-      label="%featureName"
+      label="DBeaver Databases UI"
       version="1.0.148.qualifier"
-      provider-name="%providerName">
+      provider-name="DBeaver Corp">
 
-   <description>
-      %description
-   </description>
-
-   <copyright>
-      %copyright
-   </copyright>
+   <copyright>DBeaver Corp and others</copyright>
+   <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
    <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
 
