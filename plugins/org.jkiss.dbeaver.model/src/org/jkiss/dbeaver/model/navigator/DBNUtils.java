@@ -143,7 +143,7 @@ public class DBNUtils {
             return;
         }
 
-        if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBSTableIndexColumn) {
+        if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBPObjectWithOrdinalPosition) {
             return;
         }
 
