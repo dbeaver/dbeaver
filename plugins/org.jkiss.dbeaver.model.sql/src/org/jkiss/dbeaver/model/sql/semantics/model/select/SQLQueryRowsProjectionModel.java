@@ -345,7 +345,9 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                         case SQLStandardParser.RULE_derivedColumn -> {
                             // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
                             STMTreeNode exprNode = sublistNode.findFirstChildOfName(STMKnownRuleNames.valueExpression);
-                            SQLQueryValueExpression expr = exprNode == null ? null : recognizer.collectValueExpression(exprNode);
+                            SQLQueryValueExpression expr = exprNode == null
+                                ? null
+                                : recognizer.collectValueExpression(exprNode, selectListScope);
                             if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
                                 if (tupleRef.getTupleRefEntry() != null) {
                                     recognizer.registerScopeItem(tupleRef.getTupleRefEntry());
@@ -413,7 +415,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                     int scopeIndex = i + 1;
                     if (filterNode != null) {
                         try (SQLQueryModelRecognizer.LexicalScopeHolder exprScope = recognizer.openScope()) {
-                            filterExprs[i] = recognizer.collectValueExpression(filterNode);
+                            filterExprs[i] = recognizer.collectValueExpression(filterNode, exprScope.lexicalScope);
                             nextScopeNodes[prevScopeIndex] = filterNode;
                             scopes[scopeIndex] = exprScope.lexicalScope;
                             prevScopes[scopeIndex] = scopes[prevScopeIndex];

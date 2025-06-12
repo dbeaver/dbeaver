@@ -34,7 +34,10 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
-import org.jkiss.dbeaver.model.qm.meta.*;
+import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -253,11 +256,15 @@ public class QMUtils {
     /**
      * Return close time for events that were ended
      */
-    public static long getObjectEventTime(QMMObject object, QMEventAction action) {
-        if (action == QMEventAction.END) {
-            return object.getCloseTime();
+    public static long getObjectEventTime(QMEvent event) {
+        if (event instanceof QMMetaEvent metaEvent) {
+            return metaEvent.getTimestamp();
         }
-        return object.getOpenTime();
+
+        if (event.getAction() == QMEventAction.END) {
+            return event.getObject().getCloseTime();
+        }
+        return event.getObject().getOpenTime();
     }
 
     /**

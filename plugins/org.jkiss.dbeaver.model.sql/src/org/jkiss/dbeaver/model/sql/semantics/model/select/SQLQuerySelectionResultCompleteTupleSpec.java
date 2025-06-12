@@ -63,7 +63,9 @@ public class SQLQuerySelectionResultCompleteTupleSpec extends SQLQuerySelectionR
         @NotNull SQLQueryRecognitionContext statistics,
         @NotNull LinkedList<SQLQueryResultColumn> resultColumns
     ) {
-        // TODO this.tupleRefEntry.setOrigin(new SQLQuerySymbolOrigin.RowsDataRef(knownValues));
+        this.tupleRefEntry.setOrigin(
+            new SQLQuerySymbolOrigin.ExpandableRowsTupleRef(this.tupleRefEntry.getSyntaxNode(),knownValues, null)
+        );
         this.collectForeignColumns(knownValues.getColumnsList(), rowsSourceModel, resultColumns);
     }
 
