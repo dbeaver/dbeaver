@@ -80,8 +80,6 @@ public class ItemListControl extends NodeListControl
     private final Map<DBNNode, Map<String, Object>> changedProperties = new HashMap<>();
     private CommandContributionItem createObjectCommand;
 
-    private final DBPProjectListener projectListener;
-
     public ItemListControl(
         Composite parent,
         int style,
@@ -95,14 +93,6 @@ public class ItemListControl extends NodeListControl
             UIFonts.DBEAVER_FONTS_MAIN_FONT,
             s -> super.getItemsViewer().refresh(),
             this);
-
-        projectListener = new DBPProjectListener() {
-            @Override
-            public void handleProjectRemove(@NotNull DBPProject project) {
-                handleRemoveProject(project);
-            }
-        };
-        DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
 
         this.searcher = new SearcherFilter();
         this.searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
@@ -278,39 +268,6 @@ public class ItemListControl extends NodeListControl
         return new ItemColorProvider(objectColumn);
     }
 
-    @Override
-    public void dispose() {
-        DBPPlatformDesktop.getInstance().getWorkspace().removeProjectListener(projectListener);
-        super.dispose();
-    }
-
-    private void handleRemoveProject(DBPProject project) {
-        UIUtils.asyncExec(() -> closeOpenEditors(project));
-        dispose();
-    }
-
-    private void closeOpenEditors(DBPProject project) {
-        IWorkbenchPage page = getWorkbenchSite().getPage();
-        if (page == null) return;
-
-        for (IEditorReference editorReference : page.getEditorReferences()) {
-            IEditorInput input;
-            try {
-                input = editorReference.getEditorInput();
-            } catch (PartInitException e) {
-                log.debug(e.getMessage(), e);
-                return;
-            }
-
-            if (input instanceof NodeEditorInput nodeEditorInput) {
-                DBPProject editorProject = nodeEditorInput.getNavigatorNode().getOwnerProject();
-                if (Objects.equals(project, editorProject)) {
-                    page.closeEditor(editorReference.getEditor(false), false);
-                }
-            }
-        }
-    }
-
     private class ItemLoadService extends DatabaseLoadService<Collection<DBNNode>> {
 
         private DBXTreeNode metaNode;
@@ -328,13 +285,6 @@ public class ItemListControl extends NodeListControl
             try {
                 List<DBNNode> items = new ArrayList<>();
                 DBNNode parentNode = getRootNode();
-
-                parentNode.getOwnerProject().getDataSourceRegistry(); // lazy init data source registry
-                if (parentNode.getOwnerProject() instanceof BaseProjectImpl baseProject) {
-                    if (baseProject.getDataSourceRegistryOrNull() == null) {
-                        return Collections.emptyList();
-                    }
-                }
 
                 DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, parentNode, false);
                 if (ArrayUtils.isEmpty(children)) {
