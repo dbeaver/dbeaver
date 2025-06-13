@@ -304,8 +304,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
             }
         }
 
-        if (tableBase instanceof PostgreTableRegular) {
-            PostgreTableRegular table = (PostgreTableRegular) tableBase;
+        if (tableBase instanceof PostgreTableRegular table) {
             try {
                 if (!alter) {
                     ddl.append(createWithClause(table, tableBase));
@@ -326,8 +325,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
             } catch (DBException e) {
                 log.error(e);
             }
-        } else if (tableBase instanceof PostgreTableForeign) {
-            PostgreTableForeign table = (PostgreTableForeign)tableBase;
+        } else if (tableBase instanceof PostgreTableForeign table) {
             try {
                 String foreignServerName = table.getForeignServerName();
                 if (CommonUtils.isEmpty(foreignServerName)) {
@@ -336,7 +334,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                         foreignServerName = DBUtils.getQuotedIdentifier(foreignServer);
                     }
                 }
-                if (foreignServerName != null ) {
+                if (foreignServerName != null) {
                     ddl.append(delimiter).append("SERVER ").append(foreignServerName);
                 }
                 String[] foreignOptions = table.getForeignOptions(monitor);

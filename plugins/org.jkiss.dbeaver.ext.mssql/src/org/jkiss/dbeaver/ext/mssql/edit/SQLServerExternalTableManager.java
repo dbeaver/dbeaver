@@ -53,15 +53,30 @@ public class SQLServerExternalTableManager extends SQLServerBaseTableManager<SQL
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, SQLServerExternalTable table, SQLObjectEditor.NestedObjectCommand tableProps, StringBuilder ddl, boolean alter, Map<String, Object> options) {
+    protected void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        SQLServerExternalTable table,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter,
+        Map<String, Object> options) {
         try {
             String delimiter = getDelimiter(options);
             String indent = delimiter.equals(" ") ? "" : "\t";
             final SQLServerExternalTable.AdditionalInfo info = table.getAdditionalInfo(monitor);
-            ddl.append(" WITH (").append(delimiter).append(indent).append("LOCATION = ").append(SQLUtils.quoteString(table, info.getExternalLocation()));
-            ddl.append(",").append(delimiter).append(indent).append("DATA_SOURCE = ").append(DBUtils.getQuotedIdentifier(table.getDataSource(), info.getExternalDataSource()));
+            ddl.append(" WITH (")
+                .append(delimiter)
+                .append(indent).append("LOCATION = ")
+                .append(SQLUtils.quoteString(table, info.getExternalLocation()));
+            ddl.append(",")
+                .append(delimiter)
+                .append(indent).append("DATA_SOURCE = ")
+                .append(DBUtils.getQuotedIdentifier(table.getDataSource(), info.getExternalDataSource()));
             if (CommonUtils.isNotEmpty(info.getExternalFileFormat())) {
-                ddl.append(",").append(delimiter).append(indent).append("FILE_FORMAT = ").append(SQLUtils.quoteString(table, info.getExternalFileFormat()));
+                ddl.append(",")
+                    .append(delimiter)
+                    .append(indent).append("FILE_FORMAT = ")
+                    .append(SQLUtils.quoteString(table, info.getExternalFileFormat()));
             }
             ddl.append(delimiter).append(")");
         } catch (DBCException e) {

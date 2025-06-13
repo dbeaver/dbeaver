@@ -62,8 +62,12 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
         return options;
     }
-    
-    protected String beginCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName, Map<String, Object> options) throws DBException {
+
+    protected String beginCreateTableStatement(
+        DBRProgressMonitor monitor,
+        OBJECT_TYPE table,
+        String tableName,
+        Map<String, Object> options) throws DBException {
         String queryPart = "CREATE " + getCreateTableType(table) + " " + tableName + " (";
         if (!isCompact(options)) {
             queryPart += GeneralUtils.getDefaultLineSeparator();
@@ -76,7 +80,12 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
 
     @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addStructObjectCreateActions(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        StructCreateCommand command,
+        Map<String, Object> options) throws DBException {
         // Make options modifiable
         options = new HashMap<>(options);
 
@@ -213,8 +222,11 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         return BASE_TABLE_NAME;
     }
 
-    public DBEPersistAction[] getTableDDL(DBRProgressMonitor monitor, OBJECT_TYPE table, Map<String, Object> options) throws DBException
-    {
+    public DBEPersistAction[] getTableDDL(
+        DBRProgressMonitor monitor,
+        OBJECT_TYPE table,
+        Map<String, Object> options) throws DBException {
+
         List<DBEPersistAction> actions = new ArrayList<>();
 
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();

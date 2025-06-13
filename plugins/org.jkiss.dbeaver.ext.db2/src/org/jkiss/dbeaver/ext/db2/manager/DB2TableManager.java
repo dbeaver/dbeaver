@@ -97,7 +97,13 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void appendTableModifiers(DBRProgressMonitor monitor, DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter, Map<String, Object> options) {
+    public void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        DB2Table db2Table,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter,
+        Map<String, Object> options) {
 
         try {
             String delimiter = isCompact(options) ? " " : LINE_SEPARATOR;
