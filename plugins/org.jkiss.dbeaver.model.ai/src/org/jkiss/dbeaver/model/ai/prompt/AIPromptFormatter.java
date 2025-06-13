@@ -71,5 +71,12 @@ public interface AIPromptFormatter {
         @NotNull DBSDataContainer dataContainer,
         @NotNull StringBuilder description
     ) throws DBException;
+
+    /**
+     * Determines whether a data sample is required for processing.
+     *
+     * @return true if a data sample is needed; false otherwise
+     */
+    boolean isDataSampleNeeded();
 }
 
