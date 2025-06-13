@@ -125,12 +125,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     ) throws DBException {
         // ALTER
         if (tableProps.getProperty("tablespace") != null) { //$NON-NLS-1$
+            String delimiter = getDelimiter(options);
             Object tablespace = table.getTablespace();
             if (tablespace instanceof OracleTablespace) {
                 if (table.isPersisted()) {
-                    ddl.append("\nMOVE TABLESPACE ").append(((OracleTablespace) tablespace).getName()); //$NON-NLS-1$
+                    ddl.append(delimiter).append("MOVE TABLESPACE ").append(((OracleTablespace) tablespace).getName()); //$NON-NLS-1$
                 } else {
-                    ddl.append("\nTABLESPACE ").append(((OracleTablespace) tablespace).getName()); //$NON-NLS-1$
+                    ddl.append(delimiter).append("TABLESPACE ").append(((OracleTablespace) tablespace).getName()); //$NON-NLS-1$
                 }
             }
         }

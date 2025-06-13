@@ -65,12 +65,12 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     
     protected String beginCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName, Map<String, Object> options) throws DBException {
         String queryPart = "CREATE " + getCreateTableType(table) + " " + tableName + " (";
-        if (!Boolean.TRUE.equals(options.get(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT))) {
+        if (!isCompact(options)) {
             queryPart += GeneralUtils.getDefaultLineSeparator();
         }
         return queryPart; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
-    
+
     protected boolean hasAttrDeclarations(OBJECT_TYPE table) {
         return true;
     }
@@ -81,7 +81,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         options = new HashMap<>(options);
 
         final OBJECT_TYPE table = command.getObject();
-        final boolean isCompact = Boolean.TRUE.equals(options.get(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT));
+        final boolean isCompact = isCompact(options);
 
 
         final NestedObjectCommand<?, ?> tableProps = command.getObjectCommands().get(table);
@@ -106,14 +106,22 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 continue;
             }
             options.put(DBPScriptObject.OPTION_COMPOSITE_OBJECT, table);
-            final String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
+            String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
             options.remove(DBPScriptObject.OPTION_COMPOSITE_OBJECT);
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
+                if (isCompact) {
+                    int commentPos = findCommentPos(nestedDeclaration, slComment);
+                    if (commentPos != -1) {
+                        nestedDeclaration = nestedDeclaration.substring(0, commentPos);
+                    }
+                }
                 // Insert nested declaration
                 if (hasNestedDeclarations) {
+
                     // Check for embedded comment
-                    int lastLFPos = createQuery.lastIndexOf(lineSeparator);
-                    int lastCommentPos = createQuery.lastIndexOf(slComment);
+                    int lastLFPos = createQuery.length() - 1;
+
+                    int lastCommentPos = findCommentPos(createQuery, slComment);
                     if (lastCommentPos != -1) {
                         while (lastCommentPos > 0 && Character.isWhitespace(createQuery.charAt(lastCommentPos - 1))) {
                             lastCommentPos--;
@@ -356,5 +364,47 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         return true;
     }
 
+    public static boolean isCompact(Map<String, Object> options) {
+        return Boolean.TRUE.equals(options.get(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT));
+    }
+
+    public static String getDelimiter(Map<String, Object> options) {
+        return isCompact(options) ? " " : "\n";
+    }
+
+    public static int findCommentPos(CharSequence cs, String slComment) {
+        boolean inString = false;
+
+        for (int i = 0; i < cs.length() - slComment.length() + 1; i++) {
+            char ch = cs.charAt(i);
+
+            if (ch == '\'') {
+                if (inString && i + 1 < cs.length() && cs.charAt(i + 1) == '\'') {
+                    i++;
+                    continue;
+                }
+                inString = !inString;
+            }
+
+            if (!inString && startsWith(cs, slComment, i)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static boolean startsWith(CharSequence sb, String prefix, int toffset) {
+        if (toffset < 0 || toffset > sb.length() - prefix.length()) {
+            return false;
+        }
+
+        for (int j = 0; j < prefix.length(); j++) {
+            if (sb.charAt(toffset + j) != prefix.charAt(j)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 

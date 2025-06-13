@@ -16,14 +16,10 @@
  */
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.List;
 
 public class SQLUtilsTest extends DBeaverUnitTest {
     @Test
@@ -62,86 +58,4 @@ public class SQLUtilsTest extends DBeaverUnitTest {
 
         Assert.assertEquals("key?*\\?*\\", SQLUtils.makeGlobFromSqlLikePattern("key_%?*\\"));
     }
-
-    @Test
-    public void stripTrailingCommentsTest() {
-        final String input ="""
--- DROP TABLE public.books;
-
-CREATE TABLE public.books (
-    id_book int4 DEFAULT nextval('book_seq'::regclass) NOT NULL,
-    id_series int4 NULL,
-    file_name varchar(250) NOT NULL, -- File Name
-    comment varchar(250) DEFAULT '<-- empty -->' NOT NULL -- Second single line comment
-);
-        """;
-        final String expected = """
--- DROP TABLE public.books;
-
-CREATE TABLE public.books (
-    id_book int4 DEFAULT nextval('book_seq'::regclass) NOT NULL,
-    id_series int4 NULL,
-    file_name varchar(250) NOT NULL,
-    comment varchar(250) DEFAULT '<-- empty -->' NOT NULL
-);""";
-
-        PostgreDialect dialect = new PostgreDialect();
-        String[] slm = dialect.getSingleLineComments();
-        String ls = GeneralUtils.getDefaultLineSeparator();
-
-        Assert.assertEquals(expected, SQLUtils.stripTrailingComments(input, slm, ls));
-    }
-
-    @Test
-    public void compactSQLTest() {
-        PostgreDialect postgreDialect = new PostgreDialect();
-
-        final String inputCompactTest = """
-/*
- Multiline comment 1
-*/
-
--- public.books definition
-
--- Drop table
-
--- DROP TABLE public.books;
-
-CREATE TABLE public.books (
-    id_book int4 DEFAULT nextval('book_seq'::regclass) NOT NULL,
-    id_series int4 NULL,
-    file_name varchar(250) NOT NULL, -- File Name
-    comment varchar(250) DEFAULT '<-- empty -->' NOT NULL -- Second single line comment
-);
-
-CREATE UNIQUE INDEX books_hash_name_idx
-    ON public.books USING btree (hash_name);
-CREATE INDEX idx_books_free ON public.books USING btree (free);
-
--- public.books foreign keys
-
- ALTER TABLE public.books
-    ADD CONSTRAINT books_id_series_fkey FOREIGN KEY (id_series) REFERENCES public.series(id_series);
-
-            """;
-
-        final String expectedCompactTest = """
--- public.books definition
-
--- Drop table
-
--- DROP TABLE public.books;
-
-CREATE TABLE public.books ( id_book int4 DEFAULT nextval('book_seq'::regclass) NOT NULL, id_series int4 NULL, file_name varchar(250) NOT NULL, comment varchar(250) DEFAULT '<-- empty -->' NOT NULL );
-
-CREATE UNIQUE INDEX books_hash_name_idx ON public.books USING btree (hash_name);
-CREATE INDEX idx_books_free ON public.books USING btree (free);
-
--- public.books foreign keys
-
-ALTER TABLE public.books ADD CONSTRAINT books_id_series_fkey FOREIGN KEY (id_series) REFERENCES public.series(id_series);""";
-
-        Assert.assertEquals(expectedCompactTest, SQLUtils.compact(inputCompactTest, postgreDialect));
-    }
-
 }

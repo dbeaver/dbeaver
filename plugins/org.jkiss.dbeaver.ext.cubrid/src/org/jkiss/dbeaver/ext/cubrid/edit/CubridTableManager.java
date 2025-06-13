@@ -93,8 +93,9 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
             @NotNull boolean alter,
             @NotNull Map<String, Object> options) {
         CubridTable table = (CubridTable) genericTable;
-        String suffix = alter ? "," : "\n";
-        query.append("\n");
+        String delimiter = getDelimiter(options);
+        String suffix = alter ? "," : delimiter;
+        query.append(delimiter);
         if (!alter || command.hasProperty("reuseOID")) {
             query.append(table.isReuseOID() ? "REUSE_OID" : "DONT_REUSE_OID").append(suffix);
         }
@@ -107,7 +108,9 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         if ((!alter && table.getDescription() != null) || command.hasProperty("description")) {
             query.append("COMMENT = ").append(SQLUtils.quoteString(table, CommonUtils.notEmpty(table.getDescription()))).append(suffix);
         }
-        query.deleteCharAt(query.length() - 1);
+        if (!isCompact(options)) {
+            query.deleteCharAt(query.length() - 1);
+        }
     }
 
     @Override

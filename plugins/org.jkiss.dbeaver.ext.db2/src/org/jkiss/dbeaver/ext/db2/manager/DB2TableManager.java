@@ -100,19 +100,20 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     public void appendTableModifiers(DBRProgressMonitor monitor, DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter, Map<String, Object> options) {
 
         try {
+            String delimiter = isCompact(options) ? " " : LINE_SEPARATOR;
             // Add Tablespaces infos
             if (db2Table.getTablespace(monitor) != null) {
-                ddl.append(LINE_SEPARATOR);
+                ddl.append(delimiter);
                 ddl.append(CLAUSE_IN_TS);
                 ddl.append(getTablespaceName(db2Table.getTablespace(monitor)));
             }
             if (db2Table.getIndexTablespace(monitor) != null) {
-                ddl.append(LINE_SEPARATOR);
+                ddl.append(delimiter);
                 ddl.append(CLAUSE_IN_TS_IX);
                 ddl.append(getTablespaceName(db2Table.getIndexTablespace(monitor)));
             }
             if (db2Table.getLongTablespace(monitor) != null) {
-                ddl.append(LINE_SEPARATOR);
+                ddl.append(delimiter);
                 ddl.append(CLAUSE_IN_TS_LONG);
                 ddl.append(getTablespaceName(db2Table.getLongTablespace(monitor)));
             }
