@@ -9,13 +9,12 @@
     </configIni>
 
     <launcherArgs>
-        <programArgs></programArgs>
+        <programArgs>-nl en</programArgs>
 
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions
             -Dosgi.requiredJavaVersion=21
             -Dfile.encoding=UTF-8
-            -nl=en
             --add-modules=ALL-SYSTEM
             --add-opens=java.base/java.io=ALL-UNNAMED
             --add-opens=java.base/java.lang=ALL-UNNAMED
