@@ -71,16 +71,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
+public abstract class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
 
     private static final String TARGET_NAME_BROWSE = "[browse]";
     private final List<DatabaseMappingContainer> model = new ArrayList<>();
     private TreeViewer mappingViewer;
+    protected Composite buttonsPanel;
+    private Button mapTableButton;
+    private Button configureButton;
+    private Button previewButton;
     private Button loadMappingsButton;
     private Button autoAssignButton;
     private Button upButton;
     private Button downButton;
+    private Button mappingRules;
     private ObjectContainerSelectorPanel containerPanel;
     private boolean firstInit = true;
     private String mappingErrorMessage;
@@ -99,7 +104,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         setPageComplete(false);
     }
 
-    private DatabaseConsumerSettings getDatabaseConsumerSettings() {
+    protected DatabaseConsumerSettings getDatabaseConsumerSettings() {
         return getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
     }
 
@@ -172,10 +177,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
         {
             // Control buttons
-            Composite buttonsPanel = UIUtils.createComposite(mappingsGroup, 1);
+            buttonsPanel = UIUtils.createComposite(mappingsGroup, 1);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-            final Button mapTableButton = UIUtils.createDialogButton(buttonsPanel,
+            mapTableButton = UIUtils.createDialogButton(
+                buttonsPanel,
                 DTMessages.data_transfer_db_consumer_existing_table,
                 DBIcon.TREE_TABLE,
                 DTMessages.data_transfer_db_consumer_existing_table_description,
@@ -190,7 +196,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             UIUtils.createLabelSeparator(buttonsPanel, SWT.HORIZONTAL);
 
-            final Button configureButton = UIUtils.createDialogButton(buttonsPanel,
+            configureButton = UIUtils.createDialogButton(
+                buttonsPanel,
                 DTMessages.data_transfer_db_consumer_button_configure,
                 DBIcon.TREE_COLUMNS,
                 DTMessages.data_transfer_db_consumer_button_configure_description,
@@ -206,7 +213,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 });
             configureButton.setEnabled(false);
 
-            final Button previewButton = UIUtils.createDialogButton(buttonsPanel,
+            previewButton = UIUtils.createDialogButton(
+                buttonsPanel,
                 DTMessages.data_transfer_wizard_page_preview_name,
                 UIIcon.SQL_PREVIEW,
                 DTMessages.data_transfer_wizard_page_preview_description,
@@ -271,7 +279,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             UIUtils.createEmptyLabel(buttonsPanel, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
-            final Button mappingRules = UIUtils.createDialogButton(buttonsPanel,
+            mappingRules = UIUtils.createDialogButton(
+                buttonsPanel,
                 DTMessages.data_transfer_db_consumer_mapping_rules_button,
                 null,
                 DTMessages.data_transfer_db_consumer_mapping_rules_button_tip,
@@ -359,18 +368,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                 }
             });
-            mappingViewer.addSelectionChangedListener(event -> {
-                DatabaseMappingObject mapping = getSelectedMapping();
-                mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
-                //createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
-                final boolean hasMappings = settings.getContainer() != null &&
-                    ((mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified) ||
-                    (mapping instanceof DatabaseMappingAttribute && ((DatabaseMappingAttribute) mapping).getParent().getMappingType() != DatabaseMappingType.unspecified));
-                configureButton.setEnabled(hasMappings);
-                previewButton.setEnabled(hasMappings);
-                mappingRules.setEnabled(hasMappings);
-                updateUpAndDownButtons();
-            });
+            mappingViewer.addSelectionChangedListener(this::onMappingChanged);
             mappingViewer.addDoubleClickListener(event -> {
                 DatabaseMappingObject selectedMapping = getSelectedMapping();
                 if (selectedMapping != null) {
@@ -1118,7 +1116,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     }
 
     @Nullable
-    private DataTransferPipe getPipe(DatabaseMappingContainer mappingContainer) {
+    protected DataTransferPipe getPipe(DatabaseMappingContainer mappingContainer) {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
             if (pipe.getProducer() == null) {
@@ -1133,8 +1131,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         return null;
     }
 
-    private DatabaseMappingObject getSelectedMapping()
-    {
+    protected DatabaseMappingObject getSelectedMapping() {
         IStructuredSelection selection = (IStructuredSelection) mappingViewer.getSelection();
         return selection.isEmpty() ? null : (DatabaseMappingObject) selection.getFirstElement();
     }
@@ -1332,5 +1329,33 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         return isConsumerOfType(DatabaseTransferConsumer.class);
     }
 
+    protected void onMappingChanged(SelectionChangedEvent event) {
+        DatabaseMappingObject mapping = getSelectedMapping();
+        mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
+        //createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
+        boolean hasMappings = hasMappings(getSelectedMapping());
+        configureButton.setEnabled(hasMappings);
+        previewButton.setEnabled(hasMappings);
+        mappingRules.setEnabled(hasMappings);
+        updateUpAndDownButtons();
+    }
 
+    protected boolean hasMappings(@Nullable DatabaseMappingObject mapping) {
+        // There is nothing to check if the target container is not chosen
+        if (getDatabaseConsumerSettings().getContainer() == null) {
+            return false;
+        }
+
+        if (mapping == null) {
+            return false;
+        }
+
+        if (mapping instanceof DatabaseMappingContainer container) {
+            return container.getMappingType() != DatabaseMappingType.unspecified;
+        }
+        if (mapping instanceof DatabaseMappingAttribute attribute) {
+            return attribute.getParent().getMappingType() != DatabaseMappingType.unspecified;
+        }
+        return false;
+    }
 }

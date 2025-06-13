@@ -30,7 +30,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SQLQueryRowsSourceContext {
 
@@ -208,11 +210,13 @@ public class SQLQueryRowsSourceContext {
                 putAll(SQLQueryRowsSourceContext.this.rowsSources);
                 for (Pair<SQLQuerySymbolEntry, ? extends SQLQueryRowsSourceModel> entry : sources) {
                     SQLQuerySymbolEntry alias = entry.getFirst();
-                    SQLQueryRowsSourceModel sourceModel = entry.getSecond();
-                    SQLQueryComplexName name = new SQLQueryComplexName(new SQLQueryQualifiedName(
-                        alias.getSyntaxNode(), Collections.emptyList(), alias, 0, null
-                    ));
-                    put(name, new KnownRowsSourceInfo(sourceModel, name, null, null));
+                    if (alias != null) {
+                        SQLQueryRowsSourceModel sourceModel = entry.getSecond();
+                        SQLQueryComplexName name = new SQLQueryComplexName(new SQLQueryQualifiedName(
+                            alias.getSyntaxNode(), Collections.emptyList(), alias, 0, null
+                        ));
+                        put(name, new KnownRowsSourceInfo(sourceModel, name, null, alias.getSymbol()));
+                    }
                 }
             }
         });
@@ -262,9 +266,12 @@ public class SQLQueryRowsSourceContext {
     @NotNull
     public SQLQuerySourcesInfoCollection getKnownSources() {
         return new SQLQuerySourcesInfoCollection() {
-
+            // combine inferred sources (from the underlying query expression) and dynamically provided (from the enclosing CTE)
             private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> resolutionResults =
-                new HashSet<>(rowsSources.values()).stream().collect(Collectors.toMap(s -> s.source, s -> s));
+                Stream.of(rowsSources.values(), dynamicTableSources.values())
+                    .flatMap(Collection::stream)
+                    .distinct()
+                    .collect(Collectors.toMap(s -> s.source, Function.identity()));
 
             private final Set<DBSObject> referencedTables = rowsSources.values().stream().map(s -> s.tableOrNull)
                 .filter(Objects::nonNull)

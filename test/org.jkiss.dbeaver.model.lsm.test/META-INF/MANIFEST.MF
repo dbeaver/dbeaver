@@ -2,11 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Test Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.model.lsm.test;singleton:=true
-Bundle-Version: 1.0.17.qualifier
-Bundle-Release-Date: 20250602
+Bundle-Version: 1.0.18.qualifier
+Bundle-Release-Date: 20250616
 Require-Bundle: org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.model.lsm,
- org.jkiss.bundle.antlr4,
  org.junit,
  org.mockito.mockito-core,
  org.apache.felix.scr,
@@ -14,6 +13,6 @@ Require-Bundle: org.jkiss.dbeaver.model.sql,
  net.bytebuddy.byte-buddy,
  net.bytebuddy.byte-buddy-agent
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Automatic-Module-Name: org.jkiss.dbeaver.model.lsm.test

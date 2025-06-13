@@ -90,6 +90,10 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
         }
     }
 
+    public boolean isResolved() {
+        return this.rowsDataContext != null && this.rowsSourceContext != null;
+    }
+
     @Override
     protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
         this.propagateContext(dataContext, recognitionContext);

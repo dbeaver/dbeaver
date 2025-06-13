@@ -238,6 +238,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_show_server_help_topics_tip;
     public static String pref_page_sql_completion_label_show_values;
     public static String pref_page_sql_completion_label_show_values_tip;
+    public static String pref_page_sql_completion_label_qualified_column_names;
+    public static String pref_page_sql_completion_label_qualified_column_names_tip;
     public static String pref_page_sql_completion_group_folding;
     public static String pref_page_sql_completion_group_misc;
     public static String pref_page_code_editor_group_analysis;
