@@ -856,25 +856,6 @@
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
 
-                <!-- Neo4j -->
-                <driver
-                    id="neo4j_jdbc"
-                    label="Neo4j"
-                    icon="icons/neo4j_icon.png"
-                    iconBig="icons/neo4j_icon_big.png"
-                    class="org.neo4j.jdbc.Driver"
-                    sampleURL="jdbc:neo4j:bolt://{host}[:{port}]/"
-                    defaultPort="7687"
-                    description="Neo4j JDBC driver"
-                    supportedConfigurationTypes="MANUAL,URL"
-                    webURL="https://github.com/neo4j-contrib/neo4j-jdbc"
-                    categories="graph">
-                    <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
-                    <file type="license" path="licenses/external/lgpl-3.0.txt"/>
-                    <parameter name="supports-truncate" value="false"/>
-                    <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
-                </driver>
-
                 <!-- PrestoDB -->
                 <driver
                     id="presto_jdbc"
@@ -1506,6 +1487,15 @@
                         supportsDistributedMode="false"
                         categories="nosql,timeseries,aws">
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.timestream.reason"/>
+                </driver>
+                <driver
+                        id="neo4j_jdbc"
+                        label="Neo4j"
+                        description="Driver for Neo4j"
+                        iconBig="icons/neo4j_icon_big.png"
+                        supportsDistributedMode="false"
+                        categories="graph">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.neo4j.reason"/>
                 </driver>
             </drivers>
 

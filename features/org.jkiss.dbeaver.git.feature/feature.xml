@@ -1,21 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.jkiss.dbeaver.git.feature"
-      label="%featureName"
+      label="DBeaver Git support"
       version="1.0.145.qualifier"
-      provider-name="%providerName">
+      provider-name="DBeaver Corp">
 
-   <description>
-      %description
-   </description>
-
-   <copyright>
-      %copyright
-   </copyright>
-
-   <license url="%licenseURL">
-      %license
-   </license>
+   <copyright>DBeaver Corp and others</copyright>
+   <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
    <requires>
       <import feature="org.jkiss.dbeaver.ui.feature" version="0.0.0" match="greaterOrEqual"/>

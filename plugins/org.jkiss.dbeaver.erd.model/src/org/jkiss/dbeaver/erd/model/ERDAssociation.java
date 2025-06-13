@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,17 @@
  */
 package org.jkiss.dbeaver.erd.model;
 
+import net.sf.jsqlparser.expression.BinaryExpression;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.schema.Column;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -128,36 +133,55 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation> {
         return getObject() instanceof ERDLogicalAssociation;
     }
 
-	/**
-	 * @return Returns the sourceEntity.
-	 */
-	public ERDElement<?> getSourceEntity()
-	{
-		return sourceEntity;
-	}
+    /**
+     * @return Returns the sourceEntity.
+     */
+    public ERDElement<?> getSourceEntity()
+    {
+        return sourceEntity;
+    }
 
-	/**
-	 * @return Returns the targetEntity.
-	 */
-	public ERDElement<?> getTargetEntity()
-	{
-		return targetEntity;
-	}
+    /**
+     * @return Returns the targetEntity.
+     */
+    public ERDElement<?> getTargetEntity()
+    {
+        return targetEntity;
+    }
 
-	public void setTargetEntity(ERDElement<?> targetPrimaryKey)
-	{
-		this.targetEntity = targetPrimaryKey;
-	}
+    public void setTargetEntity(ERDElement<?> targetPrimaryKey)
+    {
+        this.targetEntity = targetPrimaryKey;
+    }
 
-	/**
-	 * @param sourceForeignKey the foreign key table you are connecting from
-	 */
-	public void setSourceEntity(ERDElement<?> sourceForeignKey)
-	{
-		this.sourceEntity = sourceForeignKey;
-	}
+    /**
+     * @param sourceForeignKey the foreign key table you are connecting from
+     */
+    public void setSourceEntity(ERDElement<?> sourceForeignKey)
+    {
+        this.sourceEntity = sourceForeignKey;
+    }
 
-	@NotNull
+    protected void resetConnections(Expression expression) {
+        if (sourceEntity != null && sourceAttributes != null) {
+            if (expression instanceof BinaryExpression be) {
+                if (be.getLeftExpression() instanceof Column c) {
+                    String leftAttr = DBUtils.getUnQuotedIdentifier(c.getColumnName(), BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES);
+                    for (int i = 0; i < sourceAttributes.size(); i++) {
+                        ERDEntityAttribute sourceAttribute = sourceAttributes.get(i);
+                        if (CommonUtils.equalObjects(sourceAttribute.getName(), leftAttr)) {
+                            sourceAttributes.remove(i);
+                            targetAttributes.remove(i);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        log.warn("Cannot find columns corresponding to expression [" + expression + "]");
+    }
+
+    @NotNull
     public List<ERDEntityAttribute> getSourceAttributes() {
         return sourceAttributes == null ? Collections.emptyList() : sourceAttributes;
     }
@@ -168,7 +192,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation> {
     }
 
     public void addCondition(@Nullable ERDEntityAttribute sourceAttribute, @Nullable ERDEntityAttribute targetAttribute) {
-	    if (sourceAttribute != null) {
+        if (sourceAttribute != null) {
             if (sourceAttributes == null) {
                 sourceAttributes = new ArrayList<>();
             }

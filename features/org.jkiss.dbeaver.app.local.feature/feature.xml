@@ -2,9 +2,12 @@
 <!-- Base for standalone applications. Includes minimum set of plugins -->
 <feature
         id="org.jkiss.dbeaver.app.local.feature"
-        label="%featureName"
+        label="DBeaver Local Standalone Application"
         version="25.1.1.qualifier"
-        provider-name="%providerName">
+        provider-name="DBeaver Corp">
+
+    <copyright>DBeaver Corp and others</copyright>
+    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <!-- Quick search. Includes minimized ant bundle. No included in non-local as it uses local FS. -->
     <plugin id="org.eclipse.text.quicksearch" version="0.0.0"/>
