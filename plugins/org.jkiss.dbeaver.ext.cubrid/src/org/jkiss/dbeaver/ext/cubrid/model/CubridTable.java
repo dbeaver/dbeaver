@@ -54,7 +54,7 @@ public class CubridTable extends GenericTable
             @Nullable String tableName,
             @Nullable String tableType,
             @Nullable JDBCResultSet dbResult) {
-        super(container, tableName.toLowerCase(), tableType, dbResult);
+        super(container, tableName != null ? tableName.toLowerCase() : null, tableType, dbResult);
 
         String collationName;
         if (tableType.equals("TABLE") && dbResult != null) {
