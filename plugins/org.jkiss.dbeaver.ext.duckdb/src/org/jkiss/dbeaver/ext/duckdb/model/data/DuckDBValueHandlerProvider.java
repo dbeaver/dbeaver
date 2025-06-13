@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.duckdb.model.data;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.duckdb.model.DuckDBConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -33,6 +34,9 @@ public class DuckDBValueHandlerProvider implements DBDValueHandlerProvider {
     @Nullable
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences, DBSTypedObject typedObject) {
+        if (typedObject.getDataKind() == DBPDataKind.STRUCT) {
+            return DuckDBStructValueHandler.INSTANCE;
+        }
         return switch (typedObject.getTypeName().toUpperCase(Locale.ROOT)) {
             case DuckDBConstants.TYPE_GEOMETRY -> DuckDBGeometryValueHandler.INSTANCE;
             case DuckDBConstants.TYPE_BLOB -> JDBCContentValueHandler.INSTANCE;

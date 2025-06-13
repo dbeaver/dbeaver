@@ -59,7 +59,7 @@ import java.util.Map;
 /**
  * Data container transfer producer
  */
-class StreamDataSourceContainer implements DBPDataSourceContainer {
+public class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     private static final Log log = Log.getLog(StreamDataSourceContainer.class);
 
