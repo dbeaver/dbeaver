@@ -159,12 +159,24 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
             UIUtils.setControlVisible(profileProvidedHint.getParent(), false);
         }
 
+        loadConfiguration(profile);
+
+        configurator.loadSettings(handlerConfiguration);
+        configuratorPlaceholder.layout(true, true);
+
+        updatePageCompletion();
+    }
+
+    public void loadConfiguration(@Nullable DBWNetworkProfile profile) {
+        DBWHandlerConfiguration profileConfiguration = profile != null ? profile.getConfiguration(handlerDescriptor) : null;
+
         if (profile != null) {
             // Use configuration from the profile
             if (profileConfiguration != null && profileConfiguration.isEnabled()) {
                 handlerConfiguration = new DBWHandlerConfiguration(profileConfiguration);
             } else {
-                throw new IllegalStateException("Attempt to configure a handler with an active profile set that doesn't provide it");
+                log.warn("Attempt to configure " + handlerDescriptor.getId() + " with profile " + profile.getProfileName()
+                    + " set that doesn't provide it");
             }
         } else {
             // Use configuration from the connection
@@ -179,11 +191,6 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
                 configuration.updateHandler(handlerConfiguration);
             }
         }
-
-        configurator.loadSettings(handlerConfiguration);
-        configuratorPlaceholder.layout(true, true);
-
-        updatePageCompletion();
     }
 
     /**

@@ -404,7 +404,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             manager.add(new Action("Edit profiles...", DBeaverIcons.getImageDescriptor(UIIcon.RENAME)) {
                 @Override
                 public void run() {
-                    PrefPageProjectNetworkProfiles.open(getShell(), getProject(), null);
+                    DBWNetworkProfile profile = getActiveProfile();
+                    PrefPageProjectNetworkProfiles.open(getShell(), getProject(), profile);
+                    if (profile != null) {
+                        selectProfile(profile);
+                    }
                 }
             });
         });
@@ -473,7 +477,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
     }
 
-    private boolean unselectProfile(boolean resultOfHandlerRemoval) {
+    private boolean unselectProfile(@Nullable DBWHandlerDescriptor handlerToKeep) {
         if (getActiveProfile() == null) {
             return true;
         }
@@ -485,7 +489,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
         }
 
-        if (handlersToRemove.size() > (resultOfHandlerRemoval ? 1 : 0)) {
+        handlersToRemove.remove(handlerToKeep);
+
+        if (!handlersToRemove.isEmpty()) {
             Reply reply = MessageBoxBuilder.builder()
                 .setTitle("Change profile")
                 .setMessage(NLS.bind(
@@ -509,8 +515,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         selectProfile0(null);
 
         for (DBWHandlerDescriptor descriptor : handlersToRemove) {
-            removeHandler(descriptor, null);
+            removeHandler(descriptor);
         }
+
+        refreshHandlers(null);
+        updateProfileItem();
 
         return true;
     }
@@ -520,7 +529,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         Set<DBWHandlerDescriptor> handlersToAdd = new HashSet<>();
 
         for (DBWHandlerConfiguration configuration : profile.getConfigurations()) {
-            handlersToAdd.add(configuration.getHandlerDescriptor());
+            if (configuration.isEnabled()) {
+                handlersToAdd.add(configuration.getHandlerDescriptor());
+            }
         }
 
         for (CTabItem item : tabFolder.getItems()) {
@@ -546,7 +557,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         for (DBWHandlerDescriptor descriptor : handlersToRemove) {
-            removeHandler(descriptor, null);
+            removeHandler(descriptor);
         }
 
         selectProfile0(profile);
@@ -555,18 +566,14 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             addHandler(descriptor, profile);
         }
 
-        for (CTabItem item : tabFolder.getItems()) {
-            if (item.getData() instanceof ConnectionPageNetworkHandler page) {
-                refreshHandler(page.getHandlerDescriptor(), profile);
-            }
-        }
+        refreshHandlers(profile);
+        updateProfileItem();
 
         return true;
     }
 
     private void selectProfile0(@Nullable DBWNetworkProfile profile) {
         getActiveDataSource().getConnectionConfiguration().setConfigProfile(profile);
-        updateProfileItem();
     }
 
     private void addHandler(@NotNull DBWHandlerDescriptor descriptor, @Nullable DBWNetworkProfile profile) {
@@ -581,15 +588,17 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             return;
         }
 
+        page.loadConfiguration(profile);
+        page.getHandlerConfiguration().setEnabled(true);
+
         var index = Math.min(tabFolder.getItemCount(), ArrayUtils.indexOf(subPages, page) + 1 /* main tab */);
         var item = createPageTab(page, index);
 
         // TODO: Stop activating pages
         activateItem(item);
-        page.getHandlerConfiguration().setEnabled(true);
     }
 
-    private void removeHandler(@NotNull DBWHandlerDescriptor descriptor, @Nullable DBWNetworkProfile profile) {
+    private void removeHandler(@NotNull DBWHandlerDescriptor descriptor) {
         var item = findHandlerItem(descriptor);
         if (item == null) {
             log.error("Can't find page item for handler " + descriptor);
@@ -597,11 +606,20 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         var page = (ConnectionPageNetworkHandler) item.getData();
+        page.loadConfiguration(null);
+        page.getHandlerConfiguration().setEnabled(false);
 
         // TODO: Stop activating pages
         activateItem(item);
-        page.getHandlerConfiguration().setEnabled(false);
         item.dispose();
+    }
+
+    private void refreshHandlers(@Nullable DBWNetworkProfile profile) {
+        for (CTabItem item : tabFolder.getItems()) {
+            if (item.getData() instanceof ConnectionPageNetworkHandler page) {
+                refreshHandler(page.getHandlerDescriptor(), profile);
+            }
+        }
     }
 
     private void refreshHandler(@NotNull DBWHandlerDescriptor descriptor, @Nullable DBWNetworkProfile profile) {
@@ -644,8 +662,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         if (item.getShowClose() && tabFolder.getSelection() == item && confirmTabClose(item)) {
             var page = (ConnectionPageNetworkHandler) item.getData();
             var descriptor = page.getHandlerDescriptor();
-            if (unselectProfile(true)) {
-                removeHandler(descriptor, null);
+            if (unselectProfile(descriptor)) {
+                removeHandler(descriptor);
+                updateProfileItem();
                 return true;
             }
         }
@@ -1041,9 +1060,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
         @Override
         public void run() {
-            if (unselectProfile(false)) {
+            if (unselectProfile(descriptor)) {
                 addHandler(descriptor, null);
                 refreshHandler(descriptor, null);
+                updateProfileItem();
             }
         }
     }
@@ -1077,7 +1097,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             if (profile != null) {
                 selectProfile(profile);
             } else {
-                unselectProfile(false);
+                unselectProfile(null);
             }
         }
 
