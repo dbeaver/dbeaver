@@ -137,12 +137,6 @@ public interface DBPDataSourceInfo
     boolean supportsReferentialIntegrity();
 
     /**
-     * Retrieves whether this database supports virtual keys.
-     * @return true or false
-     */
-    boolean supportsVirtualKeys();
-
-    /**
      * Retrieves whether this database supports indexes.
      * @return true or false
      */

@@ -241,25 +241,14 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
         return null;
     }
 
-//    @Nullable
-//    @Override
-//    public List<GenericUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
-//        throws DBException {
-//        if (getDataSource().getInfo().supportsReferentialIntegrity() || getDataSource().getInfo().supportsIndexes()) {
-//            // ensure all columns are already cached
-//            getAttributes(monitor);
-//            return getContainer().getConstraintKeysCache().getObjects(monitor, getContainer(), this);
-//        }
-//        return null;
-//    }
-
     @Nullable
     @Override
     public List<GenericUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBPDataSourceInfo dataSource = getDataSource().getInfo();
+        boolean supportsVirtualKeys = getContainer().getDataSource().getContainer().getDriver().supportsVirtualKeys();
         if (dataSource.supportsReferentialIntegrity() ||
             dataSource.supportsIndexes() ||
-            dataSource.supportsVirtualKeys()
+            supportsVirtualKeys
         ) {
             // ensure all columns are already cached
             getAttributes(monitor);

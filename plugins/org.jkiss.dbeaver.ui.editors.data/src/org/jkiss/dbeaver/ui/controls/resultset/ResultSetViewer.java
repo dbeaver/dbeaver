@@ -3203,7 +3203,8 @@ public class ResultSetViewer extends Viewer
         }
 
         DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
-        if (dataSourceInfo.supportsReferentialIntegrity() || dataSourceInfo.supportsVirtualKeys()) {
+        boolean supportsVirtualKeys = dataSource.getContainer().getDriver().supportsVirtualKeys();
+        if (dataSourceInfo.supportsReferentialIntegrity() || supportsVirtualKeys) {
             possibleActions.add(new VirtualForeignKeyEditAction(this));
             possibleActions.add(new VirtualUniqueKeyEditAction(this, true));
             possibleActions.add(new VirtualUniqueKeyEditAction(this, false));
