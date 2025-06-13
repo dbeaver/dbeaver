@@ -252,7 +252,7 @@ public interface DBPDataSourceContainer extends
     @NotNull
     DBPPreferenceStore getPreferenceStore();
 
-    @NotNull
+    @Nullable
     DBPDataSourceRegistry getRegistry();
 
     @NotNull

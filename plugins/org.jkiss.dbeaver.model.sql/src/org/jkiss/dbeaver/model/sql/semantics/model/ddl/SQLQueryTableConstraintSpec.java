@@ -176,7 +176,7 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
             };
 
             switch (constraintKind) {
-                case CHECK -> checkExpression = recognizer.collectValueExpression(constraintNode);
+                case CHECK -> checkExpression = recognizer.collectValueExpression(constraintNode, null);
                 case REFERENCES -> {
                     STMTreeNode refNode = Optional.ofNullable(constraintNode.findFirstChildOfName(STMKnownRuleNames.referencesSpecification))
                         .map(n -> n.findFirstChildOfName(STMKnownRuleNames.referencedTableAndColumns))

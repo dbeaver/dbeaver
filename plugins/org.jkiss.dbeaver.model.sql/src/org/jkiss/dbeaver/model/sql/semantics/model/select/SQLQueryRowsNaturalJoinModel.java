@@ -162,7 +162,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         SQLQueryRowsDataContext combinedContext = this.getRowsSources().makeTuple(this, x.getColumnsList(), x.getPseudoColumnsList());
 
         if (this.columnsToJoin != null) {
-            var columnNameOrigin = new SQLQuerySymbolOrigin.RowsDataRef(combinedContext);
+            var columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromRowsData(combinedContext);
             for (SQLQuerySymbolEntry column : columnsToJoin) {
                 if (column.isNotClassified()) {
                     SQLQuerySymbol symbol = column.getSymbol();
