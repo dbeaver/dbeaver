@@ -223,6 +223,9 @@
                 <property id="resultset.maxrows" label="Default fetch size" description="Default number of rows to fetch" type="integer"
                           defaultValue="200"
                           scopes="global,user"/>
+                <property id="blob.maxsize" label="Max size of binary data" description="Max size of binary data in a cell that can be displayed" type="integer"
+                          defaultValue="200"
+                          scopes="global"/>
             </propertyGroup>
         </propertyGroup>
     </extension>
