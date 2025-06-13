@@ -691,7 +691,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     DBSObjectFilter filter = dsContainer.getObjectFilter(typeEntry.getKey(), entry.getKey(), true);
                     if (filter != null && filter.isEnabled()) {
                         for (SQLCompletionProposalBase proposal : typeEntry.getValue()) {
-                            if (!filter.matchesAny(proposal.getObject().getName())) {
+                            if (!filter.matches(proposal.getObject().getName())) {
                                 proposals.remove(proposal);
                             }
                         }

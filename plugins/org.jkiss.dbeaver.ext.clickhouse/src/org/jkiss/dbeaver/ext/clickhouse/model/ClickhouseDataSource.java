@@ -224,7 +224,7 @@ public class ClickhouseDataSource extends GenericDataSource {
                     List<String> catalogNames = new ArrayList<>();
                     while (dbResults.next()) {
                         String catalogName = dbResults.getString(1);
-                        if (catalogFilters == null || catalogFilters.matchesAny(catalogName)) {
+                        if (catalogFilters == null || catalogFilters.matches(catalogName)) {
                             catalogNames.add(catalogName);
                             monitor.subTask("Extract catalogs - " + catalogName);
                         } else {

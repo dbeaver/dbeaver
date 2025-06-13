@@ -1202,7 +1202,7 @@ public class ResultSetModel implements DBDResultSetModel {
         for (DBDAttributeBinding binding : this.attributes) {
             if (!entityDataView || DBDAttributeConstraint.isVisibleByDefault(binding)) {
                 // Make visible "real" attributes
-                if (columnFilter != null && !columnFilter.matchesAny(binding.getName())) {
+                if (columnFilter != null && !columnFilter.matches(binding.getName())) {
                     // Filtered out by column filter
                     continue;
                 }

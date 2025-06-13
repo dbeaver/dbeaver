@@ -104,7 +104,7 @@ public class ERDContentProviderDefault implements ERDContentProvider {
                         // Show only visible attributes
                         continue;
                     }
-                    if (columnFilter != null && !columnFilter.matchesAny(attribute.getName())) {
+                    if (columnFilter != null && !columnFilter.matches(attribute.getName())) {
                         continue;
                     }
                     if (!attrNodesCached) {

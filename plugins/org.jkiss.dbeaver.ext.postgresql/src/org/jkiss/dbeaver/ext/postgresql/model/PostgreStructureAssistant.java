@@ -140,7 +140,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
             DBSObjectFilter schemaFilter = dataSource.getContainer().getObjectFilter(PostgreSchema.class, database, true);
             if (schemaFilter != null && schemaFilter.isEnabled()) {
                 for (PostgreSchema schema : database.getSchemas(monitor)) {
-                    if (schemaFilter.matchesAny(schema.getName())) {
+                    if (schemaFilter.matches(schema.getName())) {
                         nsList.add(schema);
                     }
                 }

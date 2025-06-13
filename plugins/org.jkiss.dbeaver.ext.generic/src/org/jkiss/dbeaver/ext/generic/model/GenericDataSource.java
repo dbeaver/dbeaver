@@ -552,7 +552,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
                         }
                     }
                     totalCatalogs++;
-                    if (catalogFilters == null || catalogFilters.matchesAny(catalogName)) {
+                    if (catalogFilters == null || catalogFilters.matches(catalogName)) {
                         catalogNames.add(catalogName);
                         monitor.subTask("Extract catalogs - " + catalogName);
                     } else {

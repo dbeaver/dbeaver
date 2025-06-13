@@ -732,7 +732,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                         overloadedObject.getOverloadedName()
                     );
                 } else {
-                    isMatchingFilter = filter.matchesAny(object.getName());
+                    isMatchingFilter = filter.matches(object.getName());
                 }
                 if (!isMatchingFilter) {
                     continue;

@@ -183,7 +183,7 @@ public class ERDUtils
 
                 for (DBSObject entity : entities) {
                     if (entity instanceof DBSEntity) {
-                        if (objectFilter != null && objectFilter.isEnabled() && !objectFilter.matchesAny(entity.getName())) {
+                        if (objectFilter != null && objectFilter.isEnabled() && !objectFilter.matches(entity.getName())) {
                             continue;
                         }
 

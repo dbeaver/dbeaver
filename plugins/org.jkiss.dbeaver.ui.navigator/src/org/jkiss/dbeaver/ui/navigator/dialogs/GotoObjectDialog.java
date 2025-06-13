@@ -211,7 +211,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             DBPDataSourceContainer dsContainer = context.getDataSource().getContainer();
             for (DBSObjectReference ref : objectFinder.getResult()) {
                 DBSObjectFilter filter = dsContainer.getObjectFilter(ref.getObjectClass(), ref.getContainer(), true);
-                if (filter == null || !filter.isEnabled() || filter.matchesAny(ref.getName())) {
+                if (filter == null || !filter.isEnabled() || filter.matches(ref.getName())) {
                     contentProvider.add(ref, itemsFilter);
                 }
             }
