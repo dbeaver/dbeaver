@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -189,13 +189,19 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                 }
 
                 try {
-                    ITypedRegion partition = TextUtilities.getPartition(
+                    ITypedRegion partitionAtCursor = TextUtilities.getPartition(
                         document,
                         SQLParserPartitions.SQL_PARTITIONING,
                         offset,
-                        true);
-                    if (!IDocument.DEFAULT_CONTENT_TYPE.equals(partition.getType())
-                        && partition.getOffset() != offset) {
+                        true
+                    );
+                    ITypedRegion partitionBeforeCursor = offset > 0
+                        ? TextUtilities.getPartition(document, SQLParserPartitions.SQL_PARTITIONING, offset - 1, true)
+                        : null;
+                    if (!IDocument.DEFAULT_CONTENT_TYPE.equals(partitionAtCursor.getType())
+                        && partitionBeforeCursor != null && !IDocument.DEFAULT_CONTENT_TYPE.equals(partitionBeforeCursor.getType())
+                        && partitionAtCursor.getOffset() != offset
+                    ) {
                         return;
                     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,12 +105,16 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                 boolean isQuote = isIdentifierQuoteString(command.text);
                 if (command.offset > 1 && isPrevLetter && !isQuote &&
                     (lineDelimiter || (command.text.length() == 1 && !Character.isJavaIdentifierPart(command.text.charAt(0)))) &&
-                    syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO))
-                {
-                    IRegion lineRegion = document.getLineInformationOfOffset(command.offset);
-                    String line = document.get(lineRegion.getOffset(), lineRegion.getLength()).trim();
-
-                    if (!SQLUtils.isCommentLine(syntaxManager.getDialect(), line)) {
+                    syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO)
+                ) {
+                    String typeAtLine = TextUtilities.getContentType(
+                        document,
+                        SQLParserPartitions.SQL_PARTITIONING,
+                        command.offset - 1,
+                        true
+                    );
+                    // we are in the nonempty line and previous position doesn't belong to the comment, string literal or command
+                    if (IDocument.DEFAULT_CONTENT_TYPE.equals(typeAtLine)) {
                         isKeywordCaseUpdated = updateKeywordCase(document, command);
                     }
                 }
