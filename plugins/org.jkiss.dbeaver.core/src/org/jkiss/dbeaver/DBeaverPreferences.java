@@ -48,7 +48,6 @@ public final class DBeaverPreferences
     public static final String UI_KEEP_DATABASE_EDITORS = DatabaseEditorPreferences.PROP_SAVE_EDITORS_STATE; //$NON-NLS-1$
     public static final String UI_KEEP_DATABASE_EDITORS_ON_DISCONNECT = DatabaseEditorPreferences.PROP_KEEP_EDITORS_ON_DISCONNECT; //$NON-NLS-1$
     public static final String UI_DISCONNECT_ON_EDITORS_CLOSE = DatabaseEditorPreferences.PROP_DISCONNECT_ON_EDITORS_CLOSE; //$NON-NLS-1$
-    public static final String UI_USE_EMBEDDED_AUTH = "ui.use.redirect.auth"; //$NON-NLS-1$
     public static final String UI_SHOW_HOLIDAY_DECORATIONS = HolidayDecorations.PREF_UI_SHOW_HOLIDAY_DECORATIONS;
     public static final String UI_STATUS_BAR_SHOW_BREADCRUMBS = DatabaseEditorPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS;
     public static final String UI_STATUS_BAR_SHOW_STATUS_LINE = "ui.statusBar.show.statusLine"; //$NON-NLS-1$

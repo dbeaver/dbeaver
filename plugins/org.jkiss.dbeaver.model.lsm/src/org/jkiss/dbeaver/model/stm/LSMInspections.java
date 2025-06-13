@@ -171,13 +171,13 @@ public class LSMInspections {
     /**
      * Returns information about the syntax tree state in the specified position, providing info about expected tokens
      */
-    @NotNull
+    @Nullable
     public SyntaxInspectionResult prepareAbstractSyntaxInspection(int position) {
         ATN atn = SQLStandardParser._ATN;
 
         Interval range = this.root.getRealInterval();
-        if (position < range.a) {
-            return prepareOffquerySyntaxInspection();
+        if (position < range.a || this.allNonErrorTerms.isEmpty()) {
+            return null;
         } else {
             int index;
             STMTreeTermNode node;

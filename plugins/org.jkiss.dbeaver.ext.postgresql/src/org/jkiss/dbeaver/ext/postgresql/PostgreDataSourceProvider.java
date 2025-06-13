@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,40 +71,47 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
 
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
-        DBAAuthModel<?> authModel = connectionInfo.getAuthModel();
-        if (authModel instanceof DBPDataSourceURLProvider) {
-            String connectionURL = ((DBPDataSourceURLProvider) authModel).getConnectionURL(driver, connectionInfo);
+        DBPConnectionConfiguration configToUse = connectionInfo;
+        String databaseName = connectionInfo.getDatabaseName();
+
+        if (databaseName != null && databaseName.contains("/")) {
+            configToUse = new DBPConnectionConfiguration(connectionInfo);
+            configToUse.setDatabaseName(databaseName.replace("/", "%2F"));
+        }
+
+        DBAAuthModel<?> authModel = configToUse.getAuthModel();
+
+        if (authModel instanceof DBPDataSourceURLProvider sourceURLProvider) {
+            String connectionURL = sourceURLProvider.getConnectionURL(driver, configToUse);
             if (CommonUtils.isNotEmpty(connectionURL)) {
                 return connectionURL;
             }
         }
-        if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
-            return connectionInfo.getUrl();
+
+        if (configToUse.getConfigurationType() == DBPDriverConfigurationType.URL) {
+            return configToUse.getUrl();
         }
+
         PostgreServerType serverType = PostgreUtils.getServerType(driver);
         if (serverType.supportsCustomConnectionURL()) {
-            return DatabaseURL.generateUrlByTemplate(driver, connectionInfo);
+            return DatabaseURL.generateUrlByTemplate(driver, configToUse);
         }
 
-        StringBuilder url = new StringBuilder();
-        url.append("jdbc:postgresql://");
+        StringBuilder url = new StringBuilder("jdbc:postgresql://");
+        url.append(configToUse.getHostName());
 
-        url.append(connectionInfo.getHostName());
-        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-            url.append(":").append(connectionInfo.getHostPort());
+        if (!CommonUtils.isEmpty(configToUse.getHostPort())) {
+            url.append(":").append(configToUse.getHostPort());
         }
+
         url.append("/");
-        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-            url.append(connectionInfo.getDatabaseName());
+
+        if (!CommonUtils.isEmpty(configToUse.getDatabaseName())) {
+            url.append(configToUse.getDatabaseName());
         }
-//        if (CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_USE_SSL))) {
-//            url.append("?ssl=true");
-//            if (CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_SSL_NON_VALIDATING))) {
-//                url.append("&sslfactory=org.postgresql.ssl.NonValidatingFactory");
-//            }
-//        }
         return url.toString();
     }
+
 
     @NotNull
     @Override
