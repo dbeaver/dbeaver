@@ -23,10 +23,7 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Tracker;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -149,7 +146,9 @@ public final class ResizeableComposite extends Composite {
         Point size = content.getSize();
         Control control = (Control) e.widget;
 
-        Rectangle rectangle = new Rectangle(0, 0, 0, 0);
+        Point offset = getLocation(); // relative to the parent
+        Rectangle rectangle = new Rectangle(offset.x, offset.y, 0, 0);
+
         if (horizontal) {
             rectangle.width = control.getLocation().x + e.x;
             rectangle.height = size.y;
@@ -158,7 +157,7 @@ public final class ResizeableComposite extends Composite {
             rectangle.height = control.getLocation().y + e.y;
         }
 
-        Tracker tracker = new Tracker(this, SWT.RESIZE | (horizontal ? SWT.RIGHT : SWT.DOWN));
+        Tracker tracker = new Tracker(getParent(), SWT.RESIZE | (horizontal ? SWT.RIGHT : SWT.DOWN));
         tracker.setStippled(true);
         tracker.setRectangles(new Rectangle[]{rectangle});
 
@@ -199,6 +198,7 @@ public final class ResizeableComposite extends Composite {
             }
 
             layout(true, true);
+            notifyListeners(SWT.Resize, new Event());
         }
     }
 }

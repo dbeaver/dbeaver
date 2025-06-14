@@ -365,7 +365,7 @@ public class STMKnownRuleNames {
     public static final String INTO_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.INTO);
     public static final String ASTERISK_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.Asterisk);
     public static final String PERIOD_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.Period);
-    public static final String RIGHT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LeftParen);
-    public static final String LEFT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.RightParen);
+    public static final String LEFT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LeftParen);
+    public static final String RIGHT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.RightParen);
     public static final String LATERAL_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LATERAL);
 }
