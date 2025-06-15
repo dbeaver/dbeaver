@@ -770,11 +770,15 @@
             <dynamic id="org.jkiss.dbeaver.core.menu.txn.isolation" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.commit.menu">
+            <command commandId="org.jkiss.dbeaver.core.commit"/>
+            <separator visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.txn.log">
                 <parameter name="showAll" value="true"/>
             </command>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.rollback.menu">
+            <command commandId="org.jkiss.dbeaver.core.rollback"/>
+            <separator visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.txn.log">
                 <parameter name="showAll" value="true"/>
             </command>
