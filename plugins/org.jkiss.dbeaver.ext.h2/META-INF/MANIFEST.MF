@@ -11,7 +11,6 @@ Require-Bundle: org.jkiss.dbeaver.model,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
-Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ext.h2.model,
  org.jkiss.dbeaver.ext.h2.backup
 Automatic-Module-Name: org.jkiss.dbeaver.ext.h2
