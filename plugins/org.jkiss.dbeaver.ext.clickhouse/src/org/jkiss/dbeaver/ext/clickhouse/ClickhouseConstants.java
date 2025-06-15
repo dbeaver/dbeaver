@@ -30,4 +30,5 @@ public class ClickhouseConstants {
 
     public static final String DATA_TYPE_IPV4 = "ipv4";
     public static final String DATA_TYPE_IPV6 = "ipv6";
+    public static final String DATA_TYPE_STRING = "String";
 }

@@ -9,9 +9,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
-Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.vertica
 Export-Package: org.jkiss.dbeaver.ext.vertica,
  org.jkiss.dbeaver.ext.vertica.model

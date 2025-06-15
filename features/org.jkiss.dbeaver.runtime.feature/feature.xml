@@ -1,22 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
-        label="%featureName"
+        label="DBeaver Runtime"
         version="25.1.1.qualifier"
-        provider-name="%providerName"
+        provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.model">
 
-    <description>
-        %description
-    </description>
+    <description>Universal Database Manager Runtime</description>
 
-    <copyright>
-        %copyright
-    </copyright>
-
-    <license url="%licenseURL">
-        %license
-    </license>
+    <copyright>DBeaver Corp and others</copyright>
+    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <!-- 3rd party -->
     <plugin id="slf4j.api" version="0.0.0" />
@@ -26,6 +19,7 @@
     <plugin id="bcpkix" version="0.0.0" />
     <plugin id="bcutil" version="0.0.0" />
 
+    <plugin id="org.antlr.antlr4-runtime" version="0.0.0" />
     <plugin id="com.github.jsqlparser" version="0.0.0" />
     <plugin id="org.apache.commons.jexl" version="0.0.0" />
     <plugin id="com.google.gson" version="0.0.0"/>
@@ -67,6 +61,5 @@
     <plugin id="org.jkiss.dbeaver.data.gis" version="0.0.0" />
     <plugin id="org.jkiss.bundle.gis" version="0.0.0" />
     <plugin id="org.jkiss.bundle.sshj" version="0.0.0" />
-    <plugin id="org.jkiss.bundle.antlr4" version="0.0.0" />
 
 </feature>

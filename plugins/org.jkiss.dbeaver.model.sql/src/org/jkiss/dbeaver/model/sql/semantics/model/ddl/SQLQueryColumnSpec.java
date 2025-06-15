@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
@@ -136,7 +133,9 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
             .map(STMTreeNode::getTextContent).orElse(null);
 
         STMTreeNode defaultValueNode = node.findFirstChildOfName(STMKnownRuleNames.defaultClause);
-        SQLQueryValueExpression defaultValueExpr = defaultValueNode == null ? null : recognizer.collectValueExpression(defaultValueNode);
+        SQLQueryValueExpression defaultValueExpr = defaultValueNode == null
+            ? null
+            : recognizer.collectValueExpression(defaultValueNode, null);
 
         LinkedList<SQLQueryColumnConstraintSpec> constraints = new LinkedList<>();
         for (STMTreeNode subnode : node.findChildrenOfName(STMKnownRuleNames.columnConstraintDefinition)) {
@@ -155,7 +154,7 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
                 constraintKind = constraintKindByNodeName.get(constraintNode.getNodeName());
                 switch (constraintKind) {
                     case CHECK ->
-                        checkExpression = recognizer.collectValueExpression(constraintNode);
+                        checkExpression = recognizer.collectValueExpression(constraintNode, null);
                     case REFERENCES -> {
                         STMTreeNode refNode = constraintNode.findFirstChildOfName(STMKnownRuleNames.referencedTableAndColumns);
                         if (refNode != null) {
