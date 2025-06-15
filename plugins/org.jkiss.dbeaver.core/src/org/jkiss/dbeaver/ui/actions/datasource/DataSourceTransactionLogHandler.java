@@ -32,8 +32,7 @@ public class DataSourceTransactionLogHandler extends AbstractDataSourceHandler {
     public static final String PARAM_SHOW_ALL = "showAll";
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
         IEditorPart editor = HandlerUtil.getActiveEditor(event);
         DBCExecutionContext context = null;
