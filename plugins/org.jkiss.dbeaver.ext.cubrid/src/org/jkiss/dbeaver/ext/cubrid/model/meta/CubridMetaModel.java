@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -391,21 +392,31 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
     @Nullable
     @Override
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView object, @NotNull Map<String, Object> options) throws DBException {
-        String ddl = "-- View definition not available";
+        String fallbackDDL = "-- View definition not available";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl")) {
             String sql = String.format("show create view %s", ((CubridView) object).getUniqueName());
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        ddl = "create or replace view " + dbResult.getString("View") + " as " + dbResult.getString("Create View");
-                        ddl = SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
+                    List<String> ddlFragments = new ArrayList<>();
+                    String viewName = null;
+                    while (dbResult.next()) {
+                        viewName = JDBCUtils.safeGetStringTrimmed(dbResult, "View");
+                        String ddlFragment = JDBCUtils.safeGetStringTrimmed(dbResult, "Create View");
+                        if (CommonUtils.isNotEmpty(ddlFragment)) {
+                            ddlFragments.add(ddlFragment.trim());
+                        }
                     }
+                    if (CommonUtils.isEmpty(viewName) || CommonUtils.isEmpty(ddlFragments)) {
+                        return fallbackDDL;
+                    }
+                    String ddl = "create or replace view " + viewName + " as " + String.join(" union all ", ddlFragments);
+                    return SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
                 }
             }
         } catch (SQLException e) {
             log.error("Cannot load view ddl", e);
         }
-        return ddl;
+        return fallbackDDL;
     }
 
     @Override

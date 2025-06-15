@@ -7,14 +7,10 @@
 # DBeaver
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts.  
-Supports any database which has JDBC driver (which basically means - ANY database).
-<a href="https://dbeaver.com/download/">Commercial versions</a> also support non-JDBC datasources such as
-MongoDB, Cassandra, Couchbase, Redis, BigTable, ScyllaDB, DynamoDB, etc.
-You can find the list of all databases supported in commercial versions
-<a href="https://dbeaver.com/databases/">here</a>.
 
-* Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including metadata editor, SQL editor, rich data editor, ERD, data export/import/migration, SQL execution plans, etc.
-* Uses plugins architecture and provides additional functionality for the following databases: MySQL/MariaDB, PostgreSQL, Greenplum, Oracle, IBM Db2, Exasol, SQL Server, Sybase/SAP ASE, SQLite, Firebird, H2, HSQLDB, Derby, Teradata, Vertica, Netezza, Informix, etc.
+* Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including schema editor, SQL editor, data editor, AI integration, ER diagrams, data export/import/migration, SQL execution plans, database administration tools, database dashboards, Spatial data viewer, proxy and SSH tunnelling, custom database drivers editor, etc.
+* Out of the box supports more than <a href="#supported-databases">100 database drivers</a>.
+* Supports any database which has JDBC or ODBC driver (basically - almost all existing databases).
 
 <a href="https://dbeaver.io/product/dbeaver-sql-editor.png"><img src="https://dbeaver.io/product/dbeaver-sql-editor.png" width="400"/></a>
 <a href="https://dbeaver.io/product/dbeaver-gis-viewer.png"><img src="https://dbeaver.io/product/dbeaver-gis-viewer.png" width="400"/></a>
@@ -35,10 +31,36 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 
 ## Documentation
 
-* <a href="https://dbeaver.com/docs/dbeaver/">Full product documentation</a>
-* <a href="https://github.com/dbeaver/dbeaver/wiki">WIKI</a>
-* <a href="https://github.com/dbeaver/dbeaver/issues">Issue tracker</a>
-* <a href="https://github.com/dbeaver/dbeaver/wiki/Build-from-sources">Building from sources</a>
+* [Full product documentation](https://dbeaver.com/docs/dbeaver/)
+* [WIKI](https://github.com/dbeaver/dbeaver/wiki)
+* [Issue tracker](https://github.com/dbeaver/dbeaver/issues)
+* [Building from sources](https://github.com/dbeaver/dbeaver/wiki/Build-from-sources)
+
+## Architecture
+
+- DBeaver is written on Java.
+- Basic frameworks:
+  - [OSGI](https://en.wikipedia.org/wiki/OSGi) platform for plugins and dependency management. Community version consists of 130+ plugins.
+  - [Eclipse RCP](https://github.com/eclipse-platform/eclipse.platform.ui/blob/master/docs/Rich_Client_Platform.md) platform for rich user interface build.
+  - [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity) for basic databases connectivity API.
+  - [JSQLParser](https://github.com/JSQLParser/JSqlParser) and [Antlr4](https://github.com/antlr/antlr4) for SQL grammar and semantic parser.
+- For networking and additional functionality we use wide range of open source libraries such as SSHJ, JSch, Okhttp, OpenAI SDK, Apache POI, JFreeChart, JTS/GIS, etc.
+- We separate model plugins from desktop UI plugins. This allows us to use the same set of "back-end" plugins in both DBeaver and CloudBeaver.
+- Dependencies: being an OSGI application we use P2 repositories for third party dependencies. For additional Maven dependencies we use our own [DBeaver P2 repo](https://github.com/dbeaver/dbeaver-deps-ce).
+
+## Supported databases
+
+### Community version
+
+Out of the box DBeaver supports following database drivers: 
+MySQL, MariaDB, Oracle, DB2, PostgreSQL, SQL Server, Sybase, Apache Hive, Drill, Presto, Trino, Phoenix, Exasol, Informix, Teradata, Vertica, Netezza, Firebird, Derby, H2, H2GIS, WMI, Snowflake, Greenplum, Redshift, Athena, SAP HANA, MaxDB, NuoDB, MS Access, SQLite, CSV, DBF, Firebird, TimescaleDB, Yellowbrick, CockroachDB, OrientDB, MonetDB, Google BigQuery, Google Spanner, Apache Hive/Impala/Spark, Apache Ignite, MapD, Azure SQL, CrateDB, Elasticsearch, Ocient, Ingres, OmniSci, Yugabyte, IRIS, Data Virtuality, Denodo, Virtuoso, Machbase, DuckDB, Babelfish, OceanBase, Salesforce, EnterpriseDB, Apache Druid, Apache Kylin, Databricks, OpenSearch, TiDB, TDEngine, Materialize, JDBCX, Dameng, Altibase, StarRocks, CUBRID, GaussDB, DolphinDB, LibSQL, GBase 8s, Databend, Cloudberry, Teiid, Kingbase.
+
+### PRO versions
+
+<a href="https://dbeaver.com/download/">Commercial versions</a> extends functionality of many popular drivers and also support non-JDBC datasources such as:
+MongoDB, Cassandra, Couchbase, CouchDB, Redis, InfluxDB, Firestore, BigTable, DynamoDB, Kafka KSQL, Neo4j, Neptune, Timestream.  
+Also, we support flat files as databases: CSV, XLSX, Json, XML, Parquet.  
+You can find the list of all databases supported in commercial versions <a href="https://dbeaver.com/databases/">here</a>.
 
 ## Feedback
 

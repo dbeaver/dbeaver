@@ -31,6 +31,8 @@ import java.util.Arrays;
 
 public class FireBirdSQLDialect extends GenericSQLDialect {
 
+    private boolean supportsAsBeforeTableAlias = true;
+
     private static final String[] FB_BLOCK_HEADERS = new String[]{
         "EXECUTE BLOCK",
         //"DECLARE",
@@ -102,6 +104,11 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
+        if (!dataSource.isServerVersionAtLeast(2, 0)) {
+            // we don't know the exact version actually
+            // it's probably in servers older than 2.0 https://www.firebirdsql.org/refdocs/langrefupd20-select.html
+            supportsAsBeforeTableAlias = false;
+        }
         turnFunctionIntoKeyword("TRUNCATE");
         addKeywords(Arrays.asList(FIREBIRD_KEYWORDS), DBPKeywordType.KEYWORD);
         addFunctions(Arrays.asList(FIREBIRD_FUNCTIONS));
@@ -115,6 +122,11 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     @Override
     public boolean supportsAliasInHaving() {
         return false;
+    }
+
+    @Override
+    public boolean supportsAsKeywordBeforeAliasInFromClause() {
+        return supportsAsBeforeTableAlias;
     }
 
     @Override

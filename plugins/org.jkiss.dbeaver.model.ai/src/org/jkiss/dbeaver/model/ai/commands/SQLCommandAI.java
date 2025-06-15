@@ -20,14 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.ai.AIAssistantRegistry;
-import org.jkiss.dbeaver.model.ai.AIBaseFeatures;
-import org.jkiss.dbeaver.model.ai.AITextUtils;
-import org.jkiss.dbeaver.model.ai.CommandResult;
-import org.jkiss.dbeaver.model.ai.completion.DAICommandRequest;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionContext;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionScope;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionSettings;
+import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -74,7 +70,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             command.getDataSourceContainer(), "AI logical wrapper", null);
 
         DBPDataSourceContainer dataSourceContainer = lDataSource.getDataSourceContainer();
-        DAICompletionSettings completionSettings = new DAICompletionSettings(dataSourceContainer);
+        AICompletionSettings completionSettings = new AICompletionSettings(dataSourceContainer);
         if (!DBWorkbench.getPlatform().getApplication().isHeadlessMode() && !completionSettings.isMetaTransferConfirmed()) {
             if (DBWorkbench.getPlatformUI().confirmAction("Do you confirm AI usage",
                 "Do you confirm AI usage for '" + dataSourceContainer.getName() + "'?"
@@ -85,11 +81,14 @@ public class SQLCommandAI implements SQLControlCommandHandler {
                 throw new DBException("AI services restricted for '" + dataSourceContainer.getName() + "'");
             }
         }
-        DAICompletionScope scope = completionSettings.getScope();
-        DAICompletionContext.Builder contextBuilder = new DAICompletionContext.Builder()
-            .setScope(scope)
-            .setExecutionContext(scriptContext.getExecutionContext());
-        if (scope == DAICompletionScope.CUSTOM) {
+        AIDatabaseScope scope = completionSettings.getScope();
+        AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(lDataSource)
+            .setScope(scope);
+        DBCExecutionContext executionContext = scriptContext.getExecutionContext();
+        if (executionContext != null) {
+            contextBuilder.setExecutionContext(executionContext);
+        }
+        if (scope == AIDatabaseScope.CUSTOM) {
             contextBuilder.setCustomEntities(
                 AITextUtils.loadCustomEntities(
                     monitor,
@@ -97,16 +96,17 @@ public class SQLCommandAI implements SQLControlCommandHandler {
                     Arrays.stream(completionSettings.getCustomObjectIds()).collect(Collectors.toSet()))
             );
         }
-        final DAICompletionContext aiContext = contextBuilder.build();
+        final AIDatabaseContext aiContext = contextBuilder.build();
 
-        CommandResult result = AIAssistantRegistry.getInstance()
-            .getAssistant()
-            .command(monitor, new DAICommandRequest(prompt, aiContext));
+        AICommandResult result = AIAssistantRegistry.getInstance()
+            .createAssistant(dataSourceContainer.getProject().getWorkspace())
+            .command(monitor, new AICommandRequest(prompt, aiContext));
 
-        if (result.sql() == null && result.message() != null) {
-            throw new DBException(result.message());
-        } else if (result.sql() == null) {
-            throw new DBException("Empty AI completion for '" + prompt + "'");
+        if (result.sql() == null) {
+            if (!CommonUtils.isEmpty(result.message())) {
+                throw new DBException(result.message());
+            }
+            throw new DBException("Empty AI response for '" + prompt + "'");
         }
 
         SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);
