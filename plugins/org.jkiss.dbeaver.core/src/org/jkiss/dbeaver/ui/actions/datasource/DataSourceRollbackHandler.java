@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -26,25 +29,24 @@ import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.TasksJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.txn.TransactionLogDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class DataSourceRollbackHandler extends AbstractDataSourceHandler
-{
+public class DataSourceRollbackHandler extends AbstractDataSourceHandler {
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         DBCExecutionContext context = getActiveExecutionContext(event, true);
         if (context != null && context.isConnected()) {
-            execute(context);
+            execute(HandlerUtil.getActiveShell(event), context);
         }
         return null;
     }
 
-    public static void execute(final DBCExecutionContext context) {
+    public static void execute(@NotNull Shell shell, DBCExecutionContext context) {
         TasksJob.runTask("Rollback transaction", monitor -> {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
             if (txnManager != null) {
@@ -55,15 +57,18 @@ public class DataSourceRollbackHandler extends AbstractDataSourceHandler
                     throw new InvocationTargetException(e);
                 }
 
-                if (context.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS)) {
+                if (context.getDataSource().getContainer().getPreferenceStore()
+                    .getBoolean(ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS)) {
                     DBeaverNotifications.showNotification(
                         context.getDataSource(),
                         DBeaverNotifications.NT_ROLLBACK,
                         "Transaction has been rolled back\n\n" +
                             "Query count: " + txnInfo.getUpdateCount() + "\n" +
-                            "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime()) + "\n",
+                            "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime())
+                            + "\n",
                         DBPMessageType.ERROR,
-                        () -> TransactionLogDialog.showDialog(null, context, true));
+                        () -> TransactionLogDialog.showDialog(shell, context, true)
+                    );
                 }
             }
         });

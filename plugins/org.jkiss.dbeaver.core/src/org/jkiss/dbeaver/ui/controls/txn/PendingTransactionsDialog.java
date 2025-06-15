@@ -53,11 +53,6 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
     }
 
     @Override
-    protected boolean isResizable() {
-    	return true;
-    }
-
-    @Override
     protected DBCExecutionContext getCurrentContext() {
         return selectedContext;
     }
@@ -145,9 +140,9 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
             return;
         }
         if (commit) {
-            DataSourceCommitHandler.execute(selectedContext);
+            DataSourceCommitHandler.execute(getShell(), selectedContext);
         } else {
-            DataSourceRollbackHandler.execute(selectedContext);
+            DataSourceRollbackHandler.execute(getShell(), selectedContext);
         }
         commitButton.setEnabled(false);
         rollbackButton.setEnabled(false);
@@ -184,7 +179,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                     QMTransactionState txnState = QMUtils.getTransactionState(context);
                     TreeItem contextItem = new TreeItem(dsItem, SWT.NONE);
                     contextItem.setText(0, context.getContextName());
-                    String stateString = String.valueOf(txnState.getUpdateCount()) + "/" + String.valueOf(txnState.getExecuteCount());
+                    String stateString = txnState.getUpdateCount() + "/" + txnState.getExecuteCount();
                     contextItem.setText(1, stateString);
                     contextItem.setData(context);
                 }
@@ -192,12 +187,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
             }
         }
 
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                UIUtils.packColumns(contextTree);
-            }
-        });
+        UIUtils.asyncExec(() -> UIUtils.packColumns(contextTree));
     }
 
     public static void showDialog(Shell shell) {
