@@ -720,6 +720,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     @Override
     public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Throwable error, @Nullable DBTTask task, boolean last) {
+        boolean headlessMode = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
         if (last && error == null) {
             // Refresh navigator
             monitor.subTask("Refresh final database model");
@@ -742,7 +743,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
 
-        if (!last && settings.isOpenTableOnFinish() && error == null) {
+        if (!headlessMode && !last && settings.isOpenTableOnFinish() && error == null) {
             try {
                 // Mappings can be outdated so is the target object.
                 // This may happen when several database consumers point to the same container node
@@ -768,7 +769,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 }
 
                 try {
-                    // FIXME: make it conditional!
                     DBWorkbench.getPlatformUI().openEntityEditor(targetObject);
                 } catch (Exception e) {
                     log.error("Error opening entity editor for '" + targetObject.getName() + "'", e);
