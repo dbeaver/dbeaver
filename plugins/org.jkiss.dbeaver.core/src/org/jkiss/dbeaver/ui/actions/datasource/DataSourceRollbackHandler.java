@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.TasksJob;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.txn.TransactionLogDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -37,6 +36,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import java.lang.reflect.InvocationTargetException;
 
 public class DataSourceRollbackHandler extends AbstractDataSourceHandler {
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         DBCExecutionContext context = getActiveExecutionContext(event, true);

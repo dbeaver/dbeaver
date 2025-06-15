@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
 
     protected abstract DBCExecutionContext getCurrentContext();
 
-    protected void createTransactionLogPanel(Composite composite) {
+    protected void createTransactionLogPanel(@NotNull Composite composite) {
         DBCExecutionContext context = getCurrentContext();
         QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context);
         logViewer = new QueryLogViewer(composite, activeEditor.getSite(), filter, false, true);
@@ -114,10 +114,9 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
         final QMMConnectionInfo currentSession = QMUtils.getCurrentConnection(executionContext);
         final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(executionContext);
 
-        QMEventFilter filter = event -> {
+        return event -> {
             QMMObject object = event.getObject();
-            if (object instanceof QMMStatementExecuteInfo) {
-                QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
+            if (object instanceof QMMStatementExecuteInfo exec) {
                 if (!showPrevious && !CommonUtils.equalObjects(exec.getSavepoint(), currentSP)) {
                     return false;
                 }
@@ -132,7 +131,6 @@ public abstract class TransactionInfoDialog extends AbstractPopupPanel {
             }
             return false;
         };
-        return filter;
     }
 
     @Override
