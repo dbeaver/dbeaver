@@ -714,7 +714,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
+    public void finishTransfer(@NotNull DBRProgressMonitor monitor, boolean last) {
         finishTransfer(monitor, null, last);
     }
 
@@ -722,7 +722,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public void finishTransfer(@NotNull DBRProgressMonitor monitor, @Nullable Throwable error, @Nullable DBTTask task, boolean last) {
         if (last && error == null) {
             // Refresh navigator
-            monitor.subTask("Refresh database model");
+            monitor.subTask("Refresh final database model");
             try {
                 DBSObjectContainer container = settings.getContainer();
                 DBNModel navigatorModel = DBNUtils.getNavigatorModel(container);
@@ -734,8 +734,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     if (node != null) {
                         node.refreshNode(monitor, this);
                     }
-                } else if (container instanceof DBPRefreshableObject) {
-                    ((DBPRefreshableObject) container).refreshObject(monitor);
+                } else if (container instanceof DBPRefreshableObject refreshableObject) {
+                    refreshableObject.refreshObject(monitor);
                 }
             } catch (Exception e) {
                 log.debug("Error refreshing database model after data consumer", e);
@@ -768,6 +768,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 }
 
                 try {
+                    // FIXME: make it conditional!
                     DBWorkbench.getPlatformUI().openEntityEditor(targetObject);
                 } catch (Exception e) {
                     log.error("Error opening entity editor for '" + targetObject.getName() + "'", e);
@@ -793,7 +794,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     }
                 } catch (DBException e) {
                     DBWorkbench.getPlatformUI().showError("Transfer event processor", "Error executing data transfer event processor '" + entry.getKey() + "'", e);
-                    log.error("Error executing event processor '" + entry.getKey() + "'", e);
                 }
             }
         }
