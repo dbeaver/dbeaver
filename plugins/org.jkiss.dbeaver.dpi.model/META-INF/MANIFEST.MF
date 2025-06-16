@@ -10,7 +10,6 @@ Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.dpi.model,
  org.jkiss.dbeaver.dpi.model.adapters,
  org.jkiss.dbeaver.dpi.model.client
-Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,
  com.google.gson;visibility:=reexport
