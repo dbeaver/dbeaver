@@ -90,6 +90,9 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
         return table;
     }
 
+    /**
+     * This implementation is intentionally left blank.
+     */
     @Override
     @SuppressWarnings("rawtypes")
     public void appendTableModifiers(
@@ -100,6 +103,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
         boolean alter,
         Map<String, Object> options) {
 
+        // no-op
     }
 
     @Override

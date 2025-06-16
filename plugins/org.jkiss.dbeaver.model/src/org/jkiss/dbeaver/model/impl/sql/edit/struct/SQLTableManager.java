@@ -381,7 +381,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
 
     public static String getDelimiter(Map<String, Object> options) {
-        return isCompact(options) ? " " : "\n";
+        return isCompact(options) ? " " : GeneralUtils.getDefaultLineSeparator();
     }
 
     public static int findCommentPos(CharSequence cs, String slComment) {
