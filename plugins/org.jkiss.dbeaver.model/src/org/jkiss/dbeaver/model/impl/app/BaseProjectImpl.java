@@ -44,8 +44,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -54,6 +52,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
