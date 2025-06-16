@@ -66,7 +66,7 @@ public class TextRenderingUtils {
         int lineHeight = textWidget.getLineHeight();
         int verticalPosition = origin.y + (lineHeight - fontHeight) + bias;
 
-        if (text != null) {
+        if (text != null && !gc.isDisposed()) {
             String remaining = getLineRemainder(widgetOffset, textWidget);
             if (!remaining.isEmpty() && text.endsWith(remaining)) {
                 text = text.substring(0, text.length() - remaining.length());
@@ -80,26 +80,37 @@ public class TextRenderingUtils {
             gc.drawString(text, origin.x, verticalPosition, true);
             gc.setBackground(bgColor);
 
-            Event ev = new Event();
-            ev.x = origin.x + textSize.x;
-            ev.y = verticalPosition;
-            ev.height = textSize.y;
-            ev.width = textSize.x;
-            ev.widget = textWidget;
-            ev.gc = gc;
-            Transform t = new Transform(gc.getDevice());
-            gc.getTransform(t);
-            Transform t2 = new Transform(gc.getDevice());
-            gc.getTransform(t2);
-            t2.translate(textSize.x, 0);
-            gc.setTransform(t2);
-            Rectangle clip = gc.getClipping();
-            Rectangle clip2 = gc.getClipping();
-            clip2.x = origin.x;
-            gc.setClipping(clip2);
-            textWidget.notifyListeners(SWT.Paint, ev);
-            gc.setClipping(clip);
-            gc.setTransform(t);
+            Transform t = null;
+            Transform t2 = null;
+            try {
+                Event ev = new Event();
+                ev.x = origin.x + textSize.x;
+                ev.y = verticalPosition;
+                ev.height = textSize.y;
+                ev.width = textSize.x;
+                ev.widget = textWidget;
+                ev.gc = gc;
+                t = new Transform(gc.getDevice());
+                gc.getTransform(t);
+                t2 = new Transform(gc.getDevice());
+                gc.getTransform(t2);
+                t2.translate(textSize.x, 0);
+                gc.setTransform(t2);
+                Rectangle clip = gc.getClipping();
+                Rectangle clip2 = gc.getClipping();
+                clip2.x = origin.x;
+                gc.setClipping(clip2);
+                textWidget.notifyListeners(SWT.Paint, ev);
+                gc.setClipping(clip);
+                gc.setTransform(t);
+            } finally {
+                if (t != null && !t.isDisposed()) {
+                    t.dispose();
+                }
+                if (t2 != null && !t2.isDisposed()) {
+                    t2.dispose();
+                }
+            }
         }
     }
 

@@ -133,6 +133,12 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
 
     @Override
     public void dispose() {
+        StyledText textWidget = getTextWidget();
+        textWidget.removePaintListener(this);
+        textWidget.removeLineBackgroundListener(this);
+        if (viewerComponent.getDocument() != null) {
+            viewerComponent.getDocument().removePositionUpdater(updater);
+        }
     }
 
     @Override
