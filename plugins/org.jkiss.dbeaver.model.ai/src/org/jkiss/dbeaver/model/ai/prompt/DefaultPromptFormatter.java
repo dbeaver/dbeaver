@@ -32,6 +32,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 
 public class DefaultPromptFormatter implements AIPromptFormatter {
+
     @NotNull
     @Override
     public String postProcessGeneratedQuery(
@@ -96,6 +97,11 @@ public class DefaultPromptFormatter implements AIPromptFormatter {
         @NotNull StringBuilder description
     ) throws DBException {
         // nothing to do
+    }
+
+    @Override
+    public boolean isDataSampleNeeded() {
+        return false;
     }
 
 }

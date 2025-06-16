@@ -64,13 +64,6 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
     }
 
     @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName() {
-        return super.getName().toLowerCase();
-    }
-
-    @NotNull
     @Property(viewable = true, order = 2, labelProvider = GenericSchema.SchemaNameTermProvider.class)
     public GenericSchema getSchema() {
         return super.getSchema();

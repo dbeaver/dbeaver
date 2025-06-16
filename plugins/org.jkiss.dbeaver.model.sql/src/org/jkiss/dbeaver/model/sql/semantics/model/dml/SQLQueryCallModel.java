@@ -152,7 +152,7 @@ public class SQLQueryCallModel extends SQLQueryModelContent {
             tailScope = null;
             exprs = paramsNode.findChildrenOfName(STMKnownRuleNames.anyValue)
                 .stream()
-                .map(recognizer::collectValueExpression)
+                .map(cn -> recognizer.collectValueExpression(cn, null))
                 .toList();
         }
 

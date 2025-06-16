@@ -45,6 +45,5 @@ Export-Package: org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.editors.sql.util,
  org.jkiss.dbeaver.ui.editors.sql.suggestion,
  org.jkiss.dbeaver.ui.editors.sql.commands
-Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.sql
 

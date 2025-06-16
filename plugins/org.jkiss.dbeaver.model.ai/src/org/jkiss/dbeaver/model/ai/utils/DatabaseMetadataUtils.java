@@ -54,6 +54,7 @@ public class DatabaseMetadataUtils {
             // Skip hidden objects
             return "";
         }
+
         StringBuilder description = new StringBuilder();
         if (object instanceof DBSEntity entity) {
             String name = useFullyQualifiedName && context != null ? DBUtils.getObjectFullName(

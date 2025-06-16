@@ -86,8 +86,8 @@ import org.jkiss.utils.LongKeyMap;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * QueryLogViewer
@@ -142,7 +142,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         @Override
         String getText(QMEvent event, boolean briefInfo) {
-            return timeFormat.format(QMUtils.getObjectEventTime(event.getObject(), event.getAction()));
+            return timeFormat.format(QMUtils.getObjectEventTime(event));
         }
 
         String getToolTipText(QMEvent event) {
@@ -152,7 +152,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Nullable
         @Override
         Comparator<QMEvent> getComparator() {
-            return Comparator.comparingLong(e -> QMUtils.getObjectEventTime(e.getObject(), e.getAction()));
+            return Comparator.comparingLong(QMUtils::getObjectEventTime);
         }
     };
     private static final LogColumn COLUMN_TYPE = new LogColumn("type", ModelMessages.controls_querylog_column_type_name, ModelMessages.controls_querylog_column_type_tooltip, 100) { //$NON-NLS-1$
