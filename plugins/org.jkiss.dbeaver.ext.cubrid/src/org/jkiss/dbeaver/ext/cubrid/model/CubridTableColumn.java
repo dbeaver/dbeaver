@@ -59,6 +59,11 @@ public class CubridTableColumn extends GenericTableColumn
         }
     }
 
+    @Override
+    public void setName(String name) {
+        super.setName(name != null ? name.toLowerCase() : null);
+    }
+
     @NotNull
     public boolean isForeignKey() {
         return isForeignKey;
@@ -71,13 +76,6 @@ public class CubridTableColumn extends GenericTableColumn
         } else {
             setTypeName(fullTypeName);
         }
-    }
-
-    @NotNull
-    @Override
-    @Property(viewable = true, editable = true, order = 10)
-    public String getName() {
-        return super.getName().toLowerCase();
     }
 
     @NotNull

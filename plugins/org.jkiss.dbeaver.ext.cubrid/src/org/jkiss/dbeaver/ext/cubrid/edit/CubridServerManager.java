@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
+import org.jkiss.utils.CommonUtils;
 
 public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericStructContainer> implements DBEObjectRenamer<CubridServer> {
 
@@ -140,11 +141,11 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
         if (command.getProperty("password") != null && server.getPassword() != null) {
             query.append(" CHANGE PASSWORD=").append(SQLUtils.quoteString(server, server.getPassword())).append(suffix);
         }
-        if (command.getProperty("properties") != null && server.getProperties() != null) {
-            query.append(" CHANGE PROPERTIES=").append(SQLUtils.quoteString(server, server.getProperties())).append(suffix);
+        if (command.hasProperty("properties") || server.getProperties() != null) {
+            query.append(" CHANGE PROPERTIES=").append(SQLUtils.quoteString(server, CommonUtils.notEmpty(server.getProperties()))).append(suffix);
         }
-        if (command.getProperty("description") != null && server.getDescription() != null) {
-            query.append(" CHANGE COMMENT=").append(SQLUtils.quoteString(server, server.getDescription())).append(suffix);
+        if (command.hasProperty("description") || server.getDescription() != null) {
+            query.append(" CHANGE COMMENT=").append(SQLUtils.quoteString(server, CommonUtils.notEmpty(server.getDescription()))).append(suffix);
         }
     }
 

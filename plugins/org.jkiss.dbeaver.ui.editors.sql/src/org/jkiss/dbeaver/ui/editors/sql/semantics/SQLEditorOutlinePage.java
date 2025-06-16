@@ -466,7 +466,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             super(null);
             if (editor.isAdvancedHighlightingEnabled() && SQLEditorUtils.isSQLSyntaxParserEnabled(editor.getEditorInput())) {
                 this.documentContext = editor.getSyntaxContext();
-                this.documentContext.addListener(syntaxContextListener);
+                if (this.documentContext != null) {
+                    this.documentContext.addListener(syntaxContextListener);
+                }
             }
         }
 
@@ -494,7 +496,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                         this.documentContext.removeListener(this.syntaxContextListener);
                     }
                     this.documentContext = editor.getSyntaxContext();
-                    this.documentContext.addListener(this.syntaxContextListener);
+                    if (this.documentContext != null) {
+                        this.documentContext.addListener(this.syntaxContextListener);
+                    }
                 }
                 if (this.elements.isEmpty()) {
                     this.children = List.of(this.noElementsNode);

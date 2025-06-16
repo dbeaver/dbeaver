@@ -8,7 +8,6 @@ Bundle-Release-Date: 20250616
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.internal.UINavigatorActivator
-Bundle-ClassPath: .
 Require-Bundle: org.eclipse.e4.ui.model.workbench,
  org.eclipse.e4.ui.workbench.swt,
  org.eclipse.e4.ui.workbench.renderers.swt,

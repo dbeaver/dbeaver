@@ -10,7 +10,6 @@ Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.editors.binary.internal.HexEditorsActivator
 Require-Bundle: org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.data
-Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ui.editors.binary,
  org.jkiss.dbeaver.ui.editors.binary.pref
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.hex
