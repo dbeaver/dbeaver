@@ -20,7 +20,6 @@ Export-Package: org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.registry.storage,
  org.jkiss.dbeaver.registry.task,
  org.jkiss.dbeaver.registry.updater
-Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.core.net,

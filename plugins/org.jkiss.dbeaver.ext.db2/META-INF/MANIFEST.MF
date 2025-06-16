@@ -19,5 +19,4 @@ Export-Package: org.jkiss.dbeaver.ext.db2,
  org.jkiss.dbeaver.ext.db2.model.app,
  org.jkiss.dbeaver.ext.db2.model.dict,
  org.jkiss.dbeaver.ext.db2.tasks
-Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.db2

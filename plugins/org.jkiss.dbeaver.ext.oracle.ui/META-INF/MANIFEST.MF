@@ -25,7 +25,6 @@ Require-Bundle: org.jkiss.dbeaver.ui.config.migration,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
-Bundle-ClassPath: .
 Import-Package: com.google.gson
 Export-Package: org.jkiss.dbeaver.ext.oracle.ui.config,
  org.jkiss.dbeaver.ext.oracle.ui.actions,
