@@ -10,7 +10,6 @@ Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.net.ssh,
  org.jkiss.dbeaver.model.net.ssh.config,
  org.jkiss.dbeaver.model.net.ssh.registry
-Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
  org.eclipse.jsch.core,

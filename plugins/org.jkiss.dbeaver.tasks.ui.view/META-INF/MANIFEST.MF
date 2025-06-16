@@ -24,5 +24,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.ui.editors.base
 Export-Package: org.jkiss.dbeaver.tasks.ui.view
-Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.tasks.ui.view

@@ -19,7 +19,6 @@ Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
-Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ext.kingbase,
  org.jkiss.dbeaver.ext.kingbase.model
 Bundle-Localization: OSGI-INF/l10n/bundle

@@ -391,8 +391,7 @@
                 description="Secure socket layer"
                 desktop="false"
                 secured="false"
-                pinned="true"
-                order="100"
+                order="2"
                 handlerClass="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl">
             <propertyGroup label="SSL Settings">
                 <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
