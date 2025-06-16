@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,10 +55,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * Action utils
@@ -496,4 +497,26 @@ public class ActionUtils {
             return label;
         }
     }
+
+    public static boolean restartForced() throws Throwable {
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        if (workbench == null) {
+            throw new IllegalStateException("Workbench is not available");
+        }
+
+        Object result = BeanUtils.invokeObjectDeclaredMethod(
+            workbench,
+            "close",
+            new Class<?>[] {int.class, boolean.class},
+            new Object[] {PlatformUI.RETURN_RESTART, true}
+        );
+
+        if (!(result instanceof Boolean)) {
+            throw new IllegalStateException("Expected boolean result, got: " +
+                (result != null ? result.getClass().getSimpleName() : "null"));
+        }
+
+        return (Boolean) result;
+    }
+
 }
