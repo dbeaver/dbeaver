@@ -24,12 +24,14 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBackgroundListener {
+    private static final Log log = Log.getLog(SQLSuggestionTextPainter.class);
 
     public static final String HINT_CATEGORY = "suggestion";
     private final ITextViewer viewerComponent;
@@ -65,17 +67,14 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
      * Displays a hint with the given content. Optionally removes any existing hint before displaying the new one.
      *
      * @param content        the content of the hint to be displayed
-     * @param removeExisting if true, removes any currently displayed hint before showing the new one
      */
-    public void showHint(String content, boolean removeExisting, int scriptEndOffset) {
+    public void showHint(String content, int scriptEndOffset) {
         if (!tryLock()) {
             return;
         }
         this.currentState = RenderState.SHOWING;
         UIUtils.asyncExec(() -> {
-            if (removeExisting) {
-                executeRemove();
-            }
+            executeRemove(); // removes any currently displayed hint before showing the new one
             executeShow(content, scriptEndOffset);
         });
     }
@@ -143,28 +142,40 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
         }
     }
 
+    private volatile boolean repainting = false;
+
     @Override
     public void paintControl(PaintEvent event) {
-        if (standaloneOperation && currentState == RenderState.SHOWING) {
-            drawHintContent(event.gc);
+        if (this.repainting) {
+            // prevent recursive invocation while asking text viewer to draw original text fragments during hint rendering
             return;
+        } else {
+            this.repainting = true;
         }
-        if (!hasContentToShow()) {
-            resetState();
-            return;
-        }
-
-        switch (currentState) {
-            case SHOWING:
+        try {
+            if (standaloneOperation && currentState == RenderState.SHOWING) {
                 drawHintContent(event.gc);
-                break;
-            case REMOVING:
+                return;
+            }
+            if (!hasContentToShow()) {
                 resetState();
-                drawHintContent(event.gc);
-                break;
-            default:
-                drawHintContent(event.gc);
-                break;
+                return;
+            }
+
+            switch (currentState) {
+                case SHOWING:
+                    drawHintContent(event.gc);
+                    break;
+                case REMOVING:
+                    resetState();
+                    drawHintContent(event.gc);
+                    break;
+                default:
+                    drawHintContent(event.gc);
+                    break;
+            }
+        } finally {
+            this.repainting = false;
         }
     }
 
@@ -230,7 +241,8 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
             int modelPosition = TextRenderingUtils.widgetOffset2ModelOffset(viewerComponent, activeHint.getPosition());
             document.replace(modelPosition, 0, text);
             getTextWidget().setCaretOffset(activeHint.getPosition() + text.length());
-        } catch (Exception ignored) {
+        } catch (BadLocationException e) {
+            log.debug("Exception trying to insert AI suggestion", e);
         }
     }
 
