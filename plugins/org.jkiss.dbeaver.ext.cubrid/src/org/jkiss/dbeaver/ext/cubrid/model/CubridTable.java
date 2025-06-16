@@ -54,7 +54,7 @@ public class CubridTable extends GenericTable
             @Nullable String tableName,
             @Nullable String tableType,
             @Nullable JDBCResultSet dbResult) {
-        super(container, tableName, tableType, dbResult);
+        super(container, tableName != null ? tableName.toLowerCase() : null, tableType, dbResult);
 
         String collationName;
         if (tableType.equals("TABLE") && dbResult != null) {
@@ -75,11 +75,9 @@ public class CubridTable extends GenericTable
         this.collation = getDataSource().getCollation(collationName);
     }
 
-    @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 1)
-    public String getName() {
-        return super.getName().toLowerCase();
+    public void setName(String name) {
+        super.setName(name != null ? name.toLowerCase() : null);
     }
 
     @NotNull
