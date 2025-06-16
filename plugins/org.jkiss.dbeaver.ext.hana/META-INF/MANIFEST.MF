@@ -12,7 +12,6 @@ Require-Bundle: org.jkiss.dbeaver.model,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
-Bundle-ClassPath: .
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.hana
 Export-Package: org.jkiss.dbeaver.ext.hana.model

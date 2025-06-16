@@ -13,7 +13,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.data.gis,
  org.jkiss.utils
-Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.exasol
 Import-Package: com.google.gson
 Export-Package: org.jkiss.dbeaver.ext.exasol,

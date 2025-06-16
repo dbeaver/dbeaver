@@ -124,7 +124,7 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
                                     setTargetNode,
                                     Set.of(STMKnownRuleNames.setTargetList),
                                     Set.of(STMKnownRuleNames.valueReference)
-                                ).stream().map(recognizer::collectValueExpression).collect(Collectors.toList());
+                                ).stream().map(cn -> recognizer.collectValueExpression(cn, targetsScope)).collect(Collectors.toList());
                             case SQLStandardParser.RULE_anyUnexpected ->
                                 // error in query text, ignoring it
                                 Collections.emptyList();
@@ -142,7 +142,7 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
                         ).stream()
                         .map(STMTreeNode::findFirstNonErrorChild)
                         .filter(Objects::nonNull)
-                        .map(recognizer::collectValueExpression)
+                        .map(cn -> recognizer.collectValueExpression(cn, targetsScope))
                         .collect(Collectors.toList());
                     setClauseList.add(
                         new SQLQueryUpdateSetClauseModel(
@@ -173,9 +173,9 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
 
         if (whereClauseNode != null || orderByClauseNode != null) {
             try (SQLQueryModelRecognizer.LexicalScopeHolder holder = recognizer.openScope()) {
-                whereClauseExpr = whereClauseNode == null ? null : recognizer.collectValueExpression(whereClauseNode);
-                orderByExpr = orderByClauseNode == null ? null : recognizer.collectValueExpression(orderByClauseNode);
                 conditionsScope = holder.lexicalScope;
+                whereClauseExpr = whereClauseNode == null ? null : recognizer.collectValueExpression(whereClauseNode, conditionsScope);
+                orderByExpr = orderByClauseNode == null ? null : recognizer.collectValueExpression(orderByClauseNode, conditionsScope);
             }
             STMTreeNode lastConditionKwNode =  (whereClauseNode != null ? whereClauseNode : orderByClauseNode).findFirstNonErrorChild();
             int from = lastConditionKwNode != null ? lastConditionKwNode.getRealInterval().b + 2 : whereClauseNode.getRealInterval().a;

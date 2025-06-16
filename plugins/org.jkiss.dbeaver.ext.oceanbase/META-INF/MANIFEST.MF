@@ -19,5 +19,4 @@ Export-Package: org.jkiss.dbeaver.ext.oceanbase,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
-Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ext.oceanbase
