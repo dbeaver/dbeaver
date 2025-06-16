@@ -128,15 +128,13 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 if (hasNestedDeclarations) {
 
                     // Check for embedded comment
-                    int lastLFPos = createQuery.length() - 1;
-
                     int lastCommentPos = findCommentPos(createQuery, slComment);
                     if (lastCommentPos != -1) {
                         while (lastCommentPos > 0 && Character.isWhitespace(createQuery.charAt(lastCommentPos - 1))) {
                             lastCommentPos--;
                         }
                     }
-                    if (lastCommentPos < 0 || lastCommentPos < lastLFPos) {
+                    if (lastCommentPos < 0 || lastCommentPos < createQuery.length() - 1) {
                         createQuery.append(","); //$NON-NLS-1$
                     } else {
                         createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
