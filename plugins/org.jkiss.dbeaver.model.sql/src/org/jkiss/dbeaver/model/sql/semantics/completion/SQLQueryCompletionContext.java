@@ -1488,7 +1488,10 @@ public abstract class SQLQueryCompletionContext {
                 return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
             } else {
                 STMTreeNode syntaxNode = model.getSyntaxNode();
-                if (scriptItem.item.getOriginalText().length() <= SQLQueryCompletionContext.getMaxKeywordLength()
+                Interval parsedInterval = syntaxNode.getRealInterval();
+                if (parsedInterval.a < 0 || parsedInterval.b < 0) {
+                    return SQLQueryCompletionContext.prepareEmpty(scriptItem.offset, offset);
+                } else if (scriptItem.item.getOriginalText().length() <= SQLQueryCompletionContext.getMaxKeywordLength()
                     && LSMInspections.matchesAnyWord(scriptItem.item.getOriginalText())
                     && position <= scriptItem.item.getOriginalText().length()
                 ) {

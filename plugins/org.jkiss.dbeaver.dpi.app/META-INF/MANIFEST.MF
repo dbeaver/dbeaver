@@ -9,7 +9,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.dpi.app.DPIActivator
 Export-Package: org.jkiss.dbeaver.dpi.app
-Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.equinox.app,
  org.eclipse.equinox.common,
