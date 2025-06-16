@@ -146,8 +146,7 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         DBSTypedObject paramType,
         int paramIndex,
         Object value
-    ) throws DBCException,
-        SQLException {
+    ) throws DBCException, SQLException {
         if (value instanceof DBDCollection dbdCollection && !dbdCollection.isNull()) {
             statement.setObject(
                 paramIndex,
