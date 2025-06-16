@@ -98,7 +98,6 @@ Import-Package: org.bouncycastle.asn1,
  org.bouncycastle.operator,
  org.bouncycastle.operator.jcajce,
  org.bouncycastle.util.io.pem
-Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.core.expressions,

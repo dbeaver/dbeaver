@@ -8,9 +8,11 @@ Bundle-Release-Date: 20250616
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.charts.internal.UIChartsActivator
-Bundle-ClassPath: .
 Require-Bundle: org.jkiss.dbeaver.ui,
  org.jkiss.bundle.jfreechart;visibility:=reexport
 Export-Package: org.jkiss.dbeaver.ui.charts,
- org.jkiss.dbeaver.ui.charts.internal
+ org.jkiss.dbeaver.ui.charts.internal,
+ org.jfree.swt,
+ org.jfree.chart.swt,
+ org.jfree.chart.swt.editor
 Automatic-Module-Name: org.jkiss.dbeaver.ui.charts

@@ -72,7 +72,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private volatile int runningOperations = 0;
 
     private String finishButtonLabel = IDialogConstants.OK_LABEL;
-    private String cancelButtonLabel = IDialogConstants.CANCEL_LABEL;
+    private final String closeButtonLabel = IDialogConstants.CLOSE_LABEL;
 
     private final ListenerList<IPageChangedListener> pageChangedListeners = new ListenerList<>();
     private Composite leftBottomPanel;
@@ -623,15 +623,11 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, finishButtonLabel,
             getShell().getDefaultButton() == null);
-        createButton(parent, IDialogConstants.CANCEL_ID, cancelButtonLabel, false);
+        createButton(parent, IDialogConstants.CANCEL_ID, closeButtonLabel, false);
     }
 
     protected void setFinishButtonLabel(String finishButtonLabel) {
         this.finishButtonLabel = finishButtonLabel;
-    }
-
-    protected void setCancelButtonLabel(String cancelButtonLabel) {
-        this.cancelButtonLabel = cancelButtonLabel;
     }
 
     @Override

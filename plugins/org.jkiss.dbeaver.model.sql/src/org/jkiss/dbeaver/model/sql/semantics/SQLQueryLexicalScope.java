@@ -45,7 +45,7 @@ public class SQLQueryLexicalScope {
     };
 
     @Nullable
-    private SQLQuerySymbolOrigin.DataContextSymbolOrigin symbolsOrigin = null;
+    private SQLQuerySymbolOrigin symbolsOrigin = null;
     @NotNull
     private final List<SQLQueryLexicalScopeItem> items;
     @NotNull
@@ -94,11 +94,11 @@ public class SQLQueryLexicalScope {
      * Returns lexical scope context. If it is not set, then use context of the model node, from which the scope was obtained.
      */
     @Nullable
-    public SQLQuerySymbolOrigin.DataContextSymbolOrigin getSymbolsOrigin() {
+    public SQLQuerySymbolOrigin getSymbolsOrigin() {
         return this.symbolsOrigin;
     }
     
-    public void setSymbolsOrigin(@NotNull SQLQuerySymbolOrigin.DataContextSymbolOrigin symbolsOrigin) {
+    public void setSymbolsOrigin(@NotNull SQLQuerySymbolOrigin symbolsOrigin) {
         this.symbolsOrigin = symbolsOrigin;
     }
 

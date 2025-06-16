@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -500,6 +500,19 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
             nodeSettings.put(node, settings);
         }
         return settings;
+    }
+
+    @NotNull
+    public IDataTransferSettings getNodeSettings(IDataTransferNode node) throws DBException {
+        DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeByType(node.getClass());
+        if (producerNode == null) {
+            throw new DBException("Cannot find node descriptor for " + node.getClass().getName());
+        }
+        IDataTransferSettings producerSettings = getNodeSettings(producerNode);
+        if (producerSettings == null) {
+            throw new DBException("Cannot find node settings for " + producerNode.getName());
+        }
+        return producerSettings;
     }
 
     public Map<DataTransferProcessorDescriptor, Map<String, Object>> getProcessorPropsHistory() {

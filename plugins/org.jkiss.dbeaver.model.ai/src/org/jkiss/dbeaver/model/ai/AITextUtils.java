@@ -36,6 +36,8 @@ import org.jkiss.utils.ArrayUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // All these ideally should be a part of a given AI engine
 public class AITextUtils {
@@ -45,6 +47,32 @@ public class AITextUtils {
     private AITextUtils() {
         // prevents instantiation
     }
+
+    // Matches ```<optional language>\n ... \n```
+    private static final Pattern CODE_BLOCK_PATTERN =
+        Pattern.compile("```[\\w+]*\\R([\\s\\S]*?)\\R```");
+
+    /**
+     * Extracts the contents of the first Markdown code block in the input.
+     * If the code ends with a semicolon, it’s removed.
+     *
+     * @param markdown the full Markdown string
+     * @return the inner code without trailing semicolon, or an empty string if none found
+     */
+    public static String extractCode(String markdown) {
+        Matcher matcher = CODE_BLOCK_PATTERN.matcher(markdown);
+        if (matcher.find()) {
+            String code = matcher.group(1).trim();
+            // Remove trailing semicolon if present
+            if (code.endsWith(";")) {
+                code = code.substring(0, code.length() - 1);
+            }
+            return code;
+        }
+
+        return "";
+    }
+
 
     @NotNull
     public static String convertToSQL(
