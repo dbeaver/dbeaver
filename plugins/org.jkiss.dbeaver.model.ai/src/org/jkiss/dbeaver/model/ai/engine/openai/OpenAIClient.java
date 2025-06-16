@@ -100,7 +100,6 @@ public class OpenAIClient {
 
         SubmissionPublisher<ChatCompletionChunk> publisher = new SubmissionPublisher<>();
 
-        int[] i = new int[] {0};
         client.sendAsync(
             modifiedRequest,
             event -> {
@@ -112,10 +111,6 @@ public class OpenAIClient {
                         try {
                             ChatCompletionChunk chunk = MAPPER.readValue(data, ChatCompletionChunk.class);
                             publisher.submit(chunk);
-                            if (i[0] > 5) {
-                                publisher.closeExceptionally(new RuntimeException("Too many requests: " + data));
-                            }
-                            i[0]++;
                         } catch (Exception e) {
                             publisher.closeExceptionally(e);
                         }
