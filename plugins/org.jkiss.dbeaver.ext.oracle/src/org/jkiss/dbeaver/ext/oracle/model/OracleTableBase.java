@@ -364,22 +364,68 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     static class TablePrivCache extends JDBCObjectCache<OracleTableBase, OraclePrivTable> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleTableBase tableBase) throws SQLException
-        {
-            boolean hasDBA = tableBase.getDataSource().isViewAvailable(session.getProgressMonitor(), OracleConstants.SCHEMA_SYS, OracleConstants.VIEW_DBA_TAB_PRIVS);
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull OracleTableBase tableBase) throws SQLException {
+
+            boolean hasDBA = tableBase.getDataSource()
+                .isViewAvailable(session.getProgressMonitor(), OracleConstants.SCHEMA_SYS, OracleConstants.VIEW_DBA_TAB_PRIVS);
+
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT p.*\n" +
-                    "FROM " + (hasDBA ? "DBA_TAB_PRIVS p" : "ALL_TAB_PRIVS p") + "\n" +
-                    "WHERE p."+ (hasDBA ? "OWNER": "TABLE_SCHEMA") +"=? AND p.TABLE_NAME =?");
+                """
+                SELECT
+                    p.GRANTEE,
+                    p.OWNER,
+                    p.TABLE_NAME,
+                    NULL AS COLUMN_NAME,
+                    p.GRANTOR,
+                    p.PRIVILEGE,
+                    p.GRANTABLE,
+                    p.HIERARCHY,
+                    p.COMMON,
+                    p.TYPE
+                FROM %s p
+                WHERE p.%s = ? AND p.TABLE_NAME = ?
+                UNION
+                SELECT
+                    p.GRANTEE,
+                    p.OWNER,
+                    p.TABLE_NAME,
+                    p.COLUMN_NAME,
+                    p.GRANTOR,
+                    p.PRIVILEGE,
+                    p.GRANTABLE,
+                    NULL AS HIERARCHY,
+                    p.COMMON,
+                    '%s' AS TYPE
+                FROM %s p
+                WHERE p.OWNER = ? AND p.TABLE_NAME = ?
+                """.formatted(
+                        hasDBA ? "DBA_TAB_PRIVS" : "ALL_TAB_PRIVS",
+                        hasDBA ? "OWNER" : "TABLE_SCHEMA",
+                        OraclePrivTableColumn.COLUMN_TYPE,
+                        hasDBA ? "DBA_COL_PRIVS" : "ALL_COL_PRIVS"
+                    )
+            );
             dbStat.setString(1, tableBase.getSchema().getName());
             dbStat.setString(2, tableBase.getName());
+            dbStat.setString(3, tableBase.getSchema().getName());
+            dbStat.setString(4, tableBase.getName());
             return dbStat;
         }
 
         @Override
-        protected OraclePrivTable fetchObject(@NotNull JDBCSession session, @NotNull OracleTableBase tableBase, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-        {
-            return new OraclePrivTable(tableBase, resultSet);
+        protected OraclePrivTable fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull OracleTableBase tableBase,
+            @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+
+            String type = JDBCUtils.safeGetString(resultSet, "TYPE");
+            if (OraclePrivTableColumn.COLUMN_TYPE.equals(type)) {
+                return new OraclePrivTableColumn(tableBase, resultSet);
+            } else {
+                return new OraclePrivTable(tableBase, resultSet);
+            }
         }
     }
 
