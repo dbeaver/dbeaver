@@ -87,10 +87,16 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) {
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options) {
+
         StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
         query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
-        appendTableModifiers(monitor, command.getObject(), command, query, true);
+        appendTableModifiers(monitor, command.getObject(), command, query, true, options);
 
         actionList.add(
             new SQLDatabasePersistAction(query.toString())
@@ -110,35 +116,45 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, MySQLTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
-        if (tableBase instanceof MySQLTable table) {
-            try {
-                final MySQLDataSource dataSource = table.getDataSource();
-                final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
-                if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
-                    ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName()); //$NON-NLS-1$
-                }
-                if (dataSource.supportsCharsets() &&
-                    (!table.isPersisted() || tableProps.getProperty("charset") != null) && //$NON-NLS-1$
-                    additionalInfo.getCharset() != null
-                ) {
-                    ddl.append("\nDEFAULT CHARSET=").append(additionalInfo.getCharset().getName()); //$NON-NLS-1$
-                }
-                if (dataSource.supportsCollations() &&
-                    (!table.isPersisted() || tableProps.getProperty("collation") != null) && //$NON-NLS-1$
-                    additionalInfo.getCollation() != null
-                ) {
-                    ddl.append("\nCOLLATE=").append(additionalInfo.getCollation().getName()); //$NON-NLS-1$
-                }
-                if ((!table.isPersisted() && table.getDescription() != null) || tableProps.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
-                    ddl.append("\nCOMMENT=").append(SQLUtils.quoteString(table, CommonUtils.notEmpty(table.getDescription())));//$NON-NLS-1$
-                }
-                if ((!table.isPersisted() || tableProps.getProperty("autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) { //$NON-NLS-1$
-                    ddl.append("\nAUTO_INCREMENT=").append(additionalInfo.getAutoIncrement()); //$NON-NLS-1$
-                }
-            } catch (DBCException e) {
-                log.error(e);
+    protected void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        MySQLTableBase tableBase,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter,
+        Map<String, Object> options) {
+
+        if (!(tableBase instanceof MySQLTable table)) {
+            return;
+        }
+
+        final String delimiter = getDelimiter(options);
+        try {
+            final MySQLDataSource dataSource = table.getDataSource();
+            final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
+            if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
+                ddl.append(delimiter).append("ENGINE=").append(additionalInfo.getEngine().getName()); //$NON-NLS-1$
             }
+            if (dataSource.supportsCharsets() &&
+                (!table.isPersisted() || tableProps.getProperty("charset") != null) && //$NON-NLS-1$
+                additionalInfo.getCharset() != null
+            ) {
+                ddl.append(delimiter).append("DEFAULT CHARSET=").append(additionalInfo.getCharset().getName()); //$NON-NLS-1$
+            }
+            if (dataSource.supportsCollations() &&
+                (!table.isPersisted() || tableProps.getProperty("collation") != null) && //$NON-NLS-1$
+                additionalInfo.getCollation() != null
+            ) {
+                ddl.append(delimiter).append("COLLATE=").append(additionalInfo.getCollation().getName()); //$NON-NLS-1$
+            }
+            if ((!table.isPersisted() && table.getDescription() != null) || tableProps.hasProperty(DBConstants.PROP_ID_DESCRIPTION)) {
+                ddl.append(delimiter).append("COMMENT=").append(SQLUtils.quoteString(table, CommonUtils.notEmpty(table.getDescription()))); //$NON-NLS-1$
+            }
+            if ((!table.isPersisted() || tableProps.getProperty("autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) { //$NON-NLS-1$
+                ddl.append(delimiter).append("AUTO_INCREMENT=").append(additionalInfo.getAutoIncrement()); //$NON-NLS-1$
+            }
+        } catch (DBCException e) {
+            log.error(e);
         }
     }
 
