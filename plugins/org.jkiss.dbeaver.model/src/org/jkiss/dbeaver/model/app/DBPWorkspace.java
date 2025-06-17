@@ -92,6 +92,10 @@ public interface DBPWorkspace extends SMAuthSpace, DBAPermissionRealm {
         return hasRealmPermission(RMConstants.PERMISSION_PROJECT_ADMIN);
     }
 
+    default boolean isEnabledSecretProviders() {
+        return true;
+    }
+
     DBPImage getResourceIcon(DBPAdaptable resourceAdapter);
 
 }

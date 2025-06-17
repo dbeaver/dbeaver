@@ -12,7 +12,6 @@ Export-Package: org.jkiss.dbeaver.model.security,
  org.jkiss.dbeaver.model.security.exception,
  org.jkiss.dbeaver.model.auth,
  org.jkiss.dbeaver.model.secret
-Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport

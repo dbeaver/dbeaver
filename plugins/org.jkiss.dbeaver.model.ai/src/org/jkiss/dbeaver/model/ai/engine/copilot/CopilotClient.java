@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
+import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatChunk;
@@ -34,10 +35,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.Flow;
+import java.util.concurrent.Future;
 import java.util.concurrent.SubmissionPublisher;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class CopilotClient implements AutoCloseable {
     private static final String DATA_EVENT = "data: ";
@@ -61,22 +62,19 @@ public class CopilotClient implements AutoCloseable {
     /**
      * Request access to the user's account
      */
-    public ResponseData requestAuth(
-        DBRProgressMonitor monitor
-    ) throws DBException {
-        RequestAccessContent requestAccessContent = new RequestAccessContent(DBEAVER_OAUTH_APP, "read:user");
-        HttpRequest post = HttpRequest.newBuilder()
+    public DeviceCodeResponse requestDeviceCode(@NotNull DBRProgressMonitor monitor) throws DBException {
+        DeviceCodeRequest deviceCodeRequest = new DeviceCodeRequest(DBEAVER_OAUTH_APP, "read:user");
+        HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve("https://github.com/login/device/code"))
             .header("accept", "application/json")
             .header("content-type", "application/json")
-            .header("accept-encoding", "deflate")
-            .timeout(java.time.Duration.ofSeconds(10)) // Set timeout
-            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(requestAccessContent)))
+            .timeout(Duration.ofSeconds(10)) // Set timeout
+            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(deviceCodeRequest)))
             .build();
 
-        HttpResponse<String> response = client.send(monitor, post);
+        HttpResponse<String> response = client.send(monitor, request);
         if (response.statusCode() == 200) {
-            return GSON.fromJson(response.body(), ResponseData.class);
+            return GSON.fromJson(response.body(), DeviceCodeResponse.class);
         } else {
             throw mapHttpError(response);
         }
@@ -85,47 +83,57 @@ public class CopilotClient implements AutoCloseable {
     /**
      * Request access token
      */
+    @NotNull
     public String requestAccessToken(
-        String deviceCode,
-        DBRProgressMonitor monitor
-    ) throws InterruptedException, TimeoutException, DBException {
-        String accessToken;
-        long duration = System.currentTimeMillis();
-        long timeoutValue = duration + 100000;
-        while (duration < timeoutValue) {
-            AccessTokenRequestBody requestAccessToken = new AccessTokenRequestBody(
-                DBEAVER_OAUTH_APP,
-                deviceCode,
-                "urn:ietf:params:oauth:grant-type:device_code"
-            );
-            HttpRequest post = HttpRequest.newBuilder()
-                .uri(AIHttpUtils.resolve("https://github.com/login/oauth/access_token"))
-                .header("accept", "application/json")
-                .header("content-type", "application/json")
-                .header("accept-encoding", "deflate")
-                .timeout(java.time.Duration.ofSeconds(10)) // Set timeout
-                .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(requestAccessToken)))
-                .build();
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DeviceCodeResponse deviceCodeResponse,
+        @NotNull Future<?> cancellationToken
+    ) throws DBException, InterruptedException {
+        AccessTokenRequest accessTokenRequest = new AccessTokenRequest(
+            DBEAVER_OAUTH_APP,
+            deviceCodeResponse.deviceCode(),
+            "urn:ietf:params:oauth:grant-type:device_code"
+        );
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(AIHttpUtils.resolve("https://github.com/login/oauth/access_token"))
+            .header("accept", "application/json")
+            .header("content-type", "application/json")
+            .timeout(Duration.ofSeconds(5)) // Set timeout
+            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(accessTokenRequest)))
+            .build();
 
-            HttpResponse<String> response = client.send(monitor, post);
-            if (response.statusCode() == 200) {
-                GithubAccessTokenData githubAccessTokenData = GSON.fromJson(response.body(), GithubAccessTokenData.class);
-                if (!CommonUtils.isEmpty(githubAccessTokenData.access_token())) {
-                    accessToken = githubAccessTokenData.access_token;
-                    return accessToken;
-                }
+        Duration expiresIn = Duration.ofSeconds(deviceCodeResponse.expiresIn());
+        Duration interval = Duration.ofSeconds(deviceCodeResponse.interval());
+        Instant start = Instant.now();
+
+        while (Instant.now().isBefore(start.plus(expiresIn)) && !monitor.isCanceled() && !cancellationToken.isCancelled()) {
+            var response = client.send(monitor, request);
+            if (response.statusCode() != 200) {
+                throw mapHttpError(response);
             }
-
-            TimeUnit.MILLISECONDS.sleep(10000);
-            duration = System.currentTimeMillis();
+            var body = GSON.fromJson(response.body(), AccessTokenResponse.class);
+            if (CommonUtils.isNotEmpty(body.accessToken())) {
+                return body.accessToken();
+            }
+            switch (body.error()) {
+                // https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps#error-codes-for-the-device-flow
+                case "authorization_pending" -> Thread.sleep(interval.toMillis());
+                case "slow_down" -> Thread.sleep(interval.plusSeconds(5).toMillis());
+                default -> throw new DBException("Error requesting access token: " + body.error());
+            }
         }
-        throw new TimeoutException("OAuth");
+
+        if (monitor.isCanceled() || cancellationToken.isCancelled()) {
+            throw new DBException("Access token request was canceled by the user");
+        } else {
+            throw new DBException("Access token request timed out");
+        }
     }
 
     /**
      * Request session token
      */
-    public CopilotSessionToken sessionToken(
+    public CopilotSessionToken requestSessionToken(
         DBRProgressMonitor monitor,
         String accessToken
     ) throws DBException {
@@ -218,24 +226,35 @@ public class CopilotClient implements AutoCloseable {
         client.close();
     }
 
-    @SuppressWarnings("checkstyle:RecordComponentName")
-    public record ResponseData(String device_code, String user_code, String verification_uri) {
-    }
-
-    @SuppressWarnings("checkstyle:RecordComponentName")
-    protected record RequestAccessContent(String client_id, String scope) {
-
-    }
-
-    @SuppressWarnings("checkstyle:RecordComponentName")
-    protected record AccessTokenRequestBody(String client_id, String device_code, String grant_type) {
-    }
-
-    @SuppressWarnings("checkstyle:RecordComponentName")
-    protected record GithubAccessTokenData(String access_token) {
-    }
-
     private static DBException mapHttpError(HttpResponse<String> response) {
         return new DBException("HTTP error: " + response.statusCode() + " " + response.body());
+    }
+
+    private record DeviceCodeRequest(
+        @SerializedName("client_id") String clientId,
+        @SerializedName("scope") String scope
+    ) {
+    }
+
+    public record DeviceCodeResponse(
+        @SerializedName("device_code") String deviceCode,
+        @SerializedName("user_code") String userCode,
+        @SerializedName("verification_uri") String verificationUri,
+        @SerializedName("expires_in") int expiresIn,
+        @SerializedName("interval") int interval
+    ) {
+    }
+
+    private record AccessTokenRequest(
+        @SerializedName("client_id") String clientId,
+        @SerializedName("device_code") String deviceCode,
+        @SerializedName("grant_type") String grantType
+    ) {
+    }
+
+    private record AccessTokenResponse(
+        @SerializedName("error") String error,
+        @SerializedName("access_token") String accessToken
+    ) {
     }
 }

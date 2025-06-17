@@ -282,21 +282,35 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIEngine engine,
         @Nullable AIDatabaseContext context
     ) throws DBException {
+        return buildPrompt(
+            monitor,
+            engine,
+            formatter(),
+            context
+        );
+    }
+
+    protected AIPromptBuilder buildPrompt(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIEngine engine,
+        @NotNull AIPromptFormatter formatter,
+        @Nullable AIDatabaseContext context
+    ) throws DBException {
         AIPromptBuilder promptBuilder = AIPromptBuilder.createForDataSource(
             context != null ? context.getDataSource() : null,
-            formatter()
+            formatter
         );
 
         if (context != null) {
             DBExecUtils.tryExecuteRecover(monitor, context.getExecutionContext().getDataSource(), param -> {
                 try {
-                    describeDatabaseMetadata(monitor, engine, context, promptBuilder);
+                    describeDatabaseMetadata(monitor, engine, formatter, context, promptBuilder);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
             });
         } else {
-            describeDatabaseMetadata(monitor, engine, context, promptBuilder);
+            describeDatabaseMetadata(monitor, engine, formatter, context, promptBuilder);
         }
 
         return promptBuilder;
@@ -306,13 +320,29 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngine engine,
         @Nullable AIDatabaseContext context,
-        AIPromptBuilder promptBuilder
+        @NotNull AIPromptBuilder promptBuilder
+    ) throws DBException {
+        describeDatabaseMetadata(
+            monitor,
+            engine,
+            formatter(),
+            context,
+            promptBuilder
+        );
+    }
+
+    protected void describeDatabaseMetadata(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIEngine engine,
+        @NotNull AIPromptFormatter formatter,
+        @Nullable AIDatabaseContext context,
+        @NotNull AIPromptBuilder promptBuilder
     ) throws DBException {
         if (context != null) {
             String description = DatabaseMetadataUtils.describeContext(
                 monitor,
                 context,
-                formatter(),
+                formatter,
                 AIUtils.getMaxRequestTokens(engine, monitor)
             );
 

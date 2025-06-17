@@ -31,14 +31,6 @@
         <module>features</module>
     </modules>
 
-    <repositories>
-        <repository>
-            <id>local-contrib</id>
-            <url>${local-p2-repo.url}</url>
-            <layout>p2</layout>
-        </repository>
-    </repositories>
-
     <build>
         <sourceDirectory>${project.basedir}/src</sourceDirectory>
         <testSourceDirectory>${project.basedir}/tests</testSourceDirectory>
