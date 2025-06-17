@@ -339,6 +339,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     @NotNull
     @Override
     public DBPDataSourceRegistry getRegistry() {
+        // Mustn't be called
         return null;
     }
 
