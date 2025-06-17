@@ -1488,4 +1488,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return false;
     }
 
+    @Override
+    public boolean supportsVirtualKeys() {
+        return true;
+    }
+
 }

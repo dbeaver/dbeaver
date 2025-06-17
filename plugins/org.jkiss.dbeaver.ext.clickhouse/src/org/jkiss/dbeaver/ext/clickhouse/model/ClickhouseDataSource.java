@@ -246,6 +246,11 @@ public class ClickhouseDataSource extends GenericDataSource {
         return new ClickhouseJdbcFactory();
     }
 
+    @Override
+    public boolean isOmitCatalog() {
+        return isDriverVersionAtLeast(0, 8);
+    }
+
     boolean isSupportTableComments() {
         return isServerVersionAtLeast(21, 6);
     }

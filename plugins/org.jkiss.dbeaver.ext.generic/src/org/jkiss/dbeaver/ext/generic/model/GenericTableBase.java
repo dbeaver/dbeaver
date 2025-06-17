@@ -243,9 +243,13 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     @Nullable
     @Override
-    public List<GenericUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
-        if (getDataSource().getInfo().supportsReferentialIntegrity() || getDataSource().getInfo().supportsIndexes()) {
+    public List<GenericUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+        DBPDataSourceInfo dataSource = getDataSource().getInfo();
+        boolean supportsUniqueKeys = getContainer().getDataSource().getMetaModel().supportsUniqueKeys();
+        if (dataSource.supportsReferentialIntegrity() ||
+            dataSource.supportsIndexes() ||
+            supportsUniqueKeys
+        ) {
             // ensure all columns are already cached
             getAttributes(monitor);
             return getContainer().getConstraintKeysCache().getObjects(monitor, getContainer(), this);

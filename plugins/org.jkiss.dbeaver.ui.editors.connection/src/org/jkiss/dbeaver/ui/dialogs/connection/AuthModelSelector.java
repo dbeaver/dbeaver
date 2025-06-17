@@ -67,7 +67,7 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
     private final Runnable changeListener;
     private Combo authModelCombo;
     private boolean authSettingsEnabled = true;
-    private boolean isEnableSharedConfigurator = true;
+    private final boolean isEnableSharedConfigurator;
     private final DBPConnectionEditIntention intention;
 
     public AuthModelSelector(
@@ -133,6 +133,10 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
         DBPAuthModelDescriptor activeAuthModel,
         String defaultAuthModelId
     ) {
+        if (activeDataSource != null) {
+            activeDataSource.getRegistry().removeDataSourceListener(this);
+        }
+
         this.activeDataSource = dataSourceContainer;
         this.selectedAuthModel = activeAuthModel;
         this.authSettingsEnabled = !dataSourceContainer.isSharedCredentials();
@@ -156,7 +160,7 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
             }
             if (selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) {
                 // First one
-                selectedAuthModel = allAuthModels.get(0);
+                selectedAuthModel = allAuthModels.getFirst();
                 dataSourceContainer.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
             }
         }
@@ -338,13 +342,11 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
         }
     }
 
-    public void setEnableSharedConfigurator(boolean isEnable) {
-        this.isEnableSharedConfigurator = isEnable;
-    }
-
     @Override
     public void dispose() {
-        activeDataSource.getRegistry().removeDataSourceListener(this);
+        if (activeDataSource != null) {
+            activeDataSource.getRegistry().removeDataSourceListener(this);
+        }
         super.dispose();
     }
 }
