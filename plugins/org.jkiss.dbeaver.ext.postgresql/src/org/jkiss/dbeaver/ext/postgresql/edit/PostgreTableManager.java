@@ -83,10 +83,10 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
 
     @Override
     protected String beginCreateTableStatement(
-        DBRProgressMonitor monitor,
-        PostgreTableBase table,
-        String tableName,
-        Map<String, Object> options) throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreTableBase table,
+        @NotNull String tableName,
+        @NotNull Map<String, Object> options) throws DBException {
 
         String statement = "CREATE " + getCreateTableType(table) + " "; //$NON-NLS-1$ //$NON-NLS-2$
         if (table.isPartition() && table instanceof PostgreTable postgreTable) {
