@@ -33,7 +33,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.concurrent.Flow;
 
-public class CopilotCompletionEngine extends BaseCompletionEngine {
+public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotProperties> {
     private static final Log log = Log.getLog(CopilotCompletionEngine.class);
 
     private final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
@@ -161,7 +161,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine {
                 return sessionToken;
             }
 
-            return client.getInstance().sessionToken(monitor, getProperties().getToken());
+            return client.getInstance().requestSessionToken(monitor, getProperties().getToken());
         }
     }
 
