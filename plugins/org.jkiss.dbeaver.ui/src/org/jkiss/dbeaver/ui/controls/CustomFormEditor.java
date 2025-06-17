@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
@@ -307,7 +308,8 @@ public class CustomFormEditor {
                 label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
                 var editorHost = new ResizeableComposite(parent, SWT.VERTICAL);
-                editorHost.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+                editorHost.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                editorHost.addControlListener(ControlListener.controlResizedAdapter(e -> parent.layout(true, true)));
 
                 var editor = new Text(editorHost, SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | (readOnly ? SWT.READ_ONLY : SWT.NONE));
                 editor.setText(objectValueToString(value));

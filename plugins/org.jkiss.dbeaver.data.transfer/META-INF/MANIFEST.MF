@@ -7,10 +7,11 @@ Bundle-Version: 2.0.141.qualifier
 Bundle-Release-Date: 20250616
 Bundle-Activator: org.jkiss.dbeaver.tools.transfer.internal.DTActivator
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.jkiss.dbeaver.tools.sql,
  org.jkiss.dbeaver.tools.transfer,
  org.jkiss.dbeaver.tools.transfer.database,
+ org.jkiss.dbeaver.tools.transfer.database.resolver,
  org.jkiss.dbeaver.tools.transfer.internal,
  org.jkiss.dbeaver.tools.transfer.processor,
  org.jkiss.dbeaver.tools.transfer.registry,
@@ -19,10 +20,10 @@ Export-Package: org.jkiss.dbeaver.tools.sql,
  org.jkiss.dbeaver.tools.transfer.stream.exporter,
  org.jkiss.dbeaver.tools.transfer.stream.importer,
  org.jkiss.dbeaver.tools.transfer.stream.model,
+ org.jkiss.dbeaver.tools.transfer.settings,
  org.jkiss.dbeaver.tools.transfer.task
 Require-Bundle: org.eclipse.core.expressions,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry
-Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.data.transfer
