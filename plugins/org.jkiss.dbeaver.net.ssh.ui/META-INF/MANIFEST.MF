@@ -8,7 +8,6 @@ Bundle-Release-Date: 20250616
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ui.net.ssh.Activator
-Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.resources,
  org.jkiss.dbeaver.ui,

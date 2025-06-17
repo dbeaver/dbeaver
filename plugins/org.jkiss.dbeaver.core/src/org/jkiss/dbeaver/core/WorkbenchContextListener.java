@@ -24,15 +24,19 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.NodeEditorInput;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * WorkbenchContextListener.
@@ -45,6 +49,7 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
     public static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.ui.perspective";
 
     private final Set<IWorkbenchWindow> registeredWindows = new HashSet<>();
+    private final DBPProjectListener projectListener;
 
     public WorkbenchContextListener() {
         IWorkbench workbench = PlatformUI.getWorkbench();
@@ -84,6 +89,40 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
                 IWorkbenchPart activePart = activePage.getActivePart();
                 if (activePart != null) {
                     partActivated(activePart);
+                }
+            }
+        }
+
+        projectListener = new DBPProjectListener() {
+            @Override
+            public void handleProjectRemove(@NotNull DBPProject project) {
+                UIUtils.asyncExec(() -> closeRemovedProjectsEditors(project));
+            }
+        };
+        DBPPlatformDesktop.getInstance().getWorkspace().addProjectListener(projectListener);
+    }
+
+    private void closeRemovedProjectsEditors(DBPProject project) {
+        Arrays.stream(PlatformUI.getWorkbench().getWorkbenchWindows())
+            .flatMap(window -> Arrays.stream(window.getPages()))
+            .forEach(page -> closePageProjectEditors(page, project));
+    }
+
+    private void closePageProjectEditors(IWorkbenchPage page, DBPProject project) {
+        for (IEditorReference editorReference : page.getEditorReferences()) {
+            IEditorInput input;
+            try {
+                input = editorReference.getEditorInput();
+            } catch (PartInitException e) {
+                return;
+            }
+
+            if (input instanceof NodeEditorInput nodeEditorInput) {
+                DBPProject editorProject = nodeEditorInput.getNavigatorNode().getOwnerProject();
+                if (Objects.equals(project, editorProject)) {
+                    IEditorPart editor = editorReference.getEditor(false);
+                    page.closeEditor(editor, false);
+                    editor.dispose();
                 }
             }
         }

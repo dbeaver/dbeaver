@@ -17,43 +17,35 @@
 package org.jkiss.dbeaver.ui.ai.engine.copilot;
 
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotClient;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModel;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceAuth;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
-import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
-import org.jkiss.dbeaver.ui.browser.BrowserPopup;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.preferences.UIPreferences;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Locale;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CompletableFuture;
 
 public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine, LegacyAISettings<CopilotProperties>> {
 
@@ -189,100 +181,54 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         accessTokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         accessTokenText.addModifyListener((e -> accessToken = accessTokenText.getText()));
         accessTokenText.setMessage(CopilotMessages.copilot_preference_page_token_info);
-        UIUtils.createDialogButton(parent, CopilotMessages.copilot_access_token_authorize, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                new AbstractJob("Requesting authorization") {
-                    @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
-                        try (var copilotClient = new CopilotClient()) {
-                            CopilotClient.ResponseData responseData = copilotClient.requestAuth(monitor);
-                            AtomicReference<BrowserPopup> popupOauth = new AtomicReference<>();
-                            UIUtils.asyncExec(() -> {
-                                CopyDeviceDialog copyYourCode = new CopyDeviceDialog(
-                                    responseData.user_code(),
-                                    UIUtils.getActiveShell(),
-                                    CopilotMessages.oauth_user_dialog_code_title,
-
-                                    DBIcon.STATUS_INFO
-                                );
-                                copyYourCode.open();
-                                if (ModelPreferences.getPreferences().getBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH)) {
-                                    try {
-                                        popupOauth.set(BrowserPopup.openBrowser("OAuth", new URL(responseData.verification_uri())));
-                                    } catch (MalformedURLException ex) {
-                                        throw new RuntimeException(ex);
-                                    }
-                                } else {
-                                    ShellUtils.launchProgram(responseData.verification_uri());
-                                }
-                            });
-                            monitor.subTask("Requesting access token");
-                            String token = copilotClient.requestAccessToken(responseData.device_code(), monitor);
-                            if (token != null) {
-                                CopilotConfigurator.this.accessToken = token;
-                            }
-                            UIUtils.syncExec(() -> {
-                                UIUtils.showMessageBox(
-                                    UIUtils.getActiveShell(),
-                                    CopilotMessages.oauth_success_title,
-                                    CopilotMessages.oauth_success_message,
-                                    SWT.ICON_INFORMATION
-                                );
-                                if (popupOauth.get() != null) {
-                                    popupOauth.get().close();
-                                }
-                            });
-
-                            UIUtils.syncExec(() -> {
-                                if (accessTokenText != null && !accessTokenText.isDisposed()) {
-                                    accessTokenText.setText(accessToken);
-                                }
-                            });
-                        } catch (TimeoutException | DBException ex) {
-                            return GeneralUtils.makeErrorStatus("Error during authorization", ex);
-                        } catch (InterruptedException ex) {
-                            return Status.OK_STATUS;
-                        }
-
-                        return Status.OK_STATUS;
+        UIUtils.createDialogButton(parent, CopilotMessages.copilot_access_token_authorize, SelectionListener.widgetSelectedAdapter(e -> {
+            try {
+                accessToken = UIUtils.runWithDialog(monitor -> {
+                    var future = new CompletableFuture<Void>();
+                    try {
+                        return acquireAccessToken(monitor, future);
+                    } finally {
+                        future.complete(null);
                     }
-                }.schedule();
+                });
+            } catch (DBException ex) {
+                DBWorkbench.getPlatformUI().showError(
+                    CopilotMessages.oauth_auth_title,
+                    NLS.bind(CopilotMessages.oauth_auth_error_message, ex.getMessage()),
+                    ex
+                );
+                return;
             }
-        });
+
+            UIUtils.showMessageBox(
+                UIUtils.getActiveShell(),
+                CopilotMessages.oauth_auth_title,
+                CopilotMessages.oauth_auth_success_message,
+                SWT.ICON_INFORMATION
+            );
+
+            if (accessTokenText != null && !accessTokenText.isDisposed()) {
+                accessTokenText.setText(accessToken);
+            }
+        }));
     }
 
-    private static class CopyDeviceDialog extends BaseDialog {
-
-        private final String userCode;
-
-        public CopyDeviceDialog(
-            String userCode,
-            Shell parentShell,
-            String title,
-            @Nullable DBIcon icon
-        ) {
-            super(parentShell, title, icon);
-            this.userCode = userCode;
+    @NotNull
+    private String acquireAccessToken(@NotNull DBRProgressMonitor monitor, @NotNull CompletableFuture<Void> future) throws DBException {
+        var service = DBWorkbench.getService(UIServiceAuth.class);
+        if (service == null) {
+            throw new DBException("No authentication service available");
         }
+        try (var client = new CopilotClient()) {
+            monitor.subTask("Requesting device code");
+            var deviceCodeResponse = client.requestDeviceCode(monitor);
 
-        @Override
-        protected Composite createDialogArea(Composite parent) {
-            Composite dialogArea = super.createDialogArea(parent);
-            Text text = new Text(dialogArea, SWT.NONE);
-            text.setText(NLS.bind(CopilotMessages.oauth_code_request_message, userCode));
-            return dialogArea;
-        }
+            service.showCodePopup(URI.create(deviceCodeResponse.verificationUri()), deviceCodeResponse.userCode(), future);
 
-        @Override
-        protected void createButtonsForButtonBar(@NotNull Composite parent) {
-            createButton(parent, IDialogConstants.OK_ID, CopilotMessages.gpt_preference_page_advanced_copilot_copy_button, true);
-        }
-
-        @Override
-        protected void okPressed() {
-            UIUtils.setClipboardContents(UIUtils.getDisplay(), TextTransfer.getInstance(), userCode);
-            close();
+            monitor.subTask("Awaiting access token");
+            return client.requestAccessToken(monitor, deviceCodeResponse, future);
+        } catch (InterruptedException e) {
+            throw new DBException("Authorization was interrupted", e);
         }
     }
 }

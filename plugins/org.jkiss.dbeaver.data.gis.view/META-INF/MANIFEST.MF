@@ -24,6 +24,5 @@ Require-Bundle: org.eclipse.core.runtime,
  com.google.gson,
  com.sun.jna,
  com.sun.jna.platform
-Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.ui.gis
 Automatic-Module-Name: org.jkiss.dbeaver.data.gis.view
