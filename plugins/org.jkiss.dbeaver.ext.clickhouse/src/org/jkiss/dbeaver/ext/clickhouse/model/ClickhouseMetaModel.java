@@ -189,4 +189,8 @@ public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTra
         return null;
     }
 
+    @Override
+    public boolean supportsUniqueKeys() {
+        return true;
+    }
 }

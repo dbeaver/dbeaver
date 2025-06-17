@@ -245,10 +245,10 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
     @Override
     public List<GenericUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBPDataSourceInfo dataSource = getDataSource().getInfo();
-        boolean supportsVirtualKeys = getContainer().getDataSource().getContainer().getDriver().supportsVirtualKeys();
+        boolean supportsUniqueKeys = getContainer().getDataSource().getMetaModel().supportsUniqueKeys();
         if (dataSource.supportsReferentialIntegrity() ||
             dataSource.supportsIndexes() ||
-            supportsVirtualKeys
+            supportsUniqueKeys
         ) {
             // ensure all columns are already cached
             getAttributes(monitor);
