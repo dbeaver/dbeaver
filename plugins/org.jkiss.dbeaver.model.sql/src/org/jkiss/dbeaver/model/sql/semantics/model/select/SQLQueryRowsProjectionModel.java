@@ -217,21 +217,21 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
             this.fromScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsSourceRef(context));
         }
 
-        context = this.fromSource.resolveRowSources(context, statistics);
+        SQLQueryRowsSourceContext resolvedContext = this.fromSource.resolveRowSources(context, statistics).setCteSourcesFrom(context);
 
         if (this.filterExprs.whereClause != null) {
-            this.filterExprs.whereClause.resolveRowSources(context, statistics);
+            this.filterExprs.whereClause.resolveRowSources(resolvedContext, statistics);
         }
         if (this.filterExprs.havingClause != null) {
-            this.filterExprs.havingClause.resolveRowSources(context, statistics);
+            this.filterExprs.havingClause.resolveRowSources(resolvedContext, statistics);
         }
         if (this.filterExprs.groupByClause != null) {
-            this.filterExprs.groupByClause.resolveRowSources(context, statistics);
+            this.filterExprs.groupByClause.resolveRowSources(resolvedContext, statistics);
         }
         if (this.filterExprs.orderByClause != null) {
-            this.filterExprs.orderByClause.resolveRowSources(context, statistics);
+            this.filterExprs.orderByClause.resolveRowSources(resolvedContext, statistics);
         }
-        return context.reset();
+        return resolvedContext.reset();
     }
 
     @Override

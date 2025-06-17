@@ -85,9 +85,9 @@
                 <version>${tycho-version}</version>
                 <configuration>
                     <useProjectSettings>false</useProjectSettings>
-                    <source>17</source>
-                    <target>17</target>
-                    <compilerVersion>17</compilerVersion>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <compilerVersion>${java.version}</compilerVersion>
                 </configuration>
             </plugin>
 

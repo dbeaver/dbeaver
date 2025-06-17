@@ -897,7 +897,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Override
         public Object visitRowsTableData(@NotNull SQLQueryRowsTableDataModel tableData, @NotNull OutlineQueryNode node) {
             DBSEntity table = tableData.getTable();
-            DBPImage icon = DBValueFormatting.getObjectImage(table);
+            DBPImage icon = tableData.getReferencedSource() != null ? DBIcon.TREE_TABLE_LINK : DBValueFormatting.getObjectImage(table);
             String text = table == null
                 ? (tableData.getName() == null ? SQLConstants.QUESTION : tableData.getName().toIdentifierString())
                 : DBUtils.getObjectFullName(table, DBPEvaluationContext.DML);
