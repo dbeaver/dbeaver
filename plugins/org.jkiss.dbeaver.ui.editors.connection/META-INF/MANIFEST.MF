@@ -12,7 +12,6 @@ Require-Bundle: org.eclipse.ui.workbench.texteditor,
  org.jkiss.dbeaver.registry;visibility:=reexport,
  org.jkiss.dbeaver.ui.editors.base;visibility:=reexport,
  org.jkiss.dbeaver.ui.navigator;visibility:=reexport
-Bundle-ClassPath: .
 Export-Package: org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.actions,
