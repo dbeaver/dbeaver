@@ -130,7 +130,7 @@ public interface PostgreServerExtension {
 
     void configureDialect(PostgreDialect dialect);
 
-    String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter);
+    String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter, String delimiter);
 
     // Initializes SSL config if SSL wasn't enabled explicitly. By default disables SSL explicitly.
     void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props);
