@@ -202,7 +202,6 @@ public class AIPromptBuilder {
             String currentSchema = customSchema != null ? customSchema : dataSource.getCurrentSchema();
             if (!CommonUtils.isEmpty(currentSchema)) {
                 lines.add("Current " + (dsInfo == null ? "schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);
-                System.out.println("Current schema: " + currentSchema);
             }
 
             if (dataSource.getDataSourceContainer() instanceof DataSourceDescriptor) {
