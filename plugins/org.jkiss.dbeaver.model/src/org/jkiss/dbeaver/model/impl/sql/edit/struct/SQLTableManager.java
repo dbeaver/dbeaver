@@ -69,12 +69,12 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         @NotNull String tableName,
         @NotNull Map<String, Object> options) throws DBException {
 
-        String queryPart = "CREATE " + getCreateTableType(table) + " " + tableName + " (";
+        String queryPart = "CREATE " + getCreateTableType(table) + " " + tableName + " (";  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         if (!isCompact(options)) {
             queryPart += GeneralUtils.getDefaultLineSeparator();
         }
 
-        return queryPart; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return queryPart;
     }
 
     protected boolean hasAttrDeclarations(OBJECT_TYPE table) {
