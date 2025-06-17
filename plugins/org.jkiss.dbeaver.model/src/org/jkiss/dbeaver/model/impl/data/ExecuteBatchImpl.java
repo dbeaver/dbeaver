@@ -247,7 +247,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
             char c = queryString.charAt(i);
             if (isNullIndex == i) {
                 paramIndex = getNextUsedParamIndex(rowValues, paramIndex);
-                isNullIndex = queryString.substring(i).indexOf(IS_NULL);
+                isNullIndex = i + 1 + queryString.substring(i + 1).indexOf(IS_NULL);
             }
             switch (c) {
                 case '?': {
