@@ -93,7 +93,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         createNodesTable(sash);
         createInputsTable(sash);
-        sash.setWeights(new int[]{70, 30});
+        sash.setWeights(70, 30);
 
         setControl(composite);
     }
@@ -152,7 +152,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                setSelectedSettings();
+                setSelectedSettings(true);
             }
 
             @Override
@@ -166,7 +166,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         });
     }
 
-    private void setSelectedSettings() {
+    private void setSelectedSettings(boolean forceUpdate) {
         final IStructuredSelection selection = (IStructuredSelection) nodesTable.getSelection();
         TransferTarget target;
         if (!selection.isEmpty()) {
@@ -179,11 +179,11 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             settings.selectConsumer(null, null, true);
         } else {
             if (settings.isConsumerOptional()) {
-                if (settings.getConsumer() == null) {
+                if (forceUpdate || settings.getConsumer() == null) {
                     settings.selectConsumer(target.node, target.processor, true);
                 }
             } else if (settings.isProducerOptional()) {
-                if (settings.getProducer() == null) {
+                if (forceUpdate || settings.getProducer() == null) {
                     settings.selectProducer(target.node, target.processor, true);
                 }
             } else {
@@ -267,7 +267,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             }
         }
         if (currentTarget == null && !targets.isEmpty()) {
-            currentTarget = targets.get(0);
+            currentTarget = targets.getFirst();
         }
 
         inputsTable.setInput(getWizard().getSettings().getSourceObjects());
@@ -275,7 +275,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         if (currentTarget != null) {
             StructuredSelection selection = new StructuredSelection(currentTarget);
             nodesTable.setSelection(selection);
-            setSelectedSettings();
+            setSelectedSettings(false);
         }
 
         UIUtils.packColumns(nodesTable.getTable());
