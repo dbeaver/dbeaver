@@ -223,7 +223,10 @@
                 <property id="resultset.maxrows" label="Default fetch size" description="Default number of rows to fetch" type="integer"
                           defaultValue="200"
                           scopes="global,user"/>
-                <property id="blob.maxsize" label="Max size of binary data" description="Max size of binary data in a cell that can be displayed" type="integer"
+                <property id="dataEditor.blob.maxsize"
+                          label="Max size of binary data"
+                          description="Maximum size (in kilobytes) of binary data that can be displayed in a data editor cell"
+                          type="integer"
                           defaultValue="200"
                           scopes="global"/>
             </propertyGroup>
