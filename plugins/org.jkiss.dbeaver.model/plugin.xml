@@ -225,9 +225,9 @@
                           scopes="global,user"/>
                 <property id="dataEditor.blob.maxsize"
                           label="Max size of binary data"
-                          description="Maximum size (in kilobytes) of binary data that can be displayed in a data editor cell"
+                          description="Maximum size of binary data that can be displayed in a data editor cell"
                           type="integer"
-                          defaultValue="200"
+                          defaultValue="100000"
                           scopes="global"/>
             </propertyGroup>
         </propertyGroup>
