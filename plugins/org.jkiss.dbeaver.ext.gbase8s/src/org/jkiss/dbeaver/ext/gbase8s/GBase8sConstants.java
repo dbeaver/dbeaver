@@ -27,4 +27,14 @@ public class GBase8sConstants {
     public static final String JDBC_SQL_MODE_GBASE = "gbase";
 
     public static final String SQL_TABLE_COMMENT = "COMMENT ON TABLE %s IS %s";
+
+    //////////////////////////////////////////////////////
+    // Constraints
+
+    public static final String CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
+    public static final String CONSTRAINT_TYPE_PRIMARY_KEY = "P";
+    public static final String CONSTRAINT_TYPE_UNIQUE_KEY = "U";
+    public static final String CONSTRAINT_TYPE_CHECK = "C";
+
+    public static final String CHECK_CLAUSE = "CHECK_TEXT";
 }

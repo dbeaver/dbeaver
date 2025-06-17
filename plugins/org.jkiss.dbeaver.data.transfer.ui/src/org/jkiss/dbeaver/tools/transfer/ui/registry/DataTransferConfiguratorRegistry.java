@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,12 @@
 
 package org.jkiss.dbeaver.tools.transfer.ui.registry;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.dbeaver.Log;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DataTransferConfiguratorRegistry
@@ -47,23 +45,43 @@ public class DataTransferConfiguratorRegistry {
 
     private Map<String, DataTransferNodeConfiguratorDescriptor> nodeConfigurators = new LinkedHashMap<>();
 
-    private DataTransferConfiguratorRegistry(IExtensionRegistry registry)
-    {
+    private DataTransferConfiguratorRegistry(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
-        for (IConfigurationElement ext : extElements) {
-            // Load main nodeConfigurators
-            if ("configPages".equals(ext.getName())) {
-                String nodeId = ext.getAttribute("node");
-                DataTransferNodeConfiguratorDescriptor descriptor = nodeConfigurators.get(nodeId);
-                if (descriptor == null) {
-                    descriptor = new DataTransferNodeConfiguratorDescriptor(ext);
-                    nodeConfigurators.put(nodeId, descriptor);
-                } else {
-                    descriptor.loadNodeConfigurations(ext);
+        Map<String, DataTransferNodeConfiguratorDescriptor> pagesById = new HashMap<>();
+        // Remember all replacement pairs to apply in a second pass
+        List<Map.Entry<String, DataTransferNodeConfiguratorDescriptor>> replacements = new ArrayList<>();
+
+        Arrays.stream(registry.getConfigurationElementsFor(EXTENSION_ID))
+            .filter(it -> "configPages".equals(it.getName()))
+            .forEach(it -> {
+                String nodeId = it.getAttribute("node");
+                String replaces = it.getAttribute("replaces");
+                DataTransferNodeConfiguratorDescriptor descriptor = new DataTransferNodeConfiguratorDescriptor(it);
+                if (pagesById.containsKey(nodeId)) {
+                    throw new IllegalArgumentException("Duplicate node id: " + nodeId);
                 }
+
+                pagesById.put(nodeId, descriptor);
+
+                if (replaces != null && !replaces.isEmpty()) {
+                    replacements.add(new AbstractMap.SimpleEntry<>(replaces, descriptor));
+                }
+            });
+
+        replacements.forEach(replacement -> {
+            pagesById.remove(replacement.getValue().getId());
+            DataTransferNodeConfiguratorDescriptor replaced = pagesById.put(replacement.getKey(), replacement.getValue());
+            if (replaced != null) {
+                log.info("Data transfer configurator '" + replaced.getId() + "' is replaced by '" + replacement.getValue().getId() + "'");
+            } else {
+                log.debug(
+                    "No configurator with id '" + replacement.getKey()
+                        + "' found to replace, adding new one: " + replacement.getValue().getId()
+                );
             }
-        }
+        });
+
+        nodeConfigurators.putAll(pagesById);
     }
 
     public DataTransferNodeConfiguratorDescriptor getConfigurator(String nodeId) {

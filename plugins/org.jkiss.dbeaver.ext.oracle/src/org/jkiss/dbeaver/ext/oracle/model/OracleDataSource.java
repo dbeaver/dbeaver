@@ -308,7 +308,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
             try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Set connection parameters")) {
                 try {
-                    readDatabaseServerVersion(session.getMetaData());
+                    readDatabaseServerVersion(session, session.getMetaData());
                 } catch (SQLException e) {
                     log.debug("Error reading metadata", e);
                 }
@@ -412,7 +412,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
-        return new OracleDataSourceInfo(this, metaData);
+        return new OracleDataSourceInfo(metaData);
     }
 
     @Override

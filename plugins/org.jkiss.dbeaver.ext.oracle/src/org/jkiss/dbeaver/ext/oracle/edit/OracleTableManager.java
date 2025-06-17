@@ -83,7 +83,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         if (command.getProperties().size() > 1 || command.getProperty("comment") == null) { //$NON-NLS-1$
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
-            appendTableModifiers(monitor, command.getObject(), command, query, true);
+            appendTableModifiers(monitor, command.getObject(), command, query, true, options);
             actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
     }
@@ -120,16 +120,18 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         OracleTable table,
         NestedObjectCommand tableProps,
         StringBuilder ddl,
-        boolean alter
+        boolean alter,
+        Map<String, Object> options
     ) throws DBException {
         // ALTER
         if (tableProps.getProperty("tablespace") != null) { //$NON-NLS-1$
+            String delimiter = getDelimiter(options);
             Object tablespace = table.getTablespace();
             if (tablespace instanceof OracleTablespace) {
                 if (table.isPersisted()) {
-                    ddl.append("\nMOVE TABLESPACE ").append(((OracleTablespace) tablespace).getName()); //$NON-NLS-1$
+                    ddl.append(delimiter).append("MOVE TABLESPACE ").append(((OracleTablespace) tablespace).getName()); //$NON-NLS-1$
                 } else {
-                    ddl.append("\nTABLESPACE ").append(((OracleTablespace) tablespace).getName()); //$NON-NLS-1$
+                    ddl.append(delimiter).append("TABLESPACE ").append(((OracleTablespace) tablespace).getName()); //$NON-NLS-1$
                 }
             }
         }

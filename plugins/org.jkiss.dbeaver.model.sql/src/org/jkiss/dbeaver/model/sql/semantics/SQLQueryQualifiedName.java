@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -224,6 +226,43 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
             return;
         }
 
+        performPartialResolutionImpl(
+            nameParts -> context.findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, nameParts),
+            name, origin, objectTypes, entityNameClass
+        );
+    }
+
+    /**
+     * Resolve object and origin from name parts
+     */
+    public static void performPartialResolution(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull SQLQueryQualifiedName name,
+        @NotNull SQLQuerySymbolOrigin origin,
+        @NotNull Set<DBSObjectType> objectTypes,
+        @NotNull SQLQuerySymbolClass entityNameClass
+    ) {
+        if (!statistics.useRealMetadata() || context.getConnectionInfo().isDummy()) {
+            return;
+        }
+
+        performPartialResolutionImpl(
+            nameParts -> context.getConnectionInfo().findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, nameParts),
+            name,
+            origin,
+            objectTypes,
+            entityNameClass
+        );
+    }
+
+    private static void performPartialResolutionImpl(
+        @NotNull Function<List<String>, DBSObject> nameResolver,
+        @NotNull SQLQueryQualifiedName name,
+        @NotNull SQLQuerySymbolOrigin origin,
+        @NotNull Set<DBSObjectType> objectTypes,
+        @NotNull SQLQuerySymbolClass entityNameClass
+    ) {
         List<SQLQuerySymbolEntry> nameParts = prepareNamePartsList(name);
 
         DBSObject object = null;
@@ -231,7 +270,7 @@ public class SQLQueryQualifiedName extends SQLQueryLexicalScopeItem {
         for (int len = nameParts.size(); len > 0 && object == null; len--) {
             nameFragment = nameParts.subList(0, len);
             List<String> fragmentStrings = nameFragment.stream().map(SQLQuerySymbolEntry::getName).toList();
-            object = context.findRealObject(statistics.getMonitor(), RelationalObjectType.TYPE_UNKNOWN, fragmentStrings);
+            object = nameResolver.apply(fragmentStrings);
         }
 
         if (object != null && !nameFragment.isEmpty()) {

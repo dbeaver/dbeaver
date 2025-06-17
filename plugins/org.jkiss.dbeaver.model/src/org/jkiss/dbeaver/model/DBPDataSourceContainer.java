@@ -102,8 +102,6 @@ public interface DBPDataSourceContainer extends
      */
     boolean isExternallyProvided();
 
-    boolean isTemplate();
-
     /**
      * Temporary datasources are not saved in project. They exist until project refresh or application shutdown
      */

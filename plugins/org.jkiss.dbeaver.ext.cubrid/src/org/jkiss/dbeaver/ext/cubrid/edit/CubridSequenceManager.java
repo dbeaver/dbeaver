@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.cubrid.model.CubridSequence;
 import org.jkiss.dbeaver.ext.generic.edit.GenericSequenceManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -64,7 +65,8 @@ public class CubridSequenceManager extends GenericSequenceManager {
     }
 
     @NotNull
-    public String buildStatement(@NotNull CubridSequence sequence, @NotNull boolean forUpdate) {
+    public String buildStatement(@NotNull CubridSequence sequence, boolean forUpdate, boolean hasComment) {
+
         StringBuilder sb = new StringBuilder();
         if (forUpdate) {
             sb.append("ALTER SERIAL ");
@@ -73,7 +75,7 @@ public class CubridSequenceManager extends GenericSequenceManager {
         }
         sb.append(sequence.getFullyQualifiedName(DBPEvaluationContext.DDL));
         buildBody(sequence, sb);
-        buildOtherValue(sequence, sb);
+        buildOtherValue(sequence, sb, hasComment);
         return sb.toString();
     }
 
@@ -92,7 +94,7 @@ public class CubridSequenceManager extends GenericSequenceManager {
         }
     }
 
-    public void buildOtherValue(@NotNull CubridSequence sequence, @NotNull StringBuilder sb) {
+    public void buildOtherValue(@NotNull CubridSequence sequence, @NotNull StringBuilder sb, boolean hasComment) {
         if (sequence.getCycle()) {
             sb.append(" CYCLE");
         }
@@ -102,7 +104,7 @@ public class CubridSequenceManager extends GenericSequenceManager {
         if (sequence.getCachedNum() != 0) {
             sb.append(" CACHE ").append(sequence.getCachedNum());
         }
-        if (sequence.getDescription() != null) {
+        if (hasComment || sequence.getDescription() != null) {
             sb.append(" COMMENT ").append(SQLUtils.quoteString(sequence, CommonUtils.notEmpty(sequence.getDescription())));
         }
     }
@@ -115,7 +117,8 @@ public class CubridSequenceManager extends GenericSequenceManager {
             @NotNull ObjectCreateCommand command,
             @NotNull Map<String, Object> options) {
         CubridSequence sequence = (CubridSequence) command.getObject();
-        actions.add(new SQLDatabasePersistAction("Create Serial", buildStatement(sequence, false)));
+        boolean hasComment = command.hasProperty(DBConstants.PROP_ID_DESCRIPTION);
+        actions.add(new SQLDatabasePersistAction("Create Serial", buildStatement(sequence, false, hasComment)));
     }
 
     @Override
@@ -126,7 +129,8 @@ public class CubridSequenceManager extends GenericSequenceManager {
             @NotNull ObjectChangeCommand command,
             @NotNull Map<String, Object> options) {
         CubridSequence sequence = (CubridSequence) command.getObject();
-        actionList.add(new SQLDatabasePersistAction("Alter Serial", buildStatement(sequence, true)));
+        boolean hasComment = command.hasProperty(DBConstants.PROP_ID_DESCRIPTION);
+        actionList.add(new SQLDatabasePersistAction("Alter Serial", buildStatement(sequence, true, hasComment)));
     }
 
     @Override

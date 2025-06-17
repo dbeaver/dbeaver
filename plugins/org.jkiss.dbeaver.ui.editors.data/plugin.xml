@@ -7,6 +7,7 @@
     <extension-point id="org.jkiss.dbeaver.dataManager" name="%extension-point.org.jkiss.dbeaver.dataManager.name" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="%extension-point.org.jkiss.dbeaver.resultset.presentation.name" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.panel" name="%extension-point.org.jkiss.dbeaver.resultset.panel.name" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resultset.error" name="%extension-point.org.jkiss.dbeaver.resultset.error.name" schema="schema/org.jkiss.dbeaver.resultset.error.exsd"/>
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsPreferencesInitializer"/>
@@ -165,6 +166,15 @@
             <!-- Show references always as we can define virtual foreign keys even if RI is not supported by database -->
 <!--            <supports if="context.supportsReferences()"/>-->
         </panel>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resultset.error">
+        <action
+            label="Go to Error"
+            description="Show the faulty query in the SQL editor"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/buttons/target_error.png"
+            class="org.jkiss.dbeaver.ui.controls.resultset.view.actions.GoToErrorAction"
+            order="10"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
@@ -775,10 +785,10 @@
         </handler>
         <!-- Zoom -->
         <handler commandId="org.jkiss.dbeaver.core.resultset.zoomIn" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerZoomIn">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.zoomOut" class="org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerZoomOut">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.presentation.control"/></activeWhen>
         </handler>
 
 
@@ -1014,8 +1024,8 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+ARROW_LEFT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.next" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+ARROW_RIGHT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.last" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+ARROW_RIGHT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.fetch.page" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+N"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.fetch.all" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+="/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.fetch.page" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+N"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.fetch.all" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+="/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+ENTER"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.edit.inline" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ENTER"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.add" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>
@@ -1031,9 +1041,9 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F7"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.activatePreview" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+7"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.cell.save" contextId="org.jkiss.dbeaver.ui.context.resultset.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+ENTER"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.grid.selectColumn" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+C"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.grid.selectRow" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.grid.gotoColumn" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+G"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.grid.selectColumn" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+C"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.grid.selectRow" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.grid.gotoColumn" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+G"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.gotoRow" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+G"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.moveColumnRight" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+SHIFT+ARROW_RIGHT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.moveColumnLeft" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.jkiss.dbeaver.keyboardOnlyKeyScheme" sequence="ALT+SHIFT+ARROW_LEFT"/>

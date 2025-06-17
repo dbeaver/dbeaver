@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,15 +25,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.app.DPIApplication;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
-import org.jkiss.dbeaver.dpi.model.adapters.DPISerializer;
-import org.jkiss.dbeaver.dpi.model.client.DPISmartObjectResponse;
-import org.jkiss.dbeaver.dpi.model.client.DPISmartObjectWrapper;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.dpi.*;
+import org.jkiss.dbeaver.model.dpi.DPIController;
+import org.jkiss.dbeaver.model.dpi.DPIDataSourceParameters;
+import org.jkiss.dbeaver.model.dpi.DPISession;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -47,7 +46,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class DPIControllerImpl implements DPIController {
 
@@ -200,29 +202,7 @@ public class DPIControllerImpl implements DPIController {
                     realArgs[i] = args[i];
                 }
             }
-            Object result = method.invoke(object, realArgs);
-            List<DPISmartObjectWrapper> smartObjects = new ArrayList<>();
-            for (int i = 0; i < parameterTypes.length; i++) {
-                Class<?> parameterType = parameterTypes[i];
-                if (DPISerializer.isSmartObject(parameterType)) {
-                    Object serverSideSmartObject = realArgs[i];
-                    if (serverSideSmartObject instanceof DPIServerSmartObject serverSmartObject) {
-                        DPISmartCallback callback = serverSmartObject.getCallback();
-                        var dpiWrapper = new DPISmartObjectWrapper(
-                            callback.getClass(),
-                            i,
-                            callback
-                        );
-                        smartObjects.add(dpiWrapper);
-                    }
-                }
-            }
-            if (smartObjects.isEmpty()) {
-                return result;
-            } else {
-                log.debug("Smart arguments detected, return smart objects wrapper instead of original method results");
-                return new DPISmartObjectResponse(result, smartObjects);
-            }
+            return method.invoke(object, realArgs);
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException) e).getTargetException();

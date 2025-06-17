@@ -69,11 +69,6 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
     }
 
     @Override
-    public void resetVersion() {
-        // do nothing
-    }
-
-    @Override
     public boolean isSecureDownload(@NotNull DBRProgressMonitor monitor) {
         return true;
     }
@@ -161,9 +156,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             return DriverDescriptor.getProvidedDriversStorageFolder();
         }
         if (DBWorkbench.isDistributed() || isCustom()) {
-            // we do not have any provided drivers in distributed mode
-            // and custom drivers stored in the workspace
-            return DriverDescriptor.getWorkspaceDriversStorageFolder();
+            return DriverDescriptor.getExternalDriversStorageFolder();
         }
 
         return DriverDescriptor.getProvidedDriversStorageFolder();

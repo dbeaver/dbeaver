@@ -432,7 +432,7 @@
                         description="%driver.exasol.description"
                         webURL="https://downloads.exasol.com/clients-and-drivers"
                         categories="sql,analytic,columns">
-                    <file path="maven:/com.exasol:exasol-jdbc:RELEASE[7.1.16]" type="jar" bundle="!drivers.exasol"/>
+                    <file path="maven:/com.exasol:exasol-jdbc:RELEASE[25.2.3]" type="jar" bundle="!drivers.exasol"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/exasol" bundle="drivers.exasol"/>
 
@@ -482,12 +482,6 @@
               class="org.jkiss.dbeaver.ext.exasol.manager.ExasolTablePartitionColumnManager"
               objectType="org.jkiss.dbeaver.ext.exasol.model.ExasolTablePartitionColumn">
         </manager>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="exasol-maven-repo" name="Exasol Repository" url="https://maven.exasol.com/artifactory/exasol-releases" order="10">
-            <scope group="com.exasol"/>
-        </repository>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">

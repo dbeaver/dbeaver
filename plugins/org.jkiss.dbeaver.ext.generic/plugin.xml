@@ -442,6 +442,7 @@
                     label="Teradata"
                     icon="icons/teradata_icon.png"
                     iconBig="icons/teradata_icon_big.png"
+                    logoImage="icons/teradata_logo.png"
                     class="com.teradata.jdbc.TeraDriver"
                     sampleURL="jdbc:teradata://{host}/[DATABASE={database},]DBS_PORT={port}"
                     defaultPort="1025"
@@ -748,6 +749,7 @@
                     label="Virtuoso"
                     icon="icons/virtuoso_icon.png"
                     iconBig="icons/virtuoso_icon_big.png"
+                    logoImage="icons/virtuoso_logo.png"
                     class="virtuoso.jdbc4.Driver"
                     sampleURL="jdbc:virtuoso://{host}:{port}/DATABASE={database}/CHARSET=UTF-8"
                     defaultPort="1111"
@@ -779,8 +781,8 @@
                 <driver
                     id="tdengine"
                     label="TDengine"
-                    class="com.taosdata.jdbc.rs.RestfulDriver"
-                    sampleURL="jdbc:TAOS-RS://{host}:{port}/[{db}]"
+                    class="com.taosdata.jdbc.ws.WebSocketDriver"
+                    sampleURL="jdbc:TAOS-WS://{host}:{port}/[{db}]"
                     defaultPort="6041"
                     description="TDengine driver"
                     supportedConfigurationTypes="MANUAL"
@@ -788,7 +790,7 @@
                     icon="icons/tdengine_icon.png"
                     iconBig="icons/tdengine_icon_big.png"
                     categories="timeseries">
-                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.7]"/>
+                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="stored-quoted-case" value="lower"/>
                     <parameter name="stored-unquoted-case" value="lower"/>
@@ -801,12 +803,12 @@
                     label="TDengine Cloud"
                     icon="icons/tdengine_icon.png"
                     iconBig="icons/tdengine_icon_big.png"
-                    class="com.taosdata.jdbc.rs.RestfulDriver"
+                    class="com.taosdata.jdbc.ws.WebSocketDriver"
                     anonymous="true"
                     webURL="http://cloud.tdengine.com"
                     description="TDengine Cloud driver"
                     categories="timeseries">
-                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE[3.2.7]"/>
+                    <file type="jar" path="maven:/com.taosdata.jdbc:taos-jdbcdriver:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="stored-quoted-case" value="lower"/>
                     <parameter name="stored-unquoted-case" value="lower"/>
@@ -852,25 +854,6 @@
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
 
                     <parameter name="supports-truncate" value="false"/>
-                </driver>
-
-                <!-- Neo4j -->
-                <driver
-                    id="neo4j_jdbc"
-                    label="Neo4j"
-                    icon="icons/neo4j_icon.png"
-                    iconBig="icons/neo4j_icon_big.png"
-                    class="org.neo4j.jdbc.Driver"
-                    sampleURL="jdbc:neo4j:bolt://{host}[:{port}]/"
-                    defaultPort="7687"
-                    description="Neo4j JDBC driver"
-                    supportedConfigurationTypes="MANUAL,URL"
-                    webURL="https://github.com/neo4j-contrib/neo4j-jdbc"
-                    categories="graph">
-                    <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
-                    <file type="license" path="licenses/external/lgpl-3.0.txt"/>
-                    <parameter name="supports-truncate" value="false"/>
-                    <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
                 </driver>
 
                 <!-- PrestoDB -->
@@ -1196,6 +1179,7 @@
                     label="Apache Kylin"
                     icon="icons/apache_icon.png"
                     iconBig="icons/apache_icon_big.png"
+                    logoImage="icons/apache_logo.png"
                     class="org.apache.kylin.jdbc.Driver"
                     sampleURL="jdbc:kylin://{host}:{port}/{database}"
                     defaultPort="443"
@@ -1352,6 +1336,7 @@
                         label="Teiid"
 		                icon="icons/teiid_icon.png"
                         iconBig="icons/teiid_icon_big.png"
+                        logoImage="icons/teiid_logo.png"
                         class="org.teiid.jdbc.TeiidDriver"
                         sampleURL="jdbc:teiid:{database}@mms://{host}:{port}"
                         defaultPort="31000"
@@ -1502,6 +1487,15 @@
                         supportsDistributedMode="false"
                         categories="nosql,timeseries,aws">
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.timestream.reason"/>
+                </driver>
+                <driver
+                        id="neo4j_jdbc"
+                        label="Neo4j"
+                        description="Driver for Neo4j"
+                        iconBig="icons/neo4j_icon_big.png"
+                        supportsDistributedMode="false"
+                        categories="graph">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.neo4j.reason"/>
                 </driver>
             </drivers>
 

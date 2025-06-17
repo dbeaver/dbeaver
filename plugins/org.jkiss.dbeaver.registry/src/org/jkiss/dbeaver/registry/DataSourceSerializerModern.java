@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -618,7 +618,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 dataSource.forceSetSharedCredentials(JSONUtils.getBoolean(conObject,
                     RegistryConstants.ATTR_SHARED_CREDENTIALS));
                 dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
-                dataSource.setTemplate(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_TEMPLATE));
                 dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
                     .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
                 dataSource.setDetachedProcessEnabled(JSONUtils.getBoolean(conObject, ATTR_DPI_ENABLED));
@@ -1095,7 +1094,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         JSONUtils.fieldNE(json, RegistryConstants.TAG_DESCRIPTION, dataSource.getDescription());
         if (dataSource.isSavePassword()) JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, true);
         if (dataSource.isSharedCredentials()) JSONUtils.field(json, RegistryConstants.ATTR_SHARED_CREDENTIALS, true);
-        if (dataSource.isTemplate()) JSONUtils.field(json, RegistryConstants.ATTR_TEMPLATE, true);
 
         DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
         if (navSettings.isShowSystemObjects()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, true);
