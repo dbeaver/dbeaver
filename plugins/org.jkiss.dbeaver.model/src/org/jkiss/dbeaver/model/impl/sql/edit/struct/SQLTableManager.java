@@ -64,14 +64,16 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
 
     protected String beginCreateTableStatement(
-        DBRProgressMonitor monitor,
-        OBJECT_TYPE table,
-        String tableName,
-        Map<String, Object> options) throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OBJECT_TYPE table,
+        @NotNull String tableName,
+        @NotNull Map<String, Object> options) throws DBException {
+
         String queryPart = "CREATE " + getCreateTableType(table) + " " + tableName + " (";
         if (!isCompact(options)) {
             queryPart += GeneralUtils.getDefaultLineSeparator();
         }
+
         return queryPart; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
