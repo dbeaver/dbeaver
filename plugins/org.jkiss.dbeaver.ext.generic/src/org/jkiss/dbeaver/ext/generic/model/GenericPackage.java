@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,18 +35,17 @@ import java.util.Map;
 /**
  * GenericPackage
  */
-public class GenericPackage extends GenericObjectContainer implements DBPQualifiedObject, GenericScriptObject, DBSPackage
-{
+public class GenericPackage extends GenericObjectContainer implements DBPQualifiedObject, GenericScriptObject, DBSPackage {
 
-    private GenericStructContainer container;
-    private String packageName;
-    private boolean nameFromCatalog;
+    private final GenericStructContainer container;
+    private final String packageName;
+    private final boolean nameFromCatalog;
 
     public GenericPackage(
         GenericStructContainer container,
         String packageName,
-        boolean nameFromCatalog)
-    {
+        boolean nameFromCatalog
+    ) {
         super(container.getDataSource());
         this.container = container;
         this.packageName = packageName;
@@ -57,114 +56,95 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return packageName;
     }
 
     @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return null;
     }
 
     @Override
-    public DBSObject getParentObject()
-    {
+    public DBSObject getParentObject() {
         return container;
     }
 
     @Override
     @Property(viewable = true, order = 3, labelProvider = GenericCatalog.CatalogNameTermProvider.class)
-    public GenericCatalog getCatalog()
-    {
+    public GenericCatalog getCatalog() {
         return container.getCatalog();
     }
 
     @Override
     @Property(viewable = true, order = 4)
-    public GenericSchema getSchema()
-    {
+    public GenericSchema getSchema() {
         return container.getSchema();
     }
 
     @Override
-    public GenericStructContainer getObject()
-    {
+    public GenericStructContainer getObject() {
         return this;
     }
 
     @Override
     public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
-        throws DBException
-    {
+    throws DBException {
         return procedures;
     }
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
-        return DBUtils.getFullQualifiedName(getDataSource(),
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(
+            getDataSource(),
             getCatalog(),
             getSchema(),
-            this);
+            this
+        );
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return procedures;
     }
 
     @Override
-    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
-    {
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
         return DBUtils.findObject(procedures, childName);
     }
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
-    {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
         return GenericProcedure.class;
     }
 
     @Override
-    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException
-    {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
     }
 
     @Override
-    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         procedures.clear();
         return super.refreshObject(monitor);
     }
 
-    public boolean isNameFromCatalog()
-    {
+    public boolean isNameFromCatalog() {
         return nameFromCatalog;
     }
 
-    public void addProcedure(GenericProcedure procedure)
-    {
+    public void addProcedure(GenericProcedure procedure) {
         procedures.add(procedure);
     }
 
-    public void hasProcedure(GenericProcedure procedure)
-    {
-        procedures.add(procedure);
-    }
-
-    public void orderProcedures()
-    {
+    public void orderProcedures() {
         DBUtils.orderObjects(procedures);
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return null;
     }
 }

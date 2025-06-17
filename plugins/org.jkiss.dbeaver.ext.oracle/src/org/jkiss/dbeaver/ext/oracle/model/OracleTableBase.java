@@ -148,7 +148,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
