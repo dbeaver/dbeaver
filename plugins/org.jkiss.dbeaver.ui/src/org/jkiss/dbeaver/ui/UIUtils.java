@@ -1557,8 +1557,8 @@ public class UIUtils {
         }
 
         control.setEnabled(enable);
-        if (control instanceof Composite) {
-            for (Control child : ((Composite) control).getChildren()) {
+        if (control instanceof Composite composite) {
+            for (Control child : composite.getChildren()) {
                 if (child instanceof Composite) {
                     enableWithChildren(child, enable);
                 } else {
