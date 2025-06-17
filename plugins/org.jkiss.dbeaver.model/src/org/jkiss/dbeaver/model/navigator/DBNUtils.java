@@ -142,14 +142,14 @@ public class DBNUtils {
             return;
         }
 
-        if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBPObjectWithOrdinalPosition) {
-            return;
-        }
-
         if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBSTableColumn) {
             if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
                 Arrays.sort(children, NodeNameComparator.INSTANCE);
             }
+            return;
+        }
+
+        if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBPObjectWithOrdinalPosition) {
             return;
         }
 
