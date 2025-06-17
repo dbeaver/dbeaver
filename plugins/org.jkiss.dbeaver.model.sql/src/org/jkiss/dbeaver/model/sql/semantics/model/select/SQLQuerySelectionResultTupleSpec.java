@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.LinkedList;
@@ -55,7 +56,6 @@ public class SQLQuerySelectionResultTupleSpec extends SQLQuerySelectionResultSub
         return this.tupleReference.getTupleSource();
     }
 
-    @NotNull
     @Override
     protected void collectColumns(
             @NotNull SQLQueryDataContext context,
@@ -68,6 +68,22 @@ public class SQLQuerySelectionResultTupleSpec extends SQLQuerySelectionResultSub
         SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
         if (tupleSource != null) {
             this.collectForeignColumns(tupleSource.getResultDataContext().getColumnsList(), rowsSourceModel, resultColumns);
+        }
+    }
+
+    @Override
+    protected void collectColumns(
+        @NotNull SQLQueryRowsDataContext knownValues,
+        @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull LinkedList<SQLQueryResultColumn> resultColumns
+    ) {
+        this.tupleReference.resolveRowSources(knownValues.getRowsSources(), statistics);
+        this.tupleReference.resolveValueRelations(knownValues, statistics);
+
+        SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
+        if (tupleSource != null) {
+            this.collectForeignColumns(tupleSource.getRowsDataContext().getColumnsList(), rowsSourceModel, resultColumns);
         }
     }
 

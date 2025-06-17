@@ -145,7 +145,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             gl.verticalSpacing = 0;
             this.filterComposite.setLayout(gl);
             this.filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            CSSUtils.setCSSClass(this.filterComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            // CSSUtils.setCSSClass(this.filterComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             if (!compactMode) {
                 this.activeObjectPanel = new ActiveObjectPanel(filterComposite);
@@ -261,7 +261,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         if (!compactMode) {
             filterToolbar = new ToolBar(this, SWT.HORIZONTAL | SWT.RIGHT);
             filterToolbar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
-
+            CSSUtils.setCSSClass(filterToolbar, DBStyles.COLORED_BY_CONNECTION_TYPE);
             filtersClearButton = new ToolItem(filterToolbar, SWT.NO_FOCUS | SWT.DROP_DOWN);
             filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
             filtersClearButton.setToolTipText(ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_FILTER_CLEAR_SETTING, viewer.getSite(), false));
@@ -388,8 +388,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
             this.filterExpandPanel.setVisible(enable);
             historyPanel.setVisible(enable);
-            filtersText.setEditable(viewer.supportsDataFilter());
-            filtersText.setEnabled(enable);
+            filtersText.setEditable(viewer.supportsDataFilter() && enable);
+            //filtersText.setEnabled(enable);
             //filtersText.setVisible(enable);
             executePanel.setVisible(enable);
         } finally {
@@ -726,7 +726,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         private Shell popup;
 
         ActiveObjectPanel(Composite addressBar) {
-            super(addressBar, SWT.NONE);
+            super(addressBar, SWT.NO_FOCUS);
             setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_open_console);
             //setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -1049,7 +1049,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         private final Image enabledImageCollapse, disabledImageCollapse;
 
         FilterExpandPanel(Composite addressBar) {
-            super(addressBar, SWT.NONE);
+            super(addressBar, SWT.NO_FOCUS);
             setToolTipText(ResultSetMessages.filter_panel_expand_panel_text);
             enabledImageExpand = DBeaverIcons.getImage(UIIcon.FIT_WINDOW);
             disabledImageExpand = new Image(enabledImageExpand.getDevice(), enabledImageExpand, SWT.IMAGE_GRAY);
@@ -1088,7 +1088,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         GridData gd = (GridData) filtersText.getLayoutData();
         gd.heightHint = filtersText.getLineHeight() * (filterExpanded ? 5 : 1);
-
+        filtersText.redraw();
         this.getParent().layout(true);
     }
 

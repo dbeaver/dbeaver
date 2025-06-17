@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.statistics;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -38,22 +39,28 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class StatisticsTransmitter {
 
     private static final Log log = Log.getLog(StatisticsTransmitter.class);
+    public static final String STATS_STAGE_DBEAVER = "stats.stage.dbeaver.infra";
+    public static final String STATS_DBEAVER_COM = "stats.dbeaver.com";
+    private static final String URL_TEMPLATE = "https://%s/send-statistics";
 
-    private static final String ENDPOINT = "https://stats.dbeaver.com/send-statistics";
+    private final String endpoint;
 
     private final String workspaceId;
 
     public StatisticsTransmitter(String workspaceId) {
         this.workspaceId = workspaceId;
+
+        if (System.getProperty(DBConstants.LM_STAGE_MODE) != null) {
+            endpoint = URL_TEMPLATE.formatted(STATS_STAGE_DBEAVER);
+        } else {
+            endpoint = URL_TEMPLATE.formatted(STATS_DBEAVER_COM);;
+        }
     }
 
     public void send(boolean detached) {
@@ -120,24 +127,29 @@ public class StatisticsTransmitter {
         }
         //log.debug("Sending statistics file '" + logFile.toAbsolutePath() + "'");
         try {
+            Map<String, String> parametersMap = new HashMap<>();
+            parametersMap.put("Content-Type", "text/plain");
+            parametersMap.put("Locale", Locale.getDefault().toString());
+            parametersMap.put("Country", Locale.getDefault().getISO3Country());
+            parametersMap.put("Timezone", TimeZone.getDefault().getID());
+            parametersMap.put("Application-Name", GeneralUtils.getProductName());
+            parametersMap.put("Application-Version", GeneralUtils.getProductVersion().toString());
+            parametersMap.put("OS", CommonUtils.notEmpty(System.getProperty(StandardConstants.ENV_OS_NAME)));
+            if (DBWorkbench.isPlatformStarted()) {
+                parametersMap.putAll(DBWorkbench.getPlatform().getApplication()
+                    .getAdditionalApplicationProperties());
+            }
             URLConnection urlConnection = WebUtils.openURLConnection(
-                ENDPOINT + "?session=" + sessionId + "&time=" + timestamp,
+                endpoint + "?session=" + sessionId + "&time=" + timestamp,
                 null,
                 workspaceId,
                 "POST",
                 0,
                 5000,
-                Map.of(
-                    "Content-Type", "text/plain",
-                    "Locale", Locale.getDefault().toString(),
-                    "Country", Locale.getDefault().getISO3Country(),
-                    "Timezone", TimeZone.getDefault().getID(),
-                    "Application-Name", GeneralUtils.getProductName(),
-                    "Application-Version", GeneralUtils.getProductVersion().toString(),
-                    "OS", CommonUtils.notEmpty(System.getProperty(StandardConstants.ENV_OS_NAME))));
+                parametersMap
+                );
 
-            ((HttpURLConnection)urlConnection).setFixedLengthStreamingMode(Files.size(logFile));
-
+            ((HttpURLConnection) urlConnection).setFixedLengthStreamingMode(Files.size(logFile));
             try (OutputStream outputStream = urlConnection.getOutputStream()) {
                 Files.copy(logFile, outputStream);
             }

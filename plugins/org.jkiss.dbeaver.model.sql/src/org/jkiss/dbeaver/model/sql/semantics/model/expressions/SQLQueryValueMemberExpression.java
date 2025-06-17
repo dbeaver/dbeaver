@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 /**
@@ -76,7 +78,24 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
     @Override
     protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.owner.propagateContext(context, statistics);
+        this.resolveTypeImpl(statistics);
+    }
 
+    @Override
+    protected void resolveRowSourcesImpl(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        this.owner.resolveRowSources(context, statistics);
+    }
+
+    @Override
+    protected SQLQueryExprType resolveValueTypeImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        this.resolveTypeImpl(statistics);
+        return this.type;
+    }
+
+    private void resolveTypeImpl(@NotNull SQLQueryRecognitionContext statistics) {
         SQLQuerySymbolOrigin memberOrigin = new SQLQuerySymbolOrigin.MemberOfType(this.owner.getValueType());
 
         if (this.identifier == null) {

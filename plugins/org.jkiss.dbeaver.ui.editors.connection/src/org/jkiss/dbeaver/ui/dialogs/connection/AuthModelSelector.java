@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,14 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
@@ -48,7 +50,7 @@ import java.util.List;
  * ConnectionPageWithAuth
  */
 
-public class AuthModelSelector extends Composite {
+public class AuthModelSelector extends Composite implements DBPEventListener {
 
     private static final Log log = Log.getLog(DataSourceProviderRegistry.class);
 
@@ -65,7 +67,7 @@ public class AuthModelSelector extends Composite {
     private final Runnable changeListener;
     private Combo authModelCombo;
     private boolean authSettingsEnabled = true;
-    private boolean isEnableSharedConfigurator = true;
+    private final boolean isEnableSharedConfigurator;
     private final DBPConnectionEditIntention intention;
 
     public AuthModelSelector(
@@ -131,6 +133,10 @@ public class AuthModelSelector extends Composite {
         DBPAuthModelDescriptor activeAuthModel,
         String defaultAuthModelId
     ) {
+        if (activeDataSource != null) {
+            activeDataSource.getRegistry().removeDataSourceListener(this);
+        }
+
         this.activeDataSource = dataSourceContainer;
         this.selectedAuthModel = activeAuthModel;
         this.authSettingsEnabled = !dataSourceContainer.isSharedCredentials();
@@ -142,6 +148,7 @@ public class AuthModelSelector extends Composite {
             o1.isDefaultModel() ? -1 :
                 o2.isDefaultModel() ? 1 :
                     o1.getName().compareTo(o2.getName()));
+        activeDataSource.getRegistry().addDataSourceListener(this);
         if ((selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
             for (DBPAuthModelDescriptor amd : allAuthModels) {
@@ -153,7 +160,7 @@ public class AuthModelSelector extends Composite {
             }
             if (selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) {
                 // First one
-                selectedAuthModel = allAuthModels.get(0);
+                selectedAuthModel = allAuthModels.getFirst();
                 dataSourceContainer.getConnectionConfiguration().setAuthModelId(selectedAuthModel.getId());
             }
         }
@@ -163,6 +170,26 @@ public class AuthModelSelector extends Composite {
 
         changeAuthModel();
     }
+
+    @Override
+    public void handleDataSourceEvent(DBPEvent event) {
+        if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
+            event.getData() instanceof DBPConnectionConfiguration newConfig &&
+            event.getObject() == activeDataSource
+        ) {
+            UIUtils.asyncExec(() -> {
+                DBPConnectionConfiguration currentConfig = activeDataSource.getConnectionConfiguration();
+                currentConfig.setUserName(newConfig.getUserName());
+                currentConfig.setUserPassword(newConfig.getUserPassword());
+                currentConfig.setUrl(newConfig.getUrl());
+
+                if (authModelConfigurator != null && !isDisposed()) {
+                    authModelConfigurator.loadSettings(activeDataSource);
+                }
+            });
+        }
+    }
+
 
     private void changeAuthModel() {
         showAuthModelSettings();
@@ -315,7 +342,11 @@ public class AuthModelSelector extends Composite {
         }
     }
 
-    public void setEnableSharedConfigurator(boolean isEnable) {
-        this.isEnableSharedConfigurator = isEnable;
+    @Override
+    public void dispose() {
+        if (activeDataSource != null) {
+            activeDataSource.getRegistry().removeDataSourceListener(this);
+        }
+        super.dispose();
     }
 }

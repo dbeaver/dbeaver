@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -248,17 +248,17 @@ public abstract class SQLQueryExprType {
                 a.getDataKind().equals(b.getDataKind())
             ) || (
                 // both are complex of the exact same db type
-                a instanceof SQLQueryExprComplexType x && 
-                b instanceof SQLQueryExprComplexType y && 
+                a instanceof SQLQueryExprComplexType<?> x &&
+                b instanceof SQLQueryExprComplexType<?> y &&
                 x.complexType.equals(y.complexType)
             ) || (
-                a instanceof SQLQueryExprIndexableType x &&
-                b instanceof SQLQueryExprIndexableType y &&
-                isDataTypeMatches(x.elementType, y.elementType)
+                a instanceof SQLQueryExprIndexableType x2 &&
+                b instanceof SQLQueryExprIndexableType y2 &&
+                isDataTypeMatches(x2.elementType, y2.elementType)
             ) || (
-                a instanceof SQLQueryExprDescribedIndexableType x &&
-                b instanceof SQLQueryExprDescribedIndexableType y &&
-                x.typeDesc.equals(y.typeDesc)
+                a instanceof SQLQueryExprDescribedIndexableType x3 &&
+                b instanceof SQLQueryExprDescribedIndexableType y3 &&
+                x3.typeDesc.equals(y3.typeDesc)
             );
         
         // TODO consider dialect-dependent coercions, consider generalizing coercion 
@@ -297,14 +297,20 @@ public abstract class SQLQueryExprType {
 
         @Override
         public @NotNull List<SQLQueryExprTypeMemberInfo> getNamedMembers(@NotNull DBRProgressMonitor monitor) throws DBException {
-            return this.referencedSource.source.getResultDataContext().getColumnsList().stream().map(
+            return (
+                this.referencedSource.source.getGivenDataContext() != null
+                    ? this.referencedSource.source.getResultDataContext().getColumnsList()
+                    : this.referencedSource.source.getRowsDataContext().getColumnsList()
+            ).stream().map(
                 c -> new SQLQueryExprTypeMemberInfo(this, c.symbol.getName(), c.type, c.realAttr, c)
             ).toList();
         }
 
         @Override
         public SQLQueryExprType findNamedMemberType(@NotNull DBRProgressMonitor monitor, @NotNull String memberName) throws DBException {
-            SQLQueryResultColumn column = this.referencedSource.source.getResultDataContext().resolveColumn(monitor, memberName);
+            SQLQueryResultColumn column = this.referencedSource.source.getGivenDataContext() != null
+                ? this.referencedSource.source.getResultDataContext().resolveColumn(monitor, memberName)
+                : this.referencedSource.source.getRowsDataContext().resolveColumn(monitor, memberName);
             return column == null ? null : column.type;
         }
 

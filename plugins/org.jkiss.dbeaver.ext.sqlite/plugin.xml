@@ -17,6 +17,18 @@
                 label="SQLite"
                 icon="icons/sqlite_icon.png"
                 dialect="sqlite">
+
+            <treeInjection path="generic/catalog/schema/table"
+                changeFolderType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable"/>
+            <treeInjection path="generic/catalog/schema/table/attribute"
+                changeFolderType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn"/>
+            <treeInjection path="generic/catalog/schema/table/association"
+                changeFolderType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey"/>
+            <treeInjection path="generic/catalog/schema/view"
+                changeFolderType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteView"/>
+            <treeInjection path="generic/catalog/schema/view/attribute"
+                changeFolderType="org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn"/>
+
             <drivers managable="true">
                 <driver
                         id="sqlite_jdbc"

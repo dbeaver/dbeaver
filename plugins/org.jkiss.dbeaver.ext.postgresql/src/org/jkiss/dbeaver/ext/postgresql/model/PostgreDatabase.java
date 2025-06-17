@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -183,7 +183,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
-        try (JDBCSession session = getMetaContext().openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+        PostgreExecutionContext context = getMetaContext();
+        try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+            ((PostgreDataSource) dataSource).readDatabaseServerVersion(session);
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE datname=?")) {
                 dbStat.setString(1, name);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -191,9 +193,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         loadInfo(dbResult);
                     }
                 }
-            } catch (SQLException e) {
-                throw new DBCException(e, session.getExecutionContext());
             }
+        } catch (SQLException e) {
+            throw new DBCException(e, context);
         }
     }
 
@@ -522,15 +524,20 @@ public class PostgreDatabase extends JDBCRemoteInstance
     @Association
     public Collection<PostgreCollation> getCollations(DBRProgressMonitor monitor)
         throws DBException {
-        return collationCache.getAllObjects(monitor, this);
+        if (getDataSource().getServerType().supportsCollations()) {
+            return collationCache.getAllObjects(monitor, this);
+        }
+        return null;
     }
 
     @Association
     public PostgreCollation getCollation(DBRProgressMonitor monitor, long id)
         throws DBException {
-        for (PostgreCollation collation : collationCache.getAllObjects(monitor, this)) {
-            if (collation.getObjectId() == id) {
-                return collation;
+        if (getDataSource().getServerType().supportsCollations()) {
+            for (PostgreCollation collation : collationCache.getAllObjects(monitor, this)) {
+                if (collation.getObjectId() == id) {
+                    return collation;
+                }
             }
         }
         log.debug("Collation '" + id + "' not found in schema " + getName());

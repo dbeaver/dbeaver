@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,11 +55,11 @@ public class ErrorPresentation extends AbstractPresentation {
 
     private final String sqlText;
     private final IStatus status;
+    private final IResultSetContainer resultSetContainer;
     private StyledText textWidget;
     private Object editorPanel;
-    private IResultSetContainerExt resultSetContainer;
 
-    public ErrorPresentation(String sqlText, IStatus status, @Nullable IResultSetContainerExt resultSetContainer) {
+    public ErrorPresentation(String sqlText, IStatus status, @NotNull IResultSetContainer resultSetContainer) {
         this.sqlText = sqlText;
         this.status = status;
         this.resultSetContainer = resultSetContainer;
@@ -163,10 +163,6 @@ public class ErrorPresentation extends AbstractPresentation {
     @Override
     public void dispose() {
         super.dispose();
-        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-        if (serviceSQL != null) {
-            serviceSQL.disposeSQLPanel(editorPanel);
-        }
     }
 
 }

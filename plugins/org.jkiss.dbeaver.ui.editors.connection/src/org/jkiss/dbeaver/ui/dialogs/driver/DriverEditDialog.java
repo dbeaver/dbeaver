@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -405,9 +406,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
                         cell.setText(displayName);
                         Path localFile = lib.getLocalFile();
                         if (localFile != null && !Files.exists(localFile)) {
-                            cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
+                            cell.setForeground(JFaceColors.getErrorText(Display.getDefault()));
                         } else if (!driver.getDefaultDriverLoader().isLibraryResolved(lib)) {
-                            cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLUE));
+                            cell.setForeground(JFaceColors.getHyperlinkText(Display.getDefault()));
                         } else {
                             cell.setForeground(null);
                         }
@@ -939,6 +940,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
         }
         for (DBPDriverLibrary newLib : libraries) {
+            if (newLib instanceof DriverLibraryMavenArtifact) {
+                continue;
+            }
             if (!(newLib instanceof DriverLibraryLocal)) {
                 log.error("Wrong driver library found: " + newLib + ". Must be a local file");
                 continue;
@@ -998,7 +1002,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         if (isNewLib) {
             driverFilePath = driver.getId() + "/" + shortFileName;
         } else {
-            driverFilePath = DriverDescriptor.getWorkspaceDriversStorageFolder().relativize(localFilePath).toString();
+            driverFilePath = DriverDescriptor.getExternalDriversStorageFolder().relativize(localFilePath).toString();
         }
 
         if (library instanceof DriverLibraryLocal libraryLocal && isNewLib) {

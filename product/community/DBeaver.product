@@ -2,7 +2,7 @@
 <?pde version="3.5"?>
 
 <product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.ui.app.standalone.product"
-    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="25.0.4.qualifier" useFeatures="true"
+    application="org.jkiss.dbeaver.ui.app.standalone.standalone" version="25.1.1.qualifier" useFeatures="true"
     includeLaunchers="true">
 
     <configIni use="default">
@@ -14,7 +14,7 @@
 
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions
-            -Dosgi.requiredJavaVersion=17
+            -Dosgi.requiredJavaVersion=21
             -Dfile.encoding=UTF-8
             --add-modules=ALL-SYSTEM
             --add-opens=java.base/java.io=ALL-UNNAMED

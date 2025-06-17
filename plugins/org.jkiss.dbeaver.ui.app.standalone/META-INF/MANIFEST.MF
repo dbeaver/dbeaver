@@ -5,13 +5,12 @@ Bundle-Name: DBeaver Application Standalone
 Bundle-SymbolicName: org.jkiss.dbeaver.ui.app.standalone;singleton:=true
 Bundle-Activator: org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator
 Bundle-ActivationPolicy: lazy
-Bundle-Version: 25.0.4.qualifier
-Bundle-Release-Date: 20250505
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Version: 25.1.1.qualifier
+Bundle-Release-Date: 20250616
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.jkiss.dbeaver.ui.app.standalone,
  org.jkiss.dbeaver.ui.app.standalone.rpc,
  org.jkiss.dbeaver.ui.app.standalone.update
-Bundle-ClassPath: .
 Import-Package: org.w3c.css.sac
 Require-Bundle: org.eclipse.e4.ui.css.core,
  org.eclipse.e4.ui.css.swt,
@@ -23,6 +22,7 @@ Require-Bundle: org.eclipse.e4.ui.css.core,
  org.apache.commons.cli,
  com.google.gson,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.cli;visibility:=reexport,
  org.jkiss.dbeaver.model.rcp,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ui,

@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -33,7 +34,10 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.filters.QMEventCriteria;
-import org.jkiss.dbeaver.model.qm.meta.*;
+import org.jkiss.dbeaver.model.qm.meta.QMMConnectionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -204,14 +208,29 @@ public class QMUtils {
      */
     public static String getQmSessionId(DBCExecutionContext executionContext) throws DBException {
         if (DBWorkbench.getPlatform().getApplication() instanceof QMSessionProvider provider) {
-            return provider.getQmSessionId();
+            return provider.getQueryManagerSessionId();
         }
-        DBRProgressMonitor monitor = new LoggingProgressMonitor();
-        DBPProject project = executionContext.getDataSource().getContainer().getProject();
+        return getQmSessionId(executionContext.getDataSource());
+    }
+
+    /**
+     * Extract QM session id from data source
+     */
+    @Nullable
+    public static String getQmSessionId(@NotNull DBPDataSource dataSource) throws DBException {
+        return getQmSessionId(dataSource.getContainer().getProject());
+    }
+
+    /**
+     * Extract QM session id from project
+     */
+    @Nullable
+    public static String getQmSessionId(@NotNull DBPProject project) throws DBException {
         SMSessionContext projectAuthContext = project.getSessionContext();
         SMAuthSpace projectPrimaryAuthSpace = projectAuthContext.getPrimaryAuthSpace();
 
         SMSession session = null;
+        DBRProgressMonitor monitor = new LoggingProgressMonitor();
         if (projectPrimaryAuthSpace != null) {
             session = project.getSessionContext().getSpaceSession(monitor, projectPrimaryAuthSpace, false);
         }
@@ -237,11 +256,15 @@ public class QMUtils {
     /**
      * Return close time for events that were ended
      */
-    public static long getObjectEventTime(QMMObject object, QMEventAction action) {
-        if (action == QMEventAction.END) {
-            return object.getCloseTime();
+    public static long getObjectEventTime(QMEvent event) {
+        if (event instanceof QMMetaEvent metaEvent) {
+            return metaEvent.getTimestamp();
         }
-        return object.getOpenTime();
+
+        if (event.getAction() == QMEventAction.END) {
+            return event.getObject().getCloseTime();
+        }
+        return event.getObject().getOpenTime();
     }
 
     /**

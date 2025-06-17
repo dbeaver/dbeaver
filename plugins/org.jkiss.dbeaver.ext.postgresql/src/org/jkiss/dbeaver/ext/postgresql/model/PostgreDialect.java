@@ -829,6 +829,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
             "TYPE",
             "USER",
             "COMMENT",
+            "LATERAL",
             "MATERIALIZED",
             "ILIKE",
             "ELSIF",
@@ -961,6 +962,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @Override
     public String[][] getBlockBoundStrings() {
         return BLOCK_BOUND_KEYWORDS;
+    }
+
+    @Override
+    public boolean validIdentifierStart(char c) {
+        return super.validIdentifierStart(c) || c == '_';
     }
 
     @Override
