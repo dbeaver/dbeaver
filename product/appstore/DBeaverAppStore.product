@@ -9,7 +9,7 @@
     </configIni>
 
     <launcherArgs>
-        <programArgs></programArgs>
+        <programArgs>-nl en</programArgs>
 
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions

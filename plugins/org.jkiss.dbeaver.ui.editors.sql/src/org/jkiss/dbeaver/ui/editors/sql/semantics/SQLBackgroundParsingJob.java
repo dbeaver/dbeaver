@@ -88,7 +88,7 @@ public class SQLBackgroundParsingJob {
             }
         }
     };
-    private CompletableFuture<Long> lastParsingFinishStamp = new CompletableFuture<>() { { this.complete(0L); } };
+    private volatile CompletableFuture<Long> lastParsingFinishStamp = new CompletableFuture<>() { { this.complete(0L); } };
 
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
@@ -399,6 +399,7 @@ public class SQLBackgroundParsingJob {
     private void doWork(DBRProgressMonitor monitor) throws BadLocationException {
         TextViewer viewer = this.editor.getTextViewer();
         if (viewer == null || this.editor.getRuleManager() == null) {
+            this.signalAccomplished();
             return;
         }
         Interval actualFragment = UIUtils.syncExec(new RunnableWithResult<>() {
@@ -426,6 +427,7 @@ public class SQLBackgroundParsingJob {
         });
 
         if (actualFragment == null) {
+            this.signalAccomplished();
             return;
         }
         int workOffset;
@@ -460,16 +462,16 @@ public class SQLBackgroundParsingJob {
                 
                 // truncate work region to fit within actualFragment,
                 // as we've dropped what is outside already, so not point to parse outside of it
-                Interval workInterval = new Interval(workOffset, workOffset + workLength);
+                Interval workInterval = new Interval(workOffset, saturatedSum(workOffset, workLength));
                 if (!actualFragment.properlyContains(workInterval)) {
                     workInterval = actualFragment.intersection(workInterval);
                     workOffset = workInterval.a;
                     workLength = workInterval.length();
                 }
 
-                int docTailDelta = this.document.getLength() - (workOffset + workLength);
+                int docTailDelta = this.document.getLength() - saturatedSum(workOffset, workLength);
                 if (docTailDelta < 0) {
-                    workLength += docTailDelta; 
+                    workLength += docTailDelta;
                 }
                 if (DEBUG) {
                     {
@@ -487,11 +489,13 @@ public class SQLBackgroundParsingJob {
             }
         } catch (Throwable ex) {
             log.error(ex);
+            this.signalAccomplished();
             return;
         }
 
         try {
             if (workLength == 0) {
+                this.signalAccomplished();
                 return;
             }
 
@@ -608,7 +612,7 @@ public class SQLBackgroundParsingJob {
                                 SQLQueryRecognitionProblemInfo.Severity.WARNING,
                                 queryModel.getSyntaxNode(),
                                 null,
-                                "Too many errors found in one query of " + this.editor.getTitle() + "!"+
+                                "Too many errors found in one query of " + this.editor.getTitle() + "!" +
                                     " Displaying first " + SQLQueryRecognitionProblemInfo.PER_QUERY_LIMIT + " of them.",
                                 null
                             ));
@@ -656,6 +660,12 @@ public class SQLBackgroundParsingJob {
         }
     }
 
+    private void signalAccomplished() {
+        synchronized (this.syncRoot) {
+            this.lastParsingFinishStamp.complete(System.currentTimeMillis());
+        }
+    }
+
     private void accomplishWork(int parsedOffset, int parsedLength) {
         synchronized (this.syncRoot) {
             this.knownRegionStart = Math.min(this.knownRegionStart, parsedOffset);
@@ -664,7 +674,16 @@ public class SQLBackgroundParsingJob {
                 log.debug("known is " + knownRegionStart + "-" + knownRegionEnd);
             }
             this.isRunning = false;
-            this.lastParsingFinishStamp.complete(System.currentTimeMillis());
+            this.signalAccomplished();
+        }
+    }
+    
+    private static int saturatedSum(int a, int b) {
+        int r = a + b;
+        if (r < a || r < b) {
+            return Integer.MAX_VALUE;
+        } else {
+            return r;
         }
     }
 
