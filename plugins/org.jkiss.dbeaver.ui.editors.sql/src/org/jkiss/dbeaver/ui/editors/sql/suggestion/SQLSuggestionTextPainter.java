@@ -36,6 +36,7 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
     public static final String HINT_CATEGORY = "suggestion";
     private final ITextViewer viewerComponent;
     private Color fontColor;
+    private Color suggestionBackground;
     private RenderState currentState;
     private final Semaphore lockObject;
     private boolean isEnabled;
@@ -51,8 +52,12 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
         UIUtils.asyncExec(() -> ((ITextViewerExtension2) viewerComponent).addPainter(this));
     }
 
-    public void setHintColor(Color color) {
+    public void setFontColor(Color color) {
         this.fontColor = color;
+    }
+
+    public void setSuggestionBackgroundColor(Color color) {
+        this.suggestionBackground = color;
     }
 
     public void removeHint() {
@@ -210,7 +215,7 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
         int position = activeHint.getPosition();
         String[] textLines = activeHint.getTextLines();
         if (textLines.length > 0) {
-            TextRenderingUtils.drawFirstLine(textLines[0], gc, getTextWidget(), position);
+            TextRenderingUtils.drawFirstLine(textLines[0], gc, getTextWidget(), position, this.suggestionBackground);
             configureGraphicsContext(gc);
             if (textLines.length > 1) {
                 TextRenderingUtils.drawNextLines(textLines[1], gc, getTextWidget(), position);

@@ -37,7 +37,8 @@ public class TextRenderingUtils {
         String text,
         GC gc,
         StyledText textWidget,
-        int widgetOffset
+        int widgetOffset,
+        Color textBackground
     ) {
         if (gc == null) {
             return;
@@ -73,9 +74,7 @@ public class TextRenderingUtils {
             }
             Point textSize = gc.stringExtent(text);
             Color bgColor = gc.getBackground();
-            Color lineBackground = textWidget.getLineBackground(line);
-            // TODO obtain current line highlight color
-            gc.setBackground(lineBackground != null ? lineBackground : textWidget.getBackground());
+            gc.setBackground(textBackground);
             gc.fillRectangle(origin.x, verticalPosition, textSize.x, textSize.y);
             gc.drawString(text, origin.x, verticalPosition, true);
             gc.setBackground(bgColor);
