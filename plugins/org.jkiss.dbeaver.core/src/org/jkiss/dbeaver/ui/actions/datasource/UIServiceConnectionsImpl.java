@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,8 @@ public class UIServiceConnectionsImpl implements DBServiceConnections, UIService
     @Override
     public void openConnectionEditor(@NotNull DBPDataSourceContainer dataSourceContainer, String defaultPageName) {
         if (dataSourceContainer.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
-            if (dataSourceContainer.getProject().isUseSecretStorage() && !dataSourceContainer.isSharedCredentials()) {
+            if (dataSourceContainer.getProject().isUseSecretStorage() && !dataSourceContainer.isSharedCredentials()
+                && DBWorkbench.getPlatform().getWorkspace().isEnabledSecretProviders()) {
                 try {
                     DBSSecretController secretController = DBSSecretController.getProjectSecretController(dataSourceContainer.getProject());
                     dataSourceContainer.resolveSecrets(secretController);

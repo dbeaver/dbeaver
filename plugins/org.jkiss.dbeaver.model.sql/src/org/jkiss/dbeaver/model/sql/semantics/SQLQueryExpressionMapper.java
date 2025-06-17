@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQuerySelectIntoModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueFlattenedExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
@@ -106,7 +107,25 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
                                 : r.collectColumnNameList(columnListNode);
 
                             SQLQueryRowsSourceModel subquerySource = subsources.getOrEmpty(cteSubqueryNode);
-                            cteSubqueries.add(new SQLQueryRowsCteSubqueryModel(cteSubqueryNode, subqueryName, columnList, subquerySource));
+                            SQLQueryLexicalScope subqueryTailScope = null;
+
+                            STMTreeNode subqueryNode = cteSubqueryNode.findLastChildOfName(STMKnownRuleNames.subquery);
+                            if (subqueryNode != null){
+                                STMTreeNode subqueryTrailingNode = subqueryNode.findLastChildOfName(STMKnownRuleNames.RIGHT_PAREN_TERM);
+                                if (subqueryTrailingNode != null) {
+                                    subqueryTailScope = new SQLQueryLexicalScope();
+                                    subqueryTailScope.setInterval(
+                                        Interval.of(subquerySource.getInterval().b + 1, subqueryTrailingNode.getRealInterval().a - 1)
+                                    );
+                                }
+                            }
+                            cteSubqueries.add(new SQLQueryRowsCteSubqueryModel(
+                                cteSubqueryNode,
+                                subqueryName,
+                                columnList,
+                                subquerySource,
+                                subqueryTailScope
+                            ));
                         }
                     }
                     return new SQLQueryRowsCteModel(n, isRecursive, cteSubqueries, resultQuery);
@@ -186,7 +205,7 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
                                                 .filter(cn -> cn instanceof STMTreeTermNode) // after the whitespace following the inclusive end position
                                                 .ifPresent(kw -> condScope.lexicalScope.setInterval(Interval.of(kw.getRealInterval().b + 2, Integer.MAX_VALUE)));
                                             yield joinConditionNode.map(cn -> cn.findFirstChildOfName(STMKnownRuleNames.searchCondition))
-                                                .map(r::collectValueExpression)
+                                                .map(cn -> r.collectValueExpression(cn, condScope.lexicalScope))
                                                 .map(e -> new SQLQueryRowsNaturalJoinModel(
                                                     range, childNode, currSource, nextSource, isLateral,
                                                     e, condScope.lexicalScope
@@ -284,10 +303,36 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
         },
         STMKnownRuleNames.explicitTable, (n, cc, r) -> r.collectTableReference(n, false),
         STMKnownRuleNames.tableValueConstructor, (n, cc, r) -> {
-            List<SQLQueryValueExpression> values = n.findChildrenOfName(STMKnownRuleNames.rowValueConstructor).stream()
-                .map(r::collectValueExpression).toList();
-            boolean isIncomplete = n.getChildCount() != values.size() * 2 || n.hasErrorChildren();
-            return new SQLQueryRowsTableValueModel(n, values, isIncomplete);
+            List<STMTreeNode> rowNodes = n.findChildrenOfName(STMKnownRuleNames.rowValueConstructor);
+            SQLQueryRowsSourceModel rs = null;
+
+            for (STMTreeNode rowNode : rowNodes) {
+                STMTreeNode valueNode = rowNode.findFirstChildOfName(STMKnownRuleNames.rowValueConstructorElement);
+                if (valueNode != null) {
+                    boolean hasErrors = rowNode.hasErrorChildren() || valueNode.hasErrorChildren();
+                    rs = new SQLQueryRowsTableValueModel(n, List.of(r.collectValueExpression(valueNode, null)), hasErrors);
+                } else {
+                    STMTreeNode rowValuesNode = rowNode.findFirstChildOfName(STMKnownRuleNames.rowValueConstructorList);
+                    if (rowValuesNode != null) {
+                        List<SQLQueryValueExpression> values = rowValuesNode.findChildrenOfName(
+                            STMKnownRuleNames.rowValueConstructorElement).stream()
+                                .map(en -> {
+                                    STMTreeNode vn = en.findFirstNonErrorChild();
+                                    return vn != null
+                                        ? r.collectValueExpression(vn, null)
+                                        : new SQLQueryValueFlattenedExpression(en, Collections.emptyList());
+                                }).toList();
+                        boolean hasErrors = rowNode.hasErrorChildren() || rowValuesNode.hasErrorChildren();
+                        rs = new SQLQueryRowsTableValueModel(n, values, hasErrors);
+                    } else if (cc.isEmpty()) {
+                        rs = makeEmptyRowsModel(n);
+                    } else {
+                        rs = cc.get(0);
+                    }
+                }
+            }
+
+            return rs != null ? rs : makeEmptyRowsModel(n);
         }
     );
 

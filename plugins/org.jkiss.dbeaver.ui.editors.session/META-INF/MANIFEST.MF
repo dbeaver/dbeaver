@@ -11,6 +11,5 @@ Require-Bundle: org.jkiss.dbeaver.ui.editors.base,
  org.jkiss.dbeaver.ui.editors.sql,
  org.jkiss.dbeaver.ui.navigator
 Export-Package: org.jkiss.dbeaver.ui.views.session
-Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.session
 

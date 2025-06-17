@@ -79,7 +79,7 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
             CubridTable table = (CubridTable) command.getObject();
             StringBuilder query = new StringBuilder("ALTER TABLE ");
             query.append(table.getContainer() + "." + table.getName());
-            appendTableModifiers(monitor, table, command, query, true);
+            appendTableModifiers(monitor, table, command, query, true, options);
             actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
     }
@@ -90,10 +90,12 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
             @NotNull GenericTableBase genericTable,
             @NotNull NestedObjectCommand command,
             @NotNull StringBuilder query,
-            @NotNull boolean alter) {
+            @NotNull boolean alter,
+            @NotNull Map<String, Object> options) {
         CubridTable table = (CubridTable) genericTable;
-        String suffix = alter ? "," : "\n";
-        query.append("\n");
+        String delimiter = getDelimiter(options);
+        String suffix = alter ? "," : delimiter;
+        query.append(delimiter);
         if (!alter || command.hasProperty("reuseOID")) {
             query.append(table.isReuseOID() ? "REUSE_OID" : "DONT_REUSE_OID").append(suffix);
         }
@@ -106,7 +108,9 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         if ((!alter && table.getDescription() != null) || command.hasProperty("description")) {
             query.append("COMMENT = ").append(SQLUtils.quoteString(table, CommonUtils.notEmpty(table.getDescription()))).append(suffix);
         }
-        query.deleteCharAt(query.length() - 1);
+        if (!isCompact(options)) {
+            query.deleteCharAt(query.length() - 1);
+        }
     }
 
     @Override
