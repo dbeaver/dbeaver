@@ -68,8 +68,14 @@ public class PostgrePartitionManager extends PostgreTableManager {
     }
 
     @Override
-    protected String beginCreateTableStatement(DBRProgressMonitor monitor, PostgreTableBase table, String tableName, Map<String, Object> options) {
-        return "CREATE " + getCreateTableType(table) + " " + tableName + " PARTITION OF " + getParentTable(monitor, (PostgreTablePartition) table) + " ";//$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    protected String beginCreateTableStatement(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PostgreTableBase table,
+        @NotNull String tableName,
+        @NotNull Map<String, Object> options) {
+
+        return "CREATE " + getCreateTableType(table) + " " + tableName //$NON-NLS-1$
+            + " PARTITION OF " + getParentTable(monitor, (PostgreTablePartition) table) + " "; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
