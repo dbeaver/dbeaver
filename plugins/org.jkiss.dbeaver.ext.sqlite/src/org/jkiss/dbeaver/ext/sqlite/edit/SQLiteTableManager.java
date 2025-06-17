@@ -105,7 +105,8 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
         GenericTableBase table,
         NestedObjectCommand tableProps,
         StringBuilder ddl,
-        boolean alter
+        boolean alter,
+        Map<String, Object> options
     ) {
         if (table instanceof SQLiteTable sqliteTable && sqliteTable.isHasStrictTyping()) {
             ddl.append(" STRICT"); //$NON-NLS-1$
