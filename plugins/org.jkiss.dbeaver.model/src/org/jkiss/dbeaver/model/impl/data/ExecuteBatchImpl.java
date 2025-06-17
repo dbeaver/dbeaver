@@ -46,6 +46,7 @@ import java.util.Map;
 public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatch {
 
     private static final Log log = Log.getLog(ExecuteBatchImpl.class);
+    public static final String IS_NULL = "IS NULL";
 
     protected final DBSAttributeBase[] attributes;
     protected final List<Object[]> values = new ArrayList<>();
@@ -193,12 +194,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                             }
                         }
                     } else {
-                        String queryString;
-                        if (statement instanceof DBCParameterizedStatement parameterizedStatement) {
-                            queryString = parameterizedStatement.getFormattedQuery();
-                        } else {
-                            queryString = formatQueryParameters(session, statement.getQueryString(), handlers, rowValues);
-                        }
+                        String queryString = formatQueryParameters(session, statement.getQueryString(), handlers, rowValues);
                         actions.add(
                             new SQLDatabasePersistAction(
                                 "Execute statement",
@@ -245,9 +241,14 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         int length = queryString.length();
         StringBuilder formatted = new StringBuilder(length * 2);
         int paramIndex = -1;
+        int isNullIndex = queryString.indexOf(IS_NULL);
 
         for (int i = 0; i < length; i++) {
             char c = queryString.charAt(i);
+            if (isNullIndex == i) {
+                paramIndex = getNextUsedParamIndex(rowValues, paramIndex);
+                isNullIndex = queryString.substring(i).indexOf(IS_NULL);
+            }
             switch (c) {
                 case '?': {
                     paramIndex = getNextUsedParamIndex(rowValues, paramIndex);
