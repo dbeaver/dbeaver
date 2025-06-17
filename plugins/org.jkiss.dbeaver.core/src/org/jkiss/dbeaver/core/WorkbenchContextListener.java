@@ -255,6 +255,10 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
         }
     }
 
+    public void dispose() {
+        DBPPlatformDesktop.getInstance().getWorkspace().removeProjectListener(projectListener);
+    }
+
     static WorkbenchContextListener registerInWorkbench() {
         return new WorkbenchContextListener();
     }

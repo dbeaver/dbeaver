@@ -106,6 +106,7 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     private void dispose() {
+        contextListener.dispose();
     }
 
     // This method is called during startup thru @ComponentReference in workbench
