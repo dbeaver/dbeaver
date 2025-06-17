@@ -1093,9 +1093,17 @@ public class SQLEditor extends SQLEditorBase implements
 
         StyledText textWidget = getViewer().getTextWidget();
         textWidget.addVerifyKeyListener(e -> {
-            if (e.keyCode == SWT.ARROW_RIGHT && suggestionTextPainter.hasContentToShow()) {
+            if ((e.keyCode == SWT.ARROW_RIGHT || e.keyCode == SWT.TAB || e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR)
+                && suggestionTextPainter.hasContentToShow()
+            ) {
                 e.doit = false;
                 suggestionTextPainter.applyHint();
+            }
+        });
+        textWidget.addVerifyKeyListener(e -> {
+            if (e.keyCode == SWT.ESC) {
+                e.doit = false;
+                suggestionTextPainter.removeHint();
             }
         });
         textWidget.addCaretListener(event -> {
