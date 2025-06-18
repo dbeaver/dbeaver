@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 /**
  * GenericSequence
  */
-public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPNamedObject2, DBPSaveableObject
-{
-    private GenericStructContainer container;
+public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPNamedObject2, DBPSaveableObject {
+    private final GenericStructContainer container;
     private String name;
     private String description;
     private Number lastValue;
@@ -38,7 +37,15 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPName
     private Number incrementBy;
     private boolean persisted;
 
-    public GenericSequence(GenericStructContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy) {
+    public GenericSequence(
+        GenericStructContainer container,
+        String name,
+        String description,
+        Number lastValue,
+        Number minValue,
+        Number maxValue,
+        Number incrementBy
+    ) {
         this.container = container;
         this.name = name;
         this.description = description;
@@ -103,11 +110,13 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject, DBPName
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
-        return DBUtils.getFullQualifiedName(getDataSource(),
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(
+            getDataSource(),
             container.getCatalog(),
             container.getSchema(),
-            this);
+            this
+        );
     }
 
     @Override

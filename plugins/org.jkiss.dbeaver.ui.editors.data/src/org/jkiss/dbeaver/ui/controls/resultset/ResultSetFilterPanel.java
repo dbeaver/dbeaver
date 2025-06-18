@@ -136,16 +136,17 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         this.shadowColor = getDisplay().getSystemColor(isDark ? SWT.COLOR_WIDGET_LIGHT_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         {
-            this.filterComposite = new Composite(this, SWT.BORDER);
+            this.filterComposite = new Composite(this, SWT.NONE);
 
             gl = new GridLayout(5, false);
-            gl.marginHeight = 0;
-            gl.marginWidth = 0;
+            gl.marginHeight = 2;
+            gl.marginWidth = 2;
             gl.horizontalSpacing = 0;
             gl.verticalSpacing = 0;
             this.filterComposite.setLayout(gl);
             this.filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             // CSSUtils.setCSSClass(this.filterComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            new CompositeBorderPainter(this.filterComposite);
 
             if (!compactMode) {
                 this.activeObjectPanel = new ActiveObjectPanel(filterComposite);
@@ -388,8 +389,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
             this.filterExpandPanel.setVisible(enable);
             historyPanel.setVisible(enable);
-            filtersText.setEditable(viewer.supportsDataFilter());
-            filtersText.setEnabled(enable);
+            filtersText.setEditable(viewer.supportsDataFilter() && enable);
+            //filtersText.setEnabled(enable);
             //filtersText.setVisible(enable);
             executePanel.setVisible(enable);
         } finally {
@@ -726,7 +727,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         private Shell popup;
 
         ActiveObjectPanel(Composite addressBar) {
-            super(addressBar, SWT.NONE);
+            super(addressBar, SWT.NO_FOCUS);
             setToolTipText(ResultSetMessages.sql_editor_resultset_filter_panel_btn_open_console);
             //setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -1049,7 +1050,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         private final Image enabledImageCollapse, disabledImageCollapse;
 
         FilterExpandPanel(Composite addressBar) {
-            super(addressBar, SWT.NONE);
+            super(addressBar, SWT.NO_FOCUS);
             setToolTipText(ResultSetMessages.filter_panel_expand_panel_text);
             enabledImageExpand = DBeaverIcons.getImage(UIIcon.FIT_WINDOW);
             disabledImageExpand = new Image(enabledImageExpand.getDevice(), enabledImageExpand, SWT.IMAGE_GRAY);
