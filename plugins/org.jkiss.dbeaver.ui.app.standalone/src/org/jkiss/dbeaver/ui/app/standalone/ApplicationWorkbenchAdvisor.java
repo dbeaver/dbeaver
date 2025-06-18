@@ -179,7 +179,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         )
     ); 
 
-    private static boolean forcedRestart = false;
     //processor must be created before we start event loop
     protected final DBPApplication application;
     private final OpenEventProcessor processor;
