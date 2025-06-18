@@ -73,4 +73,6 @@ public class ThemeConstants
     public static final String SQL_EDITOR_COLOR_TEXT = SQL_EDITOR_PROP_PREFIX + "color.text.foreground"; //$NON-NLS-1$
     public static final String SQL_EDITOR_COLOR_BACKGROUND = SQL_EDITOR_PROP_PREFIX + "color.text.background"; //$NON-NLS-1$
     public static final String SQL_EDITOR_COLOR_DISABLED = SQL_EDITOR_PROP_PREFIX + "color.disabled.background"; //$NON-NLS-1$
+    public static final String SQL_EDITOR_COLOR_AI_SUGGESTION = SQL_EDITOR_PROP_PREFIX + "color.aiSuggestion.foreground"; //$NON-NLS-1$
+    public static final String SQL_EDITOR_COLOR_AI_SUGGESTION_BACKGROUND = SQL_EDITOR_PROP_PREFIX + "color.aiSuggestion.background"; //$NON-NLS-1$
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,6 +80,7 @@ public class DatabaseTransferUtils {
         DBSObjectContainer container = consumerSettings.getContainer();
         if (container == null) {
             log.debug("Null target container");
+            return;
         }
         if (containerMapping == null) {
             log.debug("Null container mapping");
@@ -88,8 +89,6 @@ public class DatabaseTransferUtils {
 
         // Reflect database changes in mappings
         {
-            monitor.subTask("Refresh database mappings");
-
             boolean updateMappingTarget = false;
             boolean updateMappingAttributes = false;
 
@@ -108,6 +107,8 @@ public class DatabaseTransferUtils {
             }
 
             if (updateMappingTarget || force) {
+                monitor.subTask("Refresh database mappings");
+
                 DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
                 if (newTarget == null) {
                     throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));

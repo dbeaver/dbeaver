@@ -63,6 +63,10 @@ public class SQLEditorThemeSettings extends ThemeListener {
     public Color editorBackgroundColor;
     @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_DISABLED)
     public Color editorDisabledColor;
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_AI_SUGGESTION)
+    public Color editorAISuggestionColor;
+    @ThemeColor(ThemeConstants.SQL_EDITOR_COLOR_AI_SUGGESTION_BACKGROUND)
+    public Color editorAISuggestionBackgroundColor;
 
     public static final SQLEditorThemeSettings instance = new SQLEditorThemeSettings();
 

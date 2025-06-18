@@ -85,7 +85,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
-    public boolean canEditObject(OracleTableColumn object) {
+    public boolean canEditObject(@NotNull OracleTableColumn object) {
         return true;
     }
 
