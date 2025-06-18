@@ -123,6 +123,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private boolean reuseWorkspace = false;
     private boolean primaryInstance = true;
     private boolean headlessMode = false;
+    private boolean forcedRestart = false;
 
     private DBeaverInstanceServer instanceServer;
 
@@ -793,6 +794,15 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     @Override
     public void setHeadlessMode(boolean headlessMode) {
         this.headlessMode = headlessMode;
+    }
+
+    @Override
+    public boolean isForcedRestart() {
+        return forcedRestart;
+    }
+
+    public void setForcedRestart(boolean forcedRestart) {
+        this.forcedRestart = forcedRestart;
     }
 
     @Override

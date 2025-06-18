@@ -81,8 +81,8 @@ import java.awt.*;
 import java.awt.desktop.SystemEventListener;
 import java.awt.desktop.SystemSleepEvent;
 import java.awt.desktop.SystemSleepListener;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -178,7 +178,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             ApplicationWorkbenchWindowAdvisor.TREE_AND_TABLE_FONT_FOR_VIEWS
         )
     ); 
-    
+
+    private static boolean forcedRestart = false;
     //processor must be created before we start event loop
     protected final DBPApplication application;
     private final OpenEventProcessor processor;
@@ -398,7 +399,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     }
 
     private boolean saveAndCleanup() {
-        if (getWorkbenchConfigurer().emergencyClosing()) {
+        if (getWorkbenchConfigurer().emergencyClosing() || application.isForcedRestart()) {
             return true;
         }
         try {
