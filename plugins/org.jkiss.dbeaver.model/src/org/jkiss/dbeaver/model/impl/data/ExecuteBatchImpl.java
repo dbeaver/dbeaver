@@ -225,6 +225,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
 
     protected int getNextUsedParamIndex(Object[] attributeValues, int paramIndex) {
         paramIndex++;
+        // we need to skip all nullable values because they are already set in the statement
         while (paramIndex < attributeValues.length && attributeValues[paramIndex] instanceof DBDNull) {
             paramIndex++;
         }
