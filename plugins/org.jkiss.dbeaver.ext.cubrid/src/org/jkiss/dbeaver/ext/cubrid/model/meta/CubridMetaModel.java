@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,11 +167,11 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
     @Nullable
     @Override
     public GenericTableConstraintColumn[] createConstraintColumnsImpl(
-            @NotNull JDBCSession session,
-            @NotNull GenericTableBase parent,
-            @Nullable GenericUniqueKey object,
-            @Nullable GenericMetaObject pkObject,
-            @NotNull JDBCResultSet dbResult)
+        @NotNull JDBCSession session,
+        @NotNull GenericTableBase parent,
+        @NotNull GenericUniqueKey object,
+        @Nullable GenericMetaObject pkObject,
+        @NotNull JDBCResultSet dbResult)
             throws DBException {
         String name = JDBCUtils.safeGetStringTrimmed(dbResult, "key_attr_name");
         Integer keyOrder = JDBCUtils.safeGetInteger(dbResult, "key_order") + 1;
@@ -313,14 +313,14 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return dbStat;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public CubridTrigger createTableTriggerImpl(
-            @NotNull JDBCSession session,
-            @NotNull GenericStructContainer container,
-            @Nullable GenericTableBase table,
-            @Nullable String triggerName,
-            @NotNull JDBCResultSet dbResult)
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer container,
+        @NotNull GenericTableBase table,
+        @Nullable String triggerName,
+        @NotNull JDBCResultSet dbResult)
             throws DBException {
         String name = JDBCUtils.safeGetString(dbResult, CubridConstants.NAME);
         String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
@@ -419,6 +419,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return fallbackDDL;
     }
 
+    @Nullable
     @Override
     public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
         return new CubridQueryPlanner((CubridDataSource) dataSource);

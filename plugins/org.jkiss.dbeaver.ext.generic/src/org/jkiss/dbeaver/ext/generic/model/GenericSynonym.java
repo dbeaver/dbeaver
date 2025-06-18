@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,11 +31,10 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * Generic synonym (alias).
  * There is no synonyms support in JDBC API. Each Generic-based extension must provide its own implementation.
  */
-public abstract class GenericSynonym implements DBSAlias, DBSObject, DBPQualifiedObject, DBPNamedObject2
-{
-    private GenericStructContainer container;
+public abstract class GenericSynonym implements DBSAlias, DBSObject, DBPQualifiedObject, DBPNamedObject2 {
+    private final GenericStructContainer container;
     private String name;
-    private String description;
+    private final String description;
 
     protected GenericSynonym(GenericStructContainer container, String name, String description) {
         this.container = container;
@@ -81,11 +80,13 @@ public abstract class GenericSynonym implements DBSAlias, DBSObject, DBPQualifie
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
-        return DBUtils.getFullQualifiedName(getDataSource(),
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(
+            getDataSource(),
             container.getCatalog(),
             container.getSchema(),
-            this);
+            this
+        );
     }
 
 }

@@ -72,7 +72,7 @@ public class DataTransferConfiguratorRegistry {
             pagesById.remove(replacement.getValue().getId());
             DataTransferNodeConfiguratorDescriptor replaced = pagesById.put(replacement.getKey(), replacement.getValue());
             if (replaced != null) {
-                log.info("Data transfer configurator '" + replaced.getId() + "' is replaced by '" + replacement.getValue().getId() + "'");
+                log.debug("Data transfer configurator '" + replaced.getId() + "' is replaced by '" + replacement.getValue().getId() + "'");
             } else {
                 log.debug(
                     "No configurator with id '" + replacement.getKey()

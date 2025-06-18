@@ -78,8 +78,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
     private DataTransferWizard(@Nullable DBTTask task) {
         super(task);
-        setDialogSettings(
-            getWizardDialogSettings());
+        setDialogSettings(getWizardDialogSettings());
     }
 
     public DataTransferWizard(@Nullable DBTTask task, @NotNull DataTransferSettings settings, boolean initTaskVariables) {
@@ -93,7 +92,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 if (producer instanceof DatabaseTransferProducer) {
                     DBSObject databaseObject = producer.getDatabaseObject();
 
-                    SQLQueryContainer queryContainer = null;
+                    SQLQueryContainer queryContainer;
                     if (databaseObject instanceof SQLQueryContainer) {
                         queryContainer = (SQLQueryContainer) databaseObject;
                     } else {
@@ -125,7 +124,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
     }
 
     @Override
-    public void initializeWizard(Composite pageContainer) {
+    public void initializeWizard(@NotNull Composite pageContainer) {
         super.initializeWizard(pageContainer);
         if (settings.getState().hasErrors()) {
             List<Throwable> loadErrors = settings.getState().getLoadErrors();
@@ -218,6 +217,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         }
     }
 
+    @NotNull
     public DataTransferSettings getSettings() {
         return settings;
     }
@@ -484,19 +484,23 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         //UIUtils.asyncExec(this::loadNodeSettings);
     }
 
+    @Nullable
     NodePageSettings getNodeInfo(IDataTransferNode<?> node) {
         return this.nodeSettings.get(node.getClass());
     }
 
+    @Nullable
     private IDataTransferSettings getNodeSettings(IWizardPage page) {
-        for (NodePageSettings nodePageSettings : this.nodeSettings.values()) {
-            if (page == nodePageSettings.settingsPage) {
-                return settings.getNodeSettings(nodePageSettings.sourceNode);
-            }
-            if (nodePageSettings.pages != null) {
-                for (IWizardPage nodePage : nodePageSettings.pages) {
-                    if (nodePage == page) {
-                        return settings.getNodeSettings(nodePageSettings.sourceNode);
+        if (settings != null) {
+            for (NodePageSettings nodePageSettings : this.nodeSettings.values()) {
+                if (page == nodePageSettings.settingsPage) {
+                    return settings.getNodeSettings(nodePageSettings.sourceNode);
+                }
+                if (nodePageSettings.pages != null) {
+                    for (IWizardPage nodePage : nodePageSettings.pages) {
+                        if (nodePage == page) {
+                            return settings.getNodeSettings(nodePageSettings.sourceNode);
+                        }
                     }
                 }
             }
@@ -504,7 +508,11 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         return null;
     }
 
-    public void saveTaskState(DBRRunnableContext runnableContext, DBTTask task, Map<String, Object> state)  throws DBException {
+    public void saveTaskState(
+        @NotNull DBRRunnableContext runnableContext,
+        @NotNull DBTTask task,
+        @NotNull Map<String, Object> state
+    )  throws DBException {
         List<IDataTransferNode<?>> producers = new ArrayList<>();
         List<IDataTransferNode<?>> consumers = new ArrayList<>();
         for (DataTransferPipe pipe : settings.getDataPipes()) {
@@ -520,7 +528,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         state.put("configuration", saveConfiguration(new LinkedHashMap<>()));
     }
 
-    private Map<String, Object> saveConfiguration(Map<String, Object> config) {
+    @NotNull
+    private Map<String, Object> saveConfiguration(@NotNull Map<String, Object> config) {
         config.put("maxJobCount", settings.getMaxJobCount());
         config.put("showFinalMessage", settings.isShowFinalMessage());
 
@@ -604,7 +613,13 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         IWizardPage[] pages;
         IWizardPage settingsPage;
 
-        private NodePageSettings(IWizardPage[] existingPages, DataTransferNodeDescriptor sourceNode, DataTransferNodeConfiguratorDescriptor nodeConfigurator, boolean consumerOptional, boolean producerOptional) {
+        private NodePageSettings(
+            @NotNull IWizardPage[] existingPages,
+            @NotNull DataTransferNodeDescriptor sourceNode,
+            @Nullable DataTransferNodeConfiguratorDescriptor nodeConfigurator,
+            boolean consumerOptional,
+            boolean producerOptional
+        ) {
             this.sourceNode = sourceNode;
             this.nodeConfigurator = nodeConfigurator;
             this.pages = nodeConfigurator == null ? new IWizardPage[0] : nodeConfigurator.createWizardPages(existingPages, consumerOptional, producerOptional, false);

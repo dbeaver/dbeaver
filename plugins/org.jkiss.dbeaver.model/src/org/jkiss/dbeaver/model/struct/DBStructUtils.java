@@ -122,7 +122,12 @@ public final class DBStructUtils {
         return SQLUtils.generateCommentLine(object.getDataSource(), "Can't generate DDL: object editor not found for " + object.getClass().getName());
     }
 
-    public static String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, Map<String, Object> options, boolean addComments) throws DBException {
+    public static String getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity table,
+        Map<String, Object> options,
+        boolean addComments
+    ) throws DBException {
         if (table instanceof DBPScriptObject scriptObject) {
             String definitionText = scriptObject.getObjectDefinitionText(monitor, options);
             if (!CommonUtils.isEmpty(definitionText)) {
