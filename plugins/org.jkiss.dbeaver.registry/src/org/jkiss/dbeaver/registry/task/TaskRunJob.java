@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,6 +97,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
 
         try (PrintStream logStream = new PrintStream(Files.newOutputStream(logFile), true, StandardCharsets.UTF_8)) {
             taskLog = Log.getLog(TaskRunJob.class);
+            PrintStream oldLogWriter = Log.getLogWriter();
             Log.setLogWriter(logStream);
             taskLog.info(String.format("Task '%s' (%s) started", task.getName(), task.getId()));
             monitor.beginTask("Run task '" + task.getName() + " (" + task.getType().getName() + ")", 1);
@@ -128,7 +129,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                 }
                 task.updateRun(taskRun);
                 taskLog.flush();
-                Log.setLogWriter(null);
+                Log.setLogWriter(oldLogWriter);
             }
         } catch (IOException e) {
             log.error("Error opening task run log file", e);
@@ -136,7 +137,10 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         return Status.OK_STATUS;
     }
 
-    private DBTTaskRunStatus executeTask(DBRProgressMonitor monitor, PrintStream logWriter) throws DBException, InterruptedException {
+    private DBTTaskRunStatus executeTask(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull PrintStream logWriter
+    ) throws DBException, InterruptedException {
         activeMonitor = monitor;
         DBTaskUtils.confirmTaskOrThrow(task, taskLog, logWriter);
         DBTTaskHandler taskHandler = task.getType().createHandler();

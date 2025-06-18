@@ -232,7 +232,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
         @NotNull
         @Override
-        public String getFullyQualifiedName(DBPEvaluationContext context) {
+        public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
             if (this.container == defaultDummySchema || this.container == defaultDummyCatalog || this.container == dummyDataSource) {
                 return this.name;
             } else {

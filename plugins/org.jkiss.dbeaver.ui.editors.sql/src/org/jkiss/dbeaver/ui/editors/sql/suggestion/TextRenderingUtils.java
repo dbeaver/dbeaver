@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.ui.editors.sql.suggestion;
 
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.ITextViewerExtension5;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.FontMetrics;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.widgets.Event;
 import org.jkiss.utils.CommonUtils;
 
 public class TextRenderingUtils {
@@ -37,7 +37,8 @@ public class TextRenderingUtils {
         String text,
         GC gc,
         StyledText textWidget,
-        int widgetOffset
+        int widgetOffset,
+        Color textBackground
     ) {
         if (gc == null) {
             return;
@@ -66,9 +67,49 @@ public class TextRenderingUtils {
         int lineHeight = textWidget.getLineHeight();
         int verticalPosition = origin.y + (lineHeight - fontHeight) + bias;
 
-        if (text != null) {
-            text = trimOverlappingText(text, widgetOffset, textWidget);
+        if (text != null && !gc.isDisposed()) {
+            String remaining = getLineRemainder(widgetOffset, textWidget);
+            if (!remaining.isEmpty() && text.endsWith(remaining)) {
+                text = text.substring(0, text.length() - remaining.length());
+            }
+            Point textSize = gc.stringExtent(text);
+            Color bgColor = gc.getBackground();
+            gc.setBackground(textBackground);
+            gc.fillRectangle(origin.x, verticalPosition, textSize.x, textSize.y);
             gc.drawString(text, origin.x, verticalPosition, true);
+            gc.setBackground(bgColor);
+
+            Transform t = null;
+            Transform t2 = null;
+            try {
+                Event ev = new Event();
+                ev.x = origin.x + textSize.x;
+                ev.y = verticalPosition;
+                ev.height = textSize.y;
+                ev.width = textSize.x;
+                ev.widget = textWidget;
+                ev.gc = gc;
+                t = new Transform(gc.getDevice());
+                gc.getTransform(t);
+                t2 = new Transform(gc.getDevice());
+                gc.getTransform(t2);
+                t2.translate(textSize.x, 0);
+                gc.setTransform(t2);
+                Rectangle clip = gc.getClipping();
+                Rectangle clip2 = gc.getClipping();
+                clip2.x = origin.x;
+                gc.setClipping(clip2);
+                textWidget.notifyListeners(SWT.Paint, ev);
+                gc.setClipping(clip);
+                gc.setTransform(t);
+            } finally {
+                if (t != null && !t.isDisposed()) {
+                    t.dispose();
+                }
+                if (t2 != null && !t2.isDisposed()) {
+                    t2.dispose();
+                }
+            }
         }
     }
 
@@ -87,21 +128,6 @@ public class TextRenderingUtils {
         int x = textWidget.getLeftMargin();
         int y = origin.y + lineHeight + (lineHeight - fontHeight);
         gc.drawText(text, x, y, true);
-    }
-
-    /**
-     * Removes duplicate text
-     */
-    public static String trimOverlappingText(
-        String text,
-        int offset,
-        StyledText widget
-    ) {
-        String remaining = getLineRemainder(offset, widget);
-        if (!remaining.isEmpty() && text.endsWith(remaining)) {
-            return text.substring(0, text.length() - remaining.length());
-        }
-        return text;
     }
 
     /**
