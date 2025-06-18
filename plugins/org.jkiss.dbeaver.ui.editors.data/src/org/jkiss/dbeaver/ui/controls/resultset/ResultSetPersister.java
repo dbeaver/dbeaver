@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -833,7 +833,15 @@ class ResultSetPersister {
                             session,
                             DBDAttributeValue.getAttributes(statement.keyAttributes),
                             new ExecutionSource(dataContainer))) {
-                            batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
+                            Object[] attributes = new Object[statement.keyAttributes.size()];
+                            for (int i = 0; i < statement.keyAttributes.size(); i++) {
+                                if (DBUtils.isNullValue(statement.keyAttributes.get(i).getValue())) {
+                                    attributes[statement.updateAttributes.size() + i] = DBDNull.INSTANCE;
+                                } else {
+                                    attributes[statement.updateAttributes.size() + i] = statement.keyAttributes.get(i).getValue();
+                                }
+                            }
+                            batch.add(attributes);
                             if (generateScript) {
                                 batch.generatePersistActions(session, script, options);
                             } else {
@@ -895,7 +903,11 @@ class ResultSetPersister {
                                 attributes[i] = statement.updateAttributes.get(i).getValue();
                             }
                             for (int i = 0; i < statement.keyAttributes.size(); i++) {
-                                attributes[statement.updateAttributes.size() + i] = statement.keyAttributes.get(i).getValue();
+                                if (DBUtils.isNullValue(statement.keyAttributes.get(i).getValue())) {
+                                    attributes[statement.updateAttributes.size() + i] = DBDNull.INSTANCE;
+                                } else {
+                                    attributes[statement.updateAttributes.size() + i] = statement.keyAttributes.get(i).getValue();
+                                }
                             }
                             // Execute
                             batch.add(attributes);

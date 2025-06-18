@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -46,7 +43,6 @@ import java.util.Map;
 public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatch {
 
     private static final Log log = Log.getLog(ExecuteBatchImpl.class);
-    public static final String IS_NULL = "IS NULL";
 
     protected final DBSAttributeBase[] attributes;
     protected final List<Object[]> values = new ArrayList<>();
@@ -228,7 +224,11 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     }
 
     protected int getNextUsedParamIndex(Object[] attributeValues, int paramIndex) {
-        return paramIndex + 1;
+        paramIndex++;
+        while (paramIndex < attributeValues.length && attributeValues[paramIndex] instanceof DBDNull) {
+            paramIndex++;
+        }
+        return paramIndex;
     }
 
     String formatQueryParameters(DBCSession session, String queryString, DBDValueHandler[] handlers, Object[] rowValues) {
@@ -241,14 +241,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         int length = queryString.length();
         StringBuilder formatted = new StringBuilder(length * 2);
         int paramIndex = -1;
-        int isNullIndex = queryString.indexOf(IS_NULL);
 
         for (int i = 0; i < length; i++) {
             char c = queryString.charAt(i);
-            if (isNullIndex == i) {
-                paramIndex = getNextUsedParamIndex(rowValues, paramIndex);
-                isNullIndex = i + 1 + queryString.substring(i + 1).indexOf(IS_NULL);
-            }
             switch (c) {
                 case '?': {
                     paramIndex = getNextUsedParamIndex(rowValues, paramIndex);
