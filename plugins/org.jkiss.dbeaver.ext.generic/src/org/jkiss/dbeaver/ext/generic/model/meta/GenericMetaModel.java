@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,21 +88,29 @@ public class GenericMetaModel {
     //////////////////////////////////////////////////////
     // Datasource
 
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    @NotNull
+    public GenericDataSource createDataSourceImpl(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
         return new GenericDataSource(monitor, container, this, new GenericSQLDialect());
     }
 
     //////////////////////////////////////////////////////
     // Misc
 
-    public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(@NotNull GenericStructContainer container) {
+    public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(
+        @NotNull GenericStructContainer container
+    ) {
         return new GenericDataTypeCache(container);
     }
 
+    @Nullable
     public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
         return null;
     }
 
+    @Nullable
     public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
         return null;
     }
@@ -136,6 +144,7 @@ public class GenericMetaModel {
         return false;
     }
 
+    @Nullable
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog)
         throws DBException
     {
@@ -312,7 +321,7 @@ public class GenericMetaModel {
     //////////////////////////////////////////////////////
     // Procedure load
 
-    public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container)
+    public void loadProcedures(@NotNull DBRProgressMonitor monitor, @NotNull GenericObjectContainer container)
         throws DBException
     {
         Map<String, GenericPackage> packageMap = null;
@@ -467,12 +476,13 @@ public class GenericMetaModel {
         return false;
     }
 
+    @NotNull
     public GenericProcedure createProcedureImpl(
-        GenericStructContainer container,
-        String procedureName,
+        @NotNull GenericStructContainer container,
+        @NotNull String procedureName,
         String specificName,
         String remarks,
-        DBSProcedureType procedureType,
+        @NotNull DBSProcedureType procedureType,
         GenericFunctionResultType functionResultType)
     {
         return new GenericProcedure(
@@ -484,11 +494,19 @@ public class GenericMetaModel {
             functionResultType);
     }
 
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericProcedure sourceObject
+    ) throws DBException {
         return "-- Source code not available";
     }
 
-    public String getPackageName(GenericDataSource dataSource, String catalogName, String procedureName, String specificName) {
+    public String getPackageName(
+        @NotNull GenericDataSource dataSource,
+        String catalogName,
+        String procedureName,
+        String specificName
+    ) {
 
         // Caused problems in #6241. Probably we should remove it (for now getPackageName always returns null so it is disabled anyway)
         if (!CommonUtils.isEmpty(catalogName) && CommonUtils.isEmpty(dataSource.getCatalogs())) {
@@ -697,7 +715,7 @@ public class GenericMetaModel {
             monitor, sourceObject, options, false);
     }
 
-    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+    public boolean supportsTableDDLSplit(@NotNull GenericTableBase sourceObject) {
         return true;
     }
 
@@ -707,7 +725,7 @@ public class GenericMetaModel {
         return true;
     }
 
-    public boolean isSystemTable(GenericTableBase table) {
+    public boolean isSystemTable(@NotNull GenericTableBase table) {
         final String tableType = table.getTableType().toUpperCase(Locale.ENGLISH);
         return tableType.contains("SYSTEM");
     }
@@ -716,14 +734,18 @@ public class GenericMetaModel {
         return false;
     }
 
-    public boolean isView(String tableType) {
+    public boolean isView(@NotNull String tableType) {
         return tableType.toUpperCase(Locale.ENGLISH).contains(GenericConstants.TABLE_TYPE_VIEW);
     }
 
     //////////////////////////////////////////////////////
     // Table columns
 
-    public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
+    public JDBCStatement prepareTableColumnLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase forTable
+    ) throws SQLException {
         return session.getMetaData().getColumns(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : JDBCUtils.escapeWildCards(session, owner.getSchema().getName()),
@@ -822,7 +844,8 @@ public class GenericMetaModel {
         String remarks,
         String defaultValue,
         boolean autoIncrement,
-        boolean autoGenerated) throws DBException {
+        boolean autoGenerated
+    ) throws DBException {
         return new GenericTableColumn(table,
             columnName,
             typeName, valueType, sourceType, ordinalPos,
@@ -850,8 +873,11 @@ public class GenericMetaModel {
     //////////////////////////////////////////////////////
     // Constraints
 
-    public JDBCStatement prepareUniqueConstraintsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent)
-            throws SQLException, DBException {
+    public JDBCStatement prepareUniqueConstraintsLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase forParent
+    ) throws SQLException, DBException {
         return session.getMetaData().getPrimaryKeys(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
@@ -859,7 +885,7 @@ public class GenericMetaModel {
             .getSourceStatement();
     }
 
-    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
+    public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException, SQLException {
         return DBSEntityConstraintType.PRIMARY_KEY;
     }
 
@@ -872,11 +898,25 @@ public class GenericMetaModel {
     }
 
     @NotNull
-    public GenericTableForeignKey createTableForeignKeyImpl(GenericTableBase table, String name, @Nullable String remarks, DBSEntityReferrer referencedKey, DBSForeignKeyModifyRule deleteRule, DBSForeignKeyModifyRule updateRule, DBSForeignKeyDeferability deferability, boolean persisted) {
+    public GenericTableForeignKey createTableForeignKeyImpl(
+        @NotNull GenericTableBase table,
+        String name,
+        @Nullable String remarks,
+        DBSEntityReferrer referencedKey,
+        DBSForeignKeyModifyRule deleteRule,
+        DBSForeignKeyModifyRule updateRule,
+        DBSForeignKeyDeferability deferability,
+        boolean persisted
+    ) {
         return new GenericTableForeignKey(table, name, remarks, referencedKey, deleteRule, updateRule, deferability, persisted);
     }
 
-    public JDBCStatement prepareForeignKeysLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forParent) throws SQLException {
+    @NotNull
+    public JDBCStatement prepareForeignKeysLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase forParent
+    ) throws SQLException {
         return session.getMetaData().getImportedKeys(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null || DBUtils.isVirtualObject(owner.getSchema()) ? null : owner.getSchema().getName(),
@@ -890,7 +930,7 @@ public class GenericMetaModel {
         return false;
     }
 
-    public String generateOnDeleteFK(DBSForeignKeyModifyRule deleteRule) {
+    public String generateOnDeleteFK(@NotNull DBSForeignKeyModifyRule deleteRule) {
         String deleteClause = deleteRule.getClause();
         if (!CommonUtils.isEmpty(deleteClause)) {
             return "ON DELETE " + deleteClause;
@@ -898,7 +938,7 @@ public class GenericMetaModel {
         return null;
     }
 
-    public String generateOnUpdateFK(DBSForeignKeyModifyRule updateRule) {
+    public String generateOnUpdateFK(@NotNull DBSForeignKeyModifyRule updateRule) {
         String updateClause = updateRule.getClause();
         if (!CommonUtils.isEmpty(updateClause)) {
             return "ON UPDATE " + updateClause;
@@ -909,8 +949,9 @@ public class GenericMetaModel {
     //////////////////////////////////////////////////////
     // Indexes
 
+    @NotNull
     public GenericTableIndex createIndexImpl(
-        GenericTableBase table,
+        @NotNull GenericTableBase table,
         boolean nonUnique,
         String qualifier,
         long cardinality,
@@ -928,12 +969,25 @@ public class GenericMetaModel {
             persisted);
     }
 
-    public GenericUniqueKey createConstraintImpl(GenericTableBase table, String constraintName, DBSEntityConstraintType constraintType, JDBCResultSet dbResult, boolean persisted) {
+    @NotNull
+    public GenericUniqueKey createConstraintImpl(
+        @NotNull GenericTableBase table,
+        String constraintName,
+        DBSEntityConstraintType constraintType,
+        JDBCResultSet dbResult,
+        boolean persisted
+    ) {
         return new GenericUniqueKey(table, constraintName, null, constraintType, persisted);
     }
 
-    public GenericTableConstraintColumn[] createConstraintColumnsImpl(JDBCSession session,
-                                                                      GenericTableBase parent, GenericUniqueKey object, GenericMetaObject pkObject, JDBCResultSet dbResult) throws DBException {
+    @Nullable
+    public GenericTableConstraintColumn[] createConstraintColumnsImpl(
+        @NotNull JDBCSession session,
+        @NotNull GenericTableBase parent,
+        @NotNull GenericUniqueKey object,
+        GenericMetaObject pkObject,
+        JDBCResultSet dbResult
+    ) throws DBException {
         String columnName = isTrimObjectNames() ?
             GenericUtils.safeGetStringTrimmed(pkObject, dbResult, JDBCConstants.COLUMN_NAME)
             : GenericUtils.safeGetString(pkObject, dbResult, JDBCConstants.COLUMN_NAME);
@@ -965,11 +1019,18 @@ public class GenericMetaModel {
         return false;
     }
 
-    public JDBCStatement prepareSequencesLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+    public JDBCStatement prepareSequencesLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer container
+    ) throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
 
-    public GenericSequence createSequenceImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) throws DBException {
+    public GenericSequence createSequenceImpl(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer container,
+        @NotNull JDBCResultSet dbResult
+    ) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
@@ -984,11 +1045,18 @@ public class GenericMetaModel {
         return false;
     }
 
-    public JDBCStatement prepareSynonymsLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container) throws SQLException {
+    public JDBCStatement prepareSynonymsLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer container
+    ) throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
 
-    public GenericSynonym createSynonymImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull JDBCResultSet dbResult) throws DBException {
+    public GenericSynonym createSynonymImpl(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer container,
+        @NotNull JDBCResultSet dbResult
+    ) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
@@ -999,11 +1067,23 @@ public class GenericMetaModel {
         return false;
     }
 
-    public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase forParent) throws SQLException {
+    @NotNull
+    public JDBCStatement prepareTableTriggersLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer genericStructContainer,
+        @Nullable GenericTableBase forParent
+    ) throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
 
-    public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) throws DBException {
+    @NotNull
+    public GenericTrigger createTableTriggerImpl(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer genericStructContainer,
+        @NotNull GenericTableBase genericTableBase,
+        String triggerName,
+        @NotNull JDBCResultSet resultSet
+    ) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
@@ -1013,19 +1093,32 @@ public class GenericMetaModel {
         return false;
     }
 
-    public JDBCStatement prepareContainerTriggersLoadStatement(@NotNull JDBCSession session, @Nullable GenericStructContainer forParent) throws SQLException {
+    public JDBCStatement prepareContainerTriggersLoadStatement(
+        @NotNull JDBCSession session,
+        @Nullable GenericStructContainer forParent
+    ) throws SQLException {
         throw new SQLFeatureNotSupportedException();
     }
 
-    public GenericTrigger createContainerTriggerImpl(@NotNull GenericStructContainer container, @NotNull JDBCResultSet resultSet) throws DBException {
+    public GenericTrigger createContainerTriggerImpl(
+        @NotNull GenericStructContainer container,
+        @NotNull JDBCResultSet resultSet
+    ) throws DBException {
         throw new DBCFeatureNotSupportedException();
     }
 
-    public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
+    public List<? extends GenericTrigger> loadTriggers(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericStructContainer container,
+        @Nullable GenericTableBase table
+    ) throws DBException {
         return new ArrayList<>();
     }
 
-    public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
+    public String getTriggerDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTrigger trigger
+    ) throws DBException {
         return "-- Source code not available";
     }
 

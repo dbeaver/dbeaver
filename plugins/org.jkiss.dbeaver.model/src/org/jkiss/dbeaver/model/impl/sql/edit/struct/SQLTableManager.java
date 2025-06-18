@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
@@ -61,29 +62,48 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
         return options;
     }
-    
-    protected String beginCreateTableStatement(DBRProgressMonitor monitor, OBJECT_TYPE table, String tableName, Map<String, Object> options) throws DBException {
-        return "CREATE " + getCreateTableType(table) + " " + tableName + " (" + GeneralUtils.getDefaultLineSeparator(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+
+    protected String beginCreateTableStatement(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OBJECT_TYPE table,
+        @NotNull String tableName,
+        @NotNull Map<String, Object> options) throws DBException {
+
+        String queryPart = "CREATE " + getCreateTableType(table) + " " + tableName + " (";  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        if (!isCompact(options)) {
+            queryPart += GeneralUtils.getDefaultLineSeparator();
+        }
+
+        return queryPart;
     }
-    
+
     protected boolean hasAttrDeclarations(OBJECT_TYPE table) {
         return true;
     }
 
     @Override
-    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+    protected void addStructObjectCreateActions(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        StructCreateCommand command,
+        Map<String, Object> options) throws DBException {
         // Make options modifiable
         options = new HashMap<>(options);
-        final OBJECT_TYPE table = command.getObject();
 
-        final NestedObjectCommand<?,?> tableProps = command.getObjectCommands().get(table);
+        final OBJECT_TYPE table = command.getObject();
+        final boolean isCompact = isCompact(options);
+
+
+        final NestedObjectCommand<?, ?> tableProps = command.getObjectCommands().get(table);
         if (tableProps == null) {
             log.warn("Object change command not found"); //$NON-NLS-1$
             return;
         }
         final String tableName = DBUtils.getEntityScriptName(table, options);
 
-        final String slComment = SQLUtils.getDialectFromObject(table).getSingleLineComments()[0];
+        final SQLDialect sqlDialect = SQLUtils.getDialectFromObject(table);
+        final String slComment = sqlDialect.getSingleLineComments()[0];
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
         createQuery.append(beginCreateTableStatement(monitor, table, tableName, options));
@@ -97,30 +117,41 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 continue;
             }
             options.put(DBPScriptObject.OPTION_COMPOSITE_OBJECT, table);
-            final String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
+            String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
             options.remove(DBPScriptObject.OPTION_COMPOSITE_OBJECT);
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
+                if (isCompact) {
+                    int commentPos = findCommentPos(nestedDeclaration, slComment);
+                    if (commentPos != -1) {
+                        nestedDeclaration = nestedDeclaration.substring(0, commentPos);
+                    }
+                }
                 // Insert nested declaration
                 if (hasNestedDeclarations) {
+
                     // Check for embedded comment
-                    int lastLFPos = createQuery.lastIndexOf(lineSeparator);
-                    int lastCommentPos = createQuery.lastIndexOf(slComment);
+                    int lastCommentPos = findCommentPos(createQuery, slComment);
                     if (lastCommentPos != -1) {
                         while (lastCommentPos > 0 && Character.isWhitespace(createQuery.charAt(lastCommentPos - 1))) {
                             lastCommentPos--;
                         }
                     }
-                    if (lastCommentPos < 0 || lastCommentPos < lastLFPos) {
-                          createQuery.append(","); //$NON-NLS-1$
+                    if (lastCommentPos < 0 || lastCommentPos < createQuery.length() - 1) {
+                        createQuery.append(","); //$NON-NLS-1$
                     } else {
-                           createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
+                        createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
                     }
-                    createQuery.append(lineSeparator);
+                    if (!isCompact) {
+                        createQuery.append(lineSeparator);
+                    }
                 }
                 if (!hasNestedDeclarations && !hasAttrDeclarations(table)) {
-                    createQuery.append("(\n\t").append(nestedDeclaration); //$NON-NLS-1$  
+                    createQuery.append('(')
+                        .append(isCompact ? " " : "\n\t")
+                        .append(nestedDeclaration); //$NON-NLS-1$
                 } else {
-                 createQuery.append("\t").append(nestedDeclaration); //$NON-NLS-1$
+                    createQuery.append(isCompact ? " " : "\t")
+                        .append(nestedDeclaration); //$NON-NLS-1$
                 }
                 hasNestedDeclarations = true;
             } else {
@@ -132,12 +163,13 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             }
         }
         if (hasAttrDeclarations(table) || hasNestedDeclarations) {
-            createQuery.append(lineSeparator);
+            if (!isCompact) {
+                createQuery.append(lineSeparator);
+            }
             createQuery.append(")"); //$NON-NLS-1$
         }
-
-        appendTableModifiers(monitor, table, tableProps, createQuery, false);
-        actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
+        appendTableModifiers(monitor, table, tableProps, createQuery, false, options);
+        actions.add(0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()));
     }
 
     @Override
@@ -180,7 +212,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         OBJECT_TYPE table,
         NestedObjectCommand tableProps,
         StringBuilder ddl,
-        boolean alter
+        boolean alter,
+        Map<String, Object> options
     ) throws DBException {
 
     }
@@ -189,8 +222,11 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         return BASE_TABLE_NAME;
     }
 
-    public DBEPersistAction[] getTableDDL(DBRProgressMonitor monitor, OBJECT_TYPE table, Map<String, Object> options) throws DBException
-    {
+    public DBEPersistAction[] getTableDDL(
+        DBRProgressMonitor monitor,
+        OBJECT_TYPE table,
+        Map<String, Object> options) throws DBException {
+
         List<DBEPersistAction> actions = new ArrayList<>();
 
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
@@ -340,5 +376,47 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         return true;
     }
 
+    public static boolean isCompact(Map<String, Object> options) {
+        return Boolean.TRUE.equals(options.get(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT));
+    }
+
+    public static String getDelimiter(Map<String, Object> options) {
+        return isCompact(options) ? " " : GeneralUtils.getDefaultLineSeparator();
+    }
+
+    public static int findCommentPos(CharSequence cs, String slComment) {
+        boolean inString = false;
+
+        for (int i = 0; i < cs.length() - slComment.length() + 1; i++) {
+            char ch = cs.charAt(i);
+
+            if (ch == '\'') {
+                if (inString && i + 1 < cs.length() && cs.charAt(i + 1) == '\'') {
+                    i++;
+                    continue;
+                }
+                inString = !inString;
+            }
+
+            if (!inString && startsWith(cs, slComment, i)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static boolean startsWith(CharSequence sb, String prefix, int toffset) {
+        if (toffset < 0 || toffset > sb.length() - prefix.length()) {
+            return false;
+        }
+
+        for (int j = 0; j < prefix.length(); j++) {
+            if (sb.charAt(toffset + j) != prefix.charAt(j)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 

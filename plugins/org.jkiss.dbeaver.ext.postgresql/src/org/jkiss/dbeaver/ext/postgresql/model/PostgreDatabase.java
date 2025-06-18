@@ -1094,7 +1094,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             // #271, #501: in some databases (AWS?) pg_authid is not accessible
             // FIXME: maybe some better workaround?
             return handlePermissionDeniedError(error);
@@ -1235,7 +1235,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             log.debug("Error reading tablespaces", error);
             return true;
         }
@@ -1284,7 +1284,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             if (PostgreConstants.EC_PERMISSION_DENIED.equals(SQLState.getStateFromException(error))) {
                 log.warn(error);
                 setCache(Collections.emptyList());
@@ -1413,7 +1413,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             DBWorkbench.getPlatformUI().showError("Error accessing pgAgent jobs", "Can't access pgAgent jobs.\n\nThis database may not have the extension installed or you don't have sufficient permissions to access them.\n\nIf you believe that this is DBeaver's fault, please report it.", error);
             setCache(Collections.emptyList());
             return true;

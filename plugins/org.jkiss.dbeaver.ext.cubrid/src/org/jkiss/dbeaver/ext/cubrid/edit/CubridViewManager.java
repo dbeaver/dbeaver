@@ -100,7 +100,7 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
             if (command.hasProperty(DBConstants.PARAM_OBJECT_DEFINITION_TEXT)) {
                 query.append(viewDDL).append("\n");
             }
-            if (hasComment && view.getDescription() != null) {
+            if (hasComment || view.getDescription() != null) {
                 query.append("ALTER VIEW " + view.getUniqueName()
                         + " COMMENT = " + SQLUtils.quoteString(view, CommonUtils.notEmpty(view.getDescription())));
             }

@@ -217,21 +217,21 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
             this.fromScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsSourceRef(context));
         }
 
-        context = this.fromSource.resolveRowSources(context, statistics);
+        SQLQueryRowsSourceContext resolvedContext = this.fromSource.resolveRowSources(context, statistics).setCteSourcesFrom(context);
 
         if (this.filterExprs.whereClause != null) {
-            this.filterExprs.whereClause.resolveRowSources(context, statistics);
+            this.filterExprs.whereClause.resolveRowSources(resolvedContext, statistics);
         }
         if (this.filterExprs.havingClause != null) {
-            this.filterExprs.havingClause.resolveRowSources(context, statistics);
+            this.filterExprs.havingClause.resolveRowSources(resolvedContext, statistics);
         }
         if (this.filterExprs.groupByClause != null) {
-            this.filterExprs.groupByClause.resolveRowSources(context, statistics);
+            this.filterExprs.groupByClause.resolveRowSources(resolvedContext, statistics);
         }
         if (this.filterExprs.orderByClause != null) {
-            this.filterExprs.orderByClause.resolveRowSources(context, statistics);
+            this.filterExprs.orderByClause.resolveRowSources(resolvedContext, statistics);
         }
-        return context.reset();
+        return resolvedContext.reset();
     }
 
     @Override
@@ -345,7 +345,9 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                         case SQLStandardParser.RULE_derivedColumn -> {
                             // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
                             STMTreeNode exprNode = sublistNode.findFirstChildOfName(STMKnownRuleNames.valueExpression);
-                            SQLQueryValueExpression expr = exprNode == null ? null : recognizer.collectValueExpression(exprNode);
+                            SQLQueryValueExpression expr = exprNode == null
+                                ? null
+                                : recognizer.collectValueExpression(exprNode, selectListScope);
                             if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
                                 if (tupleRef.getTupleRefEntry() != null) {
                                     recognizer.registerScopeItem(tupleRef.getTupleRefEntry());
@@ -413,7 +415,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                     int scopeIndex = i + 1;
                     if (filterNode != null) {
                         try (SQLQueryModelRecognizer.LexicalScopeHolder exprScope = recognizer.openScope()) {
-                            filterExprs[i] = recognizer.collectValueExpression(filterNode);
+                            filterExprs[i] = recognizer.collectValueExpression(filterNode, exprScope.lexicalScope);
                             nextScopeNodes[prevScopeIndex] = filterNode;
                             scopes[scopeIndex] = exprScope.lexicalScope;
                             prevScopes[scopeIndex] = scopes[prevScopeIndex];
