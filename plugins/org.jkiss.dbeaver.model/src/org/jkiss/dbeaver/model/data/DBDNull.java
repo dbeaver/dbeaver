@@ -48,7 +48,7 @@ public class DBDNull implements DBDValue, DBDValueSurrogate {
 
     @Override
     public String toString() {
-        return "";
+        return "NULL";
     }
 
 }
