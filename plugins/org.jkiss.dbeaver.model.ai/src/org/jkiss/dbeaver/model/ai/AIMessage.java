@@ -21,14 +21,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * Represents a single AI message
  */
 public class AIMessage {
-    @NotNull
-    private final UUID uuid;
     @NotNull
     private final AIMessageType role;
     @NotNull
@@ -42,13 +39,11 @@ public class AIMessage {
      * Creates AI message
      */
     public AIMessage(
-        @NotNull UUID uuid,
         @NotNull AIMessageType role,
         @NotNull String content,
         @Nullable String displayMessage,
         @NotNull LocalDateTime time
     ) {
-        this.uuid = uuid;
         this.role = role;
         this.content = content;
         this.displayMessage = displayMessage;
@@ -71,34 +66,17 @@ public class AIMessage {
     }
 
     @NotNull
-    public static AIMessage assistantMessage(@NotNull UUID uuid, @NotNull String message) {
-        return new AIMessage(uuid, AIMessageType.ASSISTANT, message, message, LocalDateTime.now());
-    }
-
-    @NotNull
     public static AIMessage errorMessage(@NotNull Throwable throwable) {
-        return errorMessage(UUID.randomUUID(), throwable);
-    }
-
-    @NotNull
-    public static AIMessage errorMessage(@NotNull UUID uuid, @NotNull Throwable throwable) {
-        String errorMessage = CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error");
-        return new AIMessage(
-            uuid,
-            AIMessageType.ERROR,
-            errorMessage,
-            errorMessage,
-            LocalDateTime.now()
-        );
+        return new AIMessage(AIMessageType.ERROR, CommonUtils.toString(CommonUtils.getAllExceptionMessages(throwable), "Unknown error"));
     }
 
     @NotNull
     public static AIMessage userAutoMessage(@NotNull String prompt, @NotNull String uiMessage) {
-        return new AIMessage(UUID.randomUUID(), AIMessageType.USER, prompt, uiMessage, LocalDateTime.now());
+        return new AIMessage(AIMessageType.USER, prompt, uiMessage, LocalDateTime.now());
     }
 
     public AIMessage(@NotNull AIMessageType role, @NotNull String content) {
-        this(UUID.randomUUID(), role, content, content, LocalDateTime.now());
+        this(role, content, content, LocalDateTime.now());
     }
 
     @Override
@@ -129,8 +107,4 @@ public class AIMessage {
         return time;
     }
 
-    @NotNull
-    public UUID getId() {
-        return uuid;
-    }
 }
