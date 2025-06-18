@@ -154,7 +154,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         GenericCatalog catalog,
         ObjectsSearchParams params,
         List<DBSObjectReference> objects
-    ) throws SQLException, DBException {
+    ) throws SQLException {
         final GenericMetaObject schemaObject = getDataSource().getMetaObject(GenericConstants.OBJECT_SCHEMA);
         final DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCResultSet dbResult = session.getMetaData().getSchemas(catalog == null ? null : catalog.getName(), params.getMask())) {
@@ -181,14 +181,13 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
     }
 
     private void findProceduresByMask(
-        JDBCSession session,
+        @NotNull JDBCSession session,
         GenericCatalog catalog,
         GenericSchema schema,
         String procNameMask,
         int maxResults,
         List<DBSObjectReference> objects
-    )
-    throws SQLException, DBException {
+    ) throws SQLException, DBException {
         final GenericMetaObject procObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (
@@ -238,9 +237,10 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
         GenericCatalog tableCatalog = parentCatalog != null ? parentCatalog
             : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
         if (tableCatalog == null && CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(dataSource.getCatalogs())
-            && dataSource.getCatalogs().size() == 1) {
+            && dataSource.getCatalogs().size() == 1
+        ) {
             // there is only one catalog - let's use it (PostgreSQL)
-            tableCatalog = dataSource.getCatalogs().iterator().next();
+            tableCatalog = dataSource.getCatalogs().getFirst();
         }
         GenericSchema tableSchema = parentSchema != null ?
             parentSchema :
@@ -298,7 +298,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant<GenericExe
     private class ProcedureReference extends ObjectReference {
 
         private final String catalogName;
-        private String uniqueName;
+        private final String uniqueName;
 
         private ProcedureReference(GenericStructContainer container, String catalogName, String procedureName, String uniqueName) {
             super(container, procedureName, null, GenericProcedure.class, RelationalObjectType.TYPE_PROCEDURE);

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- *               2017 Andrew Khitrin   (andrew@jkiss.org)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +76,7 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
 
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         options = new HashMap<>(options);
         options.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
         options.put(OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, false);

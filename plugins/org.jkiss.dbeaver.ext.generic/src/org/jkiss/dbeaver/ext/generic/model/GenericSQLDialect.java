@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
 
     public static final String GENERIC_DIALECT_ID = "generic";
 
-    private static String[] EXEC_KEYWORDS =  { "EXEC", "CALL" };
+    private static final String[] EXEC_KEYWORDS =  { "EXEC", "CALL" };
 
     private String[] scriptDelimiters;
     private char stringEscapeCharacter = '\0';
@@ -225,7 +225,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         if (useSearchStringEscape) {
             return super.getSearchStringEscape();
         } else {
-            return null;
+            return "";
         }
     }
 

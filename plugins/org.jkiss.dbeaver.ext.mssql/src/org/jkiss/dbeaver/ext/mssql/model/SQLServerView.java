@@ -127,7 +127,7 @@ public class SQLServerView extends SQLServerTableBase implements DBSView {
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_REFRESH)) {
             ddl = null;
         }
