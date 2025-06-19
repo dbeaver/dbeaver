@@ -67,6 +67,8 @@ public interface DBPApplication {
 
     boolean isDetachedProcess();
 
+    boolean isStageMode();
+
     @NotNull
     Map<String, String> getAdditionalApplicationProperties();
 
