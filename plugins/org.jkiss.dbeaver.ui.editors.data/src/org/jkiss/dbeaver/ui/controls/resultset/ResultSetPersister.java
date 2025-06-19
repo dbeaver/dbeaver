@@ -834,23 +834,7 @@ class ResultSetPersister {
                             DBDAttributeValue.getAttributes(statement.keyAttributes),
                             new ExecutionSource(dataContainer))) {
                             Object[] attributes = new Object[statement.keyAttributes.size()];
-                            for (int i = 0; i < statement.keyAttributes.size(); i++) {
-                                if (DBUtils.isNullValue(statement.keyAttributes.get(i).getValue())) {
-                                    attributes[statement.updateAttributes.size() + i] = DBDNull.INSTANCE;
-                                } else {
-                                    attributes[statement.updateAttributes.size() + i] = statement.keyAttributes.get(i).getValue();
-                                }
-                            }
-                            batch.add(attributes);
-                            if (generateScript) {
-                                batch.generatePersistActions(session, script, options);
-                            } else {
-                                DBCStatistics bs = batch.execute(session, options);
-                                // Notify rsv container about statement execute
-                                this.notifyContainer(bs);
-
-                                deleteStats.accumulate(bs);
-                            }
+                            extractDataAndProcessBatch(session, options, statement, batch, attributes, deleteStats);
                         }
                         processStatementChanges(statement);
                     } catch (DBException e) {
@@ -902,24 +886,7 @@ class ResultSetPersister {
                             for (int i = 0; i < statement.updateAttributes.size(); i++) {
                                 attributes[i] = statement.updateAttributes.get(i).getValue();
                             }
-                            for (int i = 0; i < statement.keyAttributes.size(); i++) {
-                                if (DBUtils.isNullValue(statement.keyAttributes.get(i).getValue())) {
-                                    attributes[statement.updateAttributes.size() + i] = DBDNull.INSTANCE;
-                                } else {
-                                    attributes[statement.updateAttributes.size() + i] = statement.keyAttributes.get(i).getValue();
-                                }
-                            }
-                            // Execute
-                            batch.add(attributes);
-                            if (generateScript) {
-                                batch.generatePersistActions(session, script, options);
-                            } else {
-                                DBCStatistics bs = batch.execute(session, options);
-                                // Notify rsv container about statement execute
-                                this.notifyContainer(bs);
-
-                                updateStats.accumulate(bs);
-                            }
+                            extractDataAndProcessBatch(session, options, statement, batch, attributes, updateStats);
                         }
                         processStatementChanges(statement);
                     } catch (DBException e) {
@@ -939,6 +906,33 @@ class ResultSetPersister {
                         log.debug("Can't release savepoint", e);
                     }
                 }
+            }
+        }
+
+        private void extractDataAndProcessBatch(
+            DBCSession session,
+            Map<String, Object> options,
+            DataStatementInfo statement,
+            DBSDataManipulator.ExecuteBatch batch,
+            Object[] attributes,
+            DBCStatistics stats
+        ) throws DBCException {
+            for (int i = 0; i < statement.keyAttributes.size(); i++) {
+                if (DBUtils.isNullValue(statement.keyAttributes.get(i).getValue())) {
+                    attributes[statement.updateAttributes.size() + i] = DBDNull.INSTANCE;
+                } else {
+                    attributes[statement.updateAttributes.size() + i] = statement.keyAttributes.get(i).getValue();
+                }
+            }
+            batch.add(attributes);
+            if (generateScript) {
+                batch.generatePersistActions(session, script, options);
+            } else {
+                DBCStatistics bs = batch.execute(session, options);
+                // Notify rsv container about statement execute
+                this.notifyContainer(bs);
+
+                stats.accumulate(bs);
             }
         }
 
