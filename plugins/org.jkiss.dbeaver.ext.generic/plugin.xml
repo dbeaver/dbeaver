@@ -1324,7 +1324,7 @@
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
                     <replace provider="generic" driver="salesforce_jdbc"/>
-                    <file type="jar" path="maven:/com.salesforce.datacloud:jdbc:RELEASE" bundle="!drivers.salesforce_datacloud"/>
+                    <file type="jar" path="maven:/com.salesforce.datacloud:jdbc:shaded:RELEASE" bundle="!drivers.salesforce_datacloud"/>
                     <file type="jar" path="drivers/salesforce_datacloud" bundle="drivers.salesforce_datacloud"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <parameter name="read-only-meta-data" value="true"/>

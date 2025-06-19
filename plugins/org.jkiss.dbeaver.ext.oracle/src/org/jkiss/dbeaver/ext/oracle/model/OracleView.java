@@ -128,7 +128,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject, D
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (viewText == null) {
             currentDDLFormat = OracleDDLFormat.getCurrentFormat(getDataSource());
         }
