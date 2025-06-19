@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
@@ -103,12 +102,6 @@ public class DatabaseEditorUtils {
             EditorsMessages.database_editor_command_revert_tip,
             true));
         contributionManager.add(new ToolbarSeparatorContribution(true));
-
-        contributionManager.add(new Separator());
-        contributionManager.add(ActionUtils.makeCommandContribution(
-            workbenchSite,
-            "com.dbeaver.ai.describeObject"
-        ));
     }
 
 }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ContributionManager;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -32,6 +33,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.PartSite;
+import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.Nullable;
@@ -114,6 +116,14 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             @Override
             public void fillCustomActions(IContributionManager contributionManager) {
                 super.fillCustomActions(contributionManager);
+
+                IMenuService menuService = getSite().getService(IMenuService.class);
+                if (menuService != null) {
+                    menuService.populateContributionManager(
+                        (ContributionManager) contributionManager,
+                        "toolbar:org.jkiss.dbeaver.ui.editors.entity.toolbar.ai"
+                    );
+                }
                 if (propertiesPanel != null && folderComposite == null) {
                     // We have object editor and no folders - contribute default actions
                     DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
