@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -205,7 +205,7 @@ public class MySQLSequence implements DBSSequence, MySQLSourceObject, DBPQualifi
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
                 sequenceCatalog,
                 this);
@@ -218,7 +218,7 @@ public class MySQLSequence implements DBSSequence, MySQLSourceObject, DBPQualifi
 
     @Override
     @Property(hidden = true, editable = true, updatable = true)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (body == null && isPersisted) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read sequence declaration")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE SEQUENCE " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {

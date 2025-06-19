@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,21 +25,18 @@ import org.jkiss.dbeaver.model.meta.Property;
 /**
  * GenericTableConstraintColumn
  */
-public class GenericTableConstraintColumn extends AbstractTableConstraintColumn
-{
-    private JDBCTableConstraint constraint;
-    private GenericTableColumn tableColumn;
-    private int ordinalPosition;
+public class GenericTableConstraintColumn extends AbstractTableConstraintColumn {
+    private final JDBCTableConstraint constraint;
+    private final GenericTableColumn tableColumn;
+    private final int ordinalPosition;
 
-    public GenericTableConstraintColumn(JDBCTableConstraint constraint, GenericTableColumn tableColumn, int ordinalPosition)
-    {
+    public GenericTableConstraintColumn(JDBCTableConstraint constraint, GenericTableColumn tableColumn, int ordinalPosition) {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
     }
 
-    public GenericTableConstraintColumn(GenericTableConstraint constraint, GenericTableConstraintColumn column)
-    {
+    public GenericTableConstraintColumn(GenericTableConstraint constraint, GenericTableConstraintColumn column) {
         this.constraint = constraint;
         this.tableColumn = column.tableColumn;
         this.ordinalPosition = column.ordinalPosition;
@@ -47,44 +44,38 @@ public class GenericTableConstraintColumn extends AbstractTableConstraintColumn
 
     @NotNull
     @Override
-    public String getName()
-    {
+    public String getName() {
         return tableColumn.getName();
     }
 
     @NotNull
     @Override
     @Property(id = "name", viewable = true, order = 1)
-    public GenericTableColumn getAttribute()
-    {
+    public GenericTableColumn getAttribute() {
         return tableColumn;
     }
 
     @Override
     @Property(viewable = false, order = 2)
-    public int getOrdinalPosition()
-    {
+    public int getOrdinalPosition() {
         return ordinalPosition;
     }
 
-//    @Property(name = "Description", viewable = true, order = 100)
+    //    @Property(name = "Description", viewable = true, order = 100)
     @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return tableColumn.getDescription();
     }
 
     @Override
-    public JDBCTableConstraint getParentObject()
-    {
+    public JDBCTableConstraint getParentObject() {
         return constraint;
     }
 
     @NotNull
     @Override
-    public GenericDataSource getDataSource()
-    {
+    public GenericDataSource getDataSource() {
         return (GenericDataSource) constraint.getDataSource();
     }
 

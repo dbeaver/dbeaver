@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,22 +32,21 @@ import java.util.List;
 /**
  * GenericTable
  */
-public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, GenericTableBase>
-{
+public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, GenericTableBase> {
     private boolean nonUnique;
-    private String qualifier;
-    private long cardinality;
+    private final String qualifier;
+    private final long cardinality;
     private List<GenericTableIndexColumn> columns;
 
     public GenericTableIndex(
-        GenericTableBase table,
+        @NotNull GenericTableBase table,
         boolean nonUnique,
         String qualifier,
         long cardinality,
         String indexName,
         DBSIndexType indexType,
-        boolean persisted)
-    {
+        boolean persisted
+    ) {
         super(table.getContainer(), table, indexName, indexType, persisted);
         this.nonUnique = nonUnique;
         this.qualifier = qualifier;
@@ -56,10 +55,10 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
 
     /**
      * Copy constructor
+     *
      * @param source source index
      */
-    GenericTableIndex(GenericTableIndex source)
-    {
+    GenericTableIndex(@NotNull GenericTableIndex source) {
         super(source);
         this.nonUnique = source.nonUnique;
         this.qualifier = source.qualifier;
@@ -74,23 +73,20 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
 
     @NotNull
     @Override
-    public GenericDataSource getDataSource()
-    {
+    public GenericDataSource getDataSource() {
         return getTable().getDataSource();
     }
 
     @Nullable
     @Override
     @Property(viewable = true, length = PropertyLength.MULTILINE, order = 100)
-    public String getDescription()
-    {
+    public String getDescription() {
         return null;
     }
 
     @Override
     @Property(viewable = true, order = 4)
-    public boolean isUnique()
-    {
+    public boolean isUnique() {
         return !nonUnique;
     }
 
@@ -99,36 +95,30 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
     }
 
     @Property(viewable = true, order = 5)
-    public String getQualifier()
-    {
+    public String getQualifier() {
         return qualifier;
     }
 
     @Property(viewable = true, order = 5)
-    public long getCardinality()
-    {
+    public long getCardinality() {
         return cardinality;
     }
 
     @Override
-    public List<GenericTableIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor)
-    {
+    public List<GenericTableIndexColumn> getAttributeReferences(@NotNull DBRProgressMonitor monitor) {
         return columns;
     }
 
     @Nullable
-    public GenericTableIndexColumn getColumn(String columnName)
-    {
+    public GenericTableIndexColumn getColumn(@NotNull String columnName) {
         return DBUtils.findObject(columns, columnName);
     }
 
-    public void setColumns(List<GenericTableIndexColumn> columns)
-    {
+    public void setColumns(List<GenericTableIndexColumn> columns) {
         this.columns = columns;
     }
 
-    public void addColumn(GenericTableIndexColumn column)
-    {
+    public void addColumn(@NotNull GenericTableIndexColumn column) {
         if (columns == null) {
             columns = new ArrayList<>();
         }
@@ -137,12 +127,13 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
-    {
-        return DBUtils.getFullQualifiedName(getDataSource(),
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
+        return DBUtils.getFullQualifiedName(
+            getDataSource(),
             getTable().getCatalog(),
             getTable().getSchema(),
-            this);
+            this
+        );
     }
 
 }
