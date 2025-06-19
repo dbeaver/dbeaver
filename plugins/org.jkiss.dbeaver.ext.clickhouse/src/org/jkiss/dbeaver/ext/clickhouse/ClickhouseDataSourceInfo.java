@@ -33,4 +33,8 @@ public class ClickhouseDataSourceInfo extends JDBCDataSourceInfo {
         return false;
     }
 
+    @Override
+    public boolean supportsReferentialIntegrity() {
+        return false;
+    }
 }

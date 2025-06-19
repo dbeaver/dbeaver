@@ -1430,7 +1430,20 @@
             value="COLOR_WIDGET_BACKGROUND">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.disabled.background.description</description>
         </colorDefinition>
-
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.aiSuggestion.foreground.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.aiSuggestion.foreground"
+            value="128,128,128">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.aiSuggestion.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.aiSuggestion.background.label"
+            categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+            id="org.jkiss.dbeaver.sql.editor.color.aiSuggestion.background"
+            value="232,242,254">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.aiSuggestion.background.description</description>
+        </colorDefinition>
         <!-- Colors for Query Plan -->
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.sql.plan.view.label" id="org.jkiss.dbeaver.sql.plan.view.colors">
             <description>%themeElementCategory.org.jkiss.dbeaver.sql.plan.view.description</description>

@@ -222,6 +222,11 @@ public class SQLQueryRowsSourceContext {
         });
     }
 
+    @NotNull
+    public final SQLQueryRowsSourceContext setCteSourcesFrom(@NotNull SQLQueryRowsSourceContext context) {
+        return this.setDynamicRowsSources(Map.copyOf(context.dynamicTableSources));
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
