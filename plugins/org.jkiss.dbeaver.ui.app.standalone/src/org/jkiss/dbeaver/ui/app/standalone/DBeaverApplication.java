@@ -292,8 +292,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
             if (RuntimeUtils.isWindows() && preferenceStore.getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)) {
                 System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
-            } else if (RuntimeUtils.isMacOS() && preferenceStore.getBoolean(ModelPreferences.PROP_USE_MAC_TRUST_STORE_TYPE)) {
-                System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_MAC);
             }
         }
 

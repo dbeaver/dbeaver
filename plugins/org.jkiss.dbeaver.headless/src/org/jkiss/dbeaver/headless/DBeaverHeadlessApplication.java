@@ -52,10 +52,6 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
             && platform.getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
         ) {
             System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
-        } else if (RuntimeUtils.isMacOS()
-            && platform.getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_MAC_TRUST_STORE_TYPE)
-        ) {
-            System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_MAC);
         }
         System.out.println("Starting headless test application " + application.getClass().getName());
 
