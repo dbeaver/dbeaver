@@ -805,11 +805,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return "General";
     }
 
-    @Override
-    public boolean isStageMode() {
-        return false;
-    }
-
     private int showMessageBox(String title, String message, int style) {
         // Can't lock specified path
         Shell shell = new Shell(getDisplay(), SWT.ON_TOP);
