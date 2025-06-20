@@ -16,11 +16,10 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -74,9 +73,9 @@ public interface DBPScriptObject extends DBPObject {
     
     String OPTION_CAST_PARAMS = "sql.castParameter"; //$NON-NLS-1$
 
-    Map<String, Object> EMPTY_OPTIONS = Collections.unmodifiableMap(new HashMap<>());
+    Map<String, Object> EMPTY_OPTIONS = Map.of();
 
-    String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
+    String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options)
         throws DBException;
 
 }

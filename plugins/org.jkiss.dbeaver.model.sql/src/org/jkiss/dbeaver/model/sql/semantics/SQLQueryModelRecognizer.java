@@ -715,24 +715,25 @@ public class SQLQueryModelRecognizer {
     );
 
     @NotNull
-    public SQLQueryValueExpression collectValueExpression(@NotNull STMTreeNode node) {
+    public SQLQueryValueExpression collectValueExpression(@NotNull STMTreeNode node, @Nullable SQLQueryLexicalScope scope) {
         if (!knownValueExpressionRootNames.contains(node.getNodeName())) {
             log.debug("Search condition or value expression expected while facing with " + node.getNodeName());
             return new SQLQueryValueFlattenedExpression(node, Collections.emptyList());
         }
         
         if (knownRecognizableValueExpressionNames.contains(node.getNodeName())) {
-            return collectKnownValueExpression(node);
+            return collectKnownValueExpression(node, scope);
         } else {
-            try (LexicalScopeHolder sh = this.openScope()) {
+            LexicalScopeHolder exprScopeHolder = scope != null ? null : this.openScope();
+            try {
                 Stack<STMTreeNode> stack = new Stack<>();
                 Stack<List<SQLQueryValueExpression>> childLists = new Stack<>();
                 stack.add(node);
                 childLists.push(new ArrayList<>(1));
-    
+
                 while (!stack.isEmpty()) {
                     STMTreeNode n = stack.pop();
-                    
+
                     if (n != null) {
                         STMTreeNode rn = n;
                         while (rn != null && rn.getChildCount() == 1 && !knownRecognizableValueExpressionNames.contains(rn.getNodeName())) {
@@ -742,7 +743,7 @@ public class SQLQueryModelRecognizer {
                             if (knownRecognizableValueExpressionNames.contains(rn.getNodeName())
                                 || rn.getNodeName().equals(STMKnownRuleNames.valueExpressionPrimary)
                             ) {
-                                childLists.peek().add(this.collectKnownValueExpression(rn));
+                                childLists.peek().add(this.collectKnownValueExpression(rn, scope));
                             } else {
                                 stack.push(n);
                                 stack.push(null);
@@ -758,27 +759,34 @@ public class SQLQueryModelRecognizer {
                         STMTreeNode content = stack.pop();
                         List<SQLQueryValueExpression> children = childLists.pop();
                         if (!children.isEmpty()) {
-                            SQLQueryValueExpression e = children.size() == 1 && children.get(0) instanceof SQLQueryValueFlattenedExpression child
-                                ? child
-                                : new SQLQueryValueFlattenedExpression(content, children);
+                            SQLQueryValueExpression e =
+                                children.size() == 1 && children.get(0) instanceof SQLQueryValueFlattenedExpression child
+                                    ? child
+                                    : new SQLQueryValueFlattenedExpression(content, children);
                             childLists.peek().add(e);
                         }
                     }
                 }
-                
+
                 List<SQLQueryValueExpression> roots = childLists.pop();
                 SQLQueryValueExpression result = roots.isEmpty()
                     ? new SQLQueryValueFlattenedExpression(node, Collections.emptyList())
                     : roots.get(0);
-                
-                result.registerLexicalScope(sh.lexicalScope);
+
+                if (exprScopeHolder != null) {
+                    result.registerLexicalScope(exprScopeHolder.lexicalScope);
+                }
                 return result;
+            } finally {
+                if (exprScopeHolder != null) {
+                    exprScopeHolder.close();;
+                }
             }
         }
     }
 
     @NotNull
-    public SQLQueryValueExpression collectKnownValueExpression(@NotNull STMTreeNode node) {
+    public SQLQueryValueExpression collectKnownValueExpression(@NotNull STMTreeNode node, @Nullable SQLQueryLexicalScope scope) {
         SQLQueryValueExpression result = switch (node.getNodeKindId()) {
             case SQLStandardParser.RULE_subquery -> new SQLQueryValueSubqueryExpression(node, this.collectQueryExpression(node));
             case SQLStandardParser.RULE_valueReference -> this.collectValueReferenceExpression(node, false);
@@ -787,7 +795,7 @@ public class SQLQueryModelRecognizer {
                 if (valueExprNode == null) {
                     yield null;
                 } else {
-                    SQLQueryValueExpression subexpr = this.collectValueExpression(valueExprNode);
+                    SQLQueryValueExpression subexpr = this.collectValueExpression(valueExprNode, scope);
                     STMTreeNode castSpecNode = node.findFirstChildOfName(STMKnownRuleNames.valueExpressionCastSpec);
                     if (castSpecNode != null) {
                         STMTreeNode dataTypeNode = castSpecNode.findLastChildOfName(STMKnownRuleNames.dataType);

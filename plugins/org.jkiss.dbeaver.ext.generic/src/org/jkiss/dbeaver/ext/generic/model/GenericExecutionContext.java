@@ -57,7 +57,7 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
 
     @Nullable
     @Override
-    public DBCExecutionContextDefaults getContextDefaults() {
+    public DBCExecutionContextDefaults<?,?> getContextDefaults() {
         return this;
     }
 
@@ -118,10 +118,10 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
             // If we have only one catalog then it is our selected entity
             if (dataSource.hasCatalogs() && dataSource.getCatalogs().size() == 1) {
                 dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_CATALOG);
-                selectedEntityName = dataSource.getCatalogs().get(0).getName();
+                selectedEntityName = dataSource.getCatalogs().getFirst().getName();
             } else if (dataSource.hasSchemas() && dataSource.getSchemas().size() == 1) {
                 dataSource.setSelectedEntityType(GenericConstants.ENTITY_TYPE_SCHEMA);
-                selectedEntityName = dataSource.getSchemas().get(0).getName();
+                selectedEntityName = dataSource.getSchemas().getFirst().getName();
             }
         }
     }
@@ -212,10 +212,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     @Override
     public boolean supportsCatalogChange() {
         GenericDataSource dataSource = getDataSource();
-        if (!(dataSource.getInfo() instanceof GenericDataSourceInfo)) {
+        if (!(dataSource.getInfo() instanceof GenericDataSourceInfo info)) {
             return true;
         }
-        final GenericDataSourceInfo info = (GenericDataSourceInfo) dataSource.getInfo();
         if (dataSource.isSelectedEntityFromAPI() || !CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
             if (CommonUtils.isEmpty(dataSource.getSelectedEntityType())) {
                 return dataSource.hasCatalogs() && info.supportsCatalogSelection();
@@ -230,10 +229,9 @@ public class GenericExecutionContext extends JDBCExecutionContext implements DBC
     @Override
     public boolean supportsSchemaChange() {
         GenericDataSource dataSource = getDataSource();
-        if (!(dataSource.getInfo() instanceof GenericDataSourceInfo)) {
+        if (!(dataSource.getInfo() instanceof GenericDataSourceInfo info)) {
             return true;
         }
-        final GenericDataSourceInfo info = (GenericDataSourceInfo) dataSource.getInfo();
         if (dataSource.isSelectedEntityFromAPI() || !CommonUtils.isEmpty(dataSource.getQuerySetActiveDB())) {
             if (CommonUtils.isEmpty(dataSource.getSelectedEntityType())) {
                 return !dataSource.hasCatalogs() && dataSource.hasSchemas() && info.supportsSchemaSelection();

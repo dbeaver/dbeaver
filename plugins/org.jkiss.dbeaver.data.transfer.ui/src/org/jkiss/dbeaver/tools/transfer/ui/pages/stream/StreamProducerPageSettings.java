@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -95,17 +96,16 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
             UIUtils.createControlLabel(inputFilesGroup, DTMessages.data_transfer_wizard_settings_group_input_files);
 
-            final Composite inputFilesTableGroup = new Composite(inputFilesGroup, SWT.BORDER);
+            final Composite inputFilesTableGroup = new Composite(inputFilesGroup, SWT.NONE);
             inputFilesTableGroup.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
             inputFilesTableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
             DBPProject project = getWizard().getProject();
-            boolean showLocalFS = true;//!DBWorkbench.isDistributed();
             boolean showRemoteFS = project != null && DBFUtils.supportsMultiFileSystems(project);
 
-            if (showLocalFS || showRemoteFS) {
+            {
                 final ToolBar toolbar = new ToolBar(inputFilesTableGroup, SWT.HORIZONTAL | SWT.FLAT | SWT.RIGHT);
-                if (showLocalFS) {
+                {
                     tiOpenLocal = UIUtils.createToolItem(
                         toolbar,
                         UIMessages.text_with_open_dialog_browse,
@@ -132,9 +132,9 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             filesTable.setHeaderVisible(true);
             filesTable.setLinesVisible(true);
 
-            if (showLocalFS || showRemoteFS) {
+            {
                 UIWidgets.setControlContextMenu(filesTable, manager -> {
-                    if (showLocalFS) {
+                    {
                         manager.add(new SelectInputFileAction(false));
                     }
                     if (showRemoteFS) {
@@ -180,7 +180,16 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
                     @Override
                     public void widgetDefaultSelected(SelectionEvent e) {
-                        new SelectInputFileAction(!showLocalFS).run();
+                        DataTransferPipe pipe = (DataTransferPipe) filesTable.getSelection()[0].getData();
+                        if (pipe.getProducer() instanceof StreamTransferProducer stp) {
+                            Action action;
+                            if (stp.getInputFile() != null) {
+                                action = new SelectInputFileAction(!IOUtils.isLocalPath(stp.getInputFile()));
+                            } else {
+                                action = new SelectInputFileAction(false);
+                            }
+                            action.run();
+                        }
                     }
                 });
             }
@@ -466,7 +475,6 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     }
 
     private void reloadPipes() {
-        boolean firstTime = filesTable.getItemCount() == 0;
         DataTransferSettings settings = getWizard().getSettings();
         int selectionIndex = filesTable.getSelectionIndex();
         filesTable.removeAll();
@@ -482,13 +490,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             } else if (selectionIndex >= dataPipes.size()) {
                 selectionIndex = dataPipes.size() - 1;
             }
-            DataTransferPipe pipe = dataPipes.get(selectionIndex);
             filesTable.select(selectionIndex);
-            if (firstTime) {
-                if (pipe.getProducer() instanceof StreamTransferProducer stp && stp.getInputFile() == null) {
-                    UIUtils.asyncExec(() -> chooseSourceFile(pipe, DBWorkbench.isDistributed() && getWizard().getCurrentTask() != null));
-                }
-            }
         }
         updateBrowseButtons();
     }

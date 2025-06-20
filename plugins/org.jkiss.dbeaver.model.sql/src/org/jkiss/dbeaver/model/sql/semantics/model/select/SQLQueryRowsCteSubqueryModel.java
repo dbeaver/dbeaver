@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
@@ -39,17 +40,25 @@ public class SQLQueryRowsCteSubqueryModel extends SQLQueryRowsSourceModel {
     public final List<SQLQuerySymbolEntry> columNames;
     @Nullable
     public final SQLQueryRowsSourceModel source;
+    @Nullable
+    private final SQLQueryLexicalScope sourceTailScope;
 
     public SQLQueryRowsCteSubqueryModel(
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQuerySymbolEntry subqueryName,
         @NotNull List<SQLQuerySymbolEntry> columNames,
-        @Nullable SQLQueryRowsSourceModel source
+        @Nullable SQLQueryRowsSourceModel source,
+        @Nullable SQLQueryLexicalScope sourceTailScope
     ) {
         super(syntaxNode, source);
         this.subqueryName = subqueryName;
         this.columNames = columNames;
         this.source = source;
+        this.sourceTailScope = sourceTailScope;
+        
+        if (sourceTailScope != null) {
+            this.registerLexicalScope(sourceTailScope);
+        }
     }
 
     /**
@@ -98,6 +107,11 @@ public class SQLQueryRowsCteSubqueryModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         if (this.source != null) {
+            this.setTailOrigin(this.source.getTailOrigin());
+            if (this.sourceTailScope != null && this.source.getTailOrigin() != null) {
+                this.sourceTailScope.setSymbolsOrigin(this.source.getTailOrigin());
+            }
+
             if (!this.columNames.isEmpty()) {
                 return SQLQueryRowsCorrelatedSourceModel.prepareColumnsCorrelation(this.source.getRowsDataContext(), this.columNames, this);
             } else {
