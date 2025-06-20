@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,19 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
@@ -49,6 +55,8 @@ import java.util.stream.Collectors;
  */
 public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.project.settings.networkProfiles"; //$NON-NLS-1$
+
+    private static final Log log = Log.getLog(PrefPageProjectNetworkProfiles.class);
 
     private DBPProject projectMeta;
 
@@ -187,4 +195,23 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         }
     }
 
+    /**
+     * Opens a property dialog for editing network profiles.
+     *
+     * @return {@code true} if the dialog was closed with OK, {@code false} otherwise or if an error occurred.
+     */
+    public static boolean open(@NotNull Shell shell, @NotNull RCPProject project, @Nullable DBWNetworkProfile profile) {
+        PreferenceDialog dialog = PreferencesUtil.createPropertyDialogOn(
+            shell,
+            project.getEclipseProject(),
+            PAGE_ID,
+            null,
+            profile != null ? profile.getProfileName() : null
+        );
+        if (dialog == null) {
+            log.error("Can't open network profiles preferences");
+            return false;
+        }
+        return dialog.open() == IDialogConstants.OK_ID;
+    }
 }

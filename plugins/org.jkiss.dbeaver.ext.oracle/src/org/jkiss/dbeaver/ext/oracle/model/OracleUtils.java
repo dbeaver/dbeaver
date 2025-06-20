@@ -357,12 +357,11 @@ public class OracleUtils {
             "SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
     }
 
-    public static String normalizeSourceName(OracleSourceObject object, boolean body)
-    {
+    public static String normalizeSourceName(@NotNull DBRProgressMonitor monitor, @NotNull OracleSourceObject object, boolean body) {
         try {
             String source = body ?
-                ((DBPScriptObjectExt)object).getExtendedDefinitionText(null) :
-                object.getObjectDefinitionText(null, DBPScriptObject.EMPTY_OPTIONS);
+                ((DBPScriptObjectExt)object).getExtendedDefinitionText(monitor) :
+                object.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS);
             if (source == null) {
                 return null;
             }

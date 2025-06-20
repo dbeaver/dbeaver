@@ -136,16 +136,17 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         this.shadowColor = getDisplay().getSystemColor(isDark ? SWT.COLOR_WIDGET_LIGHT_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         {
-            this.filterComposite = new Composite(this, SWT.BORDER);
+            this.filterComposite = new Composite(this, SWT.NONE);
 
             gl = new GridLayout(5, false);
-            gl.marginHeight = 0;
-            gl.marginWidth = 0;
+            gl.marginHeight = 2;
+            gl.marginWidth = 2;
             gl.horizontalSpacing = 0;
             gl.verticalSpacing = 0;
             this.filterComposite.setLayout(gl);
             this.filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             // CSSUtils.setCSSClass(this.filterComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            new CompositeBorderPainter(this.filterComposite);
 
             if (!compactMode) {
                 this.activeObjectPanel = new ActiveObjectPanel(filterComposite);
