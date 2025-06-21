@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,7 +149,11 @@ public class DBVEntityForeignKey implements DBSEntityConstraint, DBSEntityAssoci
         if (refEntityId == null) {
             throw new DBException("Ref entity ID not set for virtual FK " + getName());
         }
-        DBNNode refNode = DBNUtils.getNavigatorModel(entity).getNodeByPath(monitor, refEntityId);
+        DBNModel navigatorModel = DBNUtils.getNavigatorModel(entity);
+        if (navigatorModel == null) {
+            throw new DBException("Null navigator model");
+        }
+        DBNNode refNode = navigatorModel.getNodeByPath(monitor, refEntityId);
         if (!(refNode instanceof DBNDatabaseNode)) {
             throw new DBException("Can't find reference node " + refEntityId + " for virtual foreign key");
         }
