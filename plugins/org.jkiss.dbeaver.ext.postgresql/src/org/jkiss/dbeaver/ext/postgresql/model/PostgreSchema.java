@@ -560,7 +560,7 @@ public class PostgreSchema implements
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
         sql.append("-- DROP SCHEMA ").append(DBUtils.getQuotedIdentifier(this)).append(";\n\n");
         sql.append("CREATE SCHEMA ").append(DBUtils.getQuotedIdentifier(this));

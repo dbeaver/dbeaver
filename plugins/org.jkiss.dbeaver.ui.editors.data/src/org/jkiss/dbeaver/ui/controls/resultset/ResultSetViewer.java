@@ -122,8 +122,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -3202,9 +3202,10 @@ public class ResultSetViewer extends Viewer
             possibleActions.add(new VirtualAttributeDeleteAction(this, attr));
         }
 
-        if (dataSource.getInfo().supportsReferentialIntegrity()) {
+        DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
+        boolean supportsVirtualKeys = dataSource.getContainer().getDriver().supportsVirtualKeys();
+        if (dataSourceInfo.supportsReferentialIntegrity() || supportsVirtualKeys) {
             possibleActions.add(new VirtualForeignKeyEditAction(this));
-
             possibleActions.add(new VirtualUniqueKeyEditAction(this, true));
             possibleActions.add(new VirtualUniqueKeyEditAction(this, false));
         }
@@ -3426,7 +3427,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void handleDataSourceEvent(DBPEvent event) {
+    public void handleDataSourceEvent(@NotNull DBPEvent event) {
         if (event.getObject() instanceof DBVEntity &&
             event.getData() instanceof DBVEntityForeignKey &&
             event.getObject() == model.getVirtualEntity(false))

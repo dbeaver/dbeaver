@@ -50,20 +50,28 @@ public class ClickhouseTableManager extends GenericTableManager {
     }
 
     @Override
-    protected void appendTableModifiers(DBRProgressMonitor monitor, GenericTableBase table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
+    protected void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        GenericTableBase table,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter,
+        Map<String, Object> options) {
         if (table instanceof ClickhouseTable) {
+            String delimiter = getDelimiter(options);
             ClickhouseTable clickhouseTable = (ClickhouseTable) table;
             if (clickhouseTable.getEngine() != null) {
                 ddl.append(" ENGINE = ").append(clickhouseTable.getEngine().getName());
                 if (CommonUtils.isNotEmpty(clickhouseTable.getEngineMessage())) {
-                    ddl.append("\n").append(clickhouseTable.getEngineMessage());
+                    ddl.append(delimiter).append(clickhouseTable.getEngineMessage());
                 }
             } else {
                 try {
                     List<? extends GenericTableColumn> attributes = table.getAttributes(monitor);
                     if (!CommonUtils.isEmpty(attributes)) {
-                        ddl.append(" ENGINE = MergeTree()\n" +
-                            "ORDER BY ").append(DBUtils.getQuotedIdentifier(attributes.get(0)));
+                        ddl.append(" ENGINE = MergeTree()")
+                            .append(delimiter)
+                            .append("ORDER BY ").append(DBUtils.getQuotedIdentifier(attributes.get(0)));
                     } else {
                         ddl.append(" ENGINE = Log");
                     }
@@ -73,7 +81,7 @@ public class ClickhouseTableManager extends GenericTableManager {
             }
             if (!table.isPersisted() && tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null
                 && CommonUtils.isNotEmpty(table.getDescription())) {
-                ddl.append("\nCOMMENT ").append(SQLUtils.quoteString(table, table.getDescription())); //$NON-NLS-1$
+                ddl.append(delimiter).append("COMMENT ").append(SQLUtils.quoteString(table, table.getDescription())); //$NON-NLS-1$
             }
         }
     }
