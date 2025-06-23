@@ -3414,7 +3414,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void handleDataSourceEvent(final DBPEvent event) {
+    public void handleDataSourceEvent(@NotNull final DBPEvent event) {
         final boolean dsEvent = event.getObject() == getDataSourceContainer();
         final boolean objectEvent = event.getObject() != null && event.getObject().getDataSource() == getDataSource();
         final boolean registryEvent = getDataSourceContainer() != null && event.getData() == getDataSourceContainer().getRegistry();
