@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -90,7 +91,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
     private void loadPasswordFromPgPass(AuthModelPgPassCredentials credentials, DBPDataSourceContainer dataSource, DBPConnectionConfiguration configuration) throws DBException {
         // Take database name from original config. Because it may change when user switch between databases.
         DBPConnectionConfiguration originalConfiguration = dataSource.getConnectionConfiguration();
-        DBUtils.ConnectivityParameters cnnParams = DBUtils.getConnectivityParameters(originalConfiguration, dataSource.getDriver());
+        DBWUtils.ConnectivityParameters cnnParams = DBWUtils.getConnectivityParameters(originalConfiguration, dataSource.getDriver());
 
         String conHostName = cnnParams.hostName();
         String sshHost = null;
@@ -119,7 +120,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
             throw new DBException("PgPass file '" + pgPassFile + "' not found");
         }
 
-        String conHostPort = CommonUtils.notEmptyOrDefault(cnnParams.hostPort(), dataSource.getDriver().getDefaultPort());
+        String conHostPort = CommonUtils.isNotEmpty(cnnParams.hostPort()) ? cnnParams.hostPort() : dataSource.getDriver().getDefaultPort();
 
         try (Reader r = Files.newBufferedReader(pgPassFile, GeneralUtils.UTF8_CHARSET)) {
             String passString = IOUtils.readToString(r);
@@ -140,7 +141,7 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
     private boolean findHostCredentials(
         @NotNull AuthModelPgPassCredentials credentials,
         @NotNull DBPConnectionConfiguration configuration,
-        @NotNull DBUtils.ConnectivityParameters connectivityParameters,
+        @NotNull DBWUtils.ConnectivityParameters connectivityParameters,
         @NotNull String hostName,
         @NotNull String hostPort,
         @NotNull String[] lines
