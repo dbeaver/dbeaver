@@ -64,8 +64,14 @@ public class OracleTableTriggerManager extends SQLTriggerManager<OracleTableTrig
         );
     }
 
-    protected void createOrReplaceTriggerQuery(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull OracleTableTrigger trigger, boolean create) {
-        String source = OracleUtils.normalizeSourceName(trigger, false);
+    protected void createOrReplaceTriggerQuery(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull OracleTableTrigger trigger,
+        boolean create
+    ) {
+        String source = OracleUtils.normalizeSourceName(monitor, trigger, false);
         if (source == null) {
             return;
         }

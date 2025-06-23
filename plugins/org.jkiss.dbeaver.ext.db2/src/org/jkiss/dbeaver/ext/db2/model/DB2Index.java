@@ -1,7 +1,6 @@
 /*
- * Copyright (C) 2013-2015 Denis Forveille titou10.titou10@gmail.com
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,7 +141,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         return getContainer().getName() + "." + getName();
     }

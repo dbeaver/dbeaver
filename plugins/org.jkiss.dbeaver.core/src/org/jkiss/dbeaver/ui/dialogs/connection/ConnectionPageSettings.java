@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
@@ -27,29 +28,28 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
+import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -63,26 +63,34 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
+import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
+import org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
+import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Settings connection page. Hosts particular drivers' connection pages
  */
 class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, IDialogPageProvider, ICompositeDialogPageContainer, IDataSourceConnectionTester {
-    private static final Log log = Log.getLog(DriverDescriptor.class);
-
     public static final String PAGE_NAME = ConnectionPageSettings.class.getSimpleName();
 
-    // Sort network handler pages to be last, with pinned pages first among them
+    private static final Log log = Log.getLog(DriverDescriptor.class);
+
+    private static final Reply REPLY_KEEP = new Reply("&Keep");
+    private static final Reply REPLY_REMOVE = new Reply("&Remove");
+
+    // Sort network handler pages to be last
     private static final Comparator<IDialogPage> PAGE_COMPARATOR = Comparator
-        .comparing((IDialogPage page) -> page instanceof ConnectionPageNetworkHandler)
-        .thenComparing(page -> !isPagePinned(page));
+        .comparing(ConnectionPageSettings::isHandlerPage);
+
+    private static final int MAX_CHEVRON_ITEMS_TO_PREVIEW = 2;
 
     @NotNull
     private final ConnectionWizard wizard;
@@ -95,7 +103,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private IDataSourceConnectionEditor originalConnectionEditor;
     private final Set<DataSourceDescriptor> activated = new HashSet<>();
     private IDialogPage[] subPages, extraPages;
+
     private CTabFolder tabFolder;
+    private ToolItem handlerItem;
+    private ToolItem profileItem;
 
     /**
      * Constructor for ConnectionPageSettings
@@ -271,38 +282,44 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
                 tabFolder.setUnselectedCloseVisible(false);
 
-                final ToolBar tabFolderChevron = createChevron(allPages);
-                tabFolder.setTopRight(tabFolderChevron, SWT.RIGHT);
+                // Create and populate top-right toolbar
+                var toolBar = new ToolBar(tabFolder, SWT.FLAT | SWT.RIGHT);
+                handlerItem = createHandlerItem(toolBar, allPages);
+                profileItem = createProfileItem(toolBar);
+                tabFolder.setTopRight(toolBar, SWT.RIGHT);
+
+                updateHandlerItem(allPages);
+                updateProfileItem();
 
                 tabFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
                     @Override
                     public void close(CTabFolderEvent event) {
-                        if (confirmTabClose((CTabItem) event.item)) {
-                            final ConnectionPageNetworkHandler page = (ConnectionPageNetworkHandler) event.item.getData();
-                            final NetworkHandlerDescriptor descriptor = page.getHandlerDescriptor();
-                            final DBPConnectionConfiguration configuration = getActiveDataSource().getConnectionConfiguration();
-                            final DBWHandlerConfiguration handler = configuration.getHandler(descriptor.getId());
-
-                            if (handler != null) {
-                                handler.setEnabled(false);
-                            }
-                        } else {
+                        CTabItem item = (CTabItem) event.item;
+                        if (!closeTab(item)) {
                             event.doit = false;
                         }
                     }
 
                     //@Override
                     public void itemsCount(CTabFolderEvent event) {
-                        tabFolderChevron.setVisible(canShowChevron(allPages));
+                        updateHandlerItem(allPages);
                     }
                 });
+                tabFolder.addMouseListener(MouseListener.mouseUpAdapter(event -> {
+                    if (event.button == 2) {
+                        var folder = (CTabFolder) event.widget;
+                        var item = folder.getItem(new Point(event.x, event.y));
+                        if (item != null) {
+                            closeTab(item);
+                        }
+                    }
+                }));
                 tabFolder.addKeyListener(KeyListener.keyPressedAdapter(event -> {
                     if (event.keyCode == SWT.DEL && event.stateMask == 0) {
-                        final CTabFolder folder = (CTabFolder) event.widget;
-                        final CTabItem selection = folder.getSelection();
-
-                        if (selection != null && selection.getShowClose() && confirmTabClose(selection)) {
-                            selection.dispose();
+                        var folder = (CTabFolder) event.widget;
+                        var selection = folder.getSelection();
+                        if (selection != null) {
+                            closeTab(selection);
                         }
                     }
                 }));
@@ -310,7 +327,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 setControl(tabFolder);
 
                 for (IDialogPage page : allPages) {
-                    if (ArrayUtils.contains(extraPages, page) || canShowInChevron(page)) {
+                    if (ArrayUtils.contains(extraPages, page) || canAddHandler(page)) {
                         // Ignore extra pages
                         continue;
                     }
@@ -336,38 +353,326 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @NotNull
-    private ToolBar createChevron(@NotNull List<IDialogPage> pages) {
-        final MenuManager manager = new MenuManager();
-        manager.setRemoveAllWhenShown(true);
-        manager.addMenuListener(m -> {
-            for (int i = 0; i < pages.size(); i++) {
-                final IDialogPage page = pages.get(i);
-
-                if (canShowInChevron(page)) {
-                    manager.add(new AddNetworkHandlerAction(getActiveDataSource(), (ConnectionPageNetworkHandler) page, i));
+    private ToolItem createHandlerItem(@NotNull ToolBar toolBar, @NotNull List<IDialogPage> pages) {
+        var handlerManager = new MenuManager();
+        handlerManager.setRemoveAllWhenShown(true);
+        handlerManager.addMenuListener(manager -> {
+            for (IDialogPage page : pages) {
+                if (canAddHandler(page) && page instanceof ConnectionPageNetworkHandler handlerPage) {
+                    manager.add(new AddHandlerAction(handlerPage.getHandlerDescriptor()));
                 }
             }
         });
 
-        final ToolBar toolBar = new ToolBar(tabFolder, SWT.FLAT | SWT.RIGHT);
-
-        final ToolItem toolItem = UIUtils
-            .createToolItem(toolBar, CoreMessages.dialog_connection_network_add_tunnel_label, null, UIIcon.ADD, null);
+        var toolItem = UIUtils.createToolItem(toolBar, CoreMessages.dialog_connection_network_add_tunnel_label, null, UIIcon.ADD, null);
+        toolItem.addDisposeListener(e -> handlerManager.dispose());
         toolItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-            final Rectangle bounds = toolItem.getBounds();
-            final Point location = toolBar.getDisplay().map(toolBar, null, 0, bounds.height);
-            final Menu menu = manager.createContextMenu(tabFolder);
+            var bounds = toolItem.getBounds();
+            var location = toolBar.getDisplay().map(toolBar, null, bounds.x, bounds.height);
+            var menu = handlerManager.createContextMenu(tabFolder);
             menu.setLocation(location.x, location.y);
             menu.setVisible(true);
         }));
-        toolItem.addDisposeListener(e -> manager.dispose());
 
-        return toolBar;
+        return toolItem;
+    }
+
+    @NotNull
+    private ToolItem createProfileItem(@NotNull ToolBar toolBar) {
+        var profileManager = new MenuManager();
+        profileManager.setRemoveAllWhenShown(true);
+        profileManager.addMenuListener(manager -> {
+            manager.add(new ChooseNetworkProfileAction());
+            manager.add(new Separator());
+
+            var dataSource = getActiveDataSource();
+            int index = 0;
+
+            if (dataSource.getOrigin() instanceof DBPDataSourceOriginExternal origin) {
+                for (DBWNetworkProfile profile : origin.getAvailableNetworkProfiles()) {
+                    manager.add(new ChooseNetworkProfileAction(dataSource, profile, origin, index++));
+                }
+            }
+
+            manager.add(new Separator());
+
+            for (DBWNetworkProfile profile : getProject().getDataSourceRegistry().getNetworkProfiles()) {
+                manager.add(new ChooseNetworkProfileAction(dataSource, profile, null, index++));
+            }
+
+            manager.add(new Separator());
+            manager.add(new Action("Edit profiles...", DBeaverIcons.getImageDescriptor(UIIcon.RENAME)) {
+                @Override
+                public void run() {
+                    DBWNetworkProfile profile = getActiveProfile();
+                    PrefPageProjectNetworkProfiles.open(getShell(), getProject(), profile);
+                    if (profile != null) {
+                        selectProfile(profile);
+                    }
+                }
+            });
+        });
+
+        var profileItem = UIUtils.createToolItem(toolBar, "N/A", "Active profile", DBIcon.TYPE_DOCUMENT, null);
+        profileItem.addDisposeListener(e -> profileManager.dispose());
+        profileItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            var bounds = profileItem.getBounds();
+            var location = toolBar.getDisplay().map(toolBar, null, bounds.x, bounds.height);
+            var menu = profileManager.createContextMenu(tabFolder);
+            menu.setLocation(location.x, location.y);
+            menu.setVisible(true);
+        }));
+
+        return profileItem;
+    }
+
+    @NotNull
+    private String computeChevronTitle(@NotNull List<IDialogPage> pages) {
+        List<String> items = pages.stream()
+            .filter(this::canAddHandler)
+            .map(ConnectionPageNetworkHandler.class::cast)
+            .map(x -> x.getHandlerDescriptor().getCodeName())
+            .toList();
+        StringJoiner joiner = new StringJoiner(", ");
+        for (int i = 0; i < Math.min(items.size(), MAX_CHEVRON_ITEMS_TO_PREVIEW); i++) {
+            joiner.add(items.get(i));
+        }
+        if (items.size() > MAX_CHEVRON_ITEMS_TO_PREVIEW) {
+            joiner.add("...");
+        }
+        return joiner.toString();
+    }
+
+    private void updateHandlerItem(@NotNull List<IDialogPage> allPages) {
+        if (hasHandlersToAdd(allPages)) {
+            handlerItem.setText(computeChevronTitle(allPages));
+            handlerItem.setImage(DBeaverIcons.getImage(UIIcon.ADD));
+            handlerItem.setEnabled(true);
+        } else {
+            handlerItem.setText("");
+            handlerItem.setImage(null);
+            handlerItem.setEnabled(false);
+        }
+    }
+
+    private void updateProfileItem() {
+        String profileName = getActiveDataSource().getConnectionConfiguration().getConfigProfileName();
+        if (CommonUtils.isNotEmpty(profileName)) {
+            profileItem.setText(NLS.bind("Profile ''{0}''", profileName));
+            profileItem.setToolTipText(NLS.bind("Active profile is ''{0}''", profileName));
+        } else {
+            profileItem.setText("No profile");
+            profileItem.setToolTipText("No active profile is set");
+        }
+        updateFolderToolbar();
+    }
+
+    private void updateFolderToolbar() {
+        try {
+            Method method = CTabFolder.class.getDeclaredMethod("updateFolder", int.class);
+            method.setAccessible(true);
+            method.invoke(tabFolder, 8 /* UPDATE_TAB_HEIGHT | REDRAW */);
+        } catch (ReflectiveOperationException e) {
+            log.error("Can't update folder toolbar", e);
+        }
+    }
+
+    private boolean unselectProfile(@Nullable DBWHandlerDescriptor handlerToKeep) {
+        if (getActiveProfile() == null) {
+            return true;
+        }
+
+        Set<DBWHandlerDescriptor> handlersToRemove = new HashSet<>();
+        for (CTabItem item : tabFolder.getItems()) {
+            if (item.getData() instanceof ConnectionPageNetworkHandler page) {
+                handlersToRemove.add(page.getHandlerDescriptor());
+            }
+        }
+
+        handlersToRemove.remove(handlerToKeep);
+
+        if (!handlersToRemove.isEmpty()) {
+            Reply reply = MessageBoxBuilder.builder()
+                .setTitle("Change profile")
+                .setMessage(NLS.bind(
+                    "Do you want to keep {0} after unselecting the active profile?",
+                    handlersToRemove.stream().map(DBWHandlerDescriptor::getCodeName).collect(Collectors.joining(", "))
+                ))
+                .setPrimaryImage(DBIcon.STATUS_QUESTION)
+                .setReplies(REPLY_KEEP, REPLY_REMOVE, Reply.CANCEL)
+                .setDefaultReply(Reply.CANCEL)
+                .showMessageBox();
+
+            if (reply == REPLY_KEEP) {
+                handlersToRemove.clear();
+            } else if (reply == REPLY_REMOVE) {
+                // do nothing
+            } else {
+                return false;
+            }
+        }
+
+        selectProfile0(null);
+
+        for (DBWHandlerDescriptor descriptor : handlersToRemove) {
+            removeHandler(descriptor);
+        }
+
+        refreshHandlers(null);
+        updateProfileItem();
+
+        return true;
+    }
+
+    private boolean selectProfile(@NotNull DBWNetworkProfile profile) {
+        Set<DBWHandlerDescriptor> handlersToRemove = new HashSet<>();
+        Set<DBWHandlerDescriptor> handlersToAdd = new HashSet<>();
+
+        for (DBWHandlerConfiguration configuration : profile.getConfigurations()) {
+            if (configuration.isEnabled()) {
+                handlersToAdd.add(configuration.getHandlerDescriptor());
+            }
+        }
+
+        for (CTabItem item : tabFolder.getItems()) {
+            if (item.getData() instanceof ConnectionPageNetworkHandler page) {
+                NetworkHandlerDescriptor descriptor = page.getHandlerDescriptor();
+                if (handlersToAdd.contains(descriptor)) {
+                    handlersToAdd.remove(descriptor);
+                } else {
+                    handlersToRemove.add(descriptor);
+                }
+            }
+        }
+
+        if (!handlersToRemove.isEmpty()) {
+            String message = NLS.bind(
+                "Changing the profile to ''{0}'' will remove {1}.\n\nDo you want to continue?",
+                profile.getProfileName(),
+                handlersToRemove.stream().map(DBWHandlerDescriptor::getCodeName).collect(Collectors.joining(", "))
+            );
+            if (!UIUtils.confirmAction(getShell(), "Change profile", message)) {
+                return false;
+            }
+        }
+
+        for (DBWHandlerDescriptor descriptor : handlersToRemove) {
+            removeHandler(descriptor);
+        }
+
+        selectProfile0(profile);
+
+        for (DBWHandlerDescriptor descriptor : handlersToAdd) {
+            addHandler(descriptor, profile);
+        }
+
+        refreshHandlers(profile);
+        updateProfileItem();
+
+        return true;
+    }
+
+    private void selectProfile0(@Nullable DBWNetworkProfile profile) {
+        getActiveDataSource().getConnectionConfiguration().setConfigProfile(profile);
+    }
+
+    private void addHandler(@NotNull DBWHandlerDescriptor descriptor, @Nullable DBWNetworkProfile profile) {
+        if (findHandlerItem(descriptor) != null) {
+            log.error("Handler " + descriptor + " is already enabled");
+            return;
+        }
+
+        var page = findHandlerPage(descriptor);
+        if (page == null) {
+            log.error("Can't find page for handler " + descriptor);
+            return;
+        }
+
+        page.loadConfiguration(profile);
+        page.getHandlerConfiguration().setEnabled(true);
+
+        var index = Math.min(tabFolder.getItemCount(), ArrayUtils.indexOf(subPages, page) + 1 /* main tab */);
+        var item = createPageTab(page, index);
+
+        // TODO: Stop activating pages
+        activateItem(item);
+    }
+
+    private void removeHandler(@NotNull DBWHandlerDescriptor descriptor) {
+        var item = findHandlerItem(descriptor);
+        if (item == null) {
+            log.error("Can't find page item for handler " + descriptor);
+            return;
+        }
+
+        var page = (ConnectionPageNetworkHandler) item.getData();
+        page.loadConfiguration(null);
+        page.getHandlerConfiguration().setEnabled(false);
+
+        // TODO: Stop activating pages
+        activateItem(item);
+        item.dispose();
+    }
+
+    private void refreshHandlers(@Nullable DBWNetworkProfile profile) {
+        for (CTabItem item : tabFolder.getItems()) {
+            if (item.getData() instanceof ConnectionPageNetworkHandler page) {
+                refreshHandler(page.getHandlerDescriptor(), profile);
+            }
+        }
+    }
+
+    private void refreshHandler(@NotNull DBWHandlerDescriptor descriptor, @Nullable DBWNetworkProfile profile) {
+        var item = findHandlerItem(descriptor);
+        if (item == null) {
+            log.error("Can't find page item for handler " + descriptor);
+            return;
+        }
+
+        activateItem(item);
+
+        var page = (ConnectionPageNetworkHandler) item.getData();
+        page.refreshConfiguration(profile);
+    }
+
+    @Nullable
+    private CTabItem findHandlerItem(@NotNull DBWHandlerDescriptor descriptor) {
+        for (CTabItem it : tabFolder.getItems()) {
+            if (it.getData() instanceof ConnectionPageNetworkHandler page && page.getHandlerDescriptor() == descriptor) {
+                return it;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private ConnectionPageNetworkHandler findHandlerPage(@NotNull DBWHandlerDescriptor descriptor) {
+        for (IDialogPage subPage : subPages) {
+            if (subPage instanceof ConnectionPageNetworkHandler page && page.getHandlerDescriptor() == descriptor) {
+                return page;
+            }
+        }
+        return null;
+    }
+
+    private boolean closeTab(@NotNull CTabItem item) {
+        // TODO: Don't require the page to be focused when closing it
+        //       has something to do with page not being initialized
+        //       and therefore not saving its _updated_ state
+        if (item.getShowClose() && tabFolder.getSelection() == item && confirmTabClose(item)) {
+            var page = (ConnectionPageNetworkHandler) item.getData();
+            var descriptor = page.getHandlerDescriptor();
+            if (unselectProfile(descriptor)) {
+                removeHandler(descriptor);
+                updateProfileItem();
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean confirmTabClose(@NotNull CTabItem item) {
-        if (item.getData() instanceof ConnectionPageNetworkHandler) {
-            final ConnectionPageNetworkHandler page = (ConnectionPageNetworkHandler) item.getData();
+        if (item.getData() instanceof ConnectionPageNetworkHandler page) {
             final NetworkHandlerDescriptor descriptor = page.getHandlerDescriptor();
 
             final int decision = ConfirmationDialog.confirmAction(
@@ -384,9 +689,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return false;
     }
 
-    private boolean canShowChevron(@NotNull List<IDialogPage> pages) {
+    private boolean hasHandlersToAdd(@NotNull List<IDialogPage> pages) {
         for (IDialogPage page : pages) {
-            if (canShowInChevron(page)) {
+            if (canAddHandler(page)) {
                 return true;
             }
         }
@@ -394,8 +699,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return false;
     }
 
-    private boolean canShowInChevron(@NotNull IDialogPage page) {
-        if (isPagePinned(page) || !(page instanceof ConnectionPageNetworkHandler)) {
+    private boolean canAddHandler(@NotNull IDialogPage page) {
+        if (!isHandlerPage(page)) {
             return false;
         }
 
@@ -406,17 +711,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return handler == null || !handler.isEnabled();
     }
 
-    private static boolean isPagePinned(@NotNull IDialogPage page) {
-        if (page instanceof ConnectionPageNetworkHandler) {
-            return ((ConnectionPageNetworkHandler) page).getHandlerDescriptor().isPinned();
-        } else {
-            return true;
-        }
+    private static boolean isHandlerPage(@NotNull IDialogPage page) {
+        return page instanceof ConnectionPageNetworkHandler;
     }
 
     @NotNull
     private CTabItem createPageTab(@NotNull IDialogPage page, int index) {
-        final CTabItem item = new CTabItem(tabFolder, isPagePinned(page) ? SWT.NONE : SWT.CLOSE, index);
+        final CTabItem item = new CTabItem(tabFolder, isHandlerPage(page) ? SWT.CLOSE : SWT.NONE, index);
         item.setData(page);
         item.setText(CommonUtils.isEmpty(page.getTitle()) ? CoreMessages.dialog_setting_connection_general : page.getTitle());
         item.setToolTipText(page.getDescription());
@@ -429,6 +730,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
 
         return item;
+    }
+
+    private void activateItem(@NotNull CTabItem item) {
+        tabFolder.setSelection(item);
+        activateCurrentItem();
     }
 
     private void activateCurrentItem() {
@@ -712,8 +1018,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         CTabItem selection = tabFolder.getSelection();
         for (CTabItem pageTab : tabFolder.getItems()) {
             if (pageTab.getData() == subPage) {
-                tabFolder.setSelection(pageTab);
-                activateCurrentItem();
+                activateItem(pageTab);
                 if (selection != null && selection.getData() != subPage && selection.getData() instanceof ActiveWizardPage) {
                     ((ActiveWizardPage<?>) selection.getData()).deactivatePage();
                 }
@@ -732,33 +1037,86 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return selection != null ? (IDialogPage) selection.getData() : null;
     }
 
-    private class AddNetworkHandlerAction extends Action {
-        private final DBPDataSourceContainer container;
-        private final ConnectionPageNetworkHandler page;
-        private final int index;
+    @Nullable
+    private DBWNetworkProfile getActiveProfile() {
+        DBPDataSourceContainer dataSource = getActiveDataSource();
+        DBPConnectionConfiguration configuration = dataSource.getConnectionConfiguration();
+        if (CommonUtils.isEmpty(configuration.getConfigProfileName())) {
+            return null;
+        }
+        return dataSource.getRegistry().getNetworkProfile(
+            configuration.getConfigProfileSource(),
+            configuration.getConfigProfileName()
+        );
+    }
 
-        public AddNetworkHandlerAction(@NotNull DBPDataSourceContainer container, @NotNull ConnectionPageNetworkHandler page, int index) {
-            super(page.getHandlerDescriptor().getCodeName(), AS_PUSH_BUTTON);
+    private class AddHandlerAction extends Action {
+        private final DBWHandlerDescriptor descriptor;
 
-            this.container = container;
-            this.page = page;
-            this.index = index;
+        public AddHandlerAction(@NotNull DBWHandlerDescriptor descriptor) {
+            super(descriptor.getCodeName(), AS_PUSH_BUTTON);
+            this.descriptor = descriptor;
         }
 
         @Override
         public void run() {
-            final NetworkHandlerDescriptor descriptor = page.getHandlerDescriptor();
-            final DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
-            DBWHandlerConfiguration handler = configuration.getHandler(descriptor.getId());
-
-            if (handler == null) {
-                handler = new DBWHandlerConfiguration(descriptor, container);
-                configuration.updateHandler(handler);
+            if (unselectProfile(descriptor)) {
+                addHandler(descriptor, null);
+                refreshHandler(descriptor, null);
+                updateProfileItem();
             }
+        }
+    }
 
-            handler.setEnabled(true);
-            tabFolder.setSelection(createPageTab(page, Math.min(tabFolder.getItemCount(), index)));
-            activateCurrentItem();
+    private class ChooseNetworkProfileAction extends Action {
+        private final DBWNetworkProfile profile;
+
+        public ChooseNetworkProfileAction() {
+            super("None", AS_RADIO_BUTTON);
+            this.profile = null;
+        }
+
+        public ChooseNetworkProfileAction(
+            @NotNull DBPDataSourceContainer container,
+            @NotNull DBWNetworkProfile profile,
+            @Nullable DBPDataSourceOrigin origin,
+            int index
+        ) {
+            super(null, AS_RADIO_BUTTON);
+            this.profile = profile;
+
+            setText(ActionUtils.getLabelWithIndexMnemonic(getProfileName(profile, origin), index));
+            setChecked(isProfileSelected(profile, container));
+        }
+
+        @Override
+        public void run() {
+            if (!isChecked()) {
+                return;
+            }
+            if (profile != null) {
+                selectProfile(profile);
+            } else {
+                unselectProfile(null);
+            }
+        }
+
+        @NotNull
+        private static String getProfileName(@NotNull DBWNetworkProfile profile, @Nullable DBPDataSourceOrigin origin) {
+            if (origin != null) {
+                return NLS.bind("{0} {1}", profile.getProfileName(), origin.getDisplayName());
+            } else {
+                return profile.getProfileName();
+            }
+        }
+
+        private static boolean isProfileSelected(@NotNull DBWNetworkProfile profile, @NotNull DBPDataSourceContainer container) {
+            DBPConnectionConfiguration config = container.getConnectionConfiguration();
+            if (CommonUtils.isEmptyTrimmed(config.getConfigProfileName())) {
+                return false;
+            }
+            return Objects.equals(profile.getProfileName(), config.getConfigProfileName())
+                && Objects.equals(profile.getProfileSource(), config.getConfigProfileSource());
         }
     }
 }

@@ -30,7 +30,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public abstract class ApplicationCommandLine<T extends ApplicationInstanceController> {
@@ -66,11 +68,6 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
         }
 
-        if (controller == null) {
-            log.debug("Can't process commands because no running instance is present");
-            return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
-        }
-
         if (commandLine.hasOption(PARAM_HELP)) {
             HelpFormatter helpFormatter = new HelpFormatter();
             helpFormatter.setWidth(120);
@@ -90,18 +87,22 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
         }
 
-        if (!uiActivated) {
-            if (commandLine.hasOption(PARAM_THREAD_DUMP)) {
-                String threadDump = controller.getThreadDump();
-                System.out.println(threadDump);
-                return new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN, threadDump);
-            }
-
-        }
         if (commandLine.hasOption(PARAM_VERSION)) {
             String version = GeneralUtils.getLongProductTitle();
             System.out.println(version);
             return new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN, version);
+        }
+
+        if (!uiActivated) {
+            if (commandLine.hasOption(PARAM_THREAD_DUMP)) {
+                if (controller == null) {
+                    log.debug("Can't process commands because no running instance is present");
+                    return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+                }
+                String threadDump = controller.getThreadDump();
+                System.out.println(threadDump);
+                return new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN, threadDump);
+            }
         }
 
         return new CmdProcessResult(CmdProcessResult.PostAction.UNKNOWN_COMMAND);

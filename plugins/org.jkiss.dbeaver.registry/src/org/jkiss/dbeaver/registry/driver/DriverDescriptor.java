@@ -1001,8 +1001,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public boolean addDriverLibrary(DBPDriverLibrary descriptor, boolean resetCache) {
-        if (resetCache) {
-            descriptor.resetVersion();
+        if (resetCache && descriptor instanceof DriverLibraryMavenArtifact mavenLib) {
+            mavenLib.resetVersion();
             resetDriverInstance();
         }
         if (!libraries.contains(descriptor)) {
@@ -1486,6 +1486,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean supportsVirtualKeys() {
+        return true;
     }
 
 }

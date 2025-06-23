@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
         createNodesTable(sash);
         createInputsTable(sash);
-        sash.setWeights(new int[]{70, 30});
+        sash.setWeights(70, 30);
 
         setControl(composite);
     }
@@ -152,7 +152,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                setSelectedSettings();
+                setSelectedSettings(true);
             }
 
             @Override
@@ -166,7 +166,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         });
     }
 
-    private void setSelectedSettings() {
+    private void setSelectedSettings(boolean forceUpdate) {
         final IStructuredSelection selection = (IStructuredSelection) nodesTable.getSelection();
         TransferTarget target;
         if (!selection.isEmpty()) {
@@ -179,9 +179,13 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             settings.selectConsumer(null, null, true);
         } else {
             if (settings.isConsumerOptional()) {
-                settings.selectConsumer(target.node, target.processor, true);
+                if (forceUpdate || settings.getConsumer() == null) {
+                    settings.selectConsumer(target.node, target.processor, true);
+                }
             } else if (settings.isProducerOptional()) {
-                settings.selectProducer(target.node, target.processor, true);
+                if (forceUpdate || settings.getProducer() == null) {
+                    settings.selectProducer(target.node, target.processor, true);
+                }
             } else {
                 // no optional nodes
             }
@@ -263,18 +267,16 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
             }
         }
         if (currentTarget == null && !targets.isEmpty()) {
-            currentTarget = targets.get(0);
-        }
-
-        if (currentTarget != null) {
-            StructuredSelection selection = new StructuredSelection(currentTarget);
-            UIUtils.asyncExec(() -> {
-                nodesTable.setSelection(selection);
-                setSelectedSettings();
-            });
+            currentTarget = targets.getFirst();
         }
 
         inputsTable.setInput(getWizard().getSettings().getSourceObjects());
+
+        if (currentTarget != null) {
+            StructuredSelection selection = new StructuredSelection(currentTarget);
+            nodesTable.setSelection(selection);
+            setSelectedSettings(false);
+        }
 
         UIUtils.packColumns(nodesTable.getTable());
 

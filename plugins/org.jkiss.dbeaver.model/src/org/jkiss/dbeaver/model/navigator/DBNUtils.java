@@ -149,6 +149,10 @@ public class DBNUtils {
             return;
         }
 
+        if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBPObjectWithOrdinalPosition) {
+            return;
+        }
+
         Comparator<DBNNode> comparator = null;
 
         if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
@@ -157,8 +161,12 @@ public class DBNUtils {
 
         if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST) || isMergedEntity(firstChild)) {
             comparator = NodeFolderComparator.INSTANCE.thenComparing((o1, o2) -> {
-                if (o1 instanceof DBNContainer || o2 instanceof DBNContainer) {
+                if (o1 instanceof DBNContainer && o2 instanceof DBNContainer) {
                     return 0;
+                } else if (o1 instanceof DBNContainer) {
+                    return 1;
+                } else if (o2 instanceof DBNContainer) {
+                    return -1;
                 }
                 return AlphanumericComparator.getInstance()
                     .compare(o1.getNodeDisplayName(), o2.getNodeDisplayName());

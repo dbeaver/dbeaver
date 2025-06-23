@@ -60,7 +60,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
     private final boolean forDdl;
 
     @Nullable
-    protected SQLQueryRowsSourceModel referencedSource;
+    protected SQLQueryRowsSourceModel referencedSource = null;
 
     public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryQualifiedName name, boolean forDdl) {
         super(syntaxNode);
@@ -76,6 +76,11 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
     @Nullable
     public DBSEntity getTable() {
         return this.table;
+    }
+
+    @Nullable
+    public SQLQueryRowsSourceModel getReferencedSource() {
+        return this.referencedSource;
     }
 
     @NotNull
@@ -414,7 +419,16 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
                 );
             }
         } else if (this.referencedSource != null) {
-            result = this.referencedSource.getRowsDataContext();
+            if (this.referencedSource.isResolved()) {
+                SQLQueryRowsDataContext referencedData = this.referencedSource.getRowsDataContext();
+                List<SQLQueryResultColumn> resultColumns = referencedData.getColumnsList().stream()
+                    .map(c -> c.withNewSource(this))
+                    .toList();
+                result = this.getRowsSources().makeTuple(this, resultColumns, Collections.emptyList());
+            } else {
+                statistics.appendError(this.name.getSyntaxNode(), "Circular dependency detected at " + this.name.toIdentifierString());
+                result = this.getRowsSources().makeTuple(this, Collections.emptyList(), Collections.emptyList());
+            }
         } else {
             result = this.getRowsSources().makeEmptyTuple();
         }

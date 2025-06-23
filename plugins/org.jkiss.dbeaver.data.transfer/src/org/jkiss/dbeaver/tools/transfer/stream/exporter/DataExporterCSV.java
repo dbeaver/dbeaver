@@ -245,14 +245,13 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                     if (!(row[i] instanceof Number)) {
                         quote = true;
                     }
-                } else if (quoteStrategy == QuoteStrategy.ALL_BUT_NULLS) {
-                    if (!DBUtils.isNullValue(row[i])) {
-                        quote = true;
-                    }
                 }
+
                 if (DBUtils.isNullValue(row[i])) {
                     if (CommonUtils.isNotEmpty(nullString)) {
                         writeCellValue(nullString, quote);
+                    } else if (quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS) {
+                        writeCellValue("", true);
                     }
                 } else {
                     writeCellValue(stringValue, quote);
@@ -333,15 +332,18 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             }
         }
 
-        if (quoteStrategy == QuoteStrategy.ALL || (useQuotes && value.isEmpty())) {
+        if (quoteStrategy == QuoteStrategy.ALL ||
+            quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS ||
+            (useQuotes && value.isEmpty())
+        ) {
             quote = true;
         } else if (!quote) {
             if (hasQuotes ||
                 value.contains(delimiter) ||
                 value.indexOf('\r') != -1 ||
                 value.indexOf('\n') != -1 ||
-                value.contains(rowDelimiter))
-            {
+                value.contains(rowDelimiter)
+            ) {
                 quote = true;
             }
         }

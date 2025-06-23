@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.navigator.dialogs;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -172,7 +173,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                 try {
                     treeViewer.refresh();
                     if (showConnected) {
-                        treeViewer.expandAll();
+                        expandFolders(dataSourceTree, getTreeRootNode());
                     }
                 } finally {
                     treeViewer.getControl().setRedraw(true);
@@ -181,6 +182,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
         });
         final Button showAllProjectsCheck = new Button(group, SWT.CHECK);
+        showAllProjectsCheck.setLayoutData(GridDataFactory.swtDefaults().exclude(project == null).create());
         showAllProjectsCheck.setText(UINavigatorMessages.label_show_all_projects);
         showAllProjectsCheck.setSelection(showAllProjects);
         showAllProjectsCheck.addSelectionListener(new SelectionAdapter() {
@@ -191,7 +193,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                 try {
                     dataSourceTree.reloadTree(getTreeRootNode());
                     if (showAllProjects) {
-                        treeViewer.expandToLevel(3);
+                        expandFolders(dataSourceTree, getTreeRootNode());
                     }
                 } finally {
                     treeViewer.getControl().setRedraw(true);
@@ -256,7 +258,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
             dataSourceTree.getFilterControl().setFocus();
             if (showConnected) {
-                treeViewer.expandAll();
+                expandFolders(dataSourceTree, getTreeRootNode());
             }
         });
 
@@ -272,6 +274,10 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
 
     private void expandFolders(DatabaseNavigatorTree dataSourceTree, DBNNode node) {
         if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNProject || node instanceof DBNRoot) {
+            if (node instanceof DBNProject p && !p.getProject().isOpen()) {
+                // Don't try to expand unloaded projects - let the user do it
+                return;
+            }
             dataSourceTree.getViewer().expandToLevel(node, 1);
             DBNNode[] childNodes;
             try {

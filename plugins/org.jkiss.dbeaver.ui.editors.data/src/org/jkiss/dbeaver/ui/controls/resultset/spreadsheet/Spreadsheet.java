@@ -24,8 +24,6 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.MenuDetectEvent;
 import org.eclipse.swt.events.MenuDetectListener;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -113,6 +111,7 @@ public class Spreadsheet extends LightGrid implements Listener {
 
         super.addListener(SWT.MouseDoubleClick, this);
         super.addListener(SWT.MouseDown, this);
+        super.addListener(SWT.MouseUp, this);
         super.addListener(SWT.KeyDown, this);
         super.addListener(SWT.KeyUp, this);
         super.addListener(LightGrid.Event_ChangeSort, this);
@@ -128,13 +127,7 @@ public class Spreadsheet extends LightGrid implements Listener {
 
         hookContextMenu();
         hookAccessibility();
-        this.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseDown(MouseEvent e) {
-                Spreadsheet.this.forceFocus();
-            }
-       });
-        
+
        {
             super.addDisposeListener(e -> {
                 if (clipboard != null && !clipboard.isDisposed()) {
@@ -358,8 +351,11 @@ public class Spreadsheet extends LightGrid implements Listener {
                 }
                 break;
             case SWT.MouseDown:
-                if (event.button == 2) {
-//                    presentation.openValueEditor(true);
+                forceFocus();
+                break;
+            case SWT.MouseUp:
+                if (tableEditor.getEditor() != null) {
+                    tableEditor.getEditor().forceFocus();
                 }
                 break;
             case LightGrid.Event_ChangeSort:
