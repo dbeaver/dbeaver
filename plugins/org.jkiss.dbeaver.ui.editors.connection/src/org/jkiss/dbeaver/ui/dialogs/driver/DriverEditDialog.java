@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -405,17 +406,17 @@ public class DriverEditDialog extends HelpEnabledDialog {
                         cell.setText(displayName);
                         Path localFile = lib.getLocalFile();
                         if (localFile != null && !Files.exists(localFile)) {
-                            cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
-                        } else if (!driver.isLibraryResolved(lib)) {
-                            cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLUE));
+                            cell.setForeground(JFaceColors.getErrorText(Display.getDefault()));
+                        } else if (!driver.getDefaultDriverLoader().isLibraryResolved(lib)) {
+                            cell.setForeground(JFaceColors.getHyperlinkText(Display.getDefault()));
                         } else {
                             cell.setForeground(null);
                         }
                         cell.setImage(DBeaverIcons.getImage(lib.getIcon()));
                     } else {
                         cell.setText(element.toString());
-                        if (element instanceof DriverDescriptor.DriverFileInfo) {
-                            if (((DriverDescriptor.DriverFileInfo)element).getType() == DBPDriverLibrary.FileType.license) {
+                        if (element instanceof DriverFileInfo) {
+                            if (((DriverFileInfo)element).getType() == DBPDriverLibrary.FileType.license) {
                                 cell.setImage(DBeaverIcons.getImage(DBIcon.TYPE_TEXT));
                             } else {
                                 cell.setImage(DBeaverIcons.getImage(DBIcon.JAR));
@@ -431,7 +432,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                     if (element instanceof DBPDriverLibrary dl) {
                         Path localFile = dl.getLocalFile();
                         return localFile == null ? "N/A" : localFile.toAbsolutePath().toString();
-                    } else if (element instanceof DriverDescriptor.DriverFileInfo dfi) {
+                    } else if (element instanceof DriverFileInfo dfi) {
                         Path localFile = dfi.getFile();
                         return localFile == null ? "N/A" : localFile.toString();
                     }
@@ -555,7 +556,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     driver.setDriverLibraries(libraries);
-                    driver.updateFiles();
+                    driver.getDefaultDriverLoader().updateFiles();
                     changeLibContent();
                 }
             });
@@ -579,7 +580,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 for (DBPDriverLibrary lib : libraries) {
-                    if (!driver.isLibraryResolved(lib)) {
+                    if (!driver.getDefaultDriverLoader().isLibraryResolved(lib)) {
                         if (!UIUtils.confirmAction(getShell(), "Not all files present",
                             "Driver files weren't downloaded. " +
                             "You need to click '" + UIConnectionMessages.dialog_edit_driver_button_update_version + "' before exporting.\n" +
@@ -612,7 +613,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             IStructuredSelection selection = (IStructuredSelection) libTable.getSelection();
             if (!selection.isEmpty()) {
                 Object element = selection.getFirstElement();
-                if (element instanceof DriverDescriptor.DriverFileInfo dfi) {
+                if (element instanceof DriverFileInfo dfi) {
                     DriverEditHelpers.showFileInExplorer(dfi.getFile());
                 }
             }
@@ -776,9 +777,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
             final Path localFile = library.getLocalFile();
             hasFiles = hasFiles || (localFile != null && Files.exists(localFile));
             if (!hasFiles) {
-                final Collection<DriverDescriptor.DriverFileInfo> files = driver.getLibraryFiles(library);
+                final Collection<DriverFileInfo> files = driver.getDefaultDriverLoader().getLibraryFiles(library);
                 if (files != null) {
-                    for (DriverDescriptor.DriverFileInfo file : files) {
+                    for (DriverFileInfo file : files) {
                         if (file.getFile() != null && Files.exists(file.getFile())) {
                             hasFiles = true;
                         }
@@ -865,7 +866,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     private void resetLibraries() {
         libraries.clear();
-        libraries.addAll(driver.getOrigFiles());
+        libraries.addAll(driver.getOrigLibraries());
     }
 
     @Override
@@ -939,6 +940,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
         }
         for (DBPDriverLibrary newLib : libraries) {
+            if (newLib instanceof DriverLibraryMavenArtifact) {
+                continue;
+            }
             if (!(newLib instanceof DriverLibraryLocal)) {
                 log.error("Wrong driver library found: " + newLib + ". Must be a local file");
                 continue;
@@ -951,7 +955,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
             String shortFileName = localFilePath.getFileName().toString();
 
-            driver.removeLibraryFiles(newLib);
+            driver.getDefaultDriverLoader().removeLibraryFiles(newLib);
             if (Files.isDirectory(localFilePath)) {
                 synAddDriverLibDirectory(newLib, localFilePath, shortFileName);
             } else {
@@ -961,13 +965,13 @@ public class DriverEditDialog extends HelpEnabledDialog {
     }
 
     private void syncRemoveDriverLibFile(DBPDriverLibrary library) throws DBException {
-        Collection<DriverDescriptor.DriverFileInfo> libraryFiles = driver.getLibraryFiles(library);
+        Collection<DriverFileInfo> libraryFiles = driver.getDefaultDriverLoader().getLibraryFiles(library);
         if (libraryFiles == null) {
             return;
         }
         DBFileController fileController = DBWorkbench.getPlatform().getFileController();
 
-        for (DriverDescriptor.DriverFileInfo file : libraryFiles) {
+        for (DriverFileInfo file : libraryFiles) {
             fileController.deleteFile(
                 DBFileController.TYPE_DATABASE_DRIVER,
                 file.getFile().toString(),
@@ -998,7 +1002,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         if (isNewLib) {
             driverFilePath = driver.getId() + "/" + shortFileName;
         } else {
-            driverFilePath = DriverDescriptor.getWorkspaceDriversStorageFolder().relativize(localFilePath).toString();
+            driverFilePath = DriverDescriptor.getExternalDriversStorageFolder().relativize(localFilePath).toString();
         }
 
         if (library instanceof DriverLibraryLocal libraryLocal && isNewLib) {
@@ -1014,10 +1018,10 @@ public class DriverEditDialog extends HelpEnabledDialog {
         } catch (IOException e) {
             throw new DBException("IO error while saving driver file", e);
         }
-        DriverDescriptor.DriverFileInfo fileInfo = new DriverDescriptor.DriverFileInfo(
+        DriverFileInfo fileInfo = new DriverFileInfo(
             driverFilePath, null, library.getType(), Path.of(driverFilePath), driverFilePath);
-        fileInfo.setFileCRC(DriverDescriptor.calculateFileCRC(localFilePath));
-        driver.addLibraryFile(library, fileInfo);
+        fileInfo.setFileCRC(DriverUtils.calculateFileCRC(localFilePath));
+        driver.getDefaultDriverLoader().addLibraryFile(library, fileInfo);
     }
 
 
@@ -1033,7 +1037,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         @Override
         public Object[] getChildren(Object parentElement) {
             if (parentElement instanceof DBPDriverLibrary) {
-                final Collection<DriverDescriptor.DriverFileInfo> files = driver.getLibraryFiles((DBPDriverLibrary) parentElement);
+                final Collection<DriverFileInfo> files = driver.getDefaultDriverLoader().getLibraryFiles((DBPDriverLibrary) parentElement);
                 if (CommonUtils.isEmpty(files)) {
                     return null;
                 }
@@ -1050,7 +1054,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         @Override
         public boolean hasChildren(Object element) {
             return element instanceof DBPDriverLibrary &&
-                !CommonUtils.isEmpty(driver.getLibraryFiles((DBPDriverLibrary) element));
+                !CommonUtils.isEmpty(driver.getDefaultDriverLoader().getLibraryFiles((DBPDriverLibrary) element));
         }
     }
 }

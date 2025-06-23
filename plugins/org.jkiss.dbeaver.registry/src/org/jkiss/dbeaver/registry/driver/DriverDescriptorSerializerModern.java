@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.driver;
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.connection.DBPDriverLoader;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -102,30 +103,36 @@ public class DriverDescriptorSerializerModern extends DriverDescriptorSerializer
                         }
 
                         if (!export) {
-                            List<DriverDescriptor.DriverFileInfo> files = driver.getResolvedFiles().get(lib);
-                            if (!CommonUtils.isEmpty(files)) {
-                                json.name("files");
-                                json.beginObject();
-
-                                for (DriverDescriptor.DriverFileInfo file : files) {
-                                    {
-                                        if (file.getFile() == null) {
-                                            log.warn("File missing in " + file.getId());
-                                            continue;
-                                        }
-                                        json.name(file.getId());
-                                        json.beginObject();
-                                        if (!CommonUtils.isEmpty(file.getVersion())) {
-                                            JSONUtils.field(json, RegistryConstants.ATTR_VERSION, file.getVersion());
-                                        }
-                                        JSONUtils.field(
-                                            json,
-                                            RegistryConstants.ATTR_PATH,
-                                            substitutePathVariables(pathSubstitutions, file.getFile().toAbsolutePath().toString()));
-                                        json.endObject();
-                                    }
+                            for (DBPDriverLoader driverLoader : driver.getAllDriverLoaders()) {
+                                if (!(driverLoader instanceof DriverLoaderDescriptor dld)) {
+                                    continue;
                                 }
-                                json.endObject();
+                                List<DriverFileInfo> files = dld.getResolvedFiles().get(lib);
+                                if (!CommonUtils.isEmpty(files)) {
+                                    json.name("files");
+                                    json.beginObject();
+
+                                    for (DriverFileInfo file : files) {
+                                        {
+                                            if (file.getFile() == null) {
+                                                log.warn("File missing in " + file.getId());
+                                                continue;
+                                            }
+                                            json.name(file.getId());
+                                            json.beginObject();
+                                            if (!CommonUtils.isEmpty(file.getVersion())) {
+                                                JSONUtils.field(json, RegistryConstants.ATTR_VERSION, file.getVersion());
+                                            }
+                                            JSONUtils.field(
+                                                json,
+                                                RegistryConstants.ATTR_PATH,
+                                                substitutePathVariables(pathSubstitutions, file.getFile().toAbsolutePath().toString())
+                                            );
+                                            json.endObject();
+                                        }
+                                    }
+                                    json.endObject();
+                                }
                             }
                         }
                         json.endObject();

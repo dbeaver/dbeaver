@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -47,8 +49,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * CustomFormEditor
@@ -301,16 +303,22 @@ public class CustomFormEditor {
             link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             return link;
         } else if (isTextPropertyType(propType)) {
-            if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).getLength() == PropertyLength.MULTILINE) {
+            if (property instanceof ObjectPropertyDescriptor && property.getLength() == PropertyLength.MULTILINE) {
                 Label label = UIUtils.createControlLabel(parent, propertyDisplayName);
                 label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-                Text editor = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | (readOnly ? SWT.READ_ONLY : SWT.NONE));
 
+                var editorHost = new ResizeableComposite(parent, SWT.VERTICAL);
+                editorHost.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                editorHost.addControlListener(ControlListener.controlResizedAdapter(e -> parent.layout(true, true)));
+
+                var editor = new Text(editorHost, SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | (readOnly ? SWT.READ_ONLY : SWT.NONE));
                 editor.setText(objectValueToString(value));
-                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                // Make multiline editor at least two lines height
-                gd.heightHint = (UIUtils.getTextHeight(editor) + editor.getBorderWidth()) * 2;
-                editor.setLayoutData(gd);
+
+                int editorHeight = UIUtils.getTextHeight(editor);
+                editorHost.setMinSize(new Point(0, editorHeight));
+                editorHost.setPrefSize(new Point(0, editorHeight * 4));
+                editorHost.setContent(editor);
+
                 return editor;
             } else {
                 Text text = UIUtils.createLabelText(

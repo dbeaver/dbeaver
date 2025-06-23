@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,6 +162,7 @@ public class SQLPreferenceConstants {
     public static final String SHOW_COLUMN_PROCEDURES                  = "SQLEditor.ContentAssistant.show.column.procedures";
     public static final String SHOW_SERVER_HELP_TOPICS                 = "SQLEditor.ContentAssistant.show.helpTopics";
     public static final String SHOW_VALUES                             = "SQLEditor.ContentAssistant.show.values";
+    public static final String QUALIFIED_COLUMN_NAMES                  = "SQLEditor.ContentAssistant.qualified.column.names";
 
     public static final String MARK_OCCURRENCES_UNDER_CURSOR           = "SQLEditor.markOccurrences";
     public static final String MARK_OCCURRENCES_FOR_SELECTION          = "SQLEditor.markOccurrences.forSelection";
@@ -248,7 +249,6 @@ public class SQLPreferenceConstants {
 
     public static final String CONFIRM_DANGER_SQL                       = "dangerous_sql"; //$NON-NLS-1$
     public static final String CONFIRM_DROP_SQL                         = "drop_sql"; //$NON-NLS-1$
-    public static final String CONFIRM_MASS_PARALLEL_SQL                = "mass_parallel_sql"; //$NON-NLS-1$
     public static final String CONFIRM_RUNNING_QUERY_CLOSE              = "close_running_query"; //$NON-NLS-1$
     public static final String CONFIRM_RESULT_TABS_CLOSE                = "close_result_tabs"; //$NON-NLS-1$
     public static final String CONFIRM_SAVE_SQL_CONSOLE                 = "save_sql_console"; //$NON-NLS-1$

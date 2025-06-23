@@ -55,5 +55,9 @@ public class SQLQueryResultColumn {
     public SQLQueryResultColumn withNewIndex(int index) {
         return new SQLQueryResultColumn(index, this.symbol, this.source, this.realSource, this.realAttr, this.type);
     }
+
+    public SQLQueryResultColumn withNewSource(SQLQueryRowsSourceModel source) {
+        return new SQLQueryResultColumn(this.index, this.symbol, source, this.realSource, this.realAttr, this.type);
+    }
 }
 

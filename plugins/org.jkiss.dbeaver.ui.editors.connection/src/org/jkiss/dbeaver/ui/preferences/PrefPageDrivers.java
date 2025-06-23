@@ -78,9 +78,11 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
         {
             Group settings = UIUtils.createControlGroup(composite, UIConnectionMessages.pref_page_ui_general_group_settings, 2, GridData.FILL_HORIZONTAL, 300);
             versionUpdateCheck = UIUtils.createCheckbox(
-                    settings,
-                    UIConnectionMessages.pref_page_ui_general_check_new_driver_versions,
-                    store.getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE));
+                settings,
+                UIConnectionMessages.pref_page_ui_general_check_new_driver_versions,
+                UIConnectionMessages.pref_page_ui_general_check_new_driver_versions_tip,
+                store.getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE), 1
+            );
         }
 
         {

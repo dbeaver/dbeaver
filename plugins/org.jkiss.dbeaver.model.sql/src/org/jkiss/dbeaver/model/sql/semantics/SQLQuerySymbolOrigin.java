@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -53,6 +55,14 @@ public abstract class SQLQuerySymbolOrigin {
          * Visitor for * or table-alias.* which are supposed to be expanded to the list of columns on completion
          */
         void visitExpandableTupleRef(ExpandableTupleRef tupleRef);
+
+        void visitRowsSourceRef(RowsSourceRef rowsSourceRef);
+
+        void visitRowsDataRef(RowsDataRef rowsDataRef);
+
+        void visitExpandableRowsTupleRef(ExpandableRowsTupleRef tupleRef);
+
+        void visitColumnNameFromRowsData(ColumnNameFromRowsData origin);
     }
 
     public abstract boolean isChained();
@@ -247,6 +257,7 @@ public abstract class SQLQuerySymbolOrigin {
             this.type = type;
         }
 
+        @NotNull
         public final SQLQueryExprType getType() {
             return this.type;
         }
@@ -262,6 +273,9 @@ public abstract class SQLQuerySymbolOrigin {
         }
     }
 
+    /**
+     * Placeholder is a reference to a columns subset provided by the referencedSource or to a complete tuple columns set
+     */
     public static class ExpandableTupleRef extends DataContextSymbolOrigin {
 
         @NotNull
@@ -301,5 +315,110 @@ public abstract class SQLQuerySymbolOrigin {
             visitor.visitExpandableTupleRef(this);
         }
     }
+
+    public static class RowsSourceRef extends SQLQuerySymbolOrigin {
+
+        @NotNull
+        private final SQLQueryRowsSourceContext rowsSourceContext;
+
+        public RowsSourceRef(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
+            this.rowsSourceContext = rowsSourceContext;
+        }
+
+        public boolean isChained() {
+            return false;
+        }
+
+        public @NotNull SQLQueryRowsSourceContext getRowsSourceContext() {
+            return this.rowsSourceContext;
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitRowsSourceRef(this);
+        }
+    }
+
+    public static class RowsDataRef extends SQLQuerySymbolOrigin {
+        
+        @NotNull
+        private final SQLQueryRowsDataContext rowsDataContext;
+
+        public RowsDataRef(@NotNull SQLQueryRowsDataContext rowsDataContext) {
+            this.rowsDataContext = rowsDataContext;
+        }
+
+        public boolean isChained() {
+            return false;
+        }
+
+        @NotNull
+        public SQLQueryRowsDataContext getRowsDataContext() {
+            return this.rowsDataContext;
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitRowsDataRef(this);
+        }
+    }
+
+    /**
+     * Context is a scope for strictly simple separate column name
+     */
+    public static class ColumnNameFromRowsData extends RowsDataRef {
+
+        public ColumnNameFromRowsData(@NotNull SQLQueryRowsDataContext dataContext) {
+            super(dataContext);
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitColumnNameFromRowsData(this);
+        }
+    }
+
+    /**
+     * Placeholder is a reference to a columns subset provided by the referencedSource or to all columns of the rows data
+     */
+    public static class ExpandableRowsTupleRef extends RowsDataRef {
+
+        @NotNull
+        private final STMTreeNode placeholder;
+
+        @Nullable
+        private final SourceResolutionResult referencedSource;
+
+        public ExpandableRowsTupleRef(
+            @NotNull STMTreeNode placeholder,
+            @NotNull SQLQueryRowsDataContext dataContext,
+            @Nullable SourceResolutionResult referencedSource
+        ) {
+            super(dataContext);
+            this.placeholder = placeholder;
+            this.referencedSource = referencedSource;
+        }
+
+        @Override
+        public boolean isChained() {
+            return true;
+        }
+
+        @NotNull
+        public STMTreeNode getPlaceholder() {
+            return this.placeholder;
+        }
+
+        @Nullable
+        public SourceResolutionResult getReferencedSource() {
+            return this.referencedSource;
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitExpandableRowsTupleRef(this);
+        }
+    }
+
 
 }

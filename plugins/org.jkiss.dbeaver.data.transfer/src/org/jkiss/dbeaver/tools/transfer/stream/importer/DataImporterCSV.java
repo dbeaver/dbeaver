@@ -141,7 +141,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
                 for (StreamDataImporterColumnInfo columnInfo : columnsInfo) {
                     if (columnInfo.getDataKind() == DBPDataKind.UNKNOWN) {
-                        log.warn("Cannot guess data type for column '" + columnInfo.getName() + "', defaulting to VARCHAR");
+                        log.debug("Cannot guess data type for column '" + columnInfo.getName() + "', defaulting to VARCHAR");
                         columnInfo.updateType(DBPDataKind.STRING, "VARCHAR");
                     }
                 }

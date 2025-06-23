@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import java.util.Properties;
 class JDBCConnectionOpener implements DBRRunnableWithProgress, PrivilegedExceptionAction<Connection> {
     //private static final Log log = Log.getLog(JDBCConnectionOpener.class);
 
+    private final JDBCDataSource dataSource;
     private final DBPDriver driver;
     private final Driver driverInstance;
     private final String url;
@@ -44,12 +45,14 @@ class JDBCConnectionOpener implements DBRRunnableWithProgress, PrivilegedExcepti
     private Throwable error;
 
     public JDBCConnectionOpener(
+        @NotNull JDBCDataSource dataSource,
         @NotNull DBPDriver driver,
         @Nullable Driver driverInstance,
         @NotNull String url,
         @NotNull Properties connectProps,
         @Nullable Object authResult
     ) {
+        this.dataSource = dataSource;
         this.driver = driver;
         this.driverInstance = driverInstance;
         this.url = url;
@@ -92,7 +95,7 @@ class JDBCConnectionOpener implements DBRRunnableWithProgress, PrivilegedExcepti
     public Connection run() throws Exception {
         // Set context class loaded to driver class loader
         ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(driver.getClassLoader());
+        Thread.currentThread().setContextClassLoader(driver.getDriverLoader(dataSource.getContainer()).getClassLoader());
         try {
             // Reset DriverManager cache
             try {

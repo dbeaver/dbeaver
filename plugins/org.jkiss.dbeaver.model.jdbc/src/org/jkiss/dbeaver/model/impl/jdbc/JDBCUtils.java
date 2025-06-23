@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -859,9 +859,17 @@ public class JDBCUtils {
             SQLState.SQL_25P01.getCode().equals(sqlError.getSQLState());
     }
 
-    public static boolean isFeatureNotSupportedError(DBPDataSource dataSource, Throwable ex) {
-        return ex instanceof SQLFeatureNotSupportedException || DBExecUtils.discoverErrorType(dataSource, ex)
-            == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED;
+    /**
+     * Checks whether the given exception indicates an unsupported feature error.
+     *
+     * @param dataSource the data source involved in the operation.
+     * @param ex the exception to analyze.
+     * @return {@code true} if the exception represents an unsupported feature error;
+     *         {@code false} otherwise.
+     */
+    public static boolean isFeatureNotSupportedError(@Nullable DBPDataSource dataSource, @NotNull Throwable ex) {
+        return ex instanceof SQLFeatureNotSupportedException || (dataSource != null && DBExecUtils.discoverErrorType(dataSource, ex)
+            == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED);
     }
 
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class OraclePreferencesInitializer extends AbstractPreferenceInitializer 
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_USE_RULE_HINT, false);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_USE_META_OPTIMIZER, true);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS, false);
-        PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY, false);
+        PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY, true);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS, false);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_SHOW_DATE_AS_DATE, false);
     }

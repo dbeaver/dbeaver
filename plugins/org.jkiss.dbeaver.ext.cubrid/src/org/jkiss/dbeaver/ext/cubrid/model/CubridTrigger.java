@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -37,13 +33,17 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 public class CubridTrigger extends GenericTableTrigger {
 
     private String owner;
     private String targetColumn;
     private boolean active;
     private boolean persisted;
-    private Double priority;
+    private double priority;
     private String event;
     private String condition;
     private String actionTime;
@@ -51,7 +51,7 @@ public class CubridTrigger extends GenericTableTrigger {
     private String actionDefinition;
     private Map<Integer, String> events = Map.of(0, "UPDATE", 1, "UPDATE STATEMENT", 2, "DELETE", 3, "DELETE STATEMENT", 4, "INSERT", 5, "INSERT STATEMENT", 8, "COMMIT", 9, "ROLLBACK");
     private Map<Integer, String> actionTimes = Map.of(1, "BEFORE", 2, "AFTER", 3, "DEFERRED");
-    private Map<Integer, String> actionTypes = Map.of(1, "OTHER STATEMENT", 2, "REJECT", 3, "INVALIDATE_TRANSACTION", 4, "PRINT");
+    private Map<Integer, String> actionTypes = Map.of(1, "OTHER STATEMENT", 2, "REJECT", 3, "INVALIDATE TRANSACTION", 4, "PRINT");
     List<String> columnList = new ArrayList<>();
 
     public CubridTrigger(
@@ -202,7 +202,7 @@ public class CubridTrigger extends GenericTableTrigger {
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         if (getTable().getDataSource().getSupportMultiSchema()) {
             return DBUtils.getFullQualifiedName(getDataSource(), getTable().getSchema(), this);
         } else {
@@ -212,7 +212,7 @@ public class CubridTrigger extends GenericTableTrigger {
 
     @Nullable
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (persisted) {
             StringBuilder ddl = new StringBuilder();
             ddl.append("CREATE TRIGGER ");
@@ -234,7 +234,7 @@ public class CubridTrigger extends GenericTableTrigger {
                 }
             }
             ddl.append("\nEXECUTE ");
-            if (getActionType().equals("REJECT") || getActionType().equals("INVALIDATE_TRANSACTION")) {
+            if (getActionType().equals("REJECT") || getActionType().equals("INVALIDATE TRANSACTION")) {
                 ddl.append(getActionType());
             } else if (getActionType().equals("PRINT")) {
                 ddl.append(getActionType() + " ");
@@ -242,6 +242,9 @@ public class CubridTrigger extends GenericTableTrigger {
             }
             else {
                 ddl.append(getActionDefinition() == null ? "" : actionDefinition);
+            }
+            if (getDescription() != null && !getDescription().isEmpty()) {
+                ddl.append("\nCOMMENT ").append(SQLUtils.quoteString(getDataSource(), getDescription()));
             }
             return ddl.toString();
         }

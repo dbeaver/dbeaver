@@ -298,6 +298,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         setRulerContextMenuId(SQLEditorContributions.SQL_RULER_CONTEXT_MENU_ID);
     }
 
+    @Nullable
     public DBPDataSource getDataSource() {
         DBCExecutionContext context = getExecutionContext();
         return context == null ? null : context.getDataSource();
@@ -947,7 +948,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     public SQLScriptElement extractQueryAtPos(int currentPos) {
-        return parserContext == null ? null : SQLScriptParser.extractQueryAtPos(parserContext, currentPos);
+        return parserContext == null ? null : SQLScriptParser.extractQueryAtPos(parserContext, currentPos, false);
     }
 
     public SQLScriptElement extractNextQuery(boolean next) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
@@ -316,7 +317,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements DBPE
     }
 
     @Override
-    public void handleDataSourceEvent(DBPEvent event)
+    public void handleDataSourceEvent(@NotNull DBPEvent event)
     {
         DBSObject object = event.getObject();
         if (object == null || DBWorkbench.getPlatform().isShuttingDown()) {
@@ -521,7 +522,8 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements DBPE
             UIUtils.asyncExec(() -> {
                 IWorkbenchPartSite site = editor.getSite();
                 if (site != null && site.getWorkbenchWindow() != null) {
-                    site.getWorkbenchWindow().getActivePage().closeEditor(editor, false);
+                    // No need now when we have lazy editors?
+                    //site.getWorkbenchWindow().getActivePage().closeEditor(editor, false);
                 }
             });
         }

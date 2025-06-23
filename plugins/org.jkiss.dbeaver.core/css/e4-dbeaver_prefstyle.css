@@ -3,6 +3,33 @@
 /* Includes styles for all plugins. Eclipse bug? */
 
  IEclipsePreferences#org-eclipse-ui-workbench:org-eclipse-draw2d {
-	preferences:
-		'org.eclipse.gef.color.line.foreground=192,192,192'
+    preferences:
+        'org.eclipse.gef.color.line.foreground=192,192,192'
+}
+
+.View Composite,
+.View Composite Tree,
+.View Composite Label,
+.View Group,
+.View Group Label,
+.View Section,
+.View Browser,
+.View WebSite,
+.View Link,
+.View FormText,
+.View Hyperlink,
+.View Canvas,
+.View FigureCanvas
+{
+    background-color: #ffffff;
+}
+
+#org-eclipse-e4-ui-compatibility-editor Composite {
+    background-color: #f8f8f8;
+}
+
+#org-eclipse-e4-ui-compatibility-editor Canvas,
+#org-eclipse-e4-ui-compatibility-editor Canvas > *
+{
+    background-color: #fbfbfb;
 }

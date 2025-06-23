@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
 
     public static final String PROP_KILL_QUERY = "killQuery";
     public static final String OPTION_SHOW_IDLE = "showIdle";
+    public static final String OPTION_QUERY_CANCEL = "isQueryCancel";
 
     private final PostgreDataSource dataSource;
 
@@ -81,7 +82,11 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
     {
         try {
             try (Statement dbStat = ((JDBCSession) session).createStatement()) {
-                dbStat.execute("SELECT pg_catalog.pg_terminate_backend(" + sessionId + ")");
+                if (options != null && CommonUtils.toBoolean(options.get(OPTION_QUERY_CANCEL))) {
+                    dbStat.execute("SELECT pg_catalog.pg_cancel_backend(" + sessionId + ")");
+                } else {
+                    dbStat.execute("SELECT pg_catalog.pg_terminate_backend(" + sessionId + ")");
+                }
             }
         }
         catch (SQLException e) {
