@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
@@ -72,7 +73,8 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
 //        }
 
         Pair<Integer, List<SQLQueryCompletionProposal>> result;
-        if (completionContext != null && this.request.getContext().getDataSource() != null) {
+        SQLCompletionContext requestContext = this.request.getContext();
+        if (completionContext != null && requestContext.getDataSource() != null && requestContext.getExecutionContext() != null) {
             // TODO don't we want to be able to accomplish subqueries and such even without the connection?
             this.proposalContext = this.createProposalContext(completionContext);
             List<SQLQueryCompletionProposal> proposals = this.prepareContextfulCompletion(monitor, completionContext);

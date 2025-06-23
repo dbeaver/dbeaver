@@ -56,8 +56,9 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
         super();
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new SnowflakeDataSource(monitor, container, this);
     }
 
@@ -95,7 +96,7 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+    public boolean supportsTableDDLSplit(@NotNull GenericTableBase sourceObject) {
         return false;
     }
 
@@ -114,7 +115,7 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         boolean isFunction = sourceObject.getProcedureType() == DBSProcedureType.FUNCTION;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Snowflake object DDL")) {
@@ -174,6 +175,7 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
             .getSourceStatement();
     }
 
+    @NotNull
     @Override
     public JDBCStatement prepareForeignKeysLoadStatement(
         @NotNull JDBCSession session,
@@ -191,6 +193,10 @@ public class SnowflakeMetaModel extends GenericMetaModel implements DBCQueryTran
 
     private boolean supportsWildcards(@NotNull JDBCSession session, @NotNull GenericStructContainer owner) throws SQLException {
         // Snowflake driver do not recognize wild cards patterns before version 3.13.19 - and 19 here is the number of patch, not minor
+        if (owner.getDataSource().isDriverVersionAtLeast(3, 14)) {
+            // Shouldn't check patch if the driver is newer than 3.14 or newer.
+            return true;
+        }        
         if (owner.getDataSource().isDriverVersionAtLeast(3, 13)) {
             String driverVersion = session.getMetaData().getDriverVersion();
             if (CommonUtils.isNotEmpty(driverVersion) && driverVersion.contains(".")) {

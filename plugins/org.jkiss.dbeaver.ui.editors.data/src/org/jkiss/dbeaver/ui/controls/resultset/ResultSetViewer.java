@@ -89,6 +89,8 @@ import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingPolicy;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingStrategy;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.*;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.CustomizeColorsAction;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.ResetAllColorAction;
@@ -120,8 +122,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -273,7 +275,7 @@ public class ResultSetViewer extends Viewer
         boolean supportsPanels = (decoratorFeatures & IResultSetDecorator.FEATURE_PANELS) != 0;
 
         this.mainPanel = UIUtils.createPlaceholder(parent, supportsPanels ? 3 : 2);
-        CSSUtils.setCSSClass(this.mainPanel, CSS_CLASS_RESULT_SET_VIEWER);
+        CSSUtils.setCSSClass(this.mainPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         this.autoRefreshControl = new AutoRefreshControl(
             this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
@@ -300,7 +302,7 @@ public class ResultSetViewer extends Viewer
             this.filtersPanel = new ResultSetFilterPanel(this, this.mainPanel,
                 (decoratorFeatures & IResultSetDecorator.FEATURE_COMPACT_FILTERS) != 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = ((GridLayout)mainPanel.getLayout()).numColumns;
+            gd.horizontalSpan = ((GridLayout) mainPanel.getLayout()).numColumns;
             this.filtersPanel.setLayoutData(gd);
         }
 
@@ -333,6 +335,7 @@ public class ResultSetViewer extends Viewer
             this.viewerSash = new SashForm(this.viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
             this.viewerSash.setSashWidth(5);
             this.viewerSash.setLayoutData(new GridData(GridData.FILL_BOTH));
+            CSSUtils.setCSSClass(this.viewerSash, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             this.presentationPanel = UIUtils.createPlaceholder(this.viewerSash, 1);
             this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -360,6 +363,7 @@ public class ResultSetViewer extends Viewer
                 Composite trControl = new Composite(panelFolder, SWT.NONE);
                 trControl.setLayout(new FillLayout());
                 ToolBar panelToolbarControl = this.panelToolBar.createControl(trControl);
+                trControl.setBackgroundMode(SWT.INHERIT_FORCE);
                 this.panelFolder.setTopRight(trControl, SWT.RIGHT | SWT.WRAP);
                 this.panelFolder.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -772,10 +776,7 @@ public class ResultSetViewer extends Viewer
 
     private void showErrorPresentation(String sqlText, String message, Throwable error) {
         activePresentationDescriptor = null;
-        setActivePresentation(
-            new ErrorPresentation(
-                sqlText,
-                GeneralUtils.makeErrorStatus(message, error), container instanceof IResultSetContainerExt ? (IResultSetContainerExt) container : null));
+        setActivePresentation(new ErrorPresentation(sqlText, GeneralUtils.makeErrorStatus(message, error), container));
         updatePresentationInToolbar();
         fireQueryExecuted(sqlText, null, error.getMessage());
     }
@@ -1872,20 +1873,20 @@ public class ResultSetViewer extends Viewer
         }
 
         {
-            ToolBarManager addToolbBarManagerar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
+            ToolBarManager addToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             if (!ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
-                menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_EXPORT_CONTRIBUTION_ID);
+                menuService.populateContributionManager(addToolBarManager, TOOLBAR_EXPORT_CONTRIBUTION_ID);
             }
 
-            addToolbBarManagerar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
-            addToolbBarManagerar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
+            addToolBarManager.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
+            addToolBarManager.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
 
             if (menuService != null) {
-                menuService.populateContributionManager(addToolbBarManagerar, TOOLBAR_CONTRIBUTION_ID);
+                menuService.populateContributionManager(addToolBarManager, TOOLBAR_CONTRIBUTION_ID);
             }
-            ToolBar addToolBar = addToolbBarManagerar.createControl(statusBar);
+            ToolBar addToolBar = addToolBarManager.createControl(statusBar);
             CSSUtils.setCSSClass(addToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
-            toolbarList.add(addToolbBarManagerar);
+            toolbarList.add(addToolBarManager);
         }
 
         {
@@ -2425,12 +2426,12 @@ public class ResultSetViewer extends Viewer
         // }
         DBDAttributeConstraint constraint = dataFilter.getConstraint(columnElement);
         assert constraint != null;
-        ResultSetUtils.OrderingMode orderingMode = ResultSetUtils.getOrderingMode(this);
+        OrderingStrategy orderingMode = OrderingStrategy.get(this);
         if (CommonUtils.isNotEmpty(model.getDataFilter().getOrder())) {
-            orderingMode = ResultSetUtils.OrderingMode.SERVER_SIDE;
+            orderingMode = OrderingStrategy.SERVER_SIDE;
         }
         if (constraint.getOrderPosition() == 0 && forceOrder != ColumnOrder.NONE) {
-            if (orderingMode == ResultSetUtils.OrderingMode.SERVER_SIDE && supportsDataFilter()) {
+            if (orderingMode == OrderingStrategy.SERVER_SIDE && supportsDataFilter()) {
                 if (ConfirmationDialog.confirmAction(
                     viewerPanel.getShell(),
                     ConfirmationDialog.WARNING,
@@ -3201,9 +3202,10 @@ public class ResultSetViewer extends Viewer
             possibleActions.add(new VirtualAttributeDeleteAction(this, attr));
         }
 
-        if (dataSource.getInfo().supportsReferentialIntegrity()) {
+        DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
+        boolean supportsVirtualKeys = dataSource.getContainer().getDriver().supportsVirtualKeys();
+        if (dataSourceInfo.supportsReferentialIntegrity() || supportsVirtualKeys) {
             possibleActions.add(new VirtualForeignKeyEditAction(this));
-
             possibleActions.add(new VirtualUniqueKeyEditAction(this, true));
             possibleActions.add(new VirtualUniqueKeyEditAction(this, false));
         }
@@ -3425,7 +3427,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void handleDataSourceEvent(DBPEvent event) {
+    public void handleDataSourceEvent(@NotNull DBPEvent event) {
         if (event.getObject() instanceof DBVEntity &&
             event.getData() instanceof DBVEntityForeignKey &&
             event.getObject() == model.getVirtualEntity(false))
@@ -4007,6 +4009,11 @@ public class ResultSetViewer extends Viewer
                 if (activePresentation.getControl() != null && !activePresentation.getControl().isDisposed()) {
                     activePresentation.formatData(true);
                 }
+
+                if (dataFilter == null) {
+                    // If no user-defined filter is present, apply default ordering
+                    applyDefaultOrdering();
+                }
             };
 
             dataReceiver.setNextSegmentRead(false);
@@ -4014,6 +4021,33 @@ public class ResultSetViewer extends Viewer
             runDataPump(dataContainer, dataFilter, 0, segmentSize, 0, true, false, false, finalizer);
         } else {
             DBWorkbench.getPlatformUI().showError("Error executing query", "Viewer detached from data source");
+        }
+    }
+
+    private void applyDefaultOrdering() {
+        OrderingPolicy policy = OrderingPolicy.get(this);
+        DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
+
+        if (policy != OrderingPolicy.DEFAULT && rowIdentifier != null && !rowIdentifier.isIncomplete()) {
+            DBDDataFilter dataFilter = getDataFilter();
+
+            for (DBDAttributeBinding binding : rowIdentifier.getAttributes()) {
+                DBDAttributeConstraint constraint = dataFilter.getConstraint(binding);
+                if (constraint != null) {
+                    constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
+                    constraint.setOrderDescending(policy == OrderingPolicy.PRIMARY_KEY_DESC);
+                }
+            }
+
+            OrderingStrategy strategy = OrderingStrategy.get(this);
+
+            if (strategy == OrderingStrategy.SERVER_SIDE || isHasMoreData()) {
+                refreshWithFilter(dataFilter);
+            } else {
+                getModel().resetOrdering(rowIdentifier.getAttributes());
+                getActivePresentation().refreshData(false, false, true);
+                updateFiltersText();
+            }
         }
     }
 

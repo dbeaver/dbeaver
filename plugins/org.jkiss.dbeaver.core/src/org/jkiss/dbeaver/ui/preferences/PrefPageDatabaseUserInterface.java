@@ -22,10 +22,9 @@ import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -51,6 +50,8 @@ import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences.BreadcrumbLocation;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -73,13 +74,13 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     @Nullable
     private Combo clientTimezone;
 
-    private boolean isStandalone = DesktopPlatform.isStandalone();
+    private final boolean isStandalone = DesktopPlatform.isStandalone();
     private Combo browserCombo;
     private Button useEmbeddedBrowserAuth;
 
     private Button statusBarShowBreadcrumbsCheck;
     private Button statusBarShowStatusCheck;
-
+    private Combo statusBarBreadcrumbPositionCombo;
 
     public PrefPageDatabaseUserInterface()
     {
@@ -146,12 +147,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             for (String timezoneName : TimezoneRegistry.getTimezoneNames()) {
                 clientTimezone.add(timezoneName);
             }
-            clientTimezone.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    updateApplyButton();
-                    getContainer().updateButtons();
-                }
+            clientTimezone.addModifyListener(e -> {
+                updateApplyButton();
+                getContainer().updateButtons();
             });
             IContentProposalProvider proposalProvider = (contents, position) -> {
                 List<IContentProposal> proposals = new ArrayList<>();
@@ -226,7 +224,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         Group breadcrumbs = UIUtils.createControlGroup(
             composite,
             CoreMessages.pref_page_ui_status_bar,
-            1,
+            2,
             GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
             0
         );
@@ -237,12 +235,20 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             true,
             1
         );
+        statusBarShowBreadcrumbsCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection())));
+
+        statusBarBreadcrumbPositionCombo = new Combo(breadcrumbs, SWT.READ_ONLY | SWT.DROP_DOWN);
+        statusBarBreadcrumbPositionCombo.add(CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_status_bar_label);
+        statusBarBreadcrumbPositionCombo.add(CoreMessages.pref_page_ui_status_bar_show_breadcrumbs_editors_label);
+        statusBarBreadcrumbPositionCombo.select(0);
+
         statusBarShowStatusCheck = UIUtils.createCheckbox(
             breadcrumbs,
             CoreMessages.pref_page_ui_status_bar_show_status_line_check_label,
             CoreMessages.pref_page_ui_status_bar_show_status_line_check_tip,
             true,
-            1
+            2
         );
 
         setSettings();
@@ -260,7 +266,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
             }
-            useEmbeddedBrowserAuth.setSelection(store.getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+            useEmbeddedBrowserAuth.setSelection(store.getBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH));
         }
         final String timezone = store.getString(ModelPreferences.CLIENT_TIMEZONE);
         if (clientTimezone != null) {
@@ -271,7 +277,10 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             }
         }
 
-        statusBarShowBreadcrumbsCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS));
+        BreadcrumbLocation breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.get(store);
+        statusBarShowBreadcrumbsCheck.setSelection(breadcrumbLocation != DatabaseEditorPreferences.BreadcrumbLocation.HIDDEN);
+        statusBarBreadcrumbPositionCombo.select(breadcrumbLocation == DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS ? 1 : 0);
+        statusBarBreadcrumbPositionCombo.setEnabled(statusBarShowBreadcrumbsCheck.getSelection());
         statusBarShowStatusCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
     }
 
@@ -279,7 +288,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
     protected void performDefaults() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (isStandalone) {
-            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH));
+            useEmbeddedBrowserAuth.setSelection(store.getDefaultBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH));
             if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 automaticUpdateCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
             }
@@ -292,7 +301,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
             UIUtils.setComboSelection(clientTimezone, store.getDefaultString(ModelPreferences.CLIENT_TIMEZONE));
         }
 
-        statusBarShowBreadcrumbsCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS));
+        BreadcrumbLocation location = BreadcrumbLocation.getDefault(store);
+        statusBarShowBreadcrumbsCheck.setSelection(location != BreadcrumbLocation.HIDDEN);
+        statusBarBreadcrumbPositionCombo.select(location == BreadcrumbLocation.IN_STATUS_BAR ? 0 : 1);
         statusBarShowStatusCheck.setSelection(store.getDefaultBoolean(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE));
     }
 
@@ -311,7 +322,7 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
 
         if (isStandalone) {
-            store.setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
+            store.setValue(UIPreferences.UI_USE_EMBEDDED_AUTH, useEmbeddedBrowserAuth.getSelection());
             if (!ApplicationPolicyService.getInstance().isInstallUpdateDisabled()) {
                 store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
             } else {
@@ -332,6 +343,19 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                         ZoneId.of(TimezoneRegistry.extractTimezoneId(clientTimezone.getText())), true);
                 }
             }
+
+            BreadcrumbLocation breadcrumbLocation;
+            if (!statusBarShowBreadcrumbsCheck.getSelection()) {
+                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.HIDDEN;
+            } else if (statusBarBreadcrumbPositionCombo.getSelectionIndex() == 0) {
+                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_STATUS_BAR;
+            } else {
+                breadcrumbLocation = DatabaseEditorPreferences.BreadcrumbLocation.IN_EDITORS;
+            }
+
+            store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, breadcrumbLocation.name());
+            store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
+
             if (workspaceLanguage.getSelectionIndex() >= 0) {
                 PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages()
                     .get(workspaceLanguage.getSelectionIndex());
@@ -339,7 +363,9 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
 
                 try {
                     if (curLanguage != language) {
-                        ((DBPPlatformLanguageManager) DBWorkbench.getPlatform()).setPlatformLanguage(language);
+                        if (DBWorkbench.getPlatform() instanceof DBPPlatformLanguageManager languageManager) {
+                            languageManager.setPlatformLanguage(language);
+                        }
                         if (UIUtils.confirmAction(
                             getShell(),
                             "Restart " + GeneralUtils.getProductName(),
@@ -354,9 +380,6 @@ public class PrefPageDatabaseUserInterface extends AbstractPrefPage implements I
                 }
             }
         }
-
-        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_BREADCRUMBS, statusBarShowBreadcrumbsCheck.getSelection());
-        store.setValue(DBeaverPreferences.UI_STATUS_BAR_SHOW_STATUS_LINE, statusBarShowStatusCheck.getSelection());
 
         return true;
     }

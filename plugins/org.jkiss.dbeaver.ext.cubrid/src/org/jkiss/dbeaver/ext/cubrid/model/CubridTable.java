@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class CubridTable extends GenericTable
             @Nullable String tableName,
             @Nullable String tableType,
             @Nullable JDBCResultSet dbResult) {
-        super(container, tableName, tableType, dbResult);
+        super(container, tableName != null ? tableName.toLowerCase() : null, tableType, dbResult);
 
         String collationName;
         if (tableType.equals("TABLE") && dbResult != null) {
@@ -76,11 +76,9 @@ public class CubridTable extends GenericTable
         this.collation = getDataSource().getCollation(collationName);
     }
 
-    @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 1)
-    public String getName() {
-        return super.getName().toLowerCase();
+    public void setName(String name) {
+        super.setName(name != null ? name.toLowerCase() : null);
     }
 
     @NotNull
@@ -190,7 +188,7 @@ public class CubridTable extends GenericTable
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         if (this.isSystem()) {
             return DBUtils.getFullQualifiedName(getDataSource(), this);
         } else {
@@ -222,6 +220,7 @@ public class CubridTable extends GenericTable
     static class PartitionCache extends JDBCObjectCache<CubridTable, CubridPartition> {
 
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull CubridTable table) throws SQLException {
            

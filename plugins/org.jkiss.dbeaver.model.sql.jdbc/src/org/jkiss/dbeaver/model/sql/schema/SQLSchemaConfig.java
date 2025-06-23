@@ -17,12 +17,96 @@
 package org.jkiss.dbeaver.model.sql.schema;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-public record SQLSchemaConfig(
-    @NotNull String schemaId,
-    @NotNull String createScriptPath,
-    @NotNull String updateScriptPrefix,
-    int schemaVersionActual,
-    int schemaVersionObsolete
-) {
+public class SQLSchemaConfig {
+
+    @NotNull
+    private final String schemaId;
+
+    @NotNull
+    private final String createScriptPath;
+
+    @NotNull
+    private final String updateScriptPrefix;
+
+    private final int schemaVersionActual;
+
+    private final int schemaVersionObsolete;
+
+    @NotNull
+    private final SQLSchemaVersionManager versionManager;
+
+    @NotNull
+    private final ClassLoader classLoader;
+
+    @Nullable
+    private SQLInitialSchemaFiller initialSchemaFiller;
+
+    public SQLSchemaConfig(
+        @NotNull String schemaId,
+        @NotNull String createScriptPath,
+        @NotNull String updateScriptPrefix,
+        int schemaVersionActual,
+        int schemaVersionObsolete,
+        @NotNull SQLSchemaVersionManager versionManager,
+        @NotNull ClassLoader classLoader
+    ) {
+        this(schemaId, createScriptPath, updateScriptPrefix, schemaVersionActual, schemaVersionObsolete, versionManager, classLoader, null);
+    }
+    public SQLSchemaConfig(
+        @NotNull String schemaId,
+        @NotNull String createScriptPath,
+        @NotNull String updateScriptPrefix,
+        int schemaVersionActual,
+        int schemaVersionObsolete,
+        @NotNull SQLSchemaVersionManager versionManager,
+        @NotNull ClassLoader classLoader,
+        @Nullable SQLInitialSchemaFiller initialSchemaFiller
+    ) {
+        this.schemaId = schemaId;
+        this.createScriptPath = createScriptPath;
+        this.updateScriptPrefix = updateScriptPrefix;
+        this.schemaVersionActual = schemaVersionActual;
+        this.schemaVersionObsolete = schemaVersionObsolete;
+        this.versionManager = versionManager;
+        this.classLoader = classLoader;
+        this.initialSchemaFiller = initialSchemaFiller;
+    }
+
+    public @NotNull String getSchemaId() {
+        return schemaId;
+    }
+
+    public @NotNull String getCreateScriptPath() {
+        return createScriptPath;
+    }
+
+    public @NotNull String getUpdateScriptPrefix() {
+        return updateScriptPrefix;
+    }
+
+    public int getSchemaVersionActual() {
+        return schemaVersionActual;
+    }
+
+    public int getSchemaVersionObsolete() {
+        return schemaVersionObsolete;
+    }
+
+    public @NotNull SQLSchemaVersionManager getVersionManager() {
+        return versionManager;
+    }
+
+    public @NotNull ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    public @Nullable SQLInitialSchemaFiller getInitialSchemaFiller() {
+        return initialSchemaFiller;
+    }
+
+    public void setInitialSchemaFiller(@NotNull SQLInitialSchemaFiller initialSchemaFiller) {
+        this.initialSchemaFiller = initialSchemaFiller;
+    }
 }

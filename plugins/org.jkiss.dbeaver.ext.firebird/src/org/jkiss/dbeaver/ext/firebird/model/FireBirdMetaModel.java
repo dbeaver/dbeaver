@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,8 +59,9 @@ public class FireBirdMetaModel extends GenericMetaModel
         super();
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new FireBirdDataSource(monitor, container, this);
     }
 
@@ -80,12 +81,21 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         return FireBirdUtils.getProcedureSource(monitor, sourceObject);
     }
 
+    @NotNull
     @Override
-    public GenericProcedure createProcedureImpl(GenericStructContainer container, String procedureName, String specificName, String remarks, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
+    public GenericProcedure createProcedureImpl(
+        @NotNull GenericStructContainer container,
+        @NotNull String procedureName,
+        String specificName,
+        String remarks,
+        @NotNull
+        DBSProcedureType procedureType,
+        GenericFunctionResultType functionResultType
+    ) {
         return new FireBirdProcedure(container, procedureName, specificName, remarks, procedureType, functionResultType);
     }
 
@@ -124,6 +134,7 @@ public class FireBirdMetaModel extends GenericMetaModel
         return true;
     }
 
+    @NotNull
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -135,6 +146,7 @@ public class FireBirdMetaModel extends GenericMetaModel
         return dbStat;
     }
 
+    @NotNull
     @Override
     public GenericTrigger createTableTriggerImpl(@NotNull JDBCSession session, @NotNull GenericStructContainer container, @NotNull GenericTableBase parent, String triggerName, @NotNull JDBCResultSet dbResult) throws DBException {
         if (CommonUtils.isEmpty(triggerName)) {
@@ -193,7 +205,7 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
-    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
+    public List<GenericTrigger> loadTriggers(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM RDB$TRIGGERS\n" +
@@ -237,6 +249,7 @@ public class FireBirdMetaModel extends GenericMetaModel
         return FireBirdUtils.getTriggerSource(monitor, (FireBirdTrigger)trigger);
     }
 
+    @Nullable
     @Override
     public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
         String message = error.getMessage();
@@ -258,7 +271,7 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
-    public boolean isSystemTable(GenericTableBase table) {
+    public boolean isSystemTable(@NotNull GenericTableBase table) {
         String tableName = table.getName();
         tableName = tableName.toUpperCase(Locale.ENGLISH);
         return tableName.startsWith("RDB$") || tableName.startsWith("MON$");    // [JDBC: Firebird]
@@ -446,7 +459,7 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
-    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
+    public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException, SQLException {
         String constraintType = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE");
         return "PRIMARY KEY".equals(constraintType) ? DBSEntityConstraintType.PRIMARY_KEY : DBSEntityConstraintType.UNIQUE_KEY;
     }

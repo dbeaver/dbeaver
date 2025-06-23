@@ -10,7 +10,7 @@ on:
     branches: [devel]
 
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'push-pr-devel' }}
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref_name }}
   cancel-in-progress: true
 
 jobs:

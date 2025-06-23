@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.finder;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -79,7 +80,16 @@ public class AdvancedListItem {
         }
 
         Image icon = labelProvider.getImage(data);
-        Rectangle iconBounds = icon.getBounds();
+        Rectangle iconBounds;
+
+        // Same SWT APIs yield different results across different platforms. How cool is that?
+        if (RuntimeUtils.isLinux()) {
+            ImageData imageData = icon.getImageData();
+            iconBounds = new Rectangle(0, 0, imageData.width, imageData.height);
+        } else {
+            iconBounds = icon.getBounds();
+        }
+
         Point imageSize = list.getImageSize();
 
         int imgPosX = (itemSize.x - imageSize.x) / 2;
