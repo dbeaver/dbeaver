@@ -140,7 +140,7 @@ public class DataSourceToolbarHandler implements DBPRegistryListener, DBPEventLi
     }
 
     @Override
-    public void handleDataSourceEvent(final DBPEvent event) {
+    public void handleDataSourceEvent(@NotNull final DBPEvent event) {
         if (workbenchWindow.getWorkbench().isClosing()) {
             return;
         }

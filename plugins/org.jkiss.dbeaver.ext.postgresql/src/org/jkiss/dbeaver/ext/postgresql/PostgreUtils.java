@@ -1025,7 +1025,7 @@ public class PostgreUtils {
             }
         } else {
             String url = configuration.getUrl();
-            Pattern pattern = Pattern.compile("jdbc:postgresql://[^/]+/([^?#]+)");
+            Pattern pattern = Pattern.compile("^.*?://[^/]+/([^?#]+)(?:[?#].*)?$");
             Matcher matcher = pattern.matcher(url);
             if (matcher.find()) {
                 activeDatabaseName = matcher.group(1).replace("%2F", "/");
