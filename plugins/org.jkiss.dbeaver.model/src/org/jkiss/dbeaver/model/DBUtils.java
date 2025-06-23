@@ -27,6 +27,9 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.*;
@@ -61,7 +64,12 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.*;
+import java.util.regex.Matcher;
 
 /**
  * DBUtils
@@ -2561,5 +2569,90 @@ public final class DBUtils {
             }
         }
         return false;
+    }
+
+    public record ConnectivityParameters(
+        @Nullable String hostName,
+        @Nullable String hostPort,
+        @Nullable String databaseName,
+        @Nullable String userName,
+        @Nullable String server
+    ) {
+    }
+
+    @NotNull
+    private static ConnectivityParameters getExplicitConnectivityParameters(@NotNull DBPConnectionConfiguration configuration) {
+        return new ConnectivityParameters(
+            configuration.getHostName(),
+            configuration.getHostPort(),
+            CommonUtils.notEmptyOrDefault(configuration.getBootstrap().getDefaultCatalogName(), configuration.getDatabaseName()),
+            configuration.getUserName(),
+            configuration.getServerName()
+        );
+    }
+
+    @NotNull
+    public static ConnectivityParameters getConnectivityParameters(
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull DBPDriver driver
+    ) throws DBException {
+        ConnectivityParameters explicitConfiguration = getExplicitConnectivityParameters(configuration);
+        return switch (configuration.getConfigurationType()) {
+            case MANUAL -> explicitConfiguration;
+            case URL -> {
+                String activeUrl = driver.getConnectionURL(configuration);
+                if (CommonUtils.isNotEmpty(activeUrl)) {
+                    ConnectivityParameters urlConnectivityParams = null;
+                    DBPConnectionConfiguration urlConfiguration = null;
+                    DatabaseURL.MetaURL metaURL = null;
+                    if (CommonUtils.isNotEmpty(driver.getSampleURL())) {
+                        urlConfiguration = DatabaseURL.extractConfigurationFromUrl(driver.getSampleURL(), activeUrl);
+                        if (urlConfiguration != null) {
+                            metaURL = DatabaseURL.parseSampleURL(driver.getSampleURL());
+                        }
+                    }
+                    if (urlConfiguration == null) {
+                        urlConfiguration = DatabaseURL.extractConfigurationFromUrl(DatabaseURL.GENERIC_URL_TEMPLATE, activeUrl);
+                        if (urlConfiguration != null) {
+                            metaURL = DatabaseURL.parseSampleURL(DatabaseURL.GENERIC_URL_TEMPLATE);
+                        }
+                    }
+                    if (urlConfiguration != null) {
+                        urlConnectivityParams = getExplicitConnectivityParameters(urlConfiguration);
+                    }
+                    if (urlConnectivityParams == null) {
+                        final String jdbcPrefix = "jdbc:";
+                        URI url = URI.create(activeUrl.startsWith(jdbcPrefix) ? activeUrl.substring(jdbcPrefix.length()) : activeUrl);
+                        urlConnectivityParams = new ConnectivityParameters(
+                            url.getHost(),
+                            url.getPort() != -1 ? Integer.toString(url.getPort()) : null,
+                            url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath(),
+                            url.getUserInfo(),
+                            null
+                        );
+                    }
+                    Set<String> requiredUrlParts = metaURL != null ? metaURL.getRequiredProperties() : Collections.emptySet();
+                    yield new ConnectivityParameters(
+                        urlConnectivityParams.hostName(),
+                        urlConnectivityParams.hostPort(),
+                        requiredUrlParts.contains(DBConstants.PROP_DATABASE)
+                            ? urlConnectivityParams.databaseName()
+                            : CommonUtils.notEmptyOrDefault(urlConnectivityParams.databaseName(), explicitConfiguration.databaseName()),
+                        requiredUrlParts.contains(DBConstants.PROP_USER)
+                            ? urlConnectivityParams.userName()
+                            : CommonUtils.notEmptyOrDefault(urlConnectivityParams.userName(), explicitConfiguration.userName()),
+                        urlConnectivityParams.server()
+                    );
+                } else {
+                    yield new ConnectivityParameters(
+                        driver.getDefaultHost(),
+                        driver.getDefaultPort(),
+                        explicitConfiguration.databaseName(),
+                        explicitConfiguration.userName(),
+                        null
+                    );
+                }
+            }
+        };
     }
 }
