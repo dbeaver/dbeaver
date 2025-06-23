@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -37,8 +38,7 @@ import java.util.List;
 /**
  * GenericCatalog
  */
-public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
-{
+public class GenericCatalog extends GenericObjectContainer implements DBSCatalog, DBPSystemObject {
     private final String catalogName;
     private List<GenericSchema> schemas;
     private boolean isInitialized = false;
@@ -167,6 +167,11 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         this.schemas = null;
         this.isInitialized = false;
         return super.refreshObject(monitor);
+    }
+
+    @Override
+    public boolean isSystem() {
+        return false;
     }
 
     public static class CatalogNameTermProvider implements IPropertyValueTransformer<DBSObject, String> {

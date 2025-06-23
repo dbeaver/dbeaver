@@ -38,13 +38,15 @@ class SQLTokenPredicateFactory extends TokenPredicateFactory {
         private final String string;
         private int pos = 0;
 
+        public static final char[][] DELIMITERS = { {'\r'}, {'\n'}, {'\r', '\n'} }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+
         public StringScanner(@NotNull String string) {
             this.string = string;
         }
 
         @Override
         public char[][] getLegalLineDelimiters() {
-            throw new UnsupportedOperationException();
+            return DELIMITERS;
         }
 
         @Override
@@ -93,7 +95,7 @@ class SQLTokenPredicateFactory extends TokenPredicateFactory {
                 }
             } catch (Throwable e) {
                 // some rules raise exceptions in a certain situations when the string does not correspond the rule
-                log.debug(e.getMessage());
+                log.debug(e);
             }
         }
         return null;

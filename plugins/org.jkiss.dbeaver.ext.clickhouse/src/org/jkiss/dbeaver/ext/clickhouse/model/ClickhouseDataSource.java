@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.ext.clickhouse.model.jdbc.ClickhouseJdbcFactory;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -199,6 +196,16 @@ public class ClickhouseDataSource extends GenericDataSource {
     }
 
     @Override
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
+        switch (dataKind) {
+            case STRING:
+                return ClickhouseConstants.DATA_TYPE_STRING;
+            default:
+                return super.getDefaultDataTypeName(dataKind);
+        }
+    }
+
+    @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new ClickhouseDataSourceInfo(metaData);
     }
@@ -237,6 +244,11 @@ public class ClickhouseDataSource extends GenericDataSource {
     @Override
     public JDBCFactory getJdbcFactory() {
         return new ClickhouseJdbcFactory();
+    }
+
+    @Override
+    public boolean isOmitCatalog() {
+        return isDriverVersionAtLeast(0, 8);
     }
 
     boolean isSupportTableComments() {

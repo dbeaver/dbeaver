@@ -268,7 +268,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter) {
+    public String getTableModifiers(DBRProgressMonitor monitor, PostgreTableBase tableBase, boolean alter, String delimiter) {
         StringBuilder ddl = new StringBuilder();
         if (tableBase instanceof PostgreTable) {
             PostgreTable table = (PostgreTable) tableBase;
@@ -276,7 +276,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                 try {
                     final List<PostgreTableInheritance> superTables = table.getSuperInheritance(monitor);
                     if (!CommonUtils.isEmpty(superTables) && ! tableBase.isPartition()) {
-                        ddl.append("\nINHERITS (");
+                        ddl.append(delimiter).append("INHERITS (");
                         for (int i = 0; i < superTables.size(); i++) {
                             if (i > 0) ddl.append(",");
                             ddl.append(superTables.get(i).getAssociatedEntity().getFullyQualifiedName(DBPEvaluationContext.DDL));
@@ -287,7 +287,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                     log.error(e);
                 }
                 if (!CommonUtils.isEmpty(table.getPartitionKey())) {
-                    ddl.append("\nPARTITION BY ").append(table.getPartitionKey());
+                    ddl.append(delimiter).append("PARTITION BY ").append(table.getPartitionKey());
                 }
             }
             if (tableBase instanceof PostgreTablePartition && !alter) {
@@ -304,8 +304,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
             }
         }
 
-        if (tableBase instanceof PostgreTableRegular) {
-            PostgreTableRegular table = (PostgreTableRegular) tableBase;
+        if (tableBase instanceof PostgreTableRegular table) {
             try {
                 if (!alter) {
                     ddl.append(createWithClause(table, tableBase));
@@ -315,19 +314,18 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                     PostgreTablespace tablespace = table.getTablespace(monitor);
                     if (tablespace != null) {
                         if (!alter) {
-                            ddl.append("\nTABLESPACE ").append(tablespace.getName());
+                            ddl.append(delimiter).append("TABLESPACE ").append(tablespace.getName());
                         }
                         hasOtherSpecs = true;
                     }
                 }
                 if (!alter && hasOtherSpecs) {
-                    ddl.append("\n");
+                    ddl.append(delimiter);
                 }
             } catch (DBException e) {
                 log.error(e);
             }
-        } else if (tableBase instanceof PostgreTableForeign) {
-            PostgreTableForeign table = (PostgreTableForeign)tableBase;
+        } else if (tableBase instanceof PostgreTableForeign table) {
             try {
                 String foreignServerName = table.getForeignServerName();
                 if (CommonUtils.isEmpty(foreignServerName)) {
@@ -336,12 +334,12 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
                         foreignServerName = DBUtils.getQuotedIdentifier(foreignServer);
                     }
                 }
-                if (foreignServerName != null ) {
-                    ddl.append("\nSERVER ").append(foreignServerName);
+                if (foreignServerName != null) {
+                    ddl.append(delimiter).append("SERVER ").append(foreignServerName);
                 }
                 String[] foreignOptions = table.getForeignOptions(monitor);
                 if (!ArrayUtils.isEmpty(foreignOptions)) {
-                    ddl.append("\nOPTIONS ").append(PostgreUtils.getOptionsString(foreignOptions));
+                    ddl.append(delimiter).append("OPTIONS ").append(PostgreUtils.getOptionsString(foreignOptions));
                 }
             } catch (DBException e) {
                 log.error(e);

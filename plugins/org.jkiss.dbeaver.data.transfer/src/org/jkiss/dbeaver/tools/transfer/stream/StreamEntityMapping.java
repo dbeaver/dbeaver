@@ -182,7 +182,7 @@ public class StreamEntityMapping implements DBSEntity, DBSDataContainer, DBPQual
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return getName();
     }
 

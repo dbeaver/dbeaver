@@ -21,7 +21,6 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
-import org.jkiss.utils.CommonUtils;
 
 public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
     private static final String PROP_NOT_FIRST_RUN = "tipOfTheDayInitializer.notFirstRun";
@@ -40,10 +39,6 @@ public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
             DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_NOT_FIRST_RUN, true);
             return false;
         }
-        String tipsEnabledStr = DBWorkbench.getPlatform().getPreferenceStore().getString(ShowTipOfTheDayHandler.UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP);
-        if (CommonUtils.isEmpty(tipsEnabledStr)) {
-            return true;
-        }
-        return CommonUtils.toBoolean(tipsEnabledStr);
+        return ShowTipOfTheDayDialog.isShowOnStartup();
     }
 }
