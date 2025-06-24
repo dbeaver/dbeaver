@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.erd.model.*;
 import org.jkiss.dbeaver.erd.ui.ERDUIConstants;
@@ -316,7 +317,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements DBPE
     }
 
     @Override
-    public void handleDataSourceEvent(DBPEvent event)
+    public void handleDataSourceEvent(@NotNull DBPEvent event)
     {
         DBSObject object = event.getObject();
         if (object == null || DBWorkbench.getPlatform().isShuttingDown()) {
