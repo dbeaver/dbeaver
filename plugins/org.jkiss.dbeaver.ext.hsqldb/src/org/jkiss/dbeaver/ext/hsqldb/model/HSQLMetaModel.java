@@ -57,8 +57,9 @@ public class HSQLMetaModel extends GenericMetaModel
         super();
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             String url = container.getConnectionConfiguration().getUrl();
             if (!container.getDriver().isEmbedded() && url != null) {
@@ -95,7 +96,7 @@ public class HSQLMetaModel extends GenericMetaModel
     }
 
     @Override
-    public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
+    public void loadProcedures(@NotNull DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
         GenericDataSource dataSource = container.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read HSQLDB procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -127,7 +128,7 @@ public class HSQLMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read HSQLDB procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -191,6 +192,7 @@ public class HSQLMetaModel extends GenericMetaModel
         return true;
     }
 
+    @NotNull
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase forParent) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -203,6 +205,7 @@ public class HSQLMetaModel extends GenericMetaModel
         return dbStat;
     }
 
+    @NotNull
     @Override
     public GenericTrigger createTableTriggerImpl(
         @NotNull JDBCSession session,
@@ -225,7 +228,7 @@ public class HSQLMetaModel extends GenericMetaModel
     }
 
     @Override
-    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
+    public List<GenericTrigger> loadTriggers(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         if (table == null) {
             throw new DBException("Database level triggers aren't supported for HSQLDB");
         }
@@ -285,6 +288,7 @@ public class HSQLMetaModel extends GenericMetaModel
         return new HSQLSynonym(container, dbResult);
     }
 
+    @Nullable
     @Override
     public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
         return new HSQLQueryPlanner((HSQLDataSource) dataSource);

@@ -249,4 +249,10 @@ public interface DBPDriver extends DBPNamedObject, DBPDriverLibraryProvider {
      */
     boolean matchesId(@NotNull String driverId);
 
+    /**
+     * Returns true if the driver supports virtual keys.
+     * @return true or false
+     */
+    boolean supportsVirtualKeys();
+
 }

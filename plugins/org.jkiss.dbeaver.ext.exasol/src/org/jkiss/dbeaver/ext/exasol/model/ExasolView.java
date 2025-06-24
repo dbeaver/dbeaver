@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +17,6 @@
 package org.jkiss.dbeaver.ext.exasol.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.editors.ExasolSourceObject;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
@@ -144,7 +142,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(), getSchema(), this);
     }
 
@@ -185,7 +183,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject, D
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         read();
         //return SQLFormatUtils.formatSQL(getDataSource(), this.text);
         return this.text;

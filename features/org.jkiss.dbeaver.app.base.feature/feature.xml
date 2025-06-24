@@ -3,7 +3,7 @@
 <feature
         id="org.jkiss.dbeaver.app.base.feature"
         label="DBeaver Base Standalone Application"
-        version="25.1.1.qualifier"
+        version="25.1.2.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.ui.app.standalone">
 
