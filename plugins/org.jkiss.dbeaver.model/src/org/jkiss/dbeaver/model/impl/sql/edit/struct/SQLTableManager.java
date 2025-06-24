@@ -142,7 +142,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 // Insert nested declaration
                 if (!hasNestedDeclarations && !hasAttrDeclarations(table)) {
                     createQuery.append('(')
-                        .append(isCompact ? " " : "\n\t")
+                        .append(isCompact ? " " : lineSeparator + "\t")
                         .append(nestedDeclaration); //$NON-NLS-1$
                 } else {
                     createQuery.append(isCompact ? " " : "\t")
