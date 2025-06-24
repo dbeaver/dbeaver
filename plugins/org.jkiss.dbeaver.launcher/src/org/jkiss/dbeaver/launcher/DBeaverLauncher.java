@@ -128,6 +128,7 @@ public class DBeaverLauncher {
     private String splashLocation = null;
     private String endSplash = null;
     private boolean initialize = false;
+    private boolean newInstance = false;
     protected boolean splashDown = false;
 
     public final class SplashHandler extends Thread {
@@ -174,6 +175,7 @@ public class DBeaverLauncher {
     private static final String APPEND_VMARGS = "--launcher.appendVmargs"; //$NON-NLS-1$
     private static final String OVERRIDE_VMARGS = "--launcher.overrideVmargs"; //$NON-NLS-1$
     private static final String NL = "-nl"; //$NON-NLS-1$
+    private static final String NEW_INSTANCE = "-newInstance"; //$NON-NLS-1$
     private static final String ENDSPLASH = "-endsplash"; //$NON-NLS-1$
     private static final String[] SPLASH_IMAGES = {"splash.png", //$NON-NLS-1$
             "splash.jpg", //$NON-NLS-1$
@@ -596,7 +598,7 @@ public class DBeaverLauncher {
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
         try {
-            if (processCommandLineAsClient(args, dbeaverDataDir)) {
+            if (processCommandLineAsClient(passThruArgs, dbeaverDataDir)) {
                 System.setProperty(PROP_EXITCODE, Integer.toString(0));
                 return;
             }
@@ -648,7 +650,7 @@ public class DBeaverLauncher {
 
 
     private boolean processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
-        if (args == null || args.length == 0) {
+        if (args == null || args.length == 0 || newInstance) {
             return false;
         }
         Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
@@ -670,12 +672,10 @@ public class DBeaverLauncher {
         try {
             HttpResponse.BodyHandler<String> stringBodyHandler =
                 response -> HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8);
-            String json = "{args=[" +
-                Arrays.stream(args)
-                    .filter(Objects::nonNull)
-                    .map(arg -> "\"" + LauncherUtils.escape(arg) + "\"")
-                    .collect(Collectors.joining(","))
-                + "]}";
+            String json = Arrays.stream(args)
+                .filter(Objects::nonNull)
+                .map(arg -> "\"" + LauncherUtils.escape(arg) + "\"")
+                .collect(Collectors.joining(",", "{\"args\":[", "]}"));
             HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + serverPort + "/handleCommandLine"))
                 .header("Content-Type", "application/json")
@@ -1693,6 +1693,12 @@ public class DBeaverLauncher {
 
             //just consume the --launcher.overrideVmargs and --launcher.appendVmargs
             if (args[i].equalsIgnoreCase(APPEND_VMARGS) || args[i].equalsIgnoreCase(OVERRIDE_VMARGS)) {
+                found = true;
+            }
+
+            // look for the new instance arg
+            if (args[i].equalsIgnoreCase(NEW_INSTANCE)) {
+                newInstance = true;
                 found = true;
             }
 
