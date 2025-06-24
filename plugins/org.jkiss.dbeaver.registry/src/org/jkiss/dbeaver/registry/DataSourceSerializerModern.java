@@ -100,10 +100,10 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
     @Override
     public void saveDataSources(
-        DBRProgressMonitor monitor,
-        DataSourceConfigurationManager configurationManager,
-        DBPDataSourceConfigurationStorage configurationStorage,
-        List<T> localDataSources
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull List<T> localDataSources
     ) throws DBException, IOException {
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
@@ -369,7 +369,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     public boolean parseDataSources(
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
-        @NotNull DataSourceRegistry.ParseResults parseResults,
+        @NotNull DataSourceParseResults parseResults,
         @Nullable Collection<String> dataSourceIds
     ) throws DBException, IOException {
         var connectionConfigurationChanged = false;

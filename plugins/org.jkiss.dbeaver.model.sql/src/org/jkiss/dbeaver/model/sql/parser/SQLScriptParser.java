@@ -212,8 +212,10 @@ public class SQLScriptParser {
                     // that block is not preceded by the prefix e.g 'AS', because in many dialects
                     // there's no direct header block terminators
                     // like 'BEGIN ... END' but 'DECLARE ... BEGIN ... END'
-                    if (curBlock != null && curBlock.isHeader && !ArrayUtils.containsIgnoreCase(dialect.getInnerBlockPrefixes(), lastKeyword)) {
-                        curBlock = curBlock.parent;
+                    if (curBlock != null && curBlock.isHeader) {
+                        if (curBlock.isPredicateHeaderBlock || !ArrayUtils.containsIgnoreCase(dialect.getInnerBlockPrefixes(), lastKeyword)) {
+                            curBlock = curBlock.parent;
+                        }
                     }
                     curBlock = new ScriptBlockInfo(curBlock, false);
                     hasBlocks = true;
@@ -277,6 +279,11 @@ public class SQLScriptParser {
 
                     if (actionKind == SQLParserActionKind.SKIP_SUFFIX_TERM) {
                         continue;
+                    }
+
+                    if (actionKind == SQLParserActionKind.BLOCK_HEADER) {
+                        curBlock = new ScriptBlockInfo(curBlock, true, true);
+                        hasBlocks = true;
                     }
                 }
 
@@ -1107,11 +1114,17 @@ public class SQLScriptParser {
         final ScriptBlockInfo parent;
         final String togglePattern;
         boolean isHeader; // block started by DECLARE, FUNCTION, etc
+        boolean isPredicateHeaderBlock;
 
         ScriptBlockInfo(ScriptBlockInfo parent, boolean isHeader) {
             this.parent = parent;
             this.togglePattern = null;
             this.isHeader = isHeader;
+        }
+
+        ScriptBlockInfo(ScriptBlockInfo parent, boolean isHeader, boolean isPredicateHeaderBlock) {
+            this(parent, isHeader);
+            this.isPredicateHeaderBlock = isPredicateHeaderBlock;
         }
 
         ScriptBlockInfo(ScriptBlockInfo parent, String togglePattern) {
