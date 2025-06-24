@@ -152,14 +152,6 @@ public interface DBPApplication {
     }
 
     /**
-     * Determines whether the application has been marked for a forced restart.
-     */
-    default boolean isForcedRestart() {
-        return false;
-    }
-
-
-    /**
      * Returns last user activity time
      * @return -1 by default
      */

@@ -177,7 +177,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             ApplicationWorkbenchWindowAdvisor.PART_TITLE_FONT,
             ApplicationWorkbenchWindowAdvisor.TREE_AND_TABLE_FONT_FOR_VIEWS
         )
-    ); 
+    );
+    public static boolean isForcedRestart = false;
 
     //processor must be created before we start event loop
     protected final DBPApplication application;
@@ -398,7 +399,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     }
 
     private boolean saveAndCleanup() {
-        if (getWorkbenchConfigurer().emergencyClosing() || application.isForcedRestart()) {
+        if (getWorkbenchConfigurer().emergencyClosing() || isIsForcedRestart()) {
             return true;
         }
         try {
@@ -506,6 +507,14 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     public void eventLoopIdle(Display display) {
         processor.catchUp();
         super.eventLoopIdle(display);
+    }
+
+    public static boolean isIsForcedRestart() {
+        return isForcedRestart;
+    }
+
+    public static void setIsForcedRestart(boolean isForcedRestart) {
+        ApplicationWorkbenchAdvisor.isForcedRestart = isForcedRestart;
     }
 
     /**
