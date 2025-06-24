@@ -178,7 +178,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             ApplicationWorkbenchWindowAdvisor.TREE_AND_TABLE_FONT_FOR_VIEWS
         )
     );
-    public static boolean isForcedRestart = false;
+    private static boolean isForcedRestart = false;
 
     //processor must be created before we start event loop
     protected final DBPApplication application;
