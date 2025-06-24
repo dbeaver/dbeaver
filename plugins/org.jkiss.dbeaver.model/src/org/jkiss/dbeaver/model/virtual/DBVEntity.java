@@ -221,8 +221,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             return null;
         }
         DBSObject realObject = realContainer.getChild(monitor, name);
-        if (realObject instanceof DBSEntity) {
-            return (DBSEntity) realObject;
+        if (realObject instanceof DBSEntity entity) {
+            return entity;
         }
         log.warn("Entity '" + name + "' not found in '" + realContainer.getName() + "'");
         return null;
