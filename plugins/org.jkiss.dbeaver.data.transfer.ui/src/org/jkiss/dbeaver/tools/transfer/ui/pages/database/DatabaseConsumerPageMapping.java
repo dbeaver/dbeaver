@@ -86,7 +86,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private Button autoAssignButton;
     private Button upButton;
     private Button downButton;
-    private Button mappingRules;
+    protected Button mappingRules;
     private ObjectContainerSelectorPanel containerPanel;
     private boolean firstInit = true;
     private String mappingErrorMessage;
