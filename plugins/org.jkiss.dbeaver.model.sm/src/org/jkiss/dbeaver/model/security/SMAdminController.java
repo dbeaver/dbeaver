@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.security;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.security.permissions.SMPermission;
 import org.jkiss.dbeaver.model.security.user.*;
 
 import java.util.List;
@@ -193,27 +192,6 @@ public interface SMAdminController extends SMController {
      * @throws DBException the db exception
      */
     void setSubjectPermissions(String subjectId, List<String> permissionIds, String grantorId) throws DBException;
-
-    /**
-     * Sets subject permissions.
-     *
-     * @param subjectId   the subject id
-     * @param permissions the permissions
-     * @param grantorId   the grantor id
-     * @throws DBException the db exception
-     */
-    void setGlobalSubjectPermissions(
-        @NotNull String subjectId,
-        @NotNull List<SMPermission> permissions,
-        @NotNull String grantorId
-    ) throws DBException;
-
-    void setGlobalDefaultPermissions(
-        @NotNull List<SMPermission> permissions,
-        @NotNull String grantorId
-    ) throws DBException;
-
-    List<SMPermission> getGlobalDefaultPermissions() throws DBException;
 
     /**
      * Delete all assigned object permissions for subject
