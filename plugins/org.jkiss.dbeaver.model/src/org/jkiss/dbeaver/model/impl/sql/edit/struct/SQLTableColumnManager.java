@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends DBSEntityAttribu
     }
 
     @Override
-    public boolean canEditObject(OBJECT_TYPE object)
+    public boolean canEditObject(@NotNull OBJECT_TYPE object)
     {
         DBSEntity table = object.getParentObject();
         return table != null && !DBUtils.isView(table);

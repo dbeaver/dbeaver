@@ -21,18 +21,12 @@ import org.jkiss.dbeaver.utils.NLS;
 public class CopilotMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.engine.copilot.CopilotMessages"; //$NON-NLS-1$
 
-    public static String gpt_preference_page_advanced_copilot_copy_button;
     public static String copilot_preference_page_token_info;
     public static String copilot_access_token;
-
     public static String copilot_access_token_authorize;
-
-    public static String oauth_user_dialog_code_title;
-
-    public static String oauth_success_title;
-    public static String oauth_success_message;
-
-    public static String oauth_code_request_message;
+    public static String oauth_auth_title;
+    public static String oauth_auth_success_message;
+    public static String oauth_auth_error_message;
 
     static {
         // initialize resource bundle

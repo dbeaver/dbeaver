@@ -149,6 +149,10 @@ public class DBNUtils {
             return;
         }
 
+        if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBPObjectWithOrdinalPosition) {
+            return;
+        }
+
         Comparator<DBNNode> comparator = null;
 
         if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {

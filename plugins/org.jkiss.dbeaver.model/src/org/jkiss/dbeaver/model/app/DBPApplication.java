@@ -151,7 +151,6 @@ public interface DBPApplication {
         return false;
     }
 
-
     /**
      * Returns last user activity time
      * @return -1 by default
