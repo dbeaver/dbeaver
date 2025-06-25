@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateDialog;
@@ -979,8 +980,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             if (Files.deleteIfExists(path)) {
                 DBeaverNotifications.showNotification(
                     DBeaverNotifications.NT_WORKBENCH_RESET,
-                    "Workbench Reset",
-                    "The user interface has been reset due to the major version update.\nAll editors have been closed, and the perspective has been reverted to its initial state.",
+                    CoreApplicationMessages.notification_workbench_reset_title,
+                    CoreApplicationMessages.notification_workbench_reset_message,
                     null,
                     null
                 );
