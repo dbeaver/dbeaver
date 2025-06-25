@@ -32,9 +32,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
-import java.sql.Time;
 import java.sql.Types;
-import java.time.LocalTime;
 import java.time.OffsetTime;
 import java.util.Date;
 
@@ -83,35 +81,16 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
         int index
     ) throws DBCException {
         if (resultSet instanceof JDBCResultSet jdbc) {
-            int typeID = type.getTypeID();
-
-            if (typeID == Types.TIME_WITH_TIMEZONE && !formatSettings.isUseNativeDateTimeFormat()) {
+            if (type.getTypeID() == Types.TIME && !formatSettings.isUseNativeDateTimeFormat()) {
                 try {
-                    OffsetTime ot = jdbc.getObject(index + 1, OffsetTime.class);
-                    return Time.valueOf(ot.toLocalTime());
+                    return jdbc.getObject(index + 1, OffsetTime.class);
                 } catch (SQLException e) {
-                    log.debug("Failed to fetch OffsetTime", e);
-                }
-            }
-
-            if (typeID == Types.TIME && !formatSettings.isUseNativeDateTimeFormat()) {
-                try {
-                    OffsetTime lt = jdbc.getObject(index + 1, OffsetTime.class);
-                    return Time.valueOf(lt.toLocalTime());
-                } catch (SQLException e) {
-                    try {
-                        String s = jdbc.getString(index + 1);
-                        LocalTime lt = LocalTime.parse(s);
-                        return Time.valueOf(lt);
-                    } catch (Exception ex) {
-                        log.debug("Fallback parse TIME as String failed", ex);
-                    }
+                    log.debug("Exception caught when fetching time value", e);
                 }
             }
         }
         return super.fetchValueObject(session, resultSet, type, index);
     }
-
 
     @Override
     public void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject type, int index, Object value) throws DBCException {
