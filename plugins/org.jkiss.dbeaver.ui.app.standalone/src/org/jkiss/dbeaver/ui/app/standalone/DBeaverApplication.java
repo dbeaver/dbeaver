@@ -995,14 +995,13 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     @Nullable
     private Path getWorkbenchSaveLocation(@NotNull Location instance) {
-        Path path;
         try {
-            path = RuntimeUtils.getLocalPathFromURL(instance.getURL());
+            var path = RuntimeUtils.getLocalPathFromURL(instance.getURL());
+            return path.resolve(".metadata/.plugins/org.eclipse.e4.workbench/workbench.xmi"); //$NON-NLS-1$
         } catch (IOException e) {
             log.error("Unable to resolve workbench save location: " + instance.getURL(), e);
             return null;
         }
-        return path.resolve(".metadata/.plugins/org.eclipse.e4.workbench/workbench.xmi"); //$NON-NLS-1$
     }
 
     private class ProxyPrintStream extends OutputStream {
