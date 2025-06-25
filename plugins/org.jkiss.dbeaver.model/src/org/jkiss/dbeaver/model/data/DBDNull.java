@@ -14,11 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.parser;
+package org.jkiss.dbeaver.model.data;
 
-public enum SQLParserActionKind {
-    SKIP_SUFFIX_TERM,
-    BEGIN_BLOCK,
-    CAPTURE_COMMAND,
-    BLOCK_HEADER
+/**
+ * Null value
+ */
+public class DBDNull implements DBDValue, DBDValueSurrogate {
+
+    public static final DBDNull INSTANCE = new DBDNull();
+
+    private DBDNull() {
+    }
+
+    @Override
+    public Object getRawValue() {
+        return null;
+    }
+
+    @Override
+    public boolean isNull() {
+        return true;
+    }
+
+    @Override
+    public boolean isModified() {
+        return false;
+    }
+
+    @Override
+    public void release() {
+
+    }
+
+    @Override
+    public String toString() {
+        return "NULL";
+    }
+
 }

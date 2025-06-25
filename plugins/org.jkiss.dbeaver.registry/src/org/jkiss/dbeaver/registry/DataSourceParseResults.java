@@ -14,11 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.sql.parser;
+package org.jkiss.dbeaver.registry;
 
-public enum SQLParserActionKind {
-    SKIP_SUFFIX_TERM,
-    BEGIN_BLOCK,
-    CAPTURE_COMMAND,
-    BLOCK_HEADER
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+class DataSourceParseResults {
+    public final Set<DBPDataSourceContainer> updatedDataSources = new LinkedHashSet<>();
+    public final Set<DBPDataSourceContainer> addedDataSources = new LinkedHashSet<>();
+    public final Set<DBPDataSourceFolder> addedFolders = new LinkedHashSet<>();
+    public final Set<DBPDataSourceFolder> updatedFolders = new LinkedHashSet<>();
 }
