@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,20 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Types;
+import java.time.LocalTime;
+import java.time.OffsetTime;
 import java.util.Date;
 
 /**
@@ -68,6 +74,44 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
     protected boolean isReadDateAsObject() {
         return true;
     }
+
+    @Override
+    public Object fetchValueObject(
+        @NotNull DBCSession session,
+        @NotNull DBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
+        int index
+    ) throws DBCException {
+        if (resultSet instanceof JDBCResultSet jdbc) {
+            int typeID = type.getTypeID();
+
+            if (typeID == Types.TIME_WITH_TIMEZONE && !formatSettings.isUseNativeDateTimeFormat()) {
+                try {
+                    OffsetTime ot = jdbc.getObject(index + 1, OffsetTime.class);
+                    return Time.valueOf(ot.toLocalTime());
+                } catch (SQLException e) {
+                    log.debug("Failed to fetch OffsetTime", e);
+                }
+            }
+
+            if (typeID == Types.TIME && !formatSettings.isUseNativeDateTimeFormat()) {
+                try {
+                    OffsetTime lt = jdbc.getObject(index + 1, OffsetTime.class);
+                    return Time.valueOf(lt.toLocalTime());
+                } catch (SQLException e) {
+                    try {
+                        String s = jdbc.getString(index + 1);
+                        LocalTime lt = LocalTime.parse(s);
+                        return Time.valueOf(lt);
+                    } catch (Exception ex) {
+                        log.debug("Fallback parse TIME as String failed", ex);
+                    }
+                }
+            }
+        }
+        return super.fetchValueObject(session, resultSet, type, index);
+    }
+
 
     @Override
     public void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject type, int index, Object value) throws DBCException {
