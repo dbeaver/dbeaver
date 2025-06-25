@@ -1015,6 +1015,9 @@ public class PostgreUtils {
         }
     }
 
+    /*
+       TODO consider using {@link org.jkiss.dbeaver.model.DBUtils#getConnectivityParameters(DBPConnectionConfiguration, DBPDriver)}.
+     */
     @Nullable
     public static String getDatabaseNameFromConfiguration(DBPConnectionConfiguration configuration) {
         String activeDatabaseName = null;
