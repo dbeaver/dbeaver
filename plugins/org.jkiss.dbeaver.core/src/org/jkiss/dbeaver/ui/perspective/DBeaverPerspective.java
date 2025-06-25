@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,11 +32,6 @@ import org.jkiss.dbeaver.ui.views.qm.QueryManagerView;
 public class DBeaverPerspective implements IPerspectiveFactory
 {
     public static final String PERSPECTIVE_ID = "org.jkiss.dbeaver.core.perspective"; //$NON-NLS-1$
-
-    // Every time the perspective changes, the version must be bumped.
-    // This also includes perspective extensions that contribute views.
-    // The version is not incremental.
-    public static final String PERSPECTIVE_VERSION = "25.1.0"; //$NON-NLS-1$
 
     public static final String FOLDER_NAVIGATION = "navigation"; //$NON-NLS-1$
     public static final String FOLDER_RIGHT = "right"; //$NON-NLS-1$
