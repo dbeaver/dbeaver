@@ -21,14 +21,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatChunk;
-import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
-import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatResponse;
-import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
+import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.http.HttpClient;
@@ -36,6 +35,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Flow;
 import java.util.concurrent.Future;
 import java.util.concurrent.SubmissionPublisher;
@@ -51,6 +53,7 @@ public class CopilotClient implements AutoCloseable {
 
     private static final String COPILOT_SESSION_TOKEN_URL = "https://api.github.com/copilot_internal/v2/token";
     private static final String CHAT_REQUEST_URL = "https://api.githubcopilot.com/chat/completions";
+    private static final String COPILOT_CHAT_MODELS_URL = "https://api.githubcopilot.com/models";
     private static final String EDITOR_VERSION = "Neovim/0.6.1"; // TODO replace after partnership
     private static final String EDITOR_PLUGIN_VERSION = "copilot.vim/1.16.0"; // TODO replace after partnership
     private static final String USER_AGENT = "GithubCopilot/1.155.0";
@@ -58,6 +61,7 @@ public class CopilotClient implements AutoCloseable {
     private static final String DBEAVER_OAUTH_APP = "Iv1.b507a08c87ecfe98";
 
     private final MonitoredHttpClient client = new MonitoredHttpClient(HttpClient.newBuilder().build());
+    private static Map<String, CopilotModel> models = new LinkedHashMap<>();
 
     /**
      * Request access to the user's account
@@ -221,6 +225,64 @@ public class CopilotClient implements AutoCloseable {
         return publisher;
     }
 
+    /**
+     * Retrieves a list of Copilot model IDs. If the current model list is empty or if a force refresh
+     * is required, it attempts to fetch and load models using the provided authentication token.
+     *
+     * @param monitor the progress monitor to report task progression and check for task cancellation
+     * @param token an authentication token used to fetch the models; can be null
+     * @param forceRefresh a boolean flag indicating whether to force a refresh of the model list
+     * @return a list of model IDs as strings; an empty list is returned if no models are available
+     */
+    public static List<String> getModels(@NotNull DBRProgressMonitor monitor, @Nullable String token, boolean forceRefresh) {
+        if ((models.isEmpty() || forceRefresh) && CommonUtils.isNotEmpty(token)) {
+            try (CopilotClient copilotClient = new CopilotClient()) {
+                copilotClient.loadModels(monitor, token);
+            } catch (Exception ex) {
+                DBWorkbench.getPlatformUI().showError(
+                    "Error reading model list",
+                    "Failed to read the model list",
+                    ex
+                );
+            }
+        }
+        if (models.isEmpty()) {
+            return List.of();
+        }
+        return models.values().stream().map(CopilotModel::id).toList();
+    }
+
+    /**
+     * Loads the available Copilot models by making an HTTP request to a specified endpoint.
+     * Filters the models by chat-specific criteria before returning them.
+     *
+     * @param monitor the progress monitor to check for task cancellation and update task progress
+     * @param token the authentication token required to authorize the HTTP request
+     * @return a list of chat-enabled Copilot models
+     * @throws DBException if the request fails or encounters an error during execution
+     */
+    public List<CopilotModel> loadModels(@NotNull DBRProgressMonitor monitor, @NotNull String token) throws DBException {
+        HttpRequest request = HttpRequest.newBuilder()
+            .header("Content-type", "application/json")
+            .uri(AIHttpUtils.resolve(COPILOT_CHAT_MODELS_URL))
+            .header("authorization", "Bearer " + token)
+            .header("Editor-Version", CHAT_EDITOR_VERSION)
+            .GET()
+            .timeout(TIMEOUT)
+            .build();
+
+        HttpResponse<String> response = client.send(monitor, request);
+        if (response.statusCode() == 200) {
+            CopilotModels copilotModels = GSON.fromJson(response.body(), CopilotModels.class);
+            List<CopilotModel> geminiModelList = copilotModels.filterByChat();
+            models = geminiModelList.stream()
+                .collect(LinkedHashMap::new, (map, model) -> map.put(model.name(), model), LinkedHashMap::putAll);
+            return geminiModelList;
+        } else {
+            throw new DBException("Request failed: status=" + response.statusCode() + ", body=" + response.body());
+        }
+    }
+
     @Override
     public void close() {
         client.close();
@@ -257,4 +319,5 @@ public class CopilotClient implements AutoCloseable {
         @SerializedName("access_token") String accessToken
     ) {
     }
+
 }
