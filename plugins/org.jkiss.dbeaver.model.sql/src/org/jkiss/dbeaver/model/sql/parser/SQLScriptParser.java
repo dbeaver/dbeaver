@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
+import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -137,7 +138,16 @@ public class SQLScriptParser {
             int tokenOffset = ruleScanner.getTokenOffset();
             int tokenLength = ruleScanner.getTokenLength();
 
-            SQLTokenType tokenType = token instanceof TPTokenDefault ? (SQLTokenType) ((TPTokenDefault)token).getData() : SQLTokenType.T_OTHER;
+            if (tokenOffset + tokenLength > document.getLength()) {
+                log.debug("Token location is outside of the document boundaries during query parsing");
+                token = TPTokenAbstract.EOF;
+                tokenOffset = document.getLength();
+                tokenLength = 0;
+            }
+
+            SQLTokenType tokenType = token instanceof TPTokenDefault tpTokenDefault
+                ? (SQLTokenType) tpTokenDefault.getData()
+                : SQLTokenType.T_OTHER;
             if (tokenOffset < startPos) {
                 // This may happen with EOF tokens (bug in jface?)
                 return null;
@@ -212,8 +222,10 @@ public class SQLScriptParser {
                     // that block is not preceded by the prefix e.g 'AS', because in many dialects
                     // there's no direct header block terminators
                     // like 'BEGIN ... END' but 'DECLARE ... BEGIN ... END'
-                    if (curBlock != null && curBlock.isHeader && !ArrayUtils.containsIgnoreCase(dialect.getInnerBlockPrefixes(), lastKeyword)) {
-                        curBlock = curBlock.parent;
+                    if (curBlock != null && curBlock.isHeader) {
+                        if (curBlock.isPredicateHeaderBlock || !ArrayUtils.containsIgnoreCase(dialect.getInnerBlockPrefixes(), lastKeyword)) {
+                            curBlock = curBlock.parent;
+                        }
                     }
                     curBlock = new ScriptBlockInfo(curBlock, false);
                     hasBlocks = true;
@@ -277,6 +289,11 @@ public class SQLScriptParser {
 
                     if (actionKind == SQLParserActionKind.SKIP_SUFFIX_TERM) {
                         continue;
+                    }
+
+                    if (actionKind == SQLParserActionKind.BLOCK_HEADER) {
+                        curBlock = new ScriptBlockInfo(curBlock, true, true);
+                        hasBlocks = true;
                     }
                 }
 
@@ -1107,11 +1124,17 @@ public class SQLScriptParser {
         final ScriptBlockInfo parent;
         final String togglePattern;
         boolean isHeader; // block started by DECLARE, FUNCTION, etc
+        boolean isPredicateHeaderBlock;
 
         ScriptBlockInfo(ScriptBlockInfo parent, boolean isHeader) {
             this.parent = parent;
             this.togglePattern = null;
             this.isHeader = isHeader;
+        }
+
+        ScriptBlockInfo(ScriptBlockInfo parent, boolean isHeader, boolean isPredicateHeaderBlock) {
+            this(parent, isHeader);
+            this.isPredicateHeaderBlock = isPredicateHeaderBlock;
         }
 
         ScriptBlockInfo(ScriptBlockInfo parent, String togglePattern) {

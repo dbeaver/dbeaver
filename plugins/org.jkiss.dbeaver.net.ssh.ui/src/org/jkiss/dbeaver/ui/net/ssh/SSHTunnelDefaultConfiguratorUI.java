@@ -526,26 +526,11 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         enableTunnelSharingCheck.setSelection(configuration.getBooleanProperty(SSHConstants.PROP_SHARE_TUNNELS, true));
 
         localHostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_LOCAL_HOST)));
-        int lpValue = configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT);
-        if (lpValue != 0) {
-            localPortSpinner.setText(String.valueOf(lpValue));
-        }
-
+        localPortSpinner.setText(String.valueOf(configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT)));
         remoteHostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_REMOTE_HOST)));
-        int rpValue = configuration.getIntProperty(SSHConstants.PROP_REMOTE_PORT);
-        if (rpValue != 0) {
-            remotePortSpinner.setText(String.valueOf(rpValue));
-        }
-
-        int kaValue = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL);
-        if (kaValue != 0) {
-            keepAliveText.setText(String.valueOf(kaValue));
-        }
-
-        int timeoutValue = configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT);
-        if (timeoutValue != 0) {
-            tunnelTimeout.setText(String.valueOf(timeoutValue));
-        }
+        remotePortSpinner.setText(String.valueOf(configuration.getIntProperty(SSHConstants.PROP_REMOTE_PORT)));
+        keepAliveText.setText(String.valueOf(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL)));
+        tunnelTimeout.setText(String.valueOf(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT)));
 
         savedConfiguration = new DBWHandlerConfiguration(configuration);
 
