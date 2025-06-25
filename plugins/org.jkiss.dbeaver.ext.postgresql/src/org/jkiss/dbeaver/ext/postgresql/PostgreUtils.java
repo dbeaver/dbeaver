@@ -1016,6 +1016,9 @@ public class PostgreUtils {
         }
     }
 
+    /*
+       TODO consider using {@link org.jkiss.dbeaver.model.DBUtils#getConnectivityParameters(DBPConnectionConfiguration, DBPDriver)}.
+     */
     @Nullable
     public static String getDatabaseNameFromConfiguration(DBPConnectionConfiguration configuration) {
         String activeDatabaseName = null;
@@ -1026,7 +1029,7 @@ public class PostgreUtils {
             }
         } else {
             String url = configuration.getUrl();
-            Pattern pattern = Pattern.compile("jdbc:postgresql://[^/]+/([^?#]+)");
+            Pattern pattern = Pattern.compile("^.*?://[^/]+/([^?#]+)(?:[?#].*)?$");
             Matcher matcher = pattern.matcher(url);
             if (matcher.find()) {
                 activeDatabaseName = matcher.group(1).replace("%2F", "/");
