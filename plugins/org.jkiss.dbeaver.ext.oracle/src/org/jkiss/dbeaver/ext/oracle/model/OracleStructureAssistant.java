@@ -332,7 +332,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                     if (objectType != null && objectType.isBrowsable() && oracleObjectTypes.contains(objectType)) {
                         OracleSchema objectSchema = this.dataSource.getSchema(session.getProgressMonitor(), schemaName);
                         if (objectSchema == null) {
-                            log.debug("Schema '" + schemaName + "' not found. Probably was filtered");
+                            log.trace("Schema '" + schemaName + "' not found. Probably was filtered");
                             continue;
                         }
                         addObjectReference(objects, objectName, objectSchema, objectType, objectTypeName, schemaName, session);
@@ -403,7 +403,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant<OracleExe
                     }
                     OracleSchema objectSchema = dataSource.getSchema(session.getProgressMonitor(), owner);
                     if (objectSchema == null) {
-                        log.debug("Schema '" + owner + "' not found. Probably was filtered");
+                        log.trace("Schema '" + owner + "' not found. Probably was filtered");
                         continue;
                     }
                     addObjectReference(objects, tableName, objectSchema, oracleObjectType, tableType, owner, session);
