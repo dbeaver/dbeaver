@@ -66,25 +66,31 @@ public class SQLQueryRowsSourceContext {
     private final Map<SQLQueryComplexName, KnownRowsSourceInfo> rowsSources;
 
     @NotNull
-    private final Map<SQLQueryComplexName, KnownRowsSourceInfo> dynamicTableSources;
+    private final Map<String, KnownRowsSourceInfo> dynamicTableSources;
+
+    @NotNull
+    private final Map<String, KnownRowsSourceInfo> sourcesByLoweredAlias;
 
     public SQLQueryRowsSourceContext(@NotNull SQLQueryConnectionContext connectionInfo) {
         this.connectionInfo = connectionInfo;
         this.hasUnresolvedSource = false;
         this.rowsSources = Collections.emptyMap();
         this.dynamicTableSources = Collections.emptyMap();
+        this.sourcesByLoweredAlias = Collections.emptyMap();
     }
 
     private SQLQueryRowsSourceContext(
         @NotNull SQLQueryConnectionContext connectionInfo,
         boolean hasUnresolvedSource,
         @NotNull Map<SQLQueryComplexName, KnownRowsSourceInfo> rowsSources,
-        @NotNull Map<SQLQueryComplexName, KnownRowsSourceInfo> dynamicTableSources
+        @NotNull Map<String, KnownRowsSourceInfo> dynamicTableSources,
+        @NotNull Map<String, KnownRowsSourceInfo> sourcesByLoweredAlias
     ) {
         this.connectionInfo = connectionInfo;
         this.hasUnresolvedSource = hasUnresolvedSource;
         this.rowsSources = rowsSources;
         this.dynamicTableSources = dynamicTableSources;
+        this.sourcesByLoweredAlias = sourcesByLoweredAlias;
     }
 
     @NotNull
@@ -117,7 +123,7 @@ public class SQLQueryRowsSourceContext {
      */
     @Nullable
     public KnownRowsSourceInfo findDynamicRowsSource(@NotNull SQLQueryComplexName name) {
-        return this.dynamicTableSources.get(name);
+        return name.getParts().size() == 1 ? this.dynamicTableSources.get(name.getParts().getFirst().toLowerCase()) : null;
     }
 
     /**
@@ -128,16 +134,21 @@ public class SQLQueryRowsSourceContext {
      */
     @Nullable
     public KnownRowsSourceInfo findReferencedSource(@NotNull SQLQueryComplexName name) {
+        KnownRowsSourceInfo result = null;
         SQLQueryComplexName namePart = name;
         while (namePart != null) {
             KnownRowsSourceInfo entry = this.rowsSources.get(namePart);
             if (entry != null) {
-                return entry;
+                result = entry;
+                break;
             } else {
                 namePart = namePart.trimEnd();
             }
         }
-        return null;
+        if (result == null && name.getParts().size() == 1) {
+            result = this.findSourceByAlias(name.getParts().get(0));
+        }
+        return result;
     }
 
     /**
@@ -145,7 +156,16 @@ public class SQLQueryRowsSourceContext {
      */
     @Nullable
     public KnownRowsSourceInfo findReferencedSourceExact(@NotNull SQLQueryComplexName name) {
-        return this.rowsSources.get(name);
+        KnownRowsSourceInfo result = this.rowsSources.get(name);
+        if (result == null && name.getParts().size() == 1) {
+            result = this.findSourceByAlias(name.getParts().get(0));
+        }
+        return result;
+    }
+
+    @Nullable
+    private KnownRowsSourceInfo findSourceByAlias(@NotNull String aliasName) {
+        return this.sourcesByLoweredAlias.get(aliasName.toLowerCase());
     }
 
     /**
@@ -157,6 +177,11 @@ public class SQLQueryRowsSourceContext {
             {
                 putAll(other.rowsSources);
                 putAll(SQLQueryRowsSourceContext.this.rowsSources);
+            }
+        }, new HashMap<>() {
+            {
+                putAll(other.sourcesByLoweredAlias);
+                putAll(SQLQueryRowsSourceContext.this.sourcesByLoweredAlias);
             }
         });
     }
@@ -175,7 +200,7 @@ public class SQLQueryRowsSourceContext {
                 putAll(SQLQueryRowsSourceContext.this.rowsSources);
                 put(name, new KnownRowsSourceInfo(source, name, tableOrNull, null));
             }
-        });
+        }, this.sourcesByLoweredAlias);
     }
 
     /**
@@ -183,19 +208,25 @@ public class SQLQueryRowsSourceContext {
      */
     @NotNull
     public final SQLQueryRowsSourceContext appendAlias(@NotNull SQLQueryRowsSourceModel source, @NotNull SQLQuerySymbol alias) {
+        KnownRowsSourceInfo entry = this.rowsSources.values().stream().filter(s -> s.source == source).findFirst().orElse(null);
+        KnownRowsSourceInfo newEntry;
+        if (entry != null) {
+            newEntry = new KnownRowsSourceInfo(entry.source, entry.referenceName, entry.tableOrNull, alias);
+        } else {
+            newEntry = new KnownRowsSourceInfo(source, null, null, alias);
+        }
         return this.setRowsSources(new HashMap<>() {
             {
                 putAll(SQLQueryRowsSourceContext.this.rowsSources);
-
-                KnownRowsSourceInfo entry = this.values().stream().filter(s -> s.source == source).findFirst().orElse(null);
-                KnownRowsSourceInfo newEntry;
                 if (entry != null) {
-                    newEntry = new KnownRowsSourceInfo(entry.source, entry.referenceName, entry.tableOrNull, alias);
                     put(entry.referenceName, newEntry);
-                } else {
-                    newEntry = new KnownRowsSourceInfo(source, null, null, alias);
                 }
                 put(new SQLQueryComplexName(alias.getName()), newEntry);
+            }
+        }, new HashMap<>() {
+            {
+                putAll(SQLQueryRowsSourceContext.this.sourcesByLoweredAlias);
+                put(alias.getName().toLowerCase(), newEntry);
             }
         });
     }
@@ -207,7 +238,7 @@ public class SQLQueryRowsSourceContext {
     public final SQLQueryRowsSourceContext appendCteSources(@NotNull List<Pair<SQLQuerySymbolEntry, SQLQueryRowsSourceModel>> sources) {
         return this.setDynamicRowsSources(new HashMap<>() {
             {
-                putAll(SQLQueryRowsSourceContext.this.rowsSources);
+                putAll(SQLQueryRowsSourceContext.this.dynamicTableSources);
                 for (Pair<SQLQuerySymbolEntry, ? extends SQLQueryRowsSourceModel> entry : sources) {
                     SQLQuerySymbolEntry alias = entry.getFirst();
                     if (alias != null) {
@@ -215,7 +246,7 @@ public class SQLQueryRowsSourceContext {
                         SQLQueryComplexName name = new SQLQueryComplexName(new SQLQueryQualifiedName(
                             alias.getSyntaxNode(), Collections.emptyList(), alias, 0, null
                         ));
-                        put(name, new KnownRowsSourceInfo(sourceModel, name, null, alias.getSymbol()));
+                        put(alias.getName().toLowerCase(), new KnownRowsSourceInfo(sourceModel, name, null, alias.getSymbol()));
                     }
                 }
             }
@@ -308,13 +339,28 @@ public class SQLQueryRowsSourceContext {
     }
 
     @NotNull
-    private SQLQueryRowsSourceContext setRowsSources(@NotNull Map<SQLQueryComplexName, KnownRowsSourceInfo> rowsSources) {
-        return new SQLQueryRowsSourceContext(this.connectionInfo, this.hasUnresolvedSource, rowsSources, this.dynamicTableSources);
+    private SQLQueryRowsSourceContext setRowsSources(
+        @NotNull Map<SQLQueryComplexName, KnownRowsSourceInfo> rowsSources,
+        @NotNull Map<String, KnownRowsSourceInfo> sourcesByLoweredAlias
+    ) {
+        return new SQLQueryRowsSourceContext(
+            this.connectionInfo,
+            this.hasUnresolvedSource,
+            rowsSources,
+            this.dynamicTableSources,
+            sourcesByLoweredAlias
+        );
     }
 
     @NotNull
-    private SQLQueryRowsSourceContext setDynamicRowsSources(@NotNull Map<SQLQueryComplexName, KnownRowsSourceInfo> dynamicTableSources) {
-        return new SQLQueryRowsSourceContext(this.connectionInfo, this.hasUnresolvedSource, this.rowsSources, dynamicTableSources);
+    private SQLQueryRowsSourceContext setDynamicRowsSources(@NotNull Map<String, KnownRowsSourceInfo> dynamicTableSources) {
+        return new SQLQueryRowsSourceContext(
+            this.connectionInfo,
+            this.hasUnresolvedSource,
+            this.rowsSources,
+            dynamicTableSources,
+            this.sourcesByLoweredAlias
+        );
     }
 
 }
