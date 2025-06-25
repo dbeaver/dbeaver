@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
@@ -110,6 +111,14 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String STARTUP_ACTIONS_FILE = "dbeaver-startup-actions.properties";
     private static final String RESET_USER_PREFERENCES = "reset_user_preferences";
     private static final String RESET_WORKSPACE_CONFIGURATION = "reset_workspace_configuration";
+
+    // Every time the workbench's UI changes, the version must be changed, so the cached UI state can be reset.
+    // This includes view and editor icons and labels, as well as perspective extensions that contribute views.
+    // The version is not incremental.
+    private static final String WORKBENCH_VERSION = "25.1.2"; //$NON-NLS-1$
+
+    // See WORKBENCH_VERSION
+    private static final String PROP_WORKBENCH_VERSION = "dbeaver.workbenchVersion"; //$NON-NLS-1$
 
     private final String WORKSPACE_DIR_6; //$NON-NLS-1$
     private final Path FILE_WITH_WORKSPACES;
@@ -283,6 +292,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         DBWorkbench.getPlatform();
 
+        resetWorkbenchIfNeeded(instanceLoc);
         initializeApplication();
 
         // Run instance server
@@ -948,6 +958,50 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 return FileVisitResult.CONTINUE;
             }
         });
+    }
+
+    private void resetWorkbenchIfNeeded(@NotNull Location instance) {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        String savedVersion = CommonUtils.nullIfEmpty(store.getString(PROP_WORKBENCH_VERSION));
+        String actualVersion = WORKBENCH_VERSION;
+        if (!CommonUtils.isEmpty(savedVersion) && savedVersion.equals(actualVersion)) {
+            return;
+        }
+
+        Path path = getWorkbenchSaveLocation(instance);
+        if (path == null) {
+            return;
+        }
+
+        log.debug("Resetting workbench due to the version change (" + savedVersion + " -> " + actualVersion + ")");
+
+        try {
+            if (Files.deleteIfExists(path)) {
+                DBeaverNotifications.showNotification(
+                    DBeaverNotifications.NT_WORKBENCH_RESET,
+                    "Workbench Reset",
+                    "The user interface has been reset due to the major version update.\nAll editors have been closed, and the perspective has been reverted to its initial state.",
+                    null,
+                    null
+                );
+            }
+        } catch (IOException e) {
+            log.error("Unable to delete workbench save file: " + path, e);
+        }
+
+        store.setValue(PROP_WORKBENCH_VERSION, actualVersion);
+    }
+
+    @Nullable
+    private Path getWorkbenchSaveLocation(@NotNull Location instance) {
+        Path path;
+        try {
+            path = RuntimeUtils.getLocalPathFromURL(instance.getURL());
+        } catch (IOException e) {
+            log.error("Unable to resolve workbench save location: " + instance.getURL(), e);
+            return null;
+        }
+        return path.resolve(".metadata/.plugins/org.eclipse.e4.workbench/workbench.xmi"); //$NON-NLS-1$
     }
 
     private class ProxyPrintStream extends OutputStream {
