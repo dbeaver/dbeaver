@@ -566,6 +566,7 @@ public class SQLEditor extends SQLEditorBase implements
             // Close context in separate job (otherwise it can block UI)
             new CloseContextJob(isolatedExecutionContext).schedule();
         }
+        isolatedExecutionContext = null;
         curDataSource = null;
     }
 
