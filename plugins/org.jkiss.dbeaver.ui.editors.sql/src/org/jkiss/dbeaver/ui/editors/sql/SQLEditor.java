@@ -420,7 +420,7 @@ public class SQLEditor extends SQLEditorBase implements
             datasourceChanged = true;
         }
         if (container == dataSourceContainer) {
-            return true;
+            return false;
         }
 
         // Release ds container
@@ -490,7 +490,7 @@ public class SQLEditor extends SQLEditorBase implements
         return true;
     }
 
-    private void updateDataSourceContainer() {
+    private boolean updateDataSourceContainer() {
         DBPDataSourceContainer inputDataSource = null;
         if (SQLEditorBase.isReadEmbeddedBinding()) {
             // Try to get datasource from contents (always, no matter what )
@@ -506,7 +506,7 @@ public class SQLEditor extends SQLEditorBase implements
                 inputDataSource = dsp.getDataSourceContainer();
             }
         }
-        setDataSourceContainer(inputDataSource);
+        return setDataSourceContainer(inputDataSource);
     }
 
     private void updateExecutionContext(Runnable onSuccess) {
