@@ -77,13 +77,12 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
     private static final String TARGET_NAME_BROWSE = "[browse]";
     private final List<DatabaseMappingContainer> model = new ArrayList<>();
-    private TreeViewer mappingViewer;
+    protected TreeViewer mappingViewer;
     protected Composite buttonsPanel;
     private Button mapTableButton;
     private Button configureButton;
     private Button previewButton;
     private Button loadMappingsButton;
-    private Button autoAssignButton;
     private Button upButton;
     private Button downButton;
     protected Button mappingRules;
@@ -293,18 +292,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 });
             mappingRules.setEnabled(false);
 
-            autoAssignButton = UIUtils.createDialogButton(buttonsPanel,
-                DTMessages.data_transfer_db_consumer_auto_assign,
-                UIIcon.ASTERISK,
-                DTMessages.data_transfer_db_consumer_auto_assign_description,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        autoAssignMappings();
-                    }
-                });
-
             mappingViewer.getTree().addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyReleased(KeyEvent e) {
@@ -344,7 +331,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                                 selectNextColumn(item);
                             }
                             updated = true;
-                        } else if (e.keyCode == SWT.INSERT) {
+                        } else if (e.keyCode == SWT.SHIFT) {
                             TreeItem[] selection = mappingViewer.getTree().getSelection();
                             if (selection.length > 0) {
                                 mappingViewer.editElement(selection[0].getData(), 1);
@@ -853,12 +840,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             @Override
             protected Button createButton(Composite parent) {
-                if (isContainer) {
-                    Button button = new Button(parent, SWT.PUSH | SWT.NO_FOCUS);
-                    button.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
-                    return button;
-                }
-                return null;
+                Button button = new Button(parent, SWT.PUSH | SWT.NO_FOCUS);
+                button.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
+                return button;
             }
 
             @Override
@@ -1055,18 +1039,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         updatePageCompletion();
     }
 
-    private void updateAutoAssign() {
-        boolean hasUnassigned = false;
-        final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
-        for (DatabaseMappingContainer mapping : settings.getDataMappings().values()) {
-            if (mapping.getMappingType() == DatabaseMappingType.unspecified || mapping.getMappingType() == DatabaseMappingType.skip) {
-                hasUnassigned = true;
-                break;
-            }
-        }
-        autoAssignButton.setEnabled(hasUnassigned);
-    }
-
     private void mapExistingTable(@NotNull DatabaseMappingContainer mapping) {
         mapExistingTables(new DatabaseMappingContainer[]{mapping});
     }
@@ -1128,7 +1100,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         }
     }
 
-    private void updateMappingsAndButtons() {
+    public void updateMappingsAndButtons() {
         mappingViewer.refresh();
         mappingViewer.setSelection(mappingViewer.getSelection());
     }
@@ -1387,7 +1359,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     @Override
     protected void updatePageCompletion() {
         super.updatePageCompletion();
-        updateAutoAssign();
     }
 
     private DataTransferAttributeTransformerDescriptor getTransformer(Object element) {
