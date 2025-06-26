@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -463,7 +464,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     @Override
-    public void handleDataSourceEvent(DBPEvent event) {
+    public void handleDataSourceEvent(@NotNull DBPEvent event) {
         if (event.getObject() == vEntity) {
             UIUtils.asyncExec(() -> refreshPart(event, true));
         }

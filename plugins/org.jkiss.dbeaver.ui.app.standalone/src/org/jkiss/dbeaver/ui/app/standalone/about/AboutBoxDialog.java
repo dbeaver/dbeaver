@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -224,7 +224,7 @@ public class AboutBoxDialog extends InformationDialog
         gd.horizontalAlignment = GridData.CENTER;
         authorLabel.setLayoutData(gd);
 
-        Link siteLink = UIUtils.createLink(group, UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_WEBSITE)), new SelectionAdapter() {
+        Link siteLink = UIUtils.createLink(group, "   " + UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_WEBSITE)) + "   ", new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 ShellUtils.launchProgram(e.text);

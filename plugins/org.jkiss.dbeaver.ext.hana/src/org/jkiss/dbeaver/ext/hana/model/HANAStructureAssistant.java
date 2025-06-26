@@ -186,7 +186,7 @@ public class HANAStructureAssistant extends JDBCStructureAssistant<JDBCExecution
                     }
                     GenericSchema schema = parentSchema != null ? parentSchema : dataSource.getSchema(schemaName);
                     if (schema == null) {
-                        log.debug("Schema '" + schemaName + "' not found. Probably was filtered");
+                        log.trace("Schema '" + schemaName + "' not found. Probably was filtered");
                         continue;
                     }
 

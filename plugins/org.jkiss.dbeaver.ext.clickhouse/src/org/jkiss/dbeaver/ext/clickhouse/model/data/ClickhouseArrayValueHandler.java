@@ -44,6 +44,7 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
     public static final ClickhouseArrayValueHandler INSTANCE = new ClickhouseArrayValueHandler();
     public static final String ARRAY_DELIMITER = ",";
     public static final Set<Character> QUOTED_CHARS = Set.of('[', ']', '"', ' ', '\\');
+    public static final String DEFAULT_ARRAY_TYPE_NAME = "Array(String)";
 
     @Override
     protected boolean convertSingleValueToArray() {
@@ -72,17 +73,21 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
             return super.getValueFromObject(session, type, object, copy, validateValue);
         }
 
-        final ClickhouseArrayType arrayType;
+        ClickhouseArrayType arrayType;
         try {
             arrayType = (ClickhouseArrayType) ClickhouseTypeParser.getType(
                 session.getProgressMonitor(),
                 (ClickhouseDataSource) session.getDataSource(),
                 type.getTypeName()
             );
+            if (arrayType == null) {
+                arrayType = (ClickhouseArrayType) ClickhouseTypeParser.getType(
+                    session.getProgressMonitor(),
+                    (ClickhouseDataSource) session.getDataSource(),
+                    DEFAULT_ARRAY_TYPE_NAME
+                );
+            }
         } catch (DBException e) {
-            throw new DBCException("Can't resolve data type " + type.getFullTypeName());
-        }
-        if (arrayType == null) {
             throw new DBCException("Can't resolve data type " + type.getFullTypeName());
         }
 
@@ -215,6 +220,8 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
             case NUMERIC:
                 return false;
             case STRING:
+            case DATETIME:
+            case UNKNOWN:
                 return true;
             default:
                 break;

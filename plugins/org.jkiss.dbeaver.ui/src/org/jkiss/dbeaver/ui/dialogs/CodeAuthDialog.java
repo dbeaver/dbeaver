@@ -26,6 +26,7 @@ import org.eclipse.jface.widgets.TextFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -88,7 +89,10 @@ public class CodeAuthDialog extends Dialog implements BlockingPopupDialog {
             .create(composite);
 
         userCodeText.addFocusListener(FocusListener.focusGainedAdapter(e -> userCodeText.selectAll()));
+        userCodeText.addMouseListener(MouseListener.mouseUpAdapter(e -> userCodeText.selectAll()));
         userCodeText.setFocus();
+
+        UIUtils.asyncExec(() -> composite.layout(true, true));
 
         return composite;
     }

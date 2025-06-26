@@ -122,8 +122,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -3427,7 +3427,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void handleDataSourceEvent(DBPEvent event) {
+    public void handleDataSourceEvent(@NotNull DBPEvent event) {
         if (event.getObject() instanceof DBVEntity &&
             event.getData() instanceof DBVEntityForeignKey &&
             event.getObject() == model.getVirtualEntity(false))
