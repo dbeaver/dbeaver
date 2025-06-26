@@ -137,6 +137,11 @@ public class MySQLPartition extends MySQLTable implements DBSTablePartition {
         return table;
     }
 
+    @Override
+    public boolean needFullPath() {
+        return false;
+    }
+
     @Nullable
     @Override
     public MySQLPartition getPartitionParent() {
