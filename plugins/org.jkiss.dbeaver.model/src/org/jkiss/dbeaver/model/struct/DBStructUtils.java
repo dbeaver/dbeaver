@@ -583,13 +583,40 @@ public final class DBStructUtils {
      */
     @Nullable
     public static String getObjectSchema(@NotNull DBSObject dbsObject) {
-        if (dbsObject instanceof DBSSchema || dbsObject instanceof DBSCatalog) {
+        if (dbsObject instanceof DBSSchema) {
             return dbsObject.getName();
         }
 
         DBSObject parent = dbsObject;
         while (parent != null) {
-            if (parent instanceof DBSSchema || dbsObject instanceof DBSCatalog) {
+            if (parent instanceof DBSSchema) {
+                return parent.getName();
+            }
+            parent = parent.getParentObject();
+        }
+
+        return null;
+    }
+
+    /**
+     * Retrieves the catalog name associated with the provided database object.
+     */
+    @Nullable
+    public static String getObjectCatalog(@NotNull DBSObject dbsObject) {
+        if (dbsObject instanceof DBSCatalog) {
+            return dbsObject.getName();
+        }
+
+        if (dbsObject instanceof DBSSchema) {
+            DBSObject parent = dbsObject.getParentObject();
+            if (parent instanceof DBSCatalog) {
+                return parent.getName();
+            }
+        }
+
+        DBSObject parent = dbsObject;
+        while (parent != null) {
+            if (parent instanceof DBSCatalog) {
                 return parent.getName();
             }
             parent = parent.getParentObject();

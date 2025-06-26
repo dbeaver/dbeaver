@@ -59,22 +59,21 @@ public class AIPromptBuilder {
     public static AIPromptBuilder createForDataSource(@Nullable DBSLogicalDataSource dataSource, @NotNull AIPromptFormatter formatter) {
         AIPromptBuilder promptBuilder = new AIPromptBuilder();
 
-        return fullForDataSource(promptBuilder, dataSource, formatter, null);
+        return fullForDataSource(promptBuilder, dataSource, formatter);
     }
 
     @NotNull
     public static AIPromptBuilder fullForDataSource(
         @NotNull AIPromptBuilder promptBuilder,
         @Nullable DBSLogicalDataSource dataSource,
-        @NotNull AIPromptFormatter formatter,
-        @Nullable String customSchema
+        @NotNull AIPromptFormatter formatter
     ) {
         if (promptBuilder.isUseSqlGenerateInstructions()) {
             promptBuilder.addInstructions(promptBuilder.createInstructionList(dataSource));
             promptBuilder.addInstructions(formatter.getExtraInstructions().toArray(new String[0]));
         }
 
-        promptBuilder.addContexts(describeContext(dataSource, customSchema));
+        promptBuilder.addContexts(describeContext(dataSource));
 
         return promptBuilder;
     }
@@ -186,10 +185,6 @@ public class AIPromptBuilder {
     }
 
     private static String[] describeContext(@Nullable DBSLogicalDataSource dataSource) {
-        return describeContext(dataSource, null);
-    }
-
-    private static String[] describeContext(@Nullable DBSLogicalDataSource dataSource, @Nullable String customSchema) {
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
             SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
         List<String> lines = new ArrayList<>();
@@ -199,9 +194,13 @@ public class AIPromptBuilder {
             DBPDataSource ds = dataSource.getDataSourceContainer().getDataSource();
             DBPDataSourceInfo dsInfo = ds == null ? null : ds.getInfo();
 
-            String currentSchema = customSchema != null ? customSchema : dataSource.getCurrentSchema();
+            String currentSchema = dataSource.getCurrentSchema();
             if (!CommonUtils.isEmpty(currentSchema)) {
-                lines.add("Current " + (dsInfo == null ? "schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);
+                lines.add("Current " + (dsInfo == null ? "Schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);
+            }
+            String currentCatalog = dataSource.getCurrentCatalog();
+            if (!CommonUtils.isEmpty(currentCatalog)) {
+                lines.add("Current " + (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()) + ": " + currentCatalog);
             }
 
             if (dataSource.getDataSourceContainer() instanceof DataSourceDescriptor) {
