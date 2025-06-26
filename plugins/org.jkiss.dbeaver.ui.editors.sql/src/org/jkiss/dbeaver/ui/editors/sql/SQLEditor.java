@@ -254,6 +254,7 @@ public class SQLEditor extends SQLEditorBase implements
     private final List<ServerOutputInfo> serverOutputs = new ArrayList<>();
     private ScriptAutoSaveJob scriptAutoSavejob;
     private boolean isResultSetAutoFocusEnabled = true;
+    private boolean isShowScriptRulerOnExecution = true;
     private Boolean isDisableFetchResultSet = null;
     private boolean datasourceChanged;
     private volatile boolean isPartControlInitialized = false;
@@ -308,6 +309,14 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void setResultSetAutoFocusEnabled(boolean value) {
         isResultSetAutoFocusEnabled = value;
+    }
+
+    public boolean getShowScriptRulerOnExecution() {
+        return isShowScriptRulerOnExecution;
+    }
+
+    public void setShowScriptRulerOnExecution(boolean value) {
+        isShowScriptRulerOnExecution = value;
     }
 
     @Override
@@ -3973,7 +3982,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             // Prepare execution job
             {
-                showScriptPositionRuler(true);
+                showScriptPositionRuler(isShowScriptRulerOnExecution);
                 QueryResultsContainer resultsContainer = getFirstResults();
 
                 SQLEditorQueryListener listener = new SQLEditorQueryListener(this, closeTabOnError);
