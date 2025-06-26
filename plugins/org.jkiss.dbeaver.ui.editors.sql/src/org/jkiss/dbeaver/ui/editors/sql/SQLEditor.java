@@ -3434,7 +3434,7 @@ public class SQLEditor extends SQLEditorBase implements
                                 // Active schema was changed? Update title and tooltip
                                 firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
                             }
-                            return;
+                            break;
                         case BEFORE_CONNECT:
                         case AFTER_CONNECT:
                             break;
