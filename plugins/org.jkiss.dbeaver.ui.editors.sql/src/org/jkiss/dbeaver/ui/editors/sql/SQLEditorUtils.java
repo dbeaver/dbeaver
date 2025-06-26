@@ -329,7 +329,7 @@ public class SQLEditorUtils {
                     }
                 }
             }
-            return SQLUtils.getScriptDescripion(sql.toString());
+            return SQLUtils.getScriptDescription(sql.toString());
         } catch (Exception e) {
             log.warn("", e);
         }

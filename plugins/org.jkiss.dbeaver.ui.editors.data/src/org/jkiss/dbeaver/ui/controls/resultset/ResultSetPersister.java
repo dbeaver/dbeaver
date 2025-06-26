@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -833,16 +833,8 @@ class ResultSetPersister {
                             session,
                             DBDAttributeValue.getAttributes(statement.keyAttributes),
                             new ExecutionSource(dataContainer))) {
-                            batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
-                            if (generateScript) {
-                                batch.generatePersistActions(session, script, options);
-                            } else {
-                                DBCStatistics bs = batch.execute(session, options);
-                                // Notify rsv container about statement execute
-                                this.notifyContainer(bs);
-
-                                deleteStats.accumulate(bs);
-                            }
+                            Object[] attributes = new Object[statement.keyAttributes.size()];
+                            extractDataAndProcessBatch(session, options, statement, batch, attributes, deleteStats);
                         }
                         processStatementChanges(statement);
                     } catch (DBException e) {
@@ -894,20 +886,7 @@ class ResultSetPersister {
                             for (int i = 0; i < statement.updateAttributes.size(); i++) {
                                 attributes[i] = statement.updateAttributes.get(i).getValue();
                             }
-                            for (int i = 0; i < statement.keyAttributes.size(); i++) {
-                                attributes[statement.updateAttributes.size() + i] = statement.keyAttributes.get(i).getValue();
-                            }
-                            // Execute
-                            batch.add(attributes);
-                            if (generateScript) {
-                                batch.generatePersistActions(session, script, options);
-                            } else {
-                                DBCStatistics bs = batch.execute(session, options);
-                                // Notify rsv container about statement execute
-                                this.notifyContainer(bs);
-
-                                updateStats.accumulate(bs);
-                            }
+                            extractDataAndProcessBatch(session, options, statement, batch, attributes, updateStats);
                         }
                         processStatementChanges(statement);
                     } catch (DBException e) {
@@ -927,6 +906,33 @@ class ResultSetPersister {
                         log.debug("Can't release savepoint", e);
                     }
                 }
+            }
+        }
+
+        private void extractDataAndProcessBatch(
+            DBCSession session,
+            Map<String, Object> options,
+            DataStatementInfo statement,
+            DBSDataManipulator.ExecuteBatch batch,
+            Object[] attributes,
+            DBCStatistics stats
+        ) throws DBCException {
+            for (int i = 0; i < statement.keyAttributes.size(); i++) {
+                if (DBUtils.isNullValue(statement.keyAttributes.get(i).getValue())) {
+                    attributes[statement.updateAttributes.size() + i] = DBDNull.INSTANCE;
+                } else {
+                    attributes[statement.updateAttributes.size() + i] = statement.keyAttributes.get(i).getValue();
+                }
+            }
+            batch.add(attributes);
+            if (generateScript) {
+                batch.generatePersistActions(session, script, options);
+            } else {
+                DBCStatistics bs = batch.execute(session, options);
+                // Notify rsv container about statement execute
+                this.notifyContainer(bs);
+
+                stats.accumulate(bs);
             }
         }
 

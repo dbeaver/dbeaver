@@ -108,8 +108,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         StringBuilder createQuery = new StringBuilder(100);
         createQuery.append(beginCreateTableStatement(monitor, table, tableName, options));
         boolean hasNestedDeclarations = false;
+        int lastComment = 0;
         final Collection<NestedObjectCommand> orderedCommands = getNestedOrderedCommands(command);
-        for (NestedObjectCommand<?,?> nestedCommand : orderedCommands) {
+        for (NestedObjectCommand<?, ?> nestedCommand : orderedCommands) {
             if (nestedCommand.getObject() == table) {
                 continue;
             }
@@ -120,39 +121,36 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             String nestedDeclaration = nestedCommand.getNestedDeclaration(monitor, table, options);
             options.remove(DBPScriptObject.OPTION_COMPOSITE_OBJECT);
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
+
                 if (isCompact) {
                     int commentPos = findCommentPos(nestedDeclaration, slComment);
                     if (commentPos != -1) {
-                        nestedDeclaration = nestedDeclaration.substring(0, commentPos);
+                        nestedDeclaration = nestedDeclaration.substring(0, commentPos - 1);
                     }
                 }
-                // Insert nested declaration
-                if (hasNestedDeclarations) {
 
-                    // Check for embedded comment
-                    int lastCommentPos = findCommentPos(createQuery, slComment);
-                    if (lastCommentPos != -1) {
-                        while (lastCommentPos > 0 && Character.isWhitespace(createQuery.charAt(lastCommentPos - 1))) {
-                            lastCommentPos--;
-                        }
-                    }
-                    if (lastCommentPos < 0 || lastCommentPos < createQuery.length() - 1) {
-                        createQuery.append(","); //$NON-NLS-1$
-                    } else {
-                        createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
-                    }
+                if (hasNestedDeclarations) {
                     if (!isCompact) {
+                        // Check for embedded comment
+                        lastComment = appendCommaBeforeLastComment(createQuery, slComment, lastComment);
                         createQuery.append(lineSeparator);
+                    } else {
+                        createQuery.append(","); //$NON-NLS-1$
                     }
                 }
+
+                // Insert nested declaration
                 if (!hasNestedDeclarations && !hasAttrDeclarations(table)) {
-                    createQuery.append('(')
-                        .append(isCompact ? " " : "\n\t")
-                        .append(nestedDeclaration); //$NON-NLS-1$
+                    createQuery.append('(');
+                    if (isCompact) {
+                        createQuery.append(" ");
+                    } else {
+                        createQuery.append(lineSeparator).append('\t');
+                    }
                 } else {
-                    createQuery.append(isCompact ? " " : "\t")
-                        .append(nestedDeclaration); //$NON-NLS-1$
+                    createQuery.append(isCompact ? " " : "\t");
                 }
+                createQuery.append(nestedDeclaration); //$NON-NLS-1$
                 hasNestedDeclarations = true;
             } else {
                 // This command should be executed separately
@@ -385,25 +383,73 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
     }
 
     public static int findCommentPos(CharSequence cs, String slComment) {
-        boolean inString = false;
+        return findCommentPos(cs, slComment, 0, true);
+    }
 
-        for (int i = 0; i < cs.length() - slComment.length() + 1; i++) {
+    /**
+     * Finds the position of a single-line comment marker, ignoring string literals.
+     *
+     * @param cs          the character sequence to search
+     * @param slComment   the comment prefix (e.g., "--")
+     * @param start       the index to start searching from
+     * @param findFirst   if true, returns the first match; if false, returns the last
+     * @return the position of the comment, or -1 if not found
+     */
+    public static int findCommentPos(CharSequence cs, String slComment, int start, boolean findFirst) {
+        boolean inString = false;
+        int result = -1;
+
+        for (int i = start; i <= cs.length() - slComment.length(); i++) {
             char ch = cs.charAt(i);
 
             if (ch == '\'') {
                 if (inString && i + 1 < cs.length() && cs.charAt(i + 1) == '\'') {
-                    i++;
+                    i++; // skip escaped quote ''
                     continue;
                 }
                 inString = !inString;
             }
 
             if (!inString && startsWith(cs, slComment, i)) {
-                return i;
+                if (findFirst) {
+                    return i;
+                } else {
+                    result = i;
+                }
             }
         }
 
-        return -1;
+        return result;
+    }
+
+    /**
+     * Inserts a comma before the last single-line comment (if needed).
+     *
+     * @param query       the current SQL buffer
+     * @param slComment   the single-line comment marker (e.g., "--")
+     * @param startFrom   the position from which to start searching for a comment
+     * @return updated index to be used for the next comment insertion pass
+     */
+    public static int appendCommaBeforeLastComment(StringBuilder query, String slComment, int startFrom) {
+        int commentPos = findCommentPos(query, slComment, startFrom, false);
+        if (commentPos != -1) {
+            int insertPos = commentPos;
+            while (insertPos > 0 && Character.isWhitespace(query.charAt(insertPos - 1))) {
+                insertPos--;
+            }
+
+            boolean hasCommaBefore = insertPos > 0 && query.charAt(insertPos - 1) == ',';
+
+            if (!hasCommaBefore) {
+                query.insert(insertPos, ","); //$NON-NLS-1$
+            }
+
+            // Return position after " --" so that the next search skips this comment
+            return commentPos + 3;
+        } else {
+            query.append(","); //$NON-NLS-1$
+            return query.length();
+        }
     }
 
     private static boolean startsWith(CharSequence sb, String prefix, int toffset) {
