@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.qm.meta.QMApiCallLogInfo;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
 import java.util.Map;
@@ -75,4 +76,6 @@ public interface QMExecutionHandler {
     void handleFeatureUsage(@NotNull DBRFeature feature, @Nullable Map<String, Object> parameters);
 
     void handleConnectError(@NotNull DBPDataSource dataSource, @NotNull Throwable error);
+
+    void handleActivityLog(@NotNull QMApiCallLogInfo qmApiCallLogInfo);
 }

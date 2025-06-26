@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,11 @@ public class QMConstants {
     public static final String PROP_STORE_LOG_FILE = PROP_PREFIX + "storeLogs";
     public static final String PROP_LOG_DIRECTORY = PROP_PREFIX + "logDirectory";
 
+    public static final int EVENT_TYPE_UNKNOWN = -1;
     public static final int EVENT_TYPE_SESSION = 1;
     public static final int EVENT_TYPE_TXN = 2;
     public static final int EVENT_TYPE_SAVEPOINT = 3;
     public static final int EVENT_TYPE_STATEMENT = 4;
     public static final int EVENT_TYPE_EXECUTE = 5;
-    public static final int EVENT_TYPE_UNKNOWN = -1;
+    public static final int EVENT_TYPE_ACTIVITY = 6;
 }

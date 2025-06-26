@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.qm.meta.QMMObject;
 
 /**
@@ -26,13 +27,14 @@ public class QMMetaEvent implements QMEvent {
     protected final QMMObject object;
     protected final QMEventAction action;
     protected final long timestamp;
+    @Nullable
     protected String sessionId;
 
     public QMMetaEvent(
         QMMObject object,
         QMEventAction action,
         long timestamp,
-        String sessionId
+        @Nullable String sessionId
     ) {
         this.object = object;
         this.action = action;

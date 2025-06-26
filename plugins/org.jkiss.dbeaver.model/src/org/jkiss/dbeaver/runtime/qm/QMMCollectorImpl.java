@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.runtime.qm;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -130,6 +131,14 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private void tryFireMetaEvent(
         final @NotNull QMMObject object,
         final @NotNull QMEventAction action,
+        final long timestamp
+    ) {
+        tryFireMetaEvent(object, action, timestamp, (DBPDataSource) null);
+    }
+
+    private void tryFireMetaEvent(
+        final @NotNull QMMObject object,
+        final @NotNull QMEventAction action,
         final long timestamp,
         final @NotNull DBCExecutionContext context
     ) {
@@ -140,11 +149,18 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         final @NotNull QMMObject object,
         final @NotNull QMEventAction action,
         final long timestamp,
-        final @NotNull DBPDataSource dataSource
+        final @Nullable DBPDataSource dataSource
     ) {
         try {
-            String sessionId = QMUtils.getQmSessionId(dataSource);
-            eventPool.add(new QMMetaEvent(object, action, timestamp, sessionId));
+            String qmSessionId = null;
+            if (dataSource != null) {
+                qmSessionId = QMUtils.getQmSessionId(dataSource);
+            } else {
+                if(object instanceof QMApiCallLogInfo activityLogInfo ) {
+                    qmSessionId = activityLogInfo.getQmSessionId();
+                }
+            }
+            eventPool.add(new QMMetaEvent(object, action, timestamp, qmSessionId));
             // may be send event here
         } catch (DBException e) {
             log.error("Failed to fire qm meta event", e);
@@ -331,6 +347,11 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             CommonUtils.getRootCause(error).getMessage()
         );
         tryFireMetaEvent(connectErrorInfo, QMEventAction.BEGIN, connectErrorInfo.getOpenTime(), dataSource);
+    }
+
+    @Override
+    public void handleActivityLog(@NotNull QMApiCallLogInfo qmApiCallLogInfo) {
+        tryFireMetaEvent(qmApiCallLogInfo, QMEventAction.END, qmApiCallLogInfo.getOpenTime());
     }
 
     private class EventDispatcher extends AbstractJob {

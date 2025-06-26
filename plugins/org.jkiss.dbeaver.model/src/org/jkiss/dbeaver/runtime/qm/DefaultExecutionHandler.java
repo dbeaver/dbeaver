@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
+import org.jkiss.dbeaver.model.qm.meta.QMApiCallLogInfo;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
 import java.util.Map;
@@ -147,6 +148,11 @@ public abstract class DefaultExecutionHandler implements QMExecutionHandler {
 
     @Override
     public void handleConnectError(@NotNull DBPDataSource dataSource, @NotNull Throwable error) {
+
+    }
+
+    @Override
+    public void handleActivityLog(@NotNull QMApiCallLogInfo qmApiCallLogInfo) {
 
     }
 }
