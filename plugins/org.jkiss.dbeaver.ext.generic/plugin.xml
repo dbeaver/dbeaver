@@ -1141,7 +1141,7 @@
                     sampleURL="jdbc:qubole://{server}/{host}[/{database}]"
                     description="Qubole JDBC driver"
                     webURL="https://docs.qubole.com/en/latest/connectivity-options/use-qubole-drivers/JDBC-driver/use-jdbc-driver.html"
-                    categories="bigdata,hadoop">
+                    categories="sql,hadoop">
                     <file type="jar" path="maven:/com.qubole:jdbc:RELEASE"/>
                 </driver>
                 -->
