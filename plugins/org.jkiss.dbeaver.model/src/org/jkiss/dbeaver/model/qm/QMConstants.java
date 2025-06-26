@@ -41,5 +41,5 @@ public class QMConstants {
     public static final int EVENT_TYPE_SAVEPOINT = 3;
     public static final int EVENT_TYPE_STATEMENT = 4;
     public static final int EVENT_TYPE_EXECUTE = 5;
-    public static final int EVENT_TYPE_ACTIVITY = 6;
+    public static final int EVENT_TYPE_API_LOG = 6;
 }

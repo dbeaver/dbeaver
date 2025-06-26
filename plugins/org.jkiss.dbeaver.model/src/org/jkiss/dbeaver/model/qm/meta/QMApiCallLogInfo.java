@@ -114,10 +114,6 @@ public class QMApiCallLogInfo extends QMMObject {
         private QMApiCallType requestType;
         private String userName;
 
-        public QMActivityLogInfoBuilder type(QMMetaObjectType type) {
-            this.type = type;
-            return this;
-        }
         public QMActivityLogInfoBuilder endpoint(String endpoint) {
             this.endpoint = endpoint;
             return this;
@@ -152,7 +148,7 @@ public class QMApiCallLogInfo extends QMMObject {
         }
         public QMApiCallLogInfo build() {
             return new QMApiCallLogInfo(
-                type,
+                QMMetaObjectType.API_CALL_LOG,
                 endpoint,
                 httpMethod,
                 isSuccessful,

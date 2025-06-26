@@ -25,7 +25,7 @@ public enum QMMetaObjectType {
     TRANSACTION_SAVEPOINT_INFO(QMConstants.EVENT_TYPE_SAVEPOINT, QMMTransactionSavepointInfo.class),
     STATEMENT_INFO(QMConstants.EVENT_TYPE_STATEMENT, QMMStatementInfo.class),
     STATEMENT_EXECUTE_INFO(QMConstants.EVENT_TYPE_EXECUTE, QMMStatementExecuteInfo.class),
-    ACTIVITY_INFO(QMConstants.EVENT_TYPE_ACTIVITY, QMApiCallLogInfo.class);
+    API_CALL_LOG(QMConstants.EVENT_TYPE_API_LOG, QMApiCallLogInfo.class);
 
     private final int id;
     private final Class<? extends QMMObject> objectClass;
