@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.text.TextUtils;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
+import org.jkiss.dbeaver.model.text.parser.TPTokenAbstract;
 import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -137,7 +138,16 @@ public class SQLScriptParser {
             int tokenOffset = ruleScanner.getTokenOffset();
             int tokenLength = ruleScanner.getTokenLength();
 
-            SQLTokenType tokenType = token instanceof TPTokenDefault ? (SQLTokenType) ((TPTokenDefault)token).getData() : SQLTokenType.T_OTHER;
+            if (tokenOffset + tokenLength > document.getLength()) {
+                log.debug("Token location is outside of the document boundaries during query parsing");
+                token = TPTokenAbstract.EOF;
+                tokenOffset = document.getLength();
+                tokenLength = 0;
+            }
+
+            SQLTokenType tokenType = token instanceof TPTokenDefault tpTokenDefault
+                ? (SQLTokenType) tpTokenDefault.getData()
+                : SQLTokenType.T_OTHER;
             if (tokenOffset < startPos) {
                 // This may happen with EOF tokens (bug in jface?)
                 return null;
