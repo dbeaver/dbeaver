@@ -189,9 +189,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     @Override
     public Object start(IApplicationContext context) {
-//        if (RuntimeUtils.isMacOS()) {
-//            System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_MAC);
-//        }
         instance = this;
 
         Location instanceLoc = Platform.getInstanceLocation();
