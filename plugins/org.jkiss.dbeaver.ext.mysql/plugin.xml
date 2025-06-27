@@ -311,6 +311,7 @@
             <nativeClients>
                 <client id="mariadb_client" label="MariaDB Binaries">
                     <dist os="win32" targetPath="clients/mariadb/win" remotePath="repo:/drivers/mariadb/client/win" resourcePath="clients/mariadb/win">
+                        <driver id="mariaDB"/>
                         <file type="exec" name="mariadb.exe"/>
                         <file type="exec" name="mariadb-dump.exe"/>
                     </dist>
