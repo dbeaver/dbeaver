@@ -168,8 +168,8 @@ public class CopilotClient implements AutoCloseable {
         CopilotChatRequest chatRequest
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
-            .header("Content-type", "application/json")
             .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
+            .header("Content-type", "application/json")
             .header("authorization", "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(chatRequest)))
@@ -190,8 +190,8 @@ public class CopilotClient implements AutoCloseable {
         @NotNull CopilotChatRequest chatRequest
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
-            .header("Content-type", "application/json")
             .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
+            .header("Content-type", "application/json")
             .header("authorization", "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(chatRequest)))
@@ -237,7 +237,9 @@ public class CopilotClient implements AutoCloseable {
     public static List<String> getModels(@NotNull DBRProgressMonitor monitor, @Nullable String token, boolean forceRefresh) {
         if ((models.isEmpty() || forceRefresh) && CommonUtils.isNotEmpty(token)) {
             try (CopilotClient copilotClient = new CopilotClient()) {
-                copilotClient.loadModels(monitor, token);
+                List<CopilotModel> copilotModelList = copilotClient.loadModels(monitor, token);
+                models = copilotModelList.stream()
+                    .collect(LinkedHashMap::new, (map, model) -> map.put(model.id(), model), LinkedHashMap::putAll);
             } catch (Exception ex) {
                 DBWorkbench.getPlatformUI().showError(
                     "Error reading model list",
@@ -249,22 +251,21 @@ public class CopilotClient implements AutoCloseable {
         if (models.isEmpty()) {
             return List.of();
         }
-        return models.values().stream().map(CopilotModel::id).toList();
+        return models.keySet().stream().toList();
     }
 
     /**
-     * Loads the available Copilot models by making an HTTP request to a specified endpoint.
-     * Filters the models by chat-specific criteria before returning them.
+     * Loads available Copilot models and updates the internal model cache. The method sends an HTTP GET request
+     * to retrieve the models from the specified endpoint and then filters and processes the received data.
      *
-     * @param monitor the progress monitor to check for task cancellation and update task progress
-     * @param token the authentication token required to authorize the HTTP request
-     * @return a list of chat-enabled Copilot models
-     * @throws DBException if the request fails or encounters an error during execution
+     * @param monitor the progress monitor used to track task progression and respond to cancellation requests
+     * @param token the authentication token used for authorization in the HTTP request
+     * @throws DBException if there is an issue with the HTTP request, response, or parsing the data
      */
     public List<CopilotModel> loadModels(@NotNull DBRProgressMonitor monitor, @NotNull String token) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
-            .header("Content-type", "application/json")
             .uri(AIHttpUtils.resolve(COPILOT_CHAT_MODELS_URL))
+            .header("Content-type", "application/json")
             .header("authorization", "Bearer " + token)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .GET()
@@ -274,10 +275,7 @@ public class CopilotClient implements AutoCloseable {
         HttpResponse<String> response = client.send(monitor, request);
         if (response.statusCode() == 200) {
             CopilotModels copilotModels = GSON.fromJson(response.body(), CopilotModels.class);
-            List<CopilotModel> geminiModelList = copilotModels.filterByChat();
-            models = geminiModelList.stream()
-                .collect(LinkedHashMap::new, (map, model) -> map.put(model.name(), model), LinkedHashMap::putAll);
-            return geminiModelList;
+            return copilotModels.data().stream().filter(CopilotModel::isEnabled).toList();
         } else {
             throw new DBException("Request failed: status=" + response.statusCode() + ", body=" + response.body());
         }

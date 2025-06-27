@@ -77,9 +77,9 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         Composite composite = UIUtils.createComposite(parent, 3);
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        createModelParameters(composite);
+        createModelParameters(authorizeComposite);
 
-        createAdditionalSettings(composite);
+        createAdditionalSettings(authorizeComposite);
         UIUtils.syncExec(this::applySettings);
     }
 
@@ -91,11 +91,11 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
         accessToken = CommonUtils.toString(configuration.getProperties().getToken(), "");
         accessTokenText.setText(accessToken);
-        getModels(false);
+        populateModelsCombo(false);
         applySettings();
     }
 
-    private void getModels(boolean forceRefresh) {
+    private void populateModelsCombo(boolean forceRefresh) {
         List<String> models = null;
         try {
             models = UIUtils.runWithMonitor(monitor -> CopilotClient.getModels(monitor, accessToken, forceRefresh));
@@ -108,6 +108,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
             for (int i = 0; i < modelCombo.getItemCount(); i++) {
                 if (modelCombo.getItem(i).equals(model)) {
                     modelCombo.select(i);
+                    break;
                 }
             }
         }
@@ -139,10 +140,6 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         };
     }
 
-    protected String getDefaultModel() {
-        return OpenAIModel.GPT_4.getName();
-    }
-
     private void createModelParameters(@NotNull Composite parent) {
         modelCombo = UIUtils.createLabelCombo(parent, AIUIMessages.gpt_preference_page_combo_engine, SWT.READ_ONLY);
         for (OpenAIModel model : getSupportedGPTModels()) {
@@ -150,18 +147,12 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
                 modelCombo.add(model.getName());
             }
         }
-        modelCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                model = modelCombo.getText();
-            }
-        });
-        UIUtils.createDialogButton(parent, AIUIMessages.gpt_preference_page_refresh_models, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                getModels(true);
-            }
-        });
+        modelCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> model = modelCombo.getText()));
+        UIUtils.createDialogButton(
+            parent,
+            AIUIMessages.gpt_preference_page_refresh_models,
+            SelectionListener.widgetSelectedAdapter((e) -> populateModelsCombo(true))
+        );
 
         GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
         gridData.horizontalSpan = 2;
@@ -238,7 +229,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
                 accessTokenText.setText(accessToken);
                 accessTokenText = UIUtils.recreateTextControl(accessTokenText, SWT.BORDER);
             }
-            getModels(false);
+            populateModelsCombo(true);
         }));
     }
 

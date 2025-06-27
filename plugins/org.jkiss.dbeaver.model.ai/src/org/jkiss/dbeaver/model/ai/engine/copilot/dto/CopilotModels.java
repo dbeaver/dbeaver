@@ -19,7 +19,4 @@ package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 import java.util.List;
 
 public record CopilotModels(List<CopilotModel> data) {
-    public List<CopilotModel> filterByChat() {
-        return data.stream().filter(CopilotModel::isEnabled).toList();
-    }
 }

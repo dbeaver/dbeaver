@@ -16,11 +16,20 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
-public record CopilotModel(String name, String id, boolean model_picker_enabled, CopilotModelPolicy policy) {
+import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
+public record CopilotModel(@NotNull @SerializedName("name") String name,
+    @NotNull @SerializedName("id") String id,
+    @SerializedName("model_picker_enabled") boolean modelPickerEnabled,
+    @Nullable @SerializedName("policy") CopilotModelPolicy policy) {
+
     public boolean isEnabled() {
-        return model_picker_enabled && (policy == null || policy.state() == null || policy.state().equals("enabled"));
+        return modelPickerEnabled && (policy == null || policy.state() == null || policy.state().equals("enabled"));
     }
 
-    private record CopilotModelPolicy(String state) {}
+    public record CopilotModelPolicy(@Nullable String state) {
+    }
 }
 
