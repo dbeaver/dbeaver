@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.NativeClientDescriptor;
@@ -30,9 +31,11 @@ import java.io.File;
  */
 public class RemoteNativeClientLocation implements DBPNativeClientLocation {
     private final NativeClientDescriptor clientDescriptor;
+    private final DBPDriver driver;
 
-    public RemoteNativeClientLocation(NativeClientDescriptor clientDescriptor) {
+    public RemoteNativeClientLocation(@NotNull NativeClientDescriptor clientDescriptor, @NotNull DBPDriver driver) {
         this.clientDescriptor = clientDescriptor;
+        this.driver = driver;
     }
 
     @Override
@@ -43,7 +46,7 @@ public class RemoteNativeClientLocation implements DBPNativeClientLocation {
     @NotNull
     @Override
     public File getPath() {
-        NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution();
+        NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution(driver);
         if (distribution != null) {
             File driversHome = DriverDescriptor.getCustomDriversHome().toFile();
             return new File(driversHome, distribution.getTargetPath());
@@ -59,7 +62,7 @@ public class RemoteNativeClientLocation implements DBPNativeClientLocation {
 
     @Override
     public boolean validateFilesPresence(@NotNull DBRProgressMonitor progressMonitor) throws DBException, InterruptedException {
-        NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution();
+        NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution(driver);
         if (distribution != null) {
             return distribution.downloadFiles(progressMonitor, this);
         }
