@@ -71,15 +71,11 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         AIEngine object,
         @NotNull Runnable propertyChangeListener
     ) {
-        Composite authorizeComposite = UIUtils.createComposite(parent, 3);
-        authorizeComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        createConnectionParameters(authorizeComposite);
         Composite composite = UIUtils.createComposite(parent, 3);
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        createModelParameters(authorizeComposite);
-
-        createAdditionalSettings(authorizeComposite);
+        createConnectionParameters(composite);
+        createModelParameters(composite);
+        createAdditionalSettings(composite);
         UIUtils.syncExec(this::applySettings);
     }
 
