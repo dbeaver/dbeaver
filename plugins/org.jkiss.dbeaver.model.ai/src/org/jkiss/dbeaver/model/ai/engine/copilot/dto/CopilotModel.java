@@ -20,16 +20,18 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public record CopilotModel(@NotNull @SerializedName("name") String name,
-    @NotNull @SerializedName("id") String id,
+public record CopilotModel(
+    @SerializedName("name") @NotNull String name,
+    @SerializedName("id") @NotNull String id,
     @SerializedName("model_picker_enabled") boolean modelPickerEnabled,
-    @Nullable @SerializedName("policy") CopilotModelPolicy policy) {
+    @SerializedName("policy") @Nullable CopilotModelPolicy policy
+) {
 
     public boolean isEnabled() {
         return modelPickerEnabled && (policy == null || policy.state() == null || policy.state().equals("enabled"));
     }
 
-    public record CopilotModelPolicy(@Nullable String state) {
+    public record CopilotModelPolicy(@SerializedName("state") @Nullable String state) {
     }
 }
 

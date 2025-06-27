@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
-public record CopilotModels(List<CopilotModel> data) {
+public record CopilotModels(@SerializedName("data") List<CopilotModel> data) {
 }

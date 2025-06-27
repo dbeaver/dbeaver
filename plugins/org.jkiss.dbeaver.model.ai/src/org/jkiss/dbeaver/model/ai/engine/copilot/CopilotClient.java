@@ -255,14 +255,12 @@ public class CopilotClient implements AutoCloseable {
     }
 
     /**
-     * Loads a list of available Copilot models from the server using an authorization token.
-     * The method issues an HTTP GET request to retrieve the data and processes the response
-     * to filter and return only the enabled models.
+     * Loads a list of available Copilot models from the server.
      *
      * @param monitor the progress monitor to track the request's progress and handle cancellation
      * @param token the authorization token used to authenticate the request
      * @return a list of {@code CopilotModel} objects representing the enabled models
-     * @throws DBException if the HTTP request fails or if the response contains an error
+     * @throws DBException if the request fails
      */
     public List<CopilotModel> loadModels(@NotNull DBRProgressMonitor monitor, @NotNull String token) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
