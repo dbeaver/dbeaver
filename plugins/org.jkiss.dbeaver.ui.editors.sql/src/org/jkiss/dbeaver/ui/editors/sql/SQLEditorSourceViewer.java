@@ -36,6 +36,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,19 +57,19 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
      * @param styles the SWT style bits
      */
     public SQLEditorSourceViewer(
-            @NotNull Composite parent,
-            @Nullable IVerticalRuler ruler,
-            @Nullable IOverviewRuler overviewRuler,
-            boolean showsAnnotationOverview,
-            int styles,
-            @NotNull Supplier<DBPPreferenceStore> currentPrefStoreSupplier
-        ) {
-        super( parent, ruler, overviewRuler, showsAnnotationOverview, styles );
+        @NotNull Composite parent,
+        @Nullable IVerticalRuler ruler,
+        @Nullable IOverviewRuler overviewRuler,
+        boolean showsAnnotationOverview,
+        int styles,
+        @NotNull Supplier<DBPPreferenceStore> currentPrefStoreSupplier
+    ) {
+        super(parent, ruler, overviewRuler, showsAnnotationOverview, styles);
         this.currentPrefStoreSupplier = currentPrefStoreSupplier;
     }
 
-    void refreshTextSelection(){
-        ITextSelection selection = (ITextSelection)getSelection();
+    void refreshTextSelection() {
+        ITextSelection selection = (ITextSelection) getSelection();
         fireSelectionChanged(selection.getOffset(), selection.getLength());
     }
 
@@ -149,26 +150,32 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
     public void setHyperlinkPresenter(IHyperlinkPresenter hyperlinkPresenter) throws IllegalStateException {
         if (fHyperlinkManager != null) {
             fHyperlinkManager.uninstall();
-            fHyperlinkManager= null;
+            fHyperlinkManager = null;
         }
         super.setHyperlinkPresenter(hyperlinkPresenter);
     }
     
     @Override
     public void prependVerifyKeyListener(VerifyKeyListener listener) {
-        verifyKeyListeners.addFirst(listener);
+        if (listener != null) {
+            verifyKeyListeners.addFirst(listener);
+        }
         super.prependVerifyKeyListener(listener);
     }
     
     @Override
     public void appendVerifyKeyListener(VerifyKeyListener listener) {
-        verifyKeyListeners.addLast(listener);
+        if (listener != null) {
+            verifyKeyListeners.addLast(listener);
+        }
         super.appendVerifyKeyListener(listener);
     }
     
     @Override
     public void removeVerifyKeyListener(VerifyKeyListener listener) {
-        verifyKeyListeners.remove(listener);
+        if (listener != null) {
+            verifyKeyListeners.remove(listener);
+        }
         super.removeVerifyKeyListener(listener);
     }
 }
