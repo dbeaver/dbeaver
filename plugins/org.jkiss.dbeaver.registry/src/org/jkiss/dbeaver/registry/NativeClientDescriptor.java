@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,10 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -73,11 +76,16 @@ public class NativeClientDescriptor extends AbstractDescriptor {
             && clientFile.startsWith(System.getenv("AppData")));
     }
 
-    public NativeClientDistributionDescriptor findDistribution() {
+    @Nullable
+    public NativeClientDistributionDescriptor findDistribution(@NotNull DBPDriver driver) {
         OSDescriptor localSystem = DBWorkbench.getPlatform().getLocalSystem();
         final Path driversHome = DriverDescriptor.getCustomDriversHome().toAbsolutePath();
 
         for (NativeClientDistributionDescriptor distr : distributions) {
+            // Include all clients for custom drivers
+            if (!driver.isCustom() && !distr.supports(driver)) {
+                continue;
+            }
             if (distr.getOs().matches(localSystem)
                 && !isClientsPathVirtualizedByWindows(driversHome.resolve(distr.getTargetPath()))) {
                 return distr;

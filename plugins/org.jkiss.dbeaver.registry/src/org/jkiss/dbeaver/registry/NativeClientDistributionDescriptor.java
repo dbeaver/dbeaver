@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
@@ -32,8 +34,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * NativeClientDistributionDescriptor
@@ -42,6 +43,7 @@ public class NativeClientDistributionDescriptor {
     private static final Log log = Log.getLog(NativeClientDistributionDescriptor.class);
 
     private final List<NativeClientFileDescriptor> files = new ArrayList<>();
+    private final Set<String> supportedDrivers = new HashSet<>();
     private OSDescriptor os;
     private String targetPath;
     private String remotePath;
@@ -61,10 +63,17 @@ public class NativeClientDistributionDescriptor {
                 this.files.add(new NativeClientFileDescriptor(fileElement));
             }
         }
+        for (IConfigurationElement element : config.getChildren(RegistryConstants.TAG_DRIVER)) {
+            supportedDrivers.add(element.getAttribute(RegistryConstants.ATTR_ID));
+        }
     }
 
     public OSDescriptor getOs() {
         return os;
+    }
+
+    public boolean supports(@NotNull DBPDriver driver) {
+        return supportedDrivers.isEmpty() || supportedDrivers.contains(driver.getId());
     }
 
     public String getTargetPath() {

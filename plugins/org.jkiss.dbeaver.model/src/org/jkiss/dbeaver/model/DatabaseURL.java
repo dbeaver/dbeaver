@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
  */
 public class DatabaseURL {
 
+    public static final String GENERIC_URL_TEMPLATE = "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}]";
+
     private static final Log log = Log.getLog(DatabaseURL.class);
 
     private static final char URL_GROUP_START = '{'; //$NON-NLS-1$
