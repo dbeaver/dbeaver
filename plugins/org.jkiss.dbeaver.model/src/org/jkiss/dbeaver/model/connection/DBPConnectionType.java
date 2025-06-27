@@ -91,7 +91,10 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
             null); //$NON-NLS-1$ //$NON-NLS-3$
 
         SYSTEM_TYPES = new DBPConnectionType[] { DEV, TEST, PROD };
-        DEFAULT_TYPE = DEV;
+
+        DBPConnectionType defaultType = new DBPConnectionType(DEV);
+        defaultType.predefined = false;
+        DEFAULT_TYPE = defaultType;
     }
 
     private String id;
@@ -108,7 +111,7 @@ public class DBPConnectionType implements DBPDataSourcePermissionOwner {
     private boolean autoCloseConnections;
     private int closeIdleConnectionPeriod;
 
-    private final boolean predefined;
+    private boolean predefined;
     private List<DBPDataSourcePermission> connectionModifyRestrictions;
 
     public DBPConnectionType(DBPConnectionType source) {
