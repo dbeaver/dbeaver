@@ -226,13 +226,13 @@ public class CopilotClient implements AutoCloseable {
     }
 
     /**
-     * Retrieves a list of Copilot model IDs. If the current model list is empty or if a force refresh
-     * is required, it attempts to fetch and load models using the provided authentication token.
+     * Retrieves the list of available model IDs. If the cache is empty or a refresh is forced,
+     * the method will load new models using the provided token and update the internal cache.
      *
-     * @param monitor the progress monitor to report task progression and check for task cancellation
-     * @param token an authentication token used to fetch the models; can be null
-     * @param forceRefresh a boolean flag indicating whether to force a refresh of the model list
-     * @return a list of model IDs as strings; an empty list is returned if no models are available
+     * @param monitor the progress monitor used to track the progress and detect cancellations
+     * @param token the authentication token used for accessing the models, can be null
+     * @param forceRefresh a flag indicating whether to force a refresh of the model cache
+     * @return a list of model IDs as strings. If no models are available, returns an empty list
      */
     public static List<String> getModels(@NotNull DBRProgressMonitor monitor, @Nullable String token, boolean forceRefresh) {
         if ((models.isEmpty() || forceRefresh) && CommonUtils.isNotEmpty(token)) {
@@ -255,12 +255,14 @@ public class CopilotClient implements AutoCloseable {
     }
 
     /**
-     * Loads available Copilot models and updates the internal model cache. The method sends an HTTP GET request
-     * to retrieve the models from the specified endpoint and then filters and processes the received data.
+     * Loads a list of available Copilot models from the server using an authorization token.
+     * The method issues an HTTP GET request to retrieve the data and processes the response
+     * to filter and return only the enabled models.
      *
-     * @param monitor the progress monitor used to track task progression and respond to cancellation requests
-     * @param token the authentication token used for authorization in the HTTP request
-     * @throws DBException if there is an issue with the HTTP request, response, or parsing the data
+     * @param monitor the progress monitor to track the request's progress and handle cancellation
+     * @param token the authorization token used to authenticate the request
+     * @return a list of {@code CopilotModel} objects representing the enabled models
+     * @throws DBException if the HTTP request fails or if the response contains an error
      */
     public List<CopilotModel> loadModels(@NotNull DBRProgressMonitor monitor, @NotNull String token) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
