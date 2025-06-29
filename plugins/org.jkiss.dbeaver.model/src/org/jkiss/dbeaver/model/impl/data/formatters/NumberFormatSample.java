@@ -35,6 +35,7 @@ public class NumberFormatSample implements DBDDataFormatterSample {
     public static final String PROP_USE_TYPE_SCALE  ="useTypeScale";
     public static final String PROP_ROUNDING_MODE ="roundingMode";
     public static final String PROP_NATIVE_SPECIAL_VALUES = "nativeSpecialValues";
+    public static final String PROP_SCIENTIFIC_SMALL_VALUES = "scientificSmallValues";
 
     @Override
     public Map<String, Object> getDefaultProperties(Locale locale)

@@ -44,6 +44,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
     private StringBuffer buffer;
     private FieldPosition position;
     private boolean nativeSpecialValues;
+    private boolean scientificSmallValues;
 
     public NumberDataFormatter() {
     }
@@ -118,6 +119,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
         buffer = new StringBuffer();
         position = new FieldPosition(0);
         nativeSpecialValues = CommonUtils.toBoolean(properties.get(NumberFormatSample.PROP_NATIVE_SPECIAL_VALUES));
+        scientificSmallValues = CommonUtils.toBoolean(properties.get(NumberFormatSample.PROP_SCIENTIFIC_SMALL_VALUES));
 
         DecimalFormatSymbols symbols = new DecimalFormatSymbols();
         scientificFormat = (DecimalFormat) numberFormat.clone();
@@ -156,9 +158,16 @@ public class NumberDataFormatter implements DBDDataFormatter {
                 try {
                     int maxFD = numberFormat.getMaximumFractionDigits();
                     BigDecimal smallestValue = BigDecimal.valueOf(1.0).movePointLeft(maxFD);
-                    if (value instanceof BigDecimal && ((BigDecimal) value).compareTo(smallestValue) < 0) {
-                        // This is a very small BigDecimal
-                        return scientificFormat.format(value, buffer, position).toString();
+                    if (scientificSmallValues && value instanceof BigDecimal) {
+                        BigDecimal bigValue = (BigDecimal) value;
+                        if (((bigValue.compareTo(smallestValue) < 0 && (bigValue.compareTo(BigDecimal.ZERO) > 0)) ||
+                             (bigValue.compareTo(smallestValue.negate()) > 0 && (bigValue.compareTo(BigDecimal.ZERO) < 0)))) {
+                            // This is a very small BigDecimal
+                            return scientificFormat.format(value, buffer, position).toString();
+                        } else {
+                            // This is a normal BigDecimal or zero
+                            return numberFormat.format(value, buffer, position).toString();
+                        }
                     } else {
                         return numberFormat.format(value, buffer, position).toString();
                     }
