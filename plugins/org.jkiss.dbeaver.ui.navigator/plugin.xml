@@ -40,7 +40,7 @@
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView"
             allowMultiple="false"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/databases.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/databases.svg"
             name="%view.database.navigator.title">
             <description>%view.database.navigator.description</description>
         </view>
@@ -49,7 +49,7 @@
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.navigator.database.DatabaseBrowserView"
             allowMultiple="true"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_navigator.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_navigator.svg"
             name="%view.database.browser.title">
             <description>%view.database.browser.description</description>
         </view>
@@ -58,7 +58,7 @@
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView"
             allowMultiple="false"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/projects.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/projects.svg"
             name="%view.project.navigator.title">
             <description>%view.project.navigator.description</description>
         </view>
@@ -67,7 +67,7 @@
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView"
             allowMultiple="false"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/project.svg"
             name="%view.project.explorer.title">
             <description>%view.project.explorer.description</description>
         </view>
@@ -77,7 +77,7 @@
         <wizard
                 category="org.jkiss.dbeaver.core.new.general"
                 class="org.jkiss.dbeaver.tools.project.ProjectCreateWizard"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/project.svg"
                 id="org.jkiss.dbeaver.core.wizard.new.project"
                 name="%wizard.org.jkiss.dbeaver.core.wizard.new.project.name">
             <description>
@@ -159,14 +159,14 @@
     <extension point="org.eclipse.ui.editors">
         <editor
                 name="%editor.folder.name"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/properties.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/properties.svg"
                 contributorClass="org.jkiss.dbeaver.ui.editors.entity.FolderEditorContributor"
                 class="org.jkiss.dbeaver.ui.editors.entity.FolderEditor"
                 id="org.jkiss.dbeaver.ui.editors.entity.FolderEditor">
         </editor>
         <editor
                 name="%editor.entity.name"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/properties.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/properties.svg"
                 contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor"
                 class="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
                 id="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
@@ -304,41 +304,41 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.core.object.open" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/edit.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/create.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.delete" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/delete.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.move.top" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/arrow_top.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.move.bottom" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/arrow_bottom.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.move.up" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/arrow_up.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.move.down" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/arrow_down.png"/>
+        <image commandId="org.jkiss.dbeaver.core.object.open" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/edit.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.object.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/create.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.object.delete" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/delete.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.object.move.top" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/arrow_top.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.object.move.bottom" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/arrow_bottom.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.object.move.up" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/arrow_up.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.object.move.down" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/arrow_down.svg"/>
 
-        <image commandId="org.jkiss.dbeaver.navigator.filter.connected" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_all.png"/>
-        <image commandId="org.jkiss.dbeaver.navigator.filter.object.type" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_connections.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.filter.config" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.filter.add.exclude" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_add.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.filter.add.include" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_add.png"/>
+        <image commandId="org.jkiss.dbeaver.navigator.filter.connected" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_all.svg"/>
+        <image commandId="org.jkiss.dbeaver.navigator.filter.object.type" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_connections.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.object.filter.config" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.object.filter.add.exclude" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_add.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.object.filter.add.include" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter_add.svg"/>
 
-        <image commandId="org.jkiss.dbeaver.core.edit.save.resource" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save_as.png"/>
+        <image commandId="org.jkiss.dbeaver.core.edit.save.resource" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save_as.svg"/>
         <image commandId="org.jkiss.dbeaver.core.edit.load.resource" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/load.png"/>
 
-        <image commandId="org.jkiss.dbeaver.core.project.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project_add.png"/>
-        <image commandId="org.jkiss.dbeaver.core.project.refresh" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/refresh.png"/>
-        <image commandId="org.jkiss.dbeaver.core.project.select" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project.png"/>
-        <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/folder_add.png"/>
+        <image commandId="org.jkiss.dbeaver.core.project.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project_add.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.project.refresh" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/refresh.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.project.select" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/project.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/folder_add.svg"/>
         <image commandId="org.jkiss.dbeaver.core.resource.link.file" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.png"/>
         <image commandId="org.jkiss.dbeaver.core.resource.link.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/link.png"/>
 
-        <image commandId="org.jkiss.dbeaver.core.new.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/folder_add.png"/>
-        <image commandId="org.jkiss.dbeaver.core.navigator.view.configure" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"/>
-        <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/link_to_editor.png"/>
-        <image commandId="org.jkiss.dbeaver.core.navigator.preferences" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"/>
-        <image commandId="org.jkiss.dbeaver.core.navigator.open.browser" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_navigator.png"/>
-        <image commandId="org.jkiss.dbeaver.core.sql.script.run.scriptNative" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec_native.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.tools.select.connection" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/database.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.tools.select.schema" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/schema.png"/>
+        <image commandId="org.jkiss.dbeaver.core.new.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/folder_add.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.navigator.view.configure" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/link_to_editor.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.navigator.preferences" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.navigator.open.browser" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_navigator.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.script.run.scriptNative" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec_native.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.tools.select.connection" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/database.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.tools.select.schema" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/schema.svg"/>
 
-        <image commandId="org.jkiss.dbeaver.navigator.create.column.index" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/index.png"/>
-        <image commandId="org.jkiss.dbeaver.navigator.create.column.constraint" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/constraint.png"/>
+        <image commandId="org.jkiss.dbeaver.navigator.create.column.index" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/index.svg"/>
+        <image commandId="org.jkiss.dbeaver.navigator.create.column.constraint" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/constraint.svg"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
