@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import org.jkiss.dbeaver.model.DBIcon;
 public class ERDIcon {
     public static final DBIcon ARRANGE_ALL = new DBIcon("arrangeall", "arrangeall.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LAYER_GRID = new DBIcon("layer_grid", "layer_grid.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon LAYOUT_SAVE = new DBIcon("layout_save", "layout_save.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SELECT = new DBIcon("select", "select.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon MOVE = new DBIcon("move", "move.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon NOTE = new DBIcon("note", "note.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LAYOUT_SAVE = new DBIcon("layout_save", "layout_save.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SELECT = new DBIcon("select", "select.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon MOVE = new DBIcon("move", "move.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon NOTE = new DBIcon("note", "note.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     static {
         DBIcon.loadIcons(ERDIcon.class);

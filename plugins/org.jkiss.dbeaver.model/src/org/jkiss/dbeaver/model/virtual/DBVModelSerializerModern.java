@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.virtual;
 
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
@@ -31,9 +30,7 @@ import java.util.List;
 /**
  * DBVModelSerializerLegacy
  */
-class DBVModelSerializerModern implements DBVModelSerializer
-{
-    private static final Log log = Log.getLog(DBVModelSerializerModern.class);
+class DBVModelSerializerModern implements DBVModelSerializer {
 
     static void serializeContainer(DBRProgressMonitor monitor, JsonWriter json, DBVContainer object) throws IOException, DBException {
         if (!object.hasValuableData()) {
