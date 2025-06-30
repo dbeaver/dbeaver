@@ -73,20 +73,7 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
             return super.getValueFromObject(session, type, object, copy, validateValue);
         }
 
-        ClickhouseArrayType arrayType;
-        try {
-            arrayType = (ClickhouseArrayType) ClickhouseTypeParser.getType(
-                session.getProgressMonitor(),
-                (ClickhouseDataSource) session.getDataSource(),
-                type.getTypeName()
-            );
-        } catch (DBException e) {
-            throw new DBCException("Can't resolve data type " + type.getFullTypeName());
-        }
-        if (arrayType == null) {
-            throw new DBCException("Can't resolve data type " + type.getFullTypeName());
-        }
-
+        ClickhouseArrayType arrayType = getArrayType(session, type);
         DBSDataType itemType = arrayType.getComponentType(session.getProgressMonitor());
         if (itemType == null) {
             throw new DBCException("Array type " + arrayType.getFullTypeName() + " doesn't have a component type");
@@ -151,7 +138,14 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         int paramIndex,
         Object value
     ) throws DBCException, SQLException {
-        if (value instanceof DBDCollection dbdCollection && !dbdCollection.isNull()) {
+        if (value instanceof JDBCCollection collection && !collection.isNull()) {
+            String arrayTypeName = paramType.getTypeName();
+            boolean nonNullableComponentType = !arrayTypeName.contains("Nullable");
+            boolean arrayHasNullValues = Arrays.stream(collection.toArray()).anyMatch(Objects::isNull);
+            if (nonNullableComponentType && arrayHasNullValues) {
+                throw new DBCException("Array of non-nullable types \"" + arrayTypeName + "\" has null values");
+            }
+
             statement.setObject(
                 paramIndex,
                 getValueDisplayString(paramType, value, DBDDisplayFormat.NATIVE),
@@ -261,5 +255,26 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         } catch (DBCException | SQLException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    @NotNull
+    private ClickhouseArrayType getArrayType(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type
+    ) throws DBCException {
+        ClickhouseArrayType arrayType;
+        try {
+            arrayType = (ClickhouseArrayType) ClickhouseTypeParser.getType(
+                session.getProgressMonitor(),
+                (ClickhouseDataSource) session.getDataSource(),
+                type.getTypeName()
+            );
+        } catch (DBException e) {
+            throw new DBCException("Can't resolve array data type " + type.getFullTypeName());
+        }
+        if (arrayType == null) {
+            throw new DBCException("Can't resolve array data type " + type.getFullTypeName());
+        }
+        return arrayType;
     }
 }
