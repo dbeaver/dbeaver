@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.sql.Array;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.*;
@@ -93,6 +94,9 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
 
         if (object instanceof List<?> list) {
             return makeCollectionFromNestedJavaCollection((JDBCSession) session, itemType, list);
+        } else if (object instanceof Array array && itemType.getName().startsWith("Tuple")) {
+            // Tuples are represented as Object[] and need to be handled separately to avoid confusion with nested arrays
+            return makeCollectionFromTupleArray(session, itemType, array);
         }
 
         return super.getValueFromObject(session, type, object, copy, validateValue);
@@ -233,5 +237,29 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         }
 
         return value.contains(ARRAY_DELIMITER);
+    }
+
+    @NotNull
+    private Object makeCollectionFromTupleArray(
+        @NotNull DBCSession session,
+        @NotNull DBSDataType itemType,
+        @NotNull Array array
+    ) {
+        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, itemType);
+        try {
+            ArrayList<Object> tuples = new ArrayList<>();
+            for (Object tuple : (Object[]) array.getArray()) {
+                Object value = valueHandler.getValueFromObject(session, itemType, tuple, false, false);
+                tuples.add(value);
+            }
+            return new JDBCCollection(
+                session.getProgressMonitor(),
+                itemType,
+                valueHandler,
+                tuples.toArray()
+            );
+        } catch (DBCException | SQLException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

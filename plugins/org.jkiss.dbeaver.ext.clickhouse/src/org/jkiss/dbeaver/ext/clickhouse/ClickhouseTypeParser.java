@@ -89,6 +89,8 @@ public class ClickhouseTypeParser {
             } else if (object instanceof String) { 
                 values = JSONUtils.parseMap(gson, new StringReader((String) object)).entrySet().stream()
                     .flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
+            } else if (object instanceof Object[] array) {
+                values = array;
             } else {
                 values = ((Collection<?>) object).toArray();
             }
