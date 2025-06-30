@@ -127,7 +127,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         for (IConfigurationElement searchActionItem : actionSet.getConfigurationElement().getChildren()) {
             String saId = searchActionItem.getAttribute("id");
             if ("org.eclipse.search.OpenSearchDialog".equals(saId) || "org.eclipse.search.OpenSearchDialogPage".equals(saId)) {
-                patchActionSetIcon(searchActionItem, "platform:/plugin/" + CoreApplicationActivator.PLUGIN_ID + "/icons/eclipse/search.png");
+                patchActionSetIcon(searchActionItem, "platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/search.svg");
             } else if ("org.eclipse.search.OpenFileSearchPage".equals(saId)) {
                 patchActionSetIcon(searchActionItem, UIIcon.FIND_TEXT.getLocation());
             }
