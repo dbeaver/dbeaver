@@ -143,26 +143,31 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
      * from the connection configuration, if present.
      */
     public void refreshConfiguration(@Nullable DBWNetworkProfile profile) {
+        loadConfiguration(profile);
+
+        configurator.loadSettings(handlerConfiguration);
+        configuratorPlaceholder.setRedraw(false);
+
+        if (configuratorEnableState != null) {
+            configuratorEnableState.restore();
+            configuratorEnableState = null;
+        }
+
         DBWHandlerConfiguration profileConfiguration = profile != null ? profile.getConfiguration(handlerDescriptor) : null;
 
         if (profileConfiguration != null && profileConfiguration.isEnabled()) {
             if (configuratorEnableState == null) {
                 configuratorEnableState = ControlEnableState.disable(configuratorPlaceholder);
             }
+
             profileProvidedHint.setText(NLS.bind("Using configuration from profile ''<a href=\"#\">{0}</a>''", profile.getProfileName()));
             UIUtils.setControlVisible(profileProvidedHint.getParent(), true);
         } else {
-            if (configuratorEnableState != null) {
-                configuratorEnableState.restore();
-                configuratorEnableState = null;
-            }
-            UIUtils.setControlVisible(profileProvidedHint.getParent(), false);
+             UIUtils.setControlVisible(profileProvidedHint.getParent(), false);
         }
 
-        loadConfiguration(profile);
-
-        configurator.loadSettings(handlerConfiguration);
-        configuratorPlaceholder.layout(true, true);
+        configuratorPlaceholder.getParent().layout(true, true);
+        configuratorPlaceholder.setRedraw(true);
 
         updatePageCompletion();
     }
