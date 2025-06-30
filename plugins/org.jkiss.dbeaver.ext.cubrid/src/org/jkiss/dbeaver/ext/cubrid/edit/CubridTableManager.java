@@ -97,7 +97,11 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         String suffix = alter ? "," : delimiter;
         query.append(delimiter);
         if (!alter || command.hasProperty("reuseOID")) {
-            query.append(table.isReuseOID() ? "REUSE_OID" : "DONT_REUSE_OID").append(suffix);
+            if (table.getDataSource().isServerVersionAtLeast(11, 0)) {
+                query.append(table.isReuseOID() ? "REUSE_OID" : "DONT_REUSE_OID").append(suffix);
+            } else {
+                query.append(table.isReuseOID() ? "REUSE_OID" + suffix : "");
+            }
         }
         if ((!alter && table.getCollation().getName() != null) || (command.getProperty("charset") != null || command.getProperty("collation") != null)) {
             query.append("COLLATE ").append(table.getCollation().getName()).append(suffix);
