@@ -319,13 +319,30 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         return db2Connection;
     }
 
-    private boolean isPasswordExpired(DBCException e) {
+    private boolean isPasswordExpired(@NotNull DBCException e) {
         Throwable cause = e.getCause();
-        if (cause instanceof SQLException sqlEx) {
-            return sqlEx.getErrorCode() == DB2Constants.ER_MUST_CHANGE_PASSWORD_LOGIN
-                && DB2Constants.ER_STATE_MUST_CHANGE_PASSWORD_LOGIN.equals(sqlEx.getSQLState());
+
+        if (!(cause instanceof SQLException sqlEx)) {
+            return false;
         }
-        return false;
+
+        if (sqlEx.getErrorCode() != DB2Constants.ER_MUST_CHANGE_PASSWORD_LOGIN ||
+            !DB2Constants.ER_STATE_MUST_CHANGE_PASSWORD_LOGIN.equals(sqlEx.getSQLState())) {
+            return false;
+        }
+
+        try {
+            Object errorSrc = BeanUtils.invokeObjectDeclaredMethod(
+                cause,
+                "getErrorSrc",
+                new Class<?>[0],
+                new Object[0]
+            );
+            return DB2Constants.ER_PASSWORD_EXPIRED.equals(errorSrc);
+        } catch (Throwable ex) {
+            log.error("Failed to retrieve DB2 error source from SQLException", ex);
+            return false;
+        }
     }
 
     private void changeUserPassword(
