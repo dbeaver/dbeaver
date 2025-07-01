@@ -9,8 +9,6 @@
     </configIni>
 
     <launcherArgs>
-        <programArgs>-nl en</programArgs>
-
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions
             -Dosgi.requiredJavaVersion=21
