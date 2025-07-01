@@ -1975,6 +1975,9 @@ public class DBeaverLauncher {
 
     private Path useCustomSecretStorage(Path localPath) {
         try {
+            if (!Files.exists(localPath)) {
+                Files.createDirectories(localPath);
+            }
             if (Files.exists(localPath)) {
                 Path storagePath =
                     localPath
