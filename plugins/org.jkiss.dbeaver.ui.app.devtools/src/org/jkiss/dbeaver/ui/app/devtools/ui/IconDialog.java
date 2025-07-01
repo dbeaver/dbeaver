@@ -26,15 +26,18 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -53,6 +56,10 @@ import java.util.stream.Collectors;
 public class IconDialog extends TrayDialog {
     private static final Log log = Log.getLog(ShowIconsHandler.class);
 
+    private boolean showBorders = true;
+    private final List<ImagePanel> panels = new ArrayList<>();
+    private final Set<String> hiddenExtensions = new HashSet<>();
+
     public IconDialog(@NotNull Shell shell) {
         super(shell);
     }
@@ -66,15 +73,6 @@ public class IconDialog extends TrayDialog {
     @Override
     protected Composite createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
-
-        ScrolledComposite viewport = UIUtils.createScrolledComposite(composite, SWT.V_SCROLL);
-        viewport.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(700, 500).create());
-
-        Composite container = new Composite(viewport, SWT.NONE);
-        container.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
-        container.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        UIUtils.configureScrolledComposite(viewport, container);
 
         List<ImageLocation> images = new ArrayList<>();
         collectIcons((bundle, path) -> {
@@ -91,10 +89,51 @@ public class IconDialog extends TrayDialog {
             }
         });
 
+        Button showBordersCheck = new Button(composite, SWT.CHECK);
+        showBordersCheck.setSelection(showBorders);
+        showBordersCheck.setText("Show borders");
+        showBordersCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            showBorders = showBordersCheck.getSelection();
+            panels.forEach(Control::redraw);
+        }));
+
+        Map<String, Integer> extensions = images.stream()
+            .collect(Collectors.groupingBy(
+                ImageLocation::extension,
+                Collectors.summingInt(x -> 1)
+            ));
+
+        extensions.forEach((extension, count) -> {
+            Button extensionCheck = new Button(composite, SWT.CHECK);
+            extensionCheck.setSelection(true);
+            extensionCheck.setText("%s (%d)".formatted(extension.toUpperCase(), count));
+            extensionCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (extensionCheck.getSelection()) {
+                    hiddenExtensions.remove(extension);
+                } else {
+                    hiddenExtensions.add(extension);
+                }
+
+                panels.forEach(Control::redraw);
+            }));
+        });
+
+        ScrolledComposite viewport = UIUtils.createScrolledComposite(composite, SWT.V_SCROLL);
+        viewport.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(700, 500).create());
+
+        Composite container = new Composite(viewport, SWT.NONE);
+        container.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
+        container.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        UIUtils.configureScrolledComposite(viewport, container);
+
         Map<Rectangle, List<ImageLocation>> categories = images.stream()
-            .sorted(Comparator.comparing(ImageLocation::path))
+            .sorted(Comparator.comparing(ImageLocation::filename))
             .collect(Collectors.groupingBy(image -> image.image().getBounds())).entrySet().stream()
-            .sorted(Map.Entry.<Rectangle, List<ImageLocation>> comparingByValue(Comparator.comparingInt(List::size)).reversed())
+            .sorted(Comparator
+                .comparingInt((Map.Entry<Rectangle, List<ImageLocation>> e) -> e.getValue().size()) // by count
+                .thenComparingInt(e -> e.getKey().width * e.getKey().height) // by density
+                .reversed())
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
 
         for (Map.Entry<Rectangle, List<ImageLocation>> entry : categories.entrySet()) {
@@ -110,7 +149,7 @@ public class IconDialog extends TrayDialog {
         return composite;
     }
 
-    private static void createCategory(@NotNull Composite parent, @NotNull Rectangle bounds, @NotNull List<ImageLocation> images) {
+    private void createCategory(@NotNull Composite parent, @NotNull Rectangle bounds, @NotNull List<ImageLocation> images) {
         Composite header = new Composite(parent, SWT.NONE);
         header.setLayout(new GridLayout(2, false));
         header.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -118,23 +157,10 @@ public class IconDialog extends TrayDialog {
         UIUtils.createLabel(header, "%s x %s (%s)".formatted(bounds.width, bounds.height, images.size()));
         UIUtils.createLabelSeparator(header, SWT.HORIZONTAL);
 
-        Composite group = new Composite(parent, SWT.NONE);
-        group.setLayout(new RowLayout());
-        group.setLayoutData(new GridData(GridData.FILL_BOTH));
+        ImagePanel panel = new ImagePanel(parent, images, new Point(bounds.width, bounds.height));
+        panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        for (ImageLocation image : images) {
-            Label label = new Label(group, SWT.NONE);
-            label.setImage(image.image());
-            label.setToolTipText("%s - %s".formatted(image.bundle().getSymbolicName(), image.path()));
-            label.addMouseListener(MouseListener.mouseUpAdapter(e -> {
-                try {
-                    var url = FileLocator.toFileURL(image.url());
-                    ShellUtils.showInSystemExplorer(new File(url.toURI()));
-                } catch (Exception ex) {
-                    log.error("Error accessing icon " + image.url(), ex);
-                }
-            }));
-        }
+        panels.add(panel);
     }
 
     @Override
@@ -177,6 +203,116 @@ public class IconDialog extends TrayDialog {
         }
     }
 
-    private record ImageLocation(Bundle bundle, String path, URL url, Image image) {
+    private class ImagePanel extends Composite {
+        private static final int SPACING = 5;
+
+        private final List<ImageLocation> images;
+        private final Point size;
+
+        public ImagePanel(@NotNull Composite parent, @NotNull List<ImageLocation> images, @NotNull Point size) {
+            super(parent, SWT.NONE);
+            this.images = images;
+            this.size = size;
+
+            addPaintListener(e -> {
+                e.gc.setForeground(e.display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                e.gc.fillRectangle(0, 0, e.width, e.height);
+                e.gc.setAdvanced(true);
+
+                Rectangle area = getClientArea();
+                int columns = getColumns(area.width, size.x);
+                int x = 0;
+                int y = 0;
+                boolean transparent = false;
+
+                for (int i = 0; i < images.size(); i++) {
+                    if (i > 0 && i % columns == 0) {
+                        x = 0;
+                        y += size.y + SPACING;
+                    }
+                    var image = images.get(i);
+                    var nowTransparent = hiddenExtensions.contains(image.extension());
+                    if (transparent != nowTransparent) {
+                        transparent = nowTransparent;
+                        e.gc.setAlpha(nowTransparent ? 30 : 255);
+                    }
+                    if (showBorders) {
+                        e.gc.drawRectangle(x, y, size.x + 1, size.y + 1);
+                    }
+                    e.gc.drawImage(image.image(), x + 1, y + 1);
+                    x += size.x + SPACING;
+                }
+            });
+
+            addMouseListener(MouseListener.mouseUpAdapter(e -> {
+                if (e.button != 1) {
+                    return;
+                }
+                ImageLocation image = getImageAt(e.x, e.y);
+                if (image == null) {
+                    return;
+                }
+                try {
+                    var url = FileLocator.toFileURL(image.url());
+                    ShellUtils.showInSystemExplorer(new File(url.toURI()));
+                } catch (Exception ex) {
+                    log.error("Error accessing icon " + image.url(), ex);
+                }
+            }));
+
+            addMouseMoveListener(e -> {
+                ImageLocation image = getImageAt(e.x, e.y);
+                if (image == null) {
+                    setToolTipText(null);
+                } else {
+                    setToolTipText("%s - %s".formatted(image.bundle().getSymbolicName(), image.path()));
+                }
+            });
+        }
+
+        @Override
+        public Point computeSize(int wHint, int hHint, boolean changed) {
+            if (wHint == SWT.DEFAULT) {
+                return new Point(images.size() * (size.x + SPACING), size.y);
+            } else {
+                int columns = getColumns(wHint, size.x);
+                int rows = Math.max(1, (images.size() + columns - 1) / columns);
+                return new Point(columns * (size.x + SPACING), rows * (size.y + SPACING));
+            }
+        }
+
+        @Nullable
+        private ImageLocation getImageAt(int x, int y) {
+            Rectangle area = getClientArea();
+            if (x < 0 || y < 0 || x >= area.width || y >= area.height) {
+                return null;
+            }
+
+            int column = x / (size.x + SPACING);
+            int row = y / (size.y + SPACING);
+            int index = row * getColumns(area.width, size.x) + column;
+            if (index < 0 || index >= images.size()) {
+                return null;
+            }
+
+            return images.get(index);
+        }
+
+        private int getColumns(int width, int size) {
+            return Math.max(1, width / (size + SPACING));
+        }
+    }
+
+    private record ImageLocation(Bundle bundle, String path, String filename, String extension, URL url, Image image) {
+        private ImageLocation(Bundle bundle, String path, URL url, Image image) {
+            this(
+                bundle,
+                path,
+                path.substring(path.lastIndexOf('/') + 1),
+                path.substring(path.lastIndexOf('.') + 1),
+                url,
+                image
+            );
+        }
     }
 }

@@ -233,7 +233,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private DBPDataSourceContainer dataSourceContainer;
     private DBPDataSource curDataSource;
-    private volatile DBCExecutionContext executionContext;
+    private volatile DBCExecutionContext isolatedExecutionContext;
     private volatile DBCExecutionContext lastExecutionContext;
     private volatile DBPContextProvider executionContextProvider;
     private SQLScriptContext globalScriptContext;
@@ -338,8 +338,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public DBCExecutionContext getExecutionContext() {
-        if (executionContext != null) {
-            return executionContext;
+        if (isolatedExecutionContext != null) {
+            return isolatedExecutionContext;
         }
         if (executionContextProvider != null) {
             return executionContextProvider.getExecutionContext();
@@ -429,7 +429,7 @@ public class SQLEditor extends SQLEditorBase implements
             datasourceChanged = true;
         }
         if (container == dataSourceContainer) {
-            return true;
+            return false;
         }
 
         // Release ds container
@@ -499,7 +499,7 @@ public class SQLEditor extends SQLEditorBase implements
         return true;
     }
 
-    private void updateDataSourceContainer() {
+    private boolean updateDataSourceContainer() {
         DBPDataSourceContainer inputDataSource = null;
         if (SQLEditorBase.isReadEmbeddedBinding()) {
             // Try to get datasource from contents (always, no matter what )
@@ -515,7 +515,7 @@ public class SQLEditor extends SQLEditorBase implements
                 inputDataSource = dsp.getDataSourceContainer();
             }
         }
-        setDataSourceContainer(inputDataSource);
+        return setDataSourceContainer(inputDataSource);
     }
 
     private void updateExecutionContext(Runnable onSuccess) {
@@ -562,11 +562,11 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void releaseExecutionContext() {
-        if (executionContext != null && executionContext.isConnected()) {
+        if (isolatedExecutionContext != null && isolatedExecutionContext.isConnected()) {
             // Close context in separate job (otherwise it can block UI)
-            new CloseContextJob(executionContext).schedule();
+            new CloseContextJob(isolatedExecutionContext).schedule();
         }
-        executionContext = null;
+        isolatedExecutionContext = null;
         curDataSource = null;
     }
 
@@ -813,7 +813,7 @@ public class SQLEditor extends SQLEditorBase implements
                             .showError("New connection default", "Error setting default catalog/schema for new connection", e);
                     }
                 }
-                SQLEditor.this.executionContext = newContext;
+                SQLEditor.this.isolatedExecutionContext = newContext;
                 // Needed to update main toolbar
                 // FIXME: silly workaround. Command state update doesn't happen in some cases
                 // FIXME: but it works after short pause. Seems to be a bug in E4 command framework
@@ -896,7 +896,7 @@ public class SQLEditor extends SQLEditorBase implements
                 return true;
             }
         }
-        if (QMUtils.isTransactionActive(executionContext)) {
+        if (QMUtils.isTransactionActive(isolatedExecutionContext)) {
             return true;
         }
         if (isNonPersistentEditor()) {
@@ -1724,7 +1724,7 @@ public class SQLEditor extends SQLEditorBase implements
         logViewer = new SQLLogPanel(folder, this);
         variablesViewer = new SQLVariablesPanel(folder, this);
         outputViewer = new SQLEditorOutputViewer(getSite(), folder, SWT.LEFT);
-        outputViewer.setExecutionContext(executionContext);
+        outputViewer.setExecutionContext(isolatedExecutionContext);
 
         if (getFolderForExtraPanels() != sqlExtraPanelFolder) {
             sqlExtraPanelSash.setMaximizedControl(sqlExtraPanelSash.getChildren()[0]);
@@ -3155,9 +3155,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
         DBPDataSource dataSource = ds.getDataSource();
         if (dataSource != null && executionContextProvider == null && SQLEditorUtils.isOpenSeparateConnection(ds)
-            && executionContext == null) {
+            && isolatedExecutionContext == null) {
             initSeparateConnection(dataSource, () -> onFinish.onTaskFinished(Status.OK_STATUS), false);
-            return executionContext != null;
+            return isolatedExecutionContext != null;
         }
         return true;
     }
@@ -3443,10 +3443,10 @@ public class SQLEditor extends SQLEditorBase implements
                                 // Active schema was changed? Update title and tooltip
                                 firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
                             }
-                            return;
+                            break;
                         case BEFORE_CONNECT:
                         case AFTER_CONNECT:
-                            return;
+                            break;
                         default:
                             break;
                     }
@@ -3469,7 +3469,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DBCExecutionContextDefaults<?, ?> ctxDefault = execContext.getContextDefaults();
                 if (ctxDefault != null && eventObject != null) {
                     boolean defaultChanged = eventObject == ctxDefault.getDefaultCatalog() || eventObject == ctxDefault.getDefaultSchema();
-                    if (lastExecutionContext != executionContext || defaultChanged) {
+                    if (lastExecutionContext != isolatedExecutionContext || defaultChanged) {
                         contextChanged = true;
                     }
                 }
@@ -3574,11 +3574,11 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         // End transaction
-        if (executionContext != null) {
+        if (isolatedExecutionContext != null) {
             UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
-            if (serviceConnections != null && !serviceConnections.checkAndCloseActiveTransaction(new DBCExecutionContext[] {
-                executionContext
-            })) {
+            if (serviceConnections != null && !serviceConnections.checkAndCloseActiveTransaction(
+                new DBCExecutionContext[] {isolatedExecutionContext})
+            ) {
                 return ISaveablePart2.CANCEL;
             }
         }

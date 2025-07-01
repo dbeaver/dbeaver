@@ -11,14 +11,14 @@
                 category="org.jkiss.dbeaver.core.category"
                 class="org.jkiss.dbeaver.ui.dashboard.view.DataSourceDashboardView"
                 allowMultiple="true"
-                icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.svg"
                 name="%view.dashboard.title"/>
     </extension>
 
     <extension point="org.eclipse.ui.editors">
         <editor
                 name="%editor.dashboard.name"
-                icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.svg"
                 class="org.jkiss.dbeaver.ui.dashboard.editor.DashboardEditorStandalone"
                 id="org.jkiss.dbeaver.ui.dashboard.editor.DashboardEditorStandalone">
         </editor>
@@ -49,10 +49,10 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ui.dashboard.open" icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.dashboard.catalog.show" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/config_table.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.dashboard.delete" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/delete.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.dashboard.configure" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.open" icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.catalog.show" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/config_table.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.delete" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/delete.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.dashboard.configure" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.svg"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -123,10 +123,10 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.dashboardView">
-            <command commandId="org.jkiss.dbeaver.ui.dashboard.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/chart/chart_line.png">
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/chart/chart_line.svg">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.ui.dashboard.catalog.show" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/config_table.png">
+            <command commandId="org.jkiss.dbeaver.ui.dashboard.catalog.show" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/config_table.svg">
                 <parameter name="toggleCatalogPanel" value="true"/>
                 <visibleWhen checkEnabled="true"/>
             </command>
@@ -168,7 +168,7 @@
             <tool id="org.jkiss.dbeaver.ui.dashboard.view.DashboardOpenTool"
                   label="%command.org.jkiss.dbeaver.ui.dashboard.open.name"
                   description="%command.org.jkiss.dbeaver.ui.dashboard.open.description"
-                  icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.png"
+                  icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.svg"
                   singleton="false">
                 <command id="org.jkiss.dbeaver.ui.dashboard.open">
                     <objectType name="org.jkiss.dbeaver.model.DBPDataSource"/>
@@ -190,14 +190,14 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dashboard.ui">
-        <dashboardView id="timeseries" label="Time series" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/chart/chart_line.png"
+        <dashboardView id="timeseries" label="Time series" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/chart/chart_line.svg"
             dataTypes="timeseries" native="true"
             renderer="org.jkiss.dbeaver.ui.dashboard.histogram.DashboardRendererTimeseries"
             configurationEditor="org.jkiss.dbeaver.ui.dashboard.control.DatabaseChartConfigurationEditor"
             viewSettingsEditor="org.jkiss.dbeaver.ui.dashboard.control.DatabaseChartViewSettingsEditor">
 
         </dashboardView>
-        <dashboardView id="browser" label="Browser" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/browser.png"
+        <dashboardView id="browser" label="Browser" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/browser.svg"
             dataTypes="provided"
             renderer="org.jkiss.dbeaver.ui.dashboard.browser.DashboardRendererBrowser"
             configurationEditor="org.jkiss.dbeaver.ui.dashboard.browser.BrowserChartConfigurationEditor"
@@ -210,7 +210,7 @@
         <wizard
                 category="org.jkiss.dbeaver.core.new.general"
                 class="org.jkiss.dbeaver.ui.dashboard.navigator.DashboardCreateWizard"
-                icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model.dashboard/icons/dashboard.svg"
                 id="org.jkiss.dbeaver.ui.dashboard.navigator.DashboardCreateWizard"
                 name="%wizard.dashboard.name">
             <description>
