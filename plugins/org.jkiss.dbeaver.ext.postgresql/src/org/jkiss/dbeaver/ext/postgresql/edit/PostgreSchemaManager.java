@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,14 +66,27 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     }
 
     @Override
-    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options)
-    {
+    protected void addObjectCreateActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         final PostgreSchema schema = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema));
         try {
             final PostgreRole owner = schema.getOwner(monitor);
-            if (owner != null) {
-                script.append("\nAUTHORIZATION ").append(DBUtils.getQuotedIdentifier(owner));
+            String currentUser = executionContext
+                .getDataSource()
+                .getContainer()
+                .getConnectionConfiguration()
+                .getUserName();
+
+            PostgreRole selectedRole = schema.getDatabase().getRoleById(monitor, owner.getObjectId());
+            if (selectedRole != null && !selectedRole.getName().equalsIgnoreCase(currentUser)) {
+                script.append("\nAUTHORIZATION ")
+                    .append(DBUtils.getQuotedIdentifier(owner));
             }
         } catch (DBException e) {
             log.error(e);
