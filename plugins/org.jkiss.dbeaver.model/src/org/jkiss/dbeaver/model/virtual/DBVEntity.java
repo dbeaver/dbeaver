@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -391,32 +392,56 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return entityConstraints == null ? Collections.emptyList() : entityConstraints;
     }
 
+    @NotNull
     public DBVEntityConstraint getBestIdentifier() {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
         }
+
+        for (DBVEntityConstraint constraint : entityConstraints) {
+            if (isComplete(constraint)) {
+                return constraint;
+            }
+        }
+
         if (entityConstraints.isEmpty()) {
             entityConstraints.add(new DBVEntityConstraint(
                 this,
                 DBSEntityConstraintType.VIRTUAL_KEY,
                 "VIRTUAL_PK"));
         }
-        for (DBVEntityConstraint constraint : entityConstraints) {
-            if (constraint.getConstraintType().isUnique() && !CommonUtils.isEmpty(constraint.getAttributes())) {
-                return constraint;
-            }
-        }
-        return entityConstraints.get(0);
+
+        return entityConstraints.getFirst();
     }
 
-    public void addConstraint(DBVEntityConstraint constraint) {
+    public static boolean isComplete(DBVEntityConstraint constraint) {
+        return constraint.getConstraintType().isUnique()
+            && (!CommonUtils.isEmpty(constraint.getAttributes()) || constraint.isUseAllColumns());
+    }
+
+    public void addConstraint(DBVEntityConstraint constraint) throws DBCException {
         addConstraint(constraint, true);
     }
 
-    public void addConstraint(DBVEntityConstraint constraint, boolean reflect) {
+    public void addConstraint(DBVEntityConstraint constraint, boolean reflect) throws DBCException {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
         }
+
+        String constraintName = constraint.getName();
+
+        Iterator<DBVEntityConstraint> iterator = entityConstraints.iterator();
+        while (iterator.hasNext()) {
+            DBVEntityConstraint existing = iterator.next();
+            if (Objects.equals(existing.getName(), constraintName)) {
+                if (isComplete(existing)) {
+                    throw new DBCException("Virtual Unique Key with name '" + constraintName + "' already exists");
+                }
+                iterator.remove();
+                break;
+            }
+        }
+
         entityConstraints.add(constraint);
 
         if (reflect) {

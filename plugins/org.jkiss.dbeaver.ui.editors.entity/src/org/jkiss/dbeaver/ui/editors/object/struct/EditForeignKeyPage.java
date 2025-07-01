@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -874,7 +875,11 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     for (DBSEntityAttribute refAttr : refAttributes) {
                         vUniqueKey.addAttribute(refAttr.getName());
                     }
-                    vRefEntity.addConstraint(vUniqueKey, true);
+                    try {
+                        vRefEntity.addConstraint(vUniqueKey, true);
+                    } catch (DBCException e) {
+                        throw new InvocationTargetException(e);
+                    }
                     curConstraints.add(vUniqueKey);
                 }
             }

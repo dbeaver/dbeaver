@@ -369,19 +369,17 @@ public class EditVirtualEntityDialog extends BaseTitleDialog implements IDialogP
             uniqueConstraint.setName(editUniqueKeyPage.getConstraintName());
             uniqueConstraint.setUseAllColumns(editUniqueKeyPage.isUseAllColumns());
             uniqueConstraint.setAttributes(uniqueConstraint.isUseAllColumns() ? Collections.emptyList() : uniqueAttrs);
-            DBDRowIdentifier virtualEntityIdentifier = viewer.getVirtualEntityIdentifier();
-            if (virtualEntityIdentifier != null) {
-                try {
-                    virtualEntityIdentifier.reloadAttributes(new VoidProgressMonitor(), viewer.getModel().getAttributes());
-                } catch (DBException e) {
-                    log.error(e);
-                }
+            try {
+                viewer.reloadIdentifierAttributes();
+            } catch (DBException e) {
+                log.error(e);
             }
         }
         if (editDictionaryPage != null) {
             editDictionaryPage.saveDictionarySettings();
         }
         vEntity.persistConfiguration();
+        DBUtils.fireObjectUpdate(vEntity, uniqueConstraint);
         if (structChanged || columnsPage.isStructChanged()) {
             viewer.refreshData(null);
         }

@@ -235,19 +235,40 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
             Composite buttonsPanel = UIUtils.createComposite(group, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            Button btnAdd = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_add, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    DBVEntityConstraint newConstraint = new DBVEntityConstraint(vEntity, DBSEntityConstraintType.VIRTUAL_KEY, vEntity.getName() + "_uk");
-                    EditConstraintPage editPage = new EditConstraintPage(DataEditorsMessages.virtual_structure_editor_constraint_page_edit_key, newConstraint);
-                    if (editPage.edit()) {
-                        changeConstraint(newConstraint, editPage);
-                        vEntity.addConstraint(newConstraint);
-                        createUniqueKeyItem(ukTable, newConstraint);
-                        vEntity.persistConfiguration();
+            Button btnAdd = UIUtils.createDialogButton(
+                buttonsPanel,
+                DataEditorsMessages.virtual_structure_editor_dialog_button_add,
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DBVEntityConstraint newConstraint = new DBVEntityConstraint(
+                            vEntity,
+                            DBSEntityConstraintType.VIRTUAL_KEY,
+                            vEntity.getName() + "_uk"
+                        );
+
+                        EditConstraintPage editPage = new EditConstraintPage(
+                            DataEditorsMessages.virtual_structure_editor_constraint_page_edit_key,
+                            newConstraint
+                        );
+
+                        if (editPage.edit()) {
+                            changeConstraint(newConstraint, editPage);
+                            try {
+                                vEntity.addConstraint(newConstraint);
+                                createUniqueKeyItem(ukTable, newConstraint);
+                                vEntity.persistConfiguration();
+                            } catch (DBException ex) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    "Virtual Unique Key Creation Failed",
+                                    "An error occurred while creating the virtual unique key.",
+                                    ex
+                                );
+                            }
+                        }
                     }
                 }
-            });
+            );
 
             SelectionAdapter ukEditListener = new SelectionAdapter() {
                 @Override
