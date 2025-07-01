@@ -57,7 +57,7 @@
                 category="org.jkiss.dbeaver.core.category"
                 class="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"
                 allowMultiple="false"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/qm.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/qm.svg"
                 name="%view.query.manager.title">
             <description>%view.query.manager.description</description>
         </view>
@@ -67,7 +67,7 @@
                 class="org.jkiss.dbeaver.ui.views.process.ShellProcessView"
                 allowMultiple="true"
                 restorable="false"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/shell.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/shell.svg"
                 name="%view.shell.process.title">
             <description>%view.shell.process.description</description>
         </view>
@@ -77,7 +77,7 @@
                 category="org.jkiss.dbeaver.core.category"
                 class="org.jkiss.dbeaver.ui.views.DatabaseOutputView"
                 allowMultiple="false"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.svg"
                 name="%view.database.output.title"/>
 -->
     </extension>
@@ -118,24 +118,24 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.core.new.connection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_connect.png"/>
+        <image commandId="org.jkiss.dbeaver.core.new.connection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_connect.svg"/>
         <image commandId="org.jkiss.dbeaver.core.new.connection.from.url" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/connection/database_icon.png"/>
-        <image commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark.png"/>
+        <image commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark.svg"/>
 
-        <image commandId="org.jkiss.dbeaver.core.connect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.png"/>
-        <image commandId="org.jkiss.dbeaver.core.invalidate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/reconnect.png"/>
-        <image commandId="org.jkiss.dbeaver.core.disconnect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.png"/>
-        <image commandId="org.jkiss.dbeaver.core.connection.synchronize" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sync_connection.png"/>
-        <image commandId="org.jkiss.dbeaver.core.connection.readonly" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/readonly.png" />
-        <image commandId="org.jkiss.dbeaver.folder.disconnect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.png"/>
-        <image commandId="org.jkiss.dbeaver.core.commit" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/commit.png"/>
-        <image commandId="org.jkiss.dbeaver.core.rollback" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/rollback.png"/>
-        <image commandId="org.jkiss.dbeaver.core.txn.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/txn_log.png"/>
+        <image commandId="org.jkiss.dbeaver.core.connect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.invalidate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/reconnect.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.disconnect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.connection.synchronize" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sync_connection.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.connection.readonly" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/readonly.svg" />
+        <image commandId="org.jkiss.dbeaver.folder.disconnect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.commit" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/commit.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.rollback" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/rollback.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.txn.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/txn_log.svg"/>
 
-        <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.png"/>
+        <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.svg"/>
         <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/erase.png"/>
 
-        <image commandId="org.jkiss.dbeaver.core.process.stop" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/cancel.png"/>
+        <image commandId="org.jkiss.dbeaver.core.process.stop" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/cancel.svg"/>
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
@@ -542,7 +542,7 @@
                 </command>
                 <command
                       commandId="org.jkiss.dbeaver.core.txn.autocommit"
-                      icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/txn_auto.png"
+                      icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/txn_auto.svg"
                       id="org.jkiss.dbeaver.core.menu.txn"
                       style="pulldown"
                       tooltip="%command.org.jkiss.dbeaver.core.txn.autocommit.description">
@@ -647,7 +647,7 @@
             </command>
 
             <menu
-                  icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.png"
+                  icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/filter.svg"
                   label="%menu.filter.label">
                 <command commandId="org.jkiss.dbeaver.core.object.filter.add.exclude">
                     <visibleWhen checkEnabled="true"/>
@@ -836,7 +836,7 @@
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.menu.txn.log">
             <command commandId="org.jkiss.dbeaver.core.txn.log"/>
             <command commandId="org.jkiss.dbeaver.core.txn.pending"/>
-            <command commandId="org.eclipse.ui.views.showView" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/qm.png" label="%command.org.eclipse.ui.views.showView.label" style="push">
+            <command commandId="org.eclipse.ui.views.showView" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/qm.svg" label="%command.org.eclipse.ui.views.showView.label" style="push">
                 <parameter name="org.eclipse.ui.views.showView.viewId" value="org.jkiss.dbeaver.core.queryManager"/>
             </command>
         </menuContribution>
@@ -1049,7 +1049,7 @@
         <wizard
              category="org.jkiss.dbeaver.core.export.resources"
              class="org.jkiss.dbeaver.tools.project.ProjectExportWizard"
-             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project.png"
+             icon="platform:/plugin/org.jkiss.dbeaver.model/icons/project.svg"
              id="org.jkiss.dbeaver.core.wizard.export.project"
              name="%wizard.org.jkiss.dbeaver.core.wizard.export.project.name">
            <description>
@@ -1059,7 +1059,7 @@
         <wizard
              category="org.jkiss.dbeaver.core.export.resources"
              class="org.jkiss.dbeaver.tools.scripts.ScriptsExportWizard"
-             icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
+             icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
              id="org.jkiss.dbeaver.core.wizard.export.scripts"
              name="%wizard.org.jkiss.dbeaver.core.wizard.export.scripts.name">
            <description>
@@ -1069,7 +1069,7 @@
         <wizard
                 category="org.jkiss.dbeaver.core.export.resources"
                 class="org.jkiss.dbeaver.tools.configuration.ConfigurationExportWizard"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.svg"
                 id="org.jkiss.dbeaver.core.wizard.export.workspace"
                 name="%wizard.org.jkiss.dbeaver.core.wizard.export.workspace.name">
             <description>
@@ -1084,7 +1084,7 @@
         <wizard
             category="org.jkiss.dbeaver.core.import.resources"
             class="org.jkiss.dbeaver.tools.project.ProjectImportWizard"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/project.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/project.svg"
             id="org.jkiss.dbeaver.core.wizard.import.project"
             name="%wizard.org.jkiss.dbeaver.core.wizard.import.project.name">
             <description>
@@ -1094,7 +1094,7 @@
         <wizard
             category="org.jkiss.dbeaver.core.import.resources"
             class="org.jkiss.dbeaver.tools.scripts.ScriptsImportWizard"
-            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
             id="org.jkiss.dbeaver.core.wizard.import.scripts"
             name="%wizard.org.jkiss.dbeaver.core.wizard.import.scripts.name">
             <description>
@@ -1104,7 +1104,7 @@
         <wizard
                 category="org.jkiss.dbeaver.core.import.resources"
                 class="org.jkiss.dbeaver.tools.configuration.ConfigurationImportWizard"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.svg"
                 id="org.jkiss.dbeaver.core.wizard.import.workspace"
                 name="%wizard.org.jkiss.dbeaver.core.wizard.import.workspace.name">
             <description>
@@ -1118,7 +1118,7 @@
         <wizard
              category="org.jkiss.dbeaver.core.new.general"
              class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard"
-             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database.png"
+             icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database.svg"
              id="org.jkiss.dbeaver.core.wizard.new.connection"
              name="%wizard.org.jkiss.dbeaver.core.wizard.new.connection.name">
            <description>
