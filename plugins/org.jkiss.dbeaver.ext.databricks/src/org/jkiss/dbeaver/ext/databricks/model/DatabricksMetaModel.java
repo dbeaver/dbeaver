@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,8 +63,9 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         return null;
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new DatabricksDataSource(monitor, container, this);
     }
 
@@ -77,6 +78,7 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         return new DatabricksSchema(dataSource, catalog, schemaName);
     }
 
+    @Nullable
     @Override
     public List<GenericSchema> loadSchemas(
         JDBCSession session,
@@ -181,7 +183,7 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
     }
 
     @Override
-    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+    public boolean supportsTableDDLSplit(@NotNull GenericTableBase sourceObject) {
         return false;
     }
 

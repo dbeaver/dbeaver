@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.ai.feature"
       label="DBeaver AI Support"
-      version="1.0.59.qualifier"
+      version="1.0.60.qualifier"
       provider-name="DBeaver Corp"
       plugin="org.jkiss.dbeaver.ui.ai">
 

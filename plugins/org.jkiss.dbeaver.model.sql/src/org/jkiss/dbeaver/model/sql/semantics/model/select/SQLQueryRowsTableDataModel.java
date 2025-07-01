@@ -60,7 +60,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
     private final boolean forDdl;
 
     @Nullable
-    protected SQLQueryRowsSourceModel referencedSource;
+    protected SQLQueryRowsSourceModel referencedSource = null;
 
     public SQLQueryRowsTableDataModel(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryQualifiedName name, boolean forDdl) {
         super(syntaxNode);
@@ -76,6 +76,11 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
     @Nullable
     public DBSEntity getTable() {
         return this.table;
+    }
+
+    @Nullable
+    public SQLQueryRowsSourceModel getReferencedSource() {
+        return this.referencedSource;
     }
 
     @NotNull

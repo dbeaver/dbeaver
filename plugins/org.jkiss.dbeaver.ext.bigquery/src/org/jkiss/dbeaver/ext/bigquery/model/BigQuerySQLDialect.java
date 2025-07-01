@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 
+import java.util.EnumSet;
+
 /**
  * BigQuery SQL dialect
  */
@@ -61,5 +63,15 @@ public class BigQuerySQLDialect extends GenericSQLDialect {
     @Override
     public String[][] getBlockBoundStrings() {
         return BIGQUERY_BEGIN_END_BLOCK;
+    }
+
+    @Override
+    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+        // column alias of is not visible in WHERE, but visible in other projection clauses
+        return EnumSet.of(
+            ProjectionAliasVisibilityScope.GROUP_BY,
+            ProjectionAliasVisibilityScope.HAVING,
+            ProjectionAliasVisibilityScope.ORDER_BY
+        );
     }
 }

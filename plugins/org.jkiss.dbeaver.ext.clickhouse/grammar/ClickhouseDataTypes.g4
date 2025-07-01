@@ -43,6 +43,9 @@ Tuple: 'Tuple';
 Int: 'U'? 'Int' ('8'|'16'|'32'|'64'|'128'|'256');
 Float: 'Float' ('32'|'64');
 Decimal: 'Decimal' ('32'|'64'|'128'|'256')?;
+Date: 'Date' '32'?;
+DateTime: 'DateTime' '64'?;
+FixedString: 'FixedString';
 
 RightParen: ')';
 LeftParen: '(';
@@ -78,10 +81,13 @@ simpleType
  | floatType
  | decimalType
  | stringType
+ | fixedStringType
  | uuidType
  | boolType
  | ipv4Type
  | ipv6Type
+ | dateType
+ | dateTimeType
  ;
 
 enumType: Enum LeftParen enumEntryList RightParen;
@@ -96,10 +102,16 @@ arrayType: Array LeftParen anyType RightParen;
 mapType: Map LeftParen key=anyType Comma value=anyType RightParen;
 
 stringType: 'String';
+fixedStringType: FixedString LeftParen Number RightParen;
 uuidType: 'UUID';
-boolType: 'Boolean';
+boolType: 'Boolean' | 'Bool';
 intType: Int;
 floatType: Float;
-ipv4Type: 'IPV4';
-ipv6Type: 'IPV6';
+ipv4Type: 'IPV4' | 'IPv4';
+ipv6Type: 'IPV6' | 'IPv6';
 decimalType: Decimal (LeftParen (precision=Number Comma)? scale=Number RightParen)?;
+dateType: Date;
+dateTimeType
+ : DateTime (LeftParen String RightParen)?
+ | DateTime (LeftParen Number (Comma String)? RightParen)?
+ ;

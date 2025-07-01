@@ -250,7 +250,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         }
         buf.append(driver.getName());
 
-        if (driver.getIcon() == DBIcon.DATABASE_DEFAULT || driver.getIcon() instanceof DBIcon && driver.getIcon().getLocation().endsWith("database.png")) {
+        if (driver.getIcon() == DBIcon.DATABASE_DEFAULT || driver.getIcon() instanceof DBIcon && driver.getIcon().getLocation().endsWith("database.svg")) {
             buf.append("\tN/A");
         } else {
             buf.append("\t+");

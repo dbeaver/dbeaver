@@ -940,6 +940,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
         }
         for (DBPDriverLibrary newLib : libraries) {
+            if (newLib instanceof DriverLibraryMavenArtifact) {
+                continue;
+            }
             if (!(newLib instanceof DriverLibraryLocal)) {
                 log.error("Wrong driver library found: " + newLib + ". Must be a local file");
                 continue;
@@ -999,7 +1002,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         if (isNewLib) {
             driverFilePath = driver.getId() + "/" + shortFileName;
         } else {
-            driverFilePath = DriverDescriptor.getWorkspaceDriversStorageFolder().relativize(localFilePath).toString();
+            driverFilePath = DriverDescriptor.getExternalDriversStorageFolder().relativize(localFilePath).toString();
         }
 
         if (library instanceof DriverLibraryLocal libraryLocal && isNewLib) {

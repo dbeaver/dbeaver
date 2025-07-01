@@ -144,7 +144,7 @@ public class SQLQuerySelectIntoModel extends SQLQueryRowsProjectionModel {
                             switch (targetItemNode.getNodeKindId()) {
                                 case SQLStandardParser.RULE_tableName ->
                                     new RowsetSelectionTarget(recognizer.collectTableReference(targetItemNode, false));
-                                default -> new ValueSelectionTarget(recognizer.collectValueExpression(targetItemNode));
+                                default -> new ValueSelectionTarget(recognizer.collectValueExpression(targetItemNode, null));
                             }
                         );
                     }
@@ -205,15 +205,22 @@ public class SQLQuerySelectIntoModel extends SQLQueryRowsProjectionModel {
         }
 
         @Nullable
+        private SQLQueryDataContext getUnderlyingLegacyDataContext() {
+            return this.targetScope.getSymbolsOrigin() instanceof SQLQuerySymbolOrigin.DataContextSymbolOrigin dsso
+                ? dsso.getDataContext()
+                : null;
+        }
+
+        @Nullable
         @Override
         public SQLQueryDataContext getGivenDataContext() {
-            return this.targetScope.getSymbolsOrigin().getDataContext();
+            return this.getUnderlyingLegacyDataContext();
         }
 
         @Nullable
         @Override
         public SQLQueryDataContext getResultDataContext() {
-            return this.targetScope.getSymbolsOrigin().getDataContext();
+            return this.getUnderlyingLegacyDataContext();
         }
     }
 

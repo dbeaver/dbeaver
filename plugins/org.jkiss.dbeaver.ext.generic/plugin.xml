@@ -25,7 +25,7 @@
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip" visibleIf="!object.view &amp;&amp; (object.dataSource.info.supportsReferentialIntegrity() || object.container.dataSource.metaModel.supportsUniqueKeys())">
                                     <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                         <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
@@ -856,25 +856,6 @@
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
 
-                <!-- Neo4j -->
-                <driver
-                    id="neo4j_jdbc"
-                    label="Neo4j"
-                    icon="icons/neo4j_icon.png"
-                    iconBig="icons/neo4j_icon_big.png"
-                    class="org.neo4j.jdbc.Driver"
-                    sampleURL="jdbc:neo4j:bolt://{host}[:{port}]/"
-                    defaultPort="7687"
-                    description="Neo4j JDBC driver"
-                    supportedConfigurationTypes="MANUAL,URL"
-                    webURL="https://github.com/neo4j-contrib/neo4j-jdbc"
-                    categories="graph">
-                    <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
-                    <file type="license" path="licenses/external/lgpl-3.0.txt"/>
-                    <parameter name="supports-truncate" value="false"/>
-                    <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
-                </driver>
-
                 <!-- PrestoDB -->
                 <driver
                     id="presto_jdbc"
@@ -1160,7 +1141,7 @@
                     sampleURL="jdbc:qubole://{server}/{host}[/{database}]"
                     description="Qubole JDBC driver"
                     webURL="https://docs.qubole.com/en/latest/connectivity-options/use-qubole-drivers/JDBC-driver/use-jdbc-driver.html"
-                    categories="bigdata,hadoop">
+                    categories="sql,hadoop">
                     <file type="jar" path="maven:/com.qubole:jdbc:RELEASE"/>
                 </driver>
                 -->
@@ -1343,7 +1324,7 @@
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
                     <replace provider="generic" driver="salesforce_jdbc"/>
-                    <file type="jar" path="maven:/com.salesforce.datacloud:jdbc:RELEASE" bundle="!drivers.salesforce_datacloud"/>
+                    <file type="jar" path="maven:/com.salesforce.datacloud:jdbc:shaded:RELEASE" bundle="!drivers.salesforce_datacloud"/>
                     <file type="jar" path="drivers/salesforce_datacloud" bundle="drivers.salesforce_datacloud"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <parameter name="read-only-meta-data" value="true"/>
@@ -1506,6 +1487,15 @@
                         supportsDistributedMode="false"
                         categories="nosql,timeseries,aws">
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.timestream.reason"/>
+                </driver>
+                <driver
+                        id="neo4j_jdbc"
+                        label="Neo4j"
+                        description="Driver for Neo4j"
+                        iconBig="icons/neo4j_icon_big.png"
+                        supportsDistributedMode="false"
+                        categories="graph">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.neo4j.reason"/>
                 </driver>
             </drivers>
 

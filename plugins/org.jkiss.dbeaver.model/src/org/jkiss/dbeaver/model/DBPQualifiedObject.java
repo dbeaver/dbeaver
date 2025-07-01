@@ -31,6 +31,6 @@ public interface DBPQualifiedObject extends DBPObject {
      * @return full qualified name, never returns null.
      */
     @NotNull
-    String getFullyQualifiedName(DBPEvaluationContext context);
+    String getFullyQualifiedName(@NotNull DBPEvaluationContext context);
 
 }
