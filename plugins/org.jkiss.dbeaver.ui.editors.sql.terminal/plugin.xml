@@ -53,7 +53,7 @@
     </extension>
     
     <extension point="org.eclipse.ui.commandImages">
-    	<image commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.png" />
+    	<image commandId="org.jkiss.dbeaver.ui.editors.sql.show.terminalView" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.svg" />
     </extension>
 
     <extension point="org.eclipse.core.runtime.preferences">

@@ -207,6 +207,7 @@ public class DataTransferSettings implements DBTTaskSettings<DBPObject> {
         this.pipeChangeRestricted = pipeChangeRestricted;
     }
 
+    @NotNull
     public static DataTransferSettings loadSettings(DBRRunnableWithResult<DataTransferSettings> loader) throws DBException {
         // Wait 1 minute maximum
         RuntimeUtils.runTask(loader, "Load data transfer settings", 60000, false);

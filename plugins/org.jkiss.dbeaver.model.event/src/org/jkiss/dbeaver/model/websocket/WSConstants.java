@@ -42,6 +42,7 @@ public interface WSConstants {
     String TOPIC_OBJECT_PERMISSIONS = "cb_object_permissions";
     String TOPIC_SUBJECT_PERMISSIONS = "cb_subject_permissions";
     String TOPIC_TRANSACTION_COUNT = "cb_transaction";
+    String TOPIC_AI = "cb_ai";
 
     //TODO remove this enum
     @Deprecated

@@ -136,16 +136,17 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         this.shadowColor = getDisplay().getSystemColor(isDark ? SWT.COLOR_WIDGET_LIGHT_SHADOW : SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         {
-            this.filterComposite = new Composite(this, SWT.BORDER);
+            this.filterComposite = new Composite(this, SWT.NONE);
 
             gl = new GridLayout(5, false);
-            gl.marginHeight = 0;
-            gl.marginWidth = 0;
+            gl.marginHeight = 2;
+            gl.marginWidth = 2;
             gl.horizontalSpacing = 0;
             gl.verticalSpacing = 0;
             this.filterComposite.setLayout(gl);
             this.filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             // CSSUtils.setCSSClass(this.filterComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            new CompositeBorderPainter(this.filterComposite);
 
             if (!compactMode) {
                 this.activeObjectPanel = new ActiveObjectPanel(filterComposite);
@@ -450,8 +451,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private String getActiveSourceQuery() {
         String displayName;
         DBSDataContainer dataContainer = viewer.getDataContainer();
-        if (dataContainer != null) {
-            displayName = dataContainer.getName();
+        if (dataContainer instanceof DBSEntity) {
+            displayName = ResultSetMessages.sql_editor_resultset_filter_panel_show_sql_label;
         } else {
             displayName = viewer.getActiveQueryText();
         }

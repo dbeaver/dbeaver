@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -251,6 +252,16 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
         return true;
     }
 
+    @Override
+    public boolean validIdentifierStart(char c) {
+        return SQLUtils.isLatinLetter(c);
+    }
+
+    @Override
+    public boolean validIdentifierPart(char c, boolean quoted) {
+        return SQLUtils.isLatinLetter(c) || Character.isDigit(c) || c == '_' || (quoted && validCharacters.indexOf(c) != -1);
+    }
+
     //We should quote keywords which is not keywords for clickhouse, otherwise JSQLParser can't parse statements
     @Override
     public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
@@ -261,7 +272,7 @@ public class ClickhouseSQLDialect extends GenericSQLDialect {
         }
         for (int i = 0; i < str.length(); i++) {
             int c = str.charAt(i);
-            if (Character.isLetter(c) && !(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z')) {
+            if (!SQLUtils.isLatinLetter(c)) {
                 return true;
             }
         }
