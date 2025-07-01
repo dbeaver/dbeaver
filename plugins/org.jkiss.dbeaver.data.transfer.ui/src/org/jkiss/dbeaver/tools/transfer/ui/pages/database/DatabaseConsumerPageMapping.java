@@ -839,6 +839,21 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             }
 
             @Override
+            public void activate(ColumnViewerEditorActivationEvent activationEvent) {
+                super.activate(activationEvent);
+                if (getControl() != null && !getControl().isDisposed()) {
+                    getControl().setVisible(true);
+
+                    if (combo != null && !combo.isDisposed()) {
+                        combo.setFocus();
+
+                        String text = combo.getText();
+                        combo.setSelection(new Point(0, text.length()));
+                    }
+                }
+            }
+
+            @Override
             protected Button createButton(Composite parent) {
                 Button button = new Button(parent, SWT.PUSH | SWT.NO_FOCUS);
                 button.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
