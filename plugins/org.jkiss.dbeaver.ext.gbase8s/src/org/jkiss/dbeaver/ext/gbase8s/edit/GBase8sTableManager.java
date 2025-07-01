@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,6 @@
 
 package org.jkiss.dbeaver.ext.gbase8s.edit;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -29,19 +25,8 @@ import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTableColumn;
 import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sUniqueKey;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -49,11 +34,16 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Chao Tian
@@ -82,7 +72,7 @@ public class GBase8sTableManager extends GenericTableManager implements DBEObjec
     }
 
     @Override
-    public boolean canEditObject(GenericTableBase object) {
+    public boolean canEditObject(@NotNull GenericTableBase object) {
         return true;
     }
 
@@ -101,9 +91,9 @@ public class GBase8sTableManager extends GenericTableManager implements DBEObjec
         // Filter out indexes linked to unique constraints if their columns match
         DBPObject object = command.getObject();
         if (object instanceof DBSTableIndex) {
-            for (NestedObjectCommand ccom : orderedCommands) {
+            for (NestedObjectCommand<?,?> ccom : orderedCommands) {
                 if (isUniqueConstraint(ccom)) {
-                    List<GenericTableIndexColumn> a = ((GenericTableIndex) object).getAttributeReferences(null);
+                    List<GenericTableIndexColumn> a = ((GenericTableIndex) object).getAttributeReferences(new VoidProgressMonitor());
                     List<GenericTableConstraintColumn> b = ((GBase8sUniqueKey) ccom.getObject())
                             .getAttributeReferences(null);
                     if (a.size() == b.size() && a.stream()

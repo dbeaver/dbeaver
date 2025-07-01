@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -89,7 +89,9 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
     private void loadPasswordFromPgPass(AuthModelPgPassCredentials credentials, DBPDataSourceContainer dataSource, DBPConnectionConfiguration configuration) throws DBException {
         // Take database name from original config. Because it may change when user switch between databases.
         DBPConnectionConfiguration originalConfiguration = dataSource.getConnectionConfiguration();
-        String conHostName = originalConfiguration.getHostName();
+        DBWUtils.ConnectivityParameters cnnParams = DBWUtils.getConnectivityParameters(originalConfiguration, dataSource.getDriver());
+
+        String conHostName = cnnParams.hostName();
         String sshHost = null;
         if (CommonUtils.isEmpty(conHostName) || conHostName.equals(DBConstants.HOST_LOCALHOST) || conHostName.equals(DBConstants.HOST_LOCALHOST_IP)) {
             sshHost = getSSHHost(dataSource);
@@ -116,12 +118,15 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
             throw new DBException("PgPass file '" + pgPassFile + "' not found");
         }
 
+        String conHostPort = CommonUtils.isNotEmpty(cnnParams.hostPort()) ? cnnParams.hostPort() : dataSource.getDriver().getDefaultPort();
+
         try (Reader r = Files.newBufferedReader(pgPassFile, GeneralUtils.UTF8_CHARSET)) {
             String passString = IOUtils.readToString(r);
             String[] lines = passString.split("\n");
-            if (findHostCredentials(credentials, configuration, dataSource, sshHost, lines)) {
+
+            if (sshHost != null && findHostCredentials(credentials, configuration, cnnParams, sshHost, conHostPort, lines)) {
                 return;
-            } else if (findHostCredentials(credentials, configuration, dataSource, conHostName, lines)) {
+            } else if (conHostName != null && findHostCredentials(credentials, configuration, cnnParams, conHostName, conHostPort, lines)) {
                 return;
             }
         } catch (IOException e) {
@@ -134,19 +139,11 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
     private boolean findHostCredentials(
         @NotNull AuthModelPgPassCredentials credentials,
         @NotNull DBPConnectionConfiguration configuration,
-        @NotNull DBPDataSourceContainer dataSourceContainer,
-        @Nullable String hostName,
-        @NotNull String[] lines) {
-        if (hostName == null) {
-            return false;
-        }
-        DBPConnectionConfiguration originalConfiguration = dataSourceContainer.getConnectionConfiguration();
-        String conHostPort = originalConfiguration.getHostPort();
-        String conDatabaseName = PostgreUtils.getDatabaseNameFromConfiguration(originalConfiguration);
-        String conUserName = originalConfiguration.getUserName();
-        if (CommonUtils.isEmpty(conHostPort)) {
-            conHostPort = dataSourceContainer.getDriver().getDefaultPort();
-        }
+        @NotNull DBWUtils.ConnectivityParameters connectivityParameters,
+        @NotNull String hostName,
+        @NotNull String hostPort,
+        @NotNull String[] lines
+    ) {
         for (String line : lines) {
             line = line.trim();
             if (line.isEmpty() || line.startsWith("#")) {
@@ -164,16 +161,16 @@ public class AuthModelPgPass extends AuthModelDatabaseNative<AuthModelPgPassCred
             String password = params[4];
 
             if (matchParam(hostName, host)
-                && matchParam(conHostPort, port)
-                && matchParam(conDatabaseName, database)) {
-                if (CommonUtils.isEmpty(conUserName)) {
+                && matchParam(hostPort, port)
+                && matchParam(connectivityParameters.databaseName(), database)) {
+                if (CommonUtils.isEmpty(connectivityParameters.userName())) {
                     // No user name specified. Get the first matched params
                     //configuration.setUserName(user);
                     //configuration.setUserPassword(password);
                     credentials.setUserName(user);
                     credentials.setUserPassword(password);
                     return true;
-                } else if (matchParam(conUserName, user)) {
+                } else if (matchParam(connectivityParameters.userName(), user)) {
                     if (!user.equals("*")) {
                         configuration.setUserName(user);
                     }

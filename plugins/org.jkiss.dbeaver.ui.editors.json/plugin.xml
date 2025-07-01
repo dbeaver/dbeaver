@@ -14,7 +14,7 @@
 
     <extension point="org.jkiss.dbeaver.dataManager">
         <streamManager class="org.jkiss.dbeaver.ui.data.managers.stream.JSONStreamValueManager" id="json" label="JSON" primaryMime="text/json"
-                       description="JSON" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/json.png"/>
+                       description="JSON" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/json.svg"/>
     </extension>
 
     <extension point="org.eclipse.ui.editors">
@@ -22,7 +22,7 @@
               class="org.jkiss.dbeaver.ui.editors.json.JSONTextEditor"
               default="true"
               extensions="json"
-              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/json.png"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/json.svg"
               id="org.jkiss.dbeaver.ui.editors.json.JSONTextEditor"
               name="JSON">
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.json"/>

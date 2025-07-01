@@ -32,14 +32,14 @@
         <editor
             name="%editor.org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor.name"
             class="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor"
-            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locked.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locked.svg"
             id="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor">
         </editor>
 
     </extension>
     
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
-        <editorContribution editorId="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolServerSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png">
+        <editorContribution editorId="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolServerSessionEditor" category="connectionEditor" label="%editor.session_manager.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.svg">
             <supports dataSource="exasol"/>
         </editorContribution>
         <editorContribution editorId="org.jkiss.dbeaver.ext.exasol.ui.editors.ExasolLockEditor" category="connectionEditor" label="%editor.lock_manager.name" icon="#locked">

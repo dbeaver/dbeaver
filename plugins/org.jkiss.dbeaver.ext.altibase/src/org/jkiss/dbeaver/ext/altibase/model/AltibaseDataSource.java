@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -560,8 +560,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     static class JobCache extends JDBCObjectLookupCache<GenericStructContainer, AltibaseJob> {
         
         @Override
-        protected AltibaseJob fetchObject(@NotNull JDBCSession session, GenericStructContainer owner, 
-                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected AltibaseJob fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner,
+                                          @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new AltibaseJob(owner, dbResult);
         }
 
@@ -630,8 +630,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     static class DbLinkCache extends JDBCObjectLookupCache<GenericStructContainer, AltibaseDbLink> {
 
         @Override
-        protected AltibaseDbLink fetchObject(@NotNull JDBCSession session, GenericStructContainer owner, 
-                @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
+        protected AltibaseDbLink fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner,
+                                             @NotNull JDBCResultSet dbResult) throws SQLException, DBException {
             return new AltibaseDbLink(owner, dbResult);
         }
 
