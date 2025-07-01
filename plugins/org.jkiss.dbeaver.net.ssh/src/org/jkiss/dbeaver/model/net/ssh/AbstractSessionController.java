@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -266,12 +266,16 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             @NotNull DBWHandlerConfiguration configuration,
             long timeout
         ) throws DBException {
-            if (portForward != null) {
-                jumpDestination.removePortForward(portForward);
-            }
+            if (jumpDestination != null) {
+                if (portForward != null) {
+                    jumpDestination.removePortForward(portForward);
+                }
 
-            jumpDestination.disconnect(monitor, configuration, timeout);
-            origin.removePortForward(jumpPortForward);
+                jumpDestination.disconnect(monitor, configuration, timeout);
+            }
+            if (jumpPortForward != null) {
+                origin.removePortForward(jumpPortForward);
+            }
             origin.disconnect(monitor, configuration, timeout);
 
             registered = false;

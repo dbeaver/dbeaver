@@ -22,6 +22,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -102,6 +104,12 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
                 log.error("Error creating shared configurator", e);
             }
         }
+
+        addDisposeListener(e -> {
+            if (activeDataSource != null) {
+                activeDataSource.getRegistry().removeDataSourceListener(this);
+            }
+        });
     }
 
     public DBPAuthModelDescriptor getSelectedAuthModel() {
@@ -129,15 +137,16 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
     }
 
     public void loadSettings(
-        DBPDataSourceContainer dataSourceContainer,
-        DBPAuthModelDescriptor activeAuthModel,
-        String defaultAuthModelId
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @Nullable DBPAuthModelDescriptor activeAuthModel,
+        @Nullable String defaultAuthModelId
     ) {
-        if (activeDataSource != null) {
-            activeDataSource.getRegistry().removeDataSourceListener(this);
+        if (this.activeDataSource != null) {
+            this.activeDataSource.getRegistry().removeDataSourceListener(this);
         }
-
         this.activeDataSource = dataSourceContainer;
+        this.activeDataSource.getRegistry().addDataSourceListener(this);
+
         this.selectedAuthModel = activeAuthModel;
         this.authSettingsEnabled = !dataSourceContainer.isSharedCredentials();
         this.allAuthModels = activeDataSource.getDriver() == DriverDescriptor.NULL_DRIVER ?
@@ -148,7 +157,6 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
             o1.isDefaultModel() ? -1 :
                 o2.isDefaultModel() ? 1 :
                     o1.getName().compareTo(o2.getName()));
-        activeDataSource.getRegistry().addDataSourceListener(this);
         if ((selectedAuthModel == null || !allAuthModels.contains(selectedAuthModel)) && !CommonUtils.isEmpty(defaultAuthModelId)) {
             // Set default to native
             for (DBPAuthModelDescriptor amd : allAuthModels) {
@@ -172,7 +180,7 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
     }
 
     @Override
-    public void handleDataSourceEvent(DBPEvent event) {
+    public void handleDataSourceEvent(@NotNull DBPEvent event) {
         if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
             event.getData() instanceof DBPConnectionConfiguration newConfig &&
             event.getObject() == activeDataSource
@@ -342,11 +350,4 @@ public class AuthModelSelector extends Composite implements DBPEventListener {
         }
     }
 
-    @Override
-    public void dispose() {
-        if (activeDataSource != null) {
-            activeDataSource.getRegistry().removeDataSourceListener(this);
-        }
-        super.dispose();
-    }
 }
