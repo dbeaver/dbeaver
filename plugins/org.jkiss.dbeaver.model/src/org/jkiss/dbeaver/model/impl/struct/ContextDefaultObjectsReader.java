@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,9 +88,7 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
             return;
         }
 
-        DBNModel navigatorModel = DBNUtils.getNavigatorModel(objectContainer);
-
-        DBCExecutionContextDefaults contextDefaults = null;
+        DBCExecutionContextDefaults<?,?> contextDefaults = null;
         if (executionContext != null) {
             contextDefaults = executionContext.getContextDefaults();
         }
@@ -132,6 +130,7 @@ public class ContextDefaultObjectsReader implements DBRRunnableWithProgress {
                     objectContainer.getChildren(monitor);
                 defaultObject = defObject;
 
+                DBNModel navigatorModel = DBNUtils.getNavigatorModel(objectContainer);
                 if (readNodes && navigatorModel != null) {
                     // Cache navigator nodes
                     if (objectList != null) {

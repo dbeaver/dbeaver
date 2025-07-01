@@ -66,8 +66,9 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private boolean invalidVersion;
 
     private final IVariableResolver propertyResolver = new IVariableResolver() {
+        @Nullable
         @Override
-        public String get(String name) {
+        public String get(@NotNull String name) {
             switch (name) {
                 case PROP_PROJECT_VERSION:
                     return version;

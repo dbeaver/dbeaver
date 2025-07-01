@@ -381,6 +381,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
         spreadsheet.scrollHorizontally(scrollCount);
     }
 
+    private void revealCursor() {
+        GridPos position = spreadsheet.getCursorPosition();
+        spreadsheet.showItem(position.row);
+    }
+
     void highlightRows(int firstLine, int lastLine, Color color) {
         this.highlightScopeFirstLine = firstLine;
         this.highlightScopeLastLine = lastLine;
@@ -426,8 +431,19 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private void updateGridCursor(GridCell cell) {
         boolean changed;
-        IGridColumn newCol = cell == null ? null : cell.col;
-        IGridRow newRow = cell == null ? null : cell.row;
+        IGridColumn newCol;
+        IGridRow newRow;
+        if (cell == null) {
+            newCol = null;
+            newRow = null;
+        } else if (isArrayColAndFirstRow(cell.getColumn(), cell.getRow())) {
+            newCol = cell.getColumn().getParent();
+            newRow = cell.getRow();
+        } else {
+            newCol = cell.getColumn();
+            newRow = cell.getRow();
+        }
+        
         ResultSetRow curRow = controller.getCurrentRow();
         if (!controller.isRecordMode()) {
             changed = (newRow != null && curRow != newRow.getElement()) ||
@@ -993,7 +1009,14 @@ public class SpreadsheetPresentation extends AbstractPresentation
     )
     {
         boolean recordMode = controller.isRecordMode();
-        final DBDAttributeBinding attr = colObject == null ? getFocusAttribute() : getAttributeFromGrid(colObject, rowObject);
+        DBDAttributeBinding attr;
+        if (colObject == null) {
+            attr = getFocusAttribute();
+        } else if (isArrayColAndFirstRow(colObject, rowObject)) {
+            attr = getAttributeFromGrid(colObject.getParent(), rowObject);
+        } else {
+            attr = getAttributeFromGrid(colObject, rowObject);
+        }
         final ResultSetRow row = rowObject == null ? getFocusRow() : getResultRowFromGrid(colObject, rowObject);
         IResultSetController.ContextMenuLocation menuLocation = columnHeaderMenu ?
             IResultSetController.ContextMenuLocation.COLUMN_HEADER :
@@ -1141,6 +1164,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
         return maxIndex;
     }
+    
+    private boolean isArrayColAndFirstRow(@Nullable IGridColumn colObject, @Nullable IGridRow rowObject) {
+        return colObject != null
+            && colObject.getParent() != null
+            && colObject.getParent().getElement() instanceof DBDAttributeBinding binding
+            && binding.getDataKind() == DBPDataKind.ARRAY
+            && rowObject != null
+            && rowObject.getParent() == null;
+    }
 
     /////////////////////////////////////////////////
     // Edit
@@ -1243,18 +1275,17 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
         if (activeInlineEditor != null) {
             activeInlineEditor.createControl();
-            if (activeInlineEditor.getControl() != null) {
-                activeInlineEditor.getControl().setFocus();
-                activeInlineEditor.getControl().setData(DATA_VALUE_CONTROLLER, valueController);
-                activeInlineEditor.getControl().addKeyListener(KeyListener.keyPressedAdapter(
-                    e -> scrollToRow(RowPosition.CURRENT)
-                ));
-                activeInlineEditor.getControl().addTraverseListener(e -> {
+            Control control = activeInlineEditor.getControl();
+            if (control != null) {
+                control.setFocus();
+                control.setData(DATA_VALUE_CONTROLLER, valueController);
+                control.addKeyListener(KeyListener.keyPressedAdapter(e -> revealCursor()));
+                control.addTraverseListener(e -> {
                     if (e.keyCode == SWT.ESC || e.keyCode == SWT.CR) {
-                        scrollToRow(RowPosition.CURRENT);
+                        revealCursor();
                     }
                 });
-                scrollToRow(RowPosition.CURRENT);
+                revealCursor();
             }
         }
         if (activeInlineEditor instanceof IValueEditorStandalone editorStandalone) {
@@ -2457,7 +2488,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
         private Color getCellForeground(DBDAttributeBinding attribute, ResultSetRow row, Object cellValue, Color background, boolean selected) {
             if (selected) {
                 Color fg = ResultSetThemeSettings.instance.foregroundSelected;
-                if (colorizeDataTypes && isSimpleAttribute(attribute) && !DBUtils.isNullValue(cellValue)) {
+                if (colorizeDataTypes && !DBUtils.isNullValue(cellValue)) {
                     Color color = dataTypesForegrounds.get(attribute.getDataKind());
                     if (color != null) {
                         RGB mixRGB = UIUtils.blend(
@@ -2504,7 +2535,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (DBUtils.isNullValue(cellValue)) {
                     return ResultSetThemeSettings.instance.foregroundNull;
                 } else {
-                    if (colorizeDataTypes && isSimpleAttribute(attribute)) {
+                    if (colorizeDataTypes) {
                         Color color = dataTypesForegrounds.get(attribute.getDataKind());
                         if (color != null) {
                             return color;
@@ -3010,11 +3041,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @NotNull
         private String getAttributeText(DBDAttributeBinding binding) {
-            if (CommonUtils.isEmpty(binding.getLabel())) {
-                return binding.getName();
-            } else {
-                return binding.getLabel();
+            String label = CommonUtils.isEmpty(binding.getLabel()) ? binding.getName() : binding.getLabel();
+            // get show column position configuration
+            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+            if (store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_COLUMN_POS)) {
+                label = label + " (" + (binding.getOrdinalPosition() + 1) + ")";
             }
+            return label;
         }
 
         @Nullable

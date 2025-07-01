@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.dpi.model.DPIContext;
-import org.jkiss.dbeaver.dpi.model.adapters.DPISerializer;
-import org.jkiss.dbeaver.model.dpi.*;
+import org.jkiss.dbeaver.model.dpi.DPIClientObject;
+import org.jkiss.dbeaver.model.dpi.DPIController;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.rest.RestProxy;
@@ -36,7 +35,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,9 +50,7 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
     private final String objectToString;
     private final Integer objectHashCode;
     private final transient Object objectInstance;
-    private Map<String, Object> objectContainers;
     private Map<String, Object> propertyValues;
-    private Map<Class<?>, Object> factoryObjects;
 
     public DPIClientProxy(
         @NotNull DPIContext context,
@@ -63,14 +59,12 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
         @Nullable String objectType,
         @Nullable String objectToString,
         @Nullable Integer objectHashCode,
-        @Nullable Map<String, Object> objectContainers,
         @Nullable Map<String, Object> propertyValues) {
         this.context = context;
         this.objectId = objectId;
         this.objectType = objectType;
         this.objectToString = objectToString;
         this.objectHashCode = objectHashCode;
-        this.objectContainers = objectContainers;
         this.propertyValues = propertyValues;
 
         this.objectInstance = Proxy.newProxyInstance(
@@ -174,34 +168,6 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
             return null;
         }
 
-        DPIContainer containerAnno = DPISerializer.getMethodAnno(method, DPIContainer.class);
-        if (containerAnno != null) {
-            if (containerAnno.root()) {
-                return context.getRootObject();
-            } else if (objectContainers != null) {
-                Object container = objectContainers.get(methodName);
-                if (container != null) {
-                    if (container == SELF_REFERENCE) {
-                        return objectInstance;
-                    }
-                    return unwrapObjectValue(container);
-                }
-            }
-        }
-
-        boolean isElement = DPISerializer.getMethodAnno(method, DPIElement.class) != null ||
-            method.getDeclaringClass().getAnnotation(DPIElement.class) != null;
-        if (isElement && propertyValues != null) {
-            Object result = propertyValues.get(getElementKey(method, args));
-            if (result == null && method.getParameterTypes().length == 0) {
-                // Try property
-                result = propertyValues.get(BeanUtils.getPropertyNameFromGetter(method.getName()));
-            }
-            if (result != null) {
-                return unwrapObjectValue(result);
-            }
-        }
-
         Property propAnnotation = method.getAnnotation(Property.class);
         if (propAnnotation != null && propertyValues != null) {
             Object result = propertyValues.get(getPropertyKey(method, propAnnotation));
@@ -210,46 +176,7 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
             }
         }
 
-        // If method is property read or state read the try lookup in the context cache first
-        DPIFactory dpiFactory = DPISerializer.getMethodAnno(method, DPIFactory.class);
-        Class<?> dpiFactoryClass = null;
-        if (dpiFactory != null) {
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            if (parameterTypes.length == 1 && parameterTypes[0] == Class.class) {
-                // Return type is specified in the first factory parameter
-                dpiFactoryClass = (Class<?>) args[0];
-
-                if (factoryObjects != null) {
-                    Object cachedResult = factoryObjects.get(dpiFactoryClass);
-                    if (cachedResult != null) {
-                        return unwrapObjectValue(cachedResult);
-                    }
-                }
-            }
-        }
-        Type returnType = dpiFactoryClass != null ? dpiFactoryClass : method.getGenericReturnType();
-
-        Object result = invokeRemoteMethod(methodName, args, returnType);
-
-        if (propAnnotation != null) {
-            // Cache property value
-            cachePropertyValue(getPropertyKey(method, propAnnotation), wrapObjectValue(result));
-        } else if (dpiFactoryClass != null) {
-            // Cache factory result
-            if (factoryObjects == null) {
-                factoryObjects = new HashMap<>();
-            }
-            factoryObjects.put(dpiFactoryClass, wrapObjectValue(result));
-        } else if (isElement) {
-            cachePropertyValue(getElementKey(method, args), wrapObjectValue(result));
-        } else if (containerAnno != null) {
-            if (objectContainers == null) {
-                objectContainers = new HashMap<>();
-            }
-            objectContainers.put(methodName, wrapObjectValue(result));
-        }
-
-        return result;
+        return null;
     }
 
     private void cachePropertyValue(String propertyName, Object value) {
@@ -264,26 +191,12 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
         if (controller == null) {
             throw new DBException("No DPI controller in client context");
         }
-        boolean expectSmartProxy = args != null && Arrays.stream(args).anyMatch(
-            argument -> (argument != null && DPISerializer.isSmartObject(argument.getClass()))
-        );
         if (controller instanceof RestProxy restProxy) {
-            restProxy.setNextCallResultType(expectSmartProxy ? DPISmartObjectResponse.class : returnType);
+            restProxy.setNextCallResultType(returnType);
         }
         try {
             log.debug(MessageFormat.format("Call method: {0} object: {1}", methodName, objectId));
             var result = controller.callMethod(this.objectId, methodName, args);
-            if (expectSmartProxy && result instanceof DPISmartObjectResponse smartResponse) {
-                var gson = context.getGson();
-                result = gson.fromJson(gson.toJson(smartResponse.getMethodInvocationResult()), returnType);
-                for (DPISmartObjectWrapper smartObject : smartResponse.getSmartObjects()) {
-                    Object realObject = args[smartObject.getArgumentNumber()];
-                    if (smartObject.getProxyObject() != null && smartObject.getProxyObject() instanceof DPISmartCallback
-                        dpiClientSmartObject) {
-                        dpiClientSmartObject.callback(realObject);
-                    }
-                }
-            }
             log.debug(MessageFormat.format("Return method result: {0} object: {1}", methodName, objectId));
             return result;
         } catch (Throwable e) {
@@ -306,21 +219,6 @@ public class DPIClientProxy implements DPIClientObject, InvocationHandler {
             propId = BeanUtils.getPropertyNameFromGetter(method.getName());
         }
         return propId;
-    }
-
-    private static String getElementKey(Method method, Object[] args) {
-        if (!ArrayUtils.isEmpty(args)) {
-            StringBuilder buf = new StringBuilder(method.getName());
-            for (Object arg : args) {
-                if (arg instanceof DBRProgressMonitor) {
-                    continue;
-                }
-                buf.append(":").append(arg);
-            }
-            return buf.toString();
-        } else {
-            return method.getName();
-        }
     }
 
 }

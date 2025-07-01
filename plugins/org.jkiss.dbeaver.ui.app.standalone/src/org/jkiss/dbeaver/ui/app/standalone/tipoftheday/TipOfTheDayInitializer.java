@@ -16,27 +16,22 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.tipoftheday;
 
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
 
 public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
     private static final String PROP_NOT_FIRST_RUN = "tipOfTheDayInitializer.notFirstRun";
 
     @Override
-    public void initializeWorkbenchWindow(IWorkbenchWindow window) {
+    public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
+        IWorkbenchWindow window = configurer.getWindow();
         if (!isTipsEnabled() || window.getWorkbench().getWorkbenchWindowCount() > 1) {
             return;
         }
-        Shell mainShell = window.getShell();
-        UIUtils.scheduleDelayedPopup(
-            mainShell,
-            () -> ShowTipOfTheDayHandler.showTipOfTheDay(window),
-            "Show tip of the day"
-        );
+        ShowTipOfTheDayHandler.showTipOfTheDay(window);
     }
 
     private static boolean isTipsEnabled() {
@@ -44,10 +39,6 @@ public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
             DBWorkbench.getPlatform().getPreferenceStore().setValue(PROP_NOT_FIRST_RUN, true);
             return false;
         }
-        String tipsEnabledStr = DBWorkbench.getPlatform().getPreferenceStore().getString(ShowTipOfTheDayHandler.UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP);
-        if (CommonUtils.isEmpty(tipsEnabledStr)) {
-            return true;
-        }
-        return CommonUtils.toBoolean(tipsEnabledStr);
+        return ShowTipOfTheDayDialog.isShowOnStartup();
     }
 }

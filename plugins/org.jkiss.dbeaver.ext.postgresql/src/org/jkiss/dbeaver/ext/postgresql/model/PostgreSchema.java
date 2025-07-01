@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.dpi.DPIElement;
-import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -58,8 +56,6 @@ import java.util.stream.Collectors;
 /**
  * PostgreSchema
  */
-@DPIObject
-@DPIElement
 public class PostgreSchema implements
     DBSSchema,
     PostgreTableContainer,
@@ -519,7 +515,6 @@ public class PostgreSchema implements
         return schema;
     }
 
-    @DPIElement(cache = true)
     @Override
     public boolean isSystem() {
         return
@@ -528,12 +523,10 @@ public class PostgreSchema implements
                 name.startsWith(PostgreConstants.SYSTEM_SCHEMA_PREFIX);
     }
 
-    @DPIElement(cache = true)
     public boolean isUtility() {
         return isUtilitySchema(name);
     }
 
-    @DPIElement(cache = true)
     public boolean isExternal() {
         return false;
     }
@@ -567,7 +560,7 @@ public class PostgreSchema implements
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
         sql.append("-- DROP SCHEMA ").append(DBUtils.getQuotedIdentifier(this)).append(";\n\n");
         sql.append("CREATE SCHEMA ").append(DBUtils.getQuotedIdentifier(this));

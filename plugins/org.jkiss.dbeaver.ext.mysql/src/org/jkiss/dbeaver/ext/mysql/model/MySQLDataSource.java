@@ -177,7 +177,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             String zeroDateTimeBehavior = connectionInfo.getProperty(MySQLConstants.PROP_ZERO_DATETIME_BEHAVIOR);
             if (zeroDateTimeBehavior == null) {
                 try {
-                    Driver driverInstance = (Driver) driver.getDriverInstance(monitor);
+                    Driver driverInstance = driver.getDriverLoader(getContainer()).getDriverInstance(monitor);
                     if (driverInstance != null) {
                         if (driverInstance.getMajorVersion() >= 8) {
                             props.put(MySQLConstants.PROP_ZERO_DATETIME_BEHAVIOR, "CONVERT_TO_NULL");
@@ -369,6 +369,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             String charsetName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHARSET);
+                            if (charsetName == null) {
+                                continue;
+                            }
                             MySQLCharset charset = getCharset(charsetName);
                             if (charset == null) {
                                 log.warn("Charset '" + charsetName + "' not found.");
@@ -883,7 +886,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             String sqlState = SQLState.getStateFromException(error);
             return SQLState.SQL_42000.getCode().equals(sqlState);
         }

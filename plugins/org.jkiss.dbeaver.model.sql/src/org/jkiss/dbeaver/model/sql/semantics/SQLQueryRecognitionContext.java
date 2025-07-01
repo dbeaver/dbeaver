@@ -82,7 +82,7 @@ public class SQLQueryRecognitionContext {
     }
 
     @Nullable
-    DBCExecutionContext getExecutionContext() {
+    public DBCExecutionContext getExecutionContext() {
         return this.executionContext;
     }
 

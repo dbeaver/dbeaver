@@ -85,7 +85,7 @@ public class SQLEditorQueryCompletionAnalyzer extends SQLQueryCompletionAnalyzer
     @Override
     protected DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
         return switch (item.getKind()) {
-            case UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
+            case SCHEMA, CATALOG, UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
             case RESERVED -> UIIcon.SQL_TEXT;
             case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
             case DERIVED_COLUMN_NAME -> DBIcon.TREE_DERIVED_COLUMN;

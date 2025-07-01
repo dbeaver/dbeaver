@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,8 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_AUTOMATIC_ROW_COUNT = "resultset.automatic.row.count"; //$NON-NLS-1$
     public static final String RESULT_SET_CANCEL_TIMEOUT = "resultset.cancel.timeout"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_EDITOR_TYPE = "resultset.binary.editor"; //$NON-NLS-1$
-    public static final String RESULT_SET_ORDERING_MODE = "resultset.order.mode"; //$NON-NLS-1$
+    public static final String RESULT_SET_ORDERING_STRATEGY = "resultset.order.mode"; //$NON-NLS-1$
+    public static final String RESULT_SET_ORDERING_POLICY = "resultset.order.policy"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ODD_ROWS = "resultset.show.oddRows"; //$NON-NLS-1$
     public static final String RESULT_SET_HIGHLIGHT_SELECTED_ROWS = "resultset.highlight.selectedRows"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_CELL_ICONS = "resultset.show.cellIcons"; //$NON-NLS-1$
@@ -58,6 +59,7 @@ public final class ResultSetPreferences {
     public static final String RESULT_SET_USE_SMOOTH_SCROLLING = "resultset.hScroll.smooth"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_BOOLEAN_AS_CHECKBOX = "resultset.show.boolean.checkbox"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_WHITESPACE_CHARACTERS = "resultset.show.whitespace.characters"; //$NON-NLS-1$
+    public static final String RESULT_SET_SHOW_COLUMN_POS = "resultset.show.column.position"; //$NON-NLS-1$
     public static final String RESULT_SET_CLICK_TOGGLE_BOOLEAN = "resultset.show.boolean.toggleOnClick"; //$NON-NLS-1$
     public static final String RESULT_SET_CALC_COLUMN_WIDTH_BY_VALUES = "resultset.calc.columnWidthByValues"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_CONNECTION_NAME = "resultset.show.connectionName"; //$NON-NLS-1$

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.finder;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -79,16 +80,25 @@ public class AdvancedListItem {
         }
 
         Image icon = labelProvider.getImage(data);
-        ImageData iconData = icon.getImageData();
+        Rectangle iconBounds;
+
+        // Same SWT APIs yield different results across different platforms. How cool is that?
+        if (RuntimeUtils.isLinux()) {
+            ImageData imageData = icon.getImageData();
+            iconBounds = new Rectangle(0, 0, imageData.width, imageData.height);
+        } else {
+            iconBounds = icon.getBounds();
+        }
+
         Point imageSize = list.getImageSize();
 
         int imgPosX = (itemSize.x - imageSize.x) / 2;
-        int imgPosY = BORDER_MARGIN;//(itemBounds.height - iconData.height) / 2 ;
+        int imgPosY = BORDER_MARGIN;//(itemBounds.height - iconBounds.height) / 2 ;
 
-        if (iconData.width == imageSize.x && iconData.height == imageSize.y) {
+        if (iconBounds.width == imageSize.x && iconBounds.height == imageSize.y) {
             gc.drawImage(icon, x + imgPosX, y + imgPosY);
         } else {
-            gc.drawImage(icon, 0, 0, iconData.width, iconData.height,
+            gc.drawImage(icon, 0, 0, iconBounds.width, iconBounds.height,
                 x + imgPosX, y + imgPosY, imageSize.x, imageSize.y);
         }
 

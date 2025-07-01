@@ -140,19 +140,9 @@ public class ResultSetModel implements DBDResultSetModel {
         if (isUpdateInProgress()) {
             return "Update in progress";
         }
-
-        DBPDataSource dataSource = dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
-        if (dataSource == null || !dataSourceContainer.isConnected()) {
-            return "No connection to database";
-        }
-        if (dataSourceContainer.isConnectionReadOnly()) {
-            return "Connection is in read-only state";
-        }
-        if (dataSource.getInfo().isReadOnlyData()) {
-            return "Read-only data container";
-        }
-        if (!dataSourceContainer.hasModifyPermission(DBPDataSourcePermission.PERMISSION_EDIT_DATA)) {
-            return "Data edit restricted";
+        String containerReadOnlyStatus = DBExecUtils.getResultSetReadOnlyStatus(dataSourceContainer);
+        if (containerReadOnlyStatus != null) {
+            return containerReadOnlyStatus;
         }
         if (isUniqueKeyUndefinedButRequired(dataSourceContainer)) {
             return "No unique key defined";
@@ -1140,6 +1130,12 @@ public class ResultSetModel implements DBDResultSetModel {
         this.dataFilter.setAnyConstraint(filter.isAnyConstraint());
 
         updateColorMapping(true);
+    }
+
+    public void resetOrdering(@NotNull Collection<? extends DBDAttributeBinding> bindings) {
+        for (DBDAttributeBinding binding : bindings) {
+            resetOrdering(binding);
+        }
     }
 
     public void resetOrdering(@NotNull DBDAttributeBinding columnElement) {

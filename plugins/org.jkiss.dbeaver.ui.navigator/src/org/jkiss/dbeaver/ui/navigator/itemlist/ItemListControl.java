@@ -249,7 +249,8 @@ public class ItemListControl extends NodeListControl
     {
         return LoadingJob.createService(
             new ItemLoadService(getNodeMeta()),
-            new ObjectsLoadVisualizer(forUpdate));
+            new ObjectsLoadVisualizer(forUpdate)
+        );
     }
 
     @Override

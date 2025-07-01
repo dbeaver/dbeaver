@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,6 +126,7 @@ public class RegistryConstants {
     public static final String ATTR_IGNORE_ERRORS = "ignoreErrors"; //$NON-NLS-1$
     public static final String ATTR_DIALECT = "dialect"; //$NON-NLS-1$
     public static final String ATTR_REQUIRES_MUTABILITY = "requiresMutability"; //$NON-NLS-1$
+    public static final String ATTR_REQUIRES_EXPORT_PRIVILEGES = "requiresExportPrivileges"; //$NON-NLS-1$
 
     public static final String ATTR_TARGET_ID = "targetID"; //$NON-NLS-1$
     public static final String ATTR_TYPE = "type"; //$NON-NLS-1$
@@ -194,7 +195,6 @@ public class RegistryConstants {
     public static final String ATTR_LOGIN_DATE = "login-date"; //$NON-NLS-1$
     public static final String ATTR_SAVE_PASSWORD = "save-password"; //$NON-NLS-1$
     public static final String ATTR_SHARED_CREDENTIALS = "shared-credentials"; //$NON-NLS-1$
-    public static final String ATTR_TEMPLATE = "template"; //$NON-NLS-1$
 
     public static final String ATTR_READ_ONLY = "read-only"; //$NON-NLS-1$
     public static final String ATTR_FILTER_CATALOG = "filter-catalog"; //$NON-NLS-1$

@@ -466,7 +466,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             super(null);
             if (editor.isAdvancedHighlightingEnabled() && SQLEditorUtils.isSQLSyntaxParserEnabled(editor.getEditorInput())) {
                 this.documentContext = editor.getSyntaxContext();
-                this.documentContext.addListener(syntaxContextListener);
+                if (this.documentContext != null) {
+                    this.documentContext.addListener(syntaxContextListener);
+                }
             }
         }
 
@@ -494,7 +496,9 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                         this.documentContext.removeListener(this.syntaxContextListener);
                     }
                     this.documentContext = editor.getSyntaxContext();
-                    this.documentContext.addListener(this.syntaxContextListener);
+                    if (this.documentContext != null) {
+                        this.documentContext.addListener(this.syntaxContextListener);
+                    }
                 }
                 if (this.elements.isEmpty()) {
                     this.children = List.of(this.noElementsNode);
@@ -893,7 +897,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Override
         public Object visitRowsTableData(@NotNull SQLQueryRowsTableDataModel tableData, @NotNull OutlineQueryNode node) {
             DBSEntity table = tableData.getTable();
-            DBPImage icon = DBValueFormatting.getObjectImage(table);
+            DBPImage icon = tableData.getReferencedSource() != null ? DBIcon.TREE_TABLE_LINK : DBValueFormatting.getObjectImage(table);
             String text = table == null
                 ? (tableData.getName() == null ? SQLConstants.QUESTION : tableData.getName().toIdentifierString())
                 : DBUtils.getObjectFullName(table, DBPEvaluationContext.DML);
@@ -952,8 +956,8 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                     if (naturalJoin.getCondition() != null) {
                         // TODO add expression text to the ON node and remove its immediate and only child with the same text
                         this.makeNode(node, naturalJoin.getCondition(), SQLConstants.KEYWORD_ON + " ", DBIcon.TREE_UNIQUE_KEY, naturalJoin.getCondition());
-                    } else if (naturalJoin.getColumsToJoin() != null && naturalJoin.getColumsToJoin().size() > 0) {
-                        String suffix = naturalJoin.getColumsToJoin().stream()
+                    } else if (naturalJoin.getColumnsToJoin() != null && !naturalJoin.getColumnsToJoin().isEmpty()) {
+                        String suffix = naturalJoin.getColumnsToJoin().stream()
                             .map(SQLQuerySymbolEntry::getRawName)
                             .collect(Collectors.joining(", ", "(", ")"));
                         this.makeNode(node, naturalJoin, SQLConstants.KEYWORD_USING + " " + suffix, DBIcon.TREE_UNIQUE_KEY);
@@ -1016,7 +1020,11 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             @Nullable SQLQuerySelectIntoModel.SQLQuerySelectIntoTargetsList targetsList
         ) {
             if (node.kind == OutlineQueryNodeKind.PROJECTION_SUBROOT || node instanceof OutlineScriptElementNode) {
-                String suffix = projection.getResultDataContext().getColumnsList().stream()
+                String suffix = (
+                    projection.getGivenDataContext() != null
+                        ? projection.getResultDataContext().getColumnsList()
+                        : projection.getRowsDataContext().getColumnsList()
+                ).stream()
                     .map(c -> c.symbol.getName())
                     .collect(Collectors.joining(", ", "(", ")"));
                 this.makeNode(
@@ -1386,7 +1394,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             SQLQueryQualifiedName tableName = createTable.getTableName();
             String nodeName = "CREATE TABLE " + (tableName == null ? SQLConstants.QUESTION : tableName.toIdentifierString());
             this.makeNode(
-                node, createTable, nodeName, UIIcon.ACTION_OBJECT_ADD,
+                node, createTable, nodeName, UIIcon.OBJ_ADD,
                 Stream.concat(createTable.getColumns().stream(), createTable.getConstraints().stream()).toArray(SQLQueryNodeModel[]::new)
             );
             return null;

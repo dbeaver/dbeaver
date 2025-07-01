@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -63,7 +66,11 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
     @Override
     public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String columnName) {  // TODO consider reporting ambiguity
         SQLQueryResultColumn result = this.columns.stream()
-            .filter(c -> c.symbol.getName().equals(columnName))
+            .filter(
+                c -> c.symbol.getSymbolClass() == SQLQuerySymbolClass.COLUMN_DERIVED
+                    ? c.symbol.getName().equalsIgnoreCase(columnName) // ignore case for column aliases
+                    : c.symbol.getName().equals(columnName)
+            )
             .findFirst()
             .orElse(null);
         
@@ -96,7 +103,7 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
 
     @Override
     @Nullable
-    public SQLQueryResultPseudoColumn resolvePseudoColumn(DBRProgressMonitor monitor, @NotNull String name) {
+    public SQLQueryResultPseudoColumn resolvePseudoColumn(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
         SQLQueryResultPseudoColumn result = this.pseudoColumns.stream()
             .filter(c -> c.symbol.getName().equals(name))
             .findFirst()

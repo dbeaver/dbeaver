@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,15 @@
 package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.semantics.*;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
@@ -110,6 +115,58 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
             context = context.overrideResultTuple(columnsSource, columns, context.getPseudoColumnsList());
         }
         return context;
+    }
+
+    /**
+     * Associate correlated source column names symbols with its definition
+     */
+    @NotNull
+    public static SQLQueryRowsDataContext prepareColumnsCorrelation(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull List<SQLQuerySymbolEntry> correlationColumNames,
+        @NotNull SQLQueryRowsSourceModel columnsSource
+    ) {
+        if (!correlationColumNames.isEmpty()) {
+            List<SQLQueryResultColumn> columns = new ArrayList<>(context.getColumnsList());
+            for (int i = 0; i < columns.size() && i < correlationColumNames.size(); i++) {
+                SQLQuerySymbolEntry correlatedNameDef = correlationColumNames.get(i);
+                if (correlatedNameDef.isNotClassified()) {
+                    SQLQueryResultColumn oldColumn = columns.get(i);
+                    SQLQuerySymbol correlatedName = correlatedNameDef.getSymbol();
+                    correlatedName.setDefinition(correlatedNameDef);
+                    correlatedName.setSymbolClass(SQLQuerySymbolClass.COLUMN_DERIVED);
+                    correlatedNameDef.setDefinition(oldColumn.symbol.getDefinition());
+                    columns.set(i, new SQLQueryResultColumn(i, correlatedName, columnsSource, null, null, oldColumn.type));
+                }
+            }
+            // TODO consider referencing pseudo-columns through alias
+            return columnsSource.getRowsSources().makeTuple(columnsSource, columns, context.getPseudoColumnsList());
+        } else {
+            return columnsSource.getRowsSources().makeTuple(columnsSource, context.getColumnsList(), context.getPseudoColumnsList());
+        }
+    }
+
+    @Override
+    protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        if (this.alias.isNotClassified()) {
+            this.alias.getSymbol().setDefinition(this.alias);
+            if (this.alias.isNotClassified()) {
+                this.alias.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
+            }
+        }
+
+        return this.source.resolveRowSources(context, statistics).appendAlias(this.source, this.alias.getSymbol());
+    }
+
+    @Override
+    protected SQLQueryRowsDataContext resolveRowDataImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        return prepareColumnsCorrelation(this.source.getRowsDataContext(), this.correlationColumNames, this);
     }
 
     @Override

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.binary;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.ui.ThemeColor;
 import org.jkiss.dbeaver.ui.ThemeListener;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 
 /**
  * Theme settings
@@ -29,6 +30,11 @@ public class HexEditThemeSettings extends ThemeListener {
     public volatile Color colorCaretLine;
     @ThemeColor("org.jkiss.dbeaver.hex.editor.color.text")
     public volatile Color colorText;
+
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_HEADER_FOREGROUND)
+    public volatile Color cellHeaderForeground;
+    @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_HEADER_BACKGROUND)
+    public volatile Color cellHeaderBackground;
 
     public static final HexEditThemeSettings instance = new HexEditThemeSettings();
 }
