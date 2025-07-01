@@ -1394,7 +1394,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             SQLQueryQualifiedName tableName = createTable.getTableName();
             String nodeName = "CREATE TABLE " + (tableName == null ? SQLConstants.QUESTION : tableName.toIdentifierString());
             this.makeNode(
-                node, createTable, nodeName, UIIcon.ACTION_OBJECT_ADD,
+                node, createTable, nodeName, UIIcon.OBJ_ADD,
                 Stream.concat(createTable.getColumns().stream(), createTable.getConstraints().stream()).toArray(SQLQueryNodeModel[]::new)
             );
             return null;

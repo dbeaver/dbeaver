@@ -8,7 +8,7 @@
         <node type="producer"
               id="database_producer"
               class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer"
-              icon="icons/formats/table.png"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/table.svg"
               label="%dataTransfer.producer.database.name"
               description="%dataTransfer.producer.database.description"
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings"
@@ -20,7 +20,7 @@
         <node type="consumer"
             id="database_consumer"
             class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
-            icon="icons/formats/table.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/table.svg"
             label="%dataTransfer.consumer.database.name"
             description="%dataTransfer.consumer.database.description"
             settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings"
@@ -31,7 +31,7 @@
         <node type="producer"
             id="stream_producer"
             class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer"
-            icon="icons/formats/file.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/file.svg"
             label="%dataTransfer.producer.stream.name"
             description="%dataTransfer.producer.stream.description"
             settings="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings">
@@ -67,7 +67,7 @@
         <node type="consumer"
               id="stream_consumer"
               class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer"
-              icon="icons/formats/file.png"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/file.svg"
               label="%dataTransfer.consumer.stream.name"
               description="%dataTransfer.consumer.stream.description"
               settings="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings">
@@ -280,7 +280,7 @@
 
     <extension point="org.jkiss.dbeaver.task">
         <category id="common" name="%task.category.name.common" description="%task.category.description.common"
-                  icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"/>
+                  icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.svg"/>
 
         <task id="dataExport" name="%task.name.export" description="%task.description.export" icon="icons/export.png" type="common"
               handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport" supportsVariables="true">
