@@ -414,16 +414,16 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return entityConstraints.getFirst();
     }
 
-    public static boolean isComplete(DBVEntityConstraint constraint) {
+    public static boolean isComplete(@NotNull DBVEntityConstraint constraint) {
         return constraint.getConstraintType().isUnique()
             && (!CommonUtils.isEmpty(constraint.getAttributes()) || constraint.isUseAllColumns());
     }
 
-    public void addConstraint(DBVEntityConstraint constraint) throws DBCException {
+    public void addConstraint(@NotNull DBVEntityConstraint constraint) throws DBCException {
         addConstraint(constraint, true);
     }
 
-    public void addConstraint(DBVEntityConstraint constraint, boolean reflect) throws DBCException {
+    public void addConstraint(@NotNull DBVEntityConstraint constraint, boolean reflect) throws DBCException {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
         }
