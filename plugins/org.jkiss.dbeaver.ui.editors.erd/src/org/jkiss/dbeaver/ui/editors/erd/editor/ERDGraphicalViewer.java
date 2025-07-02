@@ -42,6 +42,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.erd.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -59,7 +60,6 @@ import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.editors.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ui.editors.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ui.editors.erd.part.EntityPart;
-import org.jkiss.model.erd.*;
 
 import java.util.*;
 

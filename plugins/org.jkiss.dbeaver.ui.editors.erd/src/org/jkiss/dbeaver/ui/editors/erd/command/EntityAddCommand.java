@@ -25,6 +25,8 @@ import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.erd.ERDEntity;
+import org.jkiss.dbeaver.model.erd.ERDUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -39,8 +41,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.editors.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ui.editors.erd.part.EntityPart;
-import org.jkiss.model.erd.ERDEntity;
-import org.jkiss.model.erd.ERDUtils;
 
 import java.util.Collections;
 import java.util.List;

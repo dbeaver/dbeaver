@@ -24,6 +24,7 @@ import org.eclipse.gef.tools.DragEditPartsTracker;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.dbeaver.model.erd.*;
 import org.jkiss.dbeaver.ui.editors.erd.ERDUIUtils;
 import org.jkiss.dbeaver.ui.editors.erd.command.AttributeCheckCommand;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDGraphicalViewer;
@@ -37,7 +38,6 @@ import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.editors.erd.policy.AttributeConnectionEditPolicy;
 import org.jkiss.dbeaver.ui.editors.erd.policy.AttributeDragAndDropEditPolicy;
 import org.jkiss.dbeaver.utils.ListNode;
-import org.jkiss.model.erd.*;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;

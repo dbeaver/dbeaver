@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.erd.model;
 
+import org.jkiss.dbeaver.model.erd.DiagramCollectSettings;
 import org.jkiss.dbeaver.ui.editors.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIActivator;
-import org.jkiss.model.erd.DiagramCollectSettings;
 
 /**
  * Table collector settings

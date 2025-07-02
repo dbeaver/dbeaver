@@ -23,12 +23,12 @@ import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.erd.ERDEntityAttribute;
 import org.jkiss.dbeaver.ui.editors.erd.connector.ERDConnection;
 import org.jkiss.dbeaver.ui.editors.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ui.editors.erd.part.AttributePart;
 import org.jkiss.dbeaver.ui.editors.erd.part.EntityPart;
 import org.jkiss.dbeaver.utils.ListNode;
-import org.jkiss.model.erd.ERDEntityAttribute;
 
 import java.util.*;
 

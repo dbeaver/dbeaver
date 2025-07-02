@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.erd.command;
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.erd.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -28,7 +29,6 @@ import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
-import org.jkiss.model.erd.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;

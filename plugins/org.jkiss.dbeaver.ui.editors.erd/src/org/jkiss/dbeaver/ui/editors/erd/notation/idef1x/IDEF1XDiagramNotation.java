@@ -21,6 +21,9 @@ import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.erd.ERDAssociation;
+import org.jkiss.dbeaver.model.erd.ERDEntity;
+import org.jkiss.dbeaver.model.erd.ERDUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.editors.erd.notations.ERDNotation;
@@ -29,9 +32,6 @@ import org.jkiss.dbeaver.ui.editors.erd.part.AssociationPart.CircleDecoration;
 import org.jkiss.dbeaver.ui.editors.erd.part.AssociationPart.RhombusDecoration;
 import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterRegistry;
-import org.jkiss.model.erd.ERDAssociation;
-import org.jkiss.model.erd.ERDEntity;
-import org.jkiss.model.erd.ERDUtils;
 
 public class IDEF1XDiagramNotation extends ERDNotationBase implements ERDNotation {
     @Override

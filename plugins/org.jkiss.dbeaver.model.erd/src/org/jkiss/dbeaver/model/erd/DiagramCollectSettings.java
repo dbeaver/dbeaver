@@ -14,25 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.model.erd;
+package org.jkiss.dbeaver.model.erd;
 
-import org.jkiss.code.NotNull;
+/**
+ * Table collector settings
+ */
+public interface DiagramCollectSettings {
 
-public class ERDAttributeSettings {
-    private final ERDAttributeVisibility visibility;
-    private final boolean alphabeticalOrder;
+    boolean isShowViews();
 
-    public ERDAttributeSettings(@NotNull ERDAttributeVisibility visibility, boolean alphabeticalOrder) {
-        this.visibility = visibility;
-        this.alphabeticalOrder = alphabeticalOrder;
-    }
+    boolean isShowPartitions();
 
-    @NotNull
-    public ERDAttributeVisibility getVisibility() {
-        return visibility;
-    }
-
-    public boolean isAlphabeticalOrder() {
-        return alphabeticalOrder;
-    }
 }

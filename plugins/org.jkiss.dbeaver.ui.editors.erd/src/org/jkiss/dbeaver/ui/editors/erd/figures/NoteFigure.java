@@ -26,9 +26,9 @@ import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.text.FlowPage;
 import org.eclipse.draw2d.text.TextFlow;
+import org.jkiss.dbeaver.model.erd.ERDNote;
 import org.jkiss.dbeaver.ui.editors.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
-import org.jkiss.model.erd.ERDNote;
 
 /**
  * Figure used to represent a note

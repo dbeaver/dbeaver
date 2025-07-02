@@ -21,12 +21,12 @@ package org.jkiss.dbeaver.ui.editors.erd.editor;
 
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
+import org.jkiss.dbeaver.model.erd.ERDAssociation;
+import org.jkiss.dbeaver.model.erd.ERDEntity;
+import org.jkiss.dbeaver.model.erd.ERDEntityAttribute;
+import org.jkiss.dbeaver.model.erd.ERDNote;
 import org.jkiss.dbeaver.ui.editors.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ui.editors.erd.part.*;
-import org.jkiss.model.erd.ERDAssociation;
-import org.jkiss.model.erd.ERDEntity;
-import org.jkiss.model.erd.ERDEntityAttribute;
-import org.jkiss.model.erd.ERDNote;
 
 /**
  * Edit part factory for creating EditPart instances as delegates for model objects

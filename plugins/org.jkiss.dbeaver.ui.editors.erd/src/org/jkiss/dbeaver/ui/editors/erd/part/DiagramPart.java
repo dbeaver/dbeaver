@@ -31,6 +31,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.erd.ERDEntity;
+import org.jkiss.dbeaver.model.erd.ERDNote;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.LoadingJob;
@@ -50,8 +52,6 @@ import org.jkiss.dbeaver.ui.editors.erd.policy.DiagramContainerEditPolicy;
 import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouter;
 import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterRegistry;
-import org.jkiss.model.erd.ERDEntity;
-import org.jkiss.model.erd.ERDNote;
 import org.jkiss.utils.CommonUtils;
 
 import java.beans.PropertyChangeEvent;

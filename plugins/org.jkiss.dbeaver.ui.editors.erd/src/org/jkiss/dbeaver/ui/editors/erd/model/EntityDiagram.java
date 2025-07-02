@@ -22,13 +22,13 @@ package org.jkiss.dbeaver.ui.editors.erd.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.erd.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIActivator;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.model.erd.*;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.IdentityHashMap;

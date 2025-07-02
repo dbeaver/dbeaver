@@ -14,15 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.model.erd;
+
+package org.jkiss.dbeaver.model.erd;
+
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 /**
- * Table collector settings
+ * ERD constants
  */
-public interface DiagramCollectSettings {
+public class ERDConstants {
 
-    boolean isShowViews();
 
-    boolean isShowPartitions();
+    public static final String PREF_ATTR_VISIBILITY = "erd.attr.visibility";
+    public static final String PREF_ATTR_STYLES = "erd.attr.styles";
 
+    public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", null, true, false, false, true);
 }

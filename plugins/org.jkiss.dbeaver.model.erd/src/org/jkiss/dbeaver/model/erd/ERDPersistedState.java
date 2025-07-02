@@ -17,7 +17,7 @@
 /*
  * Created on Jul 13, 2004
  */
-package org.jkiss.model.erd;
+package org.jkiss.dbeaver.model.erd;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;

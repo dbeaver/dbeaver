@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.model.erd;
+package org.jkiss.dbeaver.model.erd;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.erd.internal.ERDMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.model.erd.internal.ERDMessages;
 import org.jkiss.utils.CommonUtils;
 
 /**

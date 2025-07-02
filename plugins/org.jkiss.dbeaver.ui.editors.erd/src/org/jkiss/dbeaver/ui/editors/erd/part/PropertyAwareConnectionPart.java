@@ -22,7 +22,7 @@ import org.eclipse.gef.RootEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.model.erd.ERDObject;
+import org.jkiss.dbeaver.model.erd.ERDObject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

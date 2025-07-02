@@ -33,6 +33,8 @@ import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.erd.ERDAssociation;
+import org.jkiss.dbeaver.model.erd.ERDEntityAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
@@ -49,8 +51,6 @@ import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouter;
 import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.ui.editors.erd.router.shortpath.ShortPathRouting;
 import org.jkiss.dbeaver.utils.ListNode;
-import org.jkiss.model.erd.ERDAssociation;
-import org.jkiss.model.erd.ERDEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;

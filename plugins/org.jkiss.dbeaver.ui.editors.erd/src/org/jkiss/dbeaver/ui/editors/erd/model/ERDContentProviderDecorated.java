@@ -18,10 +18,10 @@ package org.jkiss.dbeaver.ui.editors.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.erd.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDViewStyle;
-import org.jkiss.model.erd.*;
 
 import java.util.List;
 

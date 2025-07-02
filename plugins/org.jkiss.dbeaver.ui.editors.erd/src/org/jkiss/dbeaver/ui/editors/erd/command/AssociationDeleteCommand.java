@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.editors.erd.command;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.swt.SWT;
+import org.jkiss.dbeaver.model.erd.ERDAssociation;
+import org.jkiss.dbeaver.model.erd.ERDElement;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
@@ -27,8 +29,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ui.editors.erd.part.AttributePart;
 import org.jkiss.dbeaver.ui.editors.erd.part.EntityPart;
-import org.jkiss.model.erd.ERDAssociation;
-import org.jkiss.model.erd.ERDElement;
 
 /**
  * Command to delete relationship

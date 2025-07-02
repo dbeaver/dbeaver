@@ -22,8 +22,8 @@ package org.jkiss.dbeaver.ui.editors.erd.figures;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.jkiss.dbeaver.model.erd.ERDEntity;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
-import org.jkiss.model.erd.ERDEntity;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ui.editors.erd.notations;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.erd.ERDAssociation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.model.erd.ERDAssociation;
 
 /**
  * Interface of ER Diagram style notation

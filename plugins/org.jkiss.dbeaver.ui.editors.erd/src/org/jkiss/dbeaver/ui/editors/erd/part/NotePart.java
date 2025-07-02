@@ -28,6 +28,8 @@ import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.erd.ERDElement;
+import org.jkiss.dbeaver.model.erd.ERDNote;
 import org.jkiss.dbeaver.ui.controls.MultilineTextCellEditor;
 import org.jkiss.dbeaver.ui.editors.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ui.editors.erd.directedit.ExtendedDirectEditManager;
@@ -38,8 +40,6 @@ import org.jkiss.dbeaver.ui.editors.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ui.editors.erd.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.ui.editors.erd.policy.NoteDirectEditPolicy;
 import org.jkiss.dbeaver.ui.editors.erd.policy.NoteEditPolicy;
-import org.jkiss.model.erd.ERDElement;
-import org.jkiss.model.erd.ERDNote;
 
 import java.beans.PropertyChangeEvent;
 

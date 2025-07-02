@@ -26,6 +26,8 @@ import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.erd.ERDEntityAttribute;
+import org.jkiss.dbeaver.model.erd.ERDObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -36,8 +38,6 @@ import org.jkiss.dbeaver.ui.editors.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.editors.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.model.erd.ERDEntityAttribute;
-import org.jkiss.model.erd.ERDObject;
 import org.jkiss.utils.CommonUtils;
 
 public class ERDUIUtils {

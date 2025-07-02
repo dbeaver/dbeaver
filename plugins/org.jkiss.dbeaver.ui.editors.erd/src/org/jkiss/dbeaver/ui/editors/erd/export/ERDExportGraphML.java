@@ -21,6 +21,7 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.erd.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.erd.ERDUIUtils;
 import org.jkiss.dbeaver.ui.editors.erd.figures.AttributeListFigure;
@@ -28,7 +29,6 @@ import org.jkiss.dbeaver.ui.editors.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ui.editors.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ui.editors.erd.part.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.model.erd.*;
 import org.jkiss.utils.Pair;
 import org.jkiss.utils.xml.XMLBuilder;
 

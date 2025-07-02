@@ -24,10 +24,10 @@ import org.eclipse.gef.editpolicies.AbstractEditPolicy;
 import org.eclipse.gef.editpolicies.ContainerEditPolicy;
 import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.GroupRequest;
+import org.jkiss.dbeaver.model.erd.ERDEntity;
+import org.jkiss.dbeaver.model.erd.ERDNote;
 import org.jkiss.dbeaver.ui.editors.erd.command.NoteCreateCommand;
 import org.jkiss.dbeaver.ui.editors.erd.part.DiagramPart;
-import org.jkiss.model.erd.ERDEntity;
-import org.jkiss.model.erd.ERDNote;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;

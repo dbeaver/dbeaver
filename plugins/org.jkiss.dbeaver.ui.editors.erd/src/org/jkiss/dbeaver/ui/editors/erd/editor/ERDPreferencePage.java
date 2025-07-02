@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.erd.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -37,7 +38,6 @@ import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.model.erd.ERDAttributeVisibility;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;

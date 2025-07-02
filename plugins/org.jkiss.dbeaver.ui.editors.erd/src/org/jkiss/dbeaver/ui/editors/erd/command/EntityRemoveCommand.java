@@ -17,10 +17,10 @@
 package org.jkiss.dbeaver.ui.editors.erd.command;
 
 import org.eclipse.gef.commands.Command;
+import org.jkiss.dbeaver.model.erd.ERDAssociation;
+import org.jkiss.dbeaver.model.erd.ERDEntity;
 import org.jkiss.dbeaver.ui.editors.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ui.editors.erd.part.EntityPart;
-import org.jkiss.model.erd.ERDAssociation;
-import org.jkiss.model.erd.ERDEntity;
 
 import java.util.ArrayList;
 import java.util.List;

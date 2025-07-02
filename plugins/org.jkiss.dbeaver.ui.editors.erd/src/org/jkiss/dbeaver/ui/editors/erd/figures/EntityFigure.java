@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.erd.ERDEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -33,7 +34,6 @@ import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIActivator;
 import org.jkiss.dbeaver.ui.editors.erd.part.EntityPart;
-import org.jkiss.model.erd.ERDEntity;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;

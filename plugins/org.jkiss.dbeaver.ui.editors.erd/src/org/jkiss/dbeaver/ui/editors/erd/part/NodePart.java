@@ -22,9 +22,9 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.NodeEditPart;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.jkiss.dbeaver.model.erd.ERDAssociation;
+import org.jkiss.dbeaver.model.erd.ERDElement;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
-import org.jkiss.model.erd.ERDAssociation;
-import org.jkiss.model.erd.ERDElement;
 
 import java.util.List;
 

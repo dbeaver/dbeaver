@@ -29,6 +29,7 @@ import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.erd.ERDEntity;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ui.editors.erd.layout.GraphAnimation;
 import org.jkiss.dbeaver.ui.editors.erd.model.ERDDecorator;
@@ -37,7 +38,6 @@ import org.jkiss.dbeaver.ui.editors.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ui.editors.erd.part.EntityPart;
 import org.jkiss.dbeaver.ui.editors.erd.part.NodePart;
 import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterDescriptor;
-import org.jkiss.model.erd.ERDEntity;
 
 import java.util.ArrayList;
 import java.util.IdentityHashMap;

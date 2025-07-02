@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.ui.editors.erd.command;
 
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
+import org.jkiss.dbeaver.model.erd.ERDNote;
 import org.jkiss.dbeaver.ui.editors.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ui.editors.erd.part.NotePart;
-import org.jkiss.model.erd.ERDNote;
 
 /**
  * Command to delete tables from the schema

@@ -29,6 +29,8 @@ import org.eclipse.gef.dnd.AbstractTransferDropTargetListener;
 import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.CreationFactory;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.erd.DiagramObjectCollector;
+import org.jkiss.dbeaver.model.erd.ERDEntity;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -38,8 +40,6 @@ import org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIActivator;
 import org.jkiss.dbeaver.ui.editors.erd.model.DiagramCollectSettingsDefault;
 import org.jkiss.dbeaver.ui.editors.erd.part.DiagramPart;
-import org.jkiss.model.erd.DiagramObjectCollector;
-import org.jkiss.model.erd.ERDEntity;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

@@ -27,6 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.erd.ERDNote;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -40,7 +41,6 @@ import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIActivator;
 import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterDescriptor;
 import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterRegistry;
-import org.jkiss.model.erd.ERDNote;
 
 /**
  * ERD object adapter

@@ -20,9 +20,9 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
+import org.jkiss.dbeaver.model.erd.ERDNote;
 import org.jkiss.dbeaver.ui.editors.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ui.editors.erd.part.NotePart;
-import org.jkiss.model.erd.ERDNote;
 
 /**
  * Add entity to diagram

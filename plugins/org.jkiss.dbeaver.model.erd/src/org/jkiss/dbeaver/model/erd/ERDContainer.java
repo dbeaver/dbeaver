@@ -14,10 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 13, 2004
- */
-package org.jkiss.model.erd;
+package org.jkiss.dbeaver.model.erd;
 
-public class ERDModel {
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * ERD object container (diagram)
+ */
+public interface ERDContainer {
+
+    ERDContentProvider getContentProvider();
+
+    List<ERDEntity> getEntities();
+
+    Map<DBSEntity, ERDEntity> getEntityMap();
+
 }

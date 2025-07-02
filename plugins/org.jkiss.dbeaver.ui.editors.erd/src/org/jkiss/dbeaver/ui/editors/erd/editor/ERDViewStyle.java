@@ -17,9 +17,9 @@
 package org.jkiss.dbeaver.ui.editors.erd.editor;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.erd.ERDConstants;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
-import org.jkiss.model.erd.ERDConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;

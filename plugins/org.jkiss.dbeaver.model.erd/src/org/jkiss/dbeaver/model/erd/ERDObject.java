@@ -17,7 +17,7 @@
 /*
  * Created on Jul 15, 2004
  */
-package org.jkiss.model.erd;
+package org.jkiss.dbeaver.model.erd;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPAdaptable;

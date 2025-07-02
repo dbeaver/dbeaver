@@ -14,19 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.model.erd;
-
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-
-/**
- * ERD constants
+/*
+ * Created on Jul 13, 2004
  */
-public class ERDConstants {
+package org.jkiss.dbeaver.model.erd;
 
-
-    public static final String PREF_ATTR_VISIBILITY = "erd.attr.visibility";
-    public static final String PREF_ATTR_STYLES = "erd.attr.styles";
-
-    public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", null, true, false, false, true);
+public class ERDModel {
 }

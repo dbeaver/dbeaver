@@ -21,13 +21,13 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.erd.ERDAttributeVisibility;
+import org.jkiss.dbeaver.model.erd.ERDContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ui.editors.erd.part.EntityPart;
 import org.jkiss.dbeaver.ui.editors.erd.part.NodePart;
 import org.jkiss.dbeaver.ui.editors.erd.part.NotePart;
-import org.jkiss.model.erd.ERDAttributeVisibility;
-import org.jkiss.model.erd.ERDContainer;
 
 /**
  * ERD object container (diagram)

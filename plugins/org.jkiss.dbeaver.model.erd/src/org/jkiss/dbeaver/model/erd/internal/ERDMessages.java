@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package org.jkiss.model.erd.internal;
+package org.jkiss.dbeaver.model.erd.internal;
 
 import org.jkiss.dbeaver.utils.NLS;
 
 public class ERDMessages extends NLS {
-    static final String BUNDLE_NAME = "org.jkiss.model.erd.internal.ERDMessages"; //$NON-NLS-1$
+    static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.erd.internal.ERDMessages"; //$NON-NLS-1$
 
     static {
         // initialize resource bundle

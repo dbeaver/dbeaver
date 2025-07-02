@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.erd.ERDEntityAttribute;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDViewStyle;
@@ -34,7 +35,6 @@ import org.jkiss.dbeaver.ui.editors.erd.model.ERDDecorator;
 import org.jkiss.dbeaver.ui.editors.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ui.editors.erd.part.AttributePart;
 import org.jkiss.dbeaver.ui.editors.erd.part.DiagramPart;
-import org.jkiss.model.erd.ERDEntityAttribute;
 
 import java.util.List;
 

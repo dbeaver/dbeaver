@@ -29,6 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.erd.ERDObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
@@ -36,7 +37,6 @@ import org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ui.editors.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
-import org.jkiss.model.erd.ERDObject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

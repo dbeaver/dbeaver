@@ -29,6 +29,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.erd.DiagramObjectCollector;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -42,7 +43,6 @@ import org.jkiss.dbeaver.ui.editors.erd.model.DiagramCollectSettingsDefault;
 import org.jkiss.dbeaver.ui.editors.erd.model.ERDContentProviderDecorated;
 import org.jkiss.dbeaver.ui.editors.erd.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.ui.editors.erd.model.EntityDiagram;
-import org.jkiss.model.erd.DiagramObjectCollector;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;

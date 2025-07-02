@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ui.editors.erd.command;
 
 import org.eclipse.gef.commands.Command;
-import org.jkiss.model.erd.ERDAssociation;
-import org.jkiss.model.erd.ERDElement;
+import org.jkiss.dbeaver.model.erd.ERDAssociation;
+import org.jkiss.dbeaver.model.erd.ERDElement;
 
 import java.util.List;
 

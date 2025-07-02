@@ -25,6 +25,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.erd.DiagramObjectCollector;
+import org.jkiss.dbeaver.model.erd.ERDEntity;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -33,8 +35,6 @@ import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorAdapter;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ui.editors.erd.model.DiagramCollectSettingsDefault;
-import org.jkiss.model.erd.DiagramObjectCollector;
-import org.jkiss.model.erd.ERDEntity;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;

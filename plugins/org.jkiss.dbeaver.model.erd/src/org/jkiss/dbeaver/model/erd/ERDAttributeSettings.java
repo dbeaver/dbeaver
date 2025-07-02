@@ -14,22 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.model.erd;
+package org.jkiss.dbeaver.model.erd;
 
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.code.NotNull;
 
-import java.util.List;
-import java.util.Map;
+public class ERDAttributeSettings {
+    private final ERDAttributeVisibility visibility;
+    private final boolean alphabeticalOrder;
 
-/**
- * ERD object container (diagram)
- */
-public interface ERDContainer {
+    public ERDAttributeSettings(@NotNull ERDAttributeVisibility visibility, boolean alphabeticalOrder) {
+        this.visibility = visibility;
+        this.alphabeticalOrder = alphabeticalOrder;
+    }
 
-    ERDContentProvider getContentProvider();
+    @NotNull
+    public ERDAttributeVisibility getVisibility() {
+        return visibility;
+    }
 
-    List<ERDEntity> getEntities();
-
-    Map<DBSEntity, ERDEntity> getEntityMap();
-
+    public boolean isAlphabeticalOrder() {
+        return alphabeticalOrder;
+    }
 }
