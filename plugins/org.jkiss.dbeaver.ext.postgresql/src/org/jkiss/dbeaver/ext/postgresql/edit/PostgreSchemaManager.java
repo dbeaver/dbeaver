@@ -83,7 +83,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
                 .getConnectionConfiguration()
                 .getUserName();
 
-            if (owner != null && !owner.getName().equalsIgnoreCase(currentUser)) {
+            if (owner != null && !owner.getName().equals(currentUser)) {
                 script.append("\nAUTHORIZATION ")
                     .append(DBUtils.getQuotedIdentifier(owner));
             }
