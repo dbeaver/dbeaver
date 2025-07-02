@@ -73,18 +73,17 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
         @NotNull ObjectCreateCommand command,
         @NotNull Map<String, Object> options
     ) {
-        final PostgreSchema schema = command.getObject();
-        final StringBuilder script = new StringBuilder("CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema));
+        PostgreSchema schema = command.getObject();
+        StringBuilder script = new StringBuilder("CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema));
         try {
-            final PostgreRole owner = schema.getOwner(monitor);
+            PostgreRole owner = schema.getOwner(monitor);
             String currentUser = executionContext
                 .getDataSource()
                 .getContainer()
                 .getConnectionConfiguration()
                 .getUserName();
 
-            PostgreRole selectedRole = schema.getDatabase().getRoleById(monitor, owner.getObjectId());
-            if (selectedRole != null && !selectedRole.getName().equalsIgnoreCase(currentUser)) {
+            if (owner != null && !owner.getName().equalsIgnoreCase(currentUser)) {
                 script.append("\nAUTHORIZATION ")
                     .append(DBUtils.getQuotedIdentifier(owner));
             }
