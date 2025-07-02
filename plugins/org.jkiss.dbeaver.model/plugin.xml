@@ -87,7 +87,7 @@
                 applyByDefault="true">
             <type kind="STRUCT"/>
             <type kind="DOCUMENT"/>
-            <type kind="OBJECT"/>
+            <!--<type kind="OBJECT"/>-->
         </transformer>
         <transformer
                 class="org.jkiss.dbeaver.model.impl.data.transformers.MapAttributeTransformer"
@@ -97,7 +97,7 @@
                 applyByDefault="true">
             <type kind="STRUCT"/>
             <type kind="DOCUMENT"/>
-<!--            <type kind="OBJECT"/>-->
+            <!--<type kind="OBJECT"/>-->
             <type kind="ANY"/>
         </transformer>
         <transformer
