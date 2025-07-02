@@ -890,7 +890,8 @@ public class DBExecUtils {
     @NotNull
     public static Map<DBSEntity, DBDRowIdentifier> bindUniqueIdentifiers(
         @NotNull DBDAttributeBinding[] bindings,
-        @NotNull DBRProgressMonitor monitor) throws DBException {
+        @NotNull DBRProgressMonitor monitor
+    ) throws DBException {
 
         Map<DBSEntity, DBDRowIdentifier> identifierMap = new IdentityHashMap<>();
 

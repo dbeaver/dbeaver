@@ -414,6 +414,21 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return entityConstraints.getFirst();
     }
 
+    /**
+     * Determines whether the given virtual constraint is considered complete,
+     * meaning it can be used as a row identifier.
+     * <p>
+     * A constraint is considered complete if:
+     * <ul>
+     *   <li>its type is unique, and</li>
+     *   <li>it has at least one attribute or uses all columns</li>
+     * </ul>
+     *
+     * @param constraint the virtual entity constraint to check
+     * @return {@code true} if the constraint is unique and structurally complete
+     *
+     * @see org.jkiss.dbeaver.model.data.DBDRowIdentifier#isIncomplete()
+     */
     public static boolean isComplete(@NotNull DBVEntityConstraint constraint) {
         return constraint.getConstraintType().isUnique()
             && (!CommonUtils.isEmpty(constraint.getAttributes()) || constraint.isUseAllColumns());
