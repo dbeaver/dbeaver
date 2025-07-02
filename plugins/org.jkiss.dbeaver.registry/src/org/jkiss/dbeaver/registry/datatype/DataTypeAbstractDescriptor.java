@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
     private static final Log log = Log.getLog(ValueHandlerDescriptor.class);
 
     public static final String ALL_TYPES_PATTERN = "*";
+    public static final String TYPED_PARAMS_PATTERN = "\\(.*\\)";
 
     private final Class<DESCRIPTOR> instanceType;
     private final String id;
@@ -45,7 +46,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
     private final Set<Object> supportedTypes = new HashSet<>();
     private final List<String> supportedDataSources = new ArrayList<>();
 
-    private boolean hasAll, hasTypeIds, hasDataKinds, hasTypeNames;
+    private boolean hasAll, hasTypeIds, hasDataKinds, hasTypeNames, hasTypesWithTypedParams;
 
     protected DESCRIPTOR instance;
 
@@ -63,6 +64,10 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
             if (typeName != null) {
                 if (typeName.equals(ALL_TYPES_PATTERN)) {
                     hasAll = true;
+                } else if (Boolean.parseBoolean(typeElement.getAttribute(RegistryConstants.ATTR_INCLUDES_TYPED_PARAMS))) {
+                    supportedTypes.add(typeName.toLowerCase(Locale.ENGLISH) + TYPED_PARAMS_PATTERN);
+                    hasTypeNames = true;
+                    hasTypesWithTypedParams = true;
                 } else {
                     supportedTypes.add(typeName.toLowerCase(Locale.ENGLISH));
                     hasTypeNames = true;
@@ -152,8 +157,21 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         }
         if (hasTypeNames) {
             String typeName = typedObject.getTypeName();
-            if (typeName != null && supportedTypes.contains(typeName.toLowerCase(Locale.ENGLISH))) {
-                return true;
+            if (typeName != null) {
+                final String lowerCaseTypeName = typeName.toLowerCase(Locale.ENGLISH);
+                if (supportedTypes.contains(lowerCaseTypeName)) {
+                    return true;
+                }
+
+                if (hasTypesWithTypedParams) {
+                    boolean typeMatches = supportedTypes.stream()
+                        .map(Object::toString)
+                        .filter(type -> type.contains(TYPED_PARAMS_PATTERN))
+                        .anyMatch(lowerCaseTypeName::matches);
+                    if (typeMatches) {
+                        return true;
+                    }
+                }
             }
         }
         return hasDataKinds && supportedTypes.contains(typedObject.getDataKind());

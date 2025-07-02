@@ -39,7 +39,7 @@ public class ClickhouseValueHandlerProvider implements DBDValueHandlerProvider {
             return ClickhouseGeometryValueHandler.INSTANCE;
         } else if (dataKind == DBPDataKind.ARRAY) {
             return ClickhouseArrayValueHandler.INSTANCE;
-        } else if (dataKind == DBPDataKind.STRUCT) {
+        } else if (dataKind == DBPDataKind.STRUCT || dataKind == DBPDataKind.OBJECT) {
             return ClickhouseStructValueHandler.INSTANCE;
         } else if ("bool".equals(lowerTypeName)) {
             return ClickhouseBoolValueHandler.INSTANCE;
