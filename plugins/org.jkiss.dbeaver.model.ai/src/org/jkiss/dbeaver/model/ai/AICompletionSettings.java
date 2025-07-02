@@ -31,18 +31,24 @@ import java.io.IOException;
  * Completion settings.
  * These settings are stored for each connection separately.
  */
-public final class AICompletionSettings {
+public class AICompletionSettings {
 
     private static final Log log = Log.getLog(AICompletionSettings.class);
 
     private final DBPDataSourceContainer dataSourceContainer;
+    protected final DBPPreferenceStore preferenceStore;
     private boolean metaTransferConfirmed;
     private boolean allowMetaTransfer;
     private AIDatabaseScope scope;
     private String[] customObjectIds;
 
-    public AICompletionSettings(DBPDataSourceContainer dataSourceContainer) {
+    public AICompletionSettings(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        this(getPreferenceStore(), dataSourceContainer);
+    }
+
+    public AICompletionSettings(@NotNull DBPPreferenceStore preferenceStore, @NotNull DBPDataSourceContainer dataSourceContainer) {
         this.dataSourceContainer = dataSourceContainer;
+        this.preferenceStore = preferenceStore;
         loadSettings();
     }
 
@@ -89,34 +95,33 @@ public final class AICompletionSettings {
     }
 
     private void loadSettings() {
-        DBPPreferenceStore preferenceStore = getPreferenceStore();
-        String prefix = "ai-" + dataSourceContainer.getId() + ".";
-        metaTransferConfirmed = preferenceStore.getBoolean(prefix + AIConstants.AI_META_TRANSFER_CONFIRMED);
+        metaTransferConfirmed = preferenceStore.getBoolean(getParameterName(AIConstants.AI_META_TRANSFER_CONFIRMED));
         scope = CommonUtils.valueOf(
             AIDatabaseScope.class,
-            preferenceStore.getString(prefix + AIConstants.AI_META_SCOPE),
+            preferenceStore.getString(getParameterName(AIConstants.AI_META_SCOPE)),
             AIDatabaseScope.CURRENT_SCHEMA);
-        String csString = preferenceStore.getString(prefix + AIConstants.AI_META_CUSTOM);
-        customObjectIds = csString == null ? new String[0] : csString.split(",");
+        String csString = preferenceStore.getString(getParameterName(AIConstants.AI_META_CUSTOM));
+        customObjectIds = CommonUtils.isEmpty(csString) ? new String[0] : csString.split(",");
     }
 
     public void saveSettings() {
-        DBPPreferenceStore preferenceStore = getPreferenceStore();
-        String prefix = "ai-" + dataSourceContainer.getId() + ".";
-        preferenceStore.setValue(prefix + AIConstants.AI_META_TRANSFER_CONFIRMED, metaTransferConfirmed);
-        preferenceStore.setValue(prefix + AIConstants.AI_META_SCOPE, scope.name());
+        preferenceStore.setValue(getParameterName(AIConstants.AI_META_TRANSFER_CONFIRMED), metaTransferConfirmed);
+        preferenceStore.setValue(getParameterName(AIConstants.AI_META_SCOPE), scope.name());
         if (ArrayUtils.isEmpty(customObjectIds)) {
-            preferenceStore.setToDefault(prefix + AIConstants.AI_META_CUSTOM);
+            preferenceStore.setToDefault(getParameterName(AIConstants.AI_META_CUSTOM));
         } else {
-            preferenceStore.setValue(
-                prefix + AIConstants.AI_META_CUSTOM,
-                String.join(",", customObjectIds));
+            preferenceStore.setValue(getParameterName(AIConstants.AI_META_CUSTOM), String.join(",", customObjectIds));
         }
         try {
             preferenceStore.save();
         } catch (IOException e) {
             log.error(e);
         }
+    }
+
+    @NotNull
+    protected String getParameterName(@NotNull String postfix) {
+        return "ai-" + dataSourceContainer.getId() + "." + postfix;
     }
 
 }

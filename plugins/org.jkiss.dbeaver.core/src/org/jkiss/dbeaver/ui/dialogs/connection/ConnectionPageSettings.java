@@ -22,6 +22,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -283,10 +284,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 tabFolder.setUnselectedCloseVisible(false);
 
                 // Create and populate top-right toolbar
-                var toolBar = new ToolBar(tabFolder, SWT.FLAT | SWT.RIGHT);
+                var toolBarComposite = new Composite(tabFolder, SWT.NONE);
+                toolBarComposite.setLayout(GridLayoutFactory.fillDefaults().extendedMargins(0, 0, 0, 0).create());
+
+                var toolBar = new ToolBar(toolBarComposite, SWT.FLAT | SWT.RIGHT);
                 handlerItem = createHandlerItem(toolBar, allPages);
                 profileItem = createProfileItem(toolBar);
-                tabFolder.setTopRight(toolBar, SWT.RIGHT);
+                tabFolder.setTopRight(toolBarComposite, SWT.RIGHT);
 
                 updateHandlerItem(allPages);
                 updateProfileItem();
@@ -364,7 +368,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
         });
 
-        var toolItem = UIUtils.createToolItem(toolBar, CoreMessages.dialog_connection_network_add_tunnel_label, null, UIIcon.ADD, null);
+        var toolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
+        toolItem.setText(CoreMessages.dialog_connection_network_add_tunnel_label);
+        toolItem.setImage(DBeaverIcons.getImage(UIIcon.ADD));
         toolItem.addDisposeListener(e -> handlerManager.dispose());
         toolItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
             var bounds = toolItem.getBounds();
@@ -413,17 +419,20 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             });
         });
 
-        var profileItem = UIUtils.createToolItem(toolBar, "N/A", "Active profile", DBIcon.TYPE_DOCUMENT, null);
-        profileItem.addDisposeListener(e -> profileManager.dispose());
-        profileItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-            var bounds = profileItem.getBounds();
+        var toolItem = new ToolItem(toolBar, SWT.DROP_DOWN);
+        toolItem.setText("N/A");
+        toolItem.setToolTipText("Active profile");
+        toolItem.setImage(DBeaverIcons.getImage(DBIcon.TYPE_DOCUMENT));
+        toolItem.addDisposeListener(e -> profileManager.dispose());
+        toolItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            var bounds = toolItem.getBounds();
             var location = toolBar.getDisplay().map(toolBar, null, bounds.x, bounds.height);
             var menu = profileManager.createContextMenu(tabFolder);
             menu.setLocation(location.x, location.y);
             menu.setVisible(true);
         }));
 
-        return profileItem;
+        return toolItem;
     }
 
     @NotNull

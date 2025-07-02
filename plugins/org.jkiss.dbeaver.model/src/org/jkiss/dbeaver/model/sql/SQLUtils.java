@@ -38,9 +38,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -678,7 +675,7 @@ public final class SQLUtils {
         return dataSource.getSQLDialect().getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
-    public static String getScriptDescripion(@NotNull String sql) {
+    public static String getScriptDescription(@NotNull String sql) {
         sql = stripComments(BasicSQLDialect.INSTANCE, sql);
         Matcher matcher = CREATE_PREFIX_PATTERN.matcher(sql);
         if (matcher.find() && matcher.start(0) == 0) {
@@ -697,26 +694,26 @@ public final class SQLUtils {
             return name;
         }
 
+        SQLDialect dialect = entity.getParentObject().getDataSource().getSQLDialect();
         StringBuilder buf = new StringBuilder();
-        boolean prevNonLetter = true;
+        boolean prevInvalid = true;
         char prevChar = 0;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
-            if (!Character.isLetter(c)) {
-                prevNonLetter = true;
+            if (!dialect.validIdentifierPart(c, false)) {
+                prevInvalid = true;
             } else {
-                if (prevNonLetter || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c))) {
+                if (prevInvalid || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c))) {
                     buf.append(c);
                 }
-                prevNonLetter = false;
+                prevInvalid = false;
             }
             prevChar = c;
         }
         String alias;
-        if(!CommonUtils.isEmpty(buf)) {
+        if (!CommonUtils.isEmpty(buf)) {
             alias = buf.toString().toLowerCase(Locale.ENGLISH);
-        }
-        else{
+        } else {
             alias = "t";
         }
 
