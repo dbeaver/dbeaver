@@ -9,7 +9,7 @@
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../../</relativePath>
     </parent>
-    <version>25.1.2-SNAPSHOT</version>
+    <version>25.1.3-SNAPSHOT</version>
     <artifactId>standalone</artifactId>
     <packaging>eclipse-repository</packaging>
     <name>DBeaver CE Standalone</name>
@@ -54,7 +54,7 @@
                             <type>eclipse-plugin</type>
                             <id>org.apache.ant</id>
                             <restrictTo>
-                                <version>1.99.0</version>
+                                <version>1.99.1</version>
                             </restrictTo>
                         </filter>
                     </filters>
