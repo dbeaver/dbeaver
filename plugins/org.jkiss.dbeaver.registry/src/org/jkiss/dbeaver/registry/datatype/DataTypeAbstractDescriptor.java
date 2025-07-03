@@ -38,7 +38,6 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
     private static final Log log = Log.getLog(ValueHandlerDescriptor.class);
 
     public static final String ALL_TYPES_PATTERN = "*";
-    public static final String TYPED_PARAMS_PATTERN = "\\(.*\\)";
 
     private final Class<DESCRIPTOR> instanceType;
     private final String id;
@@ -64,11 +63,10 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
             if (typeName != null) {
                 if (typeName.equals(ALL_TYPES_PATTERN)) {
                     hasAll = true;
-                } else if (Boolean.parseBoolean(typeElement.getAttribute(RegistryConstants.ATTR_INCLUDES_TYPED_PARAMS))) {
-                    supportedTypes.add(typeName.toLowerCase(Locale.ENGLISH) + TYPED_PARAMS_PATTERN);
-                    hasTypeNames = true;
-                    hasTypesWithTypedParams = true;
                 } else {
+                    if (typeName.contains(ALL_TYPES_PATTERN)) {
+                        hasTypesWithTypedParams = true;
+                    }
                     supportedTypes.add(typeName.toLowerCase(Locale.ENGLISH));
                     hasTypeNames = true;
                 }
@@ -162,13 +160,13 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
                 if (supportedTypes.contains(lowerCaseTypeName)) {
                     return true;
                 }
-
                 if (hasTypesWithTypedParams) {
-                    boolean typeMatches = supportedTypes.stream()
+                    boolean matchesTypeWithTypesParams = supportedTypes.stream()
                         .map(Object::toString)
-                        .filter(type -> type.contains(TYPED_PARAMS_PATTERN))
-                        .anyMatch(lowerCaseTypeName::matches);
-                    if (typeMatches) {
+                        .filter(t -> t.contains(ALL_TYPES_PATTERN))
+                        .map(t -> t.substring(0, t.length() - 1))
+                        .anyMatch(lowerCaseTypeName::startsWith);
+                    if (matchesTypeWithTypesParams) {
                         return true;
                     }
                 }

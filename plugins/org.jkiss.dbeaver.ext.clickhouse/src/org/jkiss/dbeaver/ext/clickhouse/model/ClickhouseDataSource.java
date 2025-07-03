@@ -52,8 +52,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
-import static org.jkiss.dbeaver.ext.clickhouse.ClickhouseTypeParser.isComplexType;
-
 public class ClickhouseDataSource extends GenericDataSource {
 
     private static final Log log = Log.getLog(ClickhouseDataSource.class);
@@ -188,7 +186,7 @@ public class ClickhouseDataSource extends GenericDataSource {
         if (shortName != null) {
             typeFullName = shortName;
         }
-        if (isComplexType(typeFullName)) {
+        if (ClickhouseTypeParser.isComplexType(typeFullName)) {
             final DBSDataType type = ClickhouseTypeParser.getType(monitor, this, typeFullName);
             if (type != null) {
                 return type;
@@ -256,7 +254,9 @@ public class ClickhouseDataSource extends GenericDataSource {
     @NotNull
     @Override
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
-        if (isComplexType(typeName)) {
+        if (typeName.startsWith("Array")) {
+            return DBPDataKind.ARRAY;
+        } else if (ClickhouseTypeParser.isComplexType(typeName)) {
             return DBPDataKind.STRUCT;
         }
         return super.resolveDataKind(typeName, valueType);

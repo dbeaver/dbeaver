@@ -57,7 +57,6 @@ public class RegistryConstants {
     public static final String ATTR_DISABLED = "disabled"; //$NON-NLS-1$
     public static final String ATTR_CUSTOM = "custom"; //$NON-NLS-1$
     public static final String ATTR_NAME = "name"; //$NON-NLS-1$
-    public static final String ATTR_INCLUDES_TYPED_PARAMS = "includesTypedParams"; //$NON-NLS-1$
     public static final String ATTR_VALUE = "value"; //$NON-NLS-1$
     public static final String ATTR_ALIAS = "alias"; //$NON-NLS-1$
     public static final String ATTR_CLASS = "class"; //$NON-NLS-1$
