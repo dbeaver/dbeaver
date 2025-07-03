@@ -26,8 +26,7 @@ import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.ControlEditor;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -791,25 +790,51 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             @Override
             protected Control createControl(Composite parent) {
+                FormLayout fl = new FormLayout();
+                fl.marginWidth = 0;
+                fl.marginHeight = 0;
+                fl.spacing = 0;
                 Composite composite = new Composite(parent, SWT.NONE);
-                composite.setFont(parent.getFont());
-                GridLayout layout = new GridLayout(2, false);
-                layout.marginHeight      = 0;
-                layout.marginWidth       = 0;
-                layout.horizontalSpacing = 0;
-                layout.verticalSpacing   = 0;
-                composite.setLayout(layout);
+                composite.setLayout(fl);
 
-                combo = new CCombo(composite,
-                    SWT.DROP_DOWN | (finalAllowsCreate ? SWT.NONE : SWT.READ_ONLY));
+                Button browseButton = new Button(composite, SWT.PUSH);
+                browseButton.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
+                FormData btnFd = new FormData();
+                btnFd.top = new FormAttachment(0, 0);
+                btnFd.bottom = new FormAttachment(100, 0);
+                btnFd.right = new FormAttachment(100, 0);
+                browseButton.setLayoutData(btnFd);
+                if (!isContainer) {
+                    browseButton.setVisible(false);
+                } else {
+                    browseButton.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            openDialogBox(composite);
+                        }
+                    });
+                }
+
+                combo = new CCombo(
+                    composite,
+                    SWT.DROP_DOWN | (finalAllowsCreate ? SWT.NONE : SWT.READ_ONLY)
+                );
                 combo.setVisibleItemCount(15);
-                combo.setFont(parent.getFont());
-                combo.setBackground(parent.getDisplay()
+                combo.setFont(composite.getFont());
+                combo.setBackground(composite.getDisplay()
                     .getSystemColor(SWT.COLOR_LIST_BACKGROUND));
                 combo.setItems(items.toArray(new String[0]));
-                GridData gdCombo = new GridData(SWT.FILL, SWT.CENTER, true, false);
-                gdCombo.horizontalSpan = isContainer ? 1 : 2;
-                combo.setLayoutData(gdCombo);
+
+                FormData comboFd = new FormData();
+                comboFd.top = new FormAttachment(0, 0);
+                comboFd.bottom = new FormAttachment(100, 0);
+                comboFd.left = new FormAttachment(0, 0);
+                if (isContainer) {
+                    comboFd.right = new FormAttachment(browseButton, 0);
+                } else {
+                    comboFd.right = new FormAttachment(100, 0);
+                }
+                combo.setLayoutData(comboFd);
 
                 combo.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -829,22 +854,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     @Override
                     public void focusLost(FocusEvent e) {
                         markDirty();
-                        fireApplyEditorValue();
-                    }
-                });
-
-                Button browseButton = new Button(composite, SWT.PUSH);
-                browseButton.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
-                GridData gdBtn = new GridData(SWT.CENTER, SWT.CENTER, false, false);
-                if (!isContainer) {
-                    gdBtn.exclude = true;
-                    browseButton.setVisible(false);
-                }
-                browseButton.setLayoutData(gdBtn);
-                browseButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        openDialogBox(composite);
                     }
                 });
 
@@ -861,7 +870,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             @Override
             protected Object openDialogBox(Control cellEditorWindow) {
                 if (isContainer) {
-                    mapExistingTables(new DatabaseMappingContainer[]{
+                    mapExistingTables(new DatabaseMappingContainer[] {
                         (DatabaseMappingContainer) element
                     });
                     mappingViewer.refresh(element);
