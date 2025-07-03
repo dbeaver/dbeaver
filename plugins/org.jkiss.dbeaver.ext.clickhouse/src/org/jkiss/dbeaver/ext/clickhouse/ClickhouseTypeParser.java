@@ -89,6 +89,8 @@ public class ClickhouseTypeParser {
             } else if (object instanceof String) { 
                 values = JSONUtils.parseMap(gson, new StringReader((String) object)).entrySet().stream()
                     .flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
+            } else if (object instanceof Object[] array) {
+                values = array;
             } else {
                 values = ((Collection<?>) object).toArray();
             }
@@ -129,9 +131,11 @@ public class ClickhouseTypeParser {
     ) throws DBException {
         final DBSDataType resolved;
         if (type.simpleType() != null) {
-            resolved = DBUtils.resolveDataType(monitor, dataSource, type.simpleType().getText());
+            resolved = DBUtils.resolveDataType(monitor, dataSource, getSimpleTypeText(type.simpleType()));
         } else if (type.markerType() != null) {
             resolved = DBUtils.resolveDataType(monitor, dataSource, type.markerType().anyType().getText());
+        } else if (type.enumType() != null) {
+            resolved = DBUtils.resolveDataType(monitor, dataSource, type.enumType().Enum().getText());
         } else if (type.tupleType() != null) {
             resolved = getTupleType(monitor, dataSource, type.tupleType());
         } else if (type.mapType() != null) {
@@ -147,6 +151,23 @@ public class ClickhouseTypeParser {
         }
 
         return resolved;
+    }
+
+    // We need to cut out complex type's parameters received from parser
+    // E.g. Decimal(10,2) -> Decimal
+    // Otherwise types can't be established from the data source
+    private static String getSimpleTypeText(ClickhouseDataTypesParser.SimpleTypeContext simpleType) {
+        if (simpleType.dateTimeType() != null) {
+            return simpleType.dateTimeType().DateTime().getText();
+        } else if (simpleType.dateType() != null) {
+            return simpleType.dateType().Date().getText();
+        } else if (simpleType.decimalType() != null) {
+            return simpleType.decimalType().Decimal().getText();
+        } else if (simpleType.fixedStringType() != null) {
+            return simpleType.fixedStringType().FixedString().getText();
+        } else {
+            return simpleType.getText();
+        }
     }
 
     @Nullable

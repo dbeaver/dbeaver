@@ -196,7 +196,11 @@ public class AIPromptBuilder {
 
             String currentSchema = dataSource.getCurrentSchema();
             if (!CommonUtils.isEmpty(currentSchema)) {
-                lines.add("Current " + (dsInfo == null ? "schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);
+                lines.add("Current " + (dsInfo == null ? "Schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);
+            }
+            String currentCatalog = dataSource.getCurrentCatalog();
+            if (!CommonUtils.isEmpty(currentCatalog)) {
+                lines.add("Current " + (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()) + ": " + currentCatalog);
             }
 
             if (dataSource.getDataSourceContainer() instanceof DataSourceDescriptor) {

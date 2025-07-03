@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,18 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
+import java.sql.Types;
+import java.time.OffsetTime;
 import java.util.Date;
 
 /**
@@ -67,6 +71,25 @@ public class PostgreDateTimeValueHandler extends JDBCDateTimeValueHandler {
     @Override
     protected boolean isReadDateAsObject() {
         return true;
+    }
+
+    @Override
+    public Object fetchValueObject(
+        @NotNull DBCSession session,
+        @NotNull DBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
+        int index
+    ) throws DBCException {
+        if (resultSet instanceof JDBCResultSet jdbc) {
+            if (type.getTypeID() == Types.TIME && !formatSettings.isUseNativeDateTimeFormat()) {
+                try {
+                    return jdbc.getObject(index + 1, OffsetTime.class);
+                } catch (SQLException e) {
+                    log.debug("Exception caught when fetching time value", e);
+                }
+            }
+        }
+        return super.fetchValueObject(session, resultSet, type, index);
     }
 
     @Override

@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -27,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -68,7 +71,6 @@ public class CubridSQLDialect extends GenericSQLDialect
             "TRANSFORMS", "TREAT", "TYPE", "UESCAPE", "UNBOUNDED", "UNNAMED", "UNNEST", "VARBINARY", "VARIANCE",
             "VIRTUAL", "VISIBLE", "WAIT", "WIDTH_BUCKET", "WINDOW", "WITHIN"
     };
-
 
     public CubridSQLDialect() {
         super("Cubrid", "cubrid");
@@ -159,5 +161,12 @@ public class CubridSQLDialect extends GenericSQLDialect
         } catch (Throwable e) {
             log.debug("Failed to invoke isShard method:", e);
         }
+    }
+
+    public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+        if ("VARCHAR".equalsIgnoreCase(typeName)) {
+            return "(" + column.getMaxLength() + ")";
+        }
+        return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 }
