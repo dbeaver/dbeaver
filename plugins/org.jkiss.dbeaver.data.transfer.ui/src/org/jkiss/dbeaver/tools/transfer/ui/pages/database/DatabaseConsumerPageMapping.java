@@ -787,53 +787,39 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         boolean finalAllowsCreate = allowsCreate;
         return new DialogCellEditor(mappingViewer.getTree()) {
             private CCombo combo;
+            private Button browseButton;
 
             @Override
             protected Control createControl(Composite parent) {
                 FormLayout fl = new FormLayout();
-                fl.marginWidth = 0;
+                fl.marginWidth  = 0;
                 fl.marginHeight = 0;
-                fl.spacing = 0;
+                fl.spacing      = 0;
                 Composite composite = new Composite(parent, SWT.NONE);
                 composite.setLayout(fl);
 
-                Button browseButton = new Button(composite, SWT.PUSH);
+                browseButton = new Button(composite, SWT.PUSH);
                 browseButton.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
                 FormData btnFd = new FormData();
-                btnFd.top = new FormAttachment(0, 0);
+                btnFd.top    = new FormAttachment(0, 0);
                 btnFd.bottom = new FormAttachment(100, 0);
-                btnFd.right = new FormAttachment(100, 0);
+                btnFd.right  = new FormAttachment(100, 0);
                 browseButton.setLayoutData(btnFd);
                 if (!isContainer) {
                     browseButton.setVisible(false);
-                } else {
-                    browseButton.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            openDialogBox(composite);
-                        }
-                    });
                 }
 
-                combo = new CCombo(
-                    composite,
-                    SWT.DROP_DOWN | (finalAllowsCreate ? SWT.NONE : SWT.READ_ONLY)
-                );
+                combo = new CCombo(composite,
+                    SWT.DROP_DOWN | (finalAllowsCreate ? SWT.NONE : SWT.READ_ONLY));
                 combo.setVisibleItemCount(15);
-                combo.setFont(composite.getFont());
-                combo.setBackground(composite.getDisplay()
-                    .getSystemColor(SWT.COLOR_LIST_BACKGROUND));
                 combo.setItems(items.toArray(new String[0]));
-
                 FormData comboFd = new FormData();
-                comboFd.top = new FormAttachment(0, 0);
+                comboFd.top    = new FormAttachment(0, 0);
                 comboFd.bottom = new FormAttachment(100, 0);
-                comboFd.left = new FormAttachment(0, 0);
-                if (isContainer) {
-                    comboFd.right = new FormAttachment(browseButton, 0);
-                } else {
-                    comboFd.right = new FormAttachment(100, 0);
-                }
+                comboFd.left   = new FormAttachment(0, 0);
+                comboFd.right  = isContainer
+                    ? new FormAttachment(browseButton, 0)
+                    : new FormAttachment(100, 0);
                 combo.setLayoutData(comboFd);
 
                 combo.addSelectionListener(new SelectionAdapter() {
@@ -857,6 +843,17 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                 });
 
+                if (isContainer) {
+                    browseButton.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            Object newVal = openDialogBox(composite);
+                            doSetValue(newVal);
+                            markDirty();
+                        }
+                    });
+                }
+
                 return composite;
             }
 
@@ -870,11 +867,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             @Override
             protected Object openDialogBox(Control cellEditorWindow) {
                 if (isContainer) {
-                    mapExistingTables(new DatabaseMappingContainer[] {
-                        (DatabaseMappingContainer) element
-                    });
+                    mapExistingTables(new DatabaseMappingContainer[]{
+                        (DatabaseMappingContainer) element});
                     mappingViewer.refresh(element);
                 }
+                // возвращаем текущее значение, чтобы слушатель кнопки мог зафиксировать его
                 return doGetValue();
             }
 
@@ -907,6 +904,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 }
             }
         };
+
     }
 
     private void setMappingTarget(DBRProgressMonitor monitor, DatabaseMappingObject mapping, String name, boolean forceRefresh, boolean updateAttributesNames) {
