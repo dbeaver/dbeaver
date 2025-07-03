@@ -833,7 +833,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                 });
 
-                Button browseButton = new Button(composite, SWT.PUSH | SWT.NO_FOCUS);
+                Button browseButton = new Button(composite, SWT.PUSH);
                 browseButton.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
                 GridData gdBtn = new GridData(SWT.CENTER, SWT.CENTER, false, false);
                 if (!isContainer) {
