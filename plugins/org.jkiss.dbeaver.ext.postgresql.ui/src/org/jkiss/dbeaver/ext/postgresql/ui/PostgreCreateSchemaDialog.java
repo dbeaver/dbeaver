@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,7 +96,7 @@ public class PostgreCreateSchemaDialog extends BaseDialog {
                         .getContainer()
                         .getConnectionConfiguration()
                         .getUserName();
-                    final String defUserName = currentUserName == null ? "" : currentUserName;
+                    final String defUserName = CommonUtils.isEmpty(currentUserName) ? "" : currentUserName;
 
                     UIUtils.syncExec(() -> {
                         for (PostgreRole authId : allUsers) {
