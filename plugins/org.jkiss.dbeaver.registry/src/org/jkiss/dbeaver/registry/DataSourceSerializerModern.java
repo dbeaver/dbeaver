@@ -792,14 +792,17 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
                 {
                     // Extensions
+                    Map<String, Object> extensions = null;
                     if (conObject.containsKey(RegistryConstants.TAG_PROPERTIES)) {
                         // Backward compatibility
-                        dataSource.setExtensions(
-                            JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_PROPERTIES));
-                    } else {
-                        dataSource.setExtensions(
-                            JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_EXTENSIONS));
+                        extensions = JSONUtils.deserializeProperties(conObject, RegistryConstants.TAG_PROPERTIES);
+                    } else if (conObject.containsKey(RegistryConstants.TAG_EXTENSIONS)) {
+                        extensions = JSONUtils.deserializeProperties(conObject, RegistryConstants.TAG_EXTENSIONS);
                     }
+                    if (extensions == null) {
+                        extensions = new LinkedHashMap<>();
+                    }
+                    dataSource.setExtensions(extensions);
                 }
                 dataSource.setTags(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_TAGS));

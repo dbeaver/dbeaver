@@ -25,14 +25,14 @@ public class AIConstants {
     public static final String AI_LOG_QUERY = "gpt.log.query";
 
     public static final int MAX_RESPONSE_TOKENS = 2000;
+
     public static final String AI_DISABLED = "ai.completion.disabled";
     public static final String AI_COMPLETION_EXECUTE_IMMEDIATELY = "ai.completion.executeImmediately";
     public static final String AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT = "ai.completion.includeSourceTextInQuery";
     public static final String AI_SEND_TYPE_INFO = "ai.completion.sendType";
     public static final String AI_SEND_DESCRIPTION = "ai.completion.description";
     public static final String AI_COMPLETION_MAX_CHOICES = "ai.completion.maxChoices";
-    public static final String AI_META_TRANSFER_CONFIRMED = "ai.meta.transferConfirmed";
-    public static final String AI_META_SCOPE = "ai.meta.scope";
-    public static final String AI_META_CUSTOM = "ai.meta.customObjects";
+
+    public static final String AI_MODEL_PLUGIN_ID = "org.jkiss.dbeaver.model.ai";
 }
 
