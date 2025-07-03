@@ -64,7 +64,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
                 if (typeName.equals(ALL_TYPES_PATTERN)) {
                     hasAll = true;
                 } else {
-                    if (typeName.contains(ALL_TYPES_PATTERN)) {
+                    if (typeName.endsWith(ALL_TYPES_PATTERN)) {
                         hasTypesWithTypedParams = true;
                     }
                     supportedTypes.add(typeName.toLowerCase(Locale.ENGLISH));
@@ -163,7 +163,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
                 if (hasTypesWithTypedParams) {
                     boolean matchesTypeWithTypesParams = supportedTypes.stream()
                         .map(Object::toString)
-                        .filter(t -> t.contains(ALL_TYPES_PATTERN))
+                        .filter(t -> t.endsWith(ALL_TYPES_PATTERN))
                         .map(t -> t.substring(0, t.length() - 1))
                         .anyMatch(lowerCaseTypeName::startsWith);
                     if (matchesTypeWithTypesParams) {
