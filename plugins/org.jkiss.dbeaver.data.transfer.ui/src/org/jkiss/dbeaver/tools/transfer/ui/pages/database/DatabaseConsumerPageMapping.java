@@ -79,7 +79,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private final List<DatabaseMappingContainer> model = new ArrayList<>();
     protected TreeViewer mappingViewer;
     protected Composite buttonsPanel;
-    private Button mapTableButton;
     private Button configureButton;
     private Button previewButton;
     private Button loadMappingsButton;
@@ -179,20 +178,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             // Control buttons
             buttonsPanel = UIUtils.createComposite(mappingsGroup, 1);
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-
-            mapTableButton = UIUtils.createDialogButton(
-                buttonsPanel,
-                DTMessages.data_transfer_db_consumer_existing_table,
-                DBIcon.TREE_TABLE,
-                DTMessages.data_transfer_db_consumer_existing_table_description,
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        mapExistingTables(getSelectedMappingContainers());
-                    }
-                });
-            mapTableButton.setEnabled(false);
 
             UIUtils.createLabelSeparator(buttonsPanel, SWT.HORIZONTAL);
 
@@ -805,65 +790,82 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             private CCombo combo;
 
             @Override
-            protected Control createContents(Composite cell) {
-                combo = new CCombo(cell, SWT.DROP_DOWN | (finalAllowsCreate ? SWT.NONE : SWT.READ_ONLY));
+            protected Control createControl(Composite parent) {
+                Composite composite = new Composite(parent, SWT.NONE);
+                composite.setFont(parent.getFont());
+                GridLayout layout = new GridLayout(2, false);
+                layout.marginHeight      = 0;
+                layout.marginWidth       = 0;
+                layout.horizontalSpacing = 0;
+                layout.verticalSpacing   = 0;
+                composite.setLayout(layout);
+
+                combo = new CCombo(composite,
+                    SWT.DROP_DOWN | (finalAllowsCreate ? SWT.NONE : SWT.READ_ONLY));
                 combo.setVisibleItemCount(15);
-                combo.setFont(cell.getFont());
-                combo.setBackground(cell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+                combo.setFont(parent.getFont());
+                combo.setBackground(parent.getDisplay()
+                    .getSystemColor(SWT.COLOR_LIST_BACKGROUND));
                 combo.setItems(items.toArray(new String[0]));
+                GridData gdCombo = new GridData(SWT.FILL, SWT.CENTER, true, false);
+                gdCombo.horizontalSpan = isContainer ? 1 : 2;
+                combo.setLayoutData(gdCombo);
 
                 combo.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        String selected = combo.getText();
-                        if (TARGET_NAME_BROWSE.equals(selected) && isContainer) {
+                        String sel = combo.getText();
+                        if (TARGET_NAME_BROWSE.equals(sel) && isContainer) {
                             doSetValue(doGetValue());
-                            openDialogBox(cell);
+                            openDialogBox(composite);
                         } else {
                             markDirty();
-                            doSetValue(selected);
+                            doSetValue(sel);
                             fireApplyEditorValue();
                         }
                     }
                 });
-
                 combo.addFocusListener(new FocusAdapter() {
                     @Override
-                    public void focusLost(org.eclipse.swt.events.FocusEvent e) {
+                    public void focusLost(FocusEvent e) {
                         markDirty();
                         fireApplyEditorValue();
                     }
                 });
 
-                return combo;
-            }
-
-            @Override
-            public void activate(ColumnViewerEditorActivationEvent activationEvent) {
-                super.activate(activationEvent);
-                if (getControl() != null && !getControl().isDisposed()) {
-                    getControl().setVisible(true);
-
-                    if (combo != null && !combo.isDisposed()) {
-                        combo.setFocus();
-
-                        String text = combo.getText();
-                        combo.setSelection(new Point(0, text.length()));
-                    }
+                Button browseButton = new Button(composite, SWT.PUSH | SWT.NO_FOCUS);
+                browseButton.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
+                GridData gdBtn = new GridData(SWT.CENTER, SWT.CENTER, false, false);
+                if (!isContainer) {
+                    gdBtn.exclude = true;
+                    browseButton.setVisible(false);
                 }
+                browseButton.setLayoutData(gdBtn);
+                if (isContainer) {
+                    browseButton.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            openDialogBox(composite);
+                        }
+                    });
+                }
+
+                return composite;
             }
 
             @Override
-            protected Button createButton(Composite parent) {
-                Button button = new Button(parent, SWT.PUSH | SWT.NO_FOCUS);
-                button.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
-                return button;
+            protected void doSetFocus() {
+                if (combo != null && !combo.isDisposed()) {
+                    combo.setFocus();
+                }
             }
 
             @Override
             protected Object openDialogBox(Control cellEditorWindow) {
                 if (isContainer) {
-                    mapExistingTables(new DatabaseMappingContainer[]{(DatabaseMappingContainer) element});
+                    mapExistingTables(new DatabaseMappingContainer[]{
+                        (DatabaseMappingContainer) element
+                    });
                     mappingViewer.refresh(element);
                 }
                 return doGetValue();
@@ -872,23 +874,29 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             @Override
             protected void updateContents(Object value) {
                 if (combo != null && !combo.isDisposed()) {
-                    if (value == null) {
-                        combo.setText("");
-                    } else {
-                        combo.setText(value.toString());
-                    }
+                    combo.setText(value == null ? "" : value.toString());
                 }
             }
 
             @Override
             protected Object doGetValue() {
-                return combo != null && !combo.isDisposed() ? combo.getText() : "";
+                return combo != null && !combo.isDisposed()
+                    ? combo.getText()
+                    : "";
             }
 
             @Override
             protected void doSetValue(Object value) {
                 if (combo != null && !combo.isDisposed()) {
                     combo.setText(CommonUtils.toString(value));
+                }
+            }
+
+            @Override
+            public void activate(ColumnViewerEditorActivationEvent activationEvent) {
+                super.activate(activationEvent);
+                if (combo != null && !combo.isDisposed()) {
+                    combo.setSelection(new Point(0, combo.getText().length()));
                 }
             }
         };
@@ -1389,9 +1397,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     }
 
     protected void onMappingChanged(SelectionChangedEvent event) {
-        DatabaseMappingObject mapping = getSelectedMapping();
-        mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
-        //createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
         boolean hasMappings = hasMappings(getSelectedMapping());
         configureButton.setEnabled(hasMappings);
         previewButton.setEnabled(hasMappings);
