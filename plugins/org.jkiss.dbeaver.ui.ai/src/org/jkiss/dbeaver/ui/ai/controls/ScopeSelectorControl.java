@@ -77,7 +77,7 @@ public class ScopeSelectorControl extends Composite {
         this.dataSource = dataSource;
         this.executionContext = executionContext;
         this.currentScope = settings.getScope();
-        this.checkedObjectIds = new HashSet<>();
+        this.checkedObjectIds = new LinkedHashSet<>();
 
         if (!ArrayUtils.isEmpty(settings.getCustomObjectIds())) {
             checkedObjectIds.addAll(Arrays.asList(settings.getCustomObjectIds()));
@@ -191,7 +191,7 @@ public class ScopeSelectorControl extends Composite {
     }
 
     @Nullable
-    public static Set<String> chooseCustomEntities(
+    public static List<String> chooseCustomEntities(
         @NotNull Shell shell,
         @NotNull DBRRunnableContext context,
         @NotNull DBPDataSource dataSource,
@@ -229,14 +229,14 @@ public class ScopeSelectorControl extends Composite {
             .map(DBNDatabaseNode::getValueObject)
             .map(DBSObject.class::cast)
             .map(DBUtils::getObjectFullId)
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
     }
 
     public void changeScope(@NotNull AIDatabaseScope scope) {
         checkedObjectIds.clear();
 
         if (scope == AIDatabaseScope.CUSTOM) {
-            Set<String> ids = chooseCustomEntities(
+            List<String> ids = chooseCustomEntities(
                 getShell(),
                 UIUtils.getDefaultRunnableContext(),
                 executionContext.getDataSource(),

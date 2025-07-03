@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -83,6 +84,7 @@ public class ScopeSelectorDialog extends BaseDialog {
             }
 
         };
+        selectorPanel.getNavigatorTree().getViewer().expandToLevel(2);
         selectorPanel.checkNodes(selectedNodes, true);
         selectorPanel.setSelection(selectedNodes);
 
@@ -92,6 +94,15 @@ public class ScopeSelectorDialog extends BaseDialog {
     @Override
     protected void okPressed() {
         selectedNodes = selectorPanel.getCheckedNodes();
+        selectedNodes.removeIf(n -> {
+                if (n instanceof DBNDatabaseNode dbn) {
+                    if (dbn.getObject() instanceof DBSEntity || dbn.getObject() instanceof DBSEntityContainer) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+        selectedNodes.removeIf(n -> selectedNodes.contains(n.getParentNode()));
 
         super.okPressed();
     }

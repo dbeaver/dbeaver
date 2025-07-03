@@ -99,6 +99,10 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         }
     }
 
+    public DatabaseNavigatorTree getNavigatorTree() {
+        return dataSourceTree;
+    }
+
     protected DBPProject getSelectedProject() {
         return NavigatorUtils.getSelectedProject();
     }
