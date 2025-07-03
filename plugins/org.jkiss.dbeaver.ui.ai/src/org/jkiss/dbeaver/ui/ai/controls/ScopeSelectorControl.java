@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.ai.controls;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -38,13 +39,9 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -217,17 +214,12 @@ public class ScopeSelectorControl extends Composite {
             log.warn("Error loading custom entities", e);
         }
 
-        // Select custom objects
-        List<DBNNode> selected = ObjectBrowserDialog.selectObjects(
-            shell,
-            "Select objects to include in completion scope",
-            navigator.getNodeByObject(dataSource),
-            nodes,
-            new Class[]{DBSInstance.class, DBSObjectContainer.class, DBSEntity.class},
-            new Class[] {DBSObjectContainer.class, DBSEntity.class},
-            new Class[]{DBSEntity.class}
-        );
+        ScopeSelectorDialog dialog = new ScopeSelectorDialog(shell, context, dataSource.getContainer(), nodes);
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
 
+        List<? extends DBNNode> selected = dialog.getSelectedNodes();
         if (selected == null) {
             return null;
         }
