@@ -790,6 +790,16 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
                 }
 
+                dataSource.setTags(
+                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_TAGS));
+
+                // Preferences
+                Map<String, String> preferenceProperties = dataSource.getPreferenceStore().getProperties();
+                preferenceProperties.clear();
+                preferenceProperties.putAll(
+                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
+                );
+
                 {
                     // Extensions
                     Map<String, Object> extensions = null;
@@ -804,15 +814,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
                     dataSource.setExtensions(extensions);
                 }
-                dataSource.setTags(
-                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_TAGS));
-
-                // Preferences
-                Map<String, String> preferenceProperties = dataSource.getPreferenceStore().getProperties();
-                preferenceProperties.clear();
-                preferenceProperties.putAll(
-                    JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
-                );
 
                 // Virtual model
                 String vmID = CommonUtils.toString(conObject.get("virtual-model-id"), id);
@@ -1266,8 +1267,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
         }
 
-        // Extensions
-        JSONUtils.serializeProperties(json, RegistryConstants.TAG_EXTENSIONS, dataSource.getExtensions(), true);
         // Tags
         JSONUtils.serializeProperties(json, RegistryConstants.TAG_TAGS, dataSource.getTags(), true);
 
@@ -1287,6 +1286,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 JSONUtils.serializeProperties(json, RegistryConstants.TAG_CUSTOM_PROPERTIES, props, true);
             }
         }
+
+        // Extensions
+        JSONUtils.serializeProperties(json, RegistryConstants.TAG_EXTENSIONS, dataSource.getExtensions(), true);
     }
 
     private void serializeModifyPermissions(@NotNull JsonWriter json, DBPDataSourcePermissionOwner permissionOwner) throws IOException {
