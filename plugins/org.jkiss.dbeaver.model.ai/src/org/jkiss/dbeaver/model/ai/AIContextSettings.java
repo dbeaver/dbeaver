@@ -22,6 +22,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 import java.util.Map;
@@ -47,6 +48,8 @@ public abstract class AIContextSettings {
     }
 
     public abstract DBPDataSourceContainer getDataSourceContainer();
+
+    public abstract void saveSettings() throws DBException;
 
     public boolean isMetaTransferConfirmed() {
         return settings.confirmed;
