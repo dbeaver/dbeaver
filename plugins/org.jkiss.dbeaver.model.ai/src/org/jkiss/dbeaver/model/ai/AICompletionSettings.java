@@ -17,24 +17,21 @@
 
 package org.jkiss.dbeaver.model.ai;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.Strictness;
-import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
 /**
- * Completion settings.
+ * DataSource AI settings.
  * These settings are stored for each connection separately.
  */
-public class AICompletionSettings {
+public class AICompletionSettings extends AIContextSettings {
 
     // Meta parameters
     public static final String AI_DS_EXTENSION = "ai.assistant";
@@ -44,21 +41,8 @@ public class AICompletionSettings {
 
     private static final Log log = Log.getLog(AICompletionSettings.class);
 
-    private static final Gson GSON = new GsonBuilder()
-        .setStrictness(Strictness.LENIENT)
-        .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
-        .create();
-
     private final DBPDataSourceContainer dataSourceContainer;
     protected final DBPPreferenceStore preferenceStore;
-
-    private PersistentSettings settings;
-
-    private static class PersistentSettings {
-        private boolean confirmed;
-        private AIDatabaseScope scope;
-        private String[] objects;
-    }
 
     public AICompletionSettings(@NotNull DBPDataSourceContainer dataSourceContainer) {
         this(getPreferenceStore(), dataSourceContainer);
@@ -70,55 +54,33 @@ public class AICompletionSettings {
         loadSettings();
     }
 
+    @Override
     @NotNull
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
-    }
-
-    public boolean isMetaTransferConfirmed() {
-        return settings.confirmed;
-    }
-
-    public void setMetaTransferConfirmed(boolean metaTransferConfirmed) {
-        this.settings.confirmed = metaTransferConfirmed;
-    }
-
-    public AIDatabaseScope getScope() {
-        return settings.scope;
-    }
-
-    public void setScope(AIDatabaseScope scope) {
-        this.settings.scope = scope;
-    }
-
-    public String[] getCustomObjectIds() {
-        return settings.objects;
-    }
-
-    public void setCustomObjectIds(String[] customObjectIds) {
-        this.settings.objects = customObjectIds;
     }
 
     private void loadSettings() {
         Object dsConfig = dataSourceContainer.getExtension(AI_DS_EXTENSION);
         if (dsConfig == null) {
             loadLegacySettings();
-        } else {
+        } else if (dsConfig instanceof Map map){
             // Load settings from map
-            settings = GSON.fromJson(GSON.toJsonTree(dsConfig), PersistentSettings.class);
+            loadSettingsFromMap(map);
+        } else {
+            log.error("Unknown AI settings format: " + dsConfig);
         }
     }
 
     public void saveSettings() {
         // Save settings as map
-        dataSourceContainer.setExtension(AI_DS_EXTENSION, GSON.fromJson(GSON.toJson(settings), Map.class));
+        dataSourceContainer.setExtension(AI_DS_EXTENSION, saveSettingsToMap());
         dataSourceContainer.persistConfiguration();
     }
 
     // Deprecated methods - kept for backward compatibility
 
     private void loadLegacySettings() {
-        settings = new PersistentSettings();
         // Legacy configuration from preferences
         settings.confirmed = preferenceStore.getBoolean(getParameterName(AI_META_TRANSFER_CONFIRMED));
         settings.scope = CommonUtils.valueOf(
@@ -127,6 +89,16 @@ public class AICompletionSettings {
             AIDatabaseScope.CURRENT_SCHEMA);
         String csString = preferenceStore.getString(getParameterName(AI_META_CUSTOM));
         settings.objects = CommonUtils.isEmpty(csString) ? new String[0] : csString.split(",");
+    }
+
+    public void saveSettingsToPreferenceStore(DBPPreferenceStore preferenceStore) {
+        preferenceStore.setValue(getParameterName(AI_META_TRANSFER_CONFIRMED), settings.confirmed);
+        preferenceStore.setValue(getParameterName(AI_META_SCOPE), settings.scope.name());
+        if (ArrayUtils.isEmpty(settings.objects)) {
+            preferenceStore.setToDefault(getParameterName(AI_META_CUSTOM));
+        } else {
+            preferenceStore.setValue(getParameterName(AI_META_CUSTOM), String.join(",", settings.objects));
+        }
     }
 
     @NotNull
