@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public abstract class AIContextSettings {
 
-    private static final Gson GSON = new GsonBuilder()
+    public static final Gson GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
         .create();
