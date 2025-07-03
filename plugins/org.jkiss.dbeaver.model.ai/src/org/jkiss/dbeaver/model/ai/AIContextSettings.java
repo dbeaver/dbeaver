@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public abstract class AIContextSettings {
 
-    public static final Gson GSON = new GsonBuilder()
+    private static final Gson GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
         .create();
@@ -79,8 +79,16 @@ public abstract class AIContextSettings {
         settings = GSON.fromJson(GSON.toJsonTree(dsConfig), PersistentSettings.class);
     }
 
+    public void loadSettingsFromString(String dsConfig) {
+        loadSettingsFromMap(GSON.fromJson(dsConfig, Map.class));
+    }
+
     public Map<String, Object> saveSettingsToMap() {
         return GSON.fromJson(GSON.toJson(settings), Map.class);
+    }
+
+    public String saveSettingsToString() {
+        return GSON.toJson(saveSettingsToMap());
     }
 
 }
