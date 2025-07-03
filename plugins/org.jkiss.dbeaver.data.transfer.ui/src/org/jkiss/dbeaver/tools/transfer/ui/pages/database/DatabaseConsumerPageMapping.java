@@ -841,14 +841,12 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     browseButton.setVisible(false);
                 }
                 browseButton.setLayoutData(gdBtn);
-                if (isContainer) {
-                    browseButton.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            openDialogBox(composite);
-                        }
-                    });
-                }
+                browseButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        openDialogBox(composite);
+                    }
+                });
 
                 return composite;
             }
