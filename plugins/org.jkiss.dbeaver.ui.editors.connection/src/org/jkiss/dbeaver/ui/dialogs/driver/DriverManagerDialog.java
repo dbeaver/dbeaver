@@ -383,14 +383,21 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     }
 
     private void editDriver() {
-        DriverDescriptor driver = selectedDriver;
-        if (driver != null) {
-            //driver.validateFilesPresence(this);
-
-            DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
-            dialog.open();
-            treeControl.refresh(driver);
+        if (selectedDriver == null) {
+            return;
         }
+
+        DriverDescriptor driver = selectedDriver.getProviderDescriptor().getDriver(selectedDriver.getId());
+        if (driver == null) {
+            return;
+        }
+
+        DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
+        dialog.open();
+        if (selectedDriver != driver) {
+            selectedDriver.applyFrom(driver);
+        }
+        treeControl.refresh(selectedDriver);
     }
 
     private void deleteDriver() {
