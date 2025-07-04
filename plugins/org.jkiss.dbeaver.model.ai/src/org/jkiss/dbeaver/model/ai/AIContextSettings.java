@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * AI context settings
@@ -89,6 +90,12 @@ public abstract class AIContextSettings {
 
     public String saveSettingsToString() {
         return GSON.toJson(saveSettingsToMap());
+    }
+
+    public boolean equalsSettings(AIContextSettings that) {
+        return settings.confirmed == that.settings.confirmed &&
+            settings.scope == that.settings.scope &&
+            Objects.deepEquals(settings.objects, that.settings.objects);
     }
 
 }
