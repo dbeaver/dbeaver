@@ -407,7 +407,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             getShell(),
             UIConnectionMessages.dialog_driver_manager_message_delete_driver_title,
             UIConnectionMessages.dialog_driver_manager_message_delete_driver_text + selectedDriver.getName() + "'?")) {
-            selectedDriver.getProviderDescriptor().removeDriver(selectedDriver);
+            selectedDriver.getProviderDescriptor().removeDriver(selectedDriver.getId());
             selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
             treeControl.refresh();
         }
