@@ -74,6 +74,9 @@ public class ScopeSelectorDialog extends BaseDialog {
             @Override
             protected boolean isDatabaseFolderVisible(DBNDatabaseFolder folder) {
                 Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
+                if (childrenClass == null) {
+                    return false;
+                }
                 return DBSEntity.class.isAssignableFrom(childrenClass) ||
                     DBSEntityContainer.class.isAssignableFrom(childrenClass);
             }
