@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.ai.controls;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -28,12 +29,16 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
 
 import java.util.List;
 
 public class ScopeSelectorDialog extends BaseDialog {
+
+    private static final String DIALOG_ID = "DBeaver.AIScopeSelectorDialog";//$NON-NLS-1$
 
     private final DBRRunnableContext runnableContext;
     private final DBPDataSourceContainer dataSourceContainer;
@@ -50,6 +55,11 @@ public class ScopeSelectorDialog extends BaseDialog {
         this.runnableContext = runnableContext;
         this.dataSourceContainer = container;
         this.selectedNodes = selectedNodes;
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        return UIUtils.getSettingsSection(AIUIActivator.getDefault().getDialogSettings(), DIALOG_ID);
     }
 
     @Override

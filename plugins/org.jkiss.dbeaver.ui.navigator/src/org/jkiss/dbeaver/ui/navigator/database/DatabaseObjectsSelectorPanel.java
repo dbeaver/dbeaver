@@ -21,12 +21,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
@@ -38,7 +36,7 @@ import java.util.List;
 public class DatabaseObjectsSelectorPanel extends Composite {
 
     private final DBPProject selectedProject;
-    private DatabaseNavigatorTree dataSourceTree;
+    private final DatabaseNavigatorTree dataSourceTree;
     private DatabaseObjectsTreeManager checkboxTreeManager;
 
     public DatabaseObjectsSelectorPanel(Composite parent, boolean multiSelector, DBRRunnableContext runnableContext) {
@@ -68,20 +66,19 @@ public class DatabaseObjectsSelectorPanel extends Composite {
                     return true;
                 }
                 if (element instanceof DBNNode) {
-                    if (element instanceof DBNDatabaseFolder) {
-                        DBNDatabaseFolder folder = (DBNDatabaseFolder) element;
+                    if (element instanceof DBNDatabaseFolder folder) {
                         return isDatabaseFolderVisible(folder);
                     }
                     if (element instanceof DBNProjectDatabases) {
                         return true;
                     }
-                    if (element instanceof DBNLocalFolder) {
-                        return isFolderVisible((DBNLocalFolder)element);
-                    } else if (element instanceof DBNDataSource) {
-                        return isDataSourceVisible((DBNDataSource)element);
+                    if (element instanceof DBNLocalFolder localFolder) {
+                        return isFolderVisible(localFolder);
+                    } else if (element instanceof DBNDataSource dataSource) {
+                        return isDataSourceVisible(dataSource);
                     }
-                    if (element instanceof DBSWrapper) {
-                        return isDatabaseObjectVisible(((DBSWrapper) element).getObject());
+                    if (element instanceof DBSWrapper wrapper) {
+                        return isDatabaseObjectVisible(wrapper.getObject());
                     }
                 }
                 return false;
@@ -108,10 +105,9 @@ public class DatabaseObjectsSelectorPanel extends Composite {
     }
 
     protected DBNNode getRootNode() {
-        DBPPlatform platform = DBWorkbench.getPlatform();
-
-        final DBNProject projectNode = platform.getNavigatorModel().getRoot().getProjectNode(selectedProject);
-        DBNNode rootNode = projectNode == null ? platform.getNavigatorModel().getRoot() : projectNode.getDatabases();
+        DBNModel navigatorModel = selectedProject.getNavigatorModel();
+        final DBNProject projectNode = navigatorModel.getRoot().getProjectNode(selectedProject);
+        DBNNode rootNode = projectNode == null ? navigatorModel.getRoot() : projectNode.getDatabases();
         return rootNode;
     }
 
