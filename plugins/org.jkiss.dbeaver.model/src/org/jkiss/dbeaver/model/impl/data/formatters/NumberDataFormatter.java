@@ -156,10 +156,9 @@ public class NumberDataFormatter implements DBDDataFormatter {
             synchronized (this) {
                 buffer.setLength(0);
                 try {
-                    int maxFD = numberFormat.getMaximumFractionDigits();
-                    BigDecimal smallestValue = BigDecimal.valueOf(1.0).movePointLeft(maxFD);
-                    if (scientificSmallValues && value instanceof BigDecimal) {
-                        BigDecimal bigValue = (BigDecimal) value;
+                    if (scientificSmallValues && value instanceof BigDecimal bigValue) {
+                        int maxFD = numberFormat.getMaximumFractionDigits();
+                        BigDecimal smallestValue = BigDecimal.valueOf(1.0).movePointLeft(maxFD);
                         if (((bigValue.compareTo(smallestValue) < 0 && (bigValue.compareTo(BigDecimal.ZERO) > 0)) ||
                              (bigValue.compareTo(smallestValue.negate()) > 0 && (bigValue.compareTo(BigDecimal.ZERO) < 0)))) {
                             // This is a very small BigDecimal
