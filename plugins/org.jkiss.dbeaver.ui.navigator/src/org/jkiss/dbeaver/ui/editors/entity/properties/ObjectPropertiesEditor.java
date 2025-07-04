@@ -114,6 +114,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             @Override
             public void fillCustomActions(IContributionManager contributionManager) {
                 super.fillCustomActions(contributionManager);
+
                 if (propertiesPanel != null && folderComposite == null) {
                     // We have object editor and no folders - contribute default actions
                     DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
