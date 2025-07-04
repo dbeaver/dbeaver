@@ -194,12 +194,12 @@ public class AIPromptBuilder {
             DBPDataSourceInfo dsInfo = ds == null ? null : ds.getInfo();
 
             if (dataSource.getDataSourceContainer() instanceof DataSourceDescriptor) {
-                lines.add("Current database connection name: " + dataSource.getDataSourceContainer().getName());
+                lines.add("DBeaver connection name: " + dataSource.getDataSourceContainer().getName());
                 DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
                 if (ds instanceof JDBCDataSource) {
-                    lines.add("Current JDBC driver: " + dsInfo.getDriverName() + " (" + dsInfo.getDriverVersion() + ")");
+                    lines.add("JDBC driver: " + dsInfo.getDriverName() + " (" + dsInfo.getDriverVersion() + ")");
                 } else {
-                    lines.add("Current Java driver: " + driver.getFullName() + ")");
+                    lines.add("Java driver: " + driver.getFullName() + ")");
                 }
             }
 
@@ -212,7 +212,7 @@ public class AIPromptBuilder {
                 lines.add("Current " + (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()) + ": " + currentCatalog);
             }
         }
-        lines.add("Current SQL dialect: " + dialect.getDialectName());
+        lines.add("SQL dialect: " + dialect.getDialectName());
         lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
         return lines.toArray(String[]::new);
     }
