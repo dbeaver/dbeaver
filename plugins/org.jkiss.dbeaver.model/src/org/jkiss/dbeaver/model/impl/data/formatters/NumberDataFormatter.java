@@ -120,12 +120,14 @@ public class NumberDataFormatter implements DBDDataFormatter {
         position = new FieldPosition(0);
         nativeSpecialValues = CommonUtils.toBoolean(properties.get(NumberFormatSample.PROP_NATIVE_SPECIAL_VALUES));
         scientificSmallValues = CommonUtils.toBoolean(properties.get(NumberFormatSample.PROP_SCIENTIFIC_SMALL_VALUES));
+        String scientificExpSep = CommonUtils.toString(properties.get(NumberFormatSample.PROP_SCIENTIFIC_EXP_SEP));
+        String scientificPattern = CommonUtils.toString(properties.get(NumberFormatSample.PROP_SCIENTIFIC_PATTERN));
 
         DecimalFormatSymbols symbols = new DecimalFormatSymbols();
         scientificFormat = (DecimalFormat) numberFormat.clone();
-        symbols.setExponentSeparator("E");
+        symbols.setExponentSeparator(scientificExpSep);
         scientificFormat.setDecimalFormatSymbols(symbols);
-        scientificFormat.applyPattern("0.###E0");
+        scientificFormat.applyPattern(scientificPattern);
     }
 
     @Nullable
