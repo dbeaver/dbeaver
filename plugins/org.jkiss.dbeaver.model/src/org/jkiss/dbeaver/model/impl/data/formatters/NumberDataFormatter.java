@@ -163,13 +163,9 @@ public class NumberDataFormatter implements DBDDataFormatter {
                              (bigValue.compareTo(smallestValue.negate()) > 0 && (bigValue.compareTo(BigDecimal.ZERO) < 0)))) {
                             // This is a very small BigDecimal
                             return scientificFormat.format(value, buffer, position).toString();
-                        } else {
-                            // This is a normal BigDecimal or zero
-                            return numberFormat.format(value, buffer, position).toString();
                         }
-                    } else {
-                        return numberFormat.format(value, buffer, position).toString();
                     }
+                    return numberFormat.format(value, buffer, position).toString();
                 } catch (ArithmeticException e) {
                     if (numberFormat.getRoundingMode() == RoundingMode.UNNECESSARY) {
                         // This type can't use UNNECESSARY rounding. Let's set default one
