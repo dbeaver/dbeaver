@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-/**
- * OpenAI constants
- */
-public class OpenAIConstants {
-    public static final String DEFAULT_MODEL = "gpt-4o";
+import org.jkiss.code.NotNull;
 
-    public static final String OPENAI_ENGINE = "openai";
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String AI_TEMPERATURE = "gpt.model.temperature";
+public record Model(
+    @NotNull String id,
+    @NotNull String object,
+    long created,
+    @NotNull String ownedBy
+) {
 }
-

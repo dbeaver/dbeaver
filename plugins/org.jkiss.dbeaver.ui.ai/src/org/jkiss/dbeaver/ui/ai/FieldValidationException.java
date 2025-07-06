@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
+package org.jkiss.dbeaver.ui.ai;
 
-import com.google.gson.annotations.SerializedName;
+import org.jkiss.dbeaver.DBException;
 
-import java.util.List;
-
-public record CopilotModels(@SerializedName("data") List<CopilotModel> data) {
+public class FieldValidationException extends DBException {
+    public FieldValidationException(String message) {
+        super(message);
+    }
 }

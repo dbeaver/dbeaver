@@ -14,17 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai;
+package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
-/**
- * OpenAI constants
- */
-public class OpenAIConstants {
-    public static final String DEFAULT_MODEL = "gpt-4o";
+import com.google.gson.annotations.SerializedName;
 
-    public static final String OPENAI_ENGINE = "openai";
-    public static final String GPT_API_TOKEN = "gpt.token";
-    public static final String GPT_MODEL = "gpt.model";
-    public static final String AI_TEMPERATURE = "gpt.model.temperature";
+import java.util.List;
+
+public record CopilotModelList(@SerializedName("data") List<CopilotModel> data) {
 }
-
