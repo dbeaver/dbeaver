@@ -37,6 +37,8 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDataTypeConverter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
@@ -122,7 +124,12 @@ public final class DBStructUtils {
         return SQLUtils.generateCommentLine(object.getDataSource(), "Can't generate DDL: object editor not found for " + object.getClass().getName());
     }
 
-    public static String getTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, Map<String, Object> options, boolean addComments) throws DBException {
+    public static String getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity table,
+        Map<String, Object> options,
+        boolean addComments
+    ) throws DBException {
         if (table instanceof DBPScriptObject scriptObject) {
             String definitionText = scriptObject.getObjectDefinitionText(monitor, options);
             if (!CommonUtils.isEmpty(definitionText)) {
@@ -569,5 +576,52 @@ public final class DBStructUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * Retrieves the schema name associated with the provided database object.
+     */
+    @Nullable
+    public static String getObjectSchema(@NotNull DBSObject dbsObject) {
+        if (dbsObject instanceof DBSSchema) {
+            return dbsObject.getName();
+        }
+
+        DBSObject parent = dbsObject;
+        while (parent != null) {
+            if (parent instanceof DBSSchema) {
+                return parent.getName();
+            }
+            parent = parent.getParentObject();
+        }
+
+        return null;
+    }
+
+    /**
+     * Retrieves the catalog name associated with the provided database object.
+     */
+    @Nullable
+    public static String getObjectCatalog(@NotNull DBSObject dbsObject) {
+        if (dbsObject instanceof DBSCatalog) {
+            return dbsObject.getName();
+        }
+
+        if (dbsObject instanceof DBSSchema) {
+            DBSObject parent = dbsObject.getParentObject();
+            if (parent instanceof DBSCatalog) {
+                return parent.getName();
+            }
+        }
+
+        DBSObject parent = dbsObject;
+        while (parent != null) {
+            if (parent instanceof DBSCatalog) {
+                return parent.getName();
+            }
+            parent = parent.getParentObject();
+        }
+
+        return null;
     }
 }

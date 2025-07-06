@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -72,7 +73,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private volatile int runningOperations = 0;
 
     private String finishButtonLabel = IDialogConstants.OK_LABEL;
-    private String cancelButtonLabel = IDialogConstants.CANCEL_LABEL;
+    private final String closeButtonLabel = IDialogConstants.CLOSE_LABEL;
 
     private final ListenerList<IPageChangedListener> pageChangedListeners = new ListenerList<>();
     private Composite leftBottomPanel;
@@ -312,6 +313,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 page.setVisible(true);
             }
 
+            GridLayout pageLayout = (GridLayout) pageArea.getLayout();
+            if (isFullscreenPage(page)) {
+                pageLayout.marginWidth = 0;
+                pageLayout.marginHeight = 0;
+            } else {
+                pageLayout.marginWidth = 5; // default
+                pageLayout.marginHeight = 5; // default
+            }
+
             setTitle(page.getTitle());
             setMessage(page.getDescription());
 
@@ -448,6 +458,16 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         } finally {
             pagesTree.setRedraw(true);
         }
+    }
+
+    /**
+     * Checks if the page should occupy the whole dialog area without margins.
+     *
+     * @param page the page to check
+     * @return {@code true} if the page is a fullscreen page and should not have margins, {@code false} otherwise
+     */
+    protected boolean isFullscreenPage(@NotNull IDialogPage page) {
+        return page.getControl() instanceof CTabFolder;
     }
 
     private void updatePageCompleteMark(TreeItem parent) {
@@ -623,15 +643,11 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, finishButtonLabel,
             getShell().getDefaultButton() == null);
-        createButton(parent, IDialogConstants.CANCEL_ID, cancelButtonLabel, false);
+        createButton(parent, IDialogConstants.CANCEL_ID, closeButtonLabel, false);
     }
 
     protected void setFinishButtonLabel(String finishButtonLabel) {
         this.finishButtonLabel = finishButtonLabel;
-    }
-
-    protected void setCancelButtonLabel(String cancelButtonLabel) {
-        this.cancelButtonLabel = cancelButtonLabel;
     }
 
     @Override

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
@@ -65,7 +66,11 @@ public class SQLQueryResultTupleContext extends SQLQuerySyntaxContext {
     @Override
     public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String columnName) {  // TODO consider reporting ambiguity
         SQLQueryResultColumn result = this.columns.stream()
-            .filter(c -> c.symbol.getName().equals(columnName))
+            .filter(
+                c -> c.symbol.getSymbolClass() == SQLQuerySymbolClass.COLUMN_DERIVED
+                    ? c.symbol.getName().equalsIgnoreCase(columnName) // ignore case for column aliases
+                    : c.symbol.getName().equals(columnName)
+            )
             .findFirst()
             .orElse(null);
         

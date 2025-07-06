@@ -886,7 +886,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             String sqlState = SQLState.getStateFromException(error);
             return SQLState.SQL_42000.getCode().equals(sqlState);
         }

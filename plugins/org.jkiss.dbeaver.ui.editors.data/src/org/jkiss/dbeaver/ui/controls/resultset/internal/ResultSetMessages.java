@@ -148,6 +148,7 @@ public class ResultSetMessages extends NLS {
     public static String sql_editor_resultset_filter_panel_btn_open_console;
     public static String sql_editor_resultset_filter_panel_control_no_data;
     public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
+    public static String sql_editor_resultset_filter_panel_show_sql_label;
 
     public static String actions_name_color_by;
     public static String actions_name_color_reset_by;

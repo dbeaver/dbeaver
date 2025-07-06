@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,9 @@ public class NetezzaMetaModel extends GenericMetaModel
         super();
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new NetezzaDataSource(monitor, container, this);
     }
 
@@ -98,7 +99,7 @@ public class NetezzaMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         GenericSchema schema = sourceObject.getSchema();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Netezza procedure source")) {

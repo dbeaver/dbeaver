@@ -101,48 +101,48 @@
 
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.eclipse.ui.edit.text.openLocalFile" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/open.png"/>
-        <image commandId="org.eclipse.ui.file.save" icon="icons/eclipse/save.png" disabledIcon="icons/eclipse/save_d.png"/>
-        <image commandId="org.eclipse.ui.file.saveAs" icon="icons/eclipse/save_as.png" disabledIcon="icons/eclipse/save_as_d.png"/>
-        <image commandId="org.eclipse.ui.file.saveAll" icon="icons/eclipse/saveall.png" disabledIcon="icons/eclipse/saveall_d.png"/>
-        <image commandId="org.eclipse.ui.file.refresh" icon="icons/eclipse/refresh.png" disabledIcon="icons/eclipse/refresh.png"/>
+        <image commandId="org.eclipse.ui.file.save" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save.svg"/>
+        <image commandId="org.eclipse.ui.file.saveAs" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save_as.svg"/>
+        <image commandId="org.eclipse.ui.file.saveAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/saveall.svg"/>
+        <image commandId="org.eclipse.ui.file.refresh" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/refresh.svg"/>
         <image commandId="org.eclipse.ui.file.revert" icon="icons/eclipse/revert.png" disabledIcon="icons/eclipse/revert_d.png"/>
-        <image commandId="org.eclipse.ui.file.import" icon="icons/eclipse/import.png" disabledIcon="icons/eclipse/import_d.png"/>
-        <image commandId="org.eclipse.ui.file.export" icon="icons/eclipse/export.png" disabledIcon="icons/eclipse/export_d.png"/>
-        <image commandId="org.eclipse.ui.edit.delete" icon="icons/eclipse/delete.png" disabledIcon="icons/eclipse/delete_d.png"/>
-        <image commandId="org.eclipse.ui.edit.rename" icon="icons/eclipse/rename.png" disabledIcon="icons/eclipse/rename_d.png"/>
-        <image commandId="org.eclipse.ui.edit.copy" icon="icons/eclipse/copy.png" disabledIcon="icons/eclipse/copy_d.png"/>
-        <image commandId="org.eclipse.ui.edit.cut" icon="icons/eclipse/cut.png" disabledIcon="icons/eclipse/cut_d.png"/>
-        <image commandId="org.eclipse.ui.edit.paste" icon="icons/eclipse/paste.png" disabledIcon="icons/eclipse/paste_d.png"/>
-        <image commandId="org.eclipse.ui.edit.undo" icon="icons/eclipse/undo.png" disabledIcon="icons/eclipse/undo_d.png"/>
-        <image commandId="org.eclipse.ui.edit.redo" icon="icons/eclipse/redo.png" disabledIcon="icons/eclipse/redo_d.png"/>
+        <image commandId="org.eclipse.ui.file.import" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.svg"/>
+        <image commandId="org.eclipse.ui.file.export" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.svg"/>
+        <image commandId="org.eclipse.ui.edit.delete" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/delete.svg"/>
+        <image commandId="org.eclipse.ui.edit.rename" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/rename.svg"/>
+        <image commandId="org.eclipse.ui.edit.copy" icon="icons/eclipse/copy.svg"/>
+        <image commandId="org.eclipse.ui.edit.cut" icon="icons/eclipse/cut.svg"/>
+        <image commandId="org.eclipse.ui.edit.paste" icon="icons/eclipse/paste.svg"/>
+        <image commandId="org.eclipse.ui.edit.undo" icon="icons/eclipse/undo.svg"/>
+        <image commandId="org.eclipse.ui.edit.redo" icon="icons/eclipse/redo.svg"/>
 
         <image commandId="org.eclipse.ui.newWizard" icon="icons/eclipse/new_object.png" disabledIcon="icons/eclipse/new_object_d.png"/>
-        <image commandId="org.eclipse.ui.edit.text.zoomIn" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_in.png" disabledIcon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_in_d.png"/>
-        <image commandId="org.eclipse.ui.edit.text.zoomOut" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_out.png" disabledIcon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_out_d.png"/>
-        <image commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/back.png" disabledIcon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/back_d.png"/>
-        <image commandId="org.eclipse.ui.edit.text.gotoNextEditPosition" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/forward.png" disabledIcon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/forward_d.png"/>
-        <image commandId="org.eclipse.search.ui.openSearchDialog" icon="icons/eclipse/search.png" disabledIcon="icons/eclipse/search_d.png"/>
+        <image commandId="org.eclipse.ui.edit.text.zoomIn" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_in.svg"/>
+        <image commandId="org.eclipse.ui.edit.text.zoomOut" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_out.svg"/>
+        <image commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/back.svg"/>
+        <image commandId="org.eclipse.ui.edit.text.gotoNextEditPosition" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/forward.svg"/>
+        <image commandId="org.eclipse.search.ui.openSearchDialog" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/search.svg"/>
 
-        <image commandId="org.eclipse.ui.navigate.collapseAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/collapse_all.png" disabledIcon="icons/eclipse/collapse_all_d.png"/>
-        <image commandId="org.eclipse.ui.navigate.expandAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/expand_all.png" disabledIcon="icons/eclipse/expand_all_d.png"/>
+        <image commandId="org.eclipse.ui.navigate.collapseAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/collapse_all.svg"/>
+        <image commandId="org.eclipse.ui.navigate.expandAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/expand_all.svg"/>
 
-        <image commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" icon="icons/eclipse/quick_search.png" disabledIcon="icons/eclipse/quick_search_d.png"/>
+        <image commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" icon="icons/eclipse/quick_search.svg" disabledIcon="icons/eclipse/quick_search_d.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.views">
         <view id="org.eclipse.ui.views.ProgressView"
-            icon="icons/progress_view.png"
+            icon="icons/progress_view.svg"
             category="org.eclipse.ui"
             class="org.eclipse.ui.ExtensionFactory:progressView"
             name="%view.progress.title"/>
         <view id="org.eclipse.ui.texteditor.TemplatesView"
             name="%view.templates.title"
-            icon="icons/templates_view.png"
+            icon="icons/templates_view.svg"
             category="org.eclipse.ui"
             class="org.eclipse.ui.texteditor.templates.TemplatesView"/>
         <view
             name="%view.errorLog.name"
-            icon="icons/error_view.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/status/error_small.svg"
             category="org.eclipse.ui"
             class="org.eclipse.ui.internal.views.log.LogView"
             id="org.eclipse.pde.runtime.LogView">
@@ -151,13 +151,13 @@
             allowMultiple="true"
             category="org.eclipse.ui"
             class="org.eclipse.ui.views.properties.PropertySheet"
-            icon="icons/properties_view.png"
+            icon="icons/properties_view.svg"
             id="org.eclipse.ui.views.PropertySheet"
             name="%view.properties.title">
         </view>
         <view
             name="%view.search.title"
-            icon="icons/eclipse/search.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/search.svg"
             category="org.eclipse.ui"
             class="org.eclipse.search2.internal.ui.SearchView"
             allowMultiple="true"
@@ -172,7 +172,7 @@
                 name="Help"/-->
         <view
             name="%view.outline.title"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/toggle_outline.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/toggle_outline.svg"
             category="org.eclipse.ui"
             class="org.eclipse.ui.views.contentoutline.ContentOutline"
             id="org.eclipse.ui.views.ContentOutline">

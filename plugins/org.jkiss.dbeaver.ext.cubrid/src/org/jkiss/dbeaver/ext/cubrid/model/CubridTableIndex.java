@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
@@ -38,9 +37,14 @@ public class CubridTableIndex extends GenericTableIndex {
 
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    @Property(viewable = true, editable = true, order = 1)
     public String getName() {
-        return super.getName().toLowerCase();
+        return super.getName();
+    }
+
+    @Override
+    public void setName(String name) {
+        super.setName(name != null ? name.toLowerCase() : null);
     }
 
 }

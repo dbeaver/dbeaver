@@ -344,7 +344,7 @@ public class KingbaseProcedure extends PostgreProcedure{
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
             this);
@@ -374,7 +374,7 @@ public class KingbaseProcedure extends PostgreProcedure{
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         boolean omitHeader = CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE);
         String procDDL = omitHeader || CommonUtils.getOption(options, OPTION_SKIP_DROPS) ?
             "" :

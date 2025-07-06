@@ -396,7 +396,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
             loadActivePreferenceSettings();
 
-            if (sourceViewer instanceof ITextViewerExtension) {
+            if (sourceViewer instanceof ITextViewerExtension && sqlSymbolInserter != null) {
                 ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(sqlSymbolInserter);
             }
         }

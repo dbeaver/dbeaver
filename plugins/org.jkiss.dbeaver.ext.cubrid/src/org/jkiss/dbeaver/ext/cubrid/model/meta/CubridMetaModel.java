@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -166,11 +167,11 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
     @Nullable
     @Override
     public GenericTableConstraintColumn[] createConstraintColumnsImpl(
-            @NotNull JDBCSession session,
-            @NotNull GenericTableBase parent,
-            @Nullable GenericUniqueKey object,
-            @Nullable GenericMetaObject pkObject,
-            @NotNull JDBCResultSet dbResult)
+        @NotNull JDBCSession session,
+        @NotNull GenericTableBase parent,
+        @NotNull GenericUniqueKey object,
+        @Nullable GenericMetaObject pkObject,
+        @NotNull JDBCResultSet dbResult)
             throws DBException {
         String name = JDBCUtils.safeGetStringTrimmed(dbResult, "key_attr_name");
         Integer keyOrder = JDBCUtils.safeGetInteger(dbResult, "key_order") + 1;
@@ -312,14 +313,14 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         return dbStat;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public CubridTrigger createTableTriggerImpl(
-            @NotNull JDBCSession session,
-            @NotNull GenericStructContainer container,
-            @Nullable GenericTableBase table,
-            @Nullable String triggerName,
-            @NotNull JDBCResultSet dbResult)
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer container,
+        @NotNull GenericTableBase table,
+        @Nullable String triggerName,
+        @NotNull JDBCResultSet dbResult)
             throws DBException {
         String name = JDBCUtils.safeGetString(dbResult, CubridConstants.NAME);
         String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
@@ -395,23 +396,34 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
     @Nullable
     @Override
     public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView object, @NotNull Map<String, Object> options) throws DBException {
-        String ddl = "-- View definition not available";
+        String fallbackDDL = "-- View definition not available";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl")) {
             String sql = String.format("show create view %s", ((CubridView) object).getUniqueName());
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        ddl = "create or replace view " + dbResult.getString("View") + " as " + dbResult.getString("Create View");
-                        ddl = SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
+                    List<String> ddlFragments = new ArrayList<>();
+                    String viewName = null;
+                    while (dbResult.next()) {
+                        viewName = JDBCUtils.safeGetStringTrimmed(dbResult, "View");
+                        String ddlFragment = JDBCUtils.safeGetStringTrimmed(dbResult, "Create View");
+                        if (CommonUtils.isNotEmpty(ddlFragment)) {
+                            ddlFragments.add(ddlFragment.trim());
+                        }
                     }
+                    if (CommonUtils.isEmpty(viewName) || CommonUtils.isEmpty(ddlFragments)) {
+                        return fallbackDDL;
+                    }
+                    String ddl = "create or replace view " + viewName + " as " + String.join(" union all ", ddlFragments);
+                    return SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
                 }
             }
         } catch (SQLException e) {
             log.error("Cannot load view ddl", e);
         }
-        return ddl;
+        return fallbackDDL;
     }
 
+    @Nullable
     @Override
     public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
         return new CubridQueryPlanner((CubridDataSource) dataSource);

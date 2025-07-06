@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.ZonedDateTime;
@@ -195,13 +196,20 @@ public class AIPromptBuilder {
 
             String currentSchema = dataSource.getCurrentSchema();
             if (!CommonUtils.isEmpty(currentSchema)) {
-                lines.add("Current " + (dsInfo == null ? "schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);
+                lines.add("Current " + (dsInfo == null ? "Schema" : dsInfo.getSchemaTerm()) + ": " + currentSchema);
             }
-            DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
-            if (ds instanceof JDBCDataSource) {
-                lines.add("Current JDBC driver: " + dsInfo.getDriverName() + " (" + dsInfo.getDriverVersion() + ")");
-            } else {
-                lines.add("Current Java driver: " + driver.getFullName() + ")");
+            String currentCatalog = dataSource.getCurrentCatalog();
+            if (!CommonUtils.isEmpty(currentCatalog)) {
+                lines.add("Current " + (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()) + ": " + currentCatalog);
+            }
+
+            if (dataSource.getDataSourceContainer() instanceof DataSourceDescriptor) {
+                DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
+                if (ds instanceof JDBCDataSource) {
+                    lines.add("Current JDBC driver: " + dsInfo.getDriverName() + " (" + dsInfo.getDriverVersion() + ")");
+                } else {
+                    lines.add("Current Java driver: " + driver.getFullName() + ")");
+                }
             }
         }
         return lines.toArray(String[]::new);

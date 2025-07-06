@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,9 @@ public class BigQueryMetaModel extends GenericMetaModel implements DBCQueryTrans
     public BigQueryMetaModel() {
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new BigQueryDataSource(monitor, container, this);
     }
 
@@ -65,6 +66,7 @@ public class BigQueryMetaModel extends GenericMetaModel implements DBCQueryTrans
         return null;
     }
 
+    @Nullable
     @Override
     public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
         String message = error.getMessage();

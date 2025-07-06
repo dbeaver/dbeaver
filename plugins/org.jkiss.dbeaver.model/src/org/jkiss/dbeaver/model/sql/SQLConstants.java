@@ -86,6 +86,7 @@ public class SQLConstants {
     public static final String KEYWORD_USING = "USING";
 
     public static final String DATA_TYPE_VARCHAR = "varchar";
+    public static final String DATA_TYPE_NVARCHAR = "nvarchar";
     public static final String DATA_TYPE_BIGINT = "BIGINT";
     public static final String DATA_TYPE_BINARY = "BINARY";
     public static final String DATA_TYPE_BOOLEAN = "BOOLEAN";

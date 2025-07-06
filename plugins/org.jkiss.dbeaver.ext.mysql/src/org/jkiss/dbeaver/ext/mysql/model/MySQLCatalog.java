@@ -485,7 +485,7 @@ public class MySQLCatalog implements
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (databaseDDL == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load database DDL")) {
                 try (JDBCStatement dbStat = session.createStatement()) {
