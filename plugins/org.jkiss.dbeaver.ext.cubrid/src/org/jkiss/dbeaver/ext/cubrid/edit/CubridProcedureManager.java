@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure;
 import org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager;
@@ -31,6 +28,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+
+import java.util.List;
+import java.util.Map;
 
 public class CubridProcedureManager extends GenericProcedureManager {
 
