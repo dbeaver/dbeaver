@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -875,10 +874,8 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     for (DBSEntityAttribute refAttr : refAttributes) {
                         vUniqueKey.addAttribute(refAttr.getName());
                     }
-                    try {
-                        vRefEntity.addConstraint(vUniqueKey, true);
-                    } catch (DBCException e) {
-                        throw new InvocationTargetException(e);
+                    if (!vRefEntity.addConstraint(vUniqueKey, true)) {
+                        throw new DBVException("Virtual Unique Key with name '" + vUniqueKey.getName() + "' already exists");
                     }
                     curConstraints.add(vUniqueKey);
                 }
@@ -909,6 +906,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(ObjectEditorMessages.dialog_struct_edit_fk_error_load_constraints_title, ObjectEditorMessages.dialog_struct_edit_fk_error_load_constraints_message, e.getTargetException());
+        } catch (DBVException e) {
+            DBWorkbench.getPlatformUI().showError(ObjectEditorMessages.dialog_struct_edit_fk_error_load_constraints_title,
+                ObjectEditorMessages.dialog_struct_edit_fk_error_load_constraints_message, e);
         } catch (InterruptedException e) {
             // do nothing
         }

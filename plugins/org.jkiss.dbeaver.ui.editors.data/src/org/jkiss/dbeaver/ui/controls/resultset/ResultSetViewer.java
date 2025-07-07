@@ -3428,14 +3428,15 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void handleDataSourceEvent(@NotNull DBPEvent event) {
-        if (event.getObject() instanceof DBVEntity
-            && event.getObject() == model.getVirtualEntity(false)
-            && event.getData() != null) {
+        if (event.getObject() instanceof DBVEntity &&
+            event.getObject() == model.getVirtualEntity(false) &&
+            event.getData() != null) {
 
             switch (event.getData()) {
                 // Virtual foreign key change - let's refresh
                 case DBVEntityForeignKey k -> refreshData(null);
 
+                // Handle updates for virtual constraints: refresh identifiers when a constraint changes
                 case DBVEntityConstraint c -> {
                     try {
                         List<DBDAttributeBinding> visibleAttributes = model.getVisibleAttributes();
@@ -3446,8 +3447,8 @@ public class ResultSetViewer extends Viewer
                         log.error(e);
                     }
                 }
-                default -> { // do nothing
-
+                default -> {
+                    // do nothing
                 }
             }
         }
@@ -4924,6 +4925,7 @@ public class ResultSetViewer extends Viewer
         EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
             ResultSetViewer.this, model.getSingleSource(), model.getVirtualEntity(true));
         dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
+        // Removed redundant logic: identifier reload and config persistence are handled inside dialog.okPressed()
         return dialog.open() == IDialogConstants.OK_ID;
     }
 

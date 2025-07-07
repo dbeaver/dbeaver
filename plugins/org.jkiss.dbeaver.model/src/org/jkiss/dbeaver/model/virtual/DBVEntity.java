@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -399,6 +398,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
 
         for (DBVEntityConstraint constraint : entityConstraints) {
+            //Moved inline condition to isComplete() method to improve readability.
             if (isComplete(constraint)) {
                 return constraint;
             }
@@ -434,23 +434,23 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             && (!CommonUtils.isEmpty(constraint.getAttributes()) || constraint.isUseAllColumns());
     }
 
-    public void addConstraint(@NotNull DBVEntityConstraint constraint) throws DBCException {
-        addConstraint(constraint, true);
+    public boolean addConstraint(@NotNull DBVEntityConstraint constraint) {
+        return addConstraint(constraint, true);
     }
 
-    public void addConstraint(@NotNull DBVEntityConstraint constraint, boolean reflect) throws DBCException {
+    public boolean addConstraint(@NotNull DBVEntityConstraint constraint, boolean reflect) {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
         }
 
         String constraintName = constraint.getName();
-
+        //Avoid duplicates and keep the most complete version.
         Iterator<DBVEntityConstraint> iterator = entityConstraints.iterator();
         while (iterator.hasNext()) {
             DBVEntityConstraint existing = iterator.next();
             if (Objects.equals(existing.getName(), constraintName)) {
                 if (isComplete(existing)) {
-                    throw new DBCException("Virtual Unique Key with name '" + constraintName + "' already exists");
+                    return false;
                 }
                 iterator.remove();
                 break;
@@ -462,6 +462,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         if (reflect) {
             DBUtils.fireObjectUpdate(this, constraint);
         }
+
+        return true;
     }
 
     public void removeConstraint(DBVEntityConstraint constraint) {

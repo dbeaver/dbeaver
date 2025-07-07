@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
@@ -261,13 +260,7 @@ class DBVModelSerializerLegacy implements DBVModelSerializer {
                             DBSEntityConstraintType.VIRTUAL_KEY,
                             atts.getValue(ATTR_NAME)
                         );
-                        try {
-                            curEntity.addConstraint(curConstraint, false);
-                        } catch (DBCException e) {
-                            log.warn("Duplicate constraint '" + curConstraint.getName()
-                                +  "' in entity '" + curEntity.getName()
-                                +  "'; ignoring.", e);
-                        }
+                        curEntity.addConstraint(curConstraint, false);
                     }
                     break;
                 case TAG_ATTRIBUTE:

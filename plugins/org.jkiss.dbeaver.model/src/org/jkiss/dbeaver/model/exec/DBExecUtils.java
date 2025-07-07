@@ -855,6 +855,7 @@ public class DBExecUtils {
 
             // Init row identifiers
             monitor.subTask("Detect unique identifiers");
+            //Extracted logic into a helper method bindUniqueIdentifiers(..)
             final Map<DBSEntity, DBDRowIdentifier> locatorMap = bindUniqueIdentifiers(bindings, mdMonitor);
             monitor.worked(1);
 
@@ -890,44 +891,40 @@ public class DBExecUtils {
     @NotNull
     public static Map<DBSEntity, DBDRowIdentifier> bindUniqueIdentifiers(
         @NotNull DBDAttributeBinding[] bindings,
-        @NotNull DBRProgressMonitor monitor
+        @NotNull DBRProgressMonitor mdMonitor
     ) throws DBException {
 
-        Map<DBSEntity, DBDRowIdentifier> identifierMap = new IdentityHashMap<>();
+        Map<DBSEntity, DBDRowIdentifier> locatorMap = new IdentityHashMap<>();
 
         for (DBDAttributeBinding binding : bindings) {
             if (!(binding instanceof DBDAttributeBindingMeta bindingMeta)) {
                 continue;
             }
-
+            //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
             DBSEntityAttribute attr = binding.getEntityAttribute();
             if (attr == null) {
                 bindingMeta.setRowIdentifierStatus(ModelMessages.no_corresponding_table_column_text);
                 continue;
             }
-
-            DBSEntity entity = attr.getParentObject();
-            if (entity == null) {
-                bindingMeta.setRowIdentifierStatus(ModelMessages.cannot_determine_unique_row_identifier_text);
-                continue;
-            }
-
-            DBDRowIdentifier rowIdentifier = identifierMap.get(entity);
-            if (rowIdentifier == null) {
-                DBSEntityConstraint bestIdentifier = getBestIdentifier(monitor, entity, bindings);
-                if (bestIdentifier == null) {
-                    bindingMeta.setRowIdentifierStatus(ModelMessages.cannot_determine_unique_row_identifier_text);
-                    continue;
+            DBSEntity attrEntity = attr.getParentObject();
+            if (attrEntity != null) {
+                DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
+                if (rowIdentifier == null) {
+                    DBSEntityConstraint entityIdentifier = getBestIdentifier(mdMonitor, attrEntity, bindings);
+                    if (entityIdentifier != null) {
+                        rowIdentifier = new DBDRowIdentifier(
+                            attrEntity,
+                            entityIdentifier);
+                        locatorMap.put(attrEntity, rowIdentifier);
+                    } else {
+                        bindingMeta.setRowIdentifierStatus(ModelMessages.cannot_determine_unique_row_identifier_text);
+                    }
                 }
-
-                rowIdentifier = new DBDRowIdentifier(entity, bestIdentifier);
-                identifierMap.put(entity, rowIdentifier);
+                bindingMeta.setRowIdentifier(rowIdentifier);
             }
-
-            bindingMeta.setRowIdentifier(rowIdentifier);
         }
 
-        return identifierMap;
+        return locatorMap;
     }
 
 
