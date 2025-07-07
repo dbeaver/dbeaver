@@ -229,7 +229,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
-    public void applyFrom(DriverDescriptor copyFrom) {
+    public void applyFrom(@NotNull DriverDescriptor copyFrom) {
         this.category = copyFrom.category;
         this.name = copyFrom.name;
         this.description = copyFrom.description;
