@@ -33,7 +33,7 @@
                   label="WMI data source"
                   path="wmi">
                 <!--folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Classes" description="WMI classes">
-                    <items label="Classes" itemLabel="Class" path="allClass" property="allClasses" icon="icons/class.png">
+                    <items label="Classes" itemLabel="Class" path="allClass" property="allClasses" icon="icons/class.svg">
                         <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassProperty" label="Properties" icon="#columns" description="Class properties" navigable="false" id="ClassAttributes">
                             <items label="Properties" itemLabel="Property" path="property" property="attributes"/>
                         </folder>
@@ -43,7 +43,7 @@
                     <items label="Namespaces" itemLabel="Namespace" path="namespace" property="namespaces" icon="icons/namespace.png" id="Namespace">
                         <items ref="Namespace"/>
                         <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Classes" icon="icons/classes.png" description="Classes">
-                            <items label="Classes" itemLabel="Class" path="class" property="classes" icon="icons/class.png" id="Class">
+                            <items label="Classes" itemLabel="Class" path="class" property="classes" icon="icons/class.svg" id="Class">
                                 <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassAttribute" label="Properties" icon="#columns" description="Class properties" navigable="false" id="ClassAttributes">
                                     <items label="Properties" itemLabel="Property" path="attribute" property="allAttributes"/>
                                 </folder>
@@ -53,7 +53,7 @@
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Associations" icon="icons/associations.png" description="Class Associations">
-                            <items label="Associations" itemLabel="Association" path="association" property="associations" icon="icons/association.png" id="Association">
+                            <items label="Associations" itemLabel="Association" path="association" property="associations" icon="icons/association.svg" id="Association">
                                 <items ref="ClassAttributes"/>
                             </items>
                         </folder>
