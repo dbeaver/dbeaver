@@ -700,7 +700,7 @@ public final class SQLUtils {
         char prevChar = 0;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
-            if (!dialect.validIdentifierPart(c, false)) {
+            if ((buf.isEmpty() && !dialect.validIdentifierStart(c)) || (!buf.isEmpty() && !dialect.validIdentifierPart(c, false))) {
                 prevInvalid = true;
             } else {
                 if (prevInvalid || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c))) {

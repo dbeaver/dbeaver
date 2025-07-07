@@ -46,6 +46,7 @@ public class DBVModel extends DBVContainer {
     private DBPDataSourceContainer dataSourceContainer;
     @NotNull
     private String id;
+    //private Map<String, Object> extensions = new LinkedHashMap<>();
 
     public DBVModel(@NotNull String id, @NotNull Map<String, Object> map) {
         super(null, id, map);
