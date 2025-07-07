@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 
 import java.util.List;
 
@@ -46,6 +48,26 @@ public class DBSLogicalDataSource implements DBPDataSourceContainerProvider, DBP
 
     public DBSLogicalDataSource(@NotNull DBPDataSourceContainer dataSourceContainer) {
         this(dataSourceContainer, "DS Wrapper", null);
+    }
+
+    @NotNull
+    public static DBSLogicalDataSource createLogicalDataSource(
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @Nullable DBCExecutionContext executionContext
+    ) {
+        DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(dataSourceContainer, "AI logical wrapper", null);
+        if (executionContext != null) {
+            DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
+            if (contextDefaults != null) {
+                if (contextDefaults.getDefaultCatalog() != null) {
+                    lDataSource.setCurrentCatalog(contextDefaults.getDefaultCatalog().getName());
+                }
+                if (contextDefaults.getDefaultSchema() != null) {
+                    lDataSource.setCurrentSchema(contextDefaults.getDefaultSchema().getName());
+                }
+            }
+        }
+        return lDataSource;
     }
 
     @NotNull
