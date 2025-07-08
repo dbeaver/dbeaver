@@ -792,32 +792,34 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             @Override
             protected Control createControl(Composite parent) {
                 FormLayout fl = new FormLayout();
-                fl.marginWidth  = 0;
+                fl.marginWidth = 0;
                 fl.marginHeight = 0;
-                fl.spacing      = 0;
+                fl.spacing = 0;
                 Composite composite = new Composite(parent, SWT.NONE);
                 composite.setLayout(fl);
 
                 browseButton = new Button(composite, SWT.PUSH);
                 browseButton.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
                 FormData btnFd = new FormData();
-                btnFd.top    = new FormAttachment(0, 0);
+                btnFd.top = new FormAttachment(0, 0);
                 btnFd.bottom = new FormAttachment(100, 0);
-                btnFd.right  = new FormAttachment(100, 0);
+                btnFd.right = new FormAttachment(100, 0);
                 browseButton.setLayoutData(btnFd);
                 if (!isContainer) {
                     browseButton.setVisible(false);
                 }
 
-                combo = new CCombo(composite,
-                    SWT.DROP_DOWN | (finalAllowsCreate ? SWT.NONE : SWT.READ_ONLY));
+                combo = new CCombo(
+                    composite,
+                    SWT.DROP_DOWN | (finalAllowsCreate ? SWT.NONE : SWT.READ_ONLY)
+                );
                 combo.setVisibleItemCount(15);
                 combo.setItems(items.toArray(new String[0]));
                 FormData comboFd = new FormData();
-                comboFd.top    = new FormAttachment(0, 0);
+                comboFd.top = new FormAttachment(0, 0);
                 comboFd.bottom = new FormAttachment(100, 0);
-                comboFd.left   = new FormAttachment(0, 0);
-                comboFd.right  = isContainer
+                comboFd.left = new FormAttachment(0, 0);
+                comboFd.right = isContainer
                     ? new FormAttachment(browseButton, 0)
                     : new FormAttachment(100, 0);
                 combo.setLayoutData(comboFd);
@@ -867,11 +869,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             @Override
             protected Object openDialogBox(Control cellEditorWindow) {
                 if (isContainer) {
-                    mapExistingTables(new DatabaseMappingContainer[]{
-                        (DatabaseMappingContainer) element});
+                    mapExistingTables(new DatabaseMappingContainer[] {
+                        (DatabaseMappingContainer) element
+                    });
                     mappingViewer.refresh(element);
                 }
-                // возвращаем текущее значение, чтобы слушатель кнопки мог зафиксировать его
                 return doGetValue();
             }
 
