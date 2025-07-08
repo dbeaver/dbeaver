@@ -852,6 +852,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             log.info("New target name: " + newVal);
                             doSetValue(newVal);
                             markDirty();
+                            fireApplyEditorValue();
                         }
                     });
                 }
@@ -868,15 +869,12 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             @Override
             protected Object openDialogBox(Control cellEditorWindow) {
-                if (isContainer) {
-                    log.info("Open target name dialog");
-                    mapExistingTables(new DatabaseMappingContainer[] {
-                        (DatabaseMappingContainer) element
-                    });
-                    mappingViewer.refresh(element);
-                }
-                return doGetValue();
+                log.info("Open target name dialog");
+                mapExistingTables(new DatabaseMappingContainer[]{ (DatabaseMappingContainer) element });
+                mappingViewer.refresh(element);
+                return ((DatabaseMappingContainer) element).getTargetName();
             }
+
 
             @Override
             protected void updateContents(Object value) {
