@@ -811,8 +811,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
                 combo = new CCombo(
                     composite,
-                    SWT.DROP_DOWN | (finalAllowsCreate ? SWT.NONE : SWT.READ_ONLY)
-                );
+                    SWT.DROP_DOWN);
                 combo.setVisibleItemCount(15);
                 combo.setItems(items.toArray(new String[0]));
                 FormData comboFd = new FormData();
@@ -906,7 +905,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 }
             }
         };
-
     }
 
     private void setMappingTarget(DBRProgressMonitor monitor, DatabaseMappingObject mapping, String name, boolean forceRefresh, boolean updateAttributesNames) {
