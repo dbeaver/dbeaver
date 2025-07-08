@@ -871,10 +871,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             protected Object openDialogBox(Control cellEditorWindow) {
                 log.info("Open target name dialog");
                 mapExistingTables(new DatabaseMappingContainer[]{ (DatabaseMappingContainer) element });
-                mappingViewer.refresh(element);
-                return ((DatabaseMappingContainer) element).getTargetName();
+                String targetName = ((DatabaseMappingContainer) element).getTargetName();
+                System.out.println("dialog with new value " + targetName);
+                return targetName;
             }
-
 
             @Override
             protected void updateContents(Object value) {
@@ -899,13 +899,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 }
             }
 
-            @Override
-            public void activate(ColumnViewerEditorActivationEvent activationEvent) {
-                super.activate(activationEvent);
-                if (combo != null && !combo.isDisposed()) {
-                    combo.setSelection(new Point(0, combo.getText().length()));
-                }
-            }
+//            @Override
+//            public void activate(ColumnViewerEditorActivationEvent activationEvent) {
+//                super.activate(activationEvent);
+//                if (combo != null && !combo.isDisposed()) {
+//                    combo.setSelection(new Point(0, combo.getText().length()));
+//                }
+//            }
         };
     }
 
