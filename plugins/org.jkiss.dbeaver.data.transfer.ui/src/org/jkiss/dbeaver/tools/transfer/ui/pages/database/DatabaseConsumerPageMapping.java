@@ -811,7 +811,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
                 combo = new CCombo(
                     composite,
-                    SWT.DROP_DOWN);
+                    SWT.DROP_DOWN | (finalAllowsCreate ? SWT.NONE : SWT.READ_ONLY));
                 combo.setVisibleItemCount(15);
                 combo.setItems(items.toArray(new String[0]));
                 FormData comboFd = new FormData();
@@ -849,6 +849,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             Object newVal = openDialogBox(composite);
+                            log.info("New target name: " + newVal);
                             doSetValue(newVal);
                             markDirty();
                         }
@@ -868,6 +869,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             @Override
             protected Object openDialogBox(Control cellEditorWindow) {
                 if (isContainer) {
+                    log.info("Open target name dialog");
                     mapExistingTables(new DatabaseMappingContainer[] {
                         (DatabaseMappingContainer) element
                     });
@@ -892,7 +894,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             @Override
             protected void doSetValue(Object value) {
+                log.info("Set target name: " + value);
                 if (combo != null && !combo.isDisposed()) {
+                    log.info("Set target name finally: " + value);
                     combo.setText(CommonUtils.toString(value));
                 }
             }
