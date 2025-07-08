@@ -630,8 +630,8 @@ public class NavigatorUtils {
             }
         }
         if (activeProject == null) {
-            if (activePart instanceof DBPContextProvider) {
-                DBCExecutionContext executionContext = ((DBPContextProvider) activePart).getExecutionContext();
+            if (activePart instanceof DBPContextProvider contextProvider) {
+                DBCExecutionContext executionContext = contextProvider.getExecutionContext();
                 if (executionContext != null) {
                     activeProject = executionContext.getDataSource().getContainer().getRegistry().getProject();
                 } else if (activePart instanceof DBPDataSourceContainerProvider) {
