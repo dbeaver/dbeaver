@@ -51,12 +51,13 @@ public class CubridStructureAssistant extends JDBCStructureAssistant<JDBCExecuti
 
     @Override
     protected void findObjectsByMask(
-            JDBCExecutionContext executionContext,
-            JDBCSession session,
-            DBSObjectType objectType,
-            ObjectsSearchParams params,
-            List<DBSObjectReference> references)
-            throws DBException, SQLException {
+        JDBCExecutionContext executionContext,
+        JDBCSession session,
+        DBSObjectType objectType,
+        ObjectsSearchParams params,
+        List<DBSObjectReference> references
+    ) throws DBException, SQLException {
+
         GenericSchema parentSchema = params.getParentObject() instanceof GenericSchema ? (GenericSchema) params.getParentObject() : null;
         if (objectType == RelationalObjectType.TYPE_TABLE) {
             findTablesByMask(session, parentSchema, params.getMask(), references);
