@@ -65,11 +65,12 @@ public class CubridStructureAssistant extends JDBCStructureAssistant<JDBCExecuti
     }
 
     private void findTablesByMask(
-            JDBCSession session,
-            GenericSchema schema,
-            String tableNameMask,
-            List<DBSObjectReference> objects)
-            throws SQLException, DBException {
+        JDBCSession session,
+        GenericSchema schema,
+        String tableNameMask,
+        List<DBSObjectReference> objects
+    ) throws SQLException, DBException {
+
         String sql = "SELECT class_name, owner_name, comment FROM db_class WHERE class_name = ?";
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement(sql);
