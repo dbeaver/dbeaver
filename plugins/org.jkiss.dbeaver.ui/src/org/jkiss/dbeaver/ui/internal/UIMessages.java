@@ -114,6 +114,7 @@ public class UIMessages extends NLS {
 
     public static String preference_page_no_access;
     public static String preference_page_no_edit_access;
+    public static String preference_page_disabled_secret_management;
 
     public static String notification_popup_context_message;
 
@@ -125,6 +126,13 @@ public class UIMessages extends NLS {
     public static String dialog_policy_data_export_title;
     public static String dialog_policy_data_copy_title;
     public static String dialog_policy_data_copy_msg;
+
+    public static String popup_open_browser_open_external_browser;
+
+    public static String dialog_auth_code_title;
+    public static String dialog_auth_code_browser_label;
+    public static String dialog_auth_code_code_label;
+    public static String dialog_auth_code_copy_and_open_label;
 
     static {
         // initialize resource bundle

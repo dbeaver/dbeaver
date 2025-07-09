@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -549,16 +549,16 @@ public class MySQLTable extends MySQLTableBase
                                 if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintAttribute(monitor, pkConstraint, pkColumn) != null) {
                                     pk = pkConstraint;
                                     if (pkConstraint.getName().equals(pkName))
-                                    	break;
+                                        break;
                                     // If pk name does not match, keep searching (actual pk might not be this one)
                                 }
                             }
                         }
                     }
                     if (pk == null && pkTable != null && pkName != null) {
-                    	// Find pk based on name
-                    	Collection<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
-                    	pk = DBUtils.findObject(constraints, pkName);
+                        // Find pk based on name
+                        Collection<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
+                        pk = DBUtils.findObject(constraints, pkName);
                         if (pk == null) {
                             log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
                         }
@@ -617,7 +617,7 @@ public class MySQLTable extends MySQLTableBase
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         return getDDL(monitor, options);
     }
 

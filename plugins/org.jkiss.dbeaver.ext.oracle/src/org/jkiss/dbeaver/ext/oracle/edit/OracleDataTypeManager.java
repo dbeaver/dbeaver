@@ -43,8 +43,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
 
     @Nullable
     @Override
-    public DBSObjectCache<? extends DBSObject, OracleDataType> getObjectsCache(OracleDataType object)
-    {
+    public DBSObjectCache<? extends DBSObject, OracleDataType> getObjectsCache(@NotNull OracleDataType object) {
         return object.getSchema().dataTypeCache;
     }
 
@@ -70,7 +69,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     @Override
     protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand objectCreateCommand, @NotNull Map<String, Object> options)
     {
-        createOrReplaceProcedureQuery(executionContext, actions, objectCreateCommand.getObject());
+        createOrReplaceProcedureQuery(monitor, executionContext, actions, objectCreateCommand.getObject());
     }
 
     @Override
@@ -86,7 +85,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     @Override
     protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand objectChangeCommand, @NotNull Map<String, Object> options)
     {
-        createOrReplaceProcedureQuery(executionContext, actionList, objectChangeCommand.getObject());
+        createOrReplaceProcedureQuery(monitor, executionContext, actionList, objectChangeCommand.getObject());
     }
 
     @Override
@@ -95,16 +94,20 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private void createOrReplaceProcedureQuery(DBCExecutionContext executionContext, List<DBEPersistAction> actionList, OracleDataType dataType)
-    {
-        String header = OracleUtils.normalizeSourceName(dataType, false);
+    private void createOrReplaceProcedureQuery(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull OracleDataType dataType
+    ) {
+        String header = OracleUtils.normalizeSourceName(monitor, dataType, false);
         if (!CommonUtils.isEmpty(header)) {
             actionList.add(
                 new SQLDatabasePersistAction(
                     "Create type header",
                     "CREATE OR REPLACE " + header)); //$NON-NLS-1$
         }
-        String body = OracleUtils.normalizeSourceName(dataType, true);
+        String body = OracleUtils.normalizeSourceName(monitor, dataType, true);
         if (!CommonUtils.isEmpty(body)) {
             actionList.add(
                 new SQLDatabasePersistAction(

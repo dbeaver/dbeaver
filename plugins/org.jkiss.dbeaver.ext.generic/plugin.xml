@@ -25,7 +25,7 @@
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey" label="%tree.uni_keys.node.name" icon="#constraints" description="%tree.uni_keys.node.tip" visibleIf="!object.view &amp;&amp; (object.dataSource.info.supportsReferentialIntegrity() || object.container.dataSource.metaModel.supportsUniqueKeys())">
                                     <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                         <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
@@ -442,6 +442,7 @@
                     label="Teradata"
                     icon="icons/teradata_icon.png"
                     iconBig="icons/teradata_icon_big.png"
+                    logoImage="icons/teradata_logo.png"
                     class="com.teradata.jdbc.TeraDriver"
                     sampleURL="jdbc:teradata://{host}/[DATABASE={database},]DBS_PORT={port}"
                     defaultPort="1025"
@@ -748,6 +749,7 @@
                     label="Virtuoso"
                     icon="icons/virtuoso_icon.png"
                     iconBig="icons/virtuoso_icon_big.png"
+                    logoImage="icons/virtuoso_logo.png"
                     class="virtuoso.jdbc4.Driver"
                     sampleURL="jdbc:virtuoso://{host}:{port}/DATABASE={database}/CHARSET=UTF-8"
                     defaultPort="1111"
@@ -852,25 +854,6 @@
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
 
                     <parameter name="supports-truncate" value="false"/>
-                </driver>
-
-                <!-- Neo4j -->
-                <driver
-                    id="neo4j_jdbc"
-                    label="Neo4j"
-                    icon="icons/neo4j_icon.png"
-                    iconBig="icons/neo4j_icon_big.png"
-                    class="org.neo4j.jdbc.Driver"
-                    sampleURL="jdbc:neo4j:bolt://{host}[:{port}]/"
-                    defaultPort="7687"
-                    description="Neo4j JDBC driver"
-                    supportedConfigurationTypes="MANUAL,URL"
-                    webURL="https://github.com/neo4j-contrib/neo4j-jdbc"
-                    categories="graph">
-                    <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
-                    <file type="license" path="licenses/external/lgpl-3.0.txt"/>
-                    <parameter name="supports-truncate" value="false"/>
-                    <property name="@dbeaver-default-sql.parameter.enabled" value="false"/>
                 </driver>
 
                 <!-- PrestoDB -->
@@ -1158,7 +1141,7 @@
                     sampleURL="jdbc:qubole://{server}/{host}[/{database}]"
                     description="Qubole JDBC driver"
                     webURL="https://docs.qubole.com/en/latest/connectivity-options/use-qubole-drivers/JDBC-driver/use-jdbc-driver.html"
-                    categories="bigdata,hadoop">
+                    categories="sql,hadoop">
                     <file type="jar" path="maven:/com.qubole:jdbc:RELEASE"/>
                 </driver>
                 -->
@@ -1196,6 +1179,7 @@
                     label="Apache Kylin"
                     icon="icons/apache_icon.png"
                     iconBig="icons/apache_icon_big.png"
+                    logoImage="icons/apache_logo.png"
                     class="org.apache.kylin.jdbc.Driver"
                     sampleURL="jdbc:kylin://{host}:{port}/{database}"
                     defaultPort="443"
@@ -1241,7 +1225,7 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
 
-                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[11.5.9.0]" bundle="!drivers.db2"/>
+                    <file type="jar" path="maven:/com.ibm.db2:jcc:RELEASE[12.1.0.0]" bundle="!drivers.db2"/>
                     <file type="license" path="drivers/db2/LICENSE.txt" bundle="drivers.db2"/>
                     <file type="jar" path="drivers/db2" bundle="drivers.db2"/>
                 </driver>
@@ -1340,7 +1324,7 @@
                         databaseDocumentationSuffixURL="Database-driver-Salesforce"
                         categories="sql">
                     <replace provider="generic" driver="salesforce_jdbc"/>
-                    <file type="jar" path="maven:/com.salesforce.datacloud:jdbc:RELEASE" bundle="!drivers.salesforce_datacloud"/>
+                    <file type="jar" path="maven:/com.salesforce.datacloud:jdbc:shaded:RELEASE" bundle="!drivers.salesforce_datacloud"/>
                     <file type="jar" path="drivers/salesforce_datacloud" bundle="drivers.salesforce_datacloud"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <parameter name="read-only-meta-data" value="true"/>
@@ -1352,6 +1336,7 @@
                         label="Teiid"
 		                icon="icons/teiid_icon.png"
                         iconBig="icons/teiid_icon_big.png"
+                        logoImage="icons/teiid_logo.png"
                         class="org.teiid.jdbc.TeiidDriver"
                         sampleURL="jdbc:teiid:{database}@mms://{host}:{port}"
                         defaultPort="31000"
@@ -1502,6 +1487,15 @@
                         supportsDistributedMode="false"
                         categories="nosql,timeseries,aws">
                     <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.timestream.reason"/>
+                </driver>
+                <driver
+                        id="neo4j_jdbc"
+                        label="Neo4j"
+                        description="Driver for Neo4j"
+                        iconBig="icons/neo4j_icon_big.png"
+                        supportsDistributedMode="false"
+                        categories="graph">
+                    <notAvailableDriver title="%not.available.title" description="%not.available.description" message="%driver.neo4j.reason"/>
                 </driver>
             </drivers>
 

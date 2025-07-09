@@ -695,7 +695,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         final PostgreSchema owner = getParentObject();
         if (owner == null || owner.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
             return getName();
@@ -714,7 +714,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
 
         if (typeType == PostgreTypeType.d) {
