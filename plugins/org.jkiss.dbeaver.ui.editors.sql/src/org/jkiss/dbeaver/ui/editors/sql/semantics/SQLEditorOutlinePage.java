@@ -897,7 +897,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Override
         public Object visitRowsTableData(@NotNull SQLQueryRowsTableDataModel tableData, @NotNull OutlineQueryNode node) {
             DBSEntity table = tableData.getTable();
-            DBPImage icon = DBValueFormatting.getObjectImage(table);
+            DBPImage icon = tableData.getReferencedSource() != null ? DBIcon.TREE_TABLE_LINK : DBValueFormatting.getObjectImage(table);
             String text = table == null
                 ? (tableData.getName() == null ? SQLConstants.QUESTION : tableData.getName().toIdentifierString())
                 : DBUtils.getObjectFullName(table, DBPEvaluationContext.DML);
@@ -1394,7 +1394,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
             SQLQueryQualifiedName tableName = createTable.getTableName();
             String nodeName = "CREATE TABLE " + (tableName == null ? SQLConstants.QUESTION : tableName.toIdentifierString());
             this.makeNode(
-                node, createTable, nodeName, UIIcon.ACTION_OBJECT_ADD,
+                node, createTable, nodeName, UIIcon.OBJ_ADD,
                 Stream.concat(createTable.getColumns().stream(), createTable.getConstraints().stream()).toArray(SQLQueryNodeModel[]::new)
             );
             return null;

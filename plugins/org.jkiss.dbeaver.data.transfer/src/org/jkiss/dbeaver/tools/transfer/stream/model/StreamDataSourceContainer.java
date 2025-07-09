@@ -321,12 +321,12 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
 
     @Nullable
     @Override
-    public String getExtension(@NotNull String name) {
+    public <T> T getExtension(@NotNull String name) {
         return null;
     }
 
     @Override
-    public void setExtension(@NotNull String name, @Nullable String value) {
+    public void setExtension(@NotNull String name, @Nullable Object value) {
 
     }
 
@@ -339,6 +339,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     @NotNull
     @Override
     public DBPDataSourceRegistry getRegistry() {
+        // Mustn't be called
         return null;
     }
 

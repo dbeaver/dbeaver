@@ -58,7 +58,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlDialect">
-        <dialect id="basic" class="org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect" label="SQL" description="Base SQL dialect for all other dialects." icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/sql.png" abstract="true">
+        <dialect id="basic" class="org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect" label="SQL" description="Base SQL dialect for all other dialects." icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/sql.svg" abstract="true">
             <property name="keywords" value=""/>
             <property name="ddlKeywords" value="CREATE,ALTER,DROP"/>
             <property name="dmlKeywords" value="INSERT,DELETE,UPDATE,UPSERT,MERGE,TRUNCATE"/>
@@ -83,8 +83,8 @@
     <extension point="org.jkiss.dbeaver.resourceType">
         <type id="sql-script"
               name="SQL script"
-              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
-              folderIcon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script_folder.png"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
+              folderIcon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script_folder.svg"
               managable="true">
             <root folder="Scripts"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>

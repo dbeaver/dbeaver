@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,6 @@
 
 package org.jkiss.dbeaver.ext.gbase8s.model.meta;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
@@ -31,32 +24,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.gbase8s.GBase8sConstants;
 import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sCatalog;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sCheckConstraint;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sDataTypeCache;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sProcedure;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sSchema;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sSynonym;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTable;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTableColumn;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sTableTrigger;
-import org.jkiss.dbeaver.ext.gbase8s.model.GBase8sUniqueKey;
+import org.jkiss.dbeaver.ext.gbase8s.model.*;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
-import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
-import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableTrigger;
-import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
-import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
-import org.jkiss.dbeaver.ext.generic.model.GenericView;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -73,6 +43,9 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * @author Chao Tian
@@ -107,9 +80,15 @@ public class GBase8sMetaModel extends GenericMetaModel {
     /**
      * Procedure
      */
-    public GenericProcedure createProcedureImpl(GenericStructContainer container, String procedureName,
-            String specificName, String remarks, DBSProcedureType procedureType,
-            GenericFunctionResultType functionResultType) {
+    @NotNull
+    public GenericProcedure createProcedureImpl(
+        @NotNull GenericStructContainer container,
+        @NotNull String procedureName,
+        String specificName,
+        String remarks,
+        @NotNull DBSProcedureType procedureType,
+        GenericFunctionResultType functionResultType
+    ) {
         return new GBase8sProcedure(container, procedureName, specificName, remarks, procedureType, functionResultType);
     }
 
@@ -158,6 +137,7 @@ public class GBase8sMetaModel extends GenericMetaModel {
     /**
      * Table Trigger
      */
+    @NotNull
     @Override
     public GenericTableTrigger createTableTriggerImpl(@NotNull JDBCSession session,
             @NotNull GenericStructContainer container, @NotNull GenericTableBase genericTableBase, String triggerName,
@@ -173,7 +153,7 @@ public class GBase8sMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         return GBase8sUtils.getProcedureSource(monitor, sourceObject);
     }
 
@@ -252,12 +232,13 @@ public class GBase8sMetaModel extends GenericMetaModel {
         return dbStat;
     }
 
+    @NotNull
     public GBase8sUniqueKey createConstraintImpl(
-            GenericTableBase table,
-            String constraintName,
-            DBSEntityConstraintType constraintType,
-            JDBCResultSet dbResult,
-            boolean persisted) {
+        @NotNull GenericTableBase table,
+        String constraintName,
+        DBSEntityConstraintType constraintType,
+        JDBCResultSet dbResult,
+        boolean persisted) {
         if (dbResult == null || !constraintType.isUnique()) {
             String checkText = dbResult != null ? JDBCUtils.safeGetString(dbResult, GBase8sConstants.CHECK_CLAUSE)
                     : null;
@@ -267,7 +248,7 @@ public class GBase8sMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public DBSEntityConstraintType getUniqueConstraintType(JDBCResultSet dbResult) throws DBException, SQLException {
+    public DBSEntityConstraintType getUniqueConstraintType(@NotNull JDBCResultSet dbResult) throws DBException, SQLException {
         String constraintType = JDBCUtils.safeGetString(dbResult, GBase8sConstants.CONSTRAINT_TYPE);
         if (constraintType == null) {
             log.warn("Can't get column '" + GBase8sConstants.CONSTRAINT_TYPE + "': No such column name");
@@ -292,7 +273,7 @@ public class GBase8sMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container)
+    public void loadProcedures(@NotNull DBRProgressMonitor monitor, @NotNull GenericObjectContainer container)
             throws DBException {
 
         Map<String, GenericProcedure> funcMap = new LinkedHashMap<>();
@@ -359,8 +340,9 @@ public class GBase8sMetaModel extends GenericMetaModel {
     }
 
     @Override
-    public List<GBase8sTableTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container,
-            @Nullable GenericTableBase table) throws DBException {
+    public List<GBase8sTableTrigger> loadTriggers(
+        @NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container,
+        @Nullable GenericTableBase table) throws DBException {
         assert table != null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             String query = "SELECT T1.trigname FROM systriggers AS T1, systables AS T2 WHERE T2.tabid = T1.tabid AND T2.tabname = ?";
@@ -459,6 +441,7 @@ public class GBase8sMetaModel extends GenericMetaModel {
         return dbStat;
     }
 
+    @NotNull
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session,
             @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws SQLException {
