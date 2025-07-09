@@ -31,7 +31,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sql.plan.view">
-        <view id="simple" priority="100" label="%sql.plan.view.simple.name" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_explain_plan.png" description="%sql.plan.view.simple.tip" class="org.jkiss.dbeaver.ui.editors.sql.plan.simple.SQLPlanViewProviderSimple" />
+        <view id="simple" priority="100" label="%sql.plan.view.simple.name" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_explain_plan.svg" description="%sql.plan.view.simple.tip" class="org.jkiss.dbeaver.ui.editors.sql.plan.simple.SQLPlanViewProviderSimple" />
     </extension>
 
     <extension point="org.jkiss.dbeaver.sql.covert">
@@ -65,7 +65,7 @@
     <extension point="org.eclipse.ui.editors">
         <editor name="%editor.sql.name"
                 extensions="sql"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
                 contributorClass="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributor"
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"
                 matchingStrategy="org.jkiss.dbeaver.ui.editors.sql.SQLEditorMatchingStrategy"
@@ -73,7 +73,7 @@
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </editor>
         <editor name="%editor.sql.results.name"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/grid.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/grid.svg"
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLResultsEditor"
                 id="org.jkiss.dbeaver.ui.editors.sql.SQLResultsEditor">
         </editor>
@@ -99,7 +99,7 @@
         <specification
                 annotationType="org.jkisss.dbeaver.ui.occurrences.underCursor"
                 label="SQL - word (under cursor) occurrences"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
                 textPreferenceKey="occurrenceIndication"
                 textPreferenceValue="false"
                 highlightPreferenceKey="occurrenceHighlighting"
@@ -124,7 +124,7 @@
         <specification
                 annotationType="org.jkisss.dbeaver.ui.occurrences.forSelection"
                 label="SQL - selected word occurrences"
-                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
                 textPreferenceKey="writeOccurrenceIndication"
                 textPreferenceValue="false"
                 highlightPreferenceKey="writeOccurrenceHighlighting"
@@ -295,32 +295,32 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.core.sql.editor.open" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"/>
-        <image commandId="org.jkiss.dbeaver.core.sql.editor.recent" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_recent.png"/>
-        <image commandId="org.jkiss.dbeaver.core.sql.editor.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_create.png"/>
-        <image commandId="org.jkiss.dbeaver.core.sql.editor.console" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.png"/>
-        <image commandId="org.jkiss.dbeaver.core.sql.editor.showScripts" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script_folder.png"/>
-        <image commandId="org.jkiss.dbeaver.core.sql.editor.forSelection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec_new.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_exec.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_exec_new.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_plan.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.multipleResultsPerTab" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_multiple_results_per_tab_false.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.cancel.query" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_cancel.png"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.editor.open" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.editor.recent" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_recent.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.editor.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_create.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.editor.console" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.editor.showScripts" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script_folder.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.editor.forSelection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec_new.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_exec.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_exec_new.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_plan.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.multipleResultsPerTab" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_multiple_results_per_tab_false.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.cancel.query" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_cancel.svg"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.load.plan" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/load.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sync_connection.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.export.data" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/table_export.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sync_connection.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.export.data" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/table_export.svg"/>
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/load.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save_as.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save_as.svg"/>
 
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_error.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/variable.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/toggle_outline.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_error.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/variable.svg"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/toggle_outline.svg"/>
 
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.toggleLayout" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/rotate.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.toggleLayout" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/rotate.svg"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -890,7 +890,7 @@
             <command commandId="org.jkiss.dbeaver.core.sql.editor.defaultCommand"
                  label="SQL"
                  tooltip="%command.org.jkiss.dbeaver.core.sql.editor.open.description"
-                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png"
+                 icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
                  style="pulldown"
                  mode="FORCE_TEXT"
                  id="org.jkiss.dbeaver.menu.sql.open">
@@ -1098,7 +1098,7 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.additions">
-            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute.label" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.png">
+            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute.label" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.svg">
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
@@ -1177,7 +1177,7 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=generate">
-            <menu label="%menu.database.sql.generate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/sql.png">
+            <menu label="%menu.database.sql.generate" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/sql.svg">
                 <visibleWhen>
                     <with variable="activePart">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.util.canGenerate"/>

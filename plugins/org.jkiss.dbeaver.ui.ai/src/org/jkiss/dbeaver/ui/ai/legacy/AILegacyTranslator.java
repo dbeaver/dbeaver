@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.qm.QMTranslationHistoryItem;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
@@ -94,7 +93,7 @@ public class AILegacyTranslator {
                 return;
             }
 
-            DBSLogicalDataSource lDataSource = createLogicalDataSource(dataSourceContainer, executionContext);
+            DBSLogicalDataSource lDataSource = DBSLogicalDataSource.createLogicalDataSource(dataSourceContainer, executionContext);
 
             AISuggestionPopup aiCompletionPopup = new AISuggestionPopup(
                 HandlerUtil.getActiveShell(event),
@@ -109,24 +108,6 @@ public class AILegacyTranslator {
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError("AI error", "Cannot determine AI engine", e);
         }
-    }
-
-    @NotNull
-    private static DBSLogicalDataSource createLogicalDataSource(
-        DBPDataSourceContainer dataSourceContainer,
-        DBCExecutionContext executionContext
-    ) {
-        DBSLogicalDataSource lDataSource = new DBSLogicalDataSource(dataSourceContainer, "AI logical wrapper", null);
-        DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-        if (contextDefaults != null) {
-            if (contextDefaults.getDefaultCatalog() != null) {
-                lDataSource.setCurrentCatalog(contextDefaults.getDefaultCatalog().getName());
-            }
-            if (contextDefaults.getDefaultSchema() != null) {
-                lDataSource.setCurrentSchema(contextDefaults.getDefaultSchema().getName());
-            }
-        }
-        return lDataSource;
     }
 
     private void doAutoCompletion(

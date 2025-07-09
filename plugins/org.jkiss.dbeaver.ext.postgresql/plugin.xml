@@ -788,7 +788,7 @@
         <category id="postgreTool" parent="postgresql" name="%org.jkiss.dbeaver.task.category.postgreTool.name" description="%org.jkiss.dbeaver.task.category.postgreTool.description" icon="icons/postgresql_icon.png"/>
 
         <task id="pgDatabaseBackup" name="%task.pgDatabaseBackup.name" description="%task.pgDatabaseBackup.description"
-              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.svg" type="postgresql"
               handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupHandler" requiresExportPrivileges="true">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreObject" if="object.dataSource.serverType.supportsNativeClient()"/>
@@ -796,7 +796,7 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase" if="object.dataSource.serverType.supportsNativeClient()"/>
         </task>
         <task id="pgDatabaseRestore" name="%task.pgDatabaseRestore.name" description="%task.pgDatabaseRestore.description"
-              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.png" type="postgresql"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.svg" type="postgresql"
               handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseRestoreHandler" requiresMutability="true"
               confirmationMessage="%pgDatabaseRestore.confirmationMessage">
             <datasource id="postgresql"/>
@@ -804,46 +804,46 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema" if="object.dataSource.serverType.supportsNativeClient()"/>
         </task>
         <task id="pgDatabaseBackupAll" name="%task.pgDatabaseBackupAll.name" description="%task.pgDatabaseBackupAll.description"
-              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.png" type="postgresql"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/export.svg" type="postgresql"
               handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreDatabaseBackupAllHandler" requiresExportPrivileges="true">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.dataSource.serverType.supportsNativeClient()"/>
         </task>
-        <task id="pgScriptExecute" name="%task.pgScriptExecute.name" description="%task.pgScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteHandler">
+        <task id="pgScriptExecute" name="%task.pgScriptExecute.name" description="%task.pgScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg" type="postgresql" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreScriptExecuteHandler">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.dataSource.serverType.supportsNativeClient()"/>
         </task>
 
         <!-- SQL tools -->
-        <task id="pgToolRefreshMView" name="%tasks.mview.refresh.node.name" description="%tasks.mview.refresh.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolMViewRefresh">
+        <task id="pgToolRefreshMView" name="%tasks.mview.refresh.node.name" description="%tasks.mview.refresh.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolMViewRefresh">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView"/>
         </task>
-        <task id="pgToolTableAnalyze" name="%tasks.analyze.table.node.name" description="%tasks.analyze.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseAnalyze">
+        <task id="pgToolTableAnalyze" name="%tasks.analyze.table.node.name" description="%tasks.analyze.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseAnalyze">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
         </task>
-        <task id="pgToolDatabaseAnalyze" name="%tasks.analyze.database.node.name" description="%tasks.analyze.database.node.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseAnalyze">
+        <task id="pgToolDatabaseAnalyze" name="%tasks.analyze.database.node.name" description="%tasks.analyze.database.node.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseAnalyze">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
         </task>
-        <task id="pgToolTableTruncate" name="%tasks.truncate.node.name" description="%tasks.truncate.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolTableTruncate">
+        <task id="pgToolTableTruncate" name="%tasks.truncate.node.name" description="%tasks.truncate.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolTableTruncate">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
         </task>
-        <task id="pgToolTableVacuum" name="%tasks.vacuum.table.node.name" description="%tasks.vacuum.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseVacuum">
+        <task id="pgToolTableVacuum" name="%tasks.vacuum.table.node.name" description="%tasks.vacuum.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseVacuum">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
         </task>
-        <task id="pgToolDatabaseVacuum" name="%tasks.vacuum.database.node.name" description="%tasks.vacuum.database.node.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseVacuum">
+        <task id="pgToolDatabaseVacuum" name="%tasks.vacuum.database.node.name" description="%tasks.vacuum.database.node.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseVacuum">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
         </task>
-        <task id="pgToolTriggerEnable" name="%task.pgToolTriggerEnable.name" description="%task.pgToolTriggerEnable.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolTableTriggerEnable">
+        <task id="pgToolTriggerEnable" name="%task.pgToolTriggerEnable.name" description="%task.pgToolTriggerEnable.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolTableTriggerEnable">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTriggerBase" if="object.enabledState == 'D'"/>
         </task>
-        <task id="pgToolTriggerDisable" name="%task.pgToolTriggerDisable.name" description="%task.pgToolTriggerDisable.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolTableTriggerDisable">
+        <task id="pgToolTriggerDisable" name="%task.pgToolTriggerDisable.name" description="%task.pgToolTriggerDisable.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="postgreTool" handler="org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolTableTriggerDisable">
             <datasource id="postgresql"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTriggerBase" if="object.enabledState != 'D'"/>
         </task>

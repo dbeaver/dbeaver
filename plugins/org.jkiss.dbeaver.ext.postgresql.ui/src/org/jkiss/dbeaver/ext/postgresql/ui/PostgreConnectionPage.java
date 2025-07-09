@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,12 +34,10 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
-import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -57,8 +55,6 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     private Text portText;
     private Text dbText;
     private Button showNonDefault;
-    private Text roleText; //TODO: make it a combo and fill it with appropriate roles
-    private ClientHomesSelector homesSelector;
     private boolean activated = false;
 
     @Override
@@ -166,29 +162,6 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
 
         createAuthPanel(mainGroup, 1);
 
-        if (isSessionRoleSupported() || serverType.supportsClient()) {
-            Group advancedGroup = UIUtils.createControlGroup(
-                mainGroup,
-                PostgreMessages.dialog_setting_connection_advanced_group_label,
-                4,
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                0);
-
-            if (isSessionRoleSupported()) {
-                roleText = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_session_role, null, SWT.BORDER);
-                roleText.setToolTipText(PostgreMessages.dialog_setting_session_role_tip);
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-                gd.widthHint = UIUtils.getFontHeight(roleText) * 15;
-                roleText.setLayoutData(gd);
-            }
-
-            if (DBWorkbench.hasFeature(DBConnectionConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION) && serverType.supportsClient()) {
-                homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);
-                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-                homesSelector.getPanel().setLayoutData(gd);
-            }
-        }
-
         createDriverPanel(mainGroup);
         setControl(mainGroup);
     }
@@ -260,13 +233,6 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
                 connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB),
                 DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)));
         }
-        if (roleText != null) {
-            roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE)));
-        }
-        if (homesSelector != null) {
-            homesSelector.populateHomes(driver, connectionInfo.getClientHomeId(), site.isNew());
-        }
-        
         final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
         if (useURL) {
             urlText.setText(connectionInfo.getUrl());
@@ -297,12 +263,6 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         if (showNonDefault != null) {
             connectionInfo.setProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(showNonDefault.getSelection()));
         }
-        if (roleText != null) {
-            connectionInfo.setProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE, roleText.getText().trim());
-        }
-        if (homesSelector != null) {
-            connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
-        }
         if (typeURLRadio != null && typeURLRadio.getSelection()) {
             connectionInfo.setUrl(urlText.getText());
         }
@@ -313,7 +273,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
         return new IDialogPage[] {
-            new PostgreConnectionPageAdvanced(),
+            new PostgreConnectionPageAdvanced(this),
             new DriverPropertiesDialogPage(this)
         };
     }

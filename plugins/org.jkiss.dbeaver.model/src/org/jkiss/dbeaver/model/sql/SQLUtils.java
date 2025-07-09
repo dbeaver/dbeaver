@@ -38,9 +38,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -91,6 +88,26 @@ public final class SQLUtils {
             multiLineComments == null ? null : multiLineComments.getSecond(),
             dialect.getSingleLineComments());
     }
+
+    @NotNull
+    public static String[] extractComments(@NotNull SQLDialect dialect, @NotNull String query) {
+        if (query.isEmpty()) {
+            return new String[0];
+        }
+
+        SQLCommentScanner scanner = new SQLCommentScanner(
+            dialect.getMultiLineComments(),
+            dialect.getSingleLineComments(),
+            query
+        );
+
+        List<String> comments = new ArrayList<>();
+        while (scanner.hasNext()) {
+            comments.add(scanner.next());
+        }
+        return comments.toArray(new String[0]);
+    }
+
 
     /**
      * Removes both multi-line and single-line comments from an SQL query
@@ -678,7 +695,7 @@ public final class SQLUtils {
         return dataSource.getSQLDialect().getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
-    public static String getScriptDescripion(@NotNull String sql) {
+    public static String getScriptDescription(@NotNull String sql) {
         sql = stripComments(BasicSQLDialect.INSTANCE, sql);
         Matcher matcher = CREATE_PREFIX_PATTERN.matcher(sql);
         if (matcher.find() && matcher.start(0) == 0) {
@@ -697,26 +714,26 @@ public final class SQLUtils {
             return name;
         }
 
+        SQLDialect dialect = entity.getParentObject().getDataSource().getSQLDialect();
         StringBuilder buf = new StringBuilder();
-        boolean prevNonLetter = true;
+        boolean prevInvalid = true;
         char prevChar = 0;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
-            if (!Character.isLetter(c)) {
-                prevNonLetter = true;
+            if ((buf.isEmpty() && !dialect.validIdentifierStart(c)) || (!buf.isEmpty() && !dialect.validIdentifierPart(c, false))) {
+                prevInvalid = true;
             } else {
-                if (prevNonLetter || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c))) {
+                if (prevInvalid || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c))) {
                     buf.append(c);
                 }
-                prevNonLetter = false;
+                prevInvalid = false;
             }
             prevChar = c;
         }
         String alias;
-        if(!CommonUtils.isEmpty(buf)) {
+        if (!CommonUtils.isEmpty(buf)) {
             alias = buf.toString().toLowerCase(Locale.ENGLISH);
-        }
-        else{
+        } else {
             alias = "t";
         }
 
@@ -1011,9 +1028,7 @@ public final class SQLUtils {
 
         // In reverse order
         sql = generateTableJoinByColumns(monitor, rightTable, rightAlias, leftTable, leftAlias);
-        if (sql != null) return sql;
-
-        return null;
+        return sql;
     }
 
     private static String generateTableJoinByColumns(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
@@ -1057,11 +1072,10 @@ public final class SQLUtils {
         boolean hasCriteria = false;
         StringBuilder joinSQL = new StringBuilder();
         for (DBSEntityAttributeRef ar : fk.getAttributeReferences(monitor)) {
-            if (ar instanceof DBSTableForeignKeyColumn) {
+            if (ar instanceof DBSTableForeignKeyColumn fkc) {
                 if (hasCriteria) {
                     joinSQL.append(" AND ");
                 }
-                DBSTableForeignKeyColumn fkc = (DBSTableForeignKeyColumn)ar;
                 joinSQL
                     .append(leftAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc)).append(" = ")
                     .append(rightAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc.getReferencedColumn()));

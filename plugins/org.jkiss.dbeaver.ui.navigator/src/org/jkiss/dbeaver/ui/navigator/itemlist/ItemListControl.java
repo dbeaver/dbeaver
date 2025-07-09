@@ -176,6 +176,7 @@ public class ItemListControl extends NodeListControl
                 NavigatorCommands.CMD_OBJECT_DELETE));
         }
 
+
         // Reorder
 
         if (rootNode instanceof DBNDatabaseNode && rootNode.isPersisted()) {
