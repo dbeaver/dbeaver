@@ -89,6 +89,26 @@ public final class SQLUtils {
             dialect.getSingleLineComments());
     }
 
+    @NotNull
+    public static String[] extractComments(@NotNull SQLDialect dialect, @NotNull String query) {
+        if (query.isEmpty()) {
+            return new String[0];
+        }
+
+        SQLCommentScanner scanner = new SQLCommentScanner(
+            dialect.getMultiLineComments(),
+            dialect.getSingleLineComments(),
+            query
+        );
+
+        List<String> comments = new ArrayList<>();
+        while (scanner.hasNext()) {
+            comments.add(scanner.next());
+        }
+        return comments.toArray(new String[0]);
+    }
+
+
     /**
      * Removes both multi-line and single-line comments from an SQL query
      */
@@ -1008,9 +1028,7 @@ public final class SQLUtils {
 
         // In reverse order
         sql = generateTableJoinByColumns(monitor, rightTable, rightAlias, leftTable, leftAlias);
-        if (sql != null) return sql;
-
-        return null;
+        return sql;
     }
 
     private static String generateTableJoinByColumns(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
@@ -1054,11 +1072,10 @@ public final class SQLUtils {
         boolean hasCriteria = false;
         StringBuilder joinSQL = new StringBuilder();
         for (DBSEntityAttributeRef ar : fk.getAttributeReferences(monitor)) {
-            if (ar instanceof DBSTableForeignKeyColumn) {
+            if (ar instanceof DBSTableForeignKeyColumn fkc) {
                 if (hasCriteria) {
                     joinSQL.append(" AND ");
                 }
-                DBSTableForeignKeyColumn fkc = (DBSTableForeignKeyColumn)ar;
                 joinSQL
                     .append(leftAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc)).append(" = ")
                     .append(rightAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc.getReferencedColumn()));
