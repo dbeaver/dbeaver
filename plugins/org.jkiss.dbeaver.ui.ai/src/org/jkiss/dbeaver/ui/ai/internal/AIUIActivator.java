@@ -16,16 +16,19 @@
  */
 package org.jkiss.dbeaver.ui.ai.internal;
 
-import org.eclipse.core.runtime.Plugin;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.osgi.framework.BundleContext;
 
-public class AIUIActivator extends Plugin {
+public class AIUIActivator extends AbstractUIPlugin {
+
+    private static AIUIActivator plugin;
 
     @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
+        plugin = this;
         DBRFeatureRegistry.getInstance().registerFeatures(AIFeatures.class);
         // Trigger pref defaults
         new BundlePreferenceStore(getBundle());
@@ -33,7 +36,12 @@ public class AIUIActivator extends Plugin {
 
     @Override
     public void stop(BundleContext context) throws Exception {
+        plugin = null;
         super.stop(context);
+    }
+
+    public static AIUIActivator getDefault() {
+        return plugin;
     }
 
 }
