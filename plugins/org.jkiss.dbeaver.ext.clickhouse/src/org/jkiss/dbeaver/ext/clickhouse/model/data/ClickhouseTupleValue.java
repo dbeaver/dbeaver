@@ -26,6 +26,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class ClickhouseTupleValue implements DBDComposite, DBDValueCloneable {
     private final ClickhouseTupleType type;
     private Object[] values;
@@ -107,5 +110,13 @@ public class ClickhouseTupleValue implements DBDComposite, DBDValueCloneable {
     @Override
     public DBDValueCloneable cloneValue(DBRProgressMonitor monitor) throws DBCException {
         return new ClickhouseTupleValue(monitor, type, values);
+    }
+
+    @Override
+    public String toString() {
+        String elements = Arrays.stream(values)
+            .map(Object::toString)
+            .collect(Collectors.joining(", "));
+        return "(" + elements + ")";
     }
 }
