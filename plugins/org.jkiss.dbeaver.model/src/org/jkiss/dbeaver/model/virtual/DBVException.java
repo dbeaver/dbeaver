@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
-public class DBVException extends RuntimeException {
+import org.jkiss.dbeaver.DBException;
+
+public class DBVException extends DBException {
 
     public DBVException(String message) {
         super(message);
@@ -26,7 +28,4 @@ public class DBVException extends RuntimeException {
         super(message, cause);
     }
 
-    public DBVException(Throwable cause) {
-        super(cause);
-    }
 }
