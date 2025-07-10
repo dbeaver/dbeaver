@@ -849,7 +849,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             Object newVal = openDialogBox(composite);
-                            log.info("New target name: " + newVal);
                             doSetValue(newVal);
                             markDirty();
                             fireApplyEditorValue();
@@ -869,11 +868,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             @Override
             protected Object openDialogBox(Control cellEditorWindow) {
-                log.info("Open target name dialog");
                 mapExistingTables(new DatabaseMappingContainer[]{ (DatabaseMappingContainer) element });
-                String targetName = ((DatabaseMappingContainer) element).getTargetName();
-                System.out.println("dialog with new value " + targetName);
-                return targetName;
+                return ((DatabaseMappingContainer) element).getTargetName();
             }
 
             @Override
@@ -892,20 +888,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             @Override
             protected void doSetValue(Object value) {
-                log.info("Set target name: " + value);
                 if (combo != null && !combo.isDisposed()) {
-                    log.info("Set target name finally: " + value);
                     combo.setText(CommonUtils.toString(value));
                 }
             }
-
-//            @Override
-//            public void activate(ColumnViewerEditorActivationEvent activationEvent) {
-//                super.activate(activationEvent);
-//                if (combo != null && !combo.isDisposed()) {
-//                    combo.setSelection(new Point(0, combo.getText().length()));
-//                }
-//            }
         };
     }
 
