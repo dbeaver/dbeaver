@@ -855,7 +855,6 @@ public class DBExecUtils {
 
             // Init row identifiers
             monitor.subTask("Detect unique identifiers");
-            //Extracted logic into a helper method bindUniqueIdentifiers(..)
             final Map<DBSEntity, DBDRowIdentifier> locatorMap = bindUniqueIdentifiers(bindings, mdMonitor);
             monitor.worked(1);
 

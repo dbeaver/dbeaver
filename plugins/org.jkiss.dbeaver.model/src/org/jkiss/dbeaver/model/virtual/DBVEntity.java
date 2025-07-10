@@ -398,7 +398,6 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
 
         for (DBVEntityConstraint constraint : entityConstraints) {
-            //Moved inline condition to isComplete() method to improve readability.
             if (isComplete(constraint)) {
                 return constraint;
             }

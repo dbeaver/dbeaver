@@ -4925,7 +4925,6 @@ public class ResultSetViewer extends Viewer
         EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
             ResultSetViewer.this, model.getSingleSource(), model.getVirtualEntity(true));
         dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
-        // Removed redundant logic: identifier reload and config persistence are handled inside dialog.okPressed()
         return dialog.open() == IDialogConstants.OK_ID;
     }
 
