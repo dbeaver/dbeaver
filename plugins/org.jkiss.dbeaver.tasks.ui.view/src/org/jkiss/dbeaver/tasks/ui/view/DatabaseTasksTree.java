@@ -182,11 +182,7 @@ public class DatabaseTasksTree {
                     if (lastRun == null) {
                         return "N/A";
                     } else {
-                        if (lastRun.isRunSuccess()) {
-                            return TaskUIViewMessages.db_tasks_tree_column_cell_text_success;
-                        } else {
-                            return CommonUtils.notEmpty(lastRun.getErrorMessage());
-                        }
+                        return DatabaseTasksView.getBriefStatus(lastRun);
                     }
                 }
                 return null;
