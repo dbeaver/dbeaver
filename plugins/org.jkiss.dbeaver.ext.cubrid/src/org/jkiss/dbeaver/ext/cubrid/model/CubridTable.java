@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 
 public class CubridTable extends GenericTable
@@ -48,6 +47,7 @@ public class CubridTable extends GenericTable
     private CubridCollation collation;
     private Integer autoIncrement;
     private boolean reuseOID = true;
+    private boolean partitioned = false;
 
     public CubridTable(
             @NotNull GenericStructContainer container,
@@ -62,6 +62,7 @@ public class CubridTable extends GenericTable
             this.reuseOID = (JDBCUtils.safeGetString(dbResult, CubridConstants.REUSE_OID)).equals("YES");
             collationName = JDBCUtils.safeGetString(dbResult, CubridConstants.COLLATION);
             autoIncrement = JDBCUtils.safeGetInteger(dbResult, CubridConstants.AUTO_INCREMENT_VAL);
+            partitioned = (JDBCUtils.safeGetString(dbResult, "partitioned")).equals("YES");
             if (type != null) {
                 this.setSystem(type.equals("YES"));
             }
@@ -110,8 +111,7 @@ public class CubridTable extends GenericTable
     }
     
     @NotNull
-    public Collection<CubridPartition> getPartitions(@NotNull DBRProgressMonitor monitor) throws DBException {
-
+    public List<CubridPartition> getPartitions(@NotNull DBRProgressMonitor monitor) throws DBException {
         return partitionCache.getAllObjects(monitor, this);
     }
 
@@ -169,6 +169,11 @@ public class CubridTable extends GenericTable
 
     public void setReuseOID(boolean reuseOID) {
         this.reuseOID = reuseOID;
+    }
+
+    @Property(viewable = true, order = 53)
+    public boolean isPartitioned() {
+        return partitioned;
     }
 
     @Nullable

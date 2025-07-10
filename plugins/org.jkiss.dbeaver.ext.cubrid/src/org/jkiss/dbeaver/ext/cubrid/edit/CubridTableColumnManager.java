@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridPartition;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
@@ -46,7 +47,7 @@ import java.util.Map;
 
 public class CubridTableColumnManager extends GenericTableColumnManager implements DBEObjectRenamer<GenericTableColumn>
 {
-   public ColumnModifier<GenericTableColumn> CubridDataTypeModifier = (monitor, column, sql, command) -> {
+    public ColumnModifier<GenericTableColumn> CubridDataTypeModifier = (monitor, column, sql, command) -> {
         final String typeName = column.getTypeName();
         DBPDataKind dataKind = column.getDataKind();
         sql.append(' ').append(typeName);
@@ -57,6 +58,14 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             sql.append('(').append(column.getPrecision()).append(')');
         }
     };
+
+    @Override
+    public boolean canCreateObject(@NotNull Object container) {
+        if (container instanceof CubridPartition) {
+            return false;
+        }
+        return super.canCreateObject(container);
+    }
 
     @NotNull
     @Override
@@ -72,6 +81,7 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         int columnSize = columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0;
 
         CubridTableColumn column = new CubridTableColumn(table, null, null, false, false, null);
+        column.setOrdinalPosition(table.getCachedAttributes().size() + 1);
         column.setName(getNewColumnName(monitor, context, table));
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
         column.setMaxLength(columnSize);
@@ -83,7 +93,7 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         return column;
     }
 
-	@NotNull
+    @NotNull
     @Override
     public StringBuilder getNestedDeclaration(
             @NotNull DBRProgressMonitor monitor,
@@ -98,16 +108,19 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), ((ObjectRenameCommand) command).getNewName());
         }
         decl.append(columnName);
-        for (ColumnModifier<GenericTableColumn> modifier : new ColumnModifier[]{CubridDataTypeModifier, NullNotNullModifierConditional}) {
+        for (ColumnModifier<GenericTableColumn> modifier : new ColumnModifier[]{CubridDataTypeModifier, NotNullModifier}) {
             modifier.appendModifier(monitor, column, decl, command);
         }
-        if (column.getDefaultValue() != null || ((DBECommandComposite) command).hasProperty("defaultValue")) {
+        if (((DBECommandComposite) command).hasProperty("required")) {
+            decl.append(column.isRequired() ? "" : " NULL");
+        }
+        if (!CommonUtils.isEmpty(column.getDefaultValue()) || ((DBECommandComposite) command).hasProperty("defaultValue")) {
             decl.append(" DEFAULT ").append(SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDefaultValue())));
         }
         if (column.isAutoIncrement() && (column.getTypeName().equals("INTEGER") || column.getTypeName().equals("BIGINT"))) {
             decl.append(" AUTO_INCREMENT");
         }
-        if (column.getDescription() != null || ((DBECommandComposite) command).hasProperty("description")) {
+        if (!CommonUtils.isEmpty(column.getDescription()) || ((DBECommandComposite) command).hasProperty("description")) {
             decl.append(" COMMENT ").append(SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription())));
         }
         return decl;

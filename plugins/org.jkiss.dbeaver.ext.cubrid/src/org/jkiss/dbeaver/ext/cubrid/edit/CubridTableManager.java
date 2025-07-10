@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridPartition;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -72,13 +74,50 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         return super.getChildObjects(monitor, object, childType);
     }
 
+    public void appendPartition(DBRProgressMonitor monitor, StringBuilder query, CubridTable table) throws DBException {
+        List<CubridPartition> partitions = table.getPartitions(monitor);
+        String type = partitions.get(0).getTableType().toUpperCase();
+        String key = partitions.get(0).getExpression();
+        CubridTableColumn column = (CubridTableColumn) table.getAttribute(monitor, key);
+
+        query.append(String.format("PARTITION BY %s (%s)", type, key));
+        if ("HASH".equals(type)) {
+            query.append(" PARTITIONS ").append(partitions.size());
+            return;
+        }
+        query.append(" (");
+        for (CubridPartition partition : partitions) {
+            String value = partition.getExpressionValues();
+            query.append("\n\tPARTITION ").append(partition.getPartitionName());
+
+            if ("RANGE".equals(type)) {
+                query.append(" VALUES LESS THAN ");
+                if ("MAXVALUE".equalsIgnoreCase(value)) {
+                    query.append("MAXVALUE");
+                } else {
+                    query.append("(").append(DBPDataKind.NUMERIC == column.getDataKind() ?
+                        value : SQLUtils.quoteString(partition, value)).append(")");
+                }
+            } else { //LIST
+                query.append(" VALUES IN ");
+                query.append("(").append(DBPDataKind.NUMERIC == column.getDataKind() ?
+                    value : "'" + value.replaceAll(",\\s*", "', '") + "'").append(")");
+            }
+            if (!CommonUtils.isEmpty(partition.getDescription())) {
+                query.append(" COMMENT ").append(SQLUtils.quoteString(partition, partition.getDescription()));
+            }
+            query.append(",");
+        }
+        query.deleteCharAt(query.length() - 1).append("\n)");
+    }
+
     @Override
     protected void addObjectModifyActions(
             @NotNull DBRProgressMonitor monitor,
             @NotNull DBCExecutionContext executionContext,
             @NotNull List<DBEPersistAction> actionList,
             @NotNull ObjectChangeCommand command,
-            @NotNull Map<String, Object> options) {
+            @NotNull Map<String, Object> options) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty("schema") == null) {
             CubridTable table = (CubridTable) command.getObject();
             StringBuilder query = new StringBuilder("ALTER TABLE ");
@@ -95,7 +134,7 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
             @NotNull NestedObjectCommand command,
             @NotNull StringBuilder query,
             @NotNull boolean alter,
-            @NotNull Map<String, Object> options) {
+            @NotNull Map<String, Object> options) throws DBException {
         CubridTable table = (CubridTable) genericTable;
         String delimiter = getDelimiter(options);
         String suffix = alter ? "," : delimiter;
@@ -113,8 +152,12 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         if ((!alter || command.getProperty("autoIncrement") != null) && table.getAutoIncrement() > 0) {
             query.append("AUTO_INCREMENT = ").append(table.getAutoIncrement()).append(suffix);
         }
-        if ((!alter && table.getDescription() != null) || command.hasProperty("description")) {
+        if ((!alter && !CommonUtils.isEmpty(table.getDescription())) || command.hasProperty("description")) {
             query.append("COMMENT = ").append(SQLUtils.quoteString(table, CommonUtils.notEmpty(table.getDescription()))).append(suffix);
+        }
+        if (table.isPartitioned() && table.isPersisted()) {
+            appendPartition(monitor, query, table);
+            query.append(suffix);
         }
         if (!isCompact(options)) {
             query.deleteCharAt(query.length() - 1);
