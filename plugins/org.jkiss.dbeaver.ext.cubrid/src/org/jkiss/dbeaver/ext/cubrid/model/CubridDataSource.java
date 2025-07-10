@@ -251,6 +251,12 @@ public class CubridDataSource extends GenericDataSource
         return true;
     }
 
+    @Nullable
+    @Override
+    public GenericSchema getSchema(String name) {
+        return super.getSchema(name == null ? null : name.toUpperCase(Locale.ENGLISH));
+    }
+
     private void setTracking(@NotNull DBRProgressMonitor monitor) throws DBException {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "set trace")) {

@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIFeatures;
 import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -60,8 +59,7 @@ public class AILegacyTranslator {
         if (AISettingsRegistry.getInstance().getSettings().isAiDisabled()) {
             return;
         }
-        SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
-        if (editor == null) {
+        if (!(HandlerUtil.getActiveEditor(event) instanceof SQLEditor editor)) {
             return;
         }
         DBPDataSourceContainer dataSourceContainer = editor.getDataSourceContainer();

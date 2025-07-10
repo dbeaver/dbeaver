@@ -51,7 +51,6 @@ public class ClickhouseTypeParser {
 
     private static final Gson gson = new Gson();
 
-    // FIXME: Disabled as per dbeaver/dbeaver#34283
     private static final boolean ENABLE_COMPLEX_TYPE_PARSING = true;
 
     private ClickhouseTypeParser() {

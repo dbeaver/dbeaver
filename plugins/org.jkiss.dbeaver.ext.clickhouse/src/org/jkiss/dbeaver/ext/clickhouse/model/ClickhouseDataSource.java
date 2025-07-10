@@ -111,6 +111,9 @@ public class ClickhouseDataSource extends GenericDataSource {
                 throw new DBCException("Error configuring SSL certificates", e);
             }
         }
+
+        configureSession(properties);
+
         return properties;
     }
 
@@ -160,6 +163,10 @@ public class ClickhouseDataSource extends GenericDataSource {
         } catch (IOException e) {
             throw new DBException("Can not configure SSL", e);
         }
+    }
+
+    private void configureSession(@NotNull Properties properties) {
+        properties.put(ClickhouseConstants.CLICKHOUSE_SETTING_SESSION_ID, "sess_" + UUID.randomUUID());
     }
 
     @Override
@@ -249,6 +256,17 @@ public class ClickhouseDataSource extends GenericDataSource {
     @Override
     public boolean isOmitCatalog() {
         return isDriverVersionAtLeast(0, 8);
+    }
+
+    @NotNull
+    @Override
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
+        if (typeName.startsWith("Array")) {
+            return DBPDataKind.ARRAY;
+        } else if (ClickhouseTypeParser.isComplexType(typeName)) {
+            return DBPDataKind.STRUCT;
+        }
+        return super.resolveDataKind(typeName, valueType);
     }
 
     boolean isSupportTableComments() {
