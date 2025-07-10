@@ -1093,7 +1093,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             if (mappings.length == 1) {
                                 // Call to this method also shows up a dialog.
                                 // It could be very noisy in case of a large amount of mappings
-                                mapColumnsAndTable(mapping);
+                                UIUtils.asyncExec(() -> mapColumnsAndTable(mapping));
                             } else {
                                 needsUpdate = true;
                             }
