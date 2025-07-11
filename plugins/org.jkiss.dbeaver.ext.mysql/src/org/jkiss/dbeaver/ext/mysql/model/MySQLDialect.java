@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
-import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -353,7 +350,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
 
     @Override
     public boolean validIdentifierStart(char c) {
-        return Character.isLetterOrDigit(c);
+        return c == '_' || SQLUtils.isLatinLetter(c);
     }
 
     @NotNull

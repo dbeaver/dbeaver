@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -62,6 +63,14 @@ public class CubridDataSource extends GenericDataSource
         this.metaModel = new CubridMetaModel();
         this.privilageCache = new CubridPrivilageCache();
         this.serverCache = new CubridServerCache();
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter == DBSStructureAssistant.class) {
+            return adapter.cast(new CubridStructureAssistant(this));
+        }
+        return super.getAdapter(adapter);
     }
 
     @NotNull
