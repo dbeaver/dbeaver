@@ -97,10 +97,10 @@ public class UIIcon {
     public static final DBIcon ARROW_RIGHT = new DBIcon("arrow_right", "misc/arrow_right.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_RIGHT_ALL = new DBIcon("arrow_right_all", "misc/arrow_right_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_RESET = new DBIcon("arrow_reset", "misc/arrow_reset.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SORT_INCREASE = new DBIcon("sort_increase", "misc/sort_increase.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SORT_DECREASE = new DBIcon("sort_decrease", "misc/sort_decrease.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SORT_UNKNOWN = new DBIcon("sort_unknown", "misc/sort_unknown.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SORT = new DBIcon("sort", "misc/sort.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT_INCREASE = new DBIcon("sort_increase", "misc/sort_increase.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT_DECREASE = new DBIcon("sort_decrease", "misc/sort_decrease.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT_UNKNOWN = new DBIcon("sort_unknown", "misc/sort_unknown.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT = new DBIcon("sort", "misc/sort.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SORT_CONFIG = new DBIcon("sort_config", "misc/sort_config.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon ALIGN_TO_LEFT = new DBIcon("align_to_left", "misc/align_to_left.svg"); //$NON-NLS-1$ //$NON-NLS-2$
