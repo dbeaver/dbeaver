@@ -188,11 +188,20 @@ public class AIPromptBuilder {
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
             SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
         List<String> lines = new ArrayList<>();
-        lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
-        lines.add("Current SQL dialect: " + dialect.getDialectName());
+
         if (dataSource != null) {
             DBPDataSource ds = dataSource.getDataSourceContainer().getDataSource();
             DBPDataSourceInfo dsInfo = ds == null ? null : ds.getInfo();
+
+            if (dataSource.getDataSourceContainer() instanceof DataSourceDescriptor) {
+                lines.add("DBeaver connection name: " + dataSource.getDataSourceContainer().getName());
+                DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
+                if (ds instanceof JDBCDataSource) {
+                    lines.add("JDBC driver: " + dsInfo.getDriverName() + " (" + dsInfo.getDriverVersion() + ")");
+                } else {
+                    lines.add("Java driver: " + driver.getFullName() + ")");
+                }
+            }
 
             String currentSchema = dataSource.getCurrentSchema();
             if (!CommonUtils.isEmpty(currentSchema)) {
@@ -202,16 +211,9 @@ public class AIPromptBuilder {
             if (!CommonUtils.isEmpty(currentCatalog)) {
                 lines.add("Current " + (dsInfo == null ? "Catalog" : dsInfo.getCatalogTerm()) + ": " + currentCatalog);
             }
-
-            if (dataSource.getDataSourceContainer() instanceof DataSourceDescriptor) {
-                DBPDriver driver = dataSource.getDataSourceContainer().getDriver();
-                if (ds instanceof JDBCDataSource) {
-                    lines.add("Current JDBC driver: " + dsInfo.getDriverName() + " (" + dsInfo.getDriverVersion() + ")");
-                } else {
-                    lines.add("Current Java driver: " + driver.getFullName() + ")");
-                }
-            }
         }
+        lines.add("SQL dialect: " + dialect.getDialectName());
+        lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
         return lines.toArray(String[]::new);
     }
 
