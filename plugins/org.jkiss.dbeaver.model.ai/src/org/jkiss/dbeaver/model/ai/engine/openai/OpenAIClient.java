@@ -21,7 +21,6 @@ import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.TooManyRequestsException;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
@@ -39,16 +38,11 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
 
 public class OpenAIClient {
-    private static final Log log = Log.getLog(OpenAIClient.class);
 
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
     private static final Gson GSON = new GsonBuilder().create();
-//    private static final ObjectMapper MAPPER = new ObjectMapper()
-//        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-//        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-//        .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     private final String baseUrl;
     private final List<HttpRequestFilter> requestFilters;
