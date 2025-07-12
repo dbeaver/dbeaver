@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.api;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,13 +28,29 @@ public class ChatFunctionParameters {
 
     private List<String> required;
 
+    public String getType() {
+        return type;
+    }
+
+    public HashMap<String, ChatFunctionProperty> getProperties() {
+        return properties;
+    }
+
+    public List<String> getRequired() {
+        return required;
+    }
+
+    public void setRequired(List<String> required) {
+        this.required = required;
+    }
+
     public void addProperty(ChatFunctionProperty property) {
-        properties.put(property.name, property);
-        if (Boolean.TRUE.equals(property.required)) {
+        properties.put(property.getName(), property);
+        if (Boolean.TRUE.equals(property.getRequired())) {
             if (this.required == null) {
                 this.required = new ArrayList<>();
             }
-            this.required.add(property.name);
+            this.required.add(property.getName());
         }
     }
 }

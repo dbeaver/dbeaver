@@ -14,18 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.api;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 public class ChatFunctionCall {
 
     /**
      * The name of the function being called
      */
-    String name;
+    private String name;
 
     /**
      * The arguments of the call produced by the model, represented as a JsonNode for easy manipulation.
      */
-    Object arguments;
+    private Object arguments;
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Object getArguments() {
+        return arguments;
+    }
+
+    public void setArguments(Object arguments) {
+        this.arguments = arguments;
+    }
 }

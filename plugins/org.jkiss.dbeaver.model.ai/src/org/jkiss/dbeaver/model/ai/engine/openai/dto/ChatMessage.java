@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.api;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
@@ -31,59 +31,59 @@ import org.jkiss.code.NotNull;
  */
 public class ChatMessage {
 
-	/**
-	 * Must be either 'system', 'user', 'assistant' or 'function'.<br>
-	 * You may use {@link ChatMessageRole} enum.
-	 */
-	@NotNull
-	String role;
-	String content;
-	//name is optional, The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores, with a maximum length of 64 characters.
-	String name;
-	@SerializedName("function_call")
-    ChatFunctionCall functionCall;
+    /**
+     * Must be either 'system', 'user', 'assistant' or 'function'.<br>
+     * You may use {@link ChatMessageRole} enum.
+     */
+    @NotNull
+    private String role;
+	private String content;
+    //name is optional, The name of the author of this message. May contain a-z, A-Z, 0-9, and underscores, with a maximum length of 64 characters.
+	private String name;
+    @SerializedName("function_call")
+	private ChatFunctionCall functionCall;
 
-	public ChatMessage(String role, String content) {
-		this.role = role;
-		this.content = content;
-	}
+    public ChatMessage(String role, String content) {
+        this.role = role;
+        this.content = content;
+    }
 
-	public ChatMessage(String role, String content, String name) {
-		this.role = role;
-		this.content = content;
-		this.name = name;
-	}
+    public ChatMessage(String role, String content, String name) {
+        this.role = role;
+        this.content = content;
+        this.name = name;
+    }
 
-	@NotNull
-	public String getRole() {
-		return role;
-	}
+    @NotNull
+    public String getRole() {
+        return role;
+    }
 
-	public void setRole(@NotNull String role) {
-		this.role = role;
-	}
+    public void setRole(@NotNull String role) {
+        this.role = role;
+    }
 
-	public String getContent() {
-		return content;
-	}
+    public String getContent() {
+        return content;
+    }
 
-	public void setContent(String content) {
-		this.content = content;
-	}
+    public void setContent(String content) {
+        this.content = content;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public ChatFunctionCall getFunctionCall() {
-		return functionCall;
-	}
+    public ChatFunctionCall getFunctionCall() {
+        return functionCall;
+    }
 
-	public void setFunctionCall(ChatFunctionCall functionCall) {
-		this.functionCall = functionCall;
-	}
+    public void setFunctionCall(ChatFunctionCall functionCall) {
+        this.functionCall = functionCall;
+    }
 }

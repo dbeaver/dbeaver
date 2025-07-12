@@ -14,22 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.api;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import java.util.List;
 
 /**
- * Object containing a response from the chat completions api.
+ * Object containing a response chunk from the chat completions streaming api.
  */
-public class ChatCompletionResult {
-
+public class ChatCompletionChunk {
     /**
      * Unique id assigned to this chat completion.
      */
     String id;
 
     /**
-     * The type of object returned, should be "chat.completion"
+     * The type of object returned, should be "chat.completion.chunk"
      */
     String object;
 
@@ -39,7 +38,7 @@ public class ChatCompletionResult {
     long created;
     
     /**
-     * The GPT model used.
+     * The model used.
      */
     String model;
 
@@ -47,11 +46,6 @@ public class ChatCompletionResult {
      * A list of all generated completions.
      */
     List<ChatCompletionChoice> choices;
-
-    /**
-     * The API usage for this request.
-     */
-    Usage usage;
 
     public String getId() {
         return id;
@@ -91,13 +85,5 @@ public class ChatCompletionResult {
 
     public void setChoices(List<ChatCompletionChoice> choices) {
         this.choices = choices;
-    }
-
-    public Usage getUsage() {
-        return usage;
-    }
-
-    public void setUsage(Usage usage) {
-        this.usage = usage;
     }
 }

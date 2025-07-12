@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.api;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
+import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 
+import java.util.function.Function;
 
-public class ChatFunctionDynamic {
+public class ChatFunction {
 
     /**
      * The name of the function being called.
@@ -35,7 +37,10 @@ public class ChatFunctionDynamic {
     /**
      * The parameters the functions accepts.
      */
-    private ChatFunctionParameters parameters;
+    @SerializedName("parameters")
+    private Class<?> parametersClass;
+
+    private transient Function<Object, Object> executor;
 
     public static Builder builder() {
         return new Builder();
@@ -44,8 +49,8 @@ public class ChatFunctionDynamic {
     public static class Builder {
         private String name;
         private String description;
-        private ChatFunctionParameters
-            parameters = new ChatFunctionParameters();
+        private Class<?> parameters;
+        private Function<Object, Object> executor;
 
         public Builder name(String name) {
             this.name = name;
@@ -57,21 +62,18 @@ public class ChatFunctionDynamic {
             return this;
         }
 
-        public Builder parameters(ChatFunctionParameters parameters) {
-            this.parameters = parameters;
+        public <T> Builder executor(Class<T> requestClass, Function<T, Object> executor) {
+            this.parameters = requestClass;
+            this.executor = (Function<Object, Object>) executor;
             return this;
         }
 
-        public Builder addProperty(ChatFunctionProperty property) {
-            this.parameters.addProperty(property);
-            return this;
-        }
-
-        public ChatFunctionDynamic build() {
-            ChatFunctionDynamic chatFunction = new ChatFunctionDynamic();
+        public ChatFunction build() {
+            ChatFunction chatFunction = new ChatFunction();
             chatFunction.name = name;
             chatFunction.description = description;
-            chatFunction.parameters = parameters;
+            chatFunction.parametersClass = parameters;
+            chatFunction.executor = executor;
             return chatFunction;
         }
     }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.api;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -26,19 +26,16 @@ public class ChatCompletionChoice {
     /**
      * This index of this completion in the returned list.
      */
-    Integer index;
+    private Integer index;
 
-    /**
-     * The {@link ChatMessageRole#assistant} message or delta (when streaming) which was generated
-     */
     @SerializedName("delta")
-    ChatMessage message;
+    private ChatMessage message;
 
     /**
      * The reason why GPT stopped generating, for example "length".
      */
     @SerializedName("finish_reason")
-    String finishReason;
+    private String finishReason;
 
     public Integer getIndex() {
         return index;

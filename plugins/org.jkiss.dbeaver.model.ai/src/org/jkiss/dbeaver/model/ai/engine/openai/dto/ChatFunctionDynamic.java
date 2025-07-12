@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.api;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 
-import java.util.function.Function;
 
-public class ChatFunction {
+public class ChatFunctionDynamic {
 
     /**
      * The name of the function being called.
@@ -37,10 +35,32 @@ public class ChatFunction {
     /**
      * The parameters the functions accepts.
      */
-    @SerializedName("parameters")
-    private Class<?> parametersClass;
+    private ChatFunctionParameters parameters;
 
-    private transient Function<Object, Object> executor;
+    @NotNull
+    public String getName() {
+        return name;
+    }
+
+    public void setName(@NotNull String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public ChatFunctionParameters getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(ChatFunctionParameters parameters) {
+        this.parameters = parameters;
+    }
 
     public static Builder builder() {
         return new Builder();
@@ -49,8 +69,8 @@ public class ChatFunction {
     public static class Builder {
         private String name;
         private String description;
-        private Class<?> parameters;
-        private Function<Object, Object> executor;
+        private ChatFunctionParameters
+            parameters = new ChatFunctionParameters();
 
         public Builder name(String name) {
             this.name = name;
@@ -62,18 +82,21 @@ public class ChatFunction {
             return this;
         }
 
-        public <T> Builder executor(Class<T> requestClass, Function<T, Object> executor) {
-            this.parameters = requestClass;
-            this.executor = (Function<Object, Object>) executor;
+        public Builder parameters(ChatFunctionParameters parameters) {
+            this.parameters = parameters;
             return this;
         }
 
-        public ChatFunction build() {
-            ChatFunction chatFunction = new ChatFunction();
+        public Builder addProperty(ChatFunctionProperty property) {
+            this.parameters.addProperty(property);
+            return this;
+        }
+
+        public ChatFunctionDynamic build() {
+            ChatFunctionDynamic chatFunction = new ChatFunctionDynamic();
             chatFunction.name = name;
             chatFunction.description = description;
-            chatFunction.parametersClass = parameters;
-            chatFunction.executor = executor;
+            chatFunction.parameters = parameters;
             return chatFunction;
         }
     }

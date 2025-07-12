@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.api;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -26,17 +26,29 @@ public class Usage {
      * The number of prompt tokens used.
      */
     @SerializedName("prompt_tokens")
-    long promptTokens;
+    private long promptTokens;
 
     /**
      * The number of completion tokens used.
      */
     @SerializedName("completion_tokens")
-    long completionTokens;
+    private long completionTokens;
 
     /**
      * The number of total tokens used
      */
     @SerializedName("total_tokens")
-    long totalTokens;
+    private long totalTokens;
+
+    public long getPromptTokens() {
+        return promptTokens;
+    }
+
+    public long getCompletionTokens() {
+        return completionTokens;
+    }
+
+    public long getTotalTokens() {
+        return totalTokens;
+    }
 }
