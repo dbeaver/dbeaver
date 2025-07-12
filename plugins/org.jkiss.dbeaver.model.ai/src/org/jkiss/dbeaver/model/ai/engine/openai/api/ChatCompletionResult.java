@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai.api;
 
-import com.theokanning.openai.Usage;
-
 import java.util.List;
 
 /**
