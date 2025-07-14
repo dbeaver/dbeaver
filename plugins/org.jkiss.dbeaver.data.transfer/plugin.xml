@@ -177,7 +177,7 @@
                     id="stream.sql"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSQL"
                     description="%dataTransfer.processor.sql.description"
-                    icon="icons/formats/sql.png"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/sql.svg"
                     label="%dataTransfer.processor.sql.name"
                 contentType="text/sql">
                 <propertyGroup label="%dataTransfer.processor.sql.propertyGroup.general.label">
@@ -282,17 +282,31 @@
         <category id="common" name="%task.category.name.common" description="%task.category.description.common"
                   icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.svg"/>
 
-        <task id="dataExport" name="%task.name.export" description="%task.description.export" icon="icons/export.png" type="common"
-              handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport" supportsVariables="true">
+        <task id="dataExport"
+              name="%task.name.export"
+              description="%task.description.export"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/table_export.svg"
+              type="common"
+              handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport"
+              supportsVariables="true">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </task>
-        <task id="dataImport" name="%task.name.import" description="%task.description.import" icon="icons/import.png" type="common"
+        <task id="dataImport"
+              name="%task.name.import"
+              description="%task.description.import"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/table_import.svg"
+              type="common"
               handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
 
-        <task id="scriptExecute" name="%task.name.sql.script" description="%task.description.sql.script" icon="icons/task_script.png"
-              type="common" handler="org.jkiss.dbeaver.tools.sql.task.SQLScriptExecuteHandler" supportsVariables="true">
+        <task id="scriptExecute"
+              name="%task.name.sql.script"
+              description="%task.description.sql.script"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
+              type="common"
+              handler="org.jkiss.dbeaver.tools.sql.task.SQLScriptExecuteHandler"
+              supportsVariables="true">
             <objectType name="org.eclipse.core.resources.IFile"/>
         </task>
     </extension>
