@@ -258,6 +258,17 @@ public class ClickhouseDataSource extends GenericDataSource {
         return isDriverVersionAtLeast(0, 8);
     }
 
+    @NotNull
+    @Override
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
+        if (typeName.startsWith("Array")) {
+            return DBPDataKind.ARRAY;
+        } else if (ClickhouseTypeParser.isComplexType(typeName)) {
+            return DBPDataKind.STRUCT;
+        }
+        return super.resolveDataKind(typeName, valueType);
+    }
+
     boolean isSupportTableComments() {
         return isServerVersionAtLeast(21, 6);
     }

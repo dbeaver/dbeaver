@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +47,7 @@ import java.util.List;
 /**
  * PostgreCreateSchemaDialog
  */
-public class PostgreCreateSchemaDialog extends BaseDialog
-{
+public class PostgreCreateSchemaDialog extends BaseDialog {
     private final PostgreSchema schema;
     private List<PostgreRole> allUsers;
     private String name;
@@ -77,7 +77,6 @@ public class PostgreCreateSchemaDialog extends BaseDialog
         final Text databaseText = UIUtils.createLabelText(group, "Database", schema.getDatabase().getName(), SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
 
         final Combo userCombo = UIUtils.createLabelCombo(group, PostgreMessages.dialog_create_schema_owner, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-
         userCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -86,14 +85,18 @@ public class PostgreCreateSchemaDialog extends BaseDialog
         });
 
         new AbstractJob("Load users") {
-
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
                     final List<String> userNames = new ArrayList<>();
                     allUsers = new ArrayList<>(schema.getDatabase().getUsers(monitor));
-                    final PostgreRole dba = schema.getDatabase().getDBA(monitor);
-                    final String defUserName = dba == null ? "" : dba.getName(); //$NON-NLS-1$
+
+                    // get the current connection username instead of DBA
+                    String currentUserName = schema.getDatabase().getDataSource()
+                        .getContainer()
+                        .getConnectionConfiguration()
+                        .getUserName();
+                    final String defUserName = CommonUtils.isEmpty(currentUserName) ? "" : currentUserName;
 
                     UIUtils.syncExec(() -> {
                         for (PostgreRole authId : allUsers) {
@@ -124,8 +127,7 @@ public class PostgreCreateSchemaDialog extends BaseDialog
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
+    protected void createButtonsForButtonBar(Composite parent) {
         super.createButtonsForButtonBar(parent);
         getButton(IDialogConstants.OK_ID).setEnabled(false);
     }

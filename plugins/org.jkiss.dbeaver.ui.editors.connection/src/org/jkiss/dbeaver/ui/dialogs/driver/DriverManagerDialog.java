@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
@@ -57,6 +58,7 @@ import java.util.List;
  * EditDriverDialog
  */
 public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener {
+    private static final Log log = Log.getLog(DriverManagerDialog.class);
 
     private static final String DIALOG_ID = "DBeaver.DriverManagerDialog";//$NON-NLS-1$
     private static final String DEFAULT_DS_PROVIDER = "generic";
@@ -383,14 +385,23 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     }
 
     private void editDriver() {
-        DriverDescriptor driver = selectedDriver;
-        if (driver != null) {
-            //driver.validateFilesPresence(this);
-
-            DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
-            dialog.open();
-            treeControl.refresh(driver);
+        if (selectedDriver == null) {
+            return;
         }
+
+        DriverDescriptor driver = selectedDriver.getProviderDescriptor().getDriver(selectedDriver.getId());
+        if (driver == null) {
+            log.warn("Driver not found for ID '" + selectedDriver.getId()
+                + "' in provider '" + selectedDriver.getProviderDescriptor().getId() + "'");
+            return;
+        }
+
+        DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
+        dialog.open();
+        if (selectedDriver != driver) {
+            selectedDriver.applyFrom(driver);
+        }
+        treeControl.refresh(selectedDriver);
     }
 
     private void deleteDriver() {
@@ -407,7 +418,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             getShell(),
             UIConnectionMessages.dialog_driver_manager_message_delete_driver_title,
             UIConnectionMessages.dialog_driver_manager_message_delete_driver_text + selectedDriver.getName() + "'?")) {
-            selectedDriver.getProviderDescriptor().removeDriver(selectedDriver);
+            selectedDriver.getProviderDescriptor().removeDriver(selectedDriver.getId());
             selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
             treeControl.refresh();
         }
