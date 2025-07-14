@@ -408,7 +408,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     iconBig="icons/ingres_icon_big.png"
                     categories="sql">
-                    <file type="jar" path="https://repo1.maven.org/maven2/com/ingres/jdbc/iijdbc/" bundle="!drivers.ingres"/>
+                    <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE[12.0-4.4.4]" bundle="!drivers.ingres"/>
                     <file type="license" path="https://communities.actian.com/s/supportservices/policy/policy-license-terms"/>
                     <file type="jar" path="drivers/ingres" bundle="drivers.ingres"/>
 
