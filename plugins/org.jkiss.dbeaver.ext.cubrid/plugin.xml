@@ -223,7 +223,7 @@
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridProcedureManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridIndexManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex"/>
-        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPartition"/>
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridPartitionManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPartition"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTable"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableColumnManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTriggerManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger"/>

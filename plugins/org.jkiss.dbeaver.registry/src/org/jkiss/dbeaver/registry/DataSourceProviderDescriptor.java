@@ -438,6 +438,14 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         }
     }
 
+    public boolean removeDriver(@NotNull String driverId) {
+        return drivers.stream()
+            .filter(d -> d.getId().equals(driverId))
+            .findFirst()
+            .map(this::removeDriver)
+            .orElse(false);
+    }
+
     @NotNull
     @Override
     public List<DBPDataSourceProviderDescriptor> getChildrenProviders() {
