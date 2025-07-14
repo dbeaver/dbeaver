@@ -131,6 +131,8 @@
             <type name="UUID"/>
             <type name="IPV4"/>
             <type name="IPV6"/>
+            <type name="TUPLE*"/>
+            <type name="MAP*"/>
         </provider>
     </extension>
 

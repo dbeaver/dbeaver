@@ -150,6 +150,8 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
                 return null;
             }
 
+            profileName = profileName.trim();
+
             if (projectMeta.getDataSourceRegistry().getNetworkProfile(null, profileName) != null) {
                 UIUtils.showMessageBox(
                     getShell(),

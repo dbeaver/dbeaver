@@ -3429,11 +3429,38 @@ public class ResultSetViewer extends Viewer
     @Override
     public void handleDataSourceEvent(@NotNull DBPEvent event) {
         if (event.getObject() instanceof DBVEntity &&
-            event.getData() instanceof DBVEntityForeignKey &&
-            event.getObject() == model.getVirtualEntity(false))
-        {
-            // Virtual foreign key change - let's refresh
-            refreshData(null);
+            event.getObject() == model.getVirtualEntity(false) &&
+            event.getData() != null) {
+
+            switch (event.getData()) {
+                // Virtual foreign key change - let's refresh
+                case DBVEntityForeignKey k -> refreshData(null);
+
+                // Handle updates for virtual constraints: refresh identifiers when a constraint changes
+                case DBVEntityConstraint c -> {
+                    try {
+                        List<DBDAttributeBinding> visibleAttributes = model.getVisibleAttributes();
+                        DBDAttributeBinding[] array = visibleAttributes.toArray(new DBDAttributeBinding[0]);
+                        DBExecUtils.bindUniqueIdentifiers(array, new VoidProgressMonitor());
+                        reloadIdentifierAttributes();
+                    } catch (DBException e) {
+                        log.error(e);
+                    }
+                }
+                default -> {
+                    // do nothing
+                }
+            }
+        }
+    }
+
+    public void reloadIdentifierAttributes() throws DBException {
+        DBDRowIdentifier rowIdentifier = getVirtualEntityIdentifier();
+        if (rowIdentifier == null) {
+            rowIdentifier = model.getDefaultRowIdentifier();
+        }
+        if (rowIdentifier != null) {
+            rowIdentifier.reloadAttributes(new VoidProgressMonitor(), model.getAttributes());
         }
     }
 
@@ -4898,19 +4925,7 @@ public class ResultSetViewer extends Viewer
         EditVirtualEntityDialog dialog = new EditVirtualEntityDialog(
             ResultSetViewer.this, model.getSingleSource(), model.getVirtualEntity(true));
         dialog.setInitPage(EditVirtualEntityDialog.InitPage.UNIQUE_KEY);
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            DBDRowIdentifier virtualID = getVirtualEntityIdentifier();
-            if (virtualID != null) {
-                try {
-                    virtualID.reloadAttributes(new VoidProgressMonitor(), getModel().getAttributes());
-                } catch (DBException e) {
-                    log.error(e);
-                }
-            }
-            persistConfig();
-            return true;
-        }
-        return false;
+        return dialog.open() == IDialogConstants.OK_ID;
     }
 
     public void clearEntityIdentifier()

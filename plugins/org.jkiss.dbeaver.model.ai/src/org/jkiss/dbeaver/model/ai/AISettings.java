@@ -27,6 +27,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * AI global settings.
+ * Keeps global parameters and configuration of all AI engines
+ */
 public class AISettings implements IAdaptable {
     private boolean aiDisabled;
     private String activeEngine;

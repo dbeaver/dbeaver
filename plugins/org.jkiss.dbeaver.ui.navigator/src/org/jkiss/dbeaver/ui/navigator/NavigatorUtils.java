@@ -72,6 +72,8 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorContext;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorContextBase;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -628,8 +630,8 @@ public class NavigatorUtils {
             }
         }
         if (activeProject == null) {
-            if (activePart instanceof DBPContextProvider) {
-                DBCExecutionContext executionContext = ((DBPContextProvider) activePart).getExecutionContext();
+            if (activePart instanceof DBPContextProvider contextProvider) {
+                DBCExecutionContext executionContext = contextProvider.getExecutionContext();
                 if (executionContext != null) {
                     activeProject = executionContext.getDataSource().getContainer().getRegistry().getProject();
                 } else if (activePart instanceof DBPDataSourceContainerProvider) {
@@ -716,6 +718,22 @@ public class NavigatorUtils {
                 return view.getNavigatorTree();
             }
         }
+        return null;
+    }
+
+    @Nullable
+    public static DBSObject getCurrentDatabaseObject() {
+        IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        IEditorPart activeEditor = activePage.getActiveEditor();
+        if (activeEditor instanceof ObjectPropertiesEditor editor) {
+            return editor.getDatabaseObject();
+        } else if (activeEditor instanceof EntityEditor editor) {
+            IEditorPart mainEditor = editor.getActiveEditor();
+            if (mainEditor instanceof ObjectPropertiesEditor objectPropertiesEditor) {
+                return objectPropertiesEditor.getDatabaseObject();
+            }
+        }
+
         return null;
     }
 }
