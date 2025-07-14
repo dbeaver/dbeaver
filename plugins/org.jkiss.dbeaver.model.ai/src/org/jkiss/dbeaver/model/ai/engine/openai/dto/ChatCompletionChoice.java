@@ -28,7 +28,7 @@ public class ChatCompletionChoice {
      */
     private Integer index;
 
-    //@SerializedName("delta")
+    @SerializedName("delta")
     private ChatMessage message;
 
     /**
