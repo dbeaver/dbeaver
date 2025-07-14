@@ -29,6 +29,8 @@ public class ChatCompletionChoice {
     private Integer index;
 
     @SerializedName("delta")
+    private ChatMessage delta;
+
     private ChatMessage message;
 
     /**
@@ -46,7 +48,7 @@ public class ChatCompletionChoice {
     }
 
     public ChatMessage getMessage() {
-        return message;
+        return delta != null ? delta : message;
     }
 
     public void setMessage(ChatMessage message) {
