@@ -24,8 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 
-public class CubridProcedureParameter implements DBSProcedureParameter
-{
+public class CubridProcedureParameter implements DBSProcedureParameter {
     private String argName;
     private String dataType;
     private String mode;
@@ -82,11 +81,11 @@ public class CubridProcedureParameter implements DBSProcedureParameter
     @Property(viewable = true, order = 4)
     public DBSProcedureParameterKind getParameterKind() {
         switch (mode) {
-            case "IN" :
+            case "IN":
                 return DBSProcedureParameterKind.IN;
             case "INOUT":
                 return DBSProcedureParameterKind.INOUT;
-            case "OUT" :
+            case "OUT":
                 return DBSProcedureParameterKind.OUT;
             default:
                 return DBSProcedureParameterKind.UNKNOWN;

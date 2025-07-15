@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -56,15 +55,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
-public class CubridDataSource extends GenericDataSource
-{
+public class CubridDataSource extends GenericDataSource {
     private final CubridMetaModel metaModel;
     private final CubridPrivilageCache privilageCache;
     private final CubridServerCache serverCache;
     private boolean supportMultiSchema;
-    private boolean supportDBMSOutputPLCSQL = false;
+    private boolean supportDbmsOutputPlCsql = false;
     private boolean isEOLVersion;
     private ArrayList<CubridCharset> charsets;
     private Map<String, CubridCollation> collations;
@@ -85,6 +84,8 @@ public class CubridDataSource extends GenericDataSource
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new CubridStructureAssistant(this));
+        } else if (adapter == DBCServerOutputReader.class) {
+            return adapter.cast(outputReader);
         }
         return super.getAdapter(adapter);
     }
@@ -239,7 +240,10 @@ public class CubridDataSource extends GenericDataSource
             loadCharsets(monitor);
             loadCollations(monitor);
         } else {
-            DBWorkbench.getPlatformUI().showMessageBox("Connected CUBRID Info", "The connected CUBRID is an EOL version. Limited features are available.", false);
+            DBWorkbench.getPlatformUI().showMessageBox(
+                "Connected CUBRID Info",
+                "The connected CUBRID is an EOL version. Limited features are available.",
+                false);
         }
         setTracking(monitor);
     }
@@ -260,12 +264,12 @@ public class CubridDataSource extends GenericDataSource
             throws DBException {
         super.initializeContextState(monitor, context, initFrom);
 
-        if (outputReader == null && checkSupportDBMSOutput(monitor, context)) {
+        if (outputReader == null && checkSupportDbmsOutput(monitor, context)) {
             outputReader = new CubridOutputReader();
         }
 
         if (outputReader != null) {
-            outputReader.enableDBMSOutput(monitor, context);
+            outputReader.enableDbmsOutput(monitor, context);
         }
     }
 
@@ -302,10 +306,12 @@ public class CubridDataSource extends GenericDataSource
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "set trace")) {
             try (JDBCStatement st = session.createStatement()) {
-                if (store.getBoolean(CubridConstants.STATISTIC_TRACE))
+                if (store.getBoolean(CubridConstants.STATISTIC_TRACE)) {
                     st.execute("SET TRACE ON;");
-                if (!CommonUtils.isEmpty(store.getString(CubridConstants.STATISTIC)))
+                }
+                if (!CommonUtils.isEmpty(store.getString(CubridConstants.STATISTIC))) {
                     st.execute("set @collect_exec_stats = 1");
+                }
             }
         } catch (SQLException e) {
             throw new DBException("Can't set trace", e);
@@ -361,24 +367,15 @@ public class CubridDataSource extends GenericDataSource
         }
     }
 
-    @Override
-    public <T> T getAdapter(Class<T> adapter) {
-        if (adapter == DBCServerOutputReader.class) {
-            return adapter.cast(outputReader);
-        }
-        return super.getAdapter(adapter);
+    public boolean isSupportEnableDbms() {
+        return getContainer().getPreferenceStore().getBoolean(CubridConstants.PREF_DBMS_OUTPUT);
     }
 
-    public boolean isSupportEnableDBMS() {
-        boolean ret = getContainer().getPreferenceStore().getBoolean(CubridConstants.PREF_DBMS_OUTPUT);
-        return ret;
+    public boolean isSupportDbmsOutputPlCsql() {
+        return supportDbmsOutputPlCsql;
     }
 
-    public boolean isSupportDBMSOutputPLCSQL() {
-        return supportDBMSOutputPLCSQL;
-    }
-
-    private boolean checkSupportDBMSOutput(
+    private boolean checkSupportDbmsOutput(
             @NotNull DBRProgressMonitor monitor,
             @NotNull DBCExecutionContext context)
             throws DBException {
@@ -392,9 +389,9 @@ public class CubridDataSource extends GenericDataSource
             throw new DBException("Check Support DBMSOutput failed", e);
         }
 
-        supportDBMSOutputPLCSQL = isServerVersionAtLeast(11, 4); 
+        supportDbmsOutputPlCsql = isServerVersionAtLeast(11, 4);
 
-        return supportDBMSOutputPLCSQL;
+        return supportDbmsOutputPlCsql;
     }
 
     private class CubridOutputReader implements DBCServerOutputReader {
@@ -408,7 +405,7 @@ public class CubridDataSource extends GenericDataSource
             return false;
         }
 
-        public void enableDBMSOutput(DBRProgressMonitor monitor, DBCExecutionContext context)
+        public void enableDbmsOutput(DBRProgressMonitor monitor, DBCExecutionContext context)
                 throws DBCException {
             if (!isServerOutputEnabled()) {
                 return;

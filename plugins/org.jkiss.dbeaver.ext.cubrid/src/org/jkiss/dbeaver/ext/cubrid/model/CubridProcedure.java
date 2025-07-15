@@ -40,8 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CubridProcedure extends GenericProcedure implements DBSObjectWithScript, DBPRefreshableObject
-{
+public class CubridProcedure extends GenericProcedure implements DBSObjectWithScript, DBPRefreshableObject {
     private List<CubridProcedureParameter> proColumns;
     private DBSProcedureType procedureType;
     private String returnType;

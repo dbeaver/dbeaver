@@ -42,7 +42,7 @@ public class CubridProcedureManager extends GenericProcedureManager {
     @Override
     protected GenericProcedure createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options){
+        Object from, Map<String, Object> options) {
         String type = options.get("container").toString();
         DBSProcedureType procedureType = type.equals("Functions")
                 ? DBSProcedureType.FUNCTION : DBSProcedureType.PROCEDURE;
@@ -50,7 +50,12 @@ public class CubridProcedureManager extends GenericProcedureManager {
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBCException {
+    protected void addObjectCreateActions(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        ObjectCreateCommand command,
+        Map<String, Object> options) throws DBCException {
         CubridProcedure procedure = (CubridProcedure) command.getObject();
         actions.add(new SQLDatabasePersistAction("Create Procedure", procedure.getSource()));
     }
@@ -60,9 +65,8 @@ public class CubridProcedureManager extends GenericProcedureManager {
             @NotNull DBCExecutionContext executionContext,
             @NotNull List<DBEPersistAction> actionList,
             @NotNull ObjectChangeCommand objectChangeCommand,
-            @NotNull Map<String, Object> options)
-    {
-        CubridProcedure procedure = (CubridProcedure)objectChangeCommand.getObject();
+            @NotNull Map<String, Object> options) {
+        CubridProcedure procedure = (CubridProcedure) objectChangeCommand.getObject();
         actionList.add(new SQLDatabasePersistAction("Modify Procedure", procedure.getSource()));
     }
 }

@@ -16,13 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.ui.views;
 
-import java.util.Locale;
-
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.events.VerifyEvent;
-import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -39,6 +35,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
+
+import java.util.Locale;
 
 public class PrefPageCubrid extends TargetPrefPage
 {
@@ -146,7 +144,8 @@ public class PrefPageCubrid extends TargetPrefPage
                 }
             };
             info = UIUtils.createRadioButton(planGroup, CubridMessages.statistic_info, CubridConstants.STATISTIC_INFO, radioListener);
-            allInfo = UIUtils.createRadioButton(planGroup, CubridMessages.statistic_all_info, CubridConstants.STATISTIC_ALL_INFO, radioListener);
+            allInfo = UIUtils.createRadioButton(planGroup, CubridMessages.statistic_all_info,
+                CubridConstants.STATISTIC_ALL_INFO, radioListener);
 
         }
 
