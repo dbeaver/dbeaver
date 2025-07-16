@@ -214,70 +214,77 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (this.iconPlain == null) {
             this.iconPlain = DBIcon.DATABASE_DEFAULT;
         }
+        if (copyFrom != null) {
+            this.categories = new ArrayList<>(copyFrom.categories);
+        } else {
+            this.categories = new ArrayList<>();
+        }
 
         makeIconExtensions();
         if (copyFrom != null) {
             // Copy props from source
-            this.category = copyFrom.category;
-            this.categories = new ArrayList<>(copyFrom.categories);
-            this.name = copyFrom.name;
-            this.description = copyFrom.description;
-            this.driverClassName = copyFrom.driverClassName;
-            this.driverDefaultHost = copyFrom.driverDefaultHost;
-            this.driverDefaultPort = copyFrom.driverDefaultPort;
-            this.driverDefaultDatabase = copyFrom.driverDefaultDatabase;
-            this.driverDefaultServer = copyFrom.driverDefaultServer;
-            this.driverDefaultUser = copyFrom.driverDefaultUser;
-            this.sampleURL = copyFrom.sampleURL;
-            this.dialectId = copyFrom.dialectId;
-
-            this.webURL = copyFrom.webURL;
-            this.propertiesWebURL = copyFrom.webURL;
-            this.databaseDocumentationSuffixURL = copyFrom.databaseDocumentationSuffixURL;
-            this.embedded = copyFrom.embedded;
-            this.propagateDriverProperties = copyFrom.propagateDriverProperties;
-            this.singleConnection = copyFrom.singleConnection;
-            this.threadSafe = copyFrom.threadSafe;
-            this.clientRequired = copyFrom.clientRequired;
-            this.supportsDriverProperties = copyFrom.supportsDriverProperties;
-            this.anonymousAccess = copyFrom.anonymousAccess;
-            this.allowsEmptyPassword = copyFrom.allowsEmptyPassword;
-            this.licenseRequired = copyFrom.licenseRequired;
-            this.customDriverLoader = copyFrom.customDriverLoader;
-            this.useURLTemplate = copyFrom.useURLTemplate;
-            this.customEndpointInformation = copyFrom.customEndpointInformation;
-            this.instantiable = copyFrom.instantiable;
-            this.promoted = copyFrom.promoted;
-            this.nativeClientHomes.addAll(copyFrom.nativeClientHomes);
-            for (DriverFileSource fs : copyFrom.fileSources) {
-                this.fileSources.add(new DriverFileSource(fs));
-            }
-            for (DBPDriverLibrary library : copyFrom.libraries) {
-                if (library instanceof DriverLibraryAbstract) {
-                    this.libraries.add(((DriverLibraryAbstract) library).copyLibrary(this));
-                } else {
-                    this.libraries.add(library);
-                }
-            }
-            this.mainPropertyDescriptors.addAll(copyFrom.mainPropertyDescriptors);
-            this.providerPropertyDescriptors.addAll(copyFrom.providerPropertyDescriptors);
-
-            this.defaultParameters.putAll(copyFrom.defaultParameters);
-            this.customParameters.putAll(copyFrom.customParameters);
-
-            this.defaultConnectionProperties.putAll(copyFrom.defaultConnectionProperties);
-            this.customConnectionProperties.putAll(copyFrom.customConnectionProperties);
-            this.configurationTypes.addAll(copyFrom.configurationTypes);
-            this.supportedPageFields.addAll(copyFrom.supportedPageFields);
-            this.supportsDistributedMode = copyFrom.supportsDistributedMode;
-            this.notAvailableDriver = copyFrom.notAvailableDriver;
-            this.nonAvailabilityTitle = copyFrom.nonAvailabilityTitle;
-            this.nonAvailabilityDescription = copyFrom.nonAvailabilityDescription;
-            this.nonAvailabilityReason = copyFrom.nonAvailabilityReason;
+            applyFrom(copyFrom);
         } else {
-            this.categories = new ArrayList<>();
             this.name = "";
         }
+    }
+
+    public void applyFrom(@NotNull DriverDescriptor copyFrom) {
+        this.category = copyFrom.category;
+        this.name = copyFrom.name;
+        this.description = copyFrom.description;
+        this.driverClassName = copyFrom.driverClassName;
+        this.driverDefaultHost = copyFrom.driverDefaultHost;
+        this.driverDefaultPort = copyFrom.driverDefaultPort;
+        this.driverDefaultDatabase = copyFrom.driverDefaultDatabase;
+        this.driverDefaultServer = copyFrom.driverDefaultServer;
+        this.driverDefaultUser = copyFrom.driverDefaultUser;
+        this.sampleURL = copyFrom.sampleURL;
+        this.dialectId = copyFrom.dialectId;
+
+        this.webURL = copyFrom.webURL;
+        this.propertiesWebURL = copyFrom.webURL;
+        this.databaseDocumentationSuffixURL = copyFrom.databaseDocumentationSuffixURL;
+        this.embedded = copyFrom.embedded;
+        this.propagateDriverProperties = copyFrom.propagateDriverProperties;
+        this.singleConnection = copyFrom.singleConnection;
+        this.threadSafe = copyFrom.threadSafe;
+        this.clientRequired = copyFrom.clientRequired;
+        this.supportsDriverProperties = copyFrom.supportsDriverProperties;
+        this.anonymousAccess = copyFrom.anonymousAccess;
+        this.allowsEmptyPassword = copyFrom.allowsEmptyPassword;
+        this.licenseRequired = copyFrom.licenseRequired;
+        this.customDriverLoader = copyFrom.customDriverLoader;
+        this.useURLTemplate = copyFrom.useURLTemplate;
+        this.customEndpointInformation = copyFrom.customEndpointInformation;
+        this.instantiable = copyFrom.instantiable;
+        this.promoted = copyFrom.promoted;
+        this.nativeClientHomes.addAll(copyFrom.nativeClientHomes);
+        for (DriverFileSource fs : copyFrom.fileSources) {
+            this.fileSources.add(new DriverFileSource(fs));
+        }
+        for (DBPDriverLibrary library : copyFrom.libraries) {
+            if (library instanceof DriverLibraryAbstract) {
+                this.libraries.add(((DriverLibraryAbstract) library).copyLibrary(this));
+            } else {
+                this.libraries.add(library);
+            }
+        }
+        this.mainPropertyDescriptors.addAll(copyFrom.mainPropertyDescriptors);
+        this.providerPropertyDescriptors.addAll(copyFrom.providerPropertyDescriptors);
+
+        this.defaultParameters.putAll(copyFrom.defaultParameters);
+        this.customParameters.putAll(copyFrom.customParameters);
+
+        this.defaultConnectionProperties.putAll(copyFrom.defaultConnectionProperties);
+        this.customConnectionProperties.putAll(copyFrom.customConnectionProperties);
+        this.configurationTypes.addAll(copyFrom.configurationTypes);
+        this.supportedPageFields.addAll(copyFrom.supportedPageFields);
+        this.supportsDistributedMode = copyFrom.supportsDistributedMode;
+        this.notAvailableDriver = copyFrom.notAvailableDriver;
+        this.nonAvailabilityTitle = copyFrom.nonAvailabilityTitle;
+        this.nonAvailabilityDescription = copyFrom.nonAvailabilityDescription;
+        this.nonAvailabilityReason = copyFrom.nonAvailabilityReason;
     }
 
     // Predefined driver constructor

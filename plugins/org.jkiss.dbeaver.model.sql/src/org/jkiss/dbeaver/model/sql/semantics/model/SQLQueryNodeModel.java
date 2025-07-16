@@ -20,12 +20,11 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.utils.ListNode;
-import org.jkiss.utils.Pair;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -62,6 +61,11 @@ public abstract class SQLQueryNodeModel {
                 .collect(Collectors.toCollection(() -> new ArrayList<>(subnodes.length)));
             this.subnodes.sort(Comparator.comparingInt(n -> n.region.a));
         }
+    }
+
+    @Nullable
+    public SQLQuerySymbolClass getAssociatedSymbolClass() {
+        return null;
     }
 
     protected void setTailOrigin(SQLQuerySymbolOrigin tailOrigin) {
@@ -160,248 +164,6 @@ public abstract class SQLQueryNodeModel {
     }
 
     /**
-     * Get initial data context
-     */
-    @Nullable
-    public abstract SQLQueryDataContext getGivenDataContext();
-
-    /**
-     * Get result data context
-     */
-    @Nullable
-    public abstract SQLQueryDataContext getResultDataContext();
-
-    /**
-     * Debugging stuff
-     */
-    public String collectScopesHierarchyDebugView() {
-        interface ITextBlock {
-            Interval getInterval();
-
-            String prepareText(int widthToFill);
-        }
-
-        class ColumnInfo {
-            public final int position;
-            public int width = 0;
-
-            public ColumnInfo(int position) {
-                this.position = position;
-            }
-        }
-
-        class TextBlocksColumnsMap {
-            private final TreeMap<Integer, ColumnInfo> columns = new TreeMap<>();
-
-            public TextBlocksColumnsMap() {
-                this.columns.put(0, new ColumnInfo(0));
-            }
-
-            public void register(int position) {
-                this.columns.put(position, new ColumnInfo(position));
-            }
-        }
-
-        class TextBlockInfo {
-            public final ITextBlock block;
-            public final int contentWidth;
-            public NavigableMap<Integer, ColumnInfo> columns = null;
-
-            public TextBlockInfo(ITextBlock block, int contentWidth) {
-                this.block = block;
-                this.contentWidth = contentWidth;
-            }
-        }
-
-        class TextBlocksLine {
-            private final List<TextBlockInfo> blocks = new ArrayList<>();
-
-            public void add(ITextBlock block, int width) {
-                this.blocks.add(new TextBlockInfo(block, width));
-            }
-
-            public void collectColumns(TextBlocksColumnsMap columns) {
-                for (var b : this.blocks) {
-                    Interval r = b.block.getInterval();
-                    columns.register(r.a); // 7
-                    columns.register((r.b + r.a) / 2);
-                    columns.register(r.b + 1); // 8
-                    b.columns = columns.columns.subMap(r.a, true, (r.b == Integer.MAX_VALUE ? r.a : r.b) + 1, false); // [7,8)
-                    System.out.println(r + " : " + b.columns.size());
-                }
-            }
-
-            public void adjustComlumns() {
-                for (var b : this.blocks) {
-                    // TODO b.columns.values().stream().mapToInt(c -> c.width).sum() >= b.contentWidth
-                    var currWidth = b.columns.values().stream().mapToInt(c -> c.width).sum();
-                    var delta = b.contentWidth - currWidth;
-                    if (delta > 0) {
-                        System.out.println("adjusting " + currWidth + " to " + b.contentWidth);
-                        var eqstep = delta / b.columns.size();
-                        var rest = b.contentWidth;
-                        for (var c : b.columns.values()) {
-                            if (c.width < eqstep) {
-                                c.width = eqstep;
-                                System.out.println("  column " + c.position + " for " + c.width);
-                            }
-                            rest -= c.width;
-                        }
-                        if (rest > 0) {
-                            b.columns.lastEntry().getValue().width += rest;
-                            System.out.println("  +rest " + rest);
-                        }
-                    }
-                    //                    if (range.a == pos) {
-                    //                        column += 1;
-                    //                    } else if (range.a > pos){
-                    //                        column += 2;
-                    //                    } else {
-                    //                        throw new IllegalStateException();
-                    //                    }
-                }
-            }
-
-            public void collectContents(StringBuilder sb, TextBlocksColumnsMap columns) {
-                sb.append("|");
-                var currColumn = columns.columns.firstEntry().getValue();
-                for (var b : this.blocks) {
-                    var headColumnPos = b.columns.firstEntry().getValue().position;
-                    if (currColumn.position < headColumnPos) {
-                        int indent = columns.columns.subMap(0, true, headColumnPos, false).values().stream().mapToInt(c -> c.width).sum();
-                        sb.append(" ".repeat(indent));
-                        sb.append("|");
-                    }
-                    int width = b.columns.values().stream().mapToInt(c -> c.width).sum();
-                    sb.append(b.block.prepareText(width));
-                    sb.append("|");
-                    currColumn = b.columns.lastEntry().getValue();
-                }
-            }
-        }
-
-        class TextBlocks {
-            private final List<TextBlocksLine> lines = new ArrayList<>();
-
-            public String getContents() {
-                TextBlocksColumnsMap columnsMap = new TextBlocksColumnsMap();
-                for (var l : this.lines) {
-                    l.collectColumns(columnsMap);
-                }
-                for (var l : this.lines) {
-                    l.adjustComlumns();
-                }
-                StringBuilder sb = new StringBuilder();
-                for (var l : this.lines) {
-                    l.collectContents(sb, columnsMap);
-                    sb.append(System.lineSeparator());
-                }
-                return sb.toString();
-            }
-
-            public TextBlocksLine appendLine() {
-                TextBlocksLine line = new TextBlocksLine();
-                this.lines.add(line);
-                return line;
-            }
-        }
-
-        class Range implements ITextBlock {
-            public final String label;
-            public final Interval interval;
-            public final List<List<Range>> subranges = new ArrayList<>();
-
-            public Range(String label, Interval interval) {
-                this.label = label;
-                this.interval = interval;
-            }
-
-            public Interval getInterval() {
-                return this.interval;
-            }
-
-            public String prepareText(int widthToFill) {
-                String a = Integer.toString(this.interval.a);
-                String b = Integer.toString(this.interval.b);
-                int minWidth = a.length() + 1 + this.label.length() + 1 + b.length();
-                int space = Math.max(0, widthToFill - minWidth);
-                int space1 = space / 2;
-                int space2 = space - space1;
-                return a +
-                    " ".repeat(1 + space1) +
-                    this.label +
-                    " ".repeat(1 + space2) +
-                    b;
-            }
-
-            public List<Range> createSubrangesLayer() {
-                List<Range> ranges = new ArrayList<>();
-                this.subranges.add(ranges);
-                return ranges;
-            }
-
-            public int collectText(TextBlocks text) {
-                return this.collectTextInternal(text, text.appendLine());
-            }
-
-            private int collectTextInternal(TextBlocks text, TextBlocksLine line) {
-                int width = this.prepareText(0).length();
-                for (List<Range> rr : this.subranges) {
-                    TextBlocksLine l = text.appendLine();
-                    int lineWidth = rr.size() - 1;
-                    for (Range r : rr) {
-                        lineWidth += r.collectTextInternal(text, l);
-                    }
-                    width = Math.max(lineWidth, width);
-                }
-                line.add(this, width);
-                return width;
-            }
-        }
-
-        var local = new Object() {
-            public Range collectModel(SQLQueryNodeModel node) {
-                if (node.getGivenDataContext() != null) {
-                    var range = new Range(
-                        node.getClass().getSimpleName() + ": " + node.getGivenDataContext().getClass().getSimpleName(),
-                        node.getInterval()
-                    );
-                    if (node.lexicalScopes != null && node.lexicalScopes.size() > 0) {
-                        List<Range> layer = range.createSubrangesLayer();
-                        for (var s : node.lexicalScopes) {
-                            SQLQuerySymbolOrigin origin = s.getSymbolsOrigin();
-                            if (origin != null) {
-                                String originName = origin.getClass().getSimpleName();
-                                String contextName = origin instanceof SQLQuerySymbolOrigin.DataContextSymbolOrigin o
-                                    ? "(" + o.getDataContext().getClass().getSimpleName() + ")"
-                                    : "";
-                                layer.add(new Range("lexical: " + originName + contextName, s.getInterval()));
-                            }
-                        }
-                    }
-                    if (node.subnodes != null && node.subnodes.size() > 0) {
-                        List<Range> layer = range.createSubrangesLayer();
-                        for (var n : node.subnodes) {
-                            layer.add(collectModel(n));
-                        }
-                    }
-                    return range;
-                }
-                return null;
-            }
-        };
-
-        Range root = local.collectModel(this);
-
-        TextBlocks text = new TextBlocks();
-        if (root != null) {
-            root.collectText(text);
-        }
-
-        return text.getContents();
-    }
-
-    /**
      * The query model node having extra control over its children traverse handling
      */
     public interface NodeSubtreeTraverseControl<N extends SQLQueryNodeModel, C>  {
@@ -421,12 +183,31 @@ public abstract class SQLQueryNodeModel {
         }
 
         /**
-         * Returns query context for the specified child
+         * Returns true when non-default query context should be used for the specified child subtree
+         */
+        default boolean overridesContextForChild(@NotNull N child) {
+            return false;
+        }
+
+        /**
+         * Returns query context for the specified child subtree
          */
         @Nullable
         default C getContextForChild(@NotNull N child, @Nullable C defaultContext) {
             return defaultContext;
         }
+    }
+
+    private record NodeExtraContext<N extends SQLQueryNodeModel, C>(
+        @NotNull NodeSubtreeTraverseControl<N, C> provider,
+        @NotNull N key
+    ) {
+    }
+
+    private record NodeEntry<N extends SQLQueryNodeModel, C>(
+        @Nullable NodeExtraContext<N, C> context,
+        @NotNull N node
+    ){
     }
 
     protected static <N extends SQLQueryNodeModel, C> void traverseSubtreeSmart(
@@ -438,26 +219,31 @@ public abstract class SQLQueryNodeModel {
     ) {
         Set<SQLQueryNodeModel> queued = new HashSet<>();
         queued.add(subroot);
-        ListNode<Pair<N, N>> queue = ListNode.of(Pair.of(null, subroot));
+        ListNode<NodeEntry<N, C>> queue = ListNode.of(new NodeEntry<>(null, subroot));
 
         while (queue != null && !cancellationChecker.getAsBoolean()) {
-            ListNode<Pair<N, N>>  stack = ListNode.of(queue.data);
+            ListNode<NodeEntry<N, C>>  stack = ListNode.of(queue.data);
             queue = queue.next;
             while (stack != null) {
                 if (stack.data != null) {  // first time handling node
-                    N node = stack.data.getSecond();
+                    NodeEntry<N, C> entry = stack.data;
+                    N node = entry.node;
                     List<SQLQueryNodeModel> subnodes = ((SQLQueryNodeModel) node).subnodes;
                     if (subnodes != null) { // children presented, push and handle them at first
                         stack = ListNode.push(stack, null); // push null to separate parent-to-handle from its already processed children
                         boolean delayChildren;
                         List<SQLQueryNodeModel> children;
+                        NodeSubtreeTraverseControl<N, C> localContextProvider;
                         if (node instanceof NodeSubtreeTraverseControl<?, ?> c) {
+                            //noinspection unchecked
+                            localContextProvider = (NodeSubtreeTraverseControl<N, C>) c;
                             delayChildren = c.delayRestChildren();
                             children = c.getChildren();
                             if (children == null) {
                                 children = subnodes;
                             }
                         } else {
+                            localContextProvider = null;
                             delayChildren = false;
                             children = subnodes;
                         }
@@ -470,27 +256,31 @@ public abstract class SQLQueryNodeModel {
                             if (childrenType.isInstance(childNode)) {
                                 //noinspection unchecked
                                 N child = (N) childNode;
+                                NodeExtraContext<N, C> extraContext = localContextProvider != null && localContextProvider.overridesContextForChild(child)
+                                    ? new NodeExtraContext<N, C>(localContextProvider, child)
+                                    : entry.context;
+                                NodeEntry<N, C> childEntry = new NodeEntry<>(extraContext, child);
                                 if (delayChildren) {
                                     if (index == 0) {
-                                        stack = ListNode.push(stack, Pair.of(node, child));
+                                        stack = ListNode.push(stack, childEntry);
                                     } else {
                                         if (queued.add(child)) {
-                                            queue = ListNode.push(queue, Pair.of(node, child));
+                                            queue = ListNode.push(queue, childEntry);
                                         }
                                     }
                                 } else {
-                                    stack = ListNode.push(stack, Pair.of(node, child));
+                                    stack = ListNode.push(stack, childEntry);
                                 }
                             }
                             index++;
                         }
                     } else { // no children, handle immediately
-                        applyActionForNode(stack.data.getFirst(), stack.data.getSecond(), context, action);
+                        applyActionForNode(stack.data, context, action);
                         stack = stack.next;
                     }
                 } else { // children already handled, handle the node
                     stack = stack.next;
-                    applyActionForNode(stack.data.getFirst(), stack.data.getSecond(), context, action);
+                    applyActionForNode(stack.data, context, action);
                     stack = stack.next;
                 }
             }
@@ -498,16 +288,12 @@ public abstract class SQLQueryNodeModel {
     }
 
     private static <N extends SQLQueryNodeModel, C> void applyActionForNode(
-        @Nullable N parent,
-        @NotNull N node,
+        @NotNull NodeEntry<N, C> entry,
         @Nullable C context,
         @NotNull BiConsumer<N, C> action
     ) {
-        @SuppressWarnings("unchecked")
-        C currContext = parent instanceof NodeSubtreeTraverseControl<?, ?> tc
-            ? ((NodeSubtreeTraverseControl<N, C>) parent).getContextForChild(node, context)
-            : context;
-        action.accept(node, currContext);
+        C currContext = entry.context == null ? context : entry.context.provider.getContextForChild(entry.context.key, context);
+        action.accept(entry.node, currContext);
     }
 
 

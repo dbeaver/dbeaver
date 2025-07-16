@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,8 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
@@ -67,20 +68,53 @@ public class SQLQuerySelectIntoModel extends SQLQueryRowsProjectionModel {
         return this.targets;
     }
 
-    @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        SQLQueryDataContext sourceContext = super.propagateContextImpl(context, statistics);
+    protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        SQLQueryRowsSourceContext sourceContext = super.resolveRowSourcesImpl(context, statistics);
 
         SelectionTargetVisitor propagator = new SelectionTargetVisitor() {
             @Override
             public void visitRowsetTarget(RowsetSelectionTarget target) {
-                target.table.propagateContext(context, statistics);
+                target.table.resolveRowSources(context, statistics);
             }
 
             @Override
             public void visitExpressionTarget(ValueSelectionTarget target) {
-                target.expression.propagateContext(context, statistics);
+                target.expression.resolveRowSources(context, statistics);
+            }
+        };
+
+        if (this.targets != null) {
+            List<SQLQuerySelectIntoModel.SelectionTarget> targets = this.targets.getTargets();
+            for (SelectionTarget target : targets) {
+                if (target.getNode() != null) {
+                    target.apply(propagator);
+                }
+            }
+            this.targets.getTargetScope().setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsSourceRef(context));
+        }
+        return sourceContext;
+    }
+
+    @Override
+    protected SQLQueryRowsDataContext resolveRowDataImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        SQLQueryRowsDataContext sourceContext = super.resolveRowDataImpl(context, statistics);
+
+        SelectionTargetVisitor propagator = new SelectionTargetVisitor() {
+            @Override
+            public void visitRowsetTarget(RowsetSelectionTarget target) {
+                target.table.resolveValueRelations(context, statistics);
+            }
+
+            @Override
+            public void visitExpressionTarget(ValueSelectionTarget target) {
+                target.expression.resolveValueRelations(context, statistics);
             }
         };
 
@@ -94,22 +128,18 @@ public class SQLQuerySelectIntoModel extends SQLQueryRowsProjectionModel {
             }
 
             if (statistics.useRealMetadata() && targets.size() == 1 && targets.get(0) instanceof RowsetSelectionTarget target) {
-                SQLQueryDataContext targetContext = target.getNode().getResultDataContext();
-                if (targetContext != null) {
-                    int selectedColumns = sourceContext.getColumnsList().size();
-                    int expectedColumns = targetContext.getColumnsList().size();
-                    if (selectedColumns != expectedColumns && expectedColumns != 0) {
-                        statistics.appendWarning(
-                            Objects.requireNonNullElse(this.intoKeywordSyntaxNode, this.getSyntaxNode()),
-                            "Selected result set has " + selectedColumns + " columns while target expected " + expectedColumns + " columns."
-                        );
-                    }
+                SQLQueryRowsDataContext targetContext = target.table.getRowsDataContext();
+                int selectedColumns = sourceContext.getColumnsList().size();
+                int expectedColumns = targetContext.getColumnsList().size();
+                if (selectedColumns != expectedColumns && expectedColumns != 0) {
+                    statistics.appendWarning(
+                        Objects.requireNonNullElse(this.intoKeywordSyntaxNode, this.getSyntaxNode()),
+                        "Selected result set has " + selectedColumns + " columns while target expected " + expectedColumns + " columns."
+                    );
                 }
             }
-
-            this.targets.getTargetScope().setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsetRefFromContext(context));
         }
-        return context;
+        return sourceContext;
     }
 
     @Override
@@ -202,25 +232,6 @@ public class SQLQuerySelectIntoModel extends SQLQueryRowsProjectionModel {
         @Override
         protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
             return visitor.visitRowsProjectionIntoTargetsList(this, arg);
-        }
-
-        @Nullable
-        private SQLQueryDataContext getUnderlyingLegacyDataContext() {
-            return this.targetScope.getSymbolsOrigin() instanceof SQLQuerySymbolOrigin.DataContextSymbolOrigin dsso
-                ? dsso.getDataContext()
-                : null;
-        }
-
-        @Nullable
-        @Override
-        public SQLQueryDataContext getGivenDataContext() {
-            return this.getUnderlyingLegacyDataContext();
-        }
-
-        @Nullable
-        @Override
-        public SQLQueryDataContext getResultDataContext() {
-            return this.getUnderlyingLegacyDataContext();
         }
     }
 

@@ -19,18 +19,16 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -81,79 +79,80 @@ public class SQLQueryRowsSetCorrespondingOperationModel extends SQLQueryRowsSetO
         
         return type;
     }
-    
-    @NotNull
-    @Override
-    protected SQLQueryDataContext propagateContextImpl(
-        @NotNull SQLQueryDataContext context,
-        @NotNull SQLQueryRecognitionContext statistics
-    ) {
-        SQLQueryDataContext left = this.left.propagateContext(context, statistics);
-        SQLQueryDataContext right = this.right.propagateContext(context, statistics);
 
-        List<SQLQueryResultColumn> resultColumns;
-        boolean nonMatchingColumnSets = false;
-        if (correspondingColumnNames.isEmpty()) { // require left and right to have the same tuples
-            List<SQLQueryResultColumn> leftColumns = left.getColumnsList();
-            List<SQLQueryResultColumn> rightColumns = right.getColumnsList();
-            int resultColumnsCount = Math.max(leftColumns.size(), rightColumns.size());
-            resultColumns = new ArrayList<>(resultColumnsCount);
-            for (int i = 0; i < resultColumnsCount; i++) {
-                if (i >= leftColumns.size()) {
-                    resultColumns.add(rightColumns.get(i));
-                    nonMatchingColumnSets = true;
-                } else if (i >= rightColumns.size()) {
-                    resultColumns.add(leftColumns.get(i));
-                    nonMatchingColumnSets = true;
-                } else {
-                    SQLQueryResultColumn leftColumn = leftColumns.get(i);
-                    SQLQueryResultColumn rightColumn = rightColumns.get(i);
-                    SQLQueryExprType type = this.obtainCommonType(leftColumn, rightColumn);
-                    SQLQuerySymbol symbol;
-                    if (leftColumn.symbol.getName().equalsIgnoreCase(rightColumn.symbol.getName())) {
-                        SQLQuerySymbolClass leftClass = leftColumn.symbol.getSymbolClass();
-                        SQLQuerySymbolDefinition leftDef = leftColumn.symbol.getDefinition();
-                        // new symbol after merge carries underlying info of the left column and combined entries set
-                        symbol = leftColumn.symbol.merge(rightColumn.symbol);
-                        symbol.setDefinition(leftDef);
-                        if (symbol.getSymbolClass() == SQLQuerySymbolClass.UNKNOWN) {
-                            symbol.setSymbolClass(leftClass);
-                        }
-                    } else {
-                        symbol = leftColumn.symbol;
-                    }
-                    resultColumns.add(new SQLQueryResultColumn(i, symbol, this, null, null, type));
-                }
-            }
-        } else { // require left and right to have columns subset as given with correspondingColumnNames
-            SQLQuerySymbolOrigin columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(left.combine(right));
-            int resultColumnsCount = correspondingColumnNames.size();
-            resultColumns = new ArrayList<>(resultColumnsCount);
-            for (int i = 0; i < resultColumnsCount; i++) {
-                SQLQuerySymbolEntry column = correspondingColumnNames.get(i);
-                if (column.isNotClassified()) {
-                    SQLQueryResultColumn leftDef = left.resolveColumn(statistics.getMonitor(), column.getName());
-                    SQLQueryResultColumn rightDef = right.resolveColumn(statistics.getMonitor(), column.getName());
-
-                    if (leftDef == null || rightDef == null) {
-                        nonMatchingColumnSets = true;
-                    }
-                    SQLQueryExprType type = this.obtainCommonType(leftDef, rightDef);
-
-                    column.getSymbol().setDefinition(column); // TODO combine multiple definitions
-                    column.setOrigin(columnNameOrigin);
-                    resultColumns.add(new SQLQueryResultColumn(i, column.getSymbol(), this, null, null, type));
-                }
-            }
-        }
-
-        if (nonMatchingColumnSets) {
-            // TODO detailed messages per column
-            statistics.appendError(this.getSyntaxNode(), "UNION, EXCEPT and INTERSECT require subsets column tuples to match");
-        }
-        // TODO multiple definitions per symbol
-        return context.overrideResultTuple(this, resultColumns, Collections.emptyList());
-    }
+//    // TODO delayed validation for new semantics resolution
+//    @NotNull
+//    @Override
+//    protected SQLQueryDataContext propagateContextImpl(
+//        @NotNull SQLQueryDataContext context,
+//        @NotNull SQLQueryRecognitionContext statistics
+//    ) {
+//        SQLQueryDataContext left = this.left.propagateContext(context, statistics);
+//        SQLQueryDataContext right = this.right.propagateContext(context, statistics);
+//
+//        List<SQLQueryResultColumn> resultColumns;
+//        boolean nonMatchingColumnSets = false;
+//        if (correspondingColumnNames.isEmpty()) { // require left and right to have the same tuples
+//            List<SQLQueryResultColumn> leftColumns = left.getColumnsList();
+//            List<SQLQueryResultColumn> rightColumns = right.getColumnsList();
+//            int resultColumnsCount = Math.max(leftColumns.size(), rightColumns.size());
+//            resultColumns = new ArrayList<>(resultColumnsCount);
+//            for (int i = 0; i < resultColumnsCount; i++) {
+//                if (i >= leftColumns.size()) {
+//                    resultColumns.add(rightColumns.get(i));
+//                    nonMatchingColumnSets = true;
+//                } else if (i >= rightColumns.size()) {
+//                    resultColumns.add(leftColumns.get(i));
+//                    nonMatchingColumnSets = true;
+//                } else {
+//                    SQLQueryResultColumn leftColumn = leftColumns.get(i);
+//                    SQLQueryResultColumn rightColumn = rightColumns.get(i);
+//                    SQLQueryExprType type = this.obtainCommonType(leftColumn, rightColumn);
+//                    SQLQuerySymbol symbol;
+//                    if (leftColumn.symbol.getName().equalsIgnoreCase(rightColumn.symbol.getName())) {
+//                        SQLQuerySymbolClass leftClass = leftColumn.symbol.getSymbolClass();
+//                        SQLQuerySymbolDefinition leftDef = leftColumn.symbol.getDefinition();
+//                        // new symbol after merge carries underlying info of the left column and combined entries set
+//                        symbol = leftColumn.symbol.merge(rightColumn.symbol);
+//                        symbol.setDefinition(leftDef);
+//                        if (symbol.getSymbolClass() == SQLQuerySymbolClass.UNKNOWN) {
+//                            symbol.setSymbolClass(leftClass);
+//                        }
+//                    } else {
+//                        symbol = leftColumn.symbol;
+//                    }
+//                    resultColumns.add(new SQLQueryResultColumn(i, symbol, this, null, null, type));
+//                }
+//            }
+//        } else { // require left and right to have columns subset as given with correspondingColumnNames
+//            SQLQuerySymbolOrigin columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(left.combine(right));
+//            int resultColumnsCount = correspondingColumnNames.size();
+//            resultColumns = new ArrayList<>(resultColumnsCount);
+//            for (int i = 0; i < resultColumnsCount; i++) {
+//                SQLQuerySymbolEntry column = correspondingColumnNames.get(i);
+//                if (column.isNotClassified()) {
+//                    SQLQueryResultColumn leftDef = left.resolveColumn(statistics.getMonitor(), column.getName());
+//                    SQLQueryResultColumn rightDef = right.resolveColumn(statistics.getMonitor(), column.getName());
+//
+//                    if (leftDef == null || rightDef == null) {
+//                        nonMatchingColumnSets = true;
+//                    }
+//                    SQLQueryExprType type = this.obtainCommonType(leftDef, rightDef);
+//
+//                    column.getSymbol().setDefinition(column); // TODO combine multiple definitions
+//                    column.setOrigin(columnNameOrigin);
+//                    resultColumns.add(new SQLQueryResultColumn(i, column.getSymbol(), this, null, null, type));
+//                }
+//            }
+//        }
+//
+//        if (nonMatchingColumnSets) {
+//            // TODO detailed messages per column
+//            statistics.appendError(this.getSyntaxNode(), "UNION, EXCEPT and INTERSECT require subsets column tuples to match");
+//        }
+//        // TODO multiple definitions per symbol
+//        return context.overrideResultTuple(this, resultColumns, Collections.emptyList());
+//    }
 
     @NotNull
     @Override

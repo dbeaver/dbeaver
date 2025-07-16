@@ -716,17 +716,18 @@ public final class SQLUtils {
 
         SQLDialect dialect = entity.getParentObject().getDataSource().getSQLDialect();
         StringBuilder buf = new StringBuilder();
-        boolean prevInvalid = true;
+        boolean prevNonLetter = true;
         char prevChar = 0;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
-            if ((buf.isEmpty() && !dialect.validIdentifierStart(c)) || (!buf.isEmpty() && !dialect.validIdentifierPart(c, false))) {
-                prevInvalid = true;
+            boolean isValidChar = (buf.isEmpty() && dialect.validIdentifierStart(c)) || (!buf.isEmpty() && dialect.validIdentifierPart(c, false));
+            if (!Character.isLetter(c)) {
+                prevNonLetter = true;
             } else {
-                if (prevInvalid || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c))) {
+                if (isValidChar && (prevNonLetter || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c)))) {
                     buf.append(c);
                 }
-                prevInvalid = false;
+                prevNonLetter = false;
             }
             prevChar = c;
         }

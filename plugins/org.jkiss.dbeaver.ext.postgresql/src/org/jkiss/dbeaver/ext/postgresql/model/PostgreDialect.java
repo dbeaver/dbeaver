@@ -626,6 +626,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "tsvector_update_trigger_column"
     };
 
+    public static String[] POSTGRE_FUNCTIONS_BUILTIN = new String[] {
+        "count"
+    };
+
+
     public static String[] POSTGRE_FUNCTIONS_XML = new String[]{
         "xmlcomment",
         "xmlconcat",
@@ -890,6 +895,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         addExtraFunctions(POSTGRE_FUNCTIONS_TRIGGER);
         addExtraFunctions(POSTGRE_FUNCTIONS_WINDOW);
         addExtraFunctions(POSTGRE_FUNCTIONS_XML);
+        addExtraFunctions(POSTGRE_FUNCTIONS_BUILTIN);
 
         removeSQLKeyword("LENGTH");
         removeSQLKeyword("JSON");

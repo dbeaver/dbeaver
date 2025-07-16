@@ -71,16 +71,17 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
     /**
      * Displays a hint with the given content. Optionally removes any existing hint before displaying the new one.
      *
-     * @param content        the content of the hint to be displayed
+     * @param content the content of the hint to be displayed
+     * @param cursorPosition the position of the cursor in editor
      */
-    public void showHint(String content, int scriptEndOffset) {
+    public void showHint(String content, int cursorPosition) {
         if (!tryLock()) {
             return;
         }
         this.currentState = RenderState.SHOWING;
         UIUtils.asyncExec(() -> {
             executeRemove(); // removes any currently displayed hint before showing the new one
-            executeShow(content, scriptEndOffset);
+            executeShow(content, cursorPosition);
         });
     }
 
@@ -224,19 +225,13 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
         resetState();
     }
 
-    private void executeShow(String text, int scriptEndOffset) {
-        int positionToShow = getCursorPosition();
-
-        if (scriptEndOffset >= 0) {
-            positionToShow = scriptEndOffset;
-        }
-
+    private void executeShow(String text, int cursorPosition) {
         String wordPrefix = extractCurrentWord();
         String fragment = text;
         if (!wordPrefix.isEmpty() && fragment.toLowerCase().startsWith(wordPrefix.toLowerCase())) {
             fragment = fragment.substring(wordPrefix.length());
         }
-        activeHint = HintContent.initialize(positionToShow, fragment);
+        activeHint = HintContent.initialize(cursorPosition, fragment);
         getTextWidget().redraw();
     }
 

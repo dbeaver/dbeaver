@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryComplexName;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsCteSubqueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
@@ -27,6 +28,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
  * Describes the result of the query source resolution
  */
 public class SourceResolutionResult {
+    @Nullable
+    public final SQLQueryComplexName referenceName;
     @NotNull
     public final SQLQueryRowsSourceModel source;
     @Nullable
@@ -35,46 +38,17 @@ public class SourceResolutionResult {
     public final SQLQuerySymbol aliasOrNull;
     public final boolean isCteSubquery;
 
-    protected SourceResolutionResult(
+    public SourceResolutionResult(
         @NotNull SQLQueryRowsSourceModel source,
+        @Nullable SQLQueryComplexName referenceName,
         @Nullable DBSEntity tableOrNull,
         @Nullable SQLQuerySymbol aliasOrNull
     ) {
         this.source = source;
+        this.referenceName = referenceName;
         this.tableOrNull = tableOrNull;
         this.aliasOrNull = aliasOrNull;
         this.isCteSubquery = source instanceof SQLQueryRowsCteSubqueryModel;
     }
 
-    /**
-     * Builds a new instance for a table by metadata without alias
-     */
-    @NotNull
-    public static SourceResolutionResult forRealTableByName(@NotNull SQLQueryRowsSourceModel source, @Nullable DBSEntity table) {
-        return new SourceResolutionResult(source, table, null);
-    }
-
-    /**
-     * Builds a new instance for a table by its alias
-     */
-    @NotNull
-    public static SourceResolutionResult forSourceByAlias(@NotNull SQLQueryRowsSourceModel source, @Nullable SQLQuerySymbol alias) {
-        return new SourceResolutionResult(source, null, alias);
-    }
-
-    /**
-     * Builds a new instance for a table from metadata with alias
-     */
-    @NotNull
-    public static SourceResolutionResult withRealTable(@NotNull SourceResolutionResult rr, @Nullable DBSEntity table) {
-        return new SourceResolutionResult(rr.source, table, rr.aliasOrNull);
-    }
-
-    /**
-     * Builds a new instance for a table by its name and alias
-     */
-    @NotNull
-    public static SourceResolutionResult withAlias(@NotNull SourceResolutionResult rr, @Nullable SQLQuerySymbol alias) {
-        return new SourceResolutionResult(rr.source, rr.tableOrNull, alias);
-    }
 }

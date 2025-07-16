@@ -92,18 +92,6 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     @Override
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
         String preparedColumnName = this.convertCaseIfNeeded(columnName.columnInfo.symbol.getName());
-//        String suffix;
-//        if (this.queryCompletionContext.getInspectionResult().expectingColumnIntroduction() &&
-//            this.aliasMode != SQLTableAliasInsertMode.NONE && this.localKnownColumnNames.contains(preparedColumnName) &&
-//            columnName.sourceInfo != null && columnName.sourceInfo.aliasOrNull != null) {
-//            DBPDataSource ds = this.request.getContext().getDataSource();
-//            String alias = DBUtils.getUnQuotedIdentifier(ds, columnName.sourceInfo.aliasOrNull.getName())
-//                + DBUtils.getUnQuotedIdentifier(ds, preparedColumnName);
-//            suffix = this.prepareAliasPrefix() + this.convertCaseIfNeeded(DBUtils.getQuotedIdentifier(ds, alias));
-//        } else {
-//            suffix = "";
-//        }
-
         String prefix;
         if (columnName.sourceInfo != null && this.queryCompletionContext.getInspectionResult().expectingColumnReference() && columnName.absolute) {
             boolean forceQualifiedName = this.request.getContext().isForceQualifiedColumnNames()
@@ -111,10 +99,8 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
 
             if (columnName.sourceInfo.aliasOrNull != null) {
                 prefix = this.prepareDefiningEntryName(columnName.sourceInfo.aliasOrNull) + this.structSeparator;
-            } else if (columnName.sourceInfo instanceof SQLQueryRowsSourceContext.KnownRowsSourceInfo knownSource
-                && forceQualifiedName
-            ) {
-                prefix = this.prepareQualifiedName(knownSource.referenceName.getParts()) + this.structSeparator;
+            } else if (columnName.sourceInfo.referenceName != null && forceQualifiedName) {
+                prefix = this.prepareQualifiedName(columnName.sourceInfo.referenceName.stringParts) + this.structSeparator;
             } else if (columnName.sourceInfo.tableOrNull != null && forceQualifiedName) {
                 prefix = this.prepareObjectName(columnName.sourceInfo.tableOrNull) + this.structSeparator;
             } else {
