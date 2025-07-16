@@ -163,7 +163,7 @@ public class PostgreUtils {
         return null;
     }
 
-    public static long[] getIdVector(@Nullable Object pgObject, @Nullable DBPDataSource dataSource) {
+    public static long[] getIdVector(@Nullable Object pgObject, @NotNull DBPDataSource dataSource) {
         Object pgVector = extractPGObjectValue(pgObject, dataSource);
         if (pgVector == null) {
             return null;
@@ -215,7 +215,7 @@ public class PostgreUtils {
         }
     }
 
-    public static int[] getIntVector(@Nullable Object pgObject, @Nullable DBPDataSource dataSource) {
+    public static int[] getIntVector(@Nullable Object pgObject, @NotNull DBPDataSource dataSource) {
         Object pgVector = extractPGObjectValue(pgObject, dataSource);
         if (pgVector == null) {
             return null;
@@ -1056,11 +1056,7 @@ public class PostgreUtils {
         return lastPos;
     }
 
-    public static boolean isPgObject(@Nullable DBPDataSource dataSource, @Nullable Object object) {
-        if (dataSource == null) {
-            return false;
-        }
-
+    public static boolean isPgObject(@NotNull DBPDataSource dataSource, @Nullable Object object) {
         if (dataSource instanceof PostgreDataSource postgreDataSource) {
             return postgreDataSource.getServerType().isPGObject(object);
         }

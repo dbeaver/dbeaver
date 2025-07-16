@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
@@ -55,6 +54,8 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     private static final Log log = Log.getLog(PostgreServerRedshift.class);
     public static final int RS_ERROR_CODE_CHANNEL_CLOSE = 500366;
     public static final int RS_ERROR_CODE_NOT_CONNECTED = 500150;
+
+    public static final String RS_OBJECT_CLASS = "com.amazon.redshift.util.RedshiftObject";
 
     private Version redshiftVersion;
 
@@ -501,6 +502,6 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
             return false;
         }
         String className = object.getClass().getName();
-        return className.equals(PostgreConstants.RS_OBJECT_CLASS);
+        return className.equals(RS_OBJECT_CLASS);
     }
 }

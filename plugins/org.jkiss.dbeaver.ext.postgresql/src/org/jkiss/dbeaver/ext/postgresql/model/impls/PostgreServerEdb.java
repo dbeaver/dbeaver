@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 public class PostgreServerEdb extends PostgreServerExtensionBase {
 
     public static final String TYPE_ID = "edb";
+    public static final String EDB_OBJECT_CLASS = "com.edb.util.PGobject";
 
     private Boolean isNspParentColumnExists;
 
@@ -94,7 +94,7 @@ public class PostgreServerEdb extends PostgreServerExtensionBase {
             return false;
         }
         String className = object.getClass().getName();
-        return className.equals(PostgreConstants.EDB_OBJECT_CLASS);
+        return className.equals(EDB_OBJECT_CLASS);
     }
 }
 
