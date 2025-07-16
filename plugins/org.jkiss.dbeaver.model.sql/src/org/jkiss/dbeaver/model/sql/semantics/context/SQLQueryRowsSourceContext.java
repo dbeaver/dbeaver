@@ -355,14 +355,16 @@ public class SQLQueryRowsSourceContext {
                     .distinct()
                     .collect(Collectors.toMap(s -> s.source, Function.identity()));
 
-            private final Set<DBSObject> referencedTables = rowsSources.values().stream().map(s -> s.tableOrNull)
+            private final Set<DBSObject> referencedTables = Stream.of(rowsSources.values(), sourcesByLoweredAlias.values())
+                .flatMap(Collection::stream)
+                .map(s -> s.tableOrNull)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-            private final Set<String> aliasesInUse = rowsSources.values().stream().map(s -> s.aliasOrNull)
-                .filter(Objects::nonNull)
-                .map(SQLQuerySymbol::getName)
-                .collect(Collectors.toSet());
+            private final Set<String> aliasesInUse = Stream.concat(
+                dynamicTableSources.keySet().stream(),
+                sourcesByLoweredAlias.keySet().stream()
+            ).map(String::toLowerCase).collect(Collectors.toSet());
 
             @NotNull
             @Override
