@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
@@ -253,16 +252,8 @@ public interface PostgreServerExtension {
      */
     boolean supportsNativeClient();
 
-
     /**
      * Determines if the provided object is a PostgreSQL-specific object (PGObject) like com.amazon.redshift.util.RedshiftObject.
      */
-    default boolean isPGObject(@Nullable Object object) {
-        if (object == null) {
-            return false;
-        }
-        String className = object.getClass().getName();
-        return className.equals(PostgreConstants.PG_OBJECT_CLASS);
-    }
-
+    boolean isPGObject(@Nullable Object object);
 }
