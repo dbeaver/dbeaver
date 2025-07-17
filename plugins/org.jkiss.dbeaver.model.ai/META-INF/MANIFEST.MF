@@ -11,6 +11,7 @@ Export-Package: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model.ai.engine.copilot,
  org.jkiss.dbeaver.model.ai.engine.copilot.dto,
  org.jkiss.dbeaver.model.ai.engine.openai,
+ org.jkiss.dbeaver.model.ai.engine.openai.dto,
  org.jkiss.dbeaver.model.ai.impl,
  org.jkiss.dbeaver.model.ai.internal,
  org.jkiss.dbeaver.model.ai.prompt,
@@ -24,7 +25,6 @@ Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
- org.jkiss.bundle.openai;visibility:=reexport,
  com.google.gson
 
 

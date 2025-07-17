@@ -69,11 +69,14 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     private final List<DBPDataSourceConfigurationStorage> storages = new ArrayList<>();
     private final Map<String, T> dataSources = new LinkedHashMap<>();
-    private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
     private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
     private final List<DBWNetworkProfile> networkProfiles = new ArrayList<>();
     private final Map<String, DBAAuthProfile> authProfiles = new LinkedHashMap<>();
+
+    private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
+    private final List<DBPEvent> dataSourceEvents = new ArrayList<>();
+    private final EventProcessJob eventsJob = new EventProcessJob();
     private volatile boolean saveInProgress = false;
 
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
@@ -722,26 +725,10 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     public void notifyDataSourceListeners(@NotNull final DBPEvent event) {
-        final List<DBPEventListener> listeners;
         synchronized (dataSourceListeners) {
-            if (dataSourceListeners.isEmpty()) {
-                return;
-            }
-            listeners = new ArrayList<>(dataSourceListeners);
+            dataSourceEvents.add(event);
         }
-        new Job("Notify datasource events") {
-            {
-                setSystem(true);
-            }
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                for (DBPEventListener listener : listeners) {
-                    listener.handleDataSourceEvent(event);
-                }
-                return Status.OK_STATUS;
-            }
-        }.schedule();
+        eventsJob.schedule(20);
     }
 
     @Nullable
@@ -1063,6 +1050,36 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     ) {
         return new DataSourceDescriptor(this, dbpDataSourceConfigurationStorage, origin, id, originalDriver,
             substitutedDriver, dbpConnectionConfiguration);
+    }
+
+    private class EventProcessJob extends Job {
+
+        public EventProcessJob() {
+            super("Notify datasource events");
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            final DBPEventListener[] listeners;
+            final DBPEvent[] events;
+            synchronized (dataSourceListeners) {
+                events = dataSourceEvents.toArray(new DBPEvent[0]);
+                dataSourceEvents.clear();
+
+                if (dataSourceListeners.isEmpty()) {
+                    return Status.OK_STATUS;
+                }
+                listeners = dataSourceListeners.toArray(new DBPEventListener[0]);
+            }
+
+            for (DBPEvent event : events) {
+                for (DBPEventListener listener : listeners) {
+                    listener.handleDataSourceEvent(event);
+                }
+            }
+            return Status.OK_STATUS;
+        }
     }
 
     private class DisconnectTask implements DBRRunnableWithProgress {
