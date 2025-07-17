@@ -1056,7 +1056,7 @@ public class PostgreUtils {
         return lastPos;
     }
 
-    public static boolean isPgObject(@NotNull DBPDataSource dataSource, @Nullable Object object) {
+    public static boolean isPgObject(@NotNull DBPDataSource dataSource, @NotNull Object object) {
         if (dataSource instanceof PostgreDataSource postgreDataSource) {
             return postgreDataSource.getServerType().isPGObject(object);
         }
