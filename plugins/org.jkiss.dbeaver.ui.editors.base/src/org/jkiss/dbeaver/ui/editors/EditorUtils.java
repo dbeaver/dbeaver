@@ -274,7 +274,7 @@ public class EditorUtils {
                         return null;
                     }
                     DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
-                    return projectMeta == null ? null : projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
+                    return projectMeta == null || !projectMeta.isRegistryLoaded() ? null : projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
 
                 } else {
                     return null;
@@ -328,7 +328,7 @@ public class EditorUtils {
         RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta != null) {
             Object dataSourceId = EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_DATASOURCE);
-            if (dataSourceId != null) {
+            if (dataSourceId != null && projectMeta.isRegistryLoaded()) {
                 DBPDataSourceContainer dataSource = projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
                 if (dataSource == null) {
                     log.debug("Datasource " + dataSourceId + " not found in project " + projectMeta.getName() + " (" + file.getFullPath().toString() + ")");
