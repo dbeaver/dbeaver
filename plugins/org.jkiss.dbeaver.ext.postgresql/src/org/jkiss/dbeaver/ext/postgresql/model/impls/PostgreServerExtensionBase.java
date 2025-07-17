@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
@@ -634,11 +633,8 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
-    public boolean isPGObject(@Nullable Object object) {
-        if (object == null) {
-            return false;
-        }
+    public boolean isPGObject(@NotNull Object object) {
         String className = object.getClass().getName();
-        return className.equals(PostgreConstants.PG_OBJECT_CLASS);
+        return PostgreConstants.PG_OBJECT_CLASS.equals(className);
     }
 }

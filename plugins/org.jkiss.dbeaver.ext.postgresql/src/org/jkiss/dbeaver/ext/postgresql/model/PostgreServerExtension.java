@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -255,5 +254,5 @@ public interface PostgreServerExtension {
     /**
      * Determines if the provided object is a PostgreSQL-specific object (PGObject) like com.amazon.redshift.util.RedshiftObject.
      */
-    boolean isPGObject(@Nullable Object object);
+    boolean isPGObject(@NotNull Object object);
 }

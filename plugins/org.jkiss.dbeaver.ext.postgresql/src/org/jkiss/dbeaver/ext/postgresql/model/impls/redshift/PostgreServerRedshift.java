@@ -495,12 +495,8 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         return false;
     }
 
-
     @Override
-    public boolean isPGObject(Object object) {
-        if (object == null) {
-            return false;
-        }
+    public boolean isPGObject(@NotNull Object object) {
         String className = object.getClass().getName();
         return className.equals(RS_OBJECT_CLASS);
     }

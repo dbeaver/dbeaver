@@ -89,12 +89,9 @@ public class PostgreServerEdb extends PostgreServerExtensionBase {
     }
 
     @Override
-    public  boolean isPGObject(Object object) {
-        if (object == null) {
-            return false;
-        }
+    public boolean isPGObject(@NotNull Object object) {
         String className = object.getClass().getName();
-        return className.equals(EDB_OBJECT_CLASS);
+        return EDB_OBJECT_CLASS.equals(className);
     }
 }
 
