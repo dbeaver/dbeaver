@@ -33,11 +33,15 @@ import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.commands.DisableSQLSyntaxParserHandler;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
@@ -58,6 +62,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * SQLEditor utils
@@ -627,6 +632,77 @@ public class SQLEditorUtils {
         return templateContextTypeId.equalsIgnoreCase(SQLContextTypeBase.ID_SQL) ||
             templateContextTypeId.equalsIgnoreCase(driverContextTypeId) ||
             templateContextTypeId.equalsIgnoreCase(providerContextTypeId);
+    }
+
+    private static class EditorConnector {
+
+        @NotNull
+        private final SQLEditorListener editorListener = new SQLEditorListenerDefault() {
+            @Override
+            public void onDataSourceChanged(DBPPreferenceListener.PreferenceChangeEvent event) {
+                EditorConnector.this.onMayByConnected();
+            }
+        };
+
+        @NotNull
+        private final SQLEditor editor;
+
+        private boolean isHandled = false;
+
+        @NotNull
+        private final Consumer<SQLEditor> onConnectedHandler;
+
+        public EditorConnector(
+            @NotNull SQLEditor editor,
+            @NotNull DBPDataSourceContainer container,
+            @NotNull Consumer<SQLEditor> onConnectedHandler
+        ) {
+            this.editor = editor;
+            this.onConnectedHandler = onConnectedHandler;
+
+            editor.setDataSourceContainer(container); // without this line checkConnected doesn't detect container info
+            editor.addListener(editorListener);
+        }
+
+        public void engage() {
+            boolean alreadyConnected = editor.checkConnected(true, status -> UIUtils.asyncExec(() -> {
+                if (status.isOK()) {
+                    this.onMayByConnected();
+                } else {
+                    log.warn("Failed to connect to the datasource. " + status.getMessage());
+                }
+            }));
+            if (alreadyConnected && !editor.isDisposed()) {
+                this.onMayByConnected();
+            }
+        }
+
+        private void onMayByConnected() {
+            UIUtils.asyncExec(() -> {
+                if (!this.isHandled) {
+                    DBCExecutionContext executionContext = this.editor.getExecutionContext();
+                    if (executionContext != null) {
+                        this.isHandled = true;
+                        this.editor.removeListener(editorListener);
+                        if (!this.editor.isDisposed()) {
+                            onConnectedHandler.accept(this.editor);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    public static boolean openSqlConsoleAndConnect(@NotNull DBPDataSourceContainer container, @NotNull Consumer<SQLEditor> onConnected) {
+        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+        if (serviceSQL != null) {
+            SQLEditor editor = (SQLEditor) serviceSQL.openSQLConsole(container, null, null, "Console", "");
+            EditorConnector connector = new EditorConnector(editor, container, onConnected);
+            connector.engage();
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

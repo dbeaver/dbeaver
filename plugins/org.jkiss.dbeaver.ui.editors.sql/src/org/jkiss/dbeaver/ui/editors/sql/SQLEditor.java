@@ -992,7 +992,7 @@ public class SQLEditor extends SQLEditorBase implements
                         serviceConnections.connectDataSource(
                             dataSourceContainer, status -> {
                                 // We must reload syntax to refresh context
-                                UIUtils.syncExec(this::reloadSyntaxRules);
+                                UIUtils.asyncExec(this::reloadSyntaxRules);
                                 if (onFinish != null) {
                                     onFinish.onTaskFinished(status);
                                 }
