@@ -26,10 +26,12 @@ import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotMessage;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModel;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.speech.TranscriptResult;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Flow;
 
@@ -135,6 +137,16 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
                 }
             }
         );
+    }
+
+    @Override
+    public boolean isSuportTranscription() {
+        return false;
+    }
+
+    @Override
+    public TranscriptResult createSpeechTranscription(Path audioFile) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

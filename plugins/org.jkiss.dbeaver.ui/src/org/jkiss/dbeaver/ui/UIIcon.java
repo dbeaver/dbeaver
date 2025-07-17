@@ -254,9 +254,6 @@ public class UIIcon {
     public static final DBIcon OPEN_EXTERNAL = new DBIcon("file/open_external.svg"); //$NON-NLS-1$
     public static final DBIcon SAVE_EXTERNAL = new DBIcon("file/save_external.svg"); //$NON-NLS-1$
 
-    public static final DBIcon MIC_OFF = new DBIcon("mic_off", "misc/AI_mic_off.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon MIC_ON = new DBIcon("mic_on", "misc/AI_mic_on.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-
     static  {
         DBIcon.loadIcons(UIIcon.class);
     }

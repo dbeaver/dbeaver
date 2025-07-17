@@ -28,9 +28,11 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionResult;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatMessage;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.speech.TranscriptResult;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Flow;
 
@@ -182,4 +184,16 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         return registry.getSettings().<LegacyAISettings<PROPS>> getEngineConfiguration(OpenAIConstants.OPENAI_ENGINE)
             .getProperties();
     }
+
+    @Override
+    public boolean isSuportTranscription() {
+        return false;
+    }
+
+    @Override
+    public TranscriptResult createSpeechTranscription(Path audioFile) throws DBException {
+        throw  new UnsupportedOperationException();
+    }
+
+
 }
