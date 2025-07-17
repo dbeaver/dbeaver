@@ -773,7 +773,7 @@ public abstract class SQLQueryCompletionContext {
 
                     @Override
                     public void visitRowsSourceRef(@NotNull SQLQuerySymbolOrigin.RowsSourceRef rowsSourceRef) {
-                        SQLQuerySourcesInfoCollection knownSources = rowsSourceRef.getRowsSourceContext().getKnownSources();
+                        SQLQuerySourcesInfoCollection knownSources = rowsSourceRef.getRowsSourceContext().getKnownSources(false);
                         setContextInfo(SQLQueryDataContextInfo.makeFor(rowsSourceRef.getRowsSourceContext()));
                         prepareTableCompletions(monitor, request, knownSources, filterOrNull, results);
                     }
@@ -1455,84 +1455,83 @@ public abstract class SQLQueryCompletionContext {
             return EMPTY_DATA_CONTEXT_INFO;
         }
 
-        static SQLQueryDataContextInfo makeFor(SQLQueryRowsSourceContext rowsSourceContext) {
-            return rowsSourceContext == null ? null : new SQLQueryDataContextInfo() {
-
-                @NotNull
-                @Override
-                public SQLQuerySourcesInfoCollection getKnownSources() {
-                    return rowsSourceContext.getKnownSources();
-                }
-
-                @NotNull
-                @Override
-                public List<SQLQueryResultColumn> getColumnsList() {
-                    return Collections.emptyList();
-                }
-
-                @Nullable
-                @Override
-                public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> tableName) {
-                    return resolveKnownSource(monitor, rowsSourceContext, tableName);
-                }
-
-                @Override
-                public boolean isJoin() {
-                    return false;
-                }
-
-                @NotNull
-                @Override
-                public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
-                    return Collections.emptyList();
-                }
-            };
+        static SQLQueryDataContextInfo makeFor(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
+            return new SQLQueryRowsSourceContextInfo(rowsSourceContext);
         }
 
-        static SQLQueryDataContextInfo makeFor(SQLQueryRowsDataContext rowsDataContext) {
-            return rowsDataContext == null ? null : new SQLQueryDataContextInfo() {
-
-                @NotNull
-                @Override
-                public SQLQuerySourcesInfoCollection getKnownSources() {
-                    return rowsDataContext.getRowsSources().getKnownSources();
-                }
-
-                @NotNull
-                @Override
-                public List<SQLQueryResultColumn> getColumnsList() {
-                    return rowsDataContext.getColumnsList();
-                }
-
-                @Nullable
-                @Override
-                public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> tableName) {
-                    return resolveKnownSource(monitor, rowsDataContext.getRowsSources(), tableName);
-                }
-
-                @Override
-                public boolean isJoin() {
-                    return rowsDataContext.getJoinInfo() != null;
-                }
-
-                @NotNull
-                @Override
-                public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
-                    return rowsDataContext.getJoinInfo().right().getColumnsList();
-                }
-            };
+        static SQLQueryDataContextInfo makeFor(@NotNull SQLQueryRowsDataContext rowsDataContext) {
+            return new SQLQueryRowsDataContextInfo(rowsDataContext);
         }
     }
 
-    @Nullable
-    private static SourceResolutionResult resolveKnownSource(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull SQLQueryRowsSourceContext rowsSourceContext,
-        @NotNull List<String> tableName
-    ) {
-        List<DBSEntity> tables = rowsSourceContext.getConnectionInfo().findRealTables(monitor, tableName);
-        return rowsSourceContext.getKnownSources().getResolutionResults().values()
-            .stream().filter(r -> tables.contains(r.tableOrNull)).findFirst().orElse(null);
+    private static class SQLQueryRowsSourceContextInfo implements SQLQueryDataContextInfo {
+        @NotNull
+        private final SQLQueryRowsSourceContext rowsSourceContext;
+        @NotNull
+        private final SQLQuerySourcesInfoCollection subquerySources;
+
+        public SQLQueryRowsSourceContextInfo(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
+            this.rowsSourceContext = rowsSourceContext;
+            this.subquerySources = rowsSourceContext.getKnownSources(true);
+        }
+
+        @NotNull
+        @Override
+        public SQLQuerySourcesInfoCollection getKnownSources() {
+            return this.subquerySources;
+        }
+
+        @NotNull
+        @Override
+        public List<SQLQueryResultColumn> getColumnsList() {
+            return Collections.emptyList();
+        }
+
+        @Nullable
+        @Override
+        public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> tableName) {
+            List<DBSEntity> tables = rowsSourceContext.getConnectionInfo().findRealTables(monitor, tableName);
+            return this.subquerySources.getResolutionResults().values()
+                .stream().filter(r -> tables.contains(r.tableOrNull)).findFirst().orElse(null);
+        }
+
+        @Override
+        public boolean isJoin() {
+            return false;
+        }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
+            return Collections.emptyList();
+        }
+    }
+
+    private static class SQLQueryRowsDataContextInfo extends SQLQueryRowsSourceContextInfo {
+        @NotNull
+        private final SQLQueryRowsDataContext rowsDataContext;
+
+        public SQLQueryRowsDataContextInfo(@NotNull SQLQueryRowsDataContext rowsDataContext) {
+            super(rowsDataContext.getRowsSources());
+            this.rowsDataContext = rowsDataContext;
+        }
+
+        @NotNull
+        @Override
+        public List<SQLQueryResultColumn> getColumnsList() {
+            return this.rowsDataContext.getColumnsList();
+        }
+
+        @Override
+        public boolean isJoin() {
+            return this.rowsDataContext.getJoinInfo() != null;
+        }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
+            return this.isJoin() ? this.rowsDataContext.getJoinInfo().right().getColumnsList() : Collections.emptyList();
+        }
     }
 
     private static final SQLQueryDataContextInfo EMPTY_DATA_CONTEXT_INFO = new SQLQueryDataContextInfo() {
