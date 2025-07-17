@@ -328,8 +328,9 @@ public class EditorUtils {
 
     @Nullable
     public static DBPDataSourceContainer getFileDataSource(IFile file) {
-
+        return getFileDataSource(file, true);
     }
+
     @Nullable
     public static DBPDataSourceContainer getFileDataSource(IFile file, boolean forceRegistryLoad) {
         if (!file.exists()) {
