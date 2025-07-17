@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
-public interface AIDdlGenerator {
-    String describeEntity(
+public interface AISchemaGenerator {
+    String generateSchema(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntity entity,
         @Nullable DBCExecutionContext ctx,

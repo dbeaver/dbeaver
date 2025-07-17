@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AIDdlGenerationOptions;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.registry.AIDdlGeneratorRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISchemaGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -48,9 +48,9 @@ public class AIDatabaseSnapshotService {
     private static final Log LOG = Log.getLog(AIDatabaseSnapshotService.class);
 
     @NotNull
-    private final AIDdlGeneratorRegistry generatorRegistry;
+    private final AISchemaGeneratorRegistry generatorRegistry;
 
-    public AIDatabaseSnapshotService(@NotNull AIDdlGeneratorRegistry generatorRegistry) {
+    public AIDatabaseSnapshotService(@NotNull AISchemaGeneratorRegistry generatorRegistry) {
         this.generatorRegistry = generatorRegistry;
     }
 
@@ -141,7 +141,7 @@ public class AIDatabaseSnapshotService {
 
         if (obj instanceof DBSEntity entity) {
             String ddl = generatorRegistry.getDdlGenerator()
-                .describeEntity(monitor, entity, execCtx, options, useFqn) + "\n\n";
+                .generateSchema(monitor, entity, execCtx, options, useFqn) + "\n\n";
             return out.append(ddl);
         }
 

@@ -26,10 +26,10 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIDdlGenerator;
+import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.impl.AIDdlGeneratorImpl;
-import org.jkiss.dbeaver.model.ai.registry.AIDdlGeneratorRegistry;
+import org.jkiss.dbeaver.model.ai.impl.AISchemaGeneratorImpl;
+import org.jkiss.dbeaver.model.ai.registry.AISchemaGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -47,17 +47,17 @@ public class AIPreferencePageConfiguration extends AbstractPrefPage implements I
     private static final Log log = Log.getLog(AIPreferencePageConfiguration.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai.config";
     private final AISettings settings;
-    private AIDdlGenerator ddlGenerator;
+    private AISchemaGenerator ddlGenerator;
 
-    private IObjectPropertyConfigurator<AIDdlGenerator, AISettings> formatterConfigurator;
+    private IObjectPropertyConfigurator<AISchemaGenerator, AISettings> formatterConfigurator;
 
     public AIPreferencePageConfiguration() {
         this.settings = AISettingsRegistry.getInstance().getSettings();
         try {
-            ddlGenerator = AIDdlGeneratorRegistry.getInstance().getDdlGenerator();
+            ddlGenerator = AISchemaGeneratorRegistry.getInstance().getDdlGenerator();
         } catch (DBException e) {
             log.error("Formatter not found", e);
-            ddlGenerator = new AIDdlGeneratorImpl();
+            ddlGenerator = new AISchemaGeneratorImpl();
         }
         UIPropertyConfiguratorDescriptor cfgDescriptor =
             UIPropertyConfiguratorRegistry.getInstance().getDescriptor(ddlGenerator.getClass().getName());

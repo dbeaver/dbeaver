@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIDdlGenerationOptions;
-import org.jkiss.dbeaver.model.ai.AIDdlGenerator;
+import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -33,10 +33,10 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import java.util.List;
 import java.util.StringJoiner;
 
-public class AIDdlGeneratorImpl implements AIDdlGenerator {
+public class AISchemaGeneratorImpl implements AISchemaGenerator {
 
     @Override
-    public String describeEntity(
+    public String generateSchema(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntity entity,
         @Nullable DBCExecutionContext ctx,

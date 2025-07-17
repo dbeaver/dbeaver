@@ -19,33 +19,33 @@ package org.jkiss.dbeaver.model.ai.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIDdlGenerator;
+import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
 /**
  * Registry for AI-based DDL generators.
  */
-public class AIDdlGeneratorRegistry
-    extends AbstractReplaceableRegistry<AIDdlGenerator,
-    AIDdlGeneratorRegistry.GeneratorDescriptorAbstract> {
+public class AISchemaGeneratorRegistry
+    extends AbstractReplaceableRegistry<AISchemaGenerator,
+    AISchemaGeneratorRegistry.GeneratorDescriptorAbstract> {
 
-    private static final AIDdlGeneratorRegistry INSTANCE =
-        new AIDdlGeneratorRegistry();
+    private static final AISchemaGeneratorRegistry INSTANCE =
+        new AISchemaGeneratorRegistry();
 
-    public static AIDdlGeneratorRegistry getInstance() {
+    public static AISchemaGeneratorRegistry getInstance() {
         return INSTANCE;
     }
 
-    private AIDdlGeneratorRegistry() {
+    private AISchemaGeneratorRegistry() {
         super(Platform.getExtensionRegistry(), "com.dbeaver.ai.ddl.generator", "generator");
     }
 
-    public AIDdlGenerator getDdlGenerator() throws DBException {
+    public AISchemaGenerator getDdlGenerator() throws DBException {
         return get("core");
     }
 
     public static class GeneratorDescriptorAbstract
-        extends AbstractReplaceableDescriptor<AIDdlGenerator> {
+        extends AbstractReplaceableDescriptor<AISchemaGenerator> {
 
         private final IConfigurationElement cfg;
 
@@ -55,9 +55,9 @@ public class AIDdlGeneratorRegistry
         }
 
         @Override
-        public AIDdlGenerator createInstance() throws DBException {
+        public AISchemaGenerator createInstance() throws DBException {
             return new ObjectType(cfg, RegistryConstants.ATTR_CLASS)
-                .createInstance(AIDdlGenerator.class);
+                .createInstance(AISchemaGenerator.class);
         }
     }
 

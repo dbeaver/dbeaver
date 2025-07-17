@@ -3,10 +3,10 @@
 <schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="com.dbeaver.ai.ddl.generator" id="com.dbeaver.ai.ddl.generator" name="AI DDL Generators"/>
+         <meta.schema plugin="com.dbeaver.ai.schema.generator" id="com.dbeaver.ai.schema.generator" name="AI Schema Generators"/>
       </appInfo>
       <documentation>
-         AI DDL Generators
+         AI Schema Generators
       </documentation>
    </annotation>
 
@@ -31,7 +31,7 @@
 
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIDdlGenerator"/>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AISchemaGenerator"/>
                </appInfo>
             </annotation>
          </attribute>

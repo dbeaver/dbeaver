@@ -36,8 +36,8 @@
         <formatter id="core" class="org.jkiss.dbeaver.model.ai.impl.AISqlFormatterImpl"/>
     </extension>
 
-    <extension point="com.dbeaver.ai.ddl.generator">
-        <generator id="core" class="org.jkiss.dbeaver.model.ai.impl.AIDdlGeneratorImpl"/>
+    <extension point="com.dbeaver.ai.schema.generator">
+        <generator id="core" class="org.jkiss.dbeaver.model.ai.impl.AISchemaGeneratorImpl"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">

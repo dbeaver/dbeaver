@@ -21,8 +21,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.registry.AIDdlGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISchemaGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISqlFormatterRegistry;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
@@ -45,7 +45,7 @@ public class AIAssistantImpl implements AIAssistant {
     protected final AISettingsRegistry settingsRegistry = AISettingsRegistry.getInstance();
     protected final AIEngineRegistry engineRegistry = AIEngineRegistry.getInstance();
     protected final AISqlFormatterRegistry formatterRegistry = AISqlFormatterRegistry.getInstance();
-    protected final AIDdlGeneratorRegistry generatorRegistry = AIDdlGeneratorRegistry.getInstance();
+    protected final AISchemaGeneratorRegistry generatorRegistry = AISchemaGeneratorRegistry.getInstance();
     protected final AIDatabaseSnapshotService metadataPromptService = new AIDatabaseSnapshotService(
         generatorRegistry
     );
