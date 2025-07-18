@@ -1204,6 +1204,7 @@ public class PostgreSchema implements
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @Nullable PostgreProcedure object, @Nullable String objectName) throws SQLException {
             PostgreServerExtension serverType = owner.getDataSource().getServerType();
             String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
+            String nameColumn = "proname";
             boolean versionAtLeast7 = session.getDataSource().isServerVersionAtLeast(7, 2);
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT p." + oidColumn + " as poid,p.*," +
@@ -1214,11 +1215,15 @@ public class PostgreSchema implements
                     (versionAtLeast7 ? " AND d.objsubid = 0" : "") + // no links to columns
                     "\nWHERE p.pronamespace=?" +
                     (object == null ? "" : " AND p." + oidColumn + "=?") +
+                    (object != null || objectName == null ? "" : " AND p." + nameColumn + "=?") +
                     "\nORDER BY p.proname"
             );
             dbStat.setLong(1, owner.getObjectId());
             if (object != null) {
                 dbStat.setLong(2, object.getObjectId());
+            }
+            if (object == null && objectName != null) {
+                dbStat.setString(2, objectName);
             }
             return dbStat;
         }

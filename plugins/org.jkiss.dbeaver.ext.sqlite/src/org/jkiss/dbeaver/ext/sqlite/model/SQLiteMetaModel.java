@@ -82,7 +82,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Override
     public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase object, @Nullable String objectName) throws SQLException {
-        if ( !(session.getDataSource() instanceof SQLiteDataSource dataSource) || ! dataSource.supportsStrictTyping()) {
+        if (!(session.getDataSource() instanceof SQLiteDataSource dataSource) || ! dataSource.supportsStrictTyping()) {
             return super.prepareTableLoadStatement(session, owner, object, objectName);
         }
 
@@ -340,5 +340,10 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
     @Override
     protected String getDefaultTypeName() {
         return "ANY"; //$NON-NLS-1$
+    }
+
+    @Override
+    public boolean hasProcedureSupport() {
+        return false;
     }
 }

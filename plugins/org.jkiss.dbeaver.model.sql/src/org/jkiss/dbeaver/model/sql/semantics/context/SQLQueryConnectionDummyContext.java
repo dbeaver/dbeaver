@@ -20,45 +20,25 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
-import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 
 import java.util.*;
 
-
-public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
-
-    private final SQLDialect dialect;
-
-    private final DummyDbObject dummyDataSource;
-    private final DummyDbObject defaultDummyCatalog;
-    private final DummyDbObject defaultDummySchema;
-    private final DummyDbObject defaultDummyTable;
-    private final Set<String> knownColumnNames;
-    private final Set<String> knownTableNames;
-    private final Set<String> knownSchemaNames;
-    private final Set<String> knownCatalogNames;
+public class SQLQueryConnectionDummyContext extends SQLQueryConnectionContext {
 
     @FunctionalInterface
     private interface DummyObjectCtor {
         DummyDbObject apply(DummyDbObject parent, String name, int index);
     }
-    
+
     public static boolean isDummyObject(@Nullable Object obj) {
         return obj instanceof DummyDbObject;
     }
-    
+
     private class DummyDbObject implements DBSEntityAttribute, DBSTable, DBSSchema, DBSCatalog, DBPDataSource, DBPImageProvider {
         private final DummyDbObject container;
         private final DBPImage image;
@@ -69,7 +49,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         private final DummyObjectCtor childCtor;
         private Map<String, DummyDbObject> childrenByName = null;
         private List<DummyDbObject> children = null;
-        
+
         public DummyDbObject(
             @NotNull DummyDbObject container,
             @NotNull DBPImage image,
@@ -87,7 +67,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             this.childrenNames = childrenNames;
             this.childCtor = childCtor;
         }
-        
+
         private Map<String, DummyDbObject> getChildrenMapImpl() {
             if (this.childrenByName == null) {
                 if (this.childCtor == null) {
@@ -123,7 +103,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         public DBPImage getObjectImage() {
             return this.image;
         }
-        
+
         @NotNull
         @Override
         public String getName() {
@@ -233,7 +213,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         @NotNull
         @Override
         public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-            if (this.container == defaultDummySchema || this.container == defaultDummyCatalog || this.container == dummyDataSource) {
+            if (this.container == dummyDataSource) {
                 return this.name;
             } else {
                 return DBUtils.getFullQualifiedName(getDataSource(), this.container, this);
@@ -274,7 +254,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
         @Override
         public void shutdown(@NotNull DBRProgressMonitor monitor) {
-            
+
         }
 
         @Override
@@ -288,7 +268,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
 
         @Override
-        public <T> void setContextAttribute(String attributeName, T attributeValue) {            
+        public <T> void setContextAttribute(String attributeName, T attributeValue) {
         }
 
         @Override
@@ -343,41 +323,32 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
         }
     }
 
-    public SQLQueryDummyDataSourceContext(
+    private final DummyDbObject dummyDataSource;
+
+    private final Set<String> knownColumnNames;
+    private final Set<String> knownTableNames;
+    private final Set<String> knownSchemaNames;
+    private final Set<String> knownCatalogNames;
+
+    public SQLQueryConnectionDummyContext(
         @NotNull SQLDialect dialect,
         @NotNull Set<String> knownColumnNames,
         @NotNull Set<List<String>> knownTableNames
     ) {
-        this.dialect = dialect;
+        super(dialect);
 
         this.knownColumnNames = knownColumnNames;
         this.knownTableNames = new HashSet<>();
         this.knownSchemaNames = new HashSet<>();
         this.knownCatalogNames = new HashSet<>();
-        
-        for (List<String> name : knownTableNames) {
-            this.knownTableNames.add(name.get(name.size() - 1));
-            if (name.size() > 1) {
-                this.knownSchemaNames.add(name.get(name.size() - 2));
-                if (name.size() > 2) {
-                    this.knownCatalogNames.add(name.get(name.size() - 3));
-                }
-            }
-        }
-        
-        if (this.knownCatalogNames.isEmpty()) {
-            this.knownCatalogNames.add("dummyCatalog");
-        }
-        if (this.knownSchemaNames.isEmpty()) {
-            this.knownSchemaNames.add("dummySchema");
-        }
-        
+
         this.dummyDataSource = this.prepareDataSource();
-        this.defaultDummyCatalog = this.dummyDataSource.getChildrenMapImpl().values().stream().findFirst().get();
-        this.defaultDummySchema = this.defaultDummyCatalog.getChildrenMapImpl().values().stream().findFirst().get();
-        this.defaultDummyTable = this.prepareTable(this.defaultDummySchema, "", -1);
+
+        for (List<String> tableName : knownTableNames) {
+            this.getOrPrepareDummyTable(tableName);
+        }
     }
-    
+
     private DummyDbObject prepareDataSource() {
         return new DummyDbObject(
             null,
@@ -389,7 +360,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             this::prepareCatalog
         );
     }
-    
+
     private DummyDbObject prepareCatalog(DummyDbObject parent, String name, int index) {
         return new DummyDbObject(
             parent,
@@ -401,7 +372,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             this::prepareSchema
         );
     }
-    
+
     private DummyDbObject prepareSchema(DummyDbObject parent, String name, int index) {
         return new DummyDbObject(
             parent,
@@ -413,7 +384,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             this::prepareTable
         );
     }
-    
+
     private DummyDbObject prepareTable(DummyDbObject parent, String name, int index) {
         return new DummyDbObject(
             parent,
@@ -425,7 +396,7 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
             this::prepareColumn
         );
     }
-    
+
     private DummyDbObject prepareColumn(DummyDbObject parent, String name, int index) {
         return new DummyDbObject(
             parent,
@@ -440,137 +411,55 @@ public class SQLQueryDummyDataSourceContext extends SQLQueryDataContext {
 
     @NotNull
     @Override
-    public List<SQLQueryResultColumn> getColumnsList() {
+    public List<SQLQueryResultPseudoColumn> obtainRowsetPseudoColumns(@Nullable SQLQueryRowsSourceModel rowsSource) {
         return Collections.emptyList();
     }
 
     @Override
-    public boolean hasUnresolvedSource() {
-        return false;
+    public boolean isDummy() {
+        return true;
     }
-
 
     @NotNull
     @Override
-    public List<SQLQueryResultPseudoColumn> getPseudoColumnsList() {
-        return Collections.emptyList();
+    public List<DBSEntity> findRealTables(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+        return List.of(this.getOrPrepareDummyTable(tableName));
     }
 
-    @Override
-    public DBSEntity findRealTable(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
+    @NotNull
+    private DBSEntity getOrPrepareDummyTable(@NotNull List<String> tableName) {
         List<String> rawTableName = tableName.stream().map(this.dialect::getUnquotedIdentifier).toList();
-        DummyDbObject catalog = rawTableName.size() > 2
-            ? this.dummyDataSource.getChildrenMapImpl().get(rawTableName.get(rawTableName.size() - 3)) : this.defaultDummyCatalog;
-        DummyDbObject schema = rawTableName.size() > 1
-            ? catalog.getChildrenMapImpl().get(rawTableName.get(rawTableName.size() - 2)) : this.defaultDummySchema;
-        return schema.getChildrenMapImpl().get(rawTableName.get(rawTableName.size() - 1));
-    }
-    
-    @Override
-    public SQLQueryRowsSourceModel findRealSource(@NotNull DBSEntity table) {
-        return null;
-    }
+        DummyDbObject container = this.dummyDataSource;
 
-    @Nullable
-    @Override
-    public DBSObject findRealObject(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSObjectType objectType,
-        @NotNull List<String> objectName
-    ) {
-        return objectType.isCompatibleWith(RelationalObjectType.TYPE_TABLE) || objectType.isCompatibleWith(RelationalObjectType.TYPE_VIEW)
-            ? this.findRealTable(monitor, objectName)
-            : null;
-    }
-
-    @Override
-    public SQLQueryResultColumn resolveColumn(@NotNull DBRProgressMonitor monitor, @NotNull String simpleName) {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryResultPseudoColumn resolvePseudoColumn(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
-        return null;
+        // create catalogs
+        for (int i = 0; i < rawTableName.size() - 2; i++) {
+            DummyDbObject catalog = container;
+            Map<String, DummyDbObject> children  = catalog.getChildrenMapImpl();
+            container = children.computeIfAbsent(rawTableName.get(i), k -> prepareCatalog(catalog, k, children.size()));
+        }
+        // create schema
+        if (rawTableName.size() > 1) {
+            DummyDbObject catalog = container;
+            Map<String, DummyDbObject> children  = catalog.getChildrenMapImpl();
+            container = children.computeIfAbsent(rawTableName.get(rawTableName.size() - 2), k -> prepareSchema(catalog, k, children.size()));
+        }
+        // create table
+        {
+            DummyDbObject schema = container;
+            Map<String, DummyDbObject> children  = schema.getChildrenMapImpl();
+            return children.computeIfAbsent(rawTableName.get(rawTableName.size() - 1), k -> prepareTable(schema, k, children.size()));
+        }
     }
 
     @NotNull
     @Override
-    public SQLDialect getDialect() {
-        return this.dialect;
+    protected List<? extends DBSObject> findRealObjectsImpl(@NotNull DBRProgressMonitor monitor, @NotNull List<String> objectName) {
+        return this.findRealTables(monitor, objectName);
     }
-    
+
+    @Nullable
     @Override
-    protected void collectKnownSourcesImpl(@NotNull KnownSourcesInfo result) {
-        // no sources have been referenced yet, so nothing to register
+    public SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(@NotNull String name) {
+        return null;
     }
-
-    @Override
-    protected List<SQLQueryResultPseudoColumn> prepareRowsetPseudoColumns(@NotNull SQLQueryRowsSourceModel source) {
-        return Collections.emptyList();
-    }
-
-    public class DummyTableRowsSource extends SQLQueryRowsTableDataModel {
-        
-        public DummyTableRowsSource(@NotNull STMTreeNode syntaxNode) {
-            super(syntaxNode, new SQLQueryQualifiedName(
-                syntaxNode, Collections.emptyList(), new SQLQuerySymbolEntry(syntaxNode, "DummyTable", "DummyTable", null), 0, null
-            ), false);
-        }
-
-        @NotNull
-        @Override
-        public SQLQuerySymbolClass getSymbolClass() {
-            return SQLQuerySymbolClass.TABLE;
-        }
-
-        @NotNull
-        @Override
-        protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-            try {
-                List<? extends DBSEntityAttribute> attributes = defaultDummyTable.getAttributes(statistics.getMonitor());
-                if (attributes != null) {
-                    context = context.overrideResultTuple(this, this.prepareResultColumnsList(
-                        this.getName().entityName, context, statistics, attributes
-                    ));
-                }
-            } catch (DBException ex) {
-                statistics.appendError(this.getName().entityName, "Failed to resolve table " + this.getName().toIdentifierString(), ex);
-            }
-            return context;
-        }
-
-        @Override
-        protected SQLQueryRowsDataContext resolveRowDataImpl(
-            @NotNull SQLQueryRowsDataContext context,
-            @NotNull SQLQueryRecognitionContext statistics
-        ) {
-            if (super.referencedSource != null) {
-                return this.referencedSource.getRowsDataContext();
-            } else {
-                try {
-                    var columnLists = this.prepareResultColumnsList(
-                        this.getName().entityName, context.getConnection().dialect, statistics,
-                        defaultDummyTable.getAttributes(statistics.getMonitor())
-                    );
-                    return this.getRowsSources().makeTuple(columnLists.getFirst(), columnLists.getSecond());
-                } catch (DBException ex) {
-                    statistics.appendError(this.getName().entityName, "Failed to resolve table " + this.getName().toIdentifierString(), ex);
-                    return this.getRowsSources().makeEmptyTuple();
-                }
-            }
-        }
-
-        @Override
-        protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T node) {
-            return visitor.visitDummyTableRowsSource(this, node);
-        }
-    }
-    
 }

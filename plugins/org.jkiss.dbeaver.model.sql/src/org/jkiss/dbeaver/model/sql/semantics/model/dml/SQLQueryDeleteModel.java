@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
@@ -83,14 +84,24 @@ public class SQLQueryDeleteModel extends SQLQueryDMLStatementModel {
     public SQLQueryRowsCorrelatedSourceModel getAliasedTableModel() {
         return this.aliasedTableModel;
     }
-    
+
     @Override
-    public void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+    protected void resolveRowsReferencesImpl(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.aliasedTableModel != null) {
-            context = this.aliasedTableModel.propagateContext(context, statistics);
+            context = this.aliasedTableModel.resolveRowSources(context, statistics);
         }
         if (this.whereClause != null) {
-            this.whereClause.propagateContext(context, statistics);
+            this.whereClause.resolveRowSources(context, statistics);
+        }
+    }
+
+    @Override
+    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        if (this.aliasedTableModel != null) {
+            this.aliasedTableModel.resolveValueRelations(context, statistics);
+        }
+        if (this.whereClause != null) {
+            this.whereClause.resolveValueRelations(context, statistics);
         }
     }
 
