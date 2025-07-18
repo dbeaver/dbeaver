@@ -129,7 +129,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
             symbols.setExponentSeparator(scientificExpSep);
             scientificFormat.setDecimalFormatSymbols(symbols);
         } catch (NullPointerException e) {
-            log.error("Can't set exponent separator '" + scientificExpSep + "' for scientific format", e);
+            log.error("Can't set exponent separator '" + scientificExpSep + "' for scientific format");
             symbols.setExponentSeparator("E");
             scientificFormat.setDecimalFormatSymbols(symbols);
         }
@@ -137,7 +137,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
         try {
             scientificFormat.applyPattern(scientificPattern);
         } catch (IllegalArgumentException|NullPointerException e) {
-            log.error("Can't set scientific format pattern '" + scientificPattern + "'", e);
+            log.error("Can't set scientific format pattern '" + scientificPattern + "'");
             scientificFormat.applyPattern("0.###E0");
         }
     }
