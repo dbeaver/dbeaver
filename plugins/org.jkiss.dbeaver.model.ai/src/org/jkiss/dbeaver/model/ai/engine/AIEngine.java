@@ -78,7 +78,7 @@ public interface AIEngine extends AISettingsEventListener {
 
     boolean isLoggingEnabled() throws DBException;
 
-    boolean isSuportTranscription();
+    boolean supportTranscription();
 
     @NotNull
     TranscriptResult createSpeechTranscription(@NotNull Path audioFile) throws DBException;

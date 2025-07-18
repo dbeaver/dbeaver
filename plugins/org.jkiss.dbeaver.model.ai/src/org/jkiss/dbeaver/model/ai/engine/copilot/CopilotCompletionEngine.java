@@ -140,7 +140,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     }
 
     @Override
-    public boolean isSuportTranscription() {
+    public boolean supportTranscription() {
         return false;
     }
 

@@ -186,7 +186,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
     }
 
     @Override
-    public boolean isSuportTranscription() {
+    public boolean supportTranscription() {
         return false;
     }
 

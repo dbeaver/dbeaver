@@ -16,8 +16,39 @@
  */
 package org.jkiss.dbeaver.model.ai.speech;
 
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+
+import java.io.IOException;
+import java.time.Duration;
+
 public record TranscriptResult(String text, Usage usage) {
 
-    public record Usage(String type, int seconds) { }
+    public record Usage(Duration duration) {}
 
+    public static class UsageAdapter extends TypeAdapter<Usage> {
+        @Override
+        public void write(JsonWriter out, Usage value) throws IOException {
+            out.beginObject();
+            out.name("seconds").value(value.duration().getSeconds());
+            out.endObject();
+        }
+
+        @Override
+        public Usage read(JsonReader in) throws IOException {
+            Duration duration = null;
+            in.beginObject();
+            while (in.hasNext()) {
+                String name = in.nextName();
+                if ("seconds".equals(name)) {
+                    duration = Duration.ofSeconds(in.nextLong());
+                } else {
+                    in.skipValue();
+                }
+            }
+            in.endObject();
+            return new Usage(duration);
+        }
+    }
 }
