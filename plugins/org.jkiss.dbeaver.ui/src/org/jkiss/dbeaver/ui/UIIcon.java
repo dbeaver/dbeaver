@@ -207,7 +207,6 @@ public class UIIcon {
     public static final DBIcon SQL_EXPLAIN_PLAN = new DBIcon("sql_explain", "sql/sql_plan.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_VALIDATE = new DBIcon("sql_validate", "sql/sql_validate.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_PREVIEW = new DBIcon("sql_preview", "sql/sql_preview.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SQL_TEXT = new DBIcon("sql_text", "sql/sql_text.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_VARIABLE = new DBIcon("sql_variable", "sql/variable.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_VARIABLE2 = new DBIcon("sql_variable2", "sql/variable2.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_PARAMETER = new DBIcon("sql_parameter", "sql/parameter.svg"); //$NON-NLS-1$ //$NON-NLS-2$

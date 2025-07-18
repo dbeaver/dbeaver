@@ -114,6 +114,11 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase {
         return proposalScore;
     }
 
+    @Override
+    public DBPImage getObjectImage() {
+        return image;
+    }
+
     @NotNull
     public SQLQueryCompletionProposalContext getProposalContext() {
         return this.proposalContext;
@@ -121,6 +126,11 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase {
 
     public String getDisplayString() {
         return CommonUtils.isNotEmpty(this.displayString) ? this.displayString : this.replacementString.replaceAll("[\r\n]", "");
+    }
+
+    @Override
+    public DBPKeywordType getProposalType() {
+        return null;
     }
 
     public String getAdditionalProposalInfo() {
