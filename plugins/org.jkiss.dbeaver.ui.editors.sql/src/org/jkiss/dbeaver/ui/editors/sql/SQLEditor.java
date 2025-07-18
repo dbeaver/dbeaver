@@ -1345,7 +1345,7 @@ public class SQLEditor extends SQLEditorBase implements
             public void setBackground(Color color) {
                 DBPDataSourceContainer dsContainer = getDataSourceContainer();
                 Color bgColor = dsContainer != null ? UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration()) : null;
-                if (bgColor != null && !bgColor.equals(color)) {
+                if (resultTabs != null && !resultTabs.isDisposed() && bgColor != null && !bgColor.equals(color)) {
                     UIUtils.asyncExec(() -> CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE));
                 } else {
                     super.setBackground(color);
