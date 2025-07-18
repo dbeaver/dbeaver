@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.tools.transfer.ui.IDataTransferEventProcessorConfigurat
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class EventProcessorComposite<T extends IDataTransferConsumerSettings> extends Composite {
@@ -47,7 +48,13 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
     private Link configureLink;
     private Map<String, Object> rawSettings;
 
-    public EventProcessorComposite(@NotNull Runnable propertyChangeListener, @NotNull Composite parent, @NotNull T settings, @NotNull DataTransferEventProcessorDescriptor descriptor, @Nullable IDataTransferEventProcessorConfigurator<T> configurator) {
+    public EventProcessorComposite(
+        @NotNull Runnable propertyChangeListener,
+        @NotNull Composite parent,
+        @NotNull T settings,
+        @NotNull DataTransferEventProcessorDescriptor descriptor,
+        @Nullable IDataTransferEventProcessorConfigurator<T> configurator
+    ) {
         super(parent, SWT.NONE);
         this.propertyChangeListener = propertyChangeListener;
         this.descriptor = descriptor;
@@ -71,10 +78,6 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
             configureLink = UIUtils.createLink(this, DTMessages.data_transfer_wizard_output_event_processor_configure, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    if (rawSettings != null) {
-                        configurator.loadSettings(rawSettings);
-                        rawSettings = null;
-                    }
                     final ConfigureDialog dialog = new ConfigureDialog(getShell());
                     if (dialog.open() == IDialogConstants.OK_ID) {
                         propertyChangeListener.run();
@@ -85,15 +88,12 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
     }
 
     public void loadSettings(@NotNull Map<String, Object> settings) {
-        if (isProcessorEnabled()) {
-            configurator.loadSettings(settings);
-        } else {
-            rawSettings = settings;
-        }
+        rawSettings = new LinkedHashMap<>(settings);
     }
 
     public void saveSettings(@NotNull Map<String, Object> settings) {
-        configurator.saveSettings(settings);
+        settings.clear();
+        settings.putAll(rawSettings);
     }
 
     public boolean isProcessorEnabled() {
@@ -148,6 +148,9 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
         protected Composite createDialogArea(Composite parent) {
             final Composite composite = super.createDialogArea(parent);
             configurator.createControl(composite, settings, this::updateCompletion);
+            if (rawSettings != null) {
+                configurator.loadSettings(rawSettings);
+            }
             return composite;
         }
 
@@ -162,6 +165,13 @@ public class EventProcessorComposite<T extends IDataTransferConsumerSettings> ex
             if (button != null) {
                 button.setEnabled(configurator.isComplete());
             }
+        }
+
+        @Override
+        protected void okPressed() {
+            rawSettings.clear();
+            configurator.saveSettings(rawSettings);
+            super.okPressed();
         }
     }
 }
