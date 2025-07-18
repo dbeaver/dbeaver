@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -696,6 +697,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     public void setLanguage(PostgreLanguage language) {
         this.languageId = language.getObjectId();
+    }
+
+    @Nullable
+    @Override
+    public DBSTypedObject getReturnType(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return this.returnType;
     }
 
     @Property(category = CAT_PROPS, viewable = true, order = 12)

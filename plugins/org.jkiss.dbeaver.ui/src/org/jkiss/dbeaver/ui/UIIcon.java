@@ -97,10 +97,10 @@ public class UIIcon {
     public static final DBIcon ARROW_RIGHT = new DBIcon("arrow_right", "misc/arrow_right.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_RIGHT_ALL = new DBIcon("arrow_right_all", "misc/arrow_right_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_RESET = new DBIcon("arrow_reset", "misc/arrow_reset.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SORT_INCREASE = new DBIcon("sort_increase", "misc/sort_increase.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SORT_DECREASE = new DBIcon("sort_decrease", "misc/sort_decrease.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SORT_UNKNOWN = new DBIcon("sort_unknown", "misc/sort_unknown.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SORT = new DBIcon("sort", "misc/sort.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT_INCREASE = new DBIcon("sort_increase", "misc/sort_increase.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT_DECREASE = new DBIcon("sort_decrease", "misc/sort_decrease.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT_UNKNOWN = new DBIcon("sort_unknown", "misc/sort_unknown.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT = new DBIcon("sort", "misc/sort.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SORT_CONFIG = new DBIcon("sort_config", "misc/sort_config.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon ALIGN_TO_LEFT = new DBIcon("align_to_left", "misc/align_to_left.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -207,7 +207,6 @@ public class UIIcon {
     public static final DBIcon SQL_EXPLAIN_PLAN = new DBIcon("sql_explain", "sql/sql_plan.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_VALIDATE = new DBIcon("sql_validate", "sql/sql_validate.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_PREVIEW = new DBIcon("sql_preview", "sql/sql_preview.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SQL_TEXT = new DBIcon("sql_text", "sql/sql_text.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_VARIABLE = new DBIcon("sql_variable", "sql/variable.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_VARIABLE2 = new DBIcon("sql_variable2", "sql/variable2.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_PARAMETER = new DBIcon("sql_parameter", "sql/parameter.svg"); //$NON-NLS-1$ //$NON-NLS-2$

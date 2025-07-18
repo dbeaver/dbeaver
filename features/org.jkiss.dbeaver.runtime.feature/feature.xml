@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.runtime.feature"
         label="DBeaver Runtime"
-        version="25.1.3.qualifier"
+        version="25.1.4.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.model">
 

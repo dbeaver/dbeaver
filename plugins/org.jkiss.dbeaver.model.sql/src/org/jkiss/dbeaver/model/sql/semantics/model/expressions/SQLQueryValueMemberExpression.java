@@ -20,16 +20,13 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 /**
@@ -59,6 +56,12 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
         this.memberAccessEntry = memberAccessEntry;
     }
 
+    @Nullable
+    @Override
+    public SQLQuerySymbolClass getAssociatedSymbolClass() {
+        return SQLQuerySemanticUtils.getIdentifierSymbolClass(this.identifier);
+    }
+
     @NotNull
     public SQLQueryValueExpression getMemberOwner() {
         return this.owner;
@@ -74,18 +77,13 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
     public SQLQuerySymbol getColumnNameIfTrivialExpression() {
         return this.identifier == null ? null : this.identifier.getSymbol();
     }
-    
-    @Override
-    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        this.owner.propagateContext(context, statistics);
-        this.resolveTypeImpl(statistics);
-    }
 
     @Override
     protected void resolveRowSourcesImpl(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.owner.resolveRowSources(context, statistics);
     }
 
+    @NotNull
     @Override
     protected SQLQueryExprType resolveValueTypeImpl(
         @NotNull SQLQueryRowsDataContext context,
@@ -101,56 +99,12 @@ public class SQLQueryValueMemberExpression extends SQLQueryValueExpression {
         if (this.identifier == null) {
             this.type = SQLQueryExprType.UNKNOWN;
             if (this.memberAccessEntry != null) {
-                if (this.owner instanceof SQLQueryValueColumnReferenceExpression c && c.getColumnName() != null
-                    && c.getColumnName().getDefinition() instanceof SQLQuerySymbolByDbObjectDefinition dbObj
-                ) {
-                    // TODO refactor column reference recognition to include this case
-                    this.memberAccessEntry.setOrigin(
-                        new SQLQuerySymbolOrigin.DbObjectFromDbObject(dbObj.getDbObject(),
-                            RelationalObjectType.TYPE_UNKNOWN)
-                    );
-                } else {
-                    this.memberAccessEntry.setOrigin(memberOrigin);
-                }
+                this.memberAccessEntry.setOrigin(memberOrigin);
             }
         } else if (this.identifier.isNotClassified()) {
-            SQLQueryExprType type = tryResolveMemberReference(statistics, this.owner.getValueType(), this.identifier, memberOrigin);
+            SQLQueryExprType type = SQLQuerySemanticUtils.tryResolveMemberReference(statistics, this.owner.getValueType(), this.identifier, memberOrigin);
             this.type = type != null ? type : SQLQueryExprType.UNKNOWN;
         }
-    }
-
-    @Nullable
-    public static SQLQueryExprType tryResolveMemberReference(
-        @NotNull SQLQueryRecognitionContext statistics,
-        @NotNull SQLQueryExprType valueType,
-        @NotNull SQLQuerySymbolEntry identifier,
-        @NotNull SQLQuerySymbolOrigin memberOrigin
-    ) {
-        identifier.setOrigin(memberOrigin);
-
-        SQLQueryExprType type;
-        try {
-            type = valueType.findNamedMemberType(statistics.getMonitor(), identifier.getName());
-
-            if (type != null) {
-                identifier.setDefinition(type.getDeclaratorDefinition());
-            } else {
-                identifier.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
-                statistics.appendError(
-                    identifier,
-                    "Failed to resolve member reference " + identifier.getName() + " for " + valueType.getDisplayName()
-                );
-            }
-        } catch (DBException e) {
-            log.debug(e);
-            statistics.appendError(
-                identifier,
-                "Failed to resolve member reference " + identifier.getName() + " for " + valueType.getDisplayName(),
-                e
-            );
-            type = null;
-        }
-        return type;
     }
 
     @Override

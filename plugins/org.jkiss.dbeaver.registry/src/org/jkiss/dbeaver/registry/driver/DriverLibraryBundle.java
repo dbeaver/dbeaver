@@ -30,6 +30,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 
@@ -93,12 +94,29 @@ public class DriverLibraryBundle extends DriverLibraryAbstract {
         if (bundle == null) {
             return null;
         }
+
         try {
             String location = bundle.getLocation();
             int divPos = location.indexOf("file:");
             if (divPos != -1) {
                 String installPath = location.substring(divPos + 5);
-                return RuntimeUtils.getLocalPathFromURL(Platform.getInstallLocation().getURL()).resolve(installPath);
+                Path localFilePath = RuntimeUtils.getLocalPathFromURL(Platform.getInstallLocation().getURL())
+                    .resolve(installPath);
+
+                if (Files.isRegularFile(localFilePath)) {
+                    return localFilePath;
+                } else if (Files.isDirectory(localFilePath)) {
+                    Path compiledClassesDir = localFilePath.resolve("target").resolve("classes");
+                    Path libraryDir = localFilePath.resolve("lib");
+
+                    if (Platform.inDevelopmentMode() && Files.exists(compiledClassesDir)) {
+                        return compiledClassesDir;
+                    } else if (Files.exists(libraryDir)) {
+                        return libraryDir;
+                    }
+                }
+
+                log.error("Bundle file not found: " + localFilePath);
             }
         } catch (Exception e) {
             log.debug(e);
@@ -143,5 +161,4 @@ public class DriverLibraryBundle extends DriverLibraryAbstract {
     public DBIcon getIcon() {
         return DBIcon.JAR;
     }
-
 }

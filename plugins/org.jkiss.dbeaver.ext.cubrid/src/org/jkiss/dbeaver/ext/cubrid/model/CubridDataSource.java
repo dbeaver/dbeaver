@@ -26,19 +26,29 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCExecutionResult;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
+import org.jkiss.dbeaver.model.exec.output.DBCServerOutputReader;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.CallableStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,6 +56,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -55,12 +66,14 @@ public class CubridDataSource extends GenericDataSource
     private final CubridPrivilageCache privilageCache;
     private final CubridServerCache serverCache;
     private boolean supportMultiSchema;
+    private boolean supportDbmsOutputPlCsql = false;
     private boolean isEOLVersion;
     private ArrayList<CubridCharset> charsets;
     private Map<String, CubridCollation> collations;
     private boolean isShard = false;
     private String shardType = "SHARD ID";
     private String shardVal = "0";
+    private CubridOutputReader outputReader = null;
 
     public CubridDataSource(
             @NotNull DBRProgressMonitor monitor,
@@ -71,6 +84,16 @@ public class CubridDataSource extends GenericDataSource
         this.metaModel = new CubridMetaModel();
         this.privilageCache = new CubridPrivilageCache();
         this.serverCache = new CubridServerCache();
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter == DBSStructureAssistant.class) {
+            return adapter.cast(new CubridStructureAssistant(this));
+        } else if (adapter == DBCServerOutputReader.class) {
+            return adapter.cast(outputReader);
+        }
+        return super.getAdapter(adapter);
     }
 
     @NotNull
@@ -223,7 +246,10 @@ public class CubridDataSource extends GenericDataSource
             loadCharsets(monitor);
             loadCollations(monitor);
         } else {
-            DBWorkbench.getPlatformUI().showMessageBox("Connected CUBRID Info", "The connected CUBRID is an EOL version. Limited features are available.", false);
+            DBWorkbench.getPlatformUI().showMessageBox(
+                "Connected CUBRID Info",
+                "The connected CUBRID is an EOL version. Limited features are available.",
+                false);
         }
         setTracking(monitor);
     }
@@ -235,6 +261,22 @@ public class CubridDataSource extends GenericDataSource
         serverCache.clearCache();
         privilageCache.clearCache();
         return this;
+    }
+
+    @Override
+    protected void initializeContextState(DBRProgressMonitor monitor,
+            JDBCExecutionContext context,
+            JDBCExecutionContext initFrom)
+            throws DBException {
+        super.initializeContextState(monitor, context, initFrom);
+
+        if (outputReader == null && checkSupportDbmsOutput(monitor, context)) {
+            outputReader = new CubridOutputReader();
+        }
+
+        if (outputReader != null) {
+            outputReader.enableDbmsOutput(monitor, context);
+        }
     }
 
     public boolean getSupportMultiSchema() {
@@ -325,9 +367,7 @@ public class CubridDataSource extends GenericDataSource
             }
         } catch (SQLException e) {
             throw new DBException("Can't set trace", e);
-
         }
-
     }
 
     public class CubridServerCache extends JDBCObjectCache<CubridDataSource, CubridServer> {
@@ -377,4 +417,99 @@ public class CubridDataSource extends GenericDataSource
         }
     }
 
+    public boolean isSupportEnableDbms() {
+        return getContainer().getPreferenceStore().getBoolean(CubridConstants.PREF_DBMS_OUTPUT);
+    }
+
+    public boolean isSupportDbmsOutputPlCsql() {
+        return supportDbmsOutputPlCsql;
+    }
+
+    private boolean checkSupportDbmsOutput(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext context)
+            throws DBException {
+
+        try (JDBCSession session =
+                (JDBCSession)
+                        context.openSession(
+                                monitor, DBCExecutionPurpose.UTIL, "Read Database Version")) {
+            readDatabaseServerVersion(session, session.getMetaData());
+        } catch (SQLException e) {
+            throw new DBException("Check Support DBMSOutput failed", e);
+        }
+
+        supportDbmsOutputPlCsql = isServerVersionAtLeast(11, 4);
+
+        return supportDbmsOutputPlCsql;
+    }
+
+    private class CubridOutputReader implements DBCServerOutputReader {
+        @Override
+        public boolean isServerOutputEnabled() {
+            return getContainer().getPreferenceStore().getBoolean(CubridConstants.PREF_DBMS_OUTPUT);
+        }
+
+        @Override
+        public boolean isAsyncOutputReadSupported() {
+            return false;
+        }
+
+        public void enableDbmsOutput(DBRProgressMonitor monitor, DBCExecutionContext context)
+                throws DBCException {
+            if (!isServerOutputEnabled()) {
+                return;
+            }
+
+            int bufferSize =
+                    getContainer()
+                            .getPreferenceStore()
+                            .getInt(CubridConstants.PREF_DBMS_OUTPUT_BUFFER_SIZE);
+
+            try (JDBCSession session =
+                    (JDBCSession)
+                            context.openSession(
+                                    monitor, DBCExecutionPurpose.UTIL, "Enable DBMS output")) {
+                CallableStatement cstmt = session.getOriginal().prepareCall("CALL dbms_output.enable(?)");
+                cstmt.setInt(1, bufferSize);
+                cstmt.execute();
+            } catch (SQLException e) {
+                throw new DBCException(e, context);
+            }
+        }
+
+        @Override
+        public void readServerOutput(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull DBCExecutionContext context,
+                @Nullable DBCExecutionResult executionResult,
+                @Nullable DBCStatement statement,
+                @NotNull DBCOutputWriter output)
+                throws DBCException {
+            try (JDBCSession session =
+                    (JDBCSession)
+                            context.openSession(
+                                    monitor, DBCExecutionPurpose.UTIL, "Read DBMS output")) {
+                try (CallableStatement cstmt =
+                        session.getOriginal().prepareCall("CALL dbms_output.get_line(?,?)")) {
+                    cstmt.registerOutParameter(1, java.sql.Types.VARCHAR);
+                    cstmt.registerOutParameter(2, java.sql.Types.INTEGER);
+
+                    String line;
+                    int status = 0;
+                    while (status == 0) {
+                        cstmt.execute();
+                        status = cstmt.getInt(2);
+                        if (status == 0) {
+                            line = cstmt.getString(1);
+                            output.println(null, line);
+                        }
+                    }
+
+                } catch (SQLException e) {
+                    throw new DBCException(e, context);
+                }
+            }
+        }
+    }
 }

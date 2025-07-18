@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext.DummyTableRowsSource;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
@@ -42,6 +41,12 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitValueFlatExpr(@NotNull SQLQueryValueFlattenedExpression flattenedExpr, T arg);
 
     /**
+     * Visit value expressions tree
+     */
+    @Nullable
+    R visitValueFunctionExpr(@NotNull SQLQueryValueFunctionExpression funcExpr, T arg);
+
+    /**
      * Visit script variable
      */
     @Nullable
@@ -58,6 +63,11 @@ public interface SQLQueryNodeModelVisitor<T, R> {
      */
     @Nullable
     R visitValueTupleRefExpr(@NotNull SQLQueryValueTupleReferenceExpression tupleRefExpr, T arg);
+
+    /**
+     * Visit column or its member reference
+     */
+    R visitValueReferenceExpr(@NotNull SQLQueryValueReferenceExpression valueRefExpr, T arg);
 
     /**
      * Visit a member access to the element of the composite type
@@ -108,6 +118,12 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitRowsTableValue(@NotNull SQLQueryRowsTableValueModel tableValue, T arg);
 
     /**
+     * Visit a rows-producing procedure call
+     */
+    @Nullable
+    R visitRowsTableProc(@NotNull SQLQueryRowsTableProcModel tableProc, T arg);
+
+    /**
      * Visit cross join clause
      */
     @Nullable
@@ -136,12 +152,6 @@ public interface SQLQueryNodeModelVisitor<T, R> {
      */
     @Nullable
     R visitRowsSetCorrespondingOp(@NotNull SQLQueryRowsSetCorrespondingOperationModel correspondingOp, T arg);
-
-    /**
-     * Visit table definition
-     */
-    @Nullable
-    R visitDummyTableRowsSource(@NotNull DummyTableRowsSource dummyTable, T arg);
 
     /**
      * Visit all columns of the table of a selection result

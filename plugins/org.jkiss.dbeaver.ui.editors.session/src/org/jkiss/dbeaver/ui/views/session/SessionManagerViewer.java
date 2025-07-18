@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -165,7 +165,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
                 CTabItem sqlViewItem = new CTabItem(previewFolder, SWT.NONE);
                 sqlViewItem.setText(SessionEditorMessages.viewer_view_item_sql);
-                sqlViewItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
+                sqlViewItem.setImage(DBeaverIcons.getImage(DBIcon.SQL_TEXT));
                 sqlViewItem.setControl(sqlViewer.getEditorControlWrapper());
 
                 previewFolder.setSelection(sqlViewItem);
