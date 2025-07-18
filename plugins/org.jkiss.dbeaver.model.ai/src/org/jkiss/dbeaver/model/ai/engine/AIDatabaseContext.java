@@ -72,7 +72,7 @@ public class AIDatabaseContext {
 
     public static class Builder {
         private DBSLogicalDataSource dataSource;
-        private AIDatabaseScope scope;
+        private AIDatabaseScope scope = AIDatabaseScope.CURRENT_SCHEMA;
         private List<DBSObject> customEntities;
         private DBCExecutionContext executionContext;
 
