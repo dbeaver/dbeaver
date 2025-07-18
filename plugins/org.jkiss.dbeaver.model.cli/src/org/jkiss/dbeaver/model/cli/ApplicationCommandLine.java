@@ -16,23 +16,21 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
+import org.apache.commons.cli.*;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class ApplicationCommandLine<T extends ApplicationInstanceController> {
@@ -56,6 +54,28 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             "Displays the app name, edition, and version in Major.Minor.Micro.Timestamp format"
         );
 
+    protected static final Map<String, CommandLineParameterDescriptor> customParameters = new LinkedHashMap<>();
+
+    static {
+        IExtensionRegistry er = Platform.getExtensionRegistry();
+        // Load datasource providers from external plugins
+        IConfigurationElement[] extElements = er.getConfigurationElementsFor(EXTENSION_ID);
+        for (IConfigurationElement ext : extElements) {
+            if ("parameter".equals(ext.getName())) {
+                try {
+                    CommandLineParameterDescriptor parameter = new CommandLineParameterDescriptor(ext);
+                    customParameters.put(parameter.getName(), parameter);
+                } catch (Exception e) {
+                    log.error("Can't load contributed parameter", e);
+                }
+            }
+        }
+
+        for (CommandLineParameterDescriptor param : customParameters.values()) {
+            ALL_OPTIONS.addOption(param.getName(), param.getLongName(), param.hasArg(), param.getDescription());
+        }
+    }
+
     protected ApplicationCommandLine() {
     }
 
@@ -68,6 +88,14 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
         }
 
+        for (CommandLineParameterDescriptor param : customParameters.values()) {
+            if (param.isExclusiveMode() && (commandLine.hasOption(param.getName()) || commandLine.hasOption(param.getLongName()))) {
+                if (param.isForceNewInstance()) {
+                    return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+                }
+                break;
+            }
+        }
         if (commandLine.hasOption(PARAM_HELP)) {
             HelpFormatter helpFormatter = new HelpFormatter();
             helpFormatter.setWidth(120);
@@ -105,8 +133,69 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
         }
 
+        handleCustomParameters(commandLine);
+
         return new CmdProcessResult(CmdProcessResult.PostAction.UNKNOWN_COMMAND);
     }
+
+    public CmdProcessResult handleCustomParameters(CommandLine commandLine) {
+        CmdProcessResult result = new CmdProcessResult(CmdProcessResult.PostAction.UNKNOWN_COMMAND);
+
+        if (commandLine == null) {
+            return result;
+        }
+
+        CommandLineContext context = new CommandLineContext();
+        List<CommandLineParameterDescriptor> initialParameters = new ArrayList<>();
+        List<CommandLineParameterDescriptor> parameters = new ArrayList<>();
+        for (Option cliOption : commandLine.getOptions()) {
+            CommandLineParameterDescriptor param = customParameters.get(cliOption.getOpt());
+            if (param == null) {
+                param = customParameters.get(cliOption.getLongOpt());
+            }
+            if (param == null) {
+                //log.error("Wrong command line parameter " + cliOption);
+                continue;
+            }
+            if (param.isContextInitializer()) {
+                initialParameters.add(param);
+            } else {
+                parameters.add(param);
+            }
+        }
+        List<CommandLineParameterDescriptor> allParameters = new ArrayList<>(initialParameters);
+        allParameters.addAll(parameters);
+
+        for (CommandLineParameterDescriptor param : allParameters) {
+            try {
+                if (param.hasArg()) {
+                    for (String optValue : commandLine.getOptionValues(param.getName())) {
+                        param.getHandler().handleParameter(
+                            commandLine,
+                            param.getName(),
+                            optValue,
+                            context
+                        );
+                    }
+                } else {
+                    param.getHandler().handleParameter(
+                        commandLine,
+                        param.getName(),
+                        null,
+                        context
+                    );
+                }
+            } catch (Exception e) {
+                log.error("Error evaluating parameter '" + param.getName() + "'", e);
+            }
+            if (param.isExitAfterExecute()) {
+                result = new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN);
+            }
+        }
+        
+        return result;
+    }
+
 
     @Nullable
     public CommandLine getCommandLine() {
