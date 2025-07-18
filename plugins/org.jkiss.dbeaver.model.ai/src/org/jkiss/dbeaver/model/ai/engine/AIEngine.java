@@ -20,10 +20,8 @@ package org.jkiss.dbeaver.model.ai.engine;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsEventListener;
-import org.jkiss.dbeaver.model.ai.speech.TranscriptResult;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.nio.file.Path;
 import java.util.concurrent.Flow;
 
 /**
@@ -77,9 +75,4 @@ public interface AIEngine extends AISettingsEventListener {
     boolean hasValidConfiguration() throws DBException;
 
     boolean isLoggingEnabled() throws DBException;
-
-    boolean supportTranscription();
-
-    @NotNull
-    TranscriptResult createSpeechTranscription(@NotNull Path audioFile) throws DBException;
 }

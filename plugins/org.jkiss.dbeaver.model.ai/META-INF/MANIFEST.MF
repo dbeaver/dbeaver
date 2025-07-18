@@ -16,7 +16,6 @@ Export-Package: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model.ai.internal,
  org.jkiss.dbeaver.model.ai.prompt,
  org.jkiss.dbeaver.model.ai.registry,
- org.jkiss.dbeaver.model.ai.speech,
  org.jkiss.dbeaver.model.ai.utils
 Bundle-Release-Date: 20250804
 Bundle-RequiredExecutionEnvironment: JavaSE-21
