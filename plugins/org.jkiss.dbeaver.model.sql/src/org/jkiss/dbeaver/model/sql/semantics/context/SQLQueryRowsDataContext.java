@@ -67,6 +67,7 @@ public class SQLQueryRowsDataContext {
         @NotNull List<SQLQueryResultPseudoColumn> pseudoColumns,
         @Nullable JoinInfo joinInfo
     ) {
+        rowsSources.registerConsumingContext(this);
         this.rowsSources = rowsSources;
         this.columns = columns;
         this.realSources = columns.stream().map(c -> c.realSource).filter(Objects::nonNull).collect(Collectors.toSet());
