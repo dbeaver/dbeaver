@@ -128,7 +128,7 @@ public class ScopeSelectorDialog extends BaseDialog {
         selectorPanel.checkNodes(selectedNodes, true);
         selectorPanel.setSelection(selectedNodes);
 
-        UIUtils.createInfoLabel(dialogArea, "Note: if your custom AI scope includes schemas/databases\nwhich differs from active schema in SQL editor\nthen final query may not work");
+        UIUtils.createInfoLabel(dialogArea, "Define database metadata to send to AI");
 
         return dialogArea;
     }
