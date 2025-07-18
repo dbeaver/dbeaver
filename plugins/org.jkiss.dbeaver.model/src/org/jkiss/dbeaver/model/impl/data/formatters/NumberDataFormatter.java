@@ -125,18 +125,13 @@ public class NumberDataFormatter implements DBDDataFormatter {
 
         DecimalFormatSymbols symbols = new DecimalFormatSymbols();
         scientificFormat = (DecimalFormat) numberFormat.clone();
-        try {
-            symbols.setExponentSeparator(scientificExpSep);
-            scientificFormat.setDecimalFormatSymbols(symbols);
-        } catch (NullPointerException e) {
-            log.error("Can't set exponent separator '" + scientificExpSep + "' for scientific format");
-            symbols.setExponentSeparator("E");
-            scientificFormat.setDecimalFormatSymbols(symbols);
-        }
+
+        symbols.setExponentSeparator(scientificExpSep);
+        scientificFormat.setDecimalFormatSymbols(symbols);
 
         try {
             scientificFormat.applyPattern(scientificPattern);
-        } catch (IllegalArgumentException|NullPointerException e) {
+        } catch (IllegalArgumentException e) {
             log.error("Can't set scientific format pattern '" + scientificPattern + "'");
             scientificFormat.applyPattern("0.###E0");
         }
