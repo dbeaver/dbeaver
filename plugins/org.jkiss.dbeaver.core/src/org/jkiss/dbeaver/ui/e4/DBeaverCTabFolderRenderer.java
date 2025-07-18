@@ -34,11 +34,11 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 
 import java.lang.reflect.Field;
 
-public final class DBeaverCTabFolderRenderer extends CTabRendering {
+public final class  DBeaverCTabFolderRenderer extends CTabRendering {
     private static final Log log = Log.getLog(DBeaverCTabFolderRenderer.class);
 
     private static final Rectangle EMPTY_CLOSE_RECT = new Rectangle(0, 0, 0, 0);
@@ -141,8 +141,9 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering {
 
     @Nullable
     private static Color getConnectionColor(@NotNull IEditorInput editorInput) {
-        if (editorInput instanceof IDatabaseEditorInput databaseEditorInput) {
-            return databaseEditorInput.getConnectionColor();
+        DBPDataSourceContainer container = EditorUtils.getInputDataSource(editorInput);
+        if (container != null) {
+            return UIUtils.getConnectionColor(container.getConnectionConfiguration());
         }
 
         return null;
