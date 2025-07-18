@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -88,12 +89,13 @@ public class ScopeSelectorDialog extends BaseDialog {
                     return false;
                 }
                 return DBSEntity.class.isAssignableFrom(childrenClass) ||
-                    DBSEntityContainer.class.isAssignableFrom(childrenClass);
+                    DBSEntityContainer.class.isAssignableFrom(childrenClass) ||
+                    DBSStructContainer.class.isAssignableFrom(childrenClass);
             }
 
             @Override
             protected boolean isDatabaseObjectVisible(DBSObject obj) {
-                return DBSEntity.class.isInstance(obj);
+                return obj instanceof DBSStructContainer || obj instanceof DBSEntityContainer || obj instanceof DBSEntity;
             }
 
         };
