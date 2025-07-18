@@ -18,13 +18,14 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryComplexName;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySemanticUtils;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.LinkedList;
@@ -37,38 +38,28 @@ public class SQLQuerySelectionResultTupleSpec extends SQLQuerySelectionResultSub
     private final SQLQueryValueTupleReferenceExpression tupleReference;
 
     public SQLQuerySelectionResultTupleSpec(
-        @NotNull SQLQuerySelectionResultModel resultModel,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryValueTupleReferenceExpression tupleReference
     ) {
-        super(resultModel, syntaxNode);
+        super(syntaxNode);
         this.tupleReference = tupleReference;
         this.registerSubnode(tupleReference);
     }
 
+    @Nullable
+    @Override
+    public SQLQuerySymbolClass getAssociatedSymbolClass() {
+        return SQLQuerySemanticUtils.getIdentifierSymbolClass(this.tupleReference.getTableName());
+    }
+
     @NotNull
-    public SQLQueryQualifiedName getTableName() {
+    public SQLQueryComplexName getTableName() {
         return this.tupleReference.getTableName();
     }
 
     @Nullable
     public SQLQueryRowsSourceModel getTupleSource() {
         return this.tupleReference.getTupleSource();
-    }
-
-    @Override
-    protected void collectColumns(
-            @NotNull SQLQueryDataContext context,
-            @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
-            @NotNull SQLQueryRecognitionContext statistics,
-            @NotNull LinkedList<SQLQueryResultColumn> resultColumns
-    ) {
-        this.tupleReference.propagateContext(context, statistics);
-
-        SQLQueryRowsSourceModel tupleSource = this.tupleReference.getTupleSource();
-        if (tupleSource != null) {
-            this.collectForeignColumns(tupleSource.getResultDataContext().getColumnsList(), rowsSourceModel, resultColumns);
-        }
     }
 
     @Override

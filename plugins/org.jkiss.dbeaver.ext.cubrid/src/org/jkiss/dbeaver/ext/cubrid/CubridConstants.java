@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.cubrid;
 public class CubridConstants
 {
     public static final String OWNER_NAME = "owner_name";
+    public static final String CLASS_NAME = "class_name";
     public static final String IS_SYSTEM_CLASS = "is_system_class";
     public static final String TERM_FUNCTION = "FUNCTION";
     public static final String TERM_PROCEDURE = "PROCEDURE";
@@ -39,4 +40,6 @@ public class CubridConstants
     public static final String STATISTIC_TRACE = "statistic_trace";
     public static final String STATISTIC_INFO = "statistic_info";
     public static final String STATISTIC_ALL_INFO = "statistic_all_info";
+    public static final String PREF_DBMS_OUTPUT = "pref.dbms.output";
+    public static final String PREF_DBMS_OUTPUT_BUFFER_SIZE = "pref.dbms.output.buffer.size";
 }

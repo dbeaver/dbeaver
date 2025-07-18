@@ -17,10 +17,10 @@
 package org.jkiss.dbeaver.model.sql.semantics.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
@@ -41,18 +41,6 @@ public class SQLCommandModel extends SQLQueryModelContent {
         @Override
         protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
             return visitor.visitCommandVariable(this, arg);
-        }
-
-        @Nullable
-        @Override
-        public SQLQueryDataContext getGivenDataContext() {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public SQLQueryDataContext getResultDataContext() {
-            return null;
         }
     }
 
@@ -82,24 +70,17 @@ public class SQLCommandModel extends SQLQueryModelContent {
     }
 
     @Override
-    protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
-        // do nothing
-    }
-
-    @Override
     protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, T arg) {
         return visitor.visitCommand(this, arg);
     }
 
-    @Nullable
     @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return null;
+    public void resolveObjectAndRowsReferences(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        // do nothing
     }
 
-    @Nullable
     @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return null;
+    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        // do nothing
     }
 }

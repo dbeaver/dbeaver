@@ -189,48 +189,6 @@
             </build>
         </profile>
 
-        <!-- Profile for jars sign -->
-        <profile>
-            <id>sign-code</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <!--
-                            Jar sign can be slow, especially if you need to sign hundreds of them.
-                            Performance hints:
-                                - Force SHA512withRSA algorithm (https://stackoverflow.com/questions/44003975/ev-code-signing-extremely-slow)
-                                - Install fast secure random generator (https://stackoverflow.com/questions/137212/how-to-deal-with-a-slow-securerandom-generator)
-                         -->
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jarsigner-plugin</artifactId>
-                        <version>3.0.0</version>
-                        <configuration>
-                            <keystore>${key.storage.path}/jar-sign.keystore</keystore>
-                            <tsa>${tsa}</tsa>
-                            <tsacert>dbeaver</tsacert>
-                            <storepass>dbeaver</storepass>
-                            <alias>dbeaver</alias>
-                            <keypass>dbeaver</keypass>
-                            <arguments>
-                                <argument>-sigalg</argument>
-                                <argument>SHA512withRSA</argument>
-                            </arguments>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>sign</id>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 
 </project>

@@ -16,10 +16,6 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
-import com.theokanning.openai.completion.chat.ChatCompletionChunk;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatCompletionResult;
-import com.theokanning.openai.completion.chat.ChatMessage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,6 +23,10 @@ import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.engine.*;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionResult;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatMessage;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -80,18 +80,16 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        Flow.Publisher<ChatCompletionChunk> publisher = openAiService.getInstance()
-            .createChatCompletionStream(monitor, ChatCompletionRequest.builder()
-                .messages(fromMessages(request.messages()))
-                .temperature(temperature())
-                .frequencyPenalty(0.0)
-                .presencePenalty(0.0)
-                .maxTokens(AIConstants.MAX_RESPONSE_TOKENS)
-                .n(1)
-                .model(model())
-                .stream(true)
-                .build()
-            );
+        ChatCompletionRequest ccr = new ChatCompletionRequest();
+        ccr.setMessages(fromMessages(request.messages()));
+        ccr.setTemperature(temperature());
+        ccr.setFrequencyPenalty(0.0);
+        ccr.setPresencePenalty(0.0);
+        ccr.setMaxTokens(AIConstants.MAX_RESPONSE_TOKENS);
+        ccr.setN(1);
+        ccr.setModel(model());
+        ccr.setStream(true);
+        Flow.Publisher<ChatCompletionChunk> publisher = openAiService.getInstance().createChatCompletionStream(monitor, ccr);
 
         return subscriber -> publisher.subscribe(new Flow.Subscriber<>() {
             @Override
@@ -136,15 +134,14 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         @NotNull DBRProgressMonitor monitor,
         @NotNull List<AIMessage> messages
     ) throws DBException {
-        ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()
-            .messages(fromMessages(messages))
-            .temperature(temperature())
-            .frequencyPenalty(0.0)
-            .presencePenalty(0.0)
-            .maxTokens(AIConstants.MAX_RESPONSE_TOKENS)
-            .n(1)
-            .model(model())
-            .build();
+        ChatCompletionRequest completionRequest = new ChatCompletionRequest();
+        completionRequest.setMessages(fromMessages(messages));
+        completionRequest.setTemperature(temperature());
+        completionRequest.setFrequencyPenalty(0.0);
+        completionRequest.setPresencePenalty(0.0);
+        completionRequest.setMaxTokens(AIConstants.MAX_RESPONSE_TOKENS);
+        completionRequest.setN(1);
+        completionRequest.setModel(model());
 
         return openAiService.getInstance().createChatCompletion(monitor, completionRequest);
     }

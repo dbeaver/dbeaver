@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,8 @@ public class SQLQueryRecognitionContext {
 
     private final boolean useRealMetadata;
 
+    private final boolean validateFunctions;
+
     @NotNull
     private final SQLSyntaxManager syntaxManager;
 
@@ -58,12 +60,14 @@ public class SQLQueryRecognitionContext {
         @NotNull DBRProgressMonitor monitor,
         @Nullable DBCExecutionContext executionContext,
         boolean useRealMetadata,
+        boolean validateFunctions,
         @NotNull SQLSyntaxManager syntaxManager,
         @NotNull SQLDialect dialect
     ) {
         this.monitor = monitor;
         this.executionContext = executionContext;
         this.useRealMetadata = useRealMetadata;
+        this.validateFunctions = validateFunctions;
         this.syntaxManager = syntaxManager;
         this.dialect = dialect;
     }
@@ -88,6 +92,10 @@ public class SQLQueryRecognitionContext {
 
     public boolean useRealMetadata() {
         return this.useRealMetadata;
+    }
+
+    public boolean validateFunctions() {
+        return this.validateFunctions;
     }
 
     @NotNull

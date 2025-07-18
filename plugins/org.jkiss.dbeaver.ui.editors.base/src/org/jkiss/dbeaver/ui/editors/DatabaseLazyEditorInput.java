@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.NotNull;
@@ -67,6 +70,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
     private final String nodeName;
     private final String activePageId;
     private final String activeFolderId;
+    private final Color connectionColor;
     private final String dataSourceId;
     private final String inputClass;
     private final boolean canLoadImmediately;
@@ -89,6 +93,13 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         activePageId = memento.getString(DatabaseEditorInputFactory.TAG_ACTIVE_PAGE);
         activeFolderId = memento.getString(DatabaseEditorInputFactory.TAG_ACTIVE_FOLDER);
 
+        RGB connectionColorRgb = StringConverter.asRGB(memento.getString(DatabaseEditorInputFactory.TAG_CONNECTION_COLOR), null);
+        if (connectionColorRgb != null) {
+            connectionColor = new Color(connectionColorRgb);
+        } else {
+            connectionColor = null;
+        }
+
         if (nodeName == null && nodePath != null) {
             int divPos = nodePath.lastIndexOf('/');
             nodeName = divPos == -1 ? nodePath : nodePath.substring(divPos + 1);
@@ -98,11 +109,12 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         this.canLoadImmediately = true;
     }
 
-    public DatabaseLazyEditorInput(
+    DatabaseLazyEditorInput(
         String nodePath,
         String nodeName,
         String activePageId,
         String activeFolderId,
+        @Nullable Color connectionColor,
         String dataSourceId,
         String inputClass,
         @Nullable DBPProject project,
@@ -113,6 +125,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         this.nodeName = nodeName;
         this.activePageId = activePageId;
         this.activeFolderId = activeFolderId;
+        this.connectionColor = connectionColor;
         this.dataSourceId = dataSourceId;
         this.inputClass = inputClass;
         this.project = project;
@@ -190,6 +203,12 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
     public String getDefaultFolderId()
     {
         return activeFolderId;
+    }
+
+    @Nullable
+    @Override
+    public Color getConnectionColor() {
+        return connectionColor;
     }
 
     @Nullable
@@ -349,6 +368,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
             nodeName,
             activePageId,
             activeFolderId,
+            connectionColor,
             dataSourceId,
             inputClass,
             project,
@@ -375,6 +395,9 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         if (!CommonUtils.isEmpty(nodeName)) memento.putString(DatabaseEditorInputFactory.TAG_NODE_NAME, nodeName);
         if (!CommonUtils.isEmpty(activePageId)) memento.putString(DatabaseEditorInputFactory.TAG_ACTIVE_PAGE, activePageId);
         if (!CommonUtils.isEmpty(activeFolderId)) memento.putString(DatabaseEditorInputFactory.TAG_ACTIVE_FOLDER, activeFolderId);
+        if (connectionColor != null) {
+            memento.putString(DatabaseEditorInputFactory.TAG_CONNECTION_COLOR, StringConverter.asString(connectionColor.getRGB()));
+        }
     }
 
     @Nullable

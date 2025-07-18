@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,11 @@ public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
 
     @Override
     public Object start(IApplicationContext context) {
-        DBPApplication application = DBWorkbench.getPlatform().getApplication();
-        if (RuntimeUtils.isWindows() && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)) {
+        DBPPlatform platform = DBWorkbench.getPlatform();
+        DBPApplication application = platform.getApplication();
+        if (RuntimeUtils.isWindows()
+            && platform.getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
+        ) {
             System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
         }
         System.out.println("Starting headless test application " + application.getClass().getName());

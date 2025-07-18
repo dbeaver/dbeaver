@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColumnReferenceExpression;
@@ -36,7 +37,7 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
     @Nullable
     private final SQLQueryTableConstraintSpec tableConstraintSpec;
     @Nullable
-    private final SQLQueryQualifiedName tableConstraintName;
+    private final SQLQueryComplexName tableConstraintName;
 
     protected SQLQueryTableAlterActionSpec(
         @NotNull STMTreeNode syntaxNode,
@@ -44,7 +45,7 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
         @Nullable SQLQueryColumnSpec columnSpec,
         @Nullable SQLQuerySymbolEntry columnName,
         @Nullable SQLQueryTableConstraintSpec tableConstraintSpec,
-        @Nullable SQLQueryQualifiedName tableConstraintName
+        @Nullable SQLQueryComplexName tableConstraintName
     ) {
         super(syntaxNode.getRealInterval(), syntaxNode, columnSpec, tableConstraintSpec);
         this.actionKind = actionKind;
@@ -72,12 +73,12 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
     /**
      * Propagate semantics context and establish relations through the query model
      */
-    public void propagateContext(
-        @NotNull SQLQueryDataContext dataContext,
-        @Nullable SQLQueryDataContext tableContext,
+    public void resolveRelations(
+        @NotNull SQLQueryRowsSourceContext dataContext,
+        @Nullable SQLQueryRowsDataContext tableContext,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        SQLQuerySymbolOrigin columnRefOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(tableContext);
+        SQLQuerySymbolOrigin columnRefOrigin = tableContext == null ? null : new SQLQuerySymbolOrigin.ColumnNameFromRowsData(tableContext);
 
         if (this.columnSpec != null) {
             SQLQuerySymbolEntry columnRef = columnSpec.getColumnName();
@@ -86,7 +87,7 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
                 if (columnRef.isNotClassified()) {
                     if (tableContext != null) {
                         SQLQueryResultColumn rc = tableContext.resolveColumn(statistics.getMonitor(), columnName.getName());
-                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics, columnRefOrigin);
+                        SQLQuerySemanticUtils.propagateColumnDefinition(columnRef, rc, statistics, columnRefOrigin);
                     } else {
                         columnName.setDefinition(columnRef);
                         columnName.setSymbolClass(SQLQuerySymbolClass.COLUMN);
@@ -94,19 +95,19 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
                     }
                 }
 
-                this.columnSpec.propagateContext(dataContext, tableContext, statistics);
+                this.columnSpec.resolveRelations(dataContext, tableContext, statistics);
             }
         }
 
         if (this.columnName != null && this.columnName.isNotClassified()) {
             if (tableContext != null) {
-                SQLQueryResultColumn rc = tableContext.resolveColumn(statistics.getMonitor(), columnName.getName());
+                SQLQueryResultColumn rc = tableContext.resolveColumn(statistics.getMonitor(), this.columnName.getName());
                 if (rc != null) {
-                    SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(this.columnName, rc, statistics, columnRefOrigin);
+                    SQLQuerySemanticUtils.propagateColumnDefinition(this.columnName, rc, statistics, columnRefOrigin);
                 } else {
-                    columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
-                    columnName.setOrigin(columnRefOrigin);
-                    statistics.appendWarning(columnName, "Column " + columnName.getName() + " not found");
+                    this.columnName.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
+                    this.columnName.setOrigin(columnRefOrigin);
+                    statistics.appendWarning(this.columnName, "Column " + this.columnName.getName() + " not found");
                 }
             } else {
                 // a message that the table doesn't exist will appear, so no need additional warning here, I assume
@@ -115,24 +116,12 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
         }
 
         if (this.tableConstraintSpec != null) {
-            this.tableConstraintSpec.propagateContext(dataContext, tableContext, statistics);
+            this.tableConstraintSpec.resolveRelations(dataContext, tableContext, statistics);
         }
 
         if (this.tableConstraintName != null) {
             // TODO validate if constraint is missing and produce a warning
         }
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return null;
     }
 
     @Override

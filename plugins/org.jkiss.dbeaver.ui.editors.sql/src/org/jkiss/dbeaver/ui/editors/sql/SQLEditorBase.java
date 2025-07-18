@@ -266,12 +266,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         return this.getActivePreferenceStore().getBoolean(SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE);
     }
 
-    public boolean isReadMetadataForQueryAnalysisEnabled() {
-        DBPPreferenceStore prefStore = this.getActivePreferenceStore();
-        return prefStore.getBoolean(SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS)
-            && !prefStore.getBoolean(ModelPreferences.META_DISABLE_EXTRA_READ);
-    }
-
     private void handleInputChange(IEditorInput input) {
         occurrencesHighlighter.updateInput(input);
     }

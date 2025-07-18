@@ -98,7 +98,7 @@ public class AIDatabaseContext {
             return this;
         }
 
-        @NotNull
+        @Nullable
         public AIDatabaseContext build() {
             Assert.isLegal(
                 scope != null,
@@ -108,10 +108,9 @@ public class AIDatabaseContext {
                 scope != AIDatabaseScope.CUSTOM || customEntities != null,
                 "Custom entities must be specified when using custom scope"
             );
-            Assert.isLegal(
-                executionContext != null,
-                "Execution context must be specified"
-            );
+            if (executionContext == null) {
+                return null;
+            }
             DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
             if (dataSource.getCurrentCatalog() == null && contextDefaults != null) {
                 DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();

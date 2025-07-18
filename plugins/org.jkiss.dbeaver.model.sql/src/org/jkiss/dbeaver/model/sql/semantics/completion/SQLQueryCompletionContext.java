@@ -48,7 +48,6 @@ import org.jkiss.dbeaver.model.stm.STMTreeTermErrorNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
@@ -243,22 +242,10 @@ public abstract class SQLQueryCompletionContext {
     ) {
         return new SQLQueryCompletionContext(scriptItem.offset, requestOffset) {
             private final Set<DBSObjectContainer> exposedContexts = SQLQueryCompletionContext.obtainExposedContexts(dbcExecutionContext);
-            private final Map<String, Boolean> columnNameConflicts = (
-                // use data context from symbols origin if presented (correctly derived from tail lexical scope when provided by the model)
-                // first try handle it from the new resolution logic, then try from the old one,
-                // otherwise, try context provided by the deepest model node (legacy and may be incorrect sometimes)
-                context.symbolsOrigin() instanceof SQLQuerySymbolOrigin.RowsDataRef rd
-                ? rd.getRowsDataContext().getColumnsList() : (
-                    context.symbolsOrigin() instanceof SQLQuerySymbolOrigin.DataContextSymbolOrigin o && !o.isChained()
-                    ? CommonUtils.notNull(o.getDataContext(), scriptItem.item.getQueryModel().getGivenDataContext())
-                    : context.deepestContext()
-                ).getColumnsList()
-            ).stream()
-                .collect(Collectors.groupingBy(c -> c.symbol.getName())).entrySet().stream()
-                .collect(Collectors.toMap(kv -> kv.getKey(), kv -> kv.getValue().size() > 1));
+            private Map<String, Boolean> columnNameConflicts = null;
 
-            private SQLQueryDataContextInfo nearestContext = SQLQueryDataContextInfo.makeFor(context.nearestResultContext());
-            private SQLQueryDataContextInfo deepestContext = SQLQueryDataContextInfo.makeFor(context.deepestContext());
+            private SQLQueryDataContextInfo nearestContext = SQLQueryDataContextInfo.empty();
+            private SQLQueryDataContextInfo deepestContext = SQLQueryDataContextInfo.empty();
 
             private void setContextInfo(SQLQueryDataContextInfo contextInfo) {
                 this.nearestContext = contextInfo;
@@ -575,9 +562,7 @@ public abstract class SQLQueryCompletionContext {
                     }
 
                     if (sourceAliasMatch || sourceFullnameMatch) {
-
-                        for (SQLQueryResultColumn c : rr.source.isResolved() ? rr.source.getRowsDataContext().getColumnsList()
-                                                                             : rr.source.getResultDataContext().getColumnsList()) {
+                        for (SQLQueryResultColumn c : rr.source.getRowsDataContext().getColumnsList()) {
                             SQLQueryWordEntry key = makeFilterInfo(tail, c.symbol.getName());
                             int nameScore = key.matches(tail, this.searchInsideWords);
                             if (nameScore > 0) {
@@ -674,80 +659,7 @@ public abstract class SQLQueryCompletionContext {
                 List<SQLQueryWordEntry> parts,
                 @NotNull List<SQLQueryCompletionSet> results
             ) {
-                if (lexicalItem instanceof SQLQueryQualifiedName qname) {
-                    Interval pos = Interval.of(position - 1, position - 1);
-                    Interval nameRange;
-                    Interval schemaRange;
-                    Interval catalogRange;
-                    // TODO consider deeper hierarchy
-                    SQLQuerySymbolEntry schemaName = qname.scopeName.size() <= 0 ? null : qname.scopeName.get(qname.scopeName.size() - 1);
-                    SQLQuerySymbolEntry catalogName = qname.scopeName.size() <= 1 ? null : qname.scopeName.get(qname.scopeName.size() - 2);
-
-                    if ((nameRange = qname.entityName.getSyntaxNode().getRealInterval()).properlyContains(pos)) {
-                        SQLQueryWordEntry part = new SQLQueryWordEntry(
-                            qname.entityName.getInterval().a,
-                            qname.entityName.getRawName().substring(0, position - nameRange.a)
-                        );
-                        if (schemaName != null) {
-                            SQLQuerySymbolDefinition scopeDef = this.unrollSymbolDefinition(schemaName.getDefinition());
-                            if (scopeDef instanceof SQLQuerySymbolByDbObjectDefinition byObjDef) {
-                                this.prepareObjectComponentCompletions(
-                                    monitor,
-                                    byObjDef.getDbObject(),
-                                    part,
-                                    List.of(DBSEntity.class),
-                                    results
-                                );
-                            } else {
-                                // schema was not resolved, so cannot accomplish its subitems
-                            }
-                        } else {
-                            this.prepareInspectedIdentifierCompletions(monitor, request, List.of(part), results);
-                        }
-                    } else if (schemaName != null && (schemaRange = schemaName.getSyntaxNode().getRealInterval()).properlyContains(pos)) {
-                        SQLQueryWordEntry part = new SQLQueryWordEntry(
-                            schemaName.getInterval().a,
-                            schemaName.getRawName().substring(0, position - schemaRange.a)
-                        );
-                        if (catalogName != null) {
-                            SQLQuerySymbolDefinition scopeDef = this.unrollSymbolDefinition(schemaName.getDefinition());
-                            if (scopeDef instanceof SQLQuerySymbolByDbObjectDefinition byObjDef) {
-                                this.prepareObjectComponentCompletions(
-                                    monitor,
-                                    byObjDef.getDbObject(),
-                                    part,
-                                    List.of(DBSSchema.class),
-                                    results
-                                );
-                            } else {
-                                // catalog was not resolved, so cannot accomplish schema
-                            }
-                        } else {
-                            this.prepareObjectComponentCompletions(
-                                monitor,
-                                dbcExecutionContext.getDataSource(),
-                                part,
-                                List.of(DBSSchema.class),
-                                results
-                            );
-                        }
-                    } else if (dbcExecutionContext != null && catalogName != null && (catalogRange = catalogName.getSyntaxNode()
-                        .getRealInterval()).properlyContains(pos)) {
-                        SQLQueryWordEntry part = new SQLQueryWordEntry(
-                            catalogName.getInterval().a,
-                            catalogName.getRawName().substring(0, position - catalogRange.a)
-                        );
-                        this.prepareObjectComponentCompletions(
-                            monitor,
-                            dbcExecutionContext.getDataSource(),
-                            part,
-                            List.of(DBSCatalog.class),
-                            results
-                        );
-                    } else {
-                        throw new UnsupportedOperationException("Illegal SQLQueryQualifiedName");
-                    }
-                } else if (lexicalItem instanceof SQLQueryTupleRefEntry tupleRef) {
+                if (lexicalItem instanceof SQLQueryTupleRefEntry tupleRef) {
                     this.accomplishFromKnownOriginOrFallback(monitor, request, tupleRef.getOrigin(), null, parts, results);
                 } else if (lexicalItem instanceof SQLQueryMemberAccessEntry entry) {
                     this.accomplishFromKnownOriginOrFallback(monitor, request, entry.getOrigin(), null, parts, results);
@@ -821,16 +733,19 @@ public abstract class SQLQueryCompletionContext {
                     }
 
                     @Override
-                    public void visitDbObjectFromContext(SQLQuerySymbolOrigin.DbObjectFromContext origin) {
+                    public void visitDbObjectRef(SQLQuerySymbolOrigin.DbObjectRef origin) {
+                        SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getRowsSourceContext());
+                        setContextInfo(contextInfo);
+
                         if (origin.isIncludingRowsets()) {
-                            prepareTableCompletions(monitor, request, origin.getDataContext().getKnownSources(), filterOrNull, results);
+                            prepareTableCompletions(monitor, request, contextInfo.getKnownSources(), filterOrNull, results);
                         } else {
                             Collection<DBSObjectContainer> container = obtainDefaultContext(monitor, request);
                             if (container != null) {
                                 prepareObjectCompletions(
                                     monitor,
                                     request,
-                                    origin.getDataContext().getKnownSources(),
+                                    contextInfo.getKnownSources(),
                                     container,
                                     null,
                                     origin.getObjectTypes(),
@@ -843,30 +758,9 @@ public abstract class SQLQueryCompletionContext {
                     }
 
                     @Override
-                    public void visitRowsetRefFromContext(SQLQuerySymbolOrigin.RowsetRefFromContext origin) {
-                        prepareTableCompletions(monitor, request, origin.getDataContext().getKnownSources(), filterOrNull, results);
-                    }
-
-                    @Override
-                    public void visitValueRefFromContext(SQLQuerySymbolOrigin.ValueRefFromContext origin) {
-                        SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getDataContext());
-                        prepareNonPrefixedColumnCompletions(monitor, request, contextInfo, filterOrNull, results);
-                    }
-
-                    @Override
                     public void visitColumnRefFromReferencedContext(SQLQuerySymbolOrigin.ColumnRefFromReferencedContext origin) {
-                        SQLQueryDataContext referencedContext = origin.getRowsSource().source.getResultDataContext();
                         makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(
-                            SQLQueryDataContextInfo.makeFor(referencedContext),
-                            filterOrNull,
-                            false
-                        ), results);
-                    }
-
-                    @Override
-                    public void visitColumnNameFromContext(SQLQuerySymbolOrigin.ColumnNameFromContext origin) {
-                        makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(
-                            SQLQueryDataContextInfo.makeFor(origin.getDataContext()),
+                            SQLQueryDataContextInfo.makeFor(origin.getRowsSource().source.getRowsDataContext()),
                             filterOrNull,
                             false
                         ), results);
@@ -875,24 +769,6 @@ public abstract class SQLQueryCompletionContext {
                     @Override
                     public void visitMemberOfType(SQLQuerySymbolOrigin.MemberOfType origin) {
                         accomplishMemberReference(monitor, origin.getType(), filterOrNull, results);
-                    }
-
-                    @Override
-                    public void visitDataContextSymbol(SQLQuerySymbolOrigin.DataContextSymbolOrigin origin) {
-                        prepareInspectedFreeCompletions(monitor, request, results);
-                    }
-
-                    @Override
-                    public void visitExpandableTupleRef(SQLQuerySymbolOrigin.ExpandableTupleRef origin) {
-                        SQLQueryDataContext tupleSource = origin.getRowsSource() != null
-                              ? origin.getRowsSource().source.getResultDataContext()
-                              : origin.getDataContext();
-
-                        prepareTupleRefExpansionCompletiom(
-                            origin.getPlaceholder(),
-                            SQLQueryDataContextInfo.makeFor(tupleSource),
-                            request, completionContext, monitor, results
-                        );
                     }
 
                     @Override
@@ -922,12 +798,18 @@ public abstract class SQLQueryCompletionContext {
 
                     @Override
                     public void visitColumnNameFromRowsData(SQLQuerySymbolOrigin.ColumnNameFromRowsData origin) {
-                        makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(
-                            SQLQueryDataContextInfo.makeFor(origin.getRowsDataContext()),
-                            filterOrNull,
-                            false
-                        ), results);
+                        SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getRowsDataContext());
+                        setContextInfo(contextInfo);
+                        makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(contextInfo, filterOrNull, false), results);
                     }
+
+                    @Override
+                    public void visitSyntaxBasedFromRowsData(SQLQuerySymbolOrigin.SyntaxBasedFromRowsData origin) {
+                        SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getRowsDataContext());
+                        setContextInfo(contextInfo);
+                        prepareInspectedFreeCompletions(monitor, request, results);
+                    }
+
                 });
             }
 
@@ -1059,12 +941,14 @@ public abstract class SQLQueryCompletionContext {
 
                 LinkedList<SQLQueryCompletionItem> result = new LinkedList<>();
 
-                if (context.getKnownSources().getReferencedTables().size() > 1 && context.getKnownSources().getResolutionResults().size() > 1
-                    && context instanceof SQLQueryCombinedContext joinContext && joinContext.isJoin()) {
+                if (context.getKnownSources().getReferencedTables().size() > 1 &&
+                    context.getKnownSources().getResolutionResults().size() > 1 &&
+                    context.isJoin()
+                ) {
 
                     AssociationsResolutionContext associations = new AssociationsResolutionContext();
 
-                    for (SQLQueryResultColumn joinedColumn : joinContext.getRightParent().getColumnsList()) {
+                    for (SQLQueryResultColumn joinedColumn : context.getRightParentColumnsList()) {
                         if (joinedColumn.realAttr != null) {
                             for (DBSEntityAttribute otherColumnAttribute : associations.findAssociations(joinedColumn.realAttr)) {
                                 List<SQLQueryCompletionItem.SQLColumnNameCompletionItem> otherColumnRefs = associations.realColumnRefsByEntityAttribute.get(otherColumnAttribute);
@@ -1075,7 +959,7 @@ public abstract class SQLQueryCompletionContext {
                                                 int thisScore = thisColumnRef.getScore();
                                                 int otherScore = otherColumnRef.getScore();
                                                 if (thisScore > 0 || otherScore > 0) {
-                                                    int score = thisScore >= otherScore ? thisScore : otherScore;
+                                                    int score = Math.max(thisScore, otherScore);
                                                     SQLQueryWordEntry word = (thisScore >= otherScore ? thisColumnRef : otherColumnRef).getFilterInfo();
 
                                                     result.addLast(SQLQueryCompletionItem.forJoinCondition(
@@ -1166,6 +1050,11 @@ public abstract class SQLQueryCompletionContext {
 
             @Override
             public boolean isColumnNameConflicting(String name) {
+                if (this.columnNameConflicts == null) {
+                    this.columnNameConflicts = this.getDataContext().getColumnsList().stream()
+                        .collect(Collectors.groupingBy(c -> c.symbol.getName())).entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, kv -> kv.getValue().size() > 1));
+                }
                 return this.columnNameConflicts.get(name);
             }
 
@@ -1507,9 +1396,6 @@ public abstract class SQLQueryCompletionContext {
                 SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(
                     Math.min(position, model.getSyntaxNode().getRealInterval().b + 1)
                 );
-                if (context.deepestContext() == null) {
-                    return SQLQueryCompletionContext.prepareEmpty(0, offset);
-                }
 
                 LSMInspections.NameInspectionResult nameInspectionResult = inspections.collectNameNodes(position);
                 if (nameInspectionResult.positionToInspect() != position) {
@@ -1560,32 +1446,13 @@ public abstract class SQLQueryCompletionContext {
         @Nullable
         SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> s);
 
+        boolean isJoin();
+
+        @NotNull
+        List<? extends SQLQueryResultColumn> getRightParentColumnsList();
 
         static SQLQueryDataContextInfo empty() {
             return EMPTY_DATA_CONTEXT_INFO;
-        }
-
-        static SQLQueryDataContextInfo makeFor(SQLQueryDataContext dataContext) {
-            return dataContext == null ? null : new SQLQueryDataContextInfo() {
-
-                @NotNull
-                @Override
-                public SQLQuerySourcesInfoCollection getKnownSources() {
-                    return dataContext.getKnownSources();
-                }
-
-                @NotNull
-                @Override
-                public List<SQLQueryResultColumn> getColumnsList() {
-                    return dataContext.getColumnsList();
-                }
-
-                @Nullable
-                @Override
-                public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> tableName) {
-                    return dataContext.resolveSource(monitor, tableName);
-                }
-            };
         }
 
         static SQLQueryDataContextInfo makeFor(SQLQueryRowsSourceContext rowsSourceContext) {
@@ -1606,7 +1473,18 @@ public abstract class SQLQueryCompletionContext {
                 @Nullable
                 @Override
                 public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> tableName) {
-                    return resolveKnownSource(rowsSourceContext, monitor, tableName);
+                    return resolveKnownSource(monitor, rowsSourceContext, tableName);
+                }
+
+                @Override
+                public boolean isJoin() {
+                    return false;
+                }
+
+                @NotNull
+                @Override
+                public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
+                    return Collections.emptyList();
                 }
             };
         }
@@ -1629,16 +1507,32 @@ public abstract class SQLQueryCompletionContext {
                 @Nullable
                 @Override
                 public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> tableName) {
-                    return resolveKnownSource(rowsDataContext.getRowsSources(), monitor, tableName);
+                    return resolveKnownSource(monitor, rowsDataContext.getRowsSources(), tableName);
+                }
+
+                @Override
+                public boolean isJoin() {
+                    return rowsDataContext.getJoinInfo() != null;
+                }
+
+                @NotNull
+                @Override
+                public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
+                    return rowsDataContext.getJoinInfo().right().getColumnsList();
                 }
             };
         }
     }
 
-    private static SourceResolutionResult resolveKnownSource(SQLQueryRowsSourceContext rowsSourceContext, DBRProgressMonitor monitor, List<String> tableName) {
-        DBSEntity table = rowsSourceContext.getConnectionInfo().findRealTable(monitor, tableName);
+    @Nullable
+    private static SourceResolutionResult resolveKnownSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLQueryRowsSourceContext rowsSourceContext,
+        @NotNull List<String> tableName
+    ) {
+        List<DBSEntity> tables = rowsSourceContext.getConnectionInfo().findRealTables(monitor, tableName);
         return rowsSourceContext.getKnownSources().getResolutionResults().values()
-            .stream().filter(r -> r.tableOrNull == table).findFirst().orElse(null);
+            .stream().filter(r -> tables.contains(r.tableOrNull)).findFirst().orElse(null);
     }
 
     private static final SQLQueryDataContextInfo EMPTY_DATA_CONTEXT_INFO = new SQLQueryDataContextInfo() {
@@ -1678,6 +1572,17 @@ public abstract class SQLQueryCompletionContext {
         @Override
         public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> s) {
             return null;
+        }
+
+        @Override
+        public boolean isJoin() {
+            return false;
+        }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
+            return Collections.emptyList();
         }
     };
 }
