@@ -141,7 +141,7 @@ public final class  DBeaverCTabFolderRenderer extends CTabRendering {
 
     @Nullable
     private static Color getConnectionColor(@NotNull IEditorInput editorInput) {
-        DBPDataSourceContainer container = EditorUtils.getInputDataSource(editorInput);
+        DBPDataSourceContainer container = EditorUtils.getInputDataSource(editorInput, false);
         if (container != null) {
             return UIUtils.getConnectionColor(container.getConnectionConfiguration());
         }
