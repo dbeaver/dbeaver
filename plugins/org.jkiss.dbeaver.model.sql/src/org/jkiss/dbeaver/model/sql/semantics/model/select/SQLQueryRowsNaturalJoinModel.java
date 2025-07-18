@@ -21,12 +21,12 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.List;
@@ -34,12 +34,16 @@ import java.util.List;
 /**
  * Describes natural join clause
  */
-public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel {
+public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel
+    implements SQLQueryNodeModel.NodeSubtreeTraverseControl<SQLQueryRowsSourceModel, SQLQueryRowsDataContext> {
+
     @Nullable
     private final SQLQueryValueExpression condition;
     @Nullable
     private final List<SQLQuerySymbolEntry> columnsToJoin;
 
+    @Nullable
+    private final SQLQueryLexicalScope rightSourceScope;
     @NotNull
     private final SQLQueryLexicalScope conditionScope;
 
@@ -49,18 +53,26 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
-        @NotNull SQLQueryRowsSourceModel right,
+        @Nullable SQLQueryRowsSourceModel right,
+        @Nullable SQLQueryLexicalScope rightSourceScope,
         boolean isLateral,
-        @NotNull SQLQueryValueExpression condition,
+        @Nullable SQLQueryValueExpression condition,
         @NotNull SQLQueryLexicalScope conditionScope
     ) {
         super(range, syntaxNode, left, right);
-        super.registerSubnode(condition);
+        this.rightSourceScope = rightSourceScope;
         this.isLateral = isLateral;
         this.condition = condition;
         this.conditionScope = conditionScope;
         this.columnsToJoin = null;
-        
+
+        if (condition != null) {
+            super.registerSubnode(condition);
+        }
+
+        if (rightSourceScope != null) {
+            this.registerLexicalScope(rightSourceScope);
+        }
         this.registerLexicalScope(conditionScope);
     }
 
@@ -68,17 +80,22 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         @NotNull Interval range,
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryRowsSourceModel left,
-        @NotNull SQLQueryRowsSourceModel right,
+        @Nullable SQLQueryRowsSourceModel right,
+        @Nullable SQLQueryLexicalScope rightSourceScope,
         boolean isLateral,
         @Nullable List<SQLQuerySymbolEntry> columnsToJoin,
         @NotNull SQLQueryLexicalScope conditionScope
     ) {
         super(range, syntaxNode, left, right);
+        this.rightSourceScope = rightSourceScope;
         this.isLateral = isLateral;
         this.condition = null;
         this.conditionScope = conditionScope;
         this.columnsToJoin = columnsToJoin;
 
+        if (rightSourceScope != null) {
+            this.registerLexicalScope(rightSourceScope);
+        }
         this.registerLexicalScope(conditionScope);
     }
 
@@ -94,62 +111,35 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
 
     @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(
-        @NotNull SQLQueryDataContext context,
-        @NotNull SQLQueryRecognitionContext statistics
-    ) {
-        SQLQueryDataContext left = this.left.propagateContext(context, statistics);
-        SQLQueryDataContext right = this.right.propagateContext(this.isLateral ? left : context, statistics);
-        SQLQueryDataContext combinedContext = left.combineForJoin(right);
-
-        if (this.columnsToJoin != null) {
-            var columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(combinedContext);
-            for (SQLQuerySymbolEntry column : columnsToJoin) {
-                if (column.isNotClassified()) {
-                    SQLQuerySymbol symbol = column.getSymbol();
-                    SQLQueryResultColumn leftColumnDef = left.resolveColumn(statistics.getMonitor(), column.getName());
-                    SQLQueryResultColumn rightColumnDef = right.resolveColumn(statistics.getMonitor(), column.getName());
-                    if (leftColumnDef != null && rightColumnDef != null) {
-                        symbol.setDefinition(column); // TODO multiple definitions per symbol
-                        symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN);
-                    } else {
-                        if (leftColumnDef == null) {
-                            statistics.appendError(column, "Column " + column.getName() + " not found on the left of join");
-                        } else {
-                            statistics.appendError(column, "Column " + column.getName() + " not found on the right of join");
-                        }
-                        symbol.setSymbolClass(SQLQuerySymbolClass.ERROR);
-                    }
-                    column.setOrigin(columnNameOrigin);
-                }
-            }
-            this.conditionScope.setSymbolsOrigin(columnNameOrigin);
-        } else {
-            var conditionOrigin = new SQLQuerySymbolOrigin.ValueRefFromContext(combinedContext);
-            this.setTailOrigin(conditionOrigin);
-
-            if (this.condition != null) {
-                this.condition.propagateContext(combinedContext, statistics);
-                this.conditionScope.setSymbolsOrigin(conditionOrigin);
-            }
-        }
-
-        return combinedContext;
-    }
-
-    @NotNull
-    @Override
     protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
         @NotNull SQLQueryRowsSourceContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        context = this.left.resolveRowSources(context, statistics).combine(this.right.resolveRowSources(context, statistics));
+        SQLQueryRowsSourceContext left = this.left.resolveRowSources(context, statistics);
+        SQLQueryRowsSourceContext right = this.right != null
+            ? this.right.resolveRowSources(this.isLateral ? left : context, statistics)
+            : context.resetAsUnresolved();
+        SQLQueryRowsSourceContext result = left.combine(right);
 
         if (this.condition != null) {
-            this.condition.resolveRowSources(context, statistics);
+            this.condition.resolveRowSources(result, statistics);
         }
 
-        return context;
+        return result;
+    }
+
+    @Override
+    public boolean overridesContextForChild(@NotNull SQLQueryRowsSourceModel child) {
+        return this.isLateral && child == this.right;
+    }
+
+    @Nullable
+    @Override
+    public SQLQueryRowsDataContext getContextForChild(
+        @NotNull SQLQueryRowsSourceModel child,
+        @Nullable SQLQueryRowsDataContext defaultContext
+    ) {
+        return this.isLateral && child == this.right ? this.left.getRowsDataContext() : defaultContext;
     }
 
     @NotNull
@@ -158,8 +148,19 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
         @NotNull SQLQueryRowsDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        SQLQueryRowsDataContext x = this.left.getRowsDataContext().combine(this.right.getRowsDataContext());
-        SQLQueryRowsDataContext combinedContext = this.getRowsSources().makeTuple(this, x.getColumnsList(), x.getPseudoColumnsList());
+        SQLQueryRowsDataContext combinedContext;
+        if (this.right != null) {
+            combinedContext = this.left.getRowsDataContext().combineForJoin(this, this.right.getRowsDataContext());
+        } else {
+            combinedContext = this.left.getRowsDataContext();
+            statistics.appendError(this.getSyntaxNode(), "Table to join is not specified");
+        }
+
+        var rightSourceOrigin = new SQLQuerySymbolOrigin.RowsSourceRef(this.getRowsSources());
+        if (this.rightSourceScope != null) {
+            this.rightSourceScope.setSymbolsOrigin(rightSourceOrigin);
+            this.setTailOrigin(rightSourceOrigin);
+        }
 
         if (this.columnsToJoin != null) {
             var columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromRowsData(combinedContext);
@@ -168,7 +169,7 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
                     SQLQuerySymbol symbol = column.getSymbol();
                     SQLQueryResultColumn leftColumnDef = this.left.getRowsDataContext()
                         .resolveColumn(statistics.getMonitor(), column.getName());
-                    SQLQueryResultColumn rightColumnDef = this.right.getRowsDataContext()
+                    SQLQueryResultColumn rightColumnDef = this.right == null ? null : this.right.getRowsDataContext()
                         .resolveColumn(statistics.getMonitor(), column.getName());
                     if (leftColumnDef != null && rightColumnDef != null) {
                         symbol.setDefinition(column); // TODO multiple definitions per symbol
@@ -184,14 +185,17 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel 
                     column.setOrigin(columnNameOrigin);
                 }
             }
+            this.setTailOrigin(columnNameOrigin);
             this.conditionScope.setSymbolsOrigin(columnNameOrigin);
         } else {
             var conditionOrigin = new SQLQuerySymbolOrigin.RowsDataRef(combinedContext);
-            this.setTailOrigin(conditionOrigin);
+            this.conditionScope.setSymbolsOrigin(conditionOrigin);
+            if (this.getTailOrigin() == null) {
+                this.setTailOrigin(conditionOrigin);
+            }
 
             if (this.condition != null) {
                 this.condition.resolveValueRelations(combinedContext, statistics);
-                this.conditionScope.setSymbolsOrigin(conditionOrigin);
             }
         }
 

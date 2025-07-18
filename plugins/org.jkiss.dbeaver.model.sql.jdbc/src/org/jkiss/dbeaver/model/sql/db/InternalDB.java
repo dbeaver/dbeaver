@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInformation;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.InternalDatabaseConfig;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -58,7 +59,8 @@ public abstract class InternalDB<T extends InternalDatabaseConfig> {
         this.schemaConfigList = configList;
     }
 
-    public synchronized Connection getConnection() {
+    @Nullable
+    public synchronized Connection tryGetDatabaseConnection() {
         try {
             if (dataSource == null) {
                 return null;
@@ -77,6 +79,15 @@ public abstract class InternalDB<T extends InternalDatabaseConfig> {
             log.error(e.getMessage(), e);
             return null;
         }
+    }
+
+    @NotNull
+    public synchronized Connection getDatabaseConnection() throws DBCException {
+        Connection connection = tryGetDatabaseConnection();
+        if (connection == null) {
+            throw new DBCException("QMDB database not initialized");
+        }
+        return connection;
     }
 
     public SQLDialect getDialect() {

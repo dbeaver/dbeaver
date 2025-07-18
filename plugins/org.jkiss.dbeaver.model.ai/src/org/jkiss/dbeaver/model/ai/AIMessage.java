@@ -92,6 +92,10 @@ public class AIMessage {
         return displayMessage != null ? displayMessage : content;
     }
 
+    public String getRawDisplayMessage() {
+        return displayMessage;
+    }
+
     @NotNull
     public AIMessageType getRole() {
         return role;

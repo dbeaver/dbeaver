@@ -2052,7 +2052,8 @@ public final class DBUtils {
         DBSInstance instance = getObjectOwnerInstance(object);
         if (instance == null
             || (instance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected())
-            || (instance.getDataSource() != null && instance.getDataSource().isConnectionRefreshing())) {
+            || (instance.getDataSource() != null && (instance.getDataSource().isConnectionRefreshing()
+            && !DBWorkbench.getPlatform().getApplication().isHeadlessMode()))) {
             return null;
         }
 

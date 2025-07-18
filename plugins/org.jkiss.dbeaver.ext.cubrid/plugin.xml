@@ -223,7 +223,7 @@
     <extension point="org.jkiss.dbeaver.objectManager">
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridProcedureManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridIndexManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex"/>
-        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPartition"/>
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridPartitionManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPartition"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTable"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTableColumnManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTriggerManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger"/>
@@ -232,5 +232,9 @@
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridSynonymManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridSynonym"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridViewManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridView"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridUserManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ext.cubrid.internal.CubridPreferencesInitializer"/>
     </extension>
 </plugin>

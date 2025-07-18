@@ -561,16 +561,14 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             if (library.isDisabled() || !library.matchesCurrentPlatform()) {
                 continue;
             }
-            if (library instanceof DriverLibraryLocal localLib) {
-                if (localLib.isUseOriginalJar()) {
-                    var localFile = localLib.getLocalFile();
-                    if (localFile == null) {
-                        continue;
-                    }
-                    localFilePaths.add(localFile);
-                    if (Files.isDirectory(localFile)) {
-                        localFilePaths.addAll(readJarsFromDir(localFile));
-                    }
+            if ((library instanceof DriverLibraryLocal localLib && localLib.isUseOriginalJar()) || library instanceof DriverLibraryBundle) {
+                var localFile = library.getLocalFile();
+                if (localFile == null) {
+                    continue;
+                }
+                localFilePaths.add(localFile);
+                if (Files.isDirectory(localFile)) {
+                    localFilePaths.addAll(readJarsFromDir(localFile));
                 }
             }
             List<DriverFileInfo> files = resolvedFiles.get(library);

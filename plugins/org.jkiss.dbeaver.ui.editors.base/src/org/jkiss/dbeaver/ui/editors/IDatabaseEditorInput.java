@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -46,6 +47,14 @@ public interface IDatabaseEditorInput extends INavigatorEditorInput, DBPContextP
      * @return folder ID or null
      */
     String getDefaultFolderId();
+
+    /**
+     * Color of the connection type used by the associated connection
+     *
+     * @return connection color or {@code null} if not defined
+     */
+    @Nullable
+    Color getConnectionColor();
 
     /**
      * Command context

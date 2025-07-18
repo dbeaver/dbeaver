@@ -790,17 +790,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
                 }
 
-                {
-                    // Extensions
-                    if (conObject.containsKey(RegistryConstants.TAG_PROPERTIES)) {
-                        // Backward compatibility
-                        dataSource.setExtensions(
-                            JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_PROPERTIES));
-                    } else {
-                        dataSource.setExtensions(
-                            JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_EXTENSIONS));
-                    }
-                }
                 dataSource.setTags(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_TAGS));
 
@@ -810,6 +799,21 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 preferenceProperties.putAll(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
                 );
+
+                {
+                    // Extensions
+                    Map<String, Object> extensions = null;
+                    if (conObject.containsKey(RegistryConstants.TAG_PROPERTIES)) {
+                        // Backward compatibility
+                        extensions = JSONUtils.deserializeProperties(conObject, RegistryConstants.TAG_PROPERTIES);
+                    } else if (conObject.containsKey(RegistryConstants.TAG_EXTENSIONS)) {
+                        extensions = JSONUtils.deserializeProperties(conObject, RegistryConstants.TAG_EXTENSIONS);
+                    }
+                    if (extensions == null) {
+                        extensions = new LinkedHashMap<>();
+                    }
+                    dataSource.setExtensions(extensions);
+                }
 
                 // Virtual model
                 String vmID = CommonUtils.toString(conObject.get("virtual-model-id"), id);
@@ -1263,8 +1267,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
         }
 
-        // Extensions
-        JSONUtils.serializeProperties(json, RegistryConstants.TAG_EXTENSIONS, dataSource.getExtensions(), true);
         // Tags
         JSONUtils.serializeProperties(json, RegistryConstants.TAG_TAGS, dataSource.getTags(), true);
 
@@ -1284,6 +1286,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 JSONUtils.serializeProperties(json, RegistryConstants.TAG_CUSTOM_PROPERTIES, props, true);
             }
         }
+
+        // Extensions
+        JSONUtils.serializeProperties(json, RegistryConstants.TAG_EXTENSIONS, dataSource.getExtensions(), true);
     }
 
     private void serializeModifyPermissions(@NotNull JsonWriter json, DBPDataSourcePermissionOwner permissionOwner) throws IOException {

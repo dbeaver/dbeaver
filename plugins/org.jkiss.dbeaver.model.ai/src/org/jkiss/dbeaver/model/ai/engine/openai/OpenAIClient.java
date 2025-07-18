@@ -16,18 +16,15 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.theokanning.openai.completion.chat.ChatCompletionChunk;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatCompletionResult;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.TooManyRequestsException;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionResult;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -41,15 +38,11 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
 
 public class OpenAIClient {
-    private static final Log log = Log.getLog(OpenAIClient.class);
 
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-        .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    private static final Gson GSON = new GsonBuilder().create();
 
     private final String baseUrl;
     private final List<HttpRequestFilter> requestFilters;
@@ -109,7 +102,7 @@ public class OpenAIClient {
                         publisher.close();
                     } else {
                         try {
-                            ChatCompletionChunk chunk = MAPPER.readValue(data, ChatCompletionChunk.class);
+                            ChatCompletionChunk chunk = GSON.fromJson(data, ChatCompletionChunk.class);
                             publisher.submit(chunk);
                         } catch (Exception e) {
                             publisher.closeExceptionally(e);
@@ -138,7 +131,7 @@ public class OpenAIClient {
     @Nullable
     private static String serializeValue(@Nullable Object value) throws DBException {
         try {
-            return MAPPER.writeValueAsString(value);
+            return GSON.toJson(value);
         } catch (Exception e) {
             throw new DBException("Error serializing value", e);
         }
@@ -147,7 +140,7 @@ public class OpenAIClient {
     @NotNull
     private static <T> T deserializeValue(@NotNull String value, @NotNull Class<T> type) throws DBException {
         try {
-            return MAPPER.readValue(value, type);
+            return GSON.fromJson(value, type);
         } catch (Exception e) {
             throw new DBException("Error deserializing value", e);
         }
