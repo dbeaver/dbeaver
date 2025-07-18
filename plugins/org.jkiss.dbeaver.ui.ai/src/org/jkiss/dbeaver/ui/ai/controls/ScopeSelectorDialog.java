@@ -99,9 +99,12 @@ public class ScopeSelectorDialog extends BaseDialog {
             }
 
         };
+        selectorPanel.getCheckboxTreeManager().setAutoCheckNested(false);
         selectorPanel.getNavigatorTree().getViewer().expandToLevel(2);
         selectorPanel.checkNodes(selectedNodes, true);
         selectorPanel.setSelection(selectedNodes);
+
+        UIUtils.createInfoLabel(dialogArea, "Note: if your custom AI scope includes schemas/databases\nwhich differs from active schema in SQL editor\nthen final query may not work");
 
         return dialogArea;
     }
@@ -111,7 +114,10 @@ public class ScopeSelectorDialog extends BaseDialog {
         selectedNodes = selectorPanel.getCheckedNodes();
         selectedNodes.removeIf(n -> {
                 if (n instanceof DBNDatabaseNode dbn) {
-                    if (dbn.getObject() instanceof DBSEntity || dbn.getObject() instanceof DBSEntityContainer) {
+                    if (dbn.getObject() instanceof DBSEntity ||
+                        dbn.getObject() instanceof DBSEntityContainer ||
+                        dbn.getObject() instanceof DBSStructContainer
+                    ) {
                         return false;
                     }
                 }
