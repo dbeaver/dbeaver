@@ -16,33 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database.load;
 
-import org.eclipse.jface.viewers.IToolTipProvider;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
-/**
- * A special node that is shown when a global or local filter is applied to a parent node.
- */
-public class TreeNodeFilteredNote extends TreeNodeSpecial implements IToolTipProvider {
-
-    public TreeNodeFilteredNote(@NotNull DBNNode parent) {
+public abstract class ContextMenuTreeNodeSpecial extends TreeNodeSpecial {
+    protected ContextMenuTreeNodeSpecial(DBNNode parent) {
         super(parent);
-    }
-
-    @Override
-    public String getText(Object element) {
-        return UINavigatorMessages.navigator_filtered_nodes_text;
-    }
-
-    @Override
-    public String getToolTipText(Object element) {
-        return UINavigatorMessages.navigator_globally_filtered_nodes_tip;
     }
 
     @Override
     public Image getImage(Object element) {
         return null;
     }
+
+    public abstract void fillContextMenu(@NotNull MenuManager menu, @NotNull DatabaseNavigatorTree navigatorTree);
 }

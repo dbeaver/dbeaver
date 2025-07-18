@@ -425,6 +425,16 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         return treeFilter.isMatchingNeeded(element);
     }
 
+    public void resetFilter() {
+        if (filterControl != null) {
+            filterControl.setText("");
+        }
+        if (treeFilter != null) {
+            treeFilter.setPattern("");
+        }
+        treeViewer.refresh(true);
+    }
+
     @Override
     public void nodeChanged(final DBNEvent event) {
         switch (event.getAction()) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,11 +148,16 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
             DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE)
         );
 
+        boolean searchBarIsActive = navigatorTree.isFilterActive() && navigatorTree.isMatchingNeeded(children[0]);
         if (parent.isFiltered() || maxFetchSize < children.length) {
             final List<Object> nodes = new ArrayList<>(maxFetchSize);
 
             if (parent.isFiltered()) {
-                nodes.add(new TreeNodeFilterConfigurator(parent));
+                if (searchBarIsActive) {
+                    nodes.add(new TreeNodeFilterSearch(parent));
+                } else {
+                    nodes.add(new TreeNodeFilter(parent));
+                }
             }
 
             if (maxFetchSize < children.length) {
@@ -165,9 +170,9 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
             return nodes.toArray();
         } else if (children.length == 0) {
             return EMPTY_CHILDREN;
-        } else if (navigatorTree.isFilterActive() && navigatorTree.isMatchingNeeded(children[0])) {
+        } else if (searchBarIsActive) {
             final List<Object> nodes = new ArrayList<>();
-            nodes.add(new TreeNodeFilteredNote(parent));
+            nodes.add(new TreeNodeSearch(parent));
             nodes.addAll(List.of(children));
             return nodes.toArray();
         } else {
