@@ -138,9 +138,10 @@ public class ScopeSelectorDialog extends BaseDialog {
         selectedNodes = selectorPanel.getCheckedNodes();
         selectedNodes.removeIf(n -> {
                 if (n instanceof DBNDatabaseNode dbn) {
-                    if (dbn.getObject() instanceof DBSEntity ||
-                        dbn.getObject() instanceof DBSEntityContainer ||
-                        dbn.getObject() instanceof DBSStructContainer
+                    DBSObject object = dbn.getObject();
+                    if (object instanceof DBSEntity ||
+                        object instanceof DBSEntityContainer ||
+                        object instanceof DBSStructContainer
                     ) {
                         return false;
                     }
