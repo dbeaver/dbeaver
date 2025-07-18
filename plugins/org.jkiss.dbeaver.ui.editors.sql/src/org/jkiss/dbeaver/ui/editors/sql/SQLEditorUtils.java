@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -640,17 +640,17 @@ public class SQLEditorUtils {
         private final SQLEditorListener editorListener = new SQLEditorListenerDefault() {
             @Override
             public void onDataSourceChanged(DBPPreferenceListener.PreferenceChangeEvent event) {
-                EditorConnector.this.onMayByConnected();
+                EditorConnector.this.onMaybeConnected();
             }
         };
 
         @NotNull
         private final SQLEditor editor;
 
-        private boolean isHandled = false;
-
         @NotNull
         private final Consumer<SQLEditor> onConnectedHandler;
+
+        private boolean isHandled = false;
 
         public EditorConnector(
             @NotNull SQLEditor editor,
@@ -667,17 +667,17 @@ public class SQLEditorUtils {
         public void engage() {
             boolean alreadyConnected = editor.checkConnected(true, status -> UIUtils.asyncExec(() -> {
                 if (status.isOK()) {
-                    this.onMayByConnected();
+                    this.onMaybeConnected();
                 } else {
                     log.warn("Failed to connect to the datasource. " + status.getMessage());
                 }
             }));
             if (alreadyConnected && !editor.isDisposed()) {
-                this.onMayByConnected();
+                this.onMaybeConnected();
             }
         }
 
-        private void onMayByConnected() {
+        private void onMaybeConnected() {
             UIUtils.asyncExec(() -> {
                 if (!this.isHandled) {
                     DBCExecutionContext executionContext = this.editor.getExecutionContext();
