@@ -261,8 +261,9 @@ public abstract class AbstractSQLDialect implements SQLDialect {
 
     @Override
     public boolean isKeywordStart(@NotNull String word) {
-        SortedMap<String, KeywordHolder> map = allKeywords.tailMap(word.toUpperCase(DEF_LOCALE));
-        return !map.isEmpty() && map.firstKey().startsWith(word);
+        String upperCaseWord = word.toUpperCase(DEF_LOCALE);
+        SortedMap<String, KeywordHolder> map = allKeywords.tailMap(upperCaseWord);
+        return !map.isEmpty() && map.firstKey().startsWith(upperCaseWord);
     }
 
     @Override

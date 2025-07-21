@@ -20,13 +20,16 @@ import org.eclipse.jface.text.BadLocationException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDummyDataSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryConnectionDummyContext;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.Pair;
@@ -117,7 +120,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         Set<String> texts = new HashSet<>();
         for (SQLQueryCompletionSet completionSet : completionSets) {
             for (SQLQueryCompletionItem item : completionSet.getItems()) {
-                DBSObject object = SQLQueryDummyDataSourceContext.isDummyObject(item.getObject()) ? null : item.getObject();
+                DBSObject object = SQLQueryConnectionDummyContext.isDummyObject(item.getObject()) ? null : item.getObject();
                 String text = item.apply(textProvider);
                 if (texts.add(text)) {
                     String decoration = item.apply(SQLQueryCompletionExtraTextProvider.INSTANCE);
@@ -192,8 +195,22 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         return this.result.get().getFirst();
     }
 
-    @Nullable
+    @NotNull
     protected DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
-        return null;
+        return switch (item.getKind()) {
+            case SCHEMA, CATALOG, UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
+            case RESERVED -> DBIcon.SQL_TEXT;
+            case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
+            case DERIVED_COLUMN_NAME -> DBIcon.TREE_DERIVED_COLUMN;
+            case NEW_TABLE_NAME, USED_TABLE_NAME -> {
+                DBPObject object = item.getObject();
+                yield object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
+            }
+            case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
+            case COMPOSITE_FIELD_NAME -> DBIcon.TREE_DATA_TYPE;
+            case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
+            case PROCEDURE -> item.getObject() == null ? DBIcon.TREE_FUNCTION : DBValueFormatting.getObjectImage(item.getObject());
+            default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
+        };
     }
 }

@@ -16,26 +16,33 @@
  */
 package org.jkiss.dbeaver.ui.e4;
 
+import org.eclipse.e4.ui.internal.css.swt.ICTabRendering;
 import org.eclipse.e4.ui.internal.workbench.swt.AbstractPartRenderer;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabFolderRenderer;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
 import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.Field;
 
-public final class DBeaverCTabFolderRenderer extends CTabRendering {
+public final class DBeaverCTabFolderRenderer extends CTabRendering implements ICTabRendering {
     private static final Log log = Log.getLog(DBeaverCTabFolderRenderer.class);
 
     private static final Rectangle EMPTY_CLOSE_RECT = new Rectangle(0, 0, 0, 0);
@@ -44,12 +51,16 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering {
     private static final FieldReflection<CTabRendering, Color> hotUnselectedTabsColorBackgroundField;
     private static final FieldReflection<CTabItem, Integer> closeImageStateField;
     private static final FieldReflection<CTabItem, Rectangle> closeRectField;
+    private static final FieldReflection<CTabFolderRenderer, Integer> curveWidth;
+    private static final FieldReflection<CTabFolderRenderer, Integer> curveIndent;
 
     static {
         selectedTabHighlightColorField = FieldReflection.of(CTabRendering.class, "selectedTabHighlightColor");
         hotUnselectedTabsColorBackgroundField = FieldReflection.of(CTabRendering.class, "hotUnselectedTabsColorBackground");
         closeImageStateField = FieldReflection.of(CTabItem.class, "closeImageState");
         closeRectField = FieldReflection.of(CTabItem.class, "closeRect");
+        curveWidth = FieldReflection.of(CTabFolderRenderer.class, "curveWidth");
+        curveIndent = FieldReflection.of(CTabFolderRenderer.class, "curveIndent");
     }
 
     public DBeaverCTabFolderRenderer(@NotNull CTabFolder parent) {
@@ -92,37 +103,83 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering {
         super.draw(part, state, bounds, gc);
     }
 
+    @Override
+    protected Rectangle computeTrim(int part, int state, int x, int y, int width, int height) {
+        try {
+            return super.computeTrim(part, state, x, y, width, height);
+        } finally {
+            resetCurves();
+        }
+    }
+
+    @Override
+    protected Point computeSize(int part, int state, GC gc, int wHint, int hHint) {
+        try {
+            return super.computeSize(part, state, gc, wHint, hHint);
+        } finally {
+            resetCurves();
+        }
+    }
+
+    private void resetCurves() {
+        if (RuntimeUtils.isLinux()) {
+            // Tab rendering is broken on Linux when a different renderer other than org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering is used:
+            // https://github.com/eclipse-platform/eclipse.platform.swt/blob/1a1f0c22b89d8c99ff9ad58c2bbcf82147852e5a/bundles/org.eclipse.swt/Eclipse%20SWT%20Custom%20Widgets/common/org/eclipse/swt/custom/CTabFolderRenderer.java#L1795-L1796
+            // The issue can be fixed by resetting these fields:
+            curveWidth.set(this, 0);
+            curveIndent.set(this, 0);
+        }
+    }
+
     @Nullable
     private static Color getConnectionColor(@NotNull CTabItem item) {
         if (!(item.getData(AbstractPartRenderer.OWNING_ME) instanceof MPart part)) {
             return null;
         }
 
-        if (getEditorInput(part) instanceof IDatabaseEditorInput databaseEditorInput) {
-            return databaseEditorInput.getConnectionColor();
-        }
-
-        return null;
+        return getConnectionColor(part);
     }
 
     @Nullable
-    private static IEditorInput getEditorInput(@NotNull MPart part) {
+    private static Color getConnectionColor(@NotNull MPart part) {
         if (part.getObject() instanceof CompatibilityEditor editor) {
-            return editor.getEditor().getEditorInput();
+            return getConnectionColor(editor.getEditor());
         }
 
         // See org.eclipse.ui.internal.WorkbenchPartReference.WorkbenchPartReference
         if (part.getTransientData().get(IWorkbenchPartReference.class.getName()) instanceof IEditorReference ref) {
             IEditorPart editor = ref.getEditor(false);
             if (editor != null) {
-                return editor.getEditorInput();
+                return getConnectionColor(editor);
             }
 
             try {
-                return ref.getEditorInput();
+                return getConnectionColor(ref.getEditorInput());
             } catch (PartInitException e) {
                 log.debug("Cannot get editor input for part: " + part.getElementId(), e);
             }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private static Color getConnectionColor(@NotNull IEditorPart editorPart) {
+        if (editorPart instanceof DBPDataSourceContainerProvider provider) {
+            DBPDataSourceContainer container = provider.getDataSourceContainer();
+            if (container != null) {
+                return UIUtils.getConnectionColor(container.getConnectionConfiguration());
+            }
+        }
+
+        return getConnectionColor(editorPart.getEditorInput());
+    }
+
+    @Nullable
+    private static Color getConnectionColor(@NotNull IEditorInput editorInput) {
+        DBPDataSourceContainer container = EditorUtils.getInputDataSource(editorInput, false);
+        if (container != null) {
+            return UIUtils.getConnectionColor(container.getConnectionConfiguration());
         }
 
         return null;
