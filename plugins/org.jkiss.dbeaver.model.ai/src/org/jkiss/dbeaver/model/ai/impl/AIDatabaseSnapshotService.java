@@ -74,19 +74,17 @@ public class AIDatabaseSnapshotService {
             return prompt.toString();
         }
 
-        return prompt.toString();
+        // --- fall-back -----------------------------------------------------
+        AIDdlGenerationOptions fallback = buildFallbackOptions(options);
+        if (options.equals(fallback)) {        // nothing else we can exclude
+            return prompt.toString();
+        }
 
-        //        // --- fall-back -----------------------------------------------------
-        //        AIDdlGenerationOptions fallback = buildFallbackOptions(options);
-        //        if (options.equals(fallback)) {        // nothing else we can exclude
-        //            return prompt.toString();
-        //        }
-        //
-        //        LOG.warn("Context description is too long, generating partial description");
-        //
-        //        var partialPrompt = new TokenBoundedStringBuilder(options.maxRequestTokens());
-        //        appendContext(monitor, aiDatabaseContext, fallback, partialPrompt, false);
-        //        return partialPrompt.toString();
+        LOG.warn("Context description is too long, generating partial description");
+
+        var partialPrompt = new TokenBoundedStringBuilder(options.maxRequestTokens());
+        appendContext(monitor, aiDatabaseContext, fallback, partialPrompt, false);
+        return partialPrompt.toString();
     }
 
     /**
