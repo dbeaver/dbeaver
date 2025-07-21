@@ -89,18 +89,26 @@ public final class AIUtils {
         @NotNull List<AIMessage> messages,
         int maxTokens
     ) {
-        final List<AIMessage> pending = new ArrayList<>(messages);
+        final List<AIMessage> pending = new ArrayList<>(filterEmptyMessages(messages));
         final List<AIMessage> truncated = new ArrayList<>();
         int remainingTokens = maxTokens - 20; // Just to be sure
 
-        if (!pending.isEmpty()) {
-            if (pending.get(0).getRole() == AIMessageType.SYSTEM) {
-                // Always append main system message and leave space for the next one
-                AIMessage msg = pending.remove(0);
-                AIMessage truncatedMessage = truncateMessage(msg, remainingTokens - 50);
-                remainingTokens -= countContentTokens(truncatedMessage.getContent());
-                truncated.add(msg);
+        if (pending.isEmpty()) {
+            return truncated; // Nothing to truncate
+        } else if (pending.size() == 1) {
+            // If we have only one message, we can return it as is
+            AIMessage singleMessage = pending.getFirst();
+            if (countContentTokens(singleMessage.getContent()) <= remainingTokens) {
+                return List.of(singleMessage);
+            } else {
+                return List.of(truncateMessage(singleMessage, remainingTokens));
             }
+        } else if (pending.getFirst().getRole() == AIMessageType.SYSTEM) {
+            // Always append main system message and leave space for the next one
+            AIMessage msg = pending.removeFirst();
+            AIMessage truncatedMessage = truncateMessage(msg, remainingTokens - 50);
+            remainingTokens -= countContentTokens(truncatedMessage.getContent());
+            truncated.add(msg);
         }
 
         for (AIMessage message : pending) {
@@ -167,7 +175,7 @@ public final class AIUtils {
     /**
      * Computes the maximum number of tokens available for a request based on the engine's context size.
      *
-     * @param engine the completion engine
+     * @param engine  the completion engine
      * @param monitor the progress monitor
      */
     public static int getMaxRequestTokens(@NotNull AIEngine engine, @NotNull DBRProgressMonitor monitor) throws DBException {
@@ -177,7 +185,7 @@ public final class AIUtils {
     /**
      * Retrieves the DDL for the given DBSObject if applicable.
      *
-     * @param object the DBSObject from which to retrieve the DDL
+     * @param object  the DBSObject from which to retrieve the DDL
      * @param monitor the progress monitor
      */
     public static String getObjectDDL(@Nullable DBSObject object, @NotNull DBRProgressMonitor monitor) {
@@ -188,17 +196,25 @@ public final class AIUtils {
         ) {
             if (object instanceof DBPScriptObject scriptObject) {
                 try {
-                    return scriptObject.getObjectDefinitionText(monitor, Map.of(
-                        DBPScriptObject.OPTION_INCLUDE_COMMENTS, false,
-                        DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, false,
-                        DBPScriptObject.OPTION_SKIP_INDEXES, true, // Exclude indexes
-                        DBPScriptObject.OPTION_SKIP_DROPS, true // Exclude --DROP
-                    ));
+                    return scriptObject.getObjectDefinitionText(
+                        monitor, Map.of(
+                            DBPScriptObject.OPTION_INCLUDE_COMMENTS, false,
+                            DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, false,
+                            DBPScriptObject.OPTION_SKIP_INDEXES, true, // Exclude indexes
+                            DBPScriptObject.OPTION_SKIP_DROPS, true // Exclude --DROP
+                        )
+                    );
                 } catch (DBException e) {
                     log.debug(e);
                 }
             }
         }
         return null;
+    }
+
+    private static List<AIMessage> filterEmptyMessages(@NotNull List<AIMessage> messages) {
+        return messages.stream()
+            .filter(message -> !message.getContent().isBlank())
+            .toList();
     }
 }

@@ -70,7 +70,7 @@ public class AIDatabaseSnapshotService {
 
         var prompt = new TokenBoundedStringBuilder(options.maxRequestTokens());
 
-        if (appendContext(monitor, aiDatabaseContext, options, prompt)) {
+        if (appendContext(monitor, aiDatabaseContext, options, prompt, true)) {
             return prompt.toString();
         }
 
@@ -83,7 +83,7 @@ public class AIDatabaseSnapshotService {
         LOG.warn("Context description is too long, generating partial description");
 
         var partialPrompt = new TokenBoundedStringBuilder(options.maxRequestTokens());
-        appendContext(monitor, aiDatabaseContext, fallback, partialPrompt);
+        appendContext(monitor, aiDatabaseContext, fallback, partialPrompt, false);
         return partialPrompt.toString();
     }
 
@@ -94,12 +94,15 @@ public class AIDatabaseSnapshotService {
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIDatabaseContext ctx,
         @NotNull AIDdlGenerationOptions options,
-        @NotNull TokenBoundedStringBuilder out
+        @NotNull TokenBoundedStringBuilder out,
+        boolean refreshCache
     ) throws DBException {
 
         if (ctx.getScope() == AIDatabaseScope.CUSTOM) {
             List<DBSObject> entities = normalizeCustomEntities(ctx.getCustomEntities());
-            cacheStructuresIfNeeded(monitor, entities);
+            if (refreshCache) {
+                cacheStructuresIfNeeded(monitor, entities);
+            }
 
             for (DBSObject entity : entities) {
                 if (!appendObjectDescription(
@@ -108,7 +111,8 @@ public class AIDatabaseSnapshotService {
                     entity,
                     ctx.getExecutionContext(),
                     options,
-                    requiresFqn(entity, ctx.getExecutionContext())
+                    requiresFqn(entity, ctx.getExecutionContext()),
+                    refreshCache
                 )) {
                     return false;
                 }
@@ -122,7 +126,8 @@ public class AIDatabaseSnapshotService {
             ctx.getScopeObject(),
             ctx.getExecutionContext(),
             options,
-            false
+            false,
+            refreshCache
         );
     }
 
@@ -132,7 +137,8 @@ public class AIDatabaseSnapshotService {
         @NotNull DBSObject obj,
         @Nullable DBCExecutionContext execCtx,
         @NotNull AIDdlGenerationOptions options,
-        boolean useFqn
+        boolean useFqn,
+        boolean refreshCache
     ) throws DBException {
 
         if (shouldSkipObject(monitor, obj)) {          // ignore system or hidden objects
@@ -146,7 +152,7 @@ public class AIDatabaseSnapshotService {
         }
 
         if (obj instanceof DBSObjectContainer container) {
-            return appendContainerDDL(monitor, out, container, execCtx, options);
+            return appendContainerDDL(monitor, out, container, execCtx, options, refreshCache);
         }
 
         return true;    // nothing to append for other object types
@@ -157,13 +163,16 @@ public class AIDatabaseSnapshotService {
         @NotNull TokenBoundedStringBuilder out,
         @NotNull DBSObjectContainer container,
         @Nullable DBCExecutionContext execCtx,
-        @NotNull AIDdlGenerationOptions options
+        @NotNull AIDdlGenerationOptions options,
+        boolean refreshCache
     ) throws DBException {
 
-        container.cacheStructure(
-            monitor,
-            DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
-        );
+        if (refreshCache) {
+            container.cacheStructure(
+                monitor,
+                DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
+            );
+        }
 
         for (DBSObject child : container.getChildren(monitor)) {
             if (shouldSkipObject(monitor, child)) {
@@ -175,7 +184,8 @@ public class AIDatabaseSnapshotService {
                 child,
                 execCtx,
                 options,
-                requiresFqn(child, execCtx)
+                requiresFqn(child, execCtx),
+                refreshCache
             )) {
 
                 LOG.warn("Object description is too long, truncated at: " + child.getName());
