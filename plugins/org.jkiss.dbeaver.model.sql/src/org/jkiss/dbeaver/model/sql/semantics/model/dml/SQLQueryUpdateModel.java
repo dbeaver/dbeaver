@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,9 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.*;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColumnReferenceExpression;
@@ -51,10 +49,6 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
     private final SQLQueryValueExpression whereClause;
     @Nullable
     private final SQLQueryValueExpression orderByClause;
-    @Nullable
-    private SQLQueryDataContext givenContext = null;
-    @Nullable
-    private SQLQueryDataContext resultContext = null;
     @Nullable
     private final SQLQueryLexicalScope targetsScope;
     @Nullable
@@ -114,10 +108,9 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
                         ? Collections.emptyList()
                         : switch (setTargetNode.getNodeKindId()) {
                             case SQLStandardParser.RULE_setTarget -> {
-                                STMTreeNode targetReferenceNode = setTargetNode.findFirstNonErrorChild();
-                                yield targetReferenceNode == null
-                                    ? Collections.emptyList()
-                                    : List.of(new SQLQueryValueColumnReferenceExpression(targetReferenceNode, false, null, recognizer.collectIdentifier(targetReferenceNode, null)));
+                                STMTreeNode targetNameNode = setTargetNode.findFirstNonErrorChild();
+                                SQLQuerySymbolEntry targetName = targetNameNode == null ? null : recognizer.collectIdentifier(targetNameNode, null);
+                                yield List.of(new SQLQueryValueColumnReferenceExpression(setTargetNode, targetName));
                             }
                             case SQLStandardParser.RULE_setTargetList ->
                                 STMUtils.expandSubtree(
@@ -234,20 +227,16 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
     }
 
     @Override
-    protected void applyContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        this.givenContext = context;
-        SQLQueryDataContext targetContext;
+    public void resolveObjectAndRowsReferences(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        SQLQueryRowsSourceContext targetContext;
         if (this.targetRows != null) {
-            targetContext = this.targetRows.propagateContext(context, statistics);
+            targetContext = this.targetRows.resolveRowSources(context, statistics);
 
-            if (this.targetsScope != null) {
-                this.targetsScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.DataContextSymbolOrigin(targetContext));
-            }
             if (this.setClauseList != null) {
                 for (SQLQueryUpdateSetClauseModel updateSetClauseModel : this.setClauseList) {
                     // resolve target columns against target set
                     for (SQLQueryValueExpression valueExpression : updateSetClauseModel.targets) {
-                        valueExpression.propagateContext(targetContext, statistics);
+                        valueExpression.resolveRowSources(targetContext, statistics);
                     }
                 }
             }
@@ -255,8 +244,62 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
             // leave target column names as unresolved
             targetContext = context;
         }
-        
-        SQLQueryDataContext sourceContext = this.sourceRows != null ? this.sourceRows.propagateContext(context, statistics) : context;
+
+        SQLQueryRowsSourceContext sourceContext = this.sourceRows != null
+            ? this.sourceRows.resolveRowSources(context, statistics)
+            : context;
+
+        if (targetContext != context || sourceContext != context) {
+            context = targetContext.combine(sourceContext);
+        }
+
+        if (this.setClauseList != null) {
+            for (SQLQueryUpdateSetClauseModel setClauseModel : this.setClauseList) {
+                // resolve source value expressions against combined participating sets
+                for (SQLQueryValueExpression valueExpression : setClauseModel.sources) {
+                    valueExpression.resolveRowSources(context, statistics);
+                }
+            }
+        }
+
+        if (this.whereClause != null) {
+            this.whereClause.resolveRowSources(context, statistics);
+        }
+        if (this.orderByClause != null) {
+            this.orderByClause.resolveRowSources(context, statistics);
+        }
+    }
+
+    @Override
+    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        SQLQueryRowsDataContext targetContext;
+        if (this.targetRows != null) {
+            this.targetRows.resolveValueRelations(context, statistics);
+            targetContext = this.targetRows.getRowsDataContext();
+
+            if (this.targetsScope != null) {
+                this.targetsScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.SyntaxBasedFromRowsData(targetContext));
+            }
+            if (this.setClauseList != null) {
+                for (SQLQueryUpdateSetClauseModel updateSetClauseModel : this.setClauseList) {
+                    // resolve target columns against target set
+                    for (SQLQueryValueExpression valueExpression : updateSetClauseModel.targets) {
+                        valueExpression.resolveValueRelations(targetContext, statistics);
+                    }
+                }
+            }
+        } else {
+            // leave target column names as unresolved
+            targetContext = context;
+        }
+
+        SQLQueryRowsDataContext sourceContext;
+        if (this.sourceRows != null) {
+            this.sourceRows.resolveValueRelations(context, statistics);
+            sourceContext = this.sourceRows.getRowsDataContext();
+        } else {
+            sourceContext = context;
+        }
         
         if (targetContext != context || sourceContext != context) {
             context = targetContext.combine(sourceContext);
@@ -266,37 +309,25 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
             for (SQLQueryUpdateSetClauseModel setClauseModel : this.setClauseList) {
                 // resolve source value expressions against combined participating sets
                 for (SQLQueryValueExpression valueExpression : setClauseModel.sources) {
-                    valueExpression.propagateContext(context, statistics);
+                    valueExpression.resolveValueRelations(context, statistics);
                 }
             }
         }
         
         if (this.whereClause != null) {
-            this.whereClause.propagateContext(context, statistics);
+            this.whereClause.resolveValueRelations(context, statistics);
         }
         if (this.orderByClause != null) {
-            this.orderByClause.propagateContext(context, statistics);
+            this.orderByClause.resolveValueRelations(context, statistics);
         }
 
         if (this.conditionsScope != null) {
-            this.conditionsScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.ValueRefFromContext(context));
+            this.conditionsScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(context));
         }
 
         if (this.tailScope != null) {
             this.setTailOrigin(this.tailScope.getSymbolsOrigin());
         }
-        
-        this.resultContext = context;
-    }
-
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return this.givenContext;
-    }
-    
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return this.resultContext;
     }
 
     @Override

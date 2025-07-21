@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.LinkedList;
@@ -33,32 +33,13 @@ import java.util.List;
  */
 public abstract class SQLQuerySelectionResultSublistSpec extends SQLQueryNodeModel {
 
-    @NotNull
-    private final SQLQuerySelectionResultModel resultModel;
-
-    protected SQLQuerySelectionResultSublistSpec(@NotNull SQLQuerySelectionResultModel resultModel, @NotNull STMTreeNode syntaxNode) {
+    protected SQLQuerySelectionResultSublistSpec(@NotNull STMTreeNode syntaxNode) {
         super(syntaxNode.getRealInterval(), syntaxNode);
-        this.resultModel = resultModel;
     }
 
     @Nullable
     @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return resultModel.getResultDataContext();
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return resultModel.getResultDataContext();
-    }
-
-    protected abstract void collectColumns(
-        @NotNull SQLQueryDataContext context,
-        @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
-        @NotNull SQLQueryRecognitionContext statistics,
-        @NotNull LinkedList<SQLQueryResultColumn> resultColumns
-    );
+    public abstract SQLQuerySymbolClass getAssociatedSymbolClass();
 
     protected abstract void collectColumns(
         @NotNull SQLQueryRowsDataContext knownValues,

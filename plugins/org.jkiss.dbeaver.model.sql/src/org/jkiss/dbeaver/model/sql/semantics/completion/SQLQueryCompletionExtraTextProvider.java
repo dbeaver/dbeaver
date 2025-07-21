@@ -19,11 +19,9 @@ package org.jkiss.dbeaver.model.sql.semantics.completion;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySemanticUtils;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionItemVisitor<String> {
@@ -72,18 +70,8 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     @NotNull
     @Override
     public String visitNamedObject(@NotNull SQLDbNamedObjectCompletionItem namedObject) {
-        DBSObject o = namedObject.object;
-        String typeName =  DBUtils.getObjectTypeName(o);
-        if (typeName.equalsIgnoreCase("Object")) {
-            if (o instanceof DBSSchema) {
-                typeName = "Schema";
-            } else if (o instanceof DBSCatalog) {
-                typeName = "Catalog";
-            } else {
-                typeName = "";
-            }
-        }
-        return CommonUtils.isEmpty(typeName) ? null : (" - " + typeName);
+        String typeName = SQLQuerySemanticUtils.getObjectTypeName(namedObject.object);
+        return CommonUtils.isEmpty(typeName) ? "" : (" - " + typeName);
     }
 
     @NotNull

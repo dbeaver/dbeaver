@@ -20,7 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
@@ -36,9 +37,6 @@ public class SQLQueryObjectDropModel extends SQLQueryModelContent {
     private final SQLQueryObjectDataModel object;
     private final boolean ifExists;
 
-    @Nullable
-    private SQLQueryDataContext dataContext = null;
-
     @NotNull
     public static SQLQueryModelContent recognize(
         @NotNull SQLQueryModelRecognizer recognizer,
@@ -49,7 +47,7 @@ public class SQLQueryObjectDropModel extends SQLQueryModelContent {
         SQLQueryObjectDataModel procedure = node.findChildrenOfName(STMKnownRuleNames.qualifiedName).stream()
             .map(recognizer::collectQualifiedName)
             .filter(Objects::nonNull)
-            .map(n -> new SQLQueryObjectDataModel(n.getSyntaxNode(), n, objectType, objectContainerTypes))
+            .map(n -> new SQLQueryObjectDataModel(n.syntaxNode, n, objectType, objectContainerTypes))
             .findFirst().orElse(null);
         boolean ifExists = node.findFirstChildOfName(STMKnownRuleNames.ifExistsSpec) != null; // "IF EXISTS" presented
         return new SQLQueryObjectDropModel(node, procedure, ifExists);
@@ -60,7 +58,7 @@ public class SQLQueryObjectDropModel extends SQLQueryModelContent {
         @Nullable SQLQueryObjectDataModel object,
         boolean ifExists
     ) {
-        super(syntaxNode.getRealInterval(), syntaxNode);
+        super(syntaxNode.getRealInterval(), syntaxNode, object);
         this.object = object;
         this.ifExists = ifExists;
     }
@@ -74,21 +72,12 @@ public class SQLQueryObjectDropModel extends SQLQueryModelContent {
         return this.ifExists;
     }
 
-    @Nullable
     @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return this.dataContext;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return this.dataContext;
+    public void resolveObjectAndRowsReferences(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
     }
 
     @Override
-    protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
-        this.dataContext = dataContext;
+    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
     }
 
     @Nullable

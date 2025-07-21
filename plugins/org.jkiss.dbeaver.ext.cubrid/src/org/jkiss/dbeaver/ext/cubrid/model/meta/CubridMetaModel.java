@@ -48,8 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
-{
+public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
     private static final Log log = Log.getLog(CubridMetaModel.class);
 
     @Nullable
@@ -66,8 +65,10 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Nullable
     @Override
-    public List<GenericSchema> loadSchemas(@NotNull JDBCSession session, @NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog)
-            throws DBException {
+    public List<GenericSchema> loadSchemas(
+        @NotNull JDBCSession session,
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog) throws DBException {
         List<GenericSchema> users = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement("select * from db_user")) {
             dbStat.executeStatement();
@@ -372,6 +373,10 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                         String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
                         String type = JDBCUtils.safeGetString(dbResult, "sp_type");
                         String returnType = JDBCUtils.safeGetString(dbResult, "return_type");
+                        String code = null;
+                        if (((CubridDataSource) container.getDataSource()).isSupportDbmsOutputPlCsql()) {
+                            code = JDBCUtils.safeGetString(dbResult, "code");
+                        }
                         DBSProcedureType procedureType;
                         if (type.equalsIgnoreCase(CubridConstants.TERM_PROCEDURE)) {
                             procedureType = DBSProcedureType.PROCEDURE;
@@ -380,7 +385,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                         } else {
                             procedureType = DBSProcedureType.UNKNOWN;
                         }
-                        container.addProcedure(new CubridProcedure(container, procedureName, description, procedureType, returnType));
+                        container.addProcedure(new CubridProcedure(container, procedureName, description, procedureType, code, returnType));
                     }
                 }
             }
@@ -391,7 +396,10 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Nullable
     @Override
-    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView object, @NotNull Map<String, Object> options) throws DBException {
+    public String getViewDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericView object,
+        @NotNull Map<String, Object> options) throws DBException {
         String fallbackDDL = "-- View definition not available";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl")) {
             String sql = String.format("show create view %s", ((CubridView) object).getUniqueName());

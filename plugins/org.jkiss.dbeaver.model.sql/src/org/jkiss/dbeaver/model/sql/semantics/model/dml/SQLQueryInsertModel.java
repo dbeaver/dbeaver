@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColumnReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
@@ -101,25 +101,36 @@ public class SQLQueryInsertModel extends SQLQueryDMLStatementModel {
     }
 
     @Override
-    public void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        var origin = new SQLQuerySymbolOrigin.ColumnNameFromContext(context);
-        if (this.columnsScope != null) {
-            this.columnsScope.setSymbolsOrigin(origin);
+    protected void resolveRowsReferencesImpl(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        if (this.valuesRows != null) {
+            this.valuesRows.resolveRowSources(context, statistics);
         }
-        if (this.columnNames != null) {
-            for (SQLQuerySymbolEntry columnName : this.columnNames) {
-                if (columnName.isNotClassified()) {
-                    SQLQueryResultColumn column = context.resolveColumn(statistics.getMonitor(), columnName.getName());
-                    if (column != null || !context.hasUnresolvedSource()) {
-                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnName, column, statistics, origin);
+    }
+
+    @Override
+    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        if (this.getTableModel() != null) {
+            this.getTableModel().resolveValueRelations(context, statistics);
+            SQLQueryRowsDataContext columnsContext = this.getTableModel().getRowsDataContext();
+            var origin = new SQLQuerySymbolOrigin.ColumnNameFromRowsData(columnsContext);
+            if (this.columnsScope != null) {
+                this.columnsScope.setSymbolsOrigin(origin);
+            }
+            if (this.columnNames != null) {
+                for (SQLQuerySymbolEntry columnName : this.columnNames) {
+                    if (columnName.isNotClassified()) {
+                        SQLQueryResultColumn column = columnsContext.resolveColumn(statistics.getMonitor(), columnName.getName());
+                        if (column != null || !columnsContext.getRowsSources().hasUnresolvedSource()) {
+                            SQLQuerySemanticUtils.propagateColumnDefinition(columnName, column, statistics, origin);
+                        }
                     }
                 }
             }
-        }
 
-        if (this.valuesRows != null) {
-            SQLQueryDataContext valuesContext = this.valuesRows.propagateContext(context, statistics);
-            // TODO validate column tuples consistency
+            if (this.valuesRows != null) {
+                this.valuesRows.resolveValueRelations(context, statistics);
+                // TODO validate column tuples consistency
+            }
         }
     }
 

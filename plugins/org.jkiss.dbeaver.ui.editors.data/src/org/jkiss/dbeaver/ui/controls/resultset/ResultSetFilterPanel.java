@@ -443,7 +443,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         } else if (dataContainer instanceof DBSEntity) {
             return DBIcon.TREE_TABLE;
         } else {
-            return UIIcon.SQL_TEXT;
+            return DBIcon.SQL_TEXT;
         }
     }
 

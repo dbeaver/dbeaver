@@ -18,11 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
@@ -75,7 +71,13 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
         this.kind = kind;
         this.rawName = rawName;
     }
-    
+
+    @Nullable
+    @Override
+    public SQLQuerySymbolClass getAssociatedSymbolClass() {
+        return SQLQuerySemanticUtils.getIdentifierSymbolClass(this.name);
+    }
+
     @Nullable
     @Override
     public SQLQuerySymbol getColumnNameIfTrivialExpression() {
@@ -91,16 +93,12 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
     public String getRawName() {
         return this.rawName;
     }
-    
-    @Override
-    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        this.resolveVariableImpl();
-    }
 
     @Override
     protected void resolveRowSourcesImpl(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
     }
 
+    @NotNull
     @Override
     protected SQLQueryExprType resolveValueTypeImpl(
         @NotNull SQLQueryRowsDataContext context,

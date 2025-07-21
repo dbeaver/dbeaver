@@ -111,7 +111,7 @@
                 id="plaintext"
                 label="%presentation.plaintext.label"
                 description="%presentation.plaintext.description"
-                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_text.svg"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/sql/sql_text.svg"
                 class="org.jkiss.dbeaver.ui.controls.resultset.plaintext.PlainTextPresentation"
                 type="columns"
                 supportsRecordMode="true"
