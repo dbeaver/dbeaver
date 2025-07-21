@@ -115,8 +115,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
 
     @NotNull
     @Override
-    public <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor)
-    throws DBException {
+    public <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (driverClass == null) {
             loadDriver(monitor);
         }
@@ -561,7 +560,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             if (library.isDisabled() || !library.matchesCurrentPlatform()) {
                 continue;
             }
-            if ((library instanceof DriverLibraryLocal localLib && localLib.isUseOriginalJar()) || library instanceof DriverLibraryBundle) {
+            if (library instanceof DriverLibraryLocal || library instanceof DriverLibraryBundle) {
                 var localFile = library.getLocalFile();
                 if (localFile == null) {
                     continue;
