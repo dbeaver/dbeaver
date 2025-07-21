@@ -162,10 +162,6 @@ public class AIPromptBuilder {
             instructions.add(stringsQuoteRule);
         }
         instructions.add("Use the same language as the user.");
-        instructions.add(
-            "Write a very short one-sentence summary of this conversation (for chat caption) "
-                + "in the end of response in xml tag <summary>."
-        );
 
         return instructions.toArray(new String[0]);
     }
