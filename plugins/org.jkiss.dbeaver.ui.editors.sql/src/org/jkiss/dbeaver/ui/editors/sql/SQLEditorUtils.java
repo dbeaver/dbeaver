@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.internal.jobs.JobManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.content.IContentType;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
@@ -646,10 +648,13 @@ public class SQLEditorUtils {
 
         @NotNull
         private final SQLEditor editor;
+        @NotNull
+        private final DBPDataSourceContainer dataSourceContainer;
 
         @NotNull
         private final Consumer<SQLEditor> onConnectedHandler;
 
+        private boolean isConnectionInitiated = false;
         private boolean isHandled = false;
 
         public EditorConnector(
@@ -658,45 +663,75 @@ public class SQLEditorUtils {
             @NotNull Consumer<SQLEditor> onConnectedHandler
         ) {
             this.editor = editor;
+            this.dataSourceContainer = container;
             this.onConnectedHandler = onConnectedHandler;
 
+            this.setup();
             editor.setDataSourceContainer(container); // without this line checkConnected doesn't detect container info
-            editor.addListener(editorListener);
         }
 
         public void engage() {
-            boolean alreadyConnected = editor.checkConnected(true, status -> UIUtils.asyncExec(() -> {
-                if (status.isOK()) {
-                    this.onMaybeConnected();
-                } else {
-                    log.warn("Failed to connect to the datasource. " + status.getMessage());
-                }
-            }));
-            if (alreadyConnected && !editor.isDisposed()) {
-                this.onMaybeConnected();
-            }
-        }
-
-        private void onMaybeConnected() {
             UIUtils.asyncExec(() -> {
                 if (!this.isHandled) {
-                    DBCExecutionContext executionContext = this.editor.getExecutionContext();
-                    if (executionContext != null) {
-                        this.isHandled = true;
-                        this.editor.removeListener(editorListener);
-                        if (!this.editor.isDisposed()) {
-                            onConnectedHandler.accept(this.editor);
-                        }
+                    boolean alreadyConnected = editor.checkConnected(
+                        true, status -> UIUtils.asyncExec(() -> {
+                            if (status.isOK()) {
+                                this.onMaybeConnected();
+                            }
+                        })
+                    );
+                    if (alreadyConnected && !editor.isDisposed()) {
+                        this.onMaybeConnected();
                     }
                 }
             });
         }
+
+        private int countRelatedJobs() {
+            return Job.getJobManager().find(this.dataSourceContainer).length + Job.getJobManager().find(this.editor).length;
+        }
+
+        private void onMaybeConnected() {
+            UIUtils.asyncExec(() -> {
+                // there is no legitimate way to detect failure of the connection attempt, so watching for connection-related jobs
+                int relatedJobsCount = this.countRelatedJobs();
+                if (relatedJobsCount > 0) {
+                    this.isConnectionInitiated = true;
+                }
+
+                if (!this.isHandled) {
+                    DBCExecutionContext executionContext = this.editor.getExecutionContext();
+                    if (executionContext != null) {
+                        this.onFinished(true);
+                    } else if (this.isConnectionInitiated && relatedJobsCount == 0) {
+                        this.onFinished(false);
+                    }
+                }
+            });
+        }
+
+        private void onFinished(boolean result) {
+            this.isHandled = true;
+            this.cleanup();
+            if (!this.editor.isDisposed()) {
+                onConnectedHandler.accept(result ? this.editor :  null);
+            }
+        }
+
+        private void setup() {
+            this.editor.addListener(editorListener);
+        }
+
+        private void cleanup() {
+            this.editor.removeListener(editorListener);
+        }
     }
 
-    public static boolean openSqlConsoleAndConnect(@NotNull DBPDataSourceContainer container, @NotNull Consumer<SQLEditor> onConnected) {
+    public static boolean openSqlConsoleAndTryConnect(@NotNull DBPDataSourceContainer container, @NotNull Consumer<SQLEditor> onConnected) {
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
             SQLEditor editor = (SQLEditor) serviceSQL.openSQLConsole(container, null, null, "Console", "");
+            onConnected.accept(editor);
             EditorConnector connector = new EditorConnector(editor, container, onConnected);
             connector.engage();
             return true;
