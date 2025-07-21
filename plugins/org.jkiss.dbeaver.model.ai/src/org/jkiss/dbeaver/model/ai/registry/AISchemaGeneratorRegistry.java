@@ -37,7 +37,7 @@ public class AISchemaGeneratorRegistry
     }
 
     private AISchemaGeneratorRegistry() {
-        super(Platform.getExtensionRegistry(), "com.dbeaver.ai.ddl.generator", "generator");
+        super(Platform.getExtensionRegistry(), "com.dbeaver.ai.schema.generator", "generator");
     }
 
     public AISchemaGenerator getDdlGenerator() throws DBException {
