@@ -142,6 +142,7 @@ public class OracleConstants {
 
     public static final String PROP_OBJECT_DEFINITION = "objectDefinitionText";
     public static final String PROP_OBJECT_BODY_DEFINITION = "extendedDefinitionText";
+    public static final String JOB_ACTION_DEFINITION = "jobAction";
 
     public static final String COL_OWNER = "OWNER";
     public static final String COL_TABLE_NAME = "TABLE_NAME";

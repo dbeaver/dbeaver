@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -37,6 +34,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
 
@@ -49,7 +47,7 @@ import java.util.StringJoiner;
 /**
  * Oracle scheduler job
  */
-public class OracleSchedulerJob extends OracleSchemaObject implements OracleStatefulObject, DBPScriptObject {
+public class OracleSchedulerJob extends OracleSchemaObject implements OracleStatefulObject, DBPScriptObject, DBPRefreshableObject {
 
     private static final String CAT_SETTINGS = "Settings";
     private static final String CAT_EVENTS = "Events";
@@ -641,7 +639,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
     }
 
     public DBSObjectState getObjectState() {
-        DBSObjectState objectState = null;
+        DBSObjectState objectState;
 
         try {
             if (JobState.valueOf(state).equals(JobState.RUNNING)) {
@@ -809,5 +807,15 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
         }
 
         return "BEGIN\n  DBMS_SCHEDULER.CREATE_JOB(\n\t" + args + "\n);\nEND;";
+    }
+
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        OracleSchema schema = getSchema();
+        if (schema != null) {
+            schema.schedulerJobCache.removeObject(this, false);
+        }
+        return this;
     }
 }
