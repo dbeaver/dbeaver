@@ -582,8 +582,12 @@ public class SQLQueryModelRecognizer {
 
         if (qualifiedNameNode.getChildCount() == 1 && !qualifiedNameNode.hasErrorChildren()) {
             SQLQuerySymbolEntry entityName = this.collectIdentifier(qualifiedNameNode.getChildNode(0), forceUnquotted, null);
-            invalidPartsCount = entityName == null ? 1 : 0;
-            nameParts = Collections.singletonList(entityName);
+            if (entityName == null) {
+                return null;
+            } else {
+                invalidPartsCount = 0;
+                nameParts = Collections.singletonList(entityName);
+            }
         } else {
             invalidPartsCount = 0;
             nameParts = new ArrayList<>(qualifiedNameNode.getChildCount());
