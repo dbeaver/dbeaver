@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 
 public class DatabricksDataSource extends GenericDataSource {
@@ -66,7 +68,10 @@ public class DatabricksDataSource extends GenericDataSource {
         @NotNull DBPConnectionConfiguration connectionInfo,
         @NotNull String purpose
     ) throws DBCException {
-        String userAgent = GeneralUtils.getProductName().replace(" ", "+") + "/" + GeneralUtils.getProductVersion();
+        String userAgent = URLEncoder.encode(
+            GeneralUtils.getProductName() + "/" + GeneralUtils.getProductVersion(),
+            StandardCharsets.UTF_8
+        );
         connectionInfo.setProperty(DatabricksConstants.USER_AGENT_ENTRY, userAgent);
         return super.openConnection(monitor, context, connectionInfo, purpose);
     }
