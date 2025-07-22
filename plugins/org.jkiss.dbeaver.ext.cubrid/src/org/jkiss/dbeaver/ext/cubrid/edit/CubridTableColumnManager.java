@@ -135,10 +135,11 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             throws DBException {
         final CubridTableColumn column = (CubridTableColumn) command.getObject();
         String table = column.getTable().getSchema().getName() + "." + column.getTable().getName();
+        boolean isView = column.getTable().isView();
         String query;
-        if (column.isForeignKey()) {
+        if (column.isForeignKey() || isView) {
             if (command.hasProperty("description")) {
-                query = "ALTER TABLE " + table + " COMMENT ON COLUMN " + column.getName() + " = "
+                query = (isView ? "ALTER VIEW " : "ALTER TABLE ") + table + " COMMENT ON COLUMN " + column.getName() + " = "
                        + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()));
                 actionList.add(new SQLDatabasePersistAction("Modify column", query));
             }
@@ -157,10 +158,11 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             @NotNull Map<String, Object> options) {
         final CubridTableColumn column = (CubridTableColumn) command.getObject();
         String table = column.getTable().getSchema().getName() + "." + column.getTable().getName();
+        boolean isView = column.getTable().isView();
         actions.add(
                 new SQLDatabasePersistAction(
                         "Rename column",
-                        "ALTER TABLE " + table + " RENAME COLUMN " + command.getOldName() + " AS " + command.getNewName()));
+                        (isView ? "ALTER VIEW " : "ALTER TABLE ") + table + " RENAME COLUMN " + command.getOldName() + " AS " + command.getNewName()));
     }
 
     @Override
