@@ -200,6 +200,11 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             UIUtils.createControlLabel(exporterSettings, DTMessages.data_transfer_wizard_settings_group_importer);
 
             propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
+            Object layoutData = propsEditor.getControl().getLayoutData();
+            if (layoutData instanceof GridData gd) {
+                // Avoid vertical grab to maximum
+                gd.heightHint = 150;
+            }
 
             UIUtils.createInfoLink(
                 exporterSettings,
