@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.commons.cli.*;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -42,6 +44,9 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     public static final String PARAM_THREAD_DUMP = "dump";
     public static final String PARAM_DB_LIST = "databaseList";
     private static final String PARAM_VERSION = "version";
+    private static final Gson gson = new GsonBuilder()
+        .setPrettyPrinting()
+        .create();
 
     public final static Options ALL_OPTIONS = new Options()
         .addOption(PARAM_HELP, PARAM_HELP, false, "Help")
@@ -133,9 +138,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
         }
 
-        handleCustomParameters(commandLine);
-
-        return new CmdProcessResult(CmdProcessResult.PostAction.UNKNOWN_COMMAND);
+        return handleCustomParameters(commandLine);
     }
 
     public CmdProcessResult handleCustomParameters(CommandLine commandLine) {
@@ -145,7 +148,6 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             return result;
         }
 
-        CommandLineContext context = new CommandLineContext();
         List<CommandLineParameterDescriptor> initialParameters = new ArrayList<>();
         List<CommandLineParameterDescriptor> parameters = new ArrayList<>();
         for (Option cliOption : commandLine.getOptions()) {
@@ -166,30 +168,36 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         List<CommandLineParameterDescriptor> allParameters = new ArrayList<>(initialParameters);
         allParameters.addAll(parameters);
 
-        for (CommandLineParameterDescriptor param : allParameters) {
-            try {
-                if (param.hasArg()) {
-                    for (String optValue : commandLine.getOptionValues(param.getName())) {
+        try (CommandLineContext context = new CommandLineContext()) {
+            for (CommandLineParameterDescriptor param : allParameters) {
+                try {
+                    if (param.hasArg()) {
+                        for (String optValue : commandLine.getOptionValues(param.getName())) {
+                            param.getHandler().handleParameter(
+                                commandLine,
+                                param.getName(),
+                                optValue,
+                                context
+                            );
+                        }
+                    } else {
                         param.getHandler().handleParameter(
                             commandLine,
                             param.getName(),
-                            optValue,
+                            null,
                             context
                         );
                     }
-                } else {
-                    param.getHandler().handleParameter(
-                        commandLine,
-                        param.getName(),
-                        null,
-                        context
-                    );
+                } catch (Exception e) {
+                    log.error("Error evaluating parameter '" + param.getName() + "'", e);
                 }
-            } catch (Exception e) {
-                log.error("Error evaluating parameter '" + param.getName() + "'", e);
+                if (param.isExitAfterExecute()) {
+                    result = new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN);
+                    break;
+                }
             }
-            if (param.isExitAfterExecute()) {
-                result = new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN);
+            if (!CommonUtils.isEmpty(context.getResults())) {
+                result = new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN, gson.toJson(context.getResults()));
             }
         }
         

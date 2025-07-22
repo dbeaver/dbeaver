@@ -18,19 +18,21 @@ package org.jkiss.dbeaver.model.cli;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CommandLineContext implements AutoCloseable {
+    private static final Log log = Log.getLog(CommandLineContext.class);
     @NotNull
     private final Map<String, Object> contextParameter = new LinkedHashMap<>();
+    private final List<Runnable> closeHandlers = new ArrayList<>();
 
-    @Nullable
-    private Object result;
-
-    private  List<Func>
-
+    @NotNull
+    private final List<Object> results = new ArrayList<>();
 
     @NotNull
     public Map<String, Object> getContext() {
@@ -47,16 +49,27 @@ public class CommandLineContext implements AutoCloseable {
     }
 
 
-    public Object getResult() {
-        return result;
+    public void addResult(@NotNull Object result) {
+        this.results.add(result);
     }
 
-    public void setResult(Object result) {
-        this.result = result;
+    @Nullable
+    public List<Object> getResults() {
+        return List.of(results);
+    }
+
+    public void addCloseHandler(@NotNull Runnable closeHandler) {
+        closeHandlers.add(closeHandler);
     }
 
     @Override
-    public void close() throws Exception {
-
+    public void close() {
+        for (Runnable closeHandler : closeHandlers) {
+            try {
+                closeHandler.run();
+            } catch (Exception e) {
+                log.error("Error during close cli context: " + e.getMessage(), e);
+            }
+        }
     }
 }
