@@ -57,6 +57,11 @@ public class OpenAIClient {
     }
 
     @NotNull
+    public HttpClient getHttpClient() {
+        return client.getHttpClient();
+    }
+
+    @NotNull
     public ChatCompletionResult createChatCompletion(
         @NotNull DBRProgressMonitor monitor,
         @NotNull ChatCompletionRequest completionRequest

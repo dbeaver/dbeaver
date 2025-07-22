@@ -20,7 +20,10 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineSettings;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,6 +59,15 @@ public class AISettings implements IAdaptable {
     @NotNull
     public synchronized <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) throws DBException {
         AIEngineSettings<?> aiEngineSettings = engineConfigurations.get(engineId);
+        if (aiEngineSettings == null) {
+            AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
+            if (engineDescriptor == null) {
+                throw new DBException("AI engine " + engineId + " not found");
+            }
+            if (!CommonUtils.isEmpty(engineDescriptor.getReplaces())) {
+                aiEngineSettings = engineConfigurations.get(engineDescriptor.getReplaces());
+            }
+        }
 
         if (!AISettingsRegistry.saveSecretsAsPlainText()) {
             if (!resolvedSecrets.contains(engineId)) {
