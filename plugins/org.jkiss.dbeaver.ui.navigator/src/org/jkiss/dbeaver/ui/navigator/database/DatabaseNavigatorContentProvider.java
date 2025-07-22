@@ -148,7 +148,8 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
             DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE)
         );
 
-        boolean searchBarIsActive = navigatorTree.isFilterActive() && navigatorTree.isMatchingNeeded(children[0]);
+        boolean isMatchingNeeded = children.length > 0 && navigatorTree.isMatchingNeeded(children[0]);
+        boolean searchBarIsActive = navigatorTree.isFilterActive() && isMatchingNeeded;
         if (parent.isFiltered() || maxFetchSize < children.length) {
             final List<Object> nodes = new ArrayList<>(maxFetchSize);
 
