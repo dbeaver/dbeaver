@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -26,8 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.List;
 
 public record AIEngineRequest(
-    @NotNull List<AIMessage> messages,
-    int maxContextSize
+    @NotNull List<AIMessage> messages
 ) {
 
     public static AIEngineRequest of(
@@ -35,14 +33,9 @@ public record AIEngineRequest(
         AIEngine engine,
         List<AIMessage> messages
     ) throws DBException {
-        int maxContextSize = engine.getMaxContextSize(monitor);
-        int maxRequestSize = maxContextSize - AIConstants.MAX_RESPONSE_TOKENS;
+        int maxRequestSize = engine.getMaxRequestSize(monitor);
         List<AIMessage> truncatedMessages = AIUtils.truncateMessages(messages, maxRequestSize);
-        return new AIEngineRequest(truncatedMessages, maxContextSize);
-    }
-
-    public int availableResponseTokens() {
-        return maxContextSize - AIUtils.countTokens(messages);
+        return new AIEngineRequest(truncatedMessages);
     }
 
     @Override

@@ -282,7 +282,7 @@ public class AIAssistantImpl implements AIAssistant {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
 
         return AIDdlGenerationOptions.builder()
-            .withMaxRequestTokens(engine.getMaxContextSize(monitor))
+            .withMaxRequestTokens(engine.getMaxRequestSize(monitor))
             .withSendObjectComment(preferenceStore.getBoolean(AIConstants.AI_SEND_DESCRIPTION))
             .withSendColumnTypes(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_SEND_TYPE_INFO))
             .build();
