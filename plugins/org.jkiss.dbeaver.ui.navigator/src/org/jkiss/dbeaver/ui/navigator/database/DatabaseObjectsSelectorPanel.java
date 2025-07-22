@@ -158,8 +158,8 @@ public class DatabaseObjectsSelectorPanel extends Composite {
                 }
                 first = false;
             }
-            if (treeViewer instanceof CheckboxTreeViewer) {
-                ((CheckboxTreeViewer) treeViewer).setChecked(node, true);
+            if (treeViewer instanceof CheckboxTreeViewer checkboxTreeViewer) {
+                checkboxTreeViewer.setChecked(node, true);
             }
         }
         if (treeViewer instanceof CheckboxTreeViewer) {

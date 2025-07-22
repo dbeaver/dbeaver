@@ -231,6 +231,9 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
     }
 
     public void updateCheckStates() {
+        if (!autoCheckNested) {
+            return;
+        }
         Set<DBNNode> parentList = new LinkedHashSet<>();
         for (Object element : viewer.getCheckedElements()) {
             for (DBNNode node = ((DBNNode)element).getParentNode(); node != null; node = node.getParentNode()) {
