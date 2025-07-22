@@ -124,7 +124,7 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
             SQLDialect sqlDialect = SQLUtils.getDialectFromObject(tableName.object);
             String alias = SQLUtils.generateEntityAlias(tableName.object,
                 s -> sqlDialect.getKeywordType(s) != null ||
-                    this.queryCompletionContext.getAliasesInUse().contains(s) ||
+                    this.queryCompletionContext.getAliasesInUse().contains(s.toLowerCase()) ||
                     (this.queryCompletionContext.getDataContext() != null
                         && this.queryCompletionContext.getDataContext().resolveSource(monitor, List.of(s)) != null)
             );

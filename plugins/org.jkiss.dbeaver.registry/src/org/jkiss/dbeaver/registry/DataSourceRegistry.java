@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
@@ -728,7 +729,12 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         synchronized (dataSourceListeners) {
             dataSourceEvents.add(event);
         }
-        eventsJob.schedule(20);
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            // In headless mode we process events immediately
+            eventsJob.run(new NullProgressMonitor());
+        } else {
+            eventsJob.schedule(20);
+        }
     }
 
     @Nullable
