@@ -107,7 +107,6 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException {
         PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
-        boolean isPgObject = PostgreUtils.isPgObject(dataSource, object);
         if (object == null) {
             return new DBGeometry();
         } else if (object instanceof DBGeometry dbGeometry) {
@@ -122,7 +121,7 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
             return makeGeometryFromWKT(session, value);
         } else if (object.getClass().getName().equals(PostgreConstants.PG_GEOMETRY_CLASS)) {
             return makeGeometryFromPGGeometry(session, object);
-        } else if (isPgObject) {
+        } else if (PostgreUtils.isPgObject(dataSource, object)) {
             return makeGeometryFromWKT(session, CommonUtils.toString(PostgreUtils.extractPGObjectValue(object, dataSource)));
         } else {
             return makeGeometryFromWKT(session, object.toString());
