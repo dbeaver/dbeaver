@@ -130,6 +130,7 @@ public class DBeaverLauncher {
     private boolean initialize = false;
     private boolean newInstance = false;
     protected boolean splashDown = false;
+    protected boolean cliMode = false;
 
     public final class SplashHandler extends Thread {
         @Override
@@ -651,15 +652,15 @@ public class DBeaverLauncher {
 
     private boolean processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
         if (args == null || args.length == 0 || newInstance) {
-            return false;
+            return cliMode;
         }
         Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
         if (Files.notExists(workspacePath)) {
-            return false;
+            return cliMode;
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
         if (serverPort == null) {
-            return false;
+            return cliMode;
         }
         //TODO auto-closable after full 21 java migration
         ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
@@ -685,7 +686,7 @@ public class DBeaverLauncher {
             String responseData = response.body();
             if (!responseData.startsWith("{") || !responseData.endsWith("}")) {
                 System.out.println("Response is not expected json: " + responseData);
-                return false;
+                return cliMode;
             }
             // remove json '{' '}' braces
             //            responseData = responseData.substring(1, responseData.length() - 1);
@@ -721,7 +722,7 @@ public class DBeaverLauncher {
         } finally {
             httpExecutor.shutdown();
         }
-        return shutdownApplication;
+        return shutdownApplication || cliMode;
     }
 
     /**
@@ -1699,6 +1700,11 @@ public class DBeaverLauncher {
             // look for the new instance arg
             if (args[i].equalsIgnoreCase(NEW_INSTANCE)) {
                 newInstance = true;
+                found = true;
+            }
+
+            if (args[i].equalsIgnoreCase(Constants.ARG_FORCE_CLI_MODE)) {
+                cliMode = true;
                 found = true;
             }
 

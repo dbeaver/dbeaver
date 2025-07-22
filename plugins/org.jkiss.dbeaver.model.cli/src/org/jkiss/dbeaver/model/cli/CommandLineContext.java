@@ -22,9 +22,14 @@ import org.jkiss.code.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class CommandLineContext {
+public class CommandLineContext implements AutoCloseable {
     @NotNull
     private final Map<String, Object> contextParameter = new LinkedHashMap<>();
+
+    @Nullable
+    private Object result;
+
+    private  List<Func>
 
 
     @NotNull
@@ -39,5 +44,19 @@ public class CommandLineContext {
 
     public void setContextParameter(@NotNull String name, @NotNull Object value) {
         contextParameter.put(name, value);
+    }
+
+
+    public Object getResult() {
+        return result;
+    }
+
+    public void setResult(Object result) {
+        this.result = result;
+    }
+
+    @Override
+    public void close() throws Exception {
+
     }
 }
