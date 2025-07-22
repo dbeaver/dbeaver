@@ -57,6 +57,7 @@ public class TaskUIViewMessages extends NLS {
 	public static String db_tasks_view_cell_text_success;
 	public static String db_tasks_view_context_menu_command_delete_task;
 	public static String db_tasks_view_adapter_label_database_tasks;
+	public static String db_tasks_view_adapter_label_database_tasks_tooltip;
 	public static String db_tasks_view_run_log_view;
 	public static String db_tasks_view_run_log_delete;
 	public static String db_tasks_view_run_log_confirm_remove;
