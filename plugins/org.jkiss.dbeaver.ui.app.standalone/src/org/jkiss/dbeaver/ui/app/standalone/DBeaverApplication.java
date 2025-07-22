@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.apache.commons.cli.CommandLine;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -34,6 +36,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
+import org.eclipse.ui.internal.menus.MenuHelper;
+import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -57,10 +61,8 @@ import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
-import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateDialog;
@@ -72,6 +74,9 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Version;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -79,8 +84,15 @@ import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 /**
  * This class controls all aspects of the application's execution
@@ -112,14 +124,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String STARTUP_ACTIONS_FILE = "dbeaver-startup-actions.properties";
     private static final String RESET_USER_PREFERENCES = "reset_user_preferences";
     private static final String RESET_WORKSPACE_CONFIGURATION = "reset_workspace_configuration";
-
-    // Every time the workbench's UI changes, the version must be changed, so the cached UI state can be reset.
-    // This includes view and editor icons and labels, as well as perspective extensions that contribute views.
-    // The version is not incremental.
-    private static final String WORKBENCH_VERSION = "25.1.2"; //$NON-NLS-1$
-
-    // See WORKBENCH_VERSION
-    private static final String PROP_WORKBENCH_VERSION = "dbeaver.workbenchVersion"; //$NON-NLS-1$
 
     private final String WORKSPACE_DIR_6; //$NON-NLS-1$
     private final Path FILE_WITH_WORKSPACES;
@@ -293,7 +297,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         DBWorkbench.getPlatform();
 
-        resetWorkbenchIfNeeded(instanceLoc);
+        patchWorkbenchXmi(instanceLoc);
         initializeApplication();
 
         // Run instance server
@@ -962,36 +966,99 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         });
     }
 
-    private void resetWorkbenchIfNeeded(@NotNull Location instance) {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        String savedVersion = CommonUtils.nullIfEmpty(store.getString(PROP_WORKBENCH_VERSION));
-        String actualVersion = WORKBENCH_VERSION;
-        if (!CommonUtils.isEmpty(savedVersion) && savedVersion.equals(actualVersion)) {
-            return;
-        }
-
+    private void patchWorkbenchXmi(@NotNull Location instance) {
         Path path = getWorkbenchSaveLocation(instance);
         if (path == null) {
             return;
         }
 
-        log.debug("Resetting workbench due to the version change (" + savedVersion + " -> " + actualVersion + ")");
-
         try {
-            if (Files.deleteIfExists(path)) {
-                DBeaverNotifications.showNotification(
-                    DBeaverNotifications.NT_WORKBENCH_RESET,
-                    CoreApplicationMessages.notification_workbench_reset_title,
-                    CoreApplicationMessages.notification_workbench_reset_message,
-                    null,
-                    null
-                );
+            patchWorkbenchXmi(path);
+        } catch (Exception e) {
+            log.error("Failed to patch workbench save file: " + path, e);
+        }
+    }
+
+    private static void patchWorkbenchXmi(@NotNull Path workbenchXmi) throws Exception {
+        var documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+        var documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        var document = documentBuilder.parse(workbenchXmi.toFile());
+
+        var parts = collectContributedParts();
+        var transformed = patchPartIconsRecursively(document, parts);
+
+        if (transformed) {
+            var transformerFactory = TransformerFactory.newInstance();
+            var transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
+
+            try (OutputStream os = Files.newOutputStream(workbenchXmi)) {
+                var source = new DOMSource(document);
+                var result = new StreamResult(os);
+
+                transformer.transform(source, result);
             }
-        } catch (IOException e) {
-            log.error("Unable to delete workbench save file: " + path, e);
+        }
+    }
+
+    private static boolean patchPartIconsRecursively(@NotNull Node node, @NotNull Map<String, PartDescriptor> parts) {
+        NodeList children = node.getChildNodes();
+        boolean modified = false;
+
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+
+            NamedNodeMap attributes = child.getAttributes();
+            if (attributes != null) {
+                Node elementId = attributes.getNamedItem("elementId");
+                Node iconURI = attributes.getNamedItem("iconURI");
+
+                if (elementId != null && iconURI != null) {
+                    PartDescriptor part = parts.get(elementId.getNodeValue());
+                    if (part != null && !iconURI.getNodeValue().equals(part.icon())) {
+                        log.debug("Replacing icon for part '" + part.id() + "' with '" + part.icon() + "'");
+                        iconURI.setNodeValue(part.icon());
+                        modified = true;
+                    }
+                }
+            }
+
+            modified |= patchPartIconsRecursively(child, parts);
         }
 
-        store.setValue(PROP_WORKBENCH_VERSION, actualVersion);
+        return modified;
+    }
+
+    /**
+     * Collects all contributed views and editors that have icons set.
+     *
+     * @return a map of part IDs to their descriptors.
+     */
+    @NotNull
+    private static Map<String, PartDescriptor> collectContributedParts() {
+        var registry = Platform.getExtensionRegistry();
+
+        var views = Stream.of(registry.getExtensionPoint("org.eclipse.ui.views").getExtensions())
+            .map(IExtension::getConfigurationElements).flatMap(Stream::of)
+            .filter(e -> e.getName().equals("view") && e.getAttribute("icon") != null)
+            .map(PartDescriptor::of)
+            .toList();
+
+        var editors = Stream.of(registry.getExtensionPoint("org.eclipse.ui.editors").getExtensions())
+            .map(IExtension::getConfigurationElements).flatMap(Stream::of)
+            .filter(e -> e.getName().equals("editor") && e.getAttribute("icon") != null)
+            .map(PartDescriptor::of)
+            .toList();
+
+        return Stream.concat(views.stream(), editors.stream())
+            .collect(Collectors.toMap(
+                PartDescriptor::id,
+                Function.identity(),
+                (a, b) -> b
+            ));
     }
 
     @Nullable
@@ -1002,6 +1069,15 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         } catch (IOException e) {
             log.error("Unable to resolve workbench save location: " + instance.getURL(), e);
             return null;
+        }
+    }
+
+    private record PartDescriptor(@NotNull IConfigurationElement element, @NotNull String id, @NotNull String icon) {
+        @NotNull
+        static PartDescriptor of(@NotNull IConfigurationElement element) {
+            String id = element.getAttribute("id");
+            String icon = MenuHelper.getIconURI(element, IWorkbenchRegistryConstants.ATT_ICON);
+            return new PartDescriptor(element, id, icon);
         }
     }
 
