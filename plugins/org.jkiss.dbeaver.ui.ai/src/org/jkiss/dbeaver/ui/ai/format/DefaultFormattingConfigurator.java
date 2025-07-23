@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -61,11 +62,11 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         Composite leftPanel = UIUtils.createComposite(settingsPanel, 1);
         leftPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Group generalComposite = UIUtils.createControlGroup(leftPanel, "General", 2,
+        Group generalComposite = UIUtils.createControlGroup(leftPanel, UIMessages.ui_properties_tree_viewer_category_general, 2,
             GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
         languageText = UIUtils.createLabelCombo(
             generalComposite,
-            "Language",
+            UIMessages.controls_locale_selector_label_language,
             SWT.DROP_DOWN);
         languageText.setToolTipText(
                 """
