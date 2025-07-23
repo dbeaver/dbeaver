@@ -59,6 +59,9 @@ public class CubridStructureAssistant extends JDBCStructureAssistant<JDBCExecuti
     ) throws DBException, SQLException {
 
         GenericSchema parentSchema = params.getParentObject() instanceof GenericSchema ? (GenericSchema) params.getParentObject() : null;
+        if (parentSchema == null && !params.isGlobalSearch()) {
+            parentSchema = (GenericSchema) executionContext.getContextDefaults().getDefaultSchema();
+        }
         if (objectType == RelationalObjectType.TYPE_TABLE) {
             findTablesByMask(session, parentSchema, params.getMask(), references);
         }
