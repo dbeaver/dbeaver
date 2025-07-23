@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.ZonedDateTime;
@@ -68,6 +70,11 @@ public class AIPromptBuilder {
         @Nullable DBSLogicalDataSource dataSource,
         @NotNull AIPromptFormatter formatter
     ) {
+        String language = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_RESPONSE_LANGUAGE);
+        if (!CommonUtils.isEmpty(language)) {
+            promptBuilder.useLanguage(language);
+        }
+
         if (promptBuilder.isUseSqlGenerateInstructions()) {
             promptBuilder.addInstructions(promptBuilder.createInstructionList(dataSource));
             promptBuilder.addInstructions(formatter.getExtraInstructions().toArray(new String[0]));
@@ -174,7 +181,7 @@ public class AIPromptBuilder {
             instructions.add(stringsQuoteRule);
         }
         if (useLanguage != null) {
-            instructions.add("Use language '" + useLanguage + "'.");
+            instructions.add("Use language '" + useLanguage + "' in your responses.");
         } else {
             instructions.add("Use the same language as the user.");
         }
