@@ -114,7 +114,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog {
 
     @Override
     protected boolean isAutoLayoutAvailable() {
-        return false;
+        return true;
     }
 
     @Override
