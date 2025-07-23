@@ -20,17 +20,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionTextProvider;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSStructContainer;
+import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
@@ -56,6 +54,12 @@ public class SQLQueryRowsSourceContext {
     @NotNull
     private final Map<String, SourceResolutionResult> sourcesByLoweredAlias;
 
+    @Nullable
+    private ListNode<SQLQueryRowsSourceContext> targetRowContexts = null;
+
+    @Nullable
+    private ListNode<SQLQueryRowsDataContext> targetDataContexts = null;
+
     public SQLQueryRowsSourceContext(@NotNull SQLQueryConnectionContext connectionInfo) {
         this(connectionInfo, false);
     }
@@ -69,17 +73,26 @@ public class SQLQueryRowsSourceContext {
     }
 
     private SQLQueryRowsSourceContext(
-        @NotNull SQLQueryConnectionContext connectionInfo,
+        @NotNull SQLQueryRowsSourceContext parent,
         boolean hasUnresolvedSource,
         @NotNull Map<SQLQueryComplexName, SourceResolutionResult> rowsSources,
         @NotNull Map<String, SourceResolutionResult> dynamicTableSources,
         @NotNull Map<String, SourceResolutionResult> sourcesByLoweredAlias
     ) {
-        this.connectionInfo = connectionInfo;
+        parent.registerConsumingContext(this);
+        this.connectionInfo = parent.connectionInfo;
         this.hasUnresolvedSource = hasUnresolvedSource;
         this.rowsSources = rowsSources;
         this.dynamicTableSources = dynamicTableSources;
         this.sourcesByLoweredAlias = sourcesByLoweredAlias;
+    }
+
+    private void registerConsumingContext(@NotNull SQLQueryRowsSourceContext context) {
+        this.targetRowContexts = ListNode.push(this.targetRowContexts, context);
+    }
+
+    void registerConsumingContext(@NotNull SQLQueryRowsDataContext context) {
+        this.targetDataContexts = ListNode.push(this.targetDataContexts, context);
     }
 
     @NotNull
@@ -346,22 +359,45 @@ public class SQLQueryRowsSourceContext {
      * Returns information about resolved sources with ability to separately provide tables and aliases used in the query
      */
     @NotNull
-    public SQLQuerySourcesInfoCollection getKnownSources() {
+    public SQLQuerySourcesInfoCollection getKnownSources(boolean forQuerySubscope) {
+        ListNode<SQLQueryRowsSourceContext> queue = ListNode.of(this);
+        Set<SQLQueryRowsSourceContext> queued = new HashSet<>();
+        queued.add(this);
+
+        Set<SourceResolutionResult>  allSourceResolutions = new HashSet<>();
+
+        while (queue != null) {
+            SQLQueryRowsSourceContext source = queue.data;
+            queue = queue.next;
+
+            allSourceResolutions.addAll(source.rowsSources.values());
+            allSourceResolutions.addAll(source.sourcesByLoweredAlias.values());
+            allSourceResolutions.addAll(source.dynamicTableSources.values());
+
+            if (forQuerySubscope) {
+                for (ListNode<SQLQueryRowsSourceContext> item = source.targetRowContexts; item != null; item = item.next) {
+                    if (queued.add(item.data)) {
+                        queue = ListNode.push(queue, item.data);
+                    }
+                }
+            }
+        }
+
         return new SQLQuerySourcesInfoCollection() {
             // combine inferred sources (from the underlying query expression) and dynamically provided (from the enclosing CTE)
             private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> resolutionResults =
-                Stream.of(rowsSources.values(), sourcesByLoweredAlias.values(), dynamicTableSources.values())
-                    .flatMap(Collection::stream)
-                    .distinct()
-                    .collect(Collectors.toMap(s -> s.source, Function.identity()));
+                allSourceResolutions.stream().collect(Collectors.toMap(s -> s.source, Function.identity()));
 
-            private final Set<DBSObject> referencedTables = rowsSources.values().stream().map(s -> s.tableOrNull)
+            private final Set<DBSObject> referencedTables = allSourceResolutions.stream()
+                .map(s -> s.tableOrNull)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-            private final Set<String> aliasesInUse = rowsSources.values().stream().map(s -> s.aliasOrNull)
+            private final Set<String> aliasesInUse = allSourceResolutions.stream()
+                .map(s -> s.aliasOrNull)
                 .filter(Objects::nonNull)
                 .map(SQLQuerySymbol::getName)
+                .map(String::toLowerCase)
                 .collect(Collectors.toSet());
 
             @NotNull
@@ -391,7 +427,7 @@ public class SQLQueryRowsSourceContext {
         boolean hasUnresolvedSource
     ) {
         return new SQLQueryRowsSourceContext(
-            this.connectionInfo,
+            this,
             hasUnresolvedSource,
             rowsSources,
             this.dynamicTableSources,
@@ -402,7 +438,7 @@ public class SQLQueryRowsSourceContext {
     @NotNull
     private SQLQueryRowsSourceContext setDynamicRowsSources(@NotNull Map<String, SourceResolutionResult> dynamicTableSources) {
         return new SQLQueryRowsSourceContext(
-            this.connectionInfo,
+            this,
             this.hasUnresolvedSource,
             this.rowsSources,
             dynamicTableSources,
