@@ -181,7 +181,7 @@ public class AIPromptBuilder {
             instructions.add(stringsQuoteRule);
         }
         if (useLanguage != null) {
-            instructions.add("Use language '" + useLanguage + "' in your responses.");
+            instructions.add("Use " + useLanguage + " language in your responses.");
         } else {
             instructions.add("Use the same language as the user.");
         }
