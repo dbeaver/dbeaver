@@ -21,6 +21,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -90,16 +92,32 @@ public class DatabaseObjectsSelectorPanel extends Composite {
             checkboxTreeManager = new DatabaseObjectsTreeManager(runnableContext, viewer,
                 new Class[]{DBSDataContainer.class});
             viewer.addCheckStateListener(event -> onSelectionChange(event.getElement()));
+            viewer.addDoubleClickListener(event ->
+            {
+                Object firstElement = viewer.getStructuredSelection().getFirstElement();
+                checkboxTreeManager.updateElementsCheck(
+                    new Object[]{firstElement},
+                    viewer.getChecked(firstElement),
+                    true,
+                    true);
+            });
         } else {
             dataSourceTree.getViewer().addSelectionChangedListener(event -> onSelectionChange(
                 ((IStructuredSelection)event.getSelection()).getFirstElement()));
         }
     }
 
+    @NotNull
     public DatabaseNavigatorTree getNavigatorTree() {
         return dataSourceTree;
     }
 
+    @NotNull
+    public DatabaseObjectsTreeManager getCheckboxTreeManager() {
+        return checkboxTreeManager;
+    }
+
+    @Nullable
     protected DBPProject getSelectedProject() {
         return NavigatorUtils.getSelectedProject();
     }
@@ -140,8 +158,8 @@ public class DatabaseObjectsSelectorPanel extends Composite {
                 }
                 first = false;
             }
-            if (treeViewer instanceof CheckboxTreeViewer) {
-                ((CheckboxTreeViewer) treeViewer).setChecked(node, true);
+            if (treeViewer instanceof CheckboxTreeViewer checkboxTreeViewer) {
+                checkboxTreeViewer.setChecked(node, true);
             }
         }
         if (treeViewer instanceof CheckboxTreeViewer) {
@@ -162,8 +180,8 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         Object[] checkedElements = dataSourceTree.getCheckboxViewer().getCheckedElements();
         List<DBNNode> result = new ArrayList<>(checkedElements.length);
         for (Object element : checkedElements) {
-            if (element instanceof DBNNode) {
-                result.add((DBNNode) element);
+            if (element instanceof DBNNode nodes) {
+                result.add(nodes);
             }
         }
         return result;
