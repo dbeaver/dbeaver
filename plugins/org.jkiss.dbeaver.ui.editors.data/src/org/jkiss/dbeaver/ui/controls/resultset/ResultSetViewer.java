@@ -5187,7 +5187,7 @@ public class ResultSetViewer extends Viewer
                 UIUtils.asyncExec(() -> {
                     filtersPanel.enableFilters(false);
                     getAutoRefresh().enableControls(false);
-;               });
+                });
             }
         }
 
