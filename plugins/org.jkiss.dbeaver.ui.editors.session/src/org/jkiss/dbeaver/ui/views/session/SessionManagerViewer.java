@@ -121,7 +121,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        sashMain = UIUtils.createPartDivider(workbenchPart, composite, SWT.VERTICAL | SWT.SMOOTH);
+        sashMain = UIUtils.createPartDivider(workbenchPart, composite, UIUtils.checkSashStyle(SWT.VERTICAL | SWT.SMOOTH));
         sashMain.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         refreshControl = new AutoRefreshControl(sashMain, sessionManager.getClass().getSimpleName(), monitor -> UIUtils.syncExec(this::refreshSessions));
@@ -136,7 +136,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
 
         {
-            sashDetails = UIUtils.createPartDivider(workbenchPart, sashMain, SWT.HORIZONTAL | SWT.SMOOTH);
+            sashDetails = UIUtils.createPartDivider(workbenchPart, sashMain, UIUtils.checkSashStyle(SWT.HORIZONTAL | SWT.SMOOTH));
             sashDetails.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             {

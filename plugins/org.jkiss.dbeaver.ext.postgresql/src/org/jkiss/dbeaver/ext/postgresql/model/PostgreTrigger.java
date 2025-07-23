@@ -123,7 +123,7 @@ public class PostgreTrigger extends PostgreTriggerBase implements DBSEntityEleme
 
         Object attrNumbersObject = JDBCUtils.safeGetObject(dbResult, "tgattr");
         if (attrNumbersObject != null) {
-            int[] attrNumbers = PostgreUtils.getIntVector(attrNumbersObject);
+            int[] attrNumbers = PostgreUtils.getIntVector(attrNumbersObject, getDataSource());
             if (attrNumbers != null) {
                 int attrCount = attrNumbers.length;
                 columnRefs = new PostgreTableColumn[attrCount];
