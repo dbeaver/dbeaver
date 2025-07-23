@@ -23,15 +23,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.prompt.AIPromptFormatter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 
-public class DefaultFormattingConfigurator implements IObjectPropertyConfigurator<AIPromptFormatter, AISettings> {
+public class DefaultFormattingConfigurator implements IObjectPropertyConfigurator<AISchemaGenerator, AISettings> {
     private Button includeSourceTextInCommentCheck;
     private Button executeQueryImmediatelyCheck;
 
@@ -45,7 +45,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     @Override
     public void createControl(
         @NotNull Composite parent,
-        AIPromptFormatter object,
+        AISchemaGenerator object,
         @NotNull Runnable propertyChangeListener
     ) {
         settingsPanel = UIUtils.createComposite(parent, 2);
