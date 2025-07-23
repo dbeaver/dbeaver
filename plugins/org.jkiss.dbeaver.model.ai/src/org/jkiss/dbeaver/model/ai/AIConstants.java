@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.model.ai;
  * GPT preference constants
  */
 public class AIConstants {
-    public static final String CORE_FORMATTER = "core";
-
     public static final String AI_LOG_QUERY = "gpt.log.query";
 
     public static final int MAX_RESPONSE_TOKENS = 2000;
