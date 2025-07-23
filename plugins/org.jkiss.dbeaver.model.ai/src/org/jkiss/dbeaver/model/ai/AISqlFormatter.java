@@ -14,33 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine;
+package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
-import java.util.List;
-
-public record AIEngineRequest(
-    @NotNull List<AIMessage> messages
-) {
-
-    public static AIEngineRequest of(
+public interface AISqlFormatter {
+    String formatGeneratedQuery(
         @NotNull DBRProgressMonitor monitor,
-        AIEngine engine,
-        List<AIMessage> messages
-    ) throws DBException {
-        int maxRequestSize = engine.getMaxRequestSize(monitor);
-        List<AIMessage> truncatedMessages = AIUtils.truncateMessages(messages, maxRequestSize);
-        return new AIEngineRequest(truncatedMessages);
-    }
-
-    @Override
-    public String toString() {
-        return "AI request " + messages;
-    }
-
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSObjectContainer mainObject,
+        @NotNull String completionText
+    );
 }
