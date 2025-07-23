@@ -421,8 +421,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         return treeFilter != null && treeFilter.isActive();
     }
 
-    public boolean isMatchingNeeded(Object element) {
-        return treeFilter.isMatchingNeeded(element);
+    public boolean isMatchingNeeded(@NotNull Object element) {
+        return treeFilter != null && treeFilter.isMatchingNeeded(element);
     }
 
     public void resetFilter() {
