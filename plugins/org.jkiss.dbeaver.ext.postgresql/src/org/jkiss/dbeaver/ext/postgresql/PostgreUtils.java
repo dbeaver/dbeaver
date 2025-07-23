@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerTypeRegistry;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -120,21 +121,12 @@ public class PostgreUtils {
         return null;
     }
 
-    public static boolean isPGObject(Object object) {
-        if (object == null) {
-            return false;
-        }
-        String className = object.getClass().getName();
-        return className.equals(PostgreConstants.PG_OBJECT_CLASS) ||
-            className.equals(PostgreConstants.RS_OBJECT_CLASS) ||
-            className.equals(PostgreConstants.EDB_OBJECT_CLASS);
-    }
-
-    public static Object extractPGObjectValue(Object pgObject) {
+    @Nullable
+    public static Object extractPGObjectValue(@Nullable Object pgObject, @Nullable DBPDataSource dataSource) {
         if (pgObject == null) {
             return null;
         }
-        if (!isPGObject(pgObject)) {
+        if (!isPgObject(dataSource, pgObject)) {
             return pgObject;
         }
         try {
@@ -171,8 +163,8 @@ public class PostgreUtils {
         return null;
     }
 
-    public static long[] getIdVector(Object pgObject) {
-        Object pgVector = extractPGObjectValue(pgObject);
+    public static long[] getIdVector(@Nullable Object pgObject, @NotNull DBPDataSource dataSource) {
+        Object pgVector = extractPGObjectValue(pgObject, dataSource);
         if (pgVector == null) {
             return null;
         }
@@ -223,8 +215,8 @@ public class PostgreUtils {
         }
     }
 
-    public static int[] getIntVector(Object pgObject) {
-        Object pgVector = extractPGObjectValue(pgObject);
+    public static int[] getIntVector(@Nullable Object pgObject, @NotNull DBPDataSource dataSource) {
+        Object pgVector = extractPGObjectValue(pgObject, dataSource);
         if (pgVector == null) {
             return null;
         }
@@ -792,7 +784,7 @@ public class PostgreUtils {
         String[] aclValues = new String[aclValuesCount];
         for (int i = 0; i < aclValuesCount; i++) {
             Object aclItem = Array.get(itemArray, i);
-            String aclValue = CommonUtils.toString(extractPGObjectValue(aclItem));
+            String aclValue = CommonUtils.toString(extractPGObjectValue(aclItem, owner.getDataSource()));
             // Quoted role names are stored with escaped quotes. We don't need quotes here (#13477)
             aclValue = aclValue.replace("\\\"", "\"");
             aclValues[i] = aclValue;
@@ -1058,8 +1050,16 @@ public class PostgreUtils {
                 break;
             }
         }
-        if (lastPos < 0) lastPos = url.length();
+        if (lastPos < 0) {
+            lastPos = url.length();
+        }
         return lastPos;
     }
 
+    public static boolean isPgObject(@NotNull DBPDataSource dataSource, @NotNull Object object) {
+        if (dataSource instanceof PostgreDataSource postgreDataSource) {
+            return postgreDataSource.getServerType().isPGObject(object);
+        }
+        return false;
+    }
 }
