@@ -51,7 +51,8 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         settingsPanel = UIUtils.createComposite(parent, 2);
         settingsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Group completionComposite = UIUtils.createControlGroup(settingsPanel, "SQL Completion", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Group completionComposite = UIUtils.createControlGroup(settingsPanel, "SQL Completion", 1,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
         UIUtils.createControlLabel(completionComposite, AIUIMessages.gpt_preference_page_advanced_appearance_group, 2);
         Composite appearanceSettings = UIUtils.createComposite(completionComposite, 2);
         appearanceSettings.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
