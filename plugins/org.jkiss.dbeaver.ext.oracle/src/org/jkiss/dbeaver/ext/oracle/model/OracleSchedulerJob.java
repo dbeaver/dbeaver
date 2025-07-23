@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -817,5 +818,12 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
             schema.schedulerJobCache.removeObject(this, false);
         }
         return this;
+    }
+
+    public static class OracleSchedulerJobModifyValueValidator implements IPropertyValueValidator<OracleSchedulerJob, Object> {
+        @Override
+        public boolean isValidValue(OracleSchedulerJob object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().supportsSchedulerJobEdit();
+        }
     }
 }

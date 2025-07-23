@@ -51,6 +51,7 @@ public class SchedulerJobActionEditor extends SQLSourceViewer<OracleSchedulerJob
 
     @Override
     protected boolean isReadOnly() {
-        return false;
+        OracleSchedulerJob schedulerJob = getSourceObject();
+        return schedulerJob == null || !schedulerJob.getDataSource().supportsSchedulerJobEdit();
     }
 }
