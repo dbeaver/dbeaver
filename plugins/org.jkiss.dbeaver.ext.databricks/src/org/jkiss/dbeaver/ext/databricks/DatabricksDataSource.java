@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.databricks;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -32,7 +31,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
+import java.util.Properties;
 
 public class DatabricksDataSource extends GenericDataSource {
 
@@ -60,19 +59,19 @@ public class DatabricksDataSource extends GenericDataSource {
         return CommonUtils.equalObjects(DatabricksConstants.DRIVER_CLASS_LEGACY, getContainer().getDriver().getDriverClassName());
     }
 
-
+    @NotNull
     @Override
-    protected Connection openConnection(
+    protected Properties getAllConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable JDBCExecutionContext context,
-        @NotNull DBPConnectionConfiguration connectionInfo,
-        @NotNull String purpose
+        JDBCExecutionContext context,
+        String purpose,
+        DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
         String userAgent = URLEncoder.encode(
             GeneralUtils.getProductName() + "/" + GeneralUtils.getProductVersion(),
             StandardCharsets.UTF_8
         );
         connectionInfo.setProperty(DatabricksConstants.USER_AGENT_ENTRY, userAgent);
-        return super.openConnection(monitor, context, connectionInfo, purpose);
+        return super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
     }
 }
