@@ -148,8 +148,7 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
             DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE)
         );
 
-        boolean isMatchingNeeded = children.length > 0 && navigatorTree.isMatchingNeeded(children[0]);
-        boolean searchBarIsActive = navigatorTree.isFilterActive() && isMatchingNeeded;
+        boolean searchBarIsActive = isSearchBarActive(children);
         if (parent.isFiltered() || maxFetchSize < children.length) {
             final List<Object> nodes = new ArrayList<>(maxFetchSize);
 
@@ -178,6 +177,15 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
             return nodes.toArray();
         } else {
             return children;
+        }
+    }
+
+    private boolean isSearchBarActive(@NotNull DBNNode[] children) {
+        if (navigatorTree == null) {
+            return false;
+        } else {
+            boolean isMatchingNeeded = children.length > 0 && navigatorTree.isMatchingNeeded(children[0]);
+            return navigatorTree.isFilterActive() && isMatchingNeeded;
         }
     }
 
