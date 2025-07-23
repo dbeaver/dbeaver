@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptBuilder;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptFormatter;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AIFormatterRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
@@ -215,8 +216,16 @@ public class AIAssistantImpl implements AIAssistant {
         throw new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
     }
 
-    protected AIEngine getActiveEngine() throws DBException {
+    @NotNull
+    @Override
+    public AIEngine getActiveEngine() throws DBException {
         return engineRegistry.getCompletionEngine(settingsRegistry.getSettings().activeEngine());
+    }
+
+    @Nullable
+    @Override
+    public AIEngineDescriptor getActiveEngineDescriptor() {
+        return engineRegistry.getEngineDescriptor(settingsRegistry.getSettings().activeEngine());
     }
 
     protected AIEngineResponse requestCompletion(
