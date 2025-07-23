@@ -126,9 +126,13 @@ public class OpenAIClient {
         client.close();
     }
 
-    private HttpRequest applyFilters(HttpRequest request) throws DBException {
+    public HttpRequest applyFilters(@NotNull HttpRequest request) throws DBException {
+        return applyFilters(request, true);
+    }
+
+    public HttpRequest applyFilters(@NotNull HttpRequest request, boolean setContentType) throws DBException {
         for (HttpRequestFilter filter : requestFilters) {
-            request = filter.filter(request);
+            request = filter.filter(request, setContentType);
         }
         return request;
     }
@@ -153,6 +157,6 @@ public class OpenAIClient {
 
     public interface HttpRequestFilter {
         @NotNull
-        HttpRequest filter(@NotNull HttpRequest request) throws DBException;
+        HttpRequest filter(@NotNull HttpRequest request, boolean setContentType) throws DBException;
     }
 }
