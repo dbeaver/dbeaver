@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEvent {
     public static final String ADDED = "cb_rm_project_added";
+    public static final String UPDATED = "cb_rm_project_updated";
     public static final String REMOVED = "cb_rm_project_removed";
 
     @NotNull
@@ -44,6 +45,19 @@ public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEv
     ) {
         return new WSProjectUpdateEvent(
             ADDED,
+            sessionId,
+            userId,
+            projectId
+        );
+    }
+
+    public static WSProjectUpdateEvent update(
+        @Nullable String sessionId,
+        @Nullable String userId,
+        @NotNull String projectId
+    ) {
+        return new WSProjectUpdateEvent(
+            UPDATED,
             sessionId,
             userId,
             projectId
