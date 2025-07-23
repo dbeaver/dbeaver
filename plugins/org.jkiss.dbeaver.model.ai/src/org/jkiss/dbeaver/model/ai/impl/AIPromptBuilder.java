@@ -54,53 +54,6 @@ public class AIPromptBuilder {
         return new AIPromptBuilder();
     }
 
-    @NotNull
-    public static AIPromptBuilder createForDataSource(@Nullable DBSLogicalDataSource dataSource, @NotNull AIPromptFormatter formatter) {
-        AIPromptBuilder promptBuilder = new AIPromptBuilder();
-
-        return fullForDataSource(promptBuilder, dataSource, formatter);
-    }
-
-    @NotNull
-    public static AIPromptBuilder fullForDataSource(
-        @NotNull AIPromptBuilder promptBuilder,
-        @Nullable DBSLogicalDataSource dataSource,
-        @NotNull AIPromptFormatter formatter
-    ) {
-        String language = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_RESPONSE_LANGUAGE);
-        if (!CommonUtils.isEmpty(language)) {
-            promptBuilder.useLanguage(language);
-        }
-
-        if (promptBuilder.isUseSqlGenerateInstructions()) {
-            promptBuilder.addInstructions(promptBuilder.createInstructionList(dataSource));
-            promptBuilder.addInstructions(formatter.getExtraInstructions().toArray(new String[0]));
-        }
-
-        promptBuilder.addContexts(describeContext(dataSource));
-
-        return promptBuilder;
-    }
-
-    public AIPromptBuilder showSummary(boolean show) {
-        this.showSummary = show;
-        return this;
-    }
-
-    public AIPromptBuilder useLanguage(String language) {
-        this.useLanguage = language;
-        return this;
-    }
-
-    public boolean isUseSqlGenerateInstructions() {
-        return useSqlGenerateInstructions;
-    }
-
-    public AIPromptBuilder useSqlGenerateInstructions(boolean use) {
-        this.useSqlGenerateInstructions = use;
-        return this;
-    }
-
     public AIPromptBuilder addGoals(@NotNull String... goals) {
         this.goals.addAll(Arrays.asList(goals));
         return this;
@@ -210,7 +163,8 @@ public class AIPromptBuilder {
         if (stringsQuoteRule != null) {
             instructions.add(stringsQuoteRule);
         }
-        if (useLanguage != null) {
+        String useLanguage = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_RESPONSE_LANGUAGE);
+        if (!CommonUtils.isEmpty(useLanguage)) {
             instructions.add("Use " + useLanguage + " language in your responses.");
         } else {
             instructions.add("Use the same language as the user.");

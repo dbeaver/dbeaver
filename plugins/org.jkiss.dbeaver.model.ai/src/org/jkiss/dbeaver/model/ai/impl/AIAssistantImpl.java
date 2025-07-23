@@ -17,17 +17,12 @@
 package org.jkiss.dbeaver.model.ai.impl;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.prompt.AIPromptBuilder;
-import org.jkiss.dbeaver.model.ai.prompt.AIPromptFormatter;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISchemaGeneratorRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISqlFormatterRegistry;
+import org.jkiss.dbeaver.model.ai.registry.*;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -103,7 +98,7 @@ public class AIAssistantImpl implements AIAssistant {
         MessageChunk[] messageChunks = processAndSplitCompletion(
             monitor,
             request.context(),
-            completionResponse.variants().get(0)
+            completionResponse.variants().getFirst()
         );
 
         return AITextUtils.convertToSQL(
@@ -156,7 +151,7 @@ public class AIAssistantImpl implements AIAssistant {
         MessageChunk[] messageChunks = processAndSplitCompletion(
             monitor,
             request.context(),
-            completionResponse.variants().get(0)
+            completionResponse.variants().getFirst()
         );
 
         String finalSQL = null;
