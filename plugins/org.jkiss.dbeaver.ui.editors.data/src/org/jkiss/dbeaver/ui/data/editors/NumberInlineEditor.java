@@ -101,7 +101,7 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
             return null;
         }
         Object curValue = valueController.getValue();
-        if (curValue instanceof String) {
+        if (curValue instanceof String || curValue instanceof Boolean) {
             return text;
         }
         Class<?> hintType = curValue instanceof Number ?
