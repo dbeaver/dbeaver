@@ -137,7 +137,9 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
             "",
             SWT.BORDER | SWT.PASSWORD
         );
-        tokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 150;
+        tokenText.setLayoutData(gd);
         tokenText.addModifyListener((e -> token = tokenText.getText()));
         tokenText.setMessage("API access token");
         createURLInfoLink(parent);
