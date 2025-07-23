@@ -53,7 +53,7 @@ public class CommandLineContext implements AutoCloseable {
         this.results.add(result);
     }
 
-    @Nullable
+    @NotNull
     public List<Object> getResults() {
         return List.of(results);
     }

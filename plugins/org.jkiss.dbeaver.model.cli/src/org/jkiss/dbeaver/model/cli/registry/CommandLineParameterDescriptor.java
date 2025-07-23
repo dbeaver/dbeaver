@@ -79,6 +79,9 @@ public class CommandLineParameterDescriptor {
         return name;
     }
 
+    /**
+     *
+     */
     public boolean isContextInitializer() {
         return contextInitializer;
     }

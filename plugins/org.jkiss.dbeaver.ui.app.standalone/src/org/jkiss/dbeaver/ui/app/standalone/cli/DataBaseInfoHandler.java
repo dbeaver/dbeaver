@@ -63,7 +63,12 @@ public class DataBaseInfoHandler implements ICommandLineParameterHandler {
         .create();
 
     @Override
-    public void handleParameter(CommandLine commandLine, String name, String directory, CommandLineContext context) {
+    public void handleParameter(
+        @NotNull CommandLine commandLine,
+        @NotNull String name,
+        String directory,
+        @NotNull CommandLineContext context
+    ) {
         Path path = Path.of(directory);
         if (!path.toFile().exists()) {
             log.error("Directory by path '" + directory + "' does not exists"); //$NON-NLS-1$

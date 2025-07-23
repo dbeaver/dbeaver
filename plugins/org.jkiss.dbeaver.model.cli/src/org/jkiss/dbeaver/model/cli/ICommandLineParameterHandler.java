@@ -22,6 +22,11 @@ import org.jkiss.code.Nullable;
 
 public interface ICommandLineParameterHandler {
 
-    void handleParameter(@NotNull CommandLine commandLine, @NotNull String name, @Nullable String value, CommandLineContext context);
+    void handleParameter(
+        @NotNull CommandLine commandLine,
+        @NotNull String name,
+        @Nullable String value,
+        @NotNull CommandLineContext context
+    );
 
 }
