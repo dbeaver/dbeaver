@@ -90,8 +90,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
     protected void createAdditionalSettings(@NotNull Composite parent) {
         logQueryCheck = UIUtils.createCheckbox(
             parent,
-            "Write GPT queries to debug log",
-            "Write GPT queries with metadata info in debug logs",
+            "Write AI queries to debug log",
+            "Write AI queries with metadata info in debug logs",
             false,
             2
         );

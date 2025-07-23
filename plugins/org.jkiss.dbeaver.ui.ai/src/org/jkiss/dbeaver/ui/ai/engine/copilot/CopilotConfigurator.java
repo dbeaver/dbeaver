@@ -163,8 +163,8 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     private void createAdditionalSettings(@NotNull Composite parent) {
         logQueryCheck = UIUtils.createCheckbox(
             parent,
-            "Write GPT queries to debug log",
-            "Write GPT queries with metadata info in debug logs",
+            "Write AI queries to debug log",
+            "Write AI queries with metadata info in the debug logs",
             false,
             2
         );
