@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.prompt;
+package org.jkiss.dbeaver.model.ai.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -43,58 +43,13 @@ public class AIPromptBuilder {
     @Nullable
     private String databaseSnapshot;
     private final List<String> outputFormats = new ArrayList<>();
-    private String useLanguage;
-    private boolean showSummary;
-    private boolean useSqlGenerateInstructions = true;
 
     private AIPromptBuilder() {
     }
 
     @NotNull
-    public static AIPromptBuilder createEmpty() {
+    public static AIPromptBuilder create() {
         return new AIPromptBuilder();
-    }
-
-    @NotNull
-    public static AIPromptBuilder createForDataSource(@Nullable DBSLogicalDataSource dataSource, @NotNull AIPromptFormatter formatter) {
-        AIPromptBuilder promptBuilder = new AIPromptBuilder();
-
-        return fullForDataSource(promptBuilder, dataSource, formatter);
-    }
-
-    @NotNull
-    public static AIPromptBuilder fullForDataSource(
-        @NotNull AIPromptBuilder promptBuilder,
-        @Nullable DBSLogicalDataSource dataSource,
-        @NotNull AIPromptFormatter formatter
-    ) {
-        if (promptBuilder.isUseSqlGenerateInstructions()) {
-            promptBuilder.addInstructions(promptBuilder.createInstructionList(dataSource));
-            promptBuilder.addInstructions(formatter.getExtraInstructions().toArray(new String[0]));
-        }
-
-        promptBuilder.addContexts(describeContext(dataSource));
-
-        return promptBuilder;
-    }
-
-    public AIPromptBuilder showSummary(boolean show) {
-        this.showSummary = show;
-        return this;
-    }
-
-    public AIPromptBuilder useLanguage(String language) {
-        this.useLanguage = language;
-        return this;
-    }
-
-    public boolean isUseSqlGenerateInstructions() {
-        return useSqlGenerateInstructions;
-    }
-
-    public AIPromptBuilder useSqlGenerateInstructions(boolean use) {
-        this.useSqlGenerateInstructions = use;
-        return this;
     }
 
     public AIPromptBuilder addGoals(@NotNull String... goals) {
@@ -156,35 +111,7 @@ public class AIPromptBuilder {
         return prompt.toString();
     }
 
-    private String[] createInstructionList(@Nullable DBSLogicalDataSource dataSource) {
-        SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
-            SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
-        List<String> instructions = new ArrayList<>();
-        instructions.add("You are the DBeaver AI assistant.");
-        instructions.add("Act as a database architect and SQL expert.");
-        instructions.add("Rely only on the schema information provided below.");
-        instructions.add("Stick strictly to " + dialect.getDialectName() + " syntax.");
-        instructions.add("Do not invent columns, tables, or data that aren’t explicitly defined.");
-        String quoteRule = identifiersQuoteRule(dialect);
-        if (quoteRule != null) {
-            instructions.add(quoteRule);
-        }
-        String stringsQuoteRule = stringsQuoteRule(dialect);
-        if (stringsQuoteRule != null) {
-            instructions.add(stringsQuoteRule);
-        }
-        if (useLanguage != null) {
-            instructions.add("Use language '" + useLanguage + "'.");
-        } else {
-            instructions.add("Use the same language as the user.");
-        }
-        if (showSummary) {
-            instructions.add("Write a very short one-sentence summary of this conversation (for chat caption) in the end of response in xml tag <summary>.");
-        }
-        return instructions.toArray(new String[0]);
-    }
-
-    private static String[] describeContext(@Nullable DBSLogicalDataSource dataSource) {
+    public static String[] describeContext(@Nullable DBSLogicalDataSource dataSource) {
         SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
             SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
         List<String> lines = new ArrayList<>();
@@ -215,6 +142,28 @@ public class AIPromptBuilder {
         lines.add("SQL dialect: " + dialect.getDialectName());
         lines.add("Current date and time: " + DateTimeFormatter.ISO_DATE_TIME.format(ZonedDateTime.now()));
         return lines.toArray(String[]::new);
+    }
+
+    public static String[] createInstructionList(@Nullable DBSLogicalDataSource dataSource) {
+        SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
+            SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
+        List<String> instructions = new ArrayList<>();
+        instructions.add("You are the DBeaver AI assistant.");
+        instructions.add("Act as a database architect and SQL expert.");
+        instructions.add("Rely only on the schema information provided below.");
+        instructions.add("Stick strictly to " + dialect.getDialectName() + " syntax.");
+        instructions.add("Do not invent columns, tables, or data that aren’t explicitly defined.");
+        String quoteRule = identifiersQuoteRule(dialect);
+        if (quoteRule != null) {
+            instructions.add(quoteRule);
+        }
+        String stringsQuoteRule = stringsQuoteRule(dialect);
+        if (stringsQuoteRule != null) {
+            instructions.add(stringsQuoteRule);
+        }
+        instructions.add("Use the same language as the user.");
+
+        return instructions.toArray(new String[0]);
     }
 
     @Nullable
