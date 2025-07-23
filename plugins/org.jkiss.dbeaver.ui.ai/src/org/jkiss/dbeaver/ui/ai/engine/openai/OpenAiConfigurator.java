@@ -35,7 +35,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
-public class OpenAiConfigurator implements IObjectPropertyConfigurator<AIEngine, LegacyAISettings<OpenAIProperties>> {
+public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends OpenAIProperties>
+    implements IObjectPropertyConfigurator<ENGINE, LegacyAISettings<PROPERTIES>> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String token = "";
     protected String model = "";
@@ -65,7 +66,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<AIEngine,
     }
 
     @Override
-    public void loadSettings(@NotNull LegacyAISettings<OpenAIProperties> configuration) {
+    public void loadSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
         token = CommonUtils.toString(configuration.getProperties().getToken());
         model = readModel(configuration).getName();
         temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
@@ -74,7 +75,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<AIEngine,
     }
 
     @Override
-    public void saveSettings(@NotNull LegacyAISettings<OpenAIProperties> configuration) {
+    public void saveSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
         configuration.getProperties().setToken(token);
         configuration.getProperties().setModel(model);
         configuration.getProperties().setTemperature(Double.parseDouble(temperature));
@@ -82,7 +83,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<AIEngine,
     }
 
     @Override
-    public void resetSettings(@NotNull LegacyAISettings<OpenAIProperties> openAIPropertiesLegacyAISettings) {
+    public void resetSettings(@NotNull LegacyAISettings<PROPERTIES> openAIPropertiesLegacyAISettings) {
 
     }
 
@@ -162,7 +163,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<AIEngine,
         return API_KEY_URL;
     }
 
-    private OpenAIModel readModel(@NotNull LegacyAISettings<OpenAIProperties> configuration) {
+    private OpenAIModel readModel(@NotNull LegacyAISettings<PROPERTIES> configuration) {
         return OpenAIModel.getByName(CommonUtils.toString(configuration.getProperties().getModel(), getDefaultModel()));
     }
 
