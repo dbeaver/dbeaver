@@ -79,6 +79,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.navigator.database.load.ContextMenuTreeNodeSpecial;
 import org.jkiss.dbeaver.ui.navigator.dnd.NavigatorDragSourceListener;
 import org.jkiss.dbeaver.ui.navigator.dnd.NavigatorDropTargetListener;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
@@ -116,6 +117,20 @@ public class NavigatorUtils {
                 return (DBNNode) selectedObject;
             } else if (selectedObject != null) {
                 return RuntimeUtils.getObjectAdapter(selectedObject, DBNNode.class);
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static ContextMenuTreeNodeSpecial getSelectedSpecialNode(@Nullable ISelection selection) {
+        if (selection == null || selection.isEmpty()) {
+            return null;
+        }
+        if (selection instanceof IStructuredSelection structuredSelection) {
+            Object selectedObject = structuredSelection.getFirstElement();
+            if (selectedObject instanceof ContextMenuTreeNodeSpecial node) {
+                return node;
             }
         }
         return null;
@@ -211,33 +226,35 @@ public class NavigatorUtils {
         @Nullable final IWorkbenchSite workbenchSite,
         @NotNull final Viewer viewer,
         @NotNull final ISelectionProvider selectionProvider,
-        @Nullable final IMenuListener menuListener)
-    {
+        @Nullable final IMenuListener menuListener
+    ) {
         final Control control = viewer.getControl();
         final MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(control);
-        menu.addMenuListener(new MenuListener()
-        {
+
+        menu.addMenuListener(new MenuListener() {
             @Override
-            public void menuHidden(MenuEvent e)
-            {
+            public void menuHidden(MenuEvent e) {
             }
 
             @Override
-            public void menuShown(MenuEvent e)
-            {
+            public void menuShown(MenuEvent e) {
                 Menu menu = (Menu) e.widget;
                 DBNNode node = getSelectedNode(viewer.getSelection());
                 removeUnrelatedMenuItems(menu, node);
                 if (node != null && !node.isLocked() && node.allowsOpen()) {
-                    String commandID = NavigatorUtils.getNodeActionCommand(DBXTreeNodeHandler.Action.open, node, NavigatorCommands.CMD_OBJECT_OPEN);
+                    String commandID = NavigatorUtils.getNodeActionCommand(
+                        DBXTreeNodeHandler.Action.open,
+                        node,
+                        NavigatorCommands.CMD_OBJECT_OPEN
+                    );
                     // Dirty hack
                     // Get contribution item from menu item and check it's ID
                     try {
                         for (MenuItem item : menu.getItems()) {
                             Object itemData = item.getData();
-                            if (itemData instanceof IContributionItem) {
-                                String contribId = ((IContributionItem)itemData).getId();
+                            if (itemData instanceof IContributionItem contributionItem) {
+                                String contribId = contributionItem.getId();
                                 if (contribId != null && contribId.equals(commandID)) {
                                     menu.setDefaultItem(item);
                                 }
@@ -250,6 +267,15 @@ public class NavigatorUtils {
             }
         });
         menuMgr.addMenuListener(manager -> {
+            ContextMenuTreeNodeSpecial specialNode = getSelectedSpecialNode(viewer.getSelection());
+            if (specialNode != null) {
+                DatabaseNavigatorTree navigatorTree = getNavigatorTree(workbenchSite);
+                if (navigatorTree != null) {
+                    specialNode.fillContextMenu(menuMgr, navigatorTree);
+                }
+                return;
+            }
+
             ViewerColumnController<?, ?> columnController = ViewerColumnController.getFromControl(control);
             if (columnController != null && columnController.isClickOnHeader()) {
                 columnController.fillConfigMenu(manager);
@@ -696,6 +722,8 @@ public class NavigatorUtils {
                     ) {
                         item.dispose();
                     }
+                } else {
+                    item.dispose();
                 }
             }
         }

@@ -38,21 +38,21 @@ class LogSubscriber implements Flow.Subscriber<AIEngineResponseChunk> {
 
     @Override
     public void onNext(AIEngineResponseChunk item) {
-        log.debug("Response chunk: " + item);
+        System.err.print(item);
 
         subscriber.onNext(item);
     }
 
     @Override
     public void onError(Throwable throwable) {
-        log.error("Error in completion stream", throwable);
+        throwable.printStackTrace(System.err);
 
         subscriber.onError(throwable);
     }
 
     @Override
     public void onComplete() {
-        log.debug("Completion stream completed");
+        System.err.println();
 
         subscriber.onComplete();
     }

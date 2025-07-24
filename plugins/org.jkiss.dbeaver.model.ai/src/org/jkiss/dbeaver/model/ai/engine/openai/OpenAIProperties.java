@@ -77,7 +77,9 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Override
     public void saveSecrets() throws DBException {
-        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(OpenAIConstants.GPT_API_TOKEN, token);
+        if (token != null) {
+            DBSSecretController.getGlobalSecretController().setPrivateSecretValue(OpenAIConstants.GPT_API_TOKEN, token);
+        }
     }
 
     public void setToken(String token) {

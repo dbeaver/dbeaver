@@ -251,4 +251,8 @@ public interface PostgreServerExtension {
      */
     boolean supportsNativeClient();
 
+    /**
+     * Determines if the provided object is a PostgreSQL-specific object (PGObject) like {@code com.amazon.redshift.util.RedshiftObject}.
+     */
+    boolean isPGObject(@NotNull Object object);
 }
