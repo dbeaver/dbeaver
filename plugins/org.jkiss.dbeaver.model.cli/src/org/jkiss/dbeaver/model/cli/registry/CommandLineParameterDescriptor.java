@@ -80,7 +80,8 @@ public class CommandLineParameterDescriptor {
     }
 
     /**
-     *
+     * Returns true if this parameter is used to initialize the CommandLineContext.
+     * Context initializers are executed before any other handlers.
      */
     public boolean isContextInitializer() {
         return contextInitializer;
