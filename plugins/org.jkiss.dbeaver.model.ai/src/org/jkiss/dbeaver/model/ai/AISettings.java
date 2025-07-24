@@ -53,6 +53,11 @@ public class AISettings implements IAdaptable {
     }
 
     public void setActiveEngine(String activeEngine) {
+        AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(activeEngine);
+        if (engineDescriptor != null) {
+            // Replacement?
+            activeEngine = engineDescriptor.getId();
+        }
         this.activeEngine = activeEngine;
     }
 
