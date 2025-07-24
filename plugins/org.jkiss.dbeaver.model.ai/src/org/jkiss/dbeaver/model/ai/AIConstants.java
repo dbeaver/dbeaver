@@ -30,6 +30,7 @@ public class AIConstants {
     public static final String AI_SEND_TYPE_INFO = "ai.completion.sendType";
     public static final String AI_SEND_DESCRIPTION = "ai.completion.description";
     public static final String AI_COMPLETION_MAX_CHOICES = "ai.completion.maxChoices";
+    public static final String AI_RESPONSE_LANGUAGE = "ai.language";
 
     public static final String AI_MODEL_PLUGIN_ID = "org.jkiss.dbeaver.model.ai";
 }
