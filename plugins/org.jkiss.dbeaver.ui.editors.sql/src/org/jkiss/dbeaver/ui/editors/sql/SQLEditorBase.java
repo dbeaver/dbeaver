@@ -280,8 +280,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         return new String[]{
             TEXT_EDITOR_CONTEXT,
             SQLEditorContributions.SQL_EDITOR_CONTEXT,
-            SQLEditorContributions.SQL_EDITOR_SCRIPT_CONTEXT,
-            SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT};
+            SQLEditorContributions.SQL_EDITOR_SCRIPT_CONTEXT};
     }
 
     @Override
@@ -397,9 +396,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
         if (sourceViewer != null) {
             final StyledText widget = sourceViewer.getTextWidget();
-
-            // Context listener
-            EditorUtils.trackControlContext(getSite(), widget, SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
 
             // Mouse listener that moves cursor upon clicking with the right mouse button
             widget.addMouseListener(new MouseAdapter() {
