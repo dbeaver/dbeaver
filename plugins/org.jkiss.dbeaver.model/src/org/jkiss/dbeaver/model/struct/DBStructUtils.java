@@ -563,7 +563,7 @@ public final class DBStructUtils {
         return result.stream().toList();
     }
 
-    public static boolean isSchemasSupported(DBPDataSourceContainer dataSourceContainer) {
+    public static boolean isSchemasSupported(@NotNull DBPDataSourceContainer dataSourceContainer) {
         DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSourceContainer, false);
         if (defaultContext != null) {
             DBCExecutionContextDefaults<?,?> contextDefaults = defaultContext.getContextDefaults();

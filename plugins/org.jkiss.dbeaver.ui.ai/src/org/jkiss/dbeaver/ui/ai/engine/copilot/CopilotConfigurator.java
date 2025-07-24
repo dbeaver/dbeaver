@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
@@ -52,8 +51,6 @@ import java.util.concurrent.CompletableFuture;
 public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine, LegacyAISettings<CopilotProperties>> {
     private static final Log log = Log.getLog(CopilotConfigurator.class);
 
-    @Nullable
-    protected Text tokenText;
     private Text temperatureText;
     private Combo modelCombo;
     private Button logQueryCheck;
@@ -163,8 +160,8 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     private void createAdditionalSettings(@NotNull Composite parent) {
         logQueryCheck = UIUtils.createCheckbox(
             parent,
-            "Write GPT queries to debug log",
-            "Write GPT queries with metadata info in debug logs",
+            "Write AI queries to debug log",
+            "Write AI queries with metadata info in the debug logs",
             false,
             2
         );
@@ -177,9 +174,6 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     }
 
     private void applySettings() {
-        if (tokenText != null) {
-            tokenText.setText(token);
-        }
         modelCombo.setText(model);
         temperatureText.setText(temperature);
         logQueryCheck.setSelection(logQuery);
@@ -193,7 +187,9 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
             "",
             SWT.BORDER | SWT.PASSWORD
         );
-        accessTokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 150;
+        accessTokenText.setLayoutData(gd);
         accessTokenText.addModifyListener((e -> accessToken = accessTokenText.getText()));
         accessTokenText.setMessage(CopilotMessages.copilot_preference_page_token_info);
         UIUtils.createDialogButton(parent, CopilotMessages.copilot_access_token_authorize, SelectionListener.widgetSelectedAdapter(e -> {

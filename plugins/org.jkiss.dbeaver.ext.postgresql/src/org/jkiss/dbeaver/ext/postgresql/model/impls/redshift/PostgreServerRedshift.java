@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     private static final Log log = Log.getLog(PostgreServerRedshift.class);
     public static final int RS_ERROR_CODE_CHANNEL_CLOSE = 500366;
     public static final int RS_ERROR_CODE_NOT_CONNECTED = 500150;
+
+    public static final String RS_OBJECT_CLASS = "com.amazon.redshift.util.RedshiftObject";
 
     private Version redshiftVersion;
 
@@ -491,5 +493,11 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     @Override
     public boolean supportsNativeClient() {
         return false;
+    }
+
+    @Override
+    public boolean isPGObject(@NotNull Object object) {
+        String className = object.getClass().getName();
+        return className.equals(RS_OBJECT_CLASS);
     }
 }
