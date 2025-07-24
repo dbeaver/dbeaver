@@ -301,9 +301,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
             String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
             connectionNameText = UIUtils.createLabelText(miscGroup, CoreMessages.dialog_connection_wizard_final_label_connection_name, CommonUtils.toString(connectionName));
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.widthHint = 300;
-            connectionNameText.setLayoutData(gd);
+            UIUtils.setWidgetWidthHint(connectionNameText, 150);
 
             connectionNameText.addModifyListener(e -> {
                 if (dataSourceDescriptor == null || !connectionNameText.getText().equals(connectionName)) {

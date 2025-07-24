@@ -2507,4 +2507,30 @@ public class UIUtils {
             .map(Widget::getData)
             .anyMatch(data -> data != null && clazz.isAssignableFrom(data.getClass()));
     }
+
+    /**
+     * Sets width hint for a control with GridData.
+     * Creates new GridData with FILL_HORIZONTAL if not exists.
+     *
+     * @param widget Control to set width hint for
+     * @param widthHint Desired width in pixels
+     */
+
+    public static void setWidgetWidthHint(@NotNull Control widget, int widthHint) {
+        if (widget.isDisposed()) {
+            return;
+        }
+
+        Object layoutData = widget.getLayoutData();
+        GridData gd;
+
+        if (layoutData instanceof GridData gridData) {
+            gd = gridData;
+        } else {
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            widget.setLayoutData(gd);
+        }
+
+        gd.widthHint = widthHint;
+    }
 }

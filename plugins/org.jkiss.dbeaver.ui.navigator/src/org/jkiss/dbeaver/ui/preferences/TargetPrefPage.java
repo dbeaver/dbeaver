@@ -169,9 +169,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
                     UINavigatorMessages.pref_page_target_button_use_datasource_settings,
                     dataSourceContainer.getName()
                 ));
-                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.widthHint = 300;
-                dataSourceSettingsButton.setLayoutData(gd);
+                UIUtils.setWidgetWidthHint(dataSourceSettingsButton, 150);
                 dataSourceSettingsButton.setFont(parent.getFont());
 
                 changeSettingsTargetLink = createLink(composite, UINavigatorMessages.pref_page_target_link_show_global_settings);
