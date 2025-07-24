@@ -20,13 +20,11 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -48,7 +46,7 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
 
     private static final Log log = Log.getLog(SQLQueryObjectDataModel.class);
     @NotNull
-    private final SQLQueryQualifiedName name;
+    private final SQLQueryComplexName name;
     @NotNull
     private DBSObjectType objectType;
     @NotNull
@@ -59,10 +57,10 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
     private SQLQuerySymbolOrigin objectNameOrigin = null;
 
     public SQLQueryObjectDataModel(
-            @NotNull STMTreeNode syntaxNode,
-            @NotNull SQLQueryQualifiedName name,
-            @NotNull DBSObjectType objectTypes,
-            @NotNull Set<DBSObjectType> objectContainerTypes
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull SQLQueryComplexName name,
+        @NotNull DBSObjectType objectTypes,
+        @NotNull Set<DBSObjectType> objectContainerTypes
     ) {
         super(syntaxNode);
         this.name = name;
@@ -76,7 +74,7 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
     }
 
     @NotNull
-    public SQLQueryQualifiedName getName() {
+    public SQLQueryComplexName getName() {
         return this.name;
     }
 
@@ -98,51 +96,43 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
             : this.object != null ? SQLQuerySymbolClass.OBJECT : SQLQuerySymbolClass.ERROR;
     }
 
-    @NotNull
-    @Override
-    protected SQLQueryDataContext propagateContextImpl(
-        @NotNull SQLQueryDataContext context,
-        @NotNull SQLQueryRecognitionContext statistics
-    ) {
-        Set<DBSObjectType> scopeMemberTypes = new HashSet<>();
-        scopeMemberTypes.addAll(this.objectContainerTypes);
-        scopeMemberTypes.add(this.objectType);
-        this.objectNameOrigin = new SQLQuerySymbolOrigin.DbObjectFromContext(context, scopeMemberTypes, false);
-
-        if (this.name.isNotClassified()) {
-            List<String> nameStrings = this.name.toListOfStrings();
-            this.object = context.findRealObject(statistics.getMonitor(), objectType, nameStrings);
-
-            if (this.object != null) {
-                this.name.setDefinition(this.object, this.objectNameOrigin);
-                if (!this.objectType.getTypeClass().isAssignableFrom(this.object.getClass())) {
-                    statistics.appendError(
-                        this.getSyntaxNode(),
-                        DBUtils.getObjectTypeName(this.object) + " found while expecting " + this.objectType.getTypeName()
-                    );
-                }
-            } else {
-                SQLQueryQualifiedName.performPartialResolution(
-                    context,
-                    statistics,
-                    this.name,
-                    this.objectNameOrigin,
-                    scopeMemberTypes,
-                    SQLQuerySymbolClass.ERROR
-                );
-                statistics.appendError(this.getSyntaxNode(), "Object " + this.name.toIdentifierString() + " not found in the database");
-            }
-        }
-        return context;
-    }
-
     @Override
     protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
         @NotNull SQLQueryRowsSourceContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        this.object = context.getConnectionInfo().findRealObject(statistics.getMonitor(), objectType, this.name.toListOfStrings());
-        return context.reset();
+        Set<DBSObjectType> scopeMemberTypes = new HashSet<>();
+        scopeMemberTypes.addAll(this.objectContainerTypes);
+        scopeMemberTypes.add(this.objectType);
+        this.objectNameOrigin = new SQLQuerySymbolOrigin.DbObjectRef(context, scopeMemberTypes, false);
+
+        List<? extends DBSObject> candidates = context.getConnectionInfo().findRealObjects(statistics.getMonitor(), objectType, this.name.stringParts);
+        if (candidates.isEmpty()) {
+            SQLQuerySemanticUtils.performPartialResolution(
+                context,
+                statistics,
+                this.name,
+                this.objectNameOrigin,
+                scopeMemberTypes,
+                SQLQuerySymbolClass.ERROR
+            );
+            statistics.appendError(this.getSyntaxNode(), "Object " + this.name.getNameString() + " not found in the database");
+            return context.resetAsUnresolved();
+        } else if (candidates.size() > 1) {
+            statistics.appendError(this.name.syntaxNode, "Object name " + this.name.getNameString() + " is ambiguous");
+            this.name.parts.forEach(p -> p.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR));
+            return context.resetAsUnresolved();
+        } else {
+            this.object = candidates.getFirst();
+            SQLQuerySemanticUtils.setNamePartsDefinition(this.name, this.object, this.objectNameOrigin);
+            if (!this.objectType.getTypeClass().isAssignableFrom(this.object.getClass())) {
+                statistics.appendError(
+                    this.getSyntaxNode(),
+                    SQLQuerySemanticUtils.getObjectTypeName(this.object) + " found while expecting " + this.objectType.getTypeName()
+                );
+            }
+            return context.reset();
+        }
     }
 
     @Override

@@ -88,6 +88,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_REPLACE_WORD, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SHOW_VALUES, false);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.USE_GLOBAL_ASSISTANT, false);
@@ -101,6 +102,7 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS, true);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.VALIDATE_FUNCTIONS, false);
 
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, true);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, true);

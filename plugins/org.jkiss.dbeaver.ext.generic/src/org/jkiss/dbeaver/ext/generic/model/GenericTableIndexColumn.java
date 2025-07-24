@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,25 +24,25 @@ import org.jkiss.dbeaver.model.meta.Property;
 /**
  * GenericTableIndexColumn
  */
-public class GenericTableIndexColumn extends AbstractTableIndexColumn
-{
-    private GenericTableIndex index;
-    private GenericTableColumn tableColumn;
-    private int ordinalPosition;
-    private boolean ascending;
+public class GenericTableIndexColumn extends AbstractTableIndexColumn {
+    private final GenericTableIndex index;
+    private final GenericTableColumn tableColumn;
+    private final int ordinalPosition;
+    private final boolean ascending;
 
-    public GenericTableIndexColumn(GenericTableIndex index, GenericTableColumn tableColumn,
-                                   int ordinalPosition,
-                                   boolean ascending)
-    {
+    public GenericTableIndexColumn(
+        @NotNull GenericTableIndex index,
+        @NotNull GenericTableColumn tableColumn,
+        int ordinalPosition,
+        boolean ascending
+    ) {
         this.index = index;
         this.tableColumn = tableColumn;
         this.ordinalPosition = ordinalPosition;
         this.ascending = ascending;
     }
 
-    GenericTableIndexColumn(GenericTableIndex toIndex, GenericTableIndexColumn source)
-    {
+    GenericTableIndexColumn(GenericTableIndex toIndex, GenericTableIndexColumn source) {
         this.index = toIndex;
         this.tableColumn = source.tableColumn;
         this.ordinalPosition = source.ordinalPosition;
@@ -51,58 +51,50 @@ public class GenericTableIndexColumn extends AbstractTableIndexColumn
 
     @NotNull
     @Override
-    public GenericTableIndex getIndex()
-    {
+    public GenericTableIndex getIndex() {
         return index;
     }
 
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
-    public String getName()
-    {
+    public String getName() {
         return tableColumn.getName();
     }
 
     @Nullable
     @Override
     @Property(viewable = true, order = 1)
-    public GenericTableColumn getTableColumn()
-    {
+    public GenericTableColumn getTableColumn() {
         return tableColumn;
     }
 
     @Override
     @Property(viewable = false, order = 2)
-    public int getOrdinalPosition()
-    {
+    public int getOrdinalPosition() {
         return ordinalPosition;
     }
 
     @Override
     @Property(viewable = true, order = 3)
-    public boolean isAscending()
-    {
+    public boolean isAscending() {
         return ascending;
     }
 
     @Nullable
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return tableColumn.getDescription();
     }
 
     @Override
-    public GenericTableIndex getParentObject()
-    {
+    public GenericTableIndex getParentObject() {
         return index;
     }
 
     @NotNull
     @Override
-    public GenericDataSource getDataSource()
-    {
+    public GenericDataSource getDataSource() {
         return index.getDataSource();
     }
 

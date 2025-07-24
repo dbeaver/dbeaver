@@ -46,6 +46,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
     private Button csProblemMarkersEnabled;
     private Button advancedHighlightingEnabled;
     private Button readMetadataForSemanticValidationEnabled;
+    private Button validateFunctionsEnabled;
     // Auto-close
     private Button acSingleQuotesCheck;
     private Button acDoubleQuotesCheck;
@@ -98,10 +99,28 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
                 false,
                 1
             );
+            validateFunctionsEnabled = UIUtils.createCheckbox(
+                analysisGroup,
+                SQLEditorMessages.pref_page_code_editor_label_validate_functions_enabled,
+                SQLEditorMessages.pref_page_code_editor_label_validate_functions_enabled_tip,
+                false,
+                1
+            );
             advancedHighlightingEnabled.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     readMetadataForSemanticValidationEnabled.setEnabled(advancedHighlightingEnabled.getSelection());
+                    validateFunctionsEnabled.setEnabled(
+                        advancedHighlightingEnabled.getSelection() && readMetadataForSemanticValidationEnabled.getSelection()
+                    );
+                }
+            });
+            readMetadataForSemanticValidationEnabled.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    validateFunctionsEnabled.setEnabled(
+                        advancedHighlightingEnabled.getSelection() && readMetadataForSemanticValidationEnabled.getSelection()
+                    );
                 }
             });
         }
@@ -144,7 +163,11 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         advancedHighlightingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE));
         readMetadataForSemanticValidationEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS));
         readMetadataForSemanticValidationEnabled.setEnabled(advancedHighlightingEnabled.getSelection());
-        
+        validateFunctionsEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.VALIDATE_FUNCTIONS));
+        validateFunctionsEnabled.setEnabled(
+            readMetadataForSemanticValidationEnabled.getSelection() && advancedHighlightingEnabled.getSelection()
+        );
+
         acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
         acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
         acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
@@ -162,7 +185,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         store.setValue(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED, csProblemMarkersEnabled.getSelection());
         store.setValue(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE, advancedHighlightingEnabled.getSelection());
         store.setValue(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS, readMetadataForSemanticValidationEnabled.getSelection());
-        
+        store.setValue(SQLPreferenceConstants.VALIDATE_FUNCTIONS, validateFunctionsEnabled.getSelection());
         store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
         store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
@@ -180,6 +203,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         store.setToDefault(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED);
         store.setToDefault(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE);
         store.setToDefault(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS);
+        store.setToDefault(SQLPreferenceConstants.VALIDATE_FUNCTIONS);
 
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
@@ -199,6 +223,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
         csProblemMarkersEnabled.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED));
         advancedHighlightingEnabled.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE));
         readMetadataForSemanticValidationEnabled.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS));
+        validateFunctionsEnabled.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.VALIDATE_FUNCTIONS));
         acSingleQuotesCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
         acDoubleQuotesCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
         acBracketsCheck.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
@@ -217,6 +242,7 @@ public class PrefPageSQLCodeEditing extends TargetPrefPage {
             || store.contains(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)
             || store.contains(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE)
             || store.contains(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS)
+            || store.contains(SQLPreferenceConstants.VALIDATE_FUNCTIONS)
             || store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES)
             || store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES)
             || store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS)

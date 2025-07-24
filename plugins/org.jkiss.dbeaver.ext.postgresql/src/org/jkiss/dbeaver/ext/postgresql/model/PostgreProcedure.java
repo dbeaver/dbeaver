@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -197,7 +198,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
 
         } else {
-            long[] inArgTypes = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "proargtypes"));
+            long[] inArgTypes = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "proargtypes"), dataSource);
 
             if (!ArrayUtils.isEmpty(inArgTypes)) {
                 for (int i = 0; i < inArgTypes.length; i++) {
@@ -387,7 +388,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context)
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context)
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
@@ -418,9 +419,11 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         boolean omitHeader = CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE);
-        String procDDL = omitHeader ? "" : "-- DROP " + getProcedureTypeName() + " " + getFullQualifiedSignature() + ";\n\n";
+        String procDDL = omitHeader || CommonUtils.getOption(options, OPTION_SKIP_DROPS) ?
+            "" :
+            "-- DROP " + getProcedureTypeName() + " " + getFullQualifiedSignature() + ";\n\n";
         if (isPersisted() && (!getDataSource().getServerType().supportsFunctionDefRead() || omitHeader) && !isAggregate) {
             if (procSrc == null) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
@@ -694,6 +697,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     public void setLanguage(PostgreLanguage language) {
         this.languageId = language.getObjectId();
+    }
+
+    @Nullable
+    @Override
+    public DBSTypedObject getReturnType(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return this.returnType;
     }
 
     @Property(category = CAT_PROPS, viewable = true, order = 12)

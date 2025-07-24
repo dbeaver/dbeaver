@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.dpi.DPIElement;
-import org.jkiss.dbeaver.model.dpi.DPIObject;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -58,8 +56,6 @@ import java.util.stream.Collectors;
 /**
  * PostgreSchema
  */
-@DPIObject
-@DPIElement
 public class PostgreSchema implements
     DBSSchema,
     PostgreTableContainer,
@@ -519,7 +515,6 @@ public class PostgreSchema implements
         return schema;
     }
 
-    @DPIElement(cache = true)
     @Override
     public boolean isSystem() {
         return
@@ -528,12 +523,10 @@ public class PostgreSchema implements
                 name.startsWith(PostgreConstants.SYSTEM_SCHEMA_PREFIX);
     }
 
-    @DPIElement(cache = true)
     public boolean isUtility() {
         return isUtilitySchema(name);
     }
 
-    @DPIElement(cache = true)
     public boolean isExternal() {
         return false;
     }
@@ -567,7 +560,7 @@ public class PostgreSchema implements
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
         sql.append("-- DROP SCHEMA ").append(DBUtils.getQuotedIdentifier(this)).append(";\n\n");
         sql.append("CREATE SCHEMA ").append(DBUtils.getQuotedIdentifier(this));
@@ -1147,12 +1140,12 @@ public class PostgreSchema implements
             JDBCSession session,
             PostgreTableBase parent, PostgreIndex object, JDBCResultSet dbResult)
             throws SQLException, DBException {
-            long[] keyNumbers = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "keys"));
+            long[] keyNumbers = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "keys"), getDataSource());
             if (keyNumbers == null) {
                 return null;
             }
-            long[] indColClasses = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "indclass"));
-            int[] keyOptions = PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, "indoption"));
+            long[] indColClasses = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "indclass"), getDataSource());
+            int[] keyOptions = PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, "indoption"), getDataSource());
             String expr = JDBCUtils.safeGetString(dbResult, "expr");
             Collection<? extends PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
             assert attributes != null;
@@ -1211,6 +1204,7 @@ public class PostgreSchema implements
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @Nullable PostgreProcedure object, @Nullable String objectName) throws SQLException {
             PostgreServerExtension serverType = owner.getDataSource().getServerType();
             String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
+            String nameColumn = "proname";
             boolean versionAtLeast7 = session.getDataSource().isServerVersionAtLeast(7, 2);
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT p." + oidColumn + " as poid,p.*," +
@@ -1221,11 +1215,15 @@ public class PostgreSchema implements
                     (versionAtLeast7 ? " AND d.objsubid = 0" : "") + // no links to columns
                     "\nWHERE p.pronamespace=?" +
                     (object == null ? "" : " AND p." + oidColumn + "=?") +
+                    (object != null || objectName == null ? "" : " AND p." + nameColumn + "=?") +
                     "\nORDER BY p.proname"
             );
             dbStat.setLong(1, owner.getObjectId());
             if (object != null) {
                 dbStat.setLong(2, object.getObjectId());
+            }
+            if (object == null && objectName != null) {
+                dbStat.setString(2, objectName);
             }
             return dbStat;
         }

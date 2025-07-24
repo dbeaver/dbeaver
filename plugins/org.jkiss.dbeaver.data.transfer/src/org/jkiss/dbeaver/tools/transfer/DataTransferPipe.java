@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,32 +26,27 @@ import java.util.Date;
  */
 public class DataTransferPipe {
 
-    private IDataTransferProducer producer;
+    private IDataTransferProducer<?> producer;
     private IDataTransferConsumer consumer;
 
-    public DataTransferPipe(IDataTransferProducer producer, IDataTransferConsumer consumer)
-    {
+    public DataTransferPipe(IDataTransferProducer<?> producer, IDataTransferConsumer consumer) {
         this.producer = producer;
         this.consumer = consumer;
     }
 
-    public IDataTransferProducer<?> getProducer()
-    {
+    public IDataTransferProducer<?> getProducer() {
         return producer;
     }
 
-    public void setProducer(IDataTransferProducer<?> producer)
-    {
+    public void setProducer(IDataTransferProducer<?> producer) {
         this.producer = producer;
     }
 
-    public IDataTransferConsumer<?,?> getConsumer()
-    {
+    public IDataTransferConsumer<?, ?> getConsumer() {
         return consumer;
     }
 
-    public void setConsumer(IDataTransferConsumer<?,?> consumer)
-    {
+    public void setConsumer(IDataTransferConsumer<?, ?> consumer) {
         this.consumer = consumer;
     }
 
@@ -65,7 +60,8 @@ public class DataTransferPipe {
 
         IDataTransferConsumer.TransferParameters parameters = new IDataTransferConsumer.TransferParameters(
             processorDescriptor != null && processorDescriptor.isBinaryFormat(),
-            processorDescriptor != null && processorDescriptor.isHTMLFormat());
+            processorDescriptor != null && processorDescriptor.isHTMLFormat()
+        );
         parameters.orderNumber = pipeIndex;
         parameters.totalConsumers = totalPipes;
         parameters.startTimestamp = new Date();
@@ -77,7 +73,8 @@ public class DataTransferPipe {
             processor == null ?
                 null :
                 settings.getProcessorProperties(),
-            producer == null ? null : producer.getProject());
+            producer == null ? null : producer.getProject()
+        );
 
     }
 }

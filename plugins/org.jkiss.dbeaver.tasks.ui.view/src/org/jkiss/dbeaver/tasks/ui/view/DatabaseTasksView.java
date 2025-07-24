@@ -185,15 +185,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskRunColumnController.addColumn(TaskUIViewMessages.db_tasks_view_column_controller_add_name_result, TaskUIViewMessages.db_tasks_view_column_controller_add_descr_task_result, SWT.LEFT, true, false, new TaskRunLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
-                String resultMessage =
-                    taskRun.isFinished() ?
-                        (taskRun.isRunSuccess() ? TaskUIViewMessages.db_tasks_view_cell_text_success : CommonUtils.notEmpty(taskRun.getErrorMessage())) :
-                        "In progress";
-
-                String extraMessage = taskRun.getExtraMessage();
-                if (CommonUtils.isNotEmpty(extraMessage)) {
-                    resultMessage += " (" + extraMessage + ")";
-                }
+                String resultMessage = getStatus(taskRun);
 
                 cell.setText(resultMessage);
             }
@@ -208,6 +200,26 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         taskRunViewer.addDoubleClickListener(event -> new ViewRunLogAction().run());
     }
+
+    public static String getStatus(@NotNull DBTTaskRun taskRun) {
+        if (!taskRun.isFinished()) {
+            return "In progress";
+        }
+
+        String resultMessage = getBriefStatus(taskRun);
+
+        String extraMessage = taskRun.getExtraMessage();
+        return CommonUtils.isNotEmpty(extraMessage)
+            ? resultMessage + " (" + extraMessage + ")"
+            : resultMessage;
+    }
+
+    public static String getBriefStatus(@NotNull DBTTaskRun run) {
+        return run.isRunSuccess()
+            ? TaskUIViewMessages.db_tasks_view_cell_text_success
+            : CommonUtils.notEmpty(run.getErrorMessage());
+    }
+
 
     private MenuManager createTaskContextMenu(TreeViewer viewer) {
         final MenuManager menuMgr = new MenuManager(null, TASKS_VIEW_MENU_ID);
@@ -611,7 +623,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             DBTTaskRun taskRun = getSelectedTaskRun();
             if (task != null && taskRun != null &&
                 UIUtils.confirmAction(
-                	TaskUIViewMessages.db_tasks_view_run_log_confirm_remove,
+                    TaskUIViewMessages.db_tasks_view_run_log_confirm_remove,
                     NLS.bind(TaskUIViewMessages.db_tasks_view_run_log_confirm_delete_task, task.getName(), tasksTree.getDateFormat().format(taskRun.getStartTime()))))
             {
                 task.removeRun(taskRun);

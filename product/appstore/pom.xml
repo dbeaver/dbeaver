@@ -9,7 +9,7 @@
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../../</relativePath>
     </parent>
-    <version>25.1.0-SNAPSHOT</version>
+    <version>25.1.4-SNAPSHOT</version>
     <artifactId>appstore</artifactId>
     <packaging>eclipse-repository</packaging>
     <name>DBeaver CE AppStore</name>
@@ -50,6 +50,22 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>target-platform-configuration</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <filters>
+                        <filter>
+                            <type>eclipse-plugin</type>
+                            <id>org.apache.ant</id>
+                            <restrictTo>
+                                <version>1.99.1</version>
+                            </restrictTo>
+                        </filter>
+                    </filters>
+                </configuration>
             </plugin>
 
         </plugins>

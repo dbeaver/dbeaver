@@ -149,7 +149,7 @@ public class DataSourceDescriptor
     @NotNull
     private final Map<String, String> tags;
     @NotNull
-    private final Map<String, String> extensions;
+    private final Map<String, Object> extensions;
     @Nullable
     private DBPDataSource dataSource;
     @Nullable
@@ -172,15 +172,16 @@ public class DataSourceDescriptor
     private volatile boolean disposed = false;
     private volatile boolean connecting = false;
 
+    private transient DBWNetworkHandler proxyHandler;
+    private transient DBWTunnel tunnelHandler;
+
     // secrets resolved from secret controller
     private volatile boolean secretsResolved = false;
     // secrets resolved from secret controller and contains db creds (we may not have db creds in the case when we store only ssh)
     private volatile boolean secretsContainsDatabaseCreds = false;
 
-    private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
-    private transient DBWNetworkHandler proxyHandler;
-    private transient DBWTunnel tunnelHandler;
-    private final List<DBPDataSourceTask> users = new ArrayList<>();
+    private transient final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
+    private transient final List<DBPDataSourceTask> users = new ArrayList<>();
     private transient String clientApplicationName;
     // DPI controller
     private transient DPIProcessController dpiController;
@@ -1712,12 +1713,12 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
-    public String getExtension(@NotNull String name) {
-        return extensions.get(name);
+    public <T> T getExtension(@NotNull String name) {
+        return (T) extensions.get(name);
     }
 
     @Override
-    public void setExtension(@NotNull String name, @Nullable String value) {
+    public void setExtension(@NotNull String name, @Nullable Object value) {
         if (value == null) {
             this.extensions.remove(name);
         } else {
@@ -1726,11 +1727,11 @@ public class DataSourceDescriptor
     }
 
     @NotNull
-    public Map<String, String> getExtensions() {
+    public Map<String, Object> getExtensions() {
         return extensions;
     }
 
-    public void setExtensions(Map<String, String> extensions) {
+    public void setExtensions(Map<String, Object> extensions) {
         this.extensions.clear();
         this.extensions.putAll(extensions);
     }

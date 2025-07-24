@@ -57,6 +57,9 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
     private final List<SQLPresentationPanelDescriptor> panels = new ArrayList<>();
     private final Expression enabledWhen;
     private final QueryMode queryMode;
+    private final String settingKey;
+    private final String prefLabel;
+    private final String prefTip;
 
     public SQLPresentationDescriptor(IConfigurationElement config)
     {
@@ -72,6 +75,9 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
         }
         this.enabledWhen = getEnablementExpression(config);
         this.queryMode = CommonUtils.valueOf(QueryMode.class, config.getAttribute("queryMode"), QueryMode.MULTIPLE);
+        this.settingKey = config.getAttribute("settingKey");
+        this.prefLabel = config.getAttribute("prefLabel");
+        this.prefTip = config.getAttribute("prefTooltip");
     }
 
     public String getId() {
@@ -107,6 +113,18 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
         return isExpressionTrue(enabledWhen, site);
     }
 
+    public String getSettingKey() {
+        return settingKey;
+    }
+
+    public String getPrefLabel() {
+        return prefLabel;
+    }
+
+    public String getPrefTip() {
+        return prefTip;
+    }
+
     @NotNull
     public QueryMode getQueryMode() {
         return queryMode;
@@ -117,5 +135,6 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
     {
         return implClass.createInstance(SQLEditorPresentation.class);
     }
+
 
 }

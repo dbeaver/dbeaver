@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.cubrid.ui.internal.CubridMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -35,12 +36,16 @@ import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
+import java.util.Locale;
+
 public class PrefPageCubrid extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.cubrid.general"; //$NON-NLS-1$
     private Button trace;
     private Button info;
     private Button allInfo;
+    private Button enableDbmsOutputCheck;
+    private Text dbmsOutputBufferSize;
 
     public PrefPageCubrid() {
         setPreferenceStore(new PreferenceStoreDelegate(DBWorkbench.getPlatform().getPreferenceStore()));
@@ -48,8 +53,9 @@ public class PrefPageCubrid extends TargetPrefPage
 
     @Override
     protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dsContainer) {
-        // TODO Auto-generated method stub
-        return false;
+        DBPPreferenceStore store = dsContainer.getPreferenceStore();
+        return (store.contains(CubridConstants.PREF_DBMS_OUTPUT)
+                || store.contains(CubridConstants.PREF_DBMS_OUTPUT_BUFFER_SIZE));
     }
 
     @Override
@@ -63,10 +69,16 @@ public class PrefPageCubrid extends TargetPrefPage
 
         info.setSelection(store.getString(CubridConstants.STATISTIC).equals(CubridConstants.STATISTIC_INFO));
         allInfo.setSelection(store.getString(CubridConstants.STATISTIC).equals(CubridConstants.STATISTIC_ALL_INFO));
+
+        enableDbmsOutputCheck.setSelection(store.getBoolean(CubridConstants.PREF_DBMS_OUTPUT));
+        dbmsOutputBufferSize.setText(String.valueOf(store.getInt(CubridConstants.PREF_DBMS_OUTPUT_BUFFER_SIZE)));
+
     }
 
     @Override
     protected void savePreferences(DBPPreferenceStore store) {
+        store.setValue(CubridConstants.PREF_DBMS_OUTPUT, enableDbmsOutputCheck.getSelection());
+        store.setValue(CubridConstants.PREF_DBMS_OUTPUT_BUFFER_SIZE, dbmsOutputBufferSize.getText());
 
         PrefUtils.savePreferenceStore(store);
 
@@ -85,6 +97,8 @@ public class PrefPageCubrid extends TargetPrefPage
         trace.setSelection(false);
         info.setSelection(false);
         allInfo.setSelection(false);
+        store.setToDefault(CubridConstants.PREF_DBMS_OUTPUT);
+        store.setToDefault(CubridConstants.PREF_DBMS_OUTPUT_BUFFER_SIZE);
     }
 
     @Override
@@ -130,8 +144,16 @@ public class PrefPageCubrid extends TargetPrefPage
                 }
             };
             info = UIUtils.createRadioButton(planGroup, CubridMessages.statistic_info, CubridConstants.STATISTIC_INFO, radioListener);
-            allInfo = UIUtils.createRadioButton(planGroup, CubridMessages.statistic_all_info, CubridConstants.STATISTIC_ALL_INFO, radioListener);
+            allInfo = UIUtils.createRadioButton(planGroup, CubridMessages.statistic_all_info,
+                CubridConstants.STATISTIC_ALL_INFO, radioListener);
 
+        }
+
+        {
+            Group miscGroup = UIUtils.createControlGroup(composite, CubridMessages.pref_page_cubrid_group_dbms_output, 2, GridData.FILL_HORIZONTAL, 0);
+            enableDbmsOutputCheck = UIUtils.createCheckbox(miscGroup, CubridMessages.pref_page_cubrid_checkbox_enable_dbms_output, "", true, 2);
+            dbmsOutputBufferSize = UIUtils.createLabelText(miscGroup, CubridMessages.pref_page_cubrid_label_buffer_size, "");
+            dbmsOutputBufferSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
         }
         return composite;
     }

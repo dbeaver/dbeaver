@@ -85,7 +85,7 @@
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Table dependency/dependent objects">
-                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
+                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.svg">
                                         <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                         </items>
                                     </items>
@@ -115,7 +115,7 @@
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Table dependency/dependent objects">
-                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
+                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.svg">
                                         <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                         </items>
                                     </items>
@@ -146,7 +146,7 @@
                                     </items>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Materialized View dependency/dependent objects">
-                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
+                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.svg">
                                         <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                         </items>
                                     </items>
@@ -188,7 +188,7 @@
                                         </items>
                                     </items>
                                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Procedure dependency/dependent objects">
-                                        <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
+                                        <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.svg">
                                             <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                             </items>
                                         </items>
@@ -201,14 +201,14 @@
                                         <items label="%tree.attributes.node.name" itemLabel="%tree.attribute.node.name" path="attribute" property="attributes" icon="#attribute" navigable="false" inline="true" visibleIf="object.hasAttributes()"/>
                                     </items>
                                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Procedure dependency/dependent objects">
-                                        <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
+                                        <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.svg">
                                             <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                             </items>
                                         </items>
                                     </folder>
                                 </items>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Table dependency/dependent objects">
-                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
+                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.svg">
                                         <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                         </items>
                                     </items>
@@ -219,7 +219,7 @@
                             <items label="%tree.procedure.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure" id="Procedure">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false"/>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Procedure dependency/dependent objects">
-                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
+                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.svg">
                                         <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                         </items>
                                     </items>
@@ -230,7 +230,7 @@
                             <items label="%tree.function.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function" id="Function">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false"/>
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDependency" label="%tree.dependencies.node.name" description="Function dependency/dependent objects">
-                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.png">
+                                    <items label="%tree.dependency.node.name" path="dependency" property="dependencies" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/link.svg">
                                         <items label="%tree.dependencies.node.name" path="entry" property="entries" navigable="false" inline="true">
                                         </items>
                                     </items>
@@ -257,12 +257,12 @@
                             <items label="Java Class" path="class" property="javaClasses" icon="#javaClass"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJob" label="Jobs" icon="#scheduler_job_folder" description="Jobs">
-                            <items label="Job" path="job" property="jobs" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/job_schedule.png"/>
+                            <items label="Job" path="job" property="jobs" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/job_schedule.svg"/>
                         </folder>
                         <folder label="%tree.scheduler.node.name" icon="#scheduler_folder" id="schedulerFolder"
                                 description="Scheduler objects">
                             <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob" label="%tree.scheduler.jobs.node.name" icon="#scheduler_job_folder" description="Scheduler jobs">
-                                <items label="%tree.scheduler.job.node.name" path="schedulerJob" property="schedulerJobs" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/job_schedule.png">
+                                <items label="%tree.scheduler.job.node.name" path="schedulerJob" property="schedulerJobs" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/job_schedule.svg">
                                     <items label="%tree.scheduler.job.arguments.node.name" itemLabel="%tree.scheduler.job.argument.node.name" path="argument" property="arguments" icon="#argument" navigable="false" inline="false"/>
                                 </items>
                             </folder>
@@ -524,38 +524,38 @@
         <category id="oracle" name="Oracle" description="%org.jkiss.dbeaver.task.category.oracle.description" icon="icons/oracle_icon.png"/>
         <category id="oracleTool" parent="oracle" name="%org.jkiss.dbeaver.task.category.oracleTool.name" description="%org.jkiss.dbeaver.task.category.oracleTool.description" icon="icons/oracle_icon.png"/>
 
-        <task id="oracleScriptExecute" name="%task.oracleScriptExecute.name" description="%task.oracleScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.png" type="oracle" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteHandler">
+        <task id="oracleScriptExecute" name="%task.oracleScriptExecute.name" description="%task.oracleScriptExecute.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg" type="oracle" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleScriptExecuteHandler">
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
         </task>
 
         <!-- SQL tools -->
-        <task id="oracleToolValidateStructure" name="%tasks.validate.structure.table.node.name" description="%tasks.validate.structure.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableValidateStructure">
+        <task id="oracleToolValidateStructure" name="%tasks.validate.structure.table.node.name" description="%tasks.validate.structure.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableValidateStructure">
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableBase"/>
         </task>
-        <task id="oracleToolTableTruncate" name="%tasks.truncate.table.node.name" description="%tasks.truncate.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableTruncate">
+        <task id="oracleToolTableTruncate" name="%tasks.truncate.table.node.name" description="%tasks.truncate.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableTruncate">
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableBase"/>
         </task>
-        <task id="oracleToolTableGatherStatistics" name="%tasks.gather.statistics.table.node.name" description="%tasks.gather.statistics.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolsTableGatherStatistics">
+        <task id="oracleToolTableGatherStatistics" name="%tasks.gather.statistics.table.node.name" description="%tasks.gather.statistics.table.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolsTableGatherStatistics">
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableBase"/>
         </task>
-        <task id="oracleToolIndexGatherStatistics" name="%tasks.gather.statistics.index.node.name" description="%tasks.gather.statistics.index.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolIndexGatherStatistics">
+        <task id="oracleToolIndexGatherStatistics" name="%tasks.gather.statistics.index.node.name" description="%tasks.gather.statistics.index.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolIndexGatherStatistics">
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
         </task>
-        <task id="oracleToolMViewRefresh" name="%tasks.refresh.mview.node.name" description="%tasks.refresh.mview.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolMViewRefresh">
+        <task id="oracleToolMViewRefresh" name="%tasks.refresh.mview.node.name" description="%tasks.refresh.mview.node.description" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolMViewRefresh">
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
         </task>
-        <task id="oracleToolTriggerEnable" name="%task.oracleToolTriggerEnable.name" description="%task.oracleToolTriggerEnable.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableTriggerEnable">
+        <task id="oracleToolTriggerEnable" name="%task.oracleToolTriggerEnable.name" description="%task.oracleToolTriggerEnable.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableTriggerEnable">
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" if="object.status == 'DISABLED'"/>
         </task>
-        <task id="oracleToolTriggerDisable" name="%task.oracleToolTriggerDisable.name" description="%task.oracleToolTriggerDisable.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.png" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableTriggerDisable">
+        <task id="oracleToolTriggerDisable" name="%task.oracleToolTriggerDisable.name" description="%task.oracleToolTriggerDisable.name" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/admin.svg" type="oracleTool" handler="org.jkiss.dbeaver.ext.oracle.tasks.OracleToolTableTriggerDisable">
             <datasource id="oracle"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableTrigger" if="object.status == 'ENABLED'"/>
         </task>

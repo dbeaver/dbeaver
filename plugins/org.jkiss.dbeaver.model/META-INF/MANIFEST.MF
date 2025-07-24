@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver API
 Bundle-SymbolicName: org.jkiss.dbeaver.model;singleton:=true
-Bundle-Version: 2.0.16.qualifier
-Bundle-Release-Date: 20250602
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Version: 2.0.20.qualifier
+Bundle-Release-Date: 20250804
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.bundle.ModelActivator
 Export-Package: org.jkiss.dbeaver,
@@ -59,6 +59,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.navigator.meta,
  org.jkiss.dbeaver.model.net,
  org.jkiss.dbeaver.model.qm,
+ org.jkiss.dbeaver.model.qm.ai,
  org.jkiss.dbeaver.model.qm.filters,
  org.jkiss.dbeaver.model.qm.meta,
  org.jkiss.dbeaver.model.preferences,
@@ -98,7 +99,6 @@ Import-Package: org.bouncycastle.asn1,
  org.bouncycastle.operator,
  org.bouncycastle.operator.jcajce,
  org.bouncycastle.util.io.pem
-Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.core.expressions,

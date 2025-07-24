@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Events Model
 Bundle-SymbolicName: org.jkiss.dbeaver.model.event;singleton:=true
-Bundle-Version: 1.0.60.qualifier
-Bundle-Release-Date: 20250602
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Version: 1.0.64.qualifier
+Bundle-Release-Date: 20250804
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Export-Package: org.jkiss.dbeaver.model.websocket,
  org.jkiss.dbeaver.model.websocket.event,
@@ -15,7 +15,6 @@ Export-Package: org.jkiss.dbeaver.model.websocket,
  org.jkiss.dbeaver.model.websocket.event.resource,
  org.jkiss.dbeaver.model.websocket.event.session,
  org.jkiss.dbeaver.model.websocket.registry
-Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.model;visibility:=reexport,

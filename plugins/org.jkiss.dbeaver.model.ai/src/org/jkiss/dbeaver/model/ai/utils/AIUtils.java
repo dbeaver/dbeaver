@@ -23,17 +23,14 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatMessage;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatRole;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
-import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -43,6 +40,10 @@ import java.util.List;
 import java.util.Map;
 
 public final class AIUtils {
+    /**
+     * How many characters we roughly get from a single token.
+     */
+    public static final int TOKEN_TO_CHAR_RATIO = 2;
 
     private static final Log log = Log.getLog(AIUtils.class);
 
@@ -68,10 +69,10 @@ public final class AIUtils {
      * @param messages list of messages
      * @return number of tokens
      */
-    public static int countTokens(@NotNull List<DAIChatMessage> messages) {
+    public static int countTokens(@NotNull List<AIMessage> messages) {
         int count = 0;
-        for (DAIChatMessage message : messages) {
-            count += countContentTokens(message.content());
+        for (AIMessage message : messages) {
+            count += countContentTokens(message.getContent());
         }
         return count;
     }
@@ -79,45 +80,46 @@ public final class AIUtils {
     /**
      * Truncates messages to fit into the given number of tokens.
      *
-     * @param chatMode  true if chat mode is enabled
      * @param messages  list of messages
      * @param maxTokens maximum number of tokens
      * @return list of truncated messages
      */
     @NotNull
-    public static List<DAIChatMessage> truncateMessages(
-        boolean chatMode,
-        @NotNull List<DAIChatMessage> messages,
+    public static List<AIMessage> truncateMessages(
+        @NotNull List<AIMessage> messages,
         int maxTokens
     ) {
-        final List<DAIChatMessage> pending = new ArrayList<>(messages);
-        final List<DAIChatMessage> truncated = new ArrayList<>();
+        final List<AIMessage> pending = new ArrayList<>(filterEmptyMessages(messages));
+        final List<AIMessage> truncated = new ArrayList<>();
         int remainingTokens = maxTokens - 20; // Just to be sure
 
-        if (!pending.isEmpty()) {
-            if (pending.get(0).role() == DAIChatRole.SYSTEM) {
-                // Always append main system message and leave space for the next one
-                DAIChatMessage msg = pending.remove(0);
-                DAIChatMessage truncatedMessage = truncateMessage(msg, remainingTokens - 50);
-                remainingTokens -= countContentTokens(truncatedMessage.content());
-                truncated.add(msg);
+        if (pending.isEmpty()) {
+            return truncated; // Nothing to truncate
+        } else if (pending.size() == 1) {
+            // If we have only one message, we can return it as is
+            AIMessage singleMessage = pending.getFirst();
+            if (countContentTokens(singleMessage.getContent()) <= remainingTokens) {
+                return List.of(singleMessage);
+            } else {
+                return List.of(truncateMessage(singleMessage, remainingTokens));
             }
+        } else if (pending.getFirst().getRole() == AIMessageType.SYSTEM) {
+            // Always append main system message and leave space for the next one
+            AIMessage msg = pending.removeFirst();
+            AIMessage truncatedMessage = truncateMessage(msg, remainingTokens - 50);
+            remainingTokens -= countContentTokens(truncatedMessage.getContent());
+            truncated.add(msg);
         }
 
-        for (DAIChatMessage message : pending) {
-            final int messageTokens = message.content().length();
+        for (AIMessage message : pending) {
+            final int messageTokens = message.getContent().length();
 
             if (remainingTokens < 0 || messageTokens > remainingTokens) {
-                // Exclude old messages that don't fit into given number of tokens
-                if (chatMode) {
-                    break;
-                } else {
-                    // Truncate message itself
-                }
+                break;
             }
 
-            DAIChatMessage truncatedMessage = truncateMessage(message, remainingTokens);
-            remainingTokens -= countContentTokens(truncatedMessage.content());
+            AIMessage truncatedMessage = truncateMessage(message, remainingTokens);
+            remainingTokens -= countContentTokens(truncatedMessage.getContent());
             truncated.add(truncatedMessage);
         }
 
@@ -129,19 +131,19 @@ public final class AIUtils {
      * It is sooooo approximately
      * We should use https://github.com/knuddelsgmbh/jtokkit/ or something similar
      */
-    private static DAIChatMessage truncateMessage(DAIChatMessage message, int remainingTokens) {
-        String content = message.content();
+    private static AIMessage truncateMessage(AIMessage message, int remainingTokens) {
+        String content = message.getContent();
         int contentTokens = countContentTokens(content);
         if (remainingTokens > contentTokens) {
             return message;
         }
 
         String truncatedContent = removeContentTokens(content, contentTokens - remainingTokens);
-        return new DAIChatMessage(message.role(), truncatedContent);
+        return new AIMessage(message.getRole(), truncatedContent);
     }
 
     private static String removeContentTokens(String content, int tokensToRemove) {
-        int charsToRemove = tokensToRemove * 2;
+        int charsToRemove = tokensToRemove * TOKEN_TO_CHAR_RATIO;
         if (charsToRemove >= content.length()) {
             return "";
         }
@@ -149,30 +151,7 @@ public final class AIUtils {
     }
 
     private static int countContentTokens(String content) {
-        return content.length() / 2;
-    }
-
-    /**
-     * Processes completion text.
-     */
-    @NotNull
-    public static String processCompletion(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull DBSObjectContainer mainObject,
-        @NotNull String completionText,
-        @NotNull IAIFormatter formatter,
-        boolean isChatAPI
-    ) {
-        if (CommonUtils.isEmpty(completionText)) {
-            return "";
-        }
-
-        if (!isChatAPI) {
-            completionText = "SELECT " + completionText.trim() + ";";
-        }
-
-        return formatter.postProcessGeneratedQuery(monitor, mainObject, executionContext, completionText).trim();
+        return content.length() / TOKEN_TO_CHAR_RATIO;
     }
 
     /**
@@ -196,17 +175,17 @@ public final class AIUtils {
     /**
      * Computes the maximum number of tokens available for a request based on the engine's context size.
      *
-     * @param engine the completion engine
+     * @param engine  the completion engine
      * @param monitor the progress monitor
      */
-    public static int getMaxRequestTokens(@NotNull DAICompletionEngine engine, @NotNull DBRProgressMonitor monitor) throws DBException {
+    public static int getMaxRequestTokens(@NotNull AIEngine engine, @NotNull DBRProgressMonitor monitor) throws DBException {
         return engine.getMaxContextSize(monitor) - AIConstants.MAX_RESPONSE_TOKENS;
     }
 
     /**
      * Retrieves the DDL for the given DBSObject if applicable.
      *
-     * @param object the DBSObject from which to retrieve the DDL
+     * @param object  the DBSObject from which to retrieve the DDL
      * @param monitor the progress monitor
      */
     public static String getObjectDDL(@Nullable DBSObject object, @NotNull DBRProgressMonitor monitor) {
@@ -217,12 +196,25 @@ public final class AIUtils {
         ) {
             if (object instanceof DBPScriptObject scriptObject) {
                 try {
-                    return scriptObject.getObjectDefinitionText(monitor, Map.of());
+                    return scriptObject.getObjectDefinitionText(
+                        monitor, Map.of(
+                            DBPScriptObject.OPTION_INCLUDE_COMMENTS, false,
+                            DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, false,
+                            DBPScriptObject.OPTION_SKIP_INDEXES, true, // Exclude indexes
+                            DBPScriptObject.OPTION_SKIP_DROPS, true // Exclude --DROP
+                        )
+                    );
                 } catch (DBException e) {
                     log.debug(e);
                 }
             }
         }
         return null;
+    }
+
+    private static List<AIMessage> filterEmptyMessages(@NotNull List<AIMessage> messages) {
+        return messages.stream()
+            .filter(message -> !message.getContent().isBlank())
+            .toList();
     }
 }

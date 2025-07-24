@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -123,7 +124,8 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         }
         try {
             Collection<? extends DBSTableConstraint> constraints = command.getObject().getParentObject().getConstraints(monitor);
-            if (constraints != null && constraints.stream().anyMatch(c -> c instanceof  MySQLTableConstraint tc &&
+            if (options.get(DBPScriptObject.OPTION_COMPOSITE_OBJECT) == null &&
+                constraints != null && constraints.stream().anyMatch(c -> c instanceof  MySQLTableConstraint tc &&
                 MySQLConstraintManager.tryGetColumnOfPrimaryKeyConstraintForAutoincrementColumn(monitor, tc, false) == column)
             ) {
                 decl.append(" PRIMARY KEY");

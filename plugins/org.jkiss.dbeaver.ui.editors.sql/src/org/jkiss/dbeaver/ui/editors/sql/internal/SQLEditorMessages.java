@@ -159,6 +159,9 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_new_script_template_variables;
     public static String pref_page_sql_editor_new_script_template_variables_tip;
     public static String pref_page_sql_editor_new_script_template_template;
+
+    public static String pref_page_sql_editor_group_presentations;
+
     // SQLExecute
     public static String pref_page_sql_editor_label_sql_timeout_tip;
     public static String pref_page_sql_editor_enable_parameters_in_ddl;
@@ -238,6 +241,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_show_server_help_topics_tip;
     public static String pref_page_sql_completion_label_show_values;
     public static String pref_page_sql_completion_label_show_values_tip;
+    public static String pref_page_sql_completion_label_qualified_column_names;
+    public static String pref_page_sql_completion_label_qualified_column_names_tip;
     public static String pref_page_sql_completion_group_folding;
     public static String pref_page_sql_completion_group_misc;
     public static String pref_page_code_editor_group_analysis;
@@ -253,6 +258,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_mark_occurrences_for_selections_tip;
     public static String pref_page_code_editor_label_advanced_highlighting_enabled;
     public static String pref_page_code_editor_label_advanced_highlighting_enabled_tip;
+    public static String pref_page_code_editor_label_validate_functions_enabled;
+    public static String pref_page_code_editor_label_validate_functions_enabled_tip;
     public static String pref_page_code_editor_label_read_metadata_enabled;
     public static String pref_page_code_editor_label_read_metadata_enabled_tip;
 
@@ -410,6 +417,9 @@ public class SQLEditorMessages extends NLS {
     
     public static String sql_editor_outline_no_elements_label;
     public static String sql_editor_outline_query_analysis_disabled_label;
+    public static String update_conflict_message;
+    public static String update_conflict_message_revert;
+    public static String update_conflict_message_overwrite;
 
     static {
         // initialize resource bundle

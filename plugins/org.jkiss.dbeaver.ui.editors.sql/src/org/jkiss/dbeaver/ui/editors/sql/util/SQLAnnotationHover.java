@@ -330,7 +330,8 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
                     IRegion visualLineRange = editor.getTextViewer().modelRange2WidgetRange(modelLineRange);
                     StyledText widget = editor.getTextViewer().getTextWidget();
                     int offset = visualLineRange.getOffset();
-                    Rectangle localLineBounds =  widget.getTextBounds(offset, offset + visualLineRange.getLength() - 1);
+                    int length = visualLineRange.getLength();
+                    Rectangle localLineBounds =  widget.getTextBounds(offset, offset + (length > 0 ? length - 1 : length));
                     Rectangle globalLineBounds = Geometry.toDisplay(widget, localLineBounds);
                     Rectangle globalWidgetBounds = Geometry.toDisplay(widget, widget.getBounds());
 

@@ -32,8 +32,13 @@ import java.util.stream.Collectors;
 public class MonitoredHttpClient implements AutoCloseable {
     private final HttpClient client;
 
-    public MonitoredHttpClient(HttpClient client) {
+    public MonitoredHttpClient(@NotNull HttpClient client) {
         this.client = client;
+    }
+
+    @NotNull
+    public HttpClient getHttpClient() {
+        return client;
     }
 
     /**
@@ -102,7 +107,6 @@ public class MonitoredHttpClient implements AutoCloseable {
 
     @Override
     public void close() {
-        //TODO should be uncommented when transition to java 21 is complete
-        //client.close();
+        client.close();
     }
 }

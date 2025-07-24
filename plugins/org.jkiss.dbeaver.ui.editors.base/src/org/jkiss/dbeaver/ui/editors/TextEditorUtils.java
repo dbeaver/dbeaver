@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,12 +63,10 @@ public class TextEditorUtils {
      * @param partSite workbench part site
      * @param enable enable or disable
      */
-    @Deprecated
     public static void enableHostEditorKeyBindings(IWorkbenchPartSite partSite, boolean enable)
     {
         IWorkbenchPart part = partSite.getPart();
-        if (part instanceof AbstractTextEditor) {
-            AbstractTextEditor hostEditor = (AbstractTextEditor) part;
+        if (part instanceof AbstractTextEditor hostEditor) {
             Control widget = hostEditor.getAdapter(Control.class);
             if (widget == null || widget.isDisposed()) {
                 return;
@@ -78,10 +76,8 @@ public class TextEditorUtils {
                 activatorMethod.setAccessible(true);
                 activatorMethod.invoke(hostEditor, enable);
             } catch (Throwable e) {
-                if (e instanceof InvocationTargetException) {
-                    e = ((InvocationTargetException) e).getTargetException();
-                }
-                log.warn("Can't disable text editor action activations", e);
+                log.warn("Can't disable text editor action activations",
+                    e instanceof InvocationTargetException ite ? ite.getTargetException() : e);
             }
             //hostEditor.getEditorSite().getActionBarContributor().setActiveEditor(hostEditor);
         }

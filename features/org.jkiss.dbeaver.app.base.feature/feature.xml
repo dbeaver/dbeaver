@@ -2,26 +2,15 @@
 <!-- Base for standalone applications. Includes minimum set of plugins -->
 <feature
         id="org.jkiss.dbeaver.app.base.feature"
-        label="%featureName"
-        version="25.1.0.qualifier"
-        provider-name="%providerName"
+        label="DBeaver Base Standalone Application"
+        version="25.1.4.qualifier"
+        provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.ui.app.standalone">
 
-    <description>
-        %description
-    </description>
+    <description>DBeaver Universal Database Manager base standalone application</description>
 
-    <copyright>
-        %copyright
-    </copyright>
-
-    <license url="%licenseURL">
-        %license
-    </license>
-
-    <url>
-        <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
-    </url>
+    <copyright>DBeaver Corp and others</copyright>
+    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
     <includes id="org.jkiss.dbeaver.rcp.feature" version="0.0.0"/>
 
@@ -29,6 +18,7 @@
     <includes id="org.jkiss.dbeaver.ui.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.db.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.db.ui.feature" version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.ext.ai.feature" version="0.0.0"/>
 
     <!-- SWT additions -->
     <plugin id="org.jkiss.dbeaver.ui.swt.linux" os="linux" version="0.0.0" />

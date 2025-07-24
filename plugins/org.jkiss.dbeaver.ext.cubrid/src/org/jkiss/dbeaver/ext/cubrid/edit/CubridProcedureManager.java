@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.edit;
 
-import java.util.List;
-import java.util.Map;
-
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure;
 import org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
@@ -31,17 +29,20 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
+import java.util.List;
+import java.util.Map;
+
 public class CubridProcedureManager extends GenericProcedureManager {
 
     @Override
-    public boolean canCreateObject(Object container) {
+    public boolean canCreateObject(@NotNull Object container) {
         return true;
     }
 
     @Override
     protected GenericProcedure createDatabaseObject(
         DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options){
+        Object from, Map<String, Object> options) {
         String type = options.get("container").toString();
         DBSProcedureType procedureType = type.equals("Functions")
                 ? DBSProcedureType.FUNCTION : DBSProcedureType.PROCEDURE;
@@ -49,8 +50,23 @@ public class CubridProcedureManager extends GenericProcedureManager {
     }
 
     @Override
-    protected void addObjectCreateActions(DBRProgressMonitor monitor, DBCExecutionContext executionContext, List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) throws DBCException {
+    protected void addObjectCreateActions(
+        DBRProgressMonitor monitor,
+        DBCExecutionContext executionContext,
+        List<DBEPersistAction> actions,
+        ObjectCreateCommand command,
+        Map<String, Object> options) throws DBCException {
         CubridProcedure procedure = (CubridProcedure) command.getObject();
         actions.add(new SQLDatabasePersistAction("Create Procedure", procedure.getSource()));
+    }
+
+    @Override
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actionList,
+            @NotNull ObjectChangeCommand objectChangeCommand,
+            @NotNull Map<String, Object> options) {
+        CubridProcedure procedure = (CubridProcedure) objectChangeCommand.getObject();
+        actionList.add(new SQLDatabasePersistAction("Modify Procedure", procedure.getSource()));
     }
 }

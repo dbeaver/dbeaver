@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -221,8 +221,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             return null;
         }
         DBSObject realObject = realContainer.getChild(monitor, name);
-        if (realObject instanceof DBSEntity) {
-            return (DBSEntity) realObject;
+        if (realObject instanceof DBSEntity entity) {
+            return entity;
         }
         log.warn("Entity '" + name + "' not found in '" + realContainer.getName() + "'");
         return null;
@@ -391,37 +391,78 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return entityConstraints == null ? Collections.emptyList() : entityConstraints;
     }
 
+    @NotNull
     public DBVEntityConstraint getBestIdentifier() {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
         }
+
+        for (DBVEntityConstraint constraint : entityConstraints) {
+            if (isComplete(constraint)) {
+                return constraint;
+            }
+        }
+
         if (entityConstraints.isEmpty()) {
             entityConstraints.add(new DBVEntityConstraint(
                 this,
                 DBSEntityConstraintType.VIRTUAL_KEY,
                 "VIRTUAL_PK"));
         }
-        for (DBVEntityConstraint constraint : entityConstraints) {
-            if (constraint.getConstraintType().isUnique() && !CommonUtils.isEmpty(constraint.getAttributes())) {
-                return constraint;
-            }
-        }
-        return entityConstraints.get(0);
+
+        return entityConstraints.getFirst();
     }
 
-    public void addConstraint(DBVEntityConstraint constraint) {
-        addConstraint(constraint, true);
+    /**
+     * Determines whether the given virtual constraint is considered complete,
+     * meaning it can be used as a row identifier.
+     * <p>
+     * A constraint is considered complete if:
+     * <ul>
+     *   <li>its type is unique, and</li>
+     *   <li>it has at least one attribute or uses all columns</li>
+     * </ul>
+     *
+     * @param constraint the virtual entity constraint to check
+     * @return {@code true} if the constraint is unique and structurally complete
+     *
+     * @see org.jkiss.dbeaver.model.data.DBDRowIdentifier#isIncomplete()
+     */
+    public static boolean isComplete(@NotNull DBVEntityConstraint constraint) {
+        return constraint.getConstraintType().isUnique()
+            && (!CommonUtils.isEmpty(constraint.getAttributes()) || constraint.isUseAllColumns());
     }
 
-    public void addConstraint(DBVEntityConstraint constraint, boolean reflect) {
+    public boolean addConstraint(@NotNull DBVEntityConstraint constraint) {
+        return addConstraint(constraint, true);
+    }
+
+    public boolean addConstraint(@NotNull DBVEntityConstraint constraint, boolean reflect) {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
         }
+
+        String constraintName = constraint.getName();
+        //Avoid duplicates and keep the most complete version.
+        Iterator<DBVEntityConstraint> iterator = entityConstraints.iterator();
+        while (iterator.hasNext()) {
+            DBVEntityConstraint existing = iterator.next();
+            if (Objects.equals(existing.getName(), constraintName)) {
+                if (isComplete(existing)) {
+                    return false;
+                }
+                iterator.remove();
+                break;
+            }
+        }
+
         entityConstraints.add(constraint);
 
         if (reflect) {
             DBUtils.fireObjectUpdate(this, constraint);
         }
+
+        return true;
     }
 
     public void removeConstraint(DBVEntityConstraint constraint) {
@@ -668,7 +709,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             container instanceof DBVModel ? null : container,
             this);

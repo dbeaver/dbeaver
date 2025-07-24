@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.completion.DAICommandRequest;
-import org.jkiss.dbeaver.model.ai.completion.DAITranslateRequest;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -28,25 +30,36 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface AIAssistant {
 
     /**
+     * Initializes assistant
+     */
+    void initialize(@NotNull DBPWorkspace workspace);
+
+    /**
      * Translates text to SQL.
      */
     @NotNull
     String translateTextToSql(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAITranslateRequest request
+        @NotNull AITranslateRequest request
     ) throws DBException;
 
     /**
      * Translates a user command to SQL. The active completion engine is used.
      */
     @NotNull
-    CommandResult command(
+    AICommandResult command(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICommandRequest request
+        @NotNull AICommandRequest request
     ) throws DBException;
 
     /**
      * Returns whether the AI assistant has a valid configuration.
      */
     boolean hasValidConfiguration() throws DBException;
+
+    @NotNull
+    AIEngine getActiveEngine() throws DBException;
+
+    @Nullable
+    AIEngineDescriptor getActiveEngineDescriptor();
 }

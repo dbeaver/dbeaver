@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,15 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.action.ContributionManager;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
@@ -33,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ISearchExecutor;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 
@@ -47,6 +52,22 @@ public class ObjectEditorPageControl extends ProgressPageControl {
     private IDatabaseEditor workbenchPart;
     private IPropertyListener propertyListener;
     private volatile LoadingJob curService = null;
+
+    @Override
+    protected void populateCustomActions(ContributionManager contributionManager) {
+        ToolBarManager extToolBar = new ToolBarManager();
+        // Add dynamic toolbar contributions
+        final IMenuService menuService = UIUtils.getActiveWorkbenchWindow().getService(IMenuService.class);
+        if (menuService != null) {
+            menuService.populateContributionManager(extToolBar, "toolbar:object.editor.toolbar");
+        }
+        if (!extToolBar.isEmpty()) {
+            for (IContributionItem item : extToolBar.getItems()) {
+                contributionManager.add(item);
+            }
+            contributionManager.update(true);
+        }
+    }
 
     public ObjectEditorPageControl(Composite parent, int style, IDatabaseEditor workbenchPart)
     {

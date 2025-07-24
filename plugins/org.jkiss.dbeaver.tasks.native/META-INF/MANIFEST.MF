@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver Tasks - Native Tools
 Bundle-SymbolicName: org.jkiss.dbeaver.tasks.native;singleton:=true
-Bundle-Version: 1.0.134.qualifier
-Bundle-Release-Date: 20250602
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Version: 1.0.138.qualifier
+Bundle-Release-Date: 20250804
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
@@ -13,5 +13,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry
 Export-Package: org.jkiss.dbeaver.tasks.nativetool
-Bundle-ClassPath: .
 Automatic-Module-Name: org.jkiss.dbeaver.tasks.native
