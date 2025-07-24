@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -44,15 +45,16 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     private static final int EXTRACT_TYPE_SINGLE_QUERY = 0;
     private static final int EXTRACT_TYPE_SEGMENTS = 1;
 
-    private Text threadsNumText;
-    private Combo rowsExtractType;
-    private Label segmentSizeLabel;
-    private Text segmentSizeText;
     private Button newConnectionCheckbox;
     private Button rowCountCheckbox;
     private Button selectedColumnsOnlyCheckbox;
     private Button selectedRowsOnlyCheckbox;
     private Text fetchSizeText;
+
+    private Text threadsNumText;
+    private Combo rowsExtractType;
+    private Label segmentSizeLabel;
+    private Text segmentSizeText;
 
     public DatabaseProducerPageExtractSettings() {
         super(DTUIMessages.database_producer_page_extract_settings_name_and_title);
@@ -70,64 +72,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_output_group_progress, 4, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-
-            Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_max_threads);
-            threadsNumText = new Text(generalSettings, SWT.BORDER);
-            threadsNumText.setToolTipText(DTUIMessages.database_producer_page_extract_settings_threads_num_text_tooltip);
-            threadsNumText.setLayoutData(new GridData(
-                GridData.HORIZONTAL_ALIGN_BEGINNING,
-                GridData.VERTICAL_ALIGN_BEGINNING,
-                false,
-                false,
-                3,
-                1));
-            ((GridData)threadsNumText.getLayoutData()).widthHint = UIUtils.getFontHeight(threadsNumText) * 5;
-            threadsNumText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
-            threadsNumText.addModifyListener(e -> {
-                try {
-                    getWizard().getSettings().setMaxJobCount(Integer.parseInt(threadsNumText.getText()));
-                } catch (NumberFormatException e1) {
-                    // do nothing
-                }
-            });
-            if (getWizard().getSettings().getDataPipes().size() < 2) {
-                threadsNumLabel.setEnabled(false);
-                threadsNumText.setEnabled(false);
-            }
-
-            {
-
-                UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_extract_type);
-                rowsExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
-                rowsExtractType.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
-                rowsExtractType.setItems(
-                    DTMessages.data_transfer_wizard_output_combo_extract_type_item_single_query,
-                    DTMessages.data_transfer_wizard_output_combo_extract_type_item_by_segments);
-                rowsExtractType.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        switch (rowsExtractType.getSelectionIndex()) {
-                            case EXTRACT_TYPE_SEGMENTS: settings.setExtractType(DatabaseProducerSettings.ExtractType.SEGMENTS); break;
-                            case EXTRACT_TYPE_SINGLE_QUERY: settings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY); break;
-                        }
-                        updatePageCompletion();
-                    }
-                });
-
-                segmentSizeLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_segment_size);
-                segmentSizeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
-                segmentSizeText = new Text(generalSettings, SWT.BORDER);
-                segmentSizeText.addModifyListener(e -> {
-                    try {
-                        settings.setSegmentSize(Integer.parseInt(segmentSizeText.getText()));
-                    } catch (NumberFormatException e1) {
-                        // just skip it
-                    }
-                });
-                segmentSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
-                ((GridData)segmentSizeText.getLayoutData()).widthHint = UIUtils.getFontHeight(segmentSizeText) * 10;
-            }
+            Group generalSettings = UIUtils.createControlGroup(composite, DTMessages.data_transfer_wizard_settings_group_general, 4, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             newConnectionCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_new_connection, DTUIMessages.database_producer_page_extract_settings_new_connection_checkbox_tooltip, true, 4);
             newConnectionCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -206,6 +151,100 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                 selectedRowsOnlyCheckbox.addSelectionListener(listener);
             }
         }
+        {
+            Group generalSettings = UIUtils.createControlGroup(
+                composite,
+                UIConnectionMessages.dialog_connection_advanced_settings,
+                4,
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                0
+            );
+
+            Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_max_threads);
+            threadsNumText = new Text(generalSettings, SWT.BORDER);
+            threadsNumText.setToolTipText(DTUIMessages.database_producer_page_extract_settings_threads_num_text_tooltip);
+            threadsNumText.setLayoutData(new GridData(
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                GridData.VERTICAL_ALIGN_BEGINNING,
+                false,
+                false,
+                3,
+                1
+            ));
+            ((GridData) threadsNumText.getLayoutData()).widthHint = UIUtils.getFontHeight(threadsNumText) * 5;
+            threadsNumText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.ENGLISH));
+            threadsNumText.addModifyListener(e -> {
+                try {
+                    getWizard().getSettings().setMaxJobCount(Integer.parseInt(threadsNumText.getText()));
+                } catch (NumberFormatException e1) {
+                    // do nothing
+                }
+            });
+            if (getWizard().getSettings().getDataPipes().size() < 2) {
+                threadsNumLabel.setEnabled(false);
+                threadsNumText.setEnabled(false);
+            }
+
+            {
+
+                UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_extract_type);
+                rowsExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
+                rowsExtractType.setLayoutData(new GridData(
+                    GridData.HORIZONTAL_ALIGN_BEGINNING,
+                    GridData.VERTICAL_ALIGN_BEGINNING,
+                    false,
+                    false,
+                    3,
+                    1
+                ));
+                rowsExtractType.setItems(
+                    DTMessages.data_transfer_wizard_output_combo_extract_type_item_single_query,
+                    DTMessages.data_transfer_wizard_output_combo_extract_type_item_by_segments
+                );
+                rowsExtractType.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        switch (rowsExtractType.getSelectionIndex()) {
+                            case EXTRACT_TYPE_SEGMENTS:
+                                settings.setExtractType(DatabaseProducerSettings.ExtractType.SEGMENTS);
+                                break;
+                            case EXTRACT_TYPE_SINGLE_QUERY:
+                                settings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
+                                break;
+                        }
+                        updatePageCompletion();
+                    }
+                });
+
+                segmentSizeLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_segment_size);
+                segmentSizeLabel.setLayoutData(new GridData(
+                    GridData.HORIZONTAL_ALIGN_BEGINNING,
+                    GridData.VERTICAL_ALIGN_BEGINNING,
+                    false,
+                    false,
+                    1,
+                    1
+                ));
+                segmentSizeText = new Text(generalSettings, SWT.BORDER);
+                segmentSizeText.addModifyListener(e -> {
+                    try {
+                        settings.setSegmentSize(Integer.parseInt(segmentSizeText.getText()));
+                    } catch (NumberFormatException e1) {
+                        // just skip it
+                    }
+                });
+                segmentSizeText.setLayoutData(new GridData(
+                    GridData.HORIZONTAL_ALIGN_BEGINNING,
+                    GridData.VERTICAL_ALIGN_BEGINNING,
+                    false,
+                    false,
+                    1,
+                    1
+                ));
+                ((GridData) segmentSizeText.getLayoutData()).widthHint = UIUtils.getFontHeight(segmentSizeText) * 10;
+            }
+        }
+
         if(getWizard().getCurrentTask() != null){
             Composite buttonsPanel = UIUtils.createComposite(composite, 1);
             getWizard().createVariablesEditButton(buttonsPanel);
