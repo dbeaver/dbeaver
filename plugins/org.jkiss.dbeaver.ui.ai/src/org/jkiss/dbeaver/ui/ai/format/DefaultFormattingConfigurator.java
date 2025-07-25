@@ -68,7 +68,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         createRightPanel(rightPanel);
     }
 
-    protected void createLeftPanel(Composite leftPanel, Runnable propertyChangeListener) {
+    protected void createLeftPanel(@NotNull Composite leftPanel, @NotNull Runnable propertyChangeListener) {
         Group generalComposite = UIUtils.createControlGroup(
             leftPanel, UIMessages.ui_properties_tree_viewer_category_general, 2,
             GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT
