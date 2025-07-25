@@ -367,10 +367,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 prevQuery = displayName;
             }
 
-            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
-            if (CommonUtils.isEmpty(activeDisplayName)) {
-                activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
-            }
+            updateActiveQueryDisplayText(displayName);
 
             if (enableFilters && !CommonUtils.equalObjects(prevQuery, displayName)) {
                 filtersHistory.clear();
@@ -379,6 +376,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         filterComposite.layout();
         redrawPanels();
+    }
+
+    public void updateActiveQueryDisplayText(String displayName) {
+        activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
+        if (CommonUtils.isEmpty(activeDisplayName)) {
+            activeDisplayName = ResultSetViewer.DEFAULT_QUERY_TEXT;
+        }
     }
 
     private void enablePanelControls(boolean enable) {
@@ -443,7 +447,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         } else if (dataContainer instanceof DBSEntity) {
             return DBIcon.TREE_TABLE;
         } else {
-            return UIIcon.SQL_TEXT;
+            return DBIcon.SQL_TEXT;
         }
     }
 
@@ -451,7 +455,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private String getActiveSourceQuery() {
         String displayName;
         DBSDataContainer dataContainer = viewer.getDataContainer();
-        if (dataContainer instanceof DBSEntity) {
+        if (dataContainer instanceof DBSEntity && !viewer.getDataFilter().hasFilters()) {
             displayName = ResultSetMessages.sql_editor_resultset_filter_panel_show_sql_label;
         } else {
             displayName = viewer.getActiveQueryText();

@@ -22,13 +22,16 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -42,6 +45,7 @@ public class ScopeSelectorDialog extends BaseDialog {
 
     private final DBRRunnableContext runnableContext;
     private final DBPDataSourceContainer dataSourceContainer;
+    private final DBCExecutionContext executionContext;
     private DatabaseObjectsSelectorPanel selectorPanel;
     private List<? extends DBNNode> selectedNodes;
 
@@ -49,11 +53,13 @@ public class ScopeSelectorDialog extends BaseDialog {
         @NotNull Shell parentShell,
         @NotNull DBRRunnableContext runnableContext,
         @NotNull DBPDataSourceContainer container,
+        @NotNull DBCExecutionContext executionContext,
         @NotNull List<? extends DBNNode> selectedNodes
     ) {
         super(parentShell, "Select objects to include in completion scope", null);
         this.runnableContext = runnableContext;
         this.dataSourceContainer = container;
+        this.executionContext = executionContext;
         this.selectedNodes = selectedNodes;
     }
 
@@ -66,6 +72,25 @@ public class ScopeSelectorDialog extends BaseDialog {
     protected Composite createDialogArea(Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
 
+        DBPProject project = dataSourceContainer.getProject();
+        DBNModel navigatorModel = project.getNavigatorModel();
+
+        // Default root node is datasource
+        // But if the datasource consists of databases which are isolated instance (e.g. PostgreSQL) then
+        // too node is the default database (cross database queries are not supported in this cases)
+        DBNDatabaseNode rootNode = navigatorModel.getNodeByObject(dataSourceContainer);
+        DBCExecutionContextDefaults<?,?> contextDefaults = executionContext.getContextDefaults();
+        if (contextDefaults != null) {
+            DBSCatalog defaultCatalog = contextDefaults.getDefaultCatalog();
+            if (defaultCatalog instanceof DBSInstance) {
+                DBNDatabaseNode catalogNode = navigatorModel.getNodeByObject(new VoidProgressMonitor(), defaultCatalog, false);
+                if (catalogNode != null) {
+                    rootNode = catalogNode;
+                }
+            }
+        }
+
+        DBNDatabaseNode finalRootNode = rootNode;
         selectorPanel = new DatabaseObjectsSelectorPanel(
             dialogArea,
             true,
@@ -73,12 +98,12 @@ public class ScopeSelectorDialog extends BaseDialog {
         ) {
             @Override
             protected DBPProject getSelectedProject() {
-                return dataSourceContainer.getProject();
+                return project;
             }
 
             @Override
             protected DBNNode getRootNode() {
-                return getProject().getNavigatorModel().getNodeByObject(dataSourceContainer);
+                return finalRootNode;
             }
 
             @Override
@@ -88,18 +113,22 @@ public class ScopeSelectorDialog extends BaseDialog {
                     return false;
                 }
                 return DBSEntity.class.isAssignableFrom(childrenClass) ||
-                    DBSEntityContainer.class.isAssignableFrom(childrenClass);
+                    DBSEntityContainer.class.isAssignableFrom(childrenClass) ||
+                    DBSStructContainer.class.isAssignableFrom(childrenClass);
             }
 
             @Override
             protected boolean isDatabaseObjectVisible(DBSObject obj) {
-                return DBSEntity.class.isInstance(obj);
+                return obj instanceof DBSStructContainer || obj instanceof DBSEntityContainer || obj instanceof DBSEntity;
             }
 
         };
+        selectorPanel.getCheckboxTreeManager().setAutoCheckNested(false);
         selectorPanel.getNavigatorTree().getViewer().expandToLevel(2);
         selectorPanel.checkNodes(selectedNodes, true);
         selectorPanel.setSelection(selectedNodes);
+
+        UIUtils.createInfoLabel(dialogArea, "Define database metadata to send to AI");
 
         return dialogArea;
     }
@@ -109,7 +138,11 @@ public class ScopeSelectorDialog extends BaseDialog {
         selectedNodes = selectorPanel.getCheckedNodes();
         selectedNodes.removeIf(n -> {
                 if (n instanceof DBNDatabaseNode dbn) {
-                    if (dbn.getObject() instanceof DBSEntity || dbn.getObject() instanceof DBSEntityContainer) {
+                    DBSObject object = dbn.getObject();
+                    if (object instanceof DBSEntity ||
+                        object instanceof DBSEntityContainer ||
+                        object instanceof DBSStructContainer
+                    ) {
                         return false;
                     }
                 }

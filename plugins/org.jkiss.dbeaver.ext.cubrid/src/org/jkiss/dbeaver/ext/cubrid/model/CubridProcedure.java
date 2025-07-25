@@ -40,8 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CubridProcedure extends GenericProcedure implements DBSObjectWithScript, DBPRefreshableObject
-{
+public class CubridProcedure extends GenericProcedure implements DBSObjectWithScript, DBPRefreshableObject {
     private List<CubridProcedureParameter> proColumns;
     private DBSProcedureType procedureType;
     private String returnType;
@@ -52,10 +51,12 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
             @NotNull String procedureName,
             @Nullable String description,
             @NotNull DBSProcedureType procedureType,
+            @Nullable String source,
             @NotNull String returnType) {
-        super(container, procedureName, description, procedureType, null, true);
+        super(container, procedureName, description, procedureType, source, true);
         this.procedureType = procedureType;
         this.returnType = returnType;
+        this.source = source;
     }
 
     public CubridProcedure(@NotNull GenericStructContainer container, DBSProcedureType procedureType) {
@@ -136,7 +137,7 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
                 this.source += (getProcedureType() == DBSProcedureType.FUNCTION) ? " RETURN int" : "";
                 this.source += "\nAS LANGUAGE JAVA NAME";
             } else {
-                this.source = "-- Procedure definition not available";
+                this.source = "-- Java procedure definition not available";
             }
         }
         return source;
@@ -175,7 +176,7 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
                         String dataType = JDBCUtils.safeGetString(dbResult, "data_type");
                         String mode = JDBCUtils.safeGetString(dbResult, "mode");
                         String comment = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
-                        addColumn(new CubridProcedureParameter(this, getName(), argName, dataType, mode, comment));
+                        addColumn(new CubridProcedureParameter(this, argName, dataType, mode, comment));
                     }
                 }
             }

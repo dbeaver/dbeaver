@@ -253,7 +253,7 @@ public class LSMInspections {
         SQLStandardParser.RULE_anyWordWithAnyValue,
         SQLStandardParser.RULE_anyProperty,
         SQLStandardParser.RULE_anyWordsWithProperty,
-        SQLStandardParser.RULE_anyWordsWithProperty2,
+        SQLStandardParser.RULE_functionCallExpression,
         SQLStandardParser.RULE_anyUnexpected
     );
 

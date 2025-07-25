@@ -1095,7 +1095,7 @@ public class SQLScriptParser {
     }
 
     @NotNull
-    private static SQLParserContext prepareSqlParserContext(
+    public static SQLParserContext prepareSqlParserContext(
         DBPDataSource dataSource,
         SQLDialect dialect,
         DBPPreferenceStore preferenceStore,

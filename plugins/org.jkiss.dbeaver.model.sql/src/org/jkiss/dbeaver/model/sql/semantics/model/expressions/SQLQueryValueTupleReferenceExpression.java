@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryQualifiedName;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -37,7 +34,7 @@ import java.util.Set;
  */
 public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpression {
     @NotNull 
-    private final SQLQueryQualifiedName tableName;
+    private final SQLQueryComplexName tableName;
 
     @Nullable
     private final SQLQueryMemberAccessEntry memberAccessEntry;
@@ -50,7 +47,7 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
 
     public SQLQueryValueTupleReferenceExpression(
         @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQueryQualifiedName tableName,
+        @NotNull SQLQueryComplexName tableName,
         @Nullable SQLQueryMemberAccessEntry memberAccessEntry,
         @Nullable SQLQueryTupleRefEntry tupleRefEntry
     ) {
@@ -60,8 +57,14 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
         this.tupleRefEntry = tupleRefEntry;
     }
 
+    @Nullable
+    @Override
+    public SQLQuerySymbolClass getAssociatedSymbolClass() {
+        return SQLQuerySemanticUtils.getIdentifierSymbolClass(this.tableName);
+    }
+
     @NotNull 
-    public SQLQueryQualifiedName getTableName() {
+    public SQLQueryComplexName getTableName() {
         return this.tableName;
     }
 
@@ -74,71 +77,44 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
     public SQLQueryRowsSourceModel getTupleSource() {
         return this.tupleSource;
     }
-    
-    @Override
-    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        if (this.tableName.isNotClassified()) {
-            SQLQuerySymbolOrigin tableNameOrigin = new SQLQuerySymbolOrigin.ValueRefFromContext(context);
-            if (this.tableName.invalidPartsCount == 0) {
-                SourceResolutionResult rr = context.resolveSource(statistics.getMonitor(), this.tableName.toListOfStrings());
-                if (rr != null) {
-                    this.tupleSource = rr.source;
-                    this.tableName.setDefinition(rr, tableNameOrigin);
-                    if (this.memberAccessEntry != null) {
-                        this.memberAccessEntry.setOrigin(new SQLQuerySymbolOrigin.ColumnRefFromReferencedContext(rr));
-                    }
-                    if (this.tupleRefEntry != null) {
-                        this.tupleRefEntry.setOrigin(new SQLQuerySymbolOrigin.ExpandableTupleRef(this.getSyntaxNode(), context, rr));
-                    }
-                } else {
-                    this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
-                    statistics.appendError(this.tableName.entityName,
-                        "Table or subquery " + this.tableName.toIdentifierString() + " not found");
-                }
-            } else {
-                SQLQueryQualifiedName.performPartialResolution(
-                    context,
-                    statistics,
-                    this.tableName,
-                    tableNameOrigin,
-                    Set.of(RelationalObjectType.TYPE_UNKNOWN),
-                    SQLQuerySymbolClass.ERROR
-                );
-                statistics.appendError(this.getSyntaxNode(), "Invalid tuple reference");
-            }
-            type = SQLQueryExprType.UNKNOWN;
-        }
-    }
 
     @Override
     protected void resolveRowSourcesImpl(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
     }
 
+    @NotNull
     @Override
     protected SQLQueryExprType resolveValueTypeImpl(
         @NotNull SQLQueryRowsDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
+        SQLQueryExprType result;
         if (this.tableName.isNotClassified()) {
             SQLQuerySymbolOrigin tableNameOrigin = new SQLQuerySymbolOrigin.RowsDataRef(context);
             if (this.tableName.invalidPartsCount == 0) {
-                SourceResolutionResult rr = context.getRowsSources().findReferencedSource(new SQLQueryComplexName(this.tableName.toListOfStrings()));
+                SourceResolutionResult rr = context.getRowsSources().findReferencedSourceExact(this.tableName);
                 if (rr != null) {
                     this.tupleSource = rr.source;
-                    this.tableName.setDefinition(rr, tableNameOrigin);
+                    SQLQuerySemanticUtils.setNamePartsDefinition(this.tableName, rr, tableNameOrigin);
                     if (this.memberAccessEntry != null) {
                         this.memberAccessEntry.setOrigin(new SQLQuerySymbolOrigin.ColumnRefFromReferencedContext(rr));
                     }
                     if (this.tupleRefEntry != null) {
-                        this.tupleRefEntry.setOrigin(new SQLQuerySymbolOrigin.ExpandableRowsTupleRef(this.getSyntaxNode(), context, rr));
+                        this.tupleRefEntry.setOrigin(
+                            new SQLQuerySymbolOrigin.ExpandableRowsTupleRef(this.getSyntaxNode(), context, rr)
+                        );
                     }
+                    result = SQLQueryExprType.forReferencedRow(this.tableName, rr);
                 } else {
-                    this.tableName.setSymbolClass(SQLQuerySymbolClass.ERROR);
-                    statistics.appendError(this.tableName.entityName,
-                        "Table or subquery " + this.tableName.toIdentifierString() + " not found");
+                    this.tableName.parts.forEach(p -> p.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR));
+                    statistics.appendError(
+                        this.tableName.syntaxNode,
+                        "Table or subquery " + this.tableName.getNameString() + " not found"
+                    );
+                    result = SQLQueryExprType.UNKNOWN;
                 }
             } else {
-                SQLQueryQualifiedName.performPartialResolution(
+                SQLQuerySemanticUtils.performPartialResolution(
                     context.getRowsSources(),
                     statistics,
                     this.tableName,
@@ -147,11 +123,13 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
                     SQLQuerySymbolClass.ERROR
                 );
                 statistics.appendError(this.getSyntaxNode(), "Invalid tuple reference");
+                result = SQLQueryExprType.UNKNOWN;
             }
-            type = SQLQueryExprType.UNKNOWN;
+        } else {
+            result = this.type;
         }
 
-        return this.type;
+        return result;
     }
 
     @Override
@@ -161,7 +139,7 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
     
     @Override
     public String toString() {
-        String name = this.tableName.toIdentifierString();
+        String name = this.tableName.getNameString();
         String type = this.type == null ? "<NULL>" : this.type.toString();
         return "TupleReference[" + name + ":" + type + "]";
     }
