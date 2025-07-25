@@ -2832,47 +2832,6 @@ public class SQLEditor extends SQLEditorBase implements
         return elements;
     }
 
-    public boolean processQueriesWithoutAutoCommit(
-        @NotNull final List<SQLScriptElement> queries, final boolean forceScript,
-        boolean newTab, final boolean export, final boolean checkSession,
-        @Nullable final SQLScriptContext context
-    ) {
-        final DBCTransactionManager txnManager = Objects.requireNonNull(
-            DBUtils.getTransactionManager(getExecutionContext())
-        );
-        boolean autoCommit = dataSourceContainer.isDefaultAutoCommit();
-        boolean smartAutoCommit = isSmartAutoCommit();
-        DBRProgressMonitor monitor = new VoidProgressMonitor();
-
-        SQLQueryListener autocommitListener = new SQLEditorQueryListener(curQueryProcessor, false) {
-            @Override
-            public void onStartScript() {
-                dataSourceContainer.setDefaultAutoCommit(false);
-                setSmartAutoCommit(false);
-                try {
-                    txnManager.setAutoCommit(monitor, false);
-                } catch (DBCException e) {
-                    throw new RuntimeException(e);
-                }
-                super.onStartScript();
-            }
-
-            @Override
-            public void onEndScript(DBCStatistics statistics, boolean hasErrors) {
-                dataSourceContainer.setDefaultAutoCommit(autoCommit);
-                setSmartAutoCommit(smartAutoCommit);
-                try {
-                    txnManager.setAutoCommit(monitor, autoCommit);
-                } catch (DBCException e) {
-                    throw new RuntimeException(e);
-                }
-                super.onEndScript(statistics, hasErrors);
-            }
-        };
-
-        return processQueries(queries, forceScript, newTab, export, checkSession, autocommitListener, context);
-    }
-
     public boolean processQueries(
         @NotNull final List<SQLScriptElement> queries, final boolean forceScript,
         boolean newTab, final boolean export, final boolean checkSession,
