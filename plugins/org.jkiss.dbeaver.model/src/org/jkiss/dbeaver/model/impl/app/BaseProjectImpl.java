@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,8 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     public static final String SETTINGS_STORAGE_FILE = "project-settings.json";
     public static final String METADATA_STORAGE_FILE = "project-metadata.json";
     public static final String PROP_PROJECT_ID = "id";
+    public static final String PROP_PROJECT_NAME = "name";
+    public static final String PROP_PROJECT_DESCRIPTION = "description";
 
     public enum ProjectFormat {
         UNKNOWN,    // Project is not open or corrupted
@@ -435,6 +437,16 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @Override
     public void refreshProject(DBRProgressMonitor monitor) {
 
+    }
+
+    @Override
+    public void updateProject(@Nullable String newName, @Nullable String description) throws DBException {
+        if (CommonUtils.isNotEmpty(newName)) {
+            setProjectProperty(PROP_PROJECT_NAME, newName);
+        }
+        if (CommonUtils.isNotEmpty(description)) {
+            setProjectProperty(PROP_PROJECT_DESCRIPTION, description);
+        }
     }
 
     public boolean resetResourceProperties(@NotNull String resourcePath) {

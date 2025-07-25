@@ -90,6 +90,9 @@ public class DBNProjectDesktop extends DBNProject {
             if (eclipseProject == null) {
                 throw new DBException("Eclipse project is null");
             }
+            if (DBWorkbench.isDistributed()) {
+                project.updateProject(newName, null);
+            }
             final IProjectDescription description = eclipseProject.getDescription();
             description.setName(newName);
             eclipseProject.move(description, true, monitor.getNestedMonitor());
