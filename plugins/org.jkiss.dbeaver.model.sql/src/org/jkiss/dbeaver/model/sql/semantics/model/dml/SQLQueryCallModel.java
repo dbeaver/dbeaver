@@ -21,7 +21,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -47,9 +48,6 @@ public class SQLQueryCallModel extends SQLQueryModelContent {
     private final SQLQueryLexicalScope nameScope;
     @Nullable
     private final SQLQueryLexicalScope tailScope;
-
-    @Nullable
-    private SQLQueryDataContext dataContext = null;
 
     private SQLQueryCallModel(
         @NotNull STMTreeNode syntaxNode,
@@ -77,33 +75,23 @@ public class SQLQueryCallModel extends SQLQueryModelContent {
         return object;
     }
 
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return this.dataContext;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return this.dataContext;
-    }
-
     @NotNull
     public List<SQLQueryValueExpression> getExpressions() {
         return this.expressions;
     }
 
     @Override
-    protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
-        this.dataContext = dataContext;
-
+    public void resolveObjectAndRowsReferences(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.object != null) {
-            this.object.propagateContext(dataContext, recognitionContext);
+            this.object.resolveObjectAndRowsReferences(context, statistics);
         }
+    }
+
+    @Override
+    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.nameScope != null) {
-            this.nameScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.DbObjectFromContext(
-                    dataContext, Set.of(RelationalObjectType.TYPE_PROCEDURE, RelationalObjectType.TYPE_PACKAGE), false
+            this.nameScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.DbObjectRef(
+                context.getRowsSources(), Set.of(RelationalObjectType.TYPE_PROCEDURE, RelationalObjectType.TYPE_PACKAGE), false
             ));
         }
         if (this.tailScope != null) {
@@ -131,7 +119,7 @@ public class SQLQueryCallModel extends SQLQueryModelContent {
         try (SQLQueryModelRecognizer.LexicalScopeHolder h = recognizer.openScope()) {
             nameScope = h.lexicalScope;
             STMTreeNode nameNode = node.findFirstChildOfName(STMKnownRuleNames.qualifiedName);
-            SQLQueryQualifiedName name = nameNode == null ? null : recognizer.collectQualifiedName(nameNode);
+            SQLQueryComplexName name = nameNode == null ? null : recognizer.collectQualifiedName(nameNode);
             procedure = name == null
                 ? null
                 : new SQLQueryObjectDataModel(

@@ -1975,6 +1975,9 @@ public class DBeaverLauncher {
 
     private Path useCustomSecretStorage(Path localPath) {
         try {
+            if (!Files.exists(localPath)) {
+                Files.createDirectories(localPath);
+            }
             if (Files.exists(localPath)) {
                 Path storagePath =
                     localPath
@@ -2073,7 +2076,12 @@ public class DBeaverLauncher {
     private void processGlobalConfiguration() {
         try {
             final Properties config = readGlobalConfiguration();
-            setSystemPropertyIfNotSet(PROP_NL, config.getProperty(DBEAVER_PROP_LANGUAGE));
+            String nlProperty = config.getProperty(DBEAVER_PROP_LANGUAGE);
+            if (nlProperty == null || nlProperty.isBlank()) {
+                // Make English the default language
+                nlProperty = "en";
+            }
+            setSystemPropertyIfNotSet(PROP_NL, nlProperty);
         } catch (IOException e) {
             log("Unable to read global configuration file: " + e.getMessage());
         }

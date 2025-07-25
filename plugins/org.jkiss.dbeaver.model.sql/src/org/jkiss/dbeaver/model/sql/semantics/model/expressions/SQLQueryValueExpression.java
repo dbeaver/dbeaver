@@ -29,8 +29,6 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
 
     @NotNull
     protected SQLQueryExprType type = SQLQueryExprType.UNKNOWN;
-    @Nullable
-    protected SQLQueryDataContext dataContext = null;
 
     public SQLQueryValueExpression(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
         this(syntaxNode.getRealInterval(), syntaxNode, subnodes);
@@ -40,7 +38,7 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
         super(region, syntaxNode, subnodes);
     }
 
-    @Nullable
+    @NotNull
     public String getExprContent() {
         return this.getSyntaxNode().getTextContent();
     }
@@ -59,28 +57,6 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
     public SQLQueryResultColumn getColumnIfTrivialExpression() {
         return null;
     }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return this.dataContext;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return this.dataContext;
-    }
-
-    /**
-     *  Propagate semantics context and establish relations through the query model
-     */
-    public final void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        this.dataContext = context;
-        this.propagateContextImpl(context, statistics);
-    }
-    
-    protected abstract void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics);
 
     /**
      * Propagate information about available tables down the model and about actually referenced tables back up
@@ -116,6 +92,7 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
         this.type = this.resolveValueTypeImpl(context, statistics);
     }
 
+    @NotNull
     protected abstract SQLQueryExprType resolveValueTypeImpl(
         @NotNull SQLQueryRowsDataContext context,
         @NotNull SQLQueryRecognitionContext statistics

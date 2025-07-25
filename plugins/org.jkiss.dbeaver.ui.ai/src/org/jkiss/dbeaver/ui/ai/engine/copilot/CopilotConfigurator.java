@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotClient;
@@ -44,13 +44,13 @@ import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine, LegacyAISettings<CopilotProperties>> {
+    private static final Log log = Log.getLog(CopilotConfigurator.class);
 
-    @Nullable
-    protected Text tokenText;
     private Text temperatureText;
     private Combo modelCombo;
     private Button logQueryCheck;
@@ -68,14 +68,10 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         AIEngine object,
         @NotNull Runnable propertyChangeListener
     ) {
-        Composite authorizeComposite = UIUtils.createComposite(parent, 3);
-        authorizeComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        createConnectionParameters(authorizeComposite);
-        Composite composite = UIUtils.createComposite(parent, 2);
+        Composite composite = UIUtils.createComposite(parent, 3);
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
+        createConnectionParameters(composite);
         createModelParameters(composite);
-
         createAdditionalSettings(composite);
         UIUtils.syncExec(this::applySettings);
     }
@@ -83,12 +79,32 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     @Override
     public void loadSettings(@NotNull LegacyAISettings<CopilotProperties> configuration) {
         token = CommonUtils.toString(configuration.getProperties().getToken());
-        model = readModel(configuration).getName();
+        model = CommonUtils.toString(configuration.getProperties().getModel());
         temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
         logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
         accessToken = CommonUtils.toString(configuration.getProperties().getToken(), "");
         accessTokenText.setText(accessToken);
+        populateModelsCombo(false);
         applySettings();
+    }
+
+    private void populateModelsCombo(boolean forceRefresh) {
+        List<String> models = null;
+        try {
+            models = UIUtils.runWithMonitor(monitor -> CopilotClient.getModels(monitor, accessToken, forceRefresh));
+        } catch (DBException e) {
+            log.error("Error reading model list", e);
+        }
+        if (!CommonUtils.isEmpty(models)) {
+            modelCombo.setItems(models.toArray(new String[0]));
+            modelCombo.select(0);
+            for (int i = 0; i < modelCombo.getItemCount(); i++) {
+                if (modelCombo.getItem(i).equals(model)) {
+                    modelCombo.select(i);
+                    break;
+                }
+            }
+        }
     }
 
     @Override
@@ -117,10 +133,6 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         };
     }
 
-    protected String getDefaultModel() {
-        return OpenAIModel.GPT_4.getName();
-    }
-
     private void createModelParameters(@NotNull Composite parent) {
         modelCombo = UIUtils.createLabelCombo(parent, AIUIMessages.gpt_preference_page_combo_engine, SWT.READ_ONLY);
         for (OpenAIModel model : getSupportedGPTModels()) {
@@ -128,15 +140,19 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
                 modelCombo.add(model.getName());
             }
         }
-        modelCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                model = modelCombo.getText();
-            }
-        });
+        modelCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> model = modelCombo.getText()));
+        UIUtils.createDialogButton(
+            parent,
+            AIUIMessages.gpt_preference_page_refresh_models,
+            SelectionListener.widgetSelectedAdapter((e) -> populateModelsCombo(true))
+        );
+
+        GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
+        gridData.horizontalSpan = 2;
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
-        UIUtils.createInfoLabel(parent, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 2);
+        temperatureText.setLayoutData(gridData);
+        UIUtils.createInfoLabel(parent, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 3);
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
@@ -144,8 +160,8 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     private void createAdditionalSettings(@NotNull Composite parent) {
         logQueryCheck = UIUtils.createCheckbox(
             parent,
-            "Write GPT queries to debug log",
-            "Write GPT queries with metadata info in debug logs",
+            "Write AI queries to debug log",
+            "Write AI queries with metadata info in the debug logs",
             false,
             2
         );
@@ -158,16 +174,9 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     }
 
     private void applySettings() {
-        if (tokenText != null) {
-            tokenText.setText(token);
-        }
         modelCombo.setText(model);
         temperatureText.setText(temperature);
         logQueryCheck.setSelection(logQuery);
-    }
-
-    private OpenAIModel readModel(@NotNull LegacyAISettings<CopilotProperties> aiSettings) {
-        return OpenAIModel.getByName(CommonUtils.toString(aiSettings.getProperties().getModel(), getDefaultModel()));
     }
 
     private void createConnectionParameters(@NotNull Composite parent) {
@@ -178,7 +187,9 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
             "",
             SWT.BORDER | SWT.PASSWORD
         );
-        accessTokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 150;
+        accessTokenText.setLayoutData(gd);
         accessTokenText.addModifyListener((e -> accessToken = accessTokenText.getText()));
         accessTokenText.setMessage(CopilotMessages.copilot_preference_page_token_info);
         UIUtils.createDialogButton(parent, CopilotMessages.copilot_access_token_authorize, SelectionListener.widgetSelectedAdapter(e -> {
@@ -206,10 +217,11 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
                 CopilotMessages.oauth_auth_success_message,
                 SWT.ICON_INFORMATION
             );
-
             if (accessTokenText != null && !accessTokenText.isDisposed()) {
                 accessTokenText.setText(accessToken);
+                accessTokenText = UIUtils.recreateTextControl(accessTokenText, SWT.BORDER);
             }
+            populateModelsCombo(true);
         }));
     }
 

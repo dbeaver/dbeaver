@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
@@ -44,12 +43,6 @@ public class SQLQueryValueSubqueryExpression extends SQLQueryValueExpression {
     }
 
     @Override
-    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        this.source.propagateContext(context, statistics);
-        this.type = SQLQueryExprType.forScalarSubquery(this.source);
-    }
-
-    @Override
     protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @NotNull T arg) {
         return visitor.visitValueSubqueryExpr(this, arg);
     }
@@ -59,12 +52,13 @@ public class SQLQueryValueSubqueryExpression extends SQLQueryValueExpression {
         this.source.resolveObjectAndRowsReferences(context, statistics);
     }
 
+    @NotNull
     @Override
     protected SQLQueryExprType resolveValueTypeImpl(
         @NotNull SQLQueryRowsDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         this.source.resolveValueRelations(context, statistics);
-        return this.source.getRowsDataContext().getColumnsList().get(0).type;
+        return SQLQueryExprType.forScalarSubquery(this.source);
     }
 }

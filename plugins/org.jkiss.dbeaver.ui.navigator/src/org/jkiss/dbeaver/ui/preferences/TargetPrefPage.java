@@ -69,6 +69,10 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         return dataSourceContainer != null;
     }
 
+    protected boolean supportsGlobalOptions() {
+        return true;
+    }
+
     protected abstract boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dsContainer);
 
     protected abstract boolean supportsDataSourceSpecificOptions();
@@ -87,6 +91,11 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     @Nullable
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
+    }
+
+    @Nullable
+    public DBPDataSourceContainer getOriginalDataSourceContainer() {
+        return dataSourceContainer.getProject().getDataSourceRegistry().getDataSource(dataSourceContainer.getId());
     }
 
     @Override
@@ -143,25 +152,29 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     @Override
     protected Label createDescriptionLabel(Composite parent) {
         if (isDataSourcePreferencePage()) {
-            Composite composite = UIUtils.createPlaceholder(parent, 2);
-            composite.setFont(parent.getFont());
-            composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+            if (supportsGlobalOptions()) {
+                Composite composite = UIUtils.createPlaceholder(parent, 2);
+                composite.setFont(parent.getFont());
+                composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-            dataSourceSettingsButton = new Button(composite, SWT.CHECK);
-            dataSourceSettingsButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    boolean enabled = dataSourceSettingsButton.getSelection();
-                    enableDataSourceSpecificSettings(enabled);
-                }
-            });
-            dataSourceSettingsButton.setText(NLS.bind(UINavigatorMessages.pref_page_target_button_use_datasource_settings, dataSourceContainer.getName()));
-            dataSourceSettingsButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            dataSourceSettingsButton.setFont(parent.getFont());
+                dataSourceSettingsButton = new Button(composite, SWT.CHECK);
+                dataSourceSettingsButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        boolean enabled = dataSourceSettingsButton.getSelection();
+                        enableDataSourceSpecificSettings(enabled);
+                    }
+                });
+                dataSourceSettingsButton.setText(NLS.bind(
+                    UINavigatorMessages.pref_page_target_button_use_datasource_settings,
+                    dataSourceContainer.getName()
+                ));
+                dataSourceSettingsButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                dataSourceSettingsButton.setFont(parent.getFont());
 
-            changeSettingsTargetLink = createLink(composite, UINavigatorMessages.pref_page_target_link_show_global_settings);
-            changeSettingsTargetLink.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
-
+                changeSettingsTargetLink = createLink(composite, UINavigatorMessages.pref_page_target_link_show_global_settings);
+                changeSettingsTargetLink.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
+            }
         } else if (supportsDataSourceSpecificOptions()) {
             changeSettingsTargetLink = createLink(
                 parent,
@@ -220,7 +233,9 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     }
 
     protected void enableDataSourceSpecificSettings(boolean useProjectSpecificSettings) {
-        dataSourceSettingsButton.setSelection(useProjectSpecificSettings);
+        if (dataSourceSettingsButton != null) {
+            dataSourceSettingsButton.setSelection(useProjectSpecificSettings);
+        }
         enablePreferenceContent(useProjectSpecificSettings);
         updateLinkVisibility();
         doStatusChanged();
@@ -251,6 +266,9 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     }
 
     protected boolean useDataSourceSettings() {
+        if (!supportsGlobalOptions()) {
+            return true;
+        }
         return isDataSourcePreferencePage() && dataSourceSettingsButton != null && dataSourceSettingsButton.getSelection();
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
@@ -40,166 +41,165 @@ import java.util.Map;
  * DBVModelSerializerLegacy
  */
 @Deprecated
-class DBVModelSerializerLegacy implements DBVModelSerializer
-{
+class DBVModelSerializerLegacy implements DBVModelSerializer {
     private static final Log log = Log.getLog(DBVModelSerializerLegacy.class);
 
-    static void serializeContainer(XMLBuilder xml, DBVContainer object) throws IOException {
+    static void serializeContainer(@NotNull XMLBuilder xml, @NotNull DBVContainer object) throws IOException {
         if (!object.hasValuableData()) {
             // nothing to save
             return;
         }
-        xml.startElement(TAG_CONTAINER);
-        xml.addAttribute(ATTR_NAME, object.getName());
-        // Containers
-        for (DBVContainer container : object.getContainers()) {
-            serializeContainer(xml, container);
-        }
+        try (var ignored = xml.startElement(TAG_CONTAINER)) {
+            xml.addAttribute(ATTR_NAME, object.getName());
+            // Containers
+            for (DBVContainer container : object.getContainers()) {
+                serializeContainer(xml, container);
+            }
 
-        for (DBVEntity entity : object.getEntities()) {
-            if (entity.hasValuableData()) {
-                serializeEntity(xml, entity);
+            for (DBVEntity entity : object.getEntities()) {
+                if (entity.hasValuableData()) {
+                    serializeEntity(xml, entity);
+                }
             }
         }
-
-        xml.endElement();
     }
 
-    private static void serializeEntity(XMLBuilder xml, DBVEntity entity) throws IOException {
-        xml.startElement(TAG_ENTITY);
-        xml.addAttribute(ATTR_NAME, entity.getName());
-        if (!CommonUtils.isEmpty(entity.getDescriptionColumnNames())) {
-            xml.addAttribute(ATTR_DESCRIPTION, entity.getDescriptionColumnNames());
-        }
-        if (!CommonUtils.isEmpty(entity.getProperties())) {
-            for (Map.Entry<String, Object> prop : entity.getProperties().entrySet()) {
-                xml.startElement(TAG_PROPERTY);
-                xml.addAttribute(ATTR_NAME, prop.getKey());
-                xml.addAttribute(ATTR_VALUE, CommonUtils.toString(prop.getValue()));
-                xml.endElement();
+    private static void serializeEntity(@NotNull XMLBuilder xml, @NotNull DBVEntity entity) throws IOException {
+        try (var ignored0 = xml.startElement(TAG_ENTITY)) {
+            xml.addAttribute(ATTR_NAME, entity.getName());
+            if (!CommonUtils.isEmpty(entity.getDescriptionColumnNames())) {
+                xml.addAttribute(ATTR_DESCRIPTION, entity.getDescriptionColumnNames());
             }
-        }
-        // Attributes
-        for (DBVEntityAttribute attr : CommonUtils.safeCollection(entity.getEntityAttributes())) {
-            if (!attr.hasValuableData()) {
-                continue;
+            if (!CommonUtils.isEmpty(entity.getProperties())) {
+                for (Map.Entry<String, Object> prop : entity.getProperties().entrySet()) {
+                    try (var ignored2 = xml.startElement(TAG_PROPERTY)) {
+                        xml.addAttribute(ATTR_NAME, prop.getKey());
+                        xml.addAttribute(ATTR_VALUE, CommonUtils.toString(prop.getValue()));
+                    }
+                }
             }
-            try (final XMLBuilder.Element e3 = xml.startElement(TAG_ATTRIBUTE)) {
-                xml.addAttribute(ATTR_NAME, attr.getName());
-                final DBVTransformSettings transformSettings = attr.getTransformSettings();
-                if (transformSettings != null && transformSettings.hasValuableData()) {
-                    try (final XMLBuilder.Element e4 = xml.startElement(TAG_TRANSFORM)) {
-                        if (!CommonUtils.isEmpty(transformSettings.getCustomTransformer())) {
-                            xml.addAttribute(ATTR_CUSTOM, transformSettings.getCustomTransformer());
-                        }
-                        for (String id : CommonUtils.safeCollection(transformSettings.getIncludedTransformers())) {
-                            try (final XMLBuilder.Element e5 = xml.startElement(TAG_INCLUDE)) {
-                                xml.addAttribute(ATTR_ID, id);
+            // Attributes
+            for (DBVEntityAttribute attr : CommonUtils.safeCollection(entity.getEntityAttributes())) {
+                if (!attr.hasValuableData()) {
+                    continue;
+                }
+                try (var ignored3 = xml.startElement(TAG_ATTRIBUTE)) {
+                    xml.addAttribute(ATTR_NAME, attr.getName());
+                    final DBVTransformSettings transformSettings = attr.getTransformSettings();
+                    if (transformSettings != null && transformSettings.hasValuableData()) {
+                        try (var ignored4 = xml.startElement(TAG_TRANSFORM)) {
+                            if (!CommonUtils.isEmpty(transformSettings.getCustomTransformer())) {
+                                xml.addAttribute(ATTR_CUSTOM, transformSettings.getCustomTransformer());
+                            }
+                            for (String id : CommonUtils.safeCollection(transformSettings.getIncludedTransformers())) {
+                                try (var ignored5 = xml.startElement(TAG_INCLUDE)) {
+                                    xml.addAttribute(ATTR_ID, id);
+                                }
+                            }
+                            for (String id : CommonUtils.safeCollection(transformSettings.getExcludedTransformers())) {
+                                try (var ignored5 = xml.startElement(TAG_EXCLUDE)) {
+                                    xml.addAttribute(ATTR_ID, id);
+                                }
+                            }
+                            final Map<String, Object> transformOptions = transformSettings.getTransformOptions();
+                            if (transformOptions != null) {
+                                for (Map.Entry<String, Object> prop : transformOptions.entrySet()) {
+                                    try (var ignored5 = xml.startElement(TAG_PROPERTY)) {
+                                        if (prop.getValue() != null) {
+                                            xml.addAttribute(ATTR_NAME, prop.getKey());
+                                            xml.addAttribute(ATTR_VALUE, CommonUtils.toString(prop.getValue()));
+                                        }
+                                    }
+                                }
                             }
                         }
-                        for (String id : CommonUtils.safeCollection(transformSettings.getExcludedTransformers())) {
-                            try (final XMLBuilder.Element e5 = xml.startElement(TAG_EXCLUDE)) {
-                                xml.addAttribute(ATTR_ID, id);
+                    }
+                    if (!CommonUtils.isEmpty(attr.getProperties())) {
+                        for (Map.Entry<String, Object> prop : attr.getProperties().entrySet()) {
+                            try (var ignored = xml.startElement(TAG_PROPERTY)) {
+                                xml.addAttribute(ATTR_NAME, prop.getKey());
+                                xml.addAttribute(ATTR_VALUE, CommonUtils.toString(prop.getValue()));
                             }
                         }
-                        final Map<String, Object> transformOptions = transformSettings.getTransformOptions();
-                        if (transformOptions != null) {
-                            for (Map.Entry<String, Object> prop : transformOptions.entrySet()) {
-                                try (final XMLBuilder.Element e5 = xml.startElement(TAG_PROPERTY)) {
-                                    if (prop.getValue() != null) {
-                                        xml.addAttribute(ATTR_NAME, prop.getKey());
-                                        xml.addAttribute(ATTR_VALUE, CommonUtils.toString(prop.getValue()));
+                    }
+                }
+            }
+            // Constraints
+            for (DBVEntityConstraint c : CommonUtils.safeCollection(entity.getConstraints())) {
+                if (c.hasAttributes()) {
+                    try (var ignored = xml.startElement(TAG_CONSTRAINT)) {
+                        xml.addAttribute(ATTR_NAME, c.getName());
+                        xml.addAttribute(ATTR_TYPE, c.getConstraintType().getName());
+                        for (DBVEntityConstraintColumn cc : CommonUtils.safeCollection(c.getAttributeReferences(null))) {
+                            try (var ignored2 = xml.startElement(TAG_ATTRIBUTE)) {
+                                xml.addAttribute(ATTR_NAME, cc.getAttributeName());
+                            }
+                        }
+                    }
+                }
+            }
+            // Foreign keys
+            for (DBVEntityForeignKey fk : CommonUtils.safeCollection(entity.getForeignKeys())) {
+                try (var ignored = xml.startElement(TAG_ASSOCIATION)) {
+                    DBSEntity refEntity = fk.getAssociatedEntity();
+                    if (refEntity != null) {
+                        xml.addAttribute(ATTR_ENTITY, DBUtils.getObjectFullId(refEntity));
+                    }
+                    DBSEntityConstraint refConstraint = fk.getReferencedConstraint();
+                    if (refConstraint != null) {
+                        xml.addAttribute(ATTR_CONSTRAINT, refConstraint.getName());
+                    }
+                    for (DBVEntityForeignKeyColumn cc : CommonUtils.safeCollection(fk.getAttributes())) {
+                        try (var ignored2 = xml.startElement(TAG_ATTRIBUTE)) {
+                            xml.addAttribute(ATTR_NAME, cc.getAttributeName());
+                        }
+                    }
+                }
+            }
+            // Colors
+            if (!CommonUtils.isEmpty(entity.getColorOverrides())) {
+                try (var ignored = xml.startElement(TAG_COLORS)) {
+                    for (DBVColorOverride color : entity.getColorOverrides()) {
+                        try (var ignored2 = xml.startElement(TAG_COLOR)) {
+                            xml.addAttribute(ATTR_NAME, color.getAttributeName());
+                            xml.addAttribute(ATTR_OPERATOR, color.getOperator().name());
+                            if (color.isRange()) {
+                                xml.addAttribute(ATTR_RANGE, true);
+                            }
+                            if (color.isSingleColumn()) {
+                                xml.addAttribute(ATTR_SINGLE_COLUMN, true);
+                            }
+                            if (color.getColorForeground() != null) {
+                                xml.addAttribute(ATTR_FOREGROUND, color.getColorForeground());
+                            }
+                            if (color.getColorForeground2() != null) {
+                                xml.addAttribute(ATTR_FOREGROUND2, color.getColorForeground2());
+                            }
+                            if (color.getColorBackground() != null) {
+                                xml.addAttribute(ATTR_BACKGROUND, color.getColorBackground());
+                            }
+                            if (color.getColorBackground2() != null) {
+                                xml.addAttribute(ATTR_BACKGROUND2, color.getColorBackground2());
+                            }
+                            if (!ArrayUtils.isEmpty(color.getAttributeValues())) {
+                                for (Object value : color.getAttributeValues()) {
+                                    if (value == null) {
+                                        continue;
+                                    }
+                                    try (var ignored3 = xml.startElement(TAG_VALUE)) {
+                                        xml.addText(GeneralUtils.serializeObject(value));
                                     }
                                 }
                             }
                         }
                     }
                 }
-                if (!CommonUtils.isEmpty(attr.getProperties())) {
-                    for (Map.Entry<String, Object> prop : attr.getProperties().entrySet()) {
-                        xml.startElement(TAG_PROPERTY);
-                        xml.addAttribute(ATTR_NAME, prop.getKey());
-                        xml.addAttribute(ATTR_VALUE, CommonUtils.toString(prop.getValue()));
-                        xml.endElement();
-                    }
-                }
             }
         }
-        // Constraints
-        for (DBVEntityConstraint c : CommonUtils.safeCollection(entity.getConstraints())) {
-            if (c.hasAttributes()) {
-                xml.startElement(TAG_CONSTRAINT);
-                xml.addAttribute(ATTR_NAME, c.getName());
-                xml.addAttribute(ATTR_TYPE, c.getConstraintType().getName());
-                for (DBVEntityConstraintColumn cc : CommonUtils.safeCollection(c.getAttributeReferences(null))) {
-                    xml.startElement(TAG_ATTRIBUTE);
-                    xml.addAttribute(ATTR_NAME, cc.getAttributeName());
-                    xml.endElement();
-                }
-                xml.endElement();
-            }
-        }
-        // Foreign keys
-        for (DBVEntityForeignKey fk : CommonUtils.safeCollection(entity.getForeignKeys())) {
-            xml.startElement(TAG_ASSOCIATION);
-            DBSEntity refEntity = fk.getAssociatedEntity();
-            xml.addAttribute(ATTR_ENTITY, DBUtils.getObjectFullId(refEntity));
-            DBSEntityConstraint refConstraint = fk.getReferencedConstraint();
-            if (refConstraint != null) {
-                xml.addAttribute(ATTR_CONSTRAINT, refConstraint.getName());
-            }
-            for (DBVEntityForeignKeyColumn cc : CommonUtils.safeCollection(fk.getAttributes())) {
-                xml.startElement(TAG_ATTRIBUTE);
-                xml.addAttribute(ATTR_NAME, cc.getAttributeName());
-                xml.endElement();
-            }
-            xml.endElement();
-        }
-        // Colors
-        if (!CommonUtils.isEmpty(entity.getColorOverrides())) {
-            xml.startElement(TAG_COLORS);
-            for (DBVColorOverride color : entity.getColorOverrides()) {
-                xml.startElement(TAG_COLOR);
-                xml.addAttribute(ATTR_NAME, color.getAttributeName());
-                xml.addAttribute(ATTR_OPERATOR, color.getOperator().name());
-                if (color.isRange()) {
-                    xml.addAttribute(ATTR_RANGE, true);
-                }
-                if (color.isSingleColumn()) {
-                    xml.addAttribute(ATTR_SINGLE_COLUMN, true);
-                }
-                if (color.getColorForeground() != null) {
-                    xml.addAttribute(ATTR_FOREGROUND, color.getColorForeground());
-                }
-                if (color.getColorForeground2() != null) {
-                    xml.addAttribute(ATTR_FOREGROUND2, color.getColorForeground2());
-                }
-                if (color.getColorBackground() != null) {
-                    xml.addAttribute(ATTR_BACKGROUND, color.getColorBackground());
-                }
-                if (color.getColorBackground2() != null) {
-                    xml.addAttribute(ATTR_BACKGROUND2, color.getColorBackground2());
-                }
-                if (!ArrayUtils.isEmpty(color.getAttributeValues())) {
-                    for (Object value : color.getAttributeValues()) {
-                        if (value == null) {
-                            continue;
-                        }
-                        xml.startElement(TAG_VALUE);
-                        xml.addText(GeneralUtils.serializeObject(value));
-                        xml.endElement();
-                    }
-                }
-                xml.endElement();
-            }
-            xml.endElement();
-        }
-
-        xml.endElement();
     }
 
     static class ModelParser implements SAXListener {
-        private DBVContainer rootContainer;
+        private final DBVContainer rootContainer;
         private DBVContainer curContainer = null;
         private DBVEntity curEntity = null;
         private DBVEntityAttribute curAttribute = null;
@@ -208,13 +208,12 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
         private DBVColorOverride curColor;
         private boolean colorValue = false;
 
-        public ModelParser(DBVContainer rootContainer) {
+        public ModelParser(@NotNull DBVContainer rootContainer) {
             this.rootContainer = rootContainer;
         }
 
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
-            throws XMLException {
+        public void saxStartElement(@NotNull SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
             switch (localName) {
                 case TAG_CONTAINER:
                     if (curContainer == null) {
@@ -222,7 +221,8 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
                     } else {
                         DBVContainer container = new DBVContainer(
                             curContainer,
-                            atts.getValue(ATTR_NAME));
+                            atts.getValue(ATTR_NAME)
+                        );
                         curContainer.addContainer(container);
                         curContainer = container;
                     }
@@ -231,22 +231,26 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
                     curEntity = new DBVEntity(
                         curContainer,
                         atts.getValue(ATTR_NAME),
-                        atts.getValue(ATTR_DESCRIPTION));
+                        atts.getValue(ATTR_DESCRIPTION)
+                    );
                     curContainer.addEntity(curEntity);
                     break;
                 case TAG_PROPERTY:
                     if (curTransformSettings != null) {
                         curTransformSettings.setTransformOption(
                             atts.getValue(ATTR_NAME),
-                            atts.getValue(ATTR_VALUE));
+                            atts.getValue(ATTR_VALUE)
+                        );
                     } else if (curAttribute != null) {
                         curAttribute.setProperty(
                             atts.getValue(ATTR_NAME),
-                            atts.getValue(ATTR_VALUE));
+                            atts.getValue(ATTR_VALUE)
+                        );
                     } else if (curEntity != null) {
                         curEntity.setProperty(
                             atts.getValue(ATTR_NAME),
-                            atts.getValue(ATTR_VALUE));
+                            atts.getValue(ATTR_VALUE)
+                        );
                     }
                     break;
                 case TAG_CONSTRAINT:
@@ -254,7 +258,8 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
                         curConstraint = new DBVEntityConstraint(
                             curEntity,
                             DBSEntityConstraintType.VIRTUAL_KEY,
-                            atts.getValue(ATTR_NAME));
+                            atts.getValue(ATTR_NAME)
+                        );
                         curEntity.addConstraint(curConstraint, false);
                     }
                     break;
@@ -283,7 +288,8 @@ class DBVModelSerializerLegacy implements DBVModelSerializer
                 case TAG_EXCLUDE:
                     String transformerId = atts.getValue(ATTR_ID);
                     if (curTransformSettings != null && !CommonUtils.isEmpty(transformerId)) {
-                        final DBDAttributeTransformerDescriptor transformer = DBWorkbench.getPlatform().getValueHandlerRegistry().getTransformer(transformerId);
+                        DBDAttributeTransformerDescriptor transformer = DBWorkbench.getPlatform().getValueHandlerRegistry()
+                            .getTransformer(transformerId);
                         if (transformer == null) {
                             log.warn("Transformer '" + transformerId + "' not found");
                         } else {
