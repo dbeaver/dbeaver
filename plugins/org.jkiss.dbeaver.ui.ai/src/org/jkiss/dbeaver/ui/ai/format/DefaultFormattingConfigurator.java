@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.ai.format;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
@@ -30,6 +31,12 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Locale;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class DefaultFormattingConfigurator implements IObjectPropertyConfigurator<AISchemaGenerator, AISettings> {
     private Button includeSourceTextInCommentCheck;
@@ -40,6 +47,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     private Button sendDescriptionCheck;
 
     protected Composite settingsPanel;
+    private Combo languageText;
 
 
     @Override
@@ -51,7 +59,28 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         settingsPanel = UIUtils.createComposite(parent, 2);
         settingsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Group completionComposite = UIUtils.createControlGroup(settingsPanel, "SQL Completion", 1,
+        Composite leftPanel = UIUtils.createComposite(settingsPanel, 1);
+        leftPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        Group generalComposite = UIUtils.createControlGroup(leftPanel, UIMessages.ui_properties_tree_viewer_category_general, 2,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
+        languageText = UIUtils.createLabelCombo(
+            generalComposite,
+            UIMessages.controls_locale_selector_label_language,
+            SWT.DROP_DOWN);
+        languageText.setToolTipText(
+                """
+                Language AI engine should use in chat by default.
+                You can enter any natural language name.
+                If not specified then AI will reply in the same language you use for prompts."""
+        );
+        Set<String> languages = new TreeSet<>();
+        for (Locale locale : Locale.getAvailableLocales()) {
+            languages.add(locale.getDisplayLanguage());
+        }
+        languageText.setItems(languages.toArray(new String[0]));
+
+        Group completionComposite = UIUtils.createControlGroup(leftPanel, "SQL Completion", 1,
             GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
         UIUtils.createControlLabel(completionComposite, AIUIMessages.gpt_preference_page_advanced_appearance_group, 2);
         Composite appearanceSettings = UIUtils.createComposite(completionComposite, 2);
@@ -119,6 +148,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     @Override
     public void loadSettings(@NotNull AISettings aiSettings) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        languageText.setText(CommonUtils.notEmpty(store.getString(AIConstants.AI_RESPONSE_LANGUAGE)));
         includeSourceTextInCommentCheck.setSelection(store.getBoolean(AIConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT));
         executeQueryImmediatelyCheck.setSelection(store.getBoolean(AIConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY));
         sendTypeInfoCheck.setSelection(store.getBoolean(AIConstants.AI_SEND_TYPE_INFO));
@@ -128,6 +158,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     @Override
     public void saveSettings(@NotNull AISettings aiSettings) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        store.setValue(AIConstants.AI_RESPONSE_LANGUAGE, languageText.getText());
         store.setValue(AIConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT, includeSourceTextInCommentCheck.getSelection());
         store.setValue(AIConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, executeQueryImmediatelyCheck.getSelection());
         store.setValue(AIConstants.AI_SEND_TYPE_INFO, sendTypeInfoCheck.getSelection());
