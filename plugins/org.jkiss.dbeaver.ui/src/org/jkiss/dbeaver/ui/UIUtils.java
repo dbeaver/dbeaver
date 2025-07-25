@@ -2515,9 +2515,13 @@ public class UIUtils {
      * @param widget Control to set width hint for
      * @param widthHint Desired width in pixels
      */
-
     public static void setWidgetWidthHint(@NotNull Control widget, int widthHint) {
         if (widget.isDisposed()) {
+            return;
+        }
+
+        Composite parent = widget.getParent();
+        if (parent == null || !(parent.getLayout() instanceof GridLayout)) {
             return;
         }
 
