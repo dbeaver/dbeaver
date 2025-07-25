@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database.load;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.IToolTipProvider;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -26,33 +27,43 @@ import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
 /**
- * A special node that is shown when a filter is applied to a parent folder node.
+ * A special node shown when a filter is applied to a parent node
  */
-public class TreeNodeFilterConfigurator extends TreeNodeSpecial implements IToolTipProvider {
-    public TreeNodeFilterConfigurator(@NotNull DBNNode parent) {
+public class TreeNodeFilter extends ContextMenuTreeNodeSpecial implements IToolTipProvider {
+    
+    public TreeNodeFilter(@NotNull DBNNode parent) {
         super(parent);
     }
 
     @Override
     public String getText(Object element) {
-        return UINavigatorMessages.navigator_filtered_nodes_text;
+        return UINavigatorMessages.navigator_nodes_filtered_by_settings_text;
     }
 
     @Override
     public String getToolTipText(Object element) {
-        return UINavigatorMessages.navigator_filtered_nodes_tip;
+        return UINavigatorMessages.navigator_nodes_filtered_by_settings_tip;
     }
 
     @Override
-    public Image getImage(Object element) {
-        return null;
-    }
-
-    @Override
-    public boolean handleDefaultAction(DatabaseNavigatorTree tree) {
-        if (getParent() instanceof DBNDatabaseNode dbNode) {
-            NavigatorHandlerFilterConfig.configureFilters(tree.getShell(), dbNode);
-        }
+    public boolean handleDefaultAction(@NotNull DatabaseNavigatorTree navigatorTree) {
+        configureFilters(navigatorTree);
         return true;
+    }
+
+    @Override
+    public void fillContextMenu(@NotNull MenuManager menu, @NotNull DatabaseNavigatorTree navigatorTree) {
+        menu.add(new Action(UINavigatorMessages.actions_navigator_configure_filters) {
+            @Override
+            public void run() {
+                configureFilters(navigatorTree);
+            }
+        });
+    }
+
+    public void configureFilters(@NotNull DatabaseNavigatorTree navigatorTree) {
+        if (getParent() instanceof DBNDatabaseNode dbNode) {
+            NavigatorHandlerFilterConfig.configureFilters(navigatorTree.getShell(), dbNode);
+        }
     }
 }

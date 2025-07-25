@@ -77,6 +77,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private TreeEditor treeEditor;
     private boolean checkEnabled;
     private INavigatorFilter navigatorFilter;
+    private TreeFilter treeFilter;
     private Text filterControl;
     private INavigatorItemRenderer itemRenderer;
 
@@ -414,6 +415,24 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     @NotNull
     public CheckboxTreeViewer getCheckboxViewer() {
         return (CheckboxTreeViewer) treeViewer;
+    }
+
+    public boolean isFilterActive() {
+        return treeFilter != null && treeFilter.isActive();
+    }
+
+    public boolean isMatchingNeeded(@NotNull Object element) {
+        return treeFilter != null && treeFilter.isMatchingNeeded(element);
+    }
+
+    public void resetFilter() {
+        if (filterControl != null) {
+            filterControl.setText("");
+        }
+        if (treeFilter != null) {
+            treeFilter.setPattern("");
+        }
+        treeViewer.refresh(true);
     }
 
     @Override
@@ -819,6 +838,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             return super.wordMatches(text);
         }
 
+        @Override
         public boolean isElementVisible(Viewer viewer, Object element) {
             if (filterShowConnected && element instanceof DBNDataSource dataSource && !dataSource.getDataSourceContainer().isConnected()) {
                 return false;
@@ -833,6 +853,21 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 return false;
             }
 
+            if (!isMatchingNeeded(element)) {
+                return true;
+            }
+            String labelText = ((ILabelProvider) ((ContentViewer) viewer).getLabelProvider()).getText(element);
+            if (labelText == null) {
+                return false;
+            }
+            return isPatternMatched(labelText, element);
+        }
+
+        public boolean isActive() {
+            return matcher != null && !matcher.match("");
+        }
+
+        public boolean isMatchingNeeded(Object element) {
             boolean needToMatch = filter.filterObjectByPattern(element);
             if (!needToMatch && element instanceof DBNDatabaseNode node) {
                 DBSObject object = node.getObject();
@@ -850,20 +885,13 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                         }
                     }
                     default -> needToMatch = !(object instanceof DBPDataSourceContainer) &&
-                                             !(object instanceof DBSSchema) &&
-                                             !(object instanceof DBSCatalog) &&
-                                             !(object instanceof DBNDatabaseFolder) &&
-                                             !(object instanceof DBSTableColumn);
+                        !(object instanceof DBSSchema) &&
+                        !(object instanceof DBSCatalog) &&
+                        !(object instanceof DBNDatabaseFolder) &&
+                        !(object instanceof DBSTableColumn);
                 }
             }
-            if (!needToMatch) {
-                return true;
-            }
-            String labelText = ((ILabelProvider) ((ContentViewer) viewer).getLabelProvider()).getText(element);
-            if (labelText == null) {
-                return false;
-            }
-            return isPatternMatched(labelText, element);
+            return needToMatch;
         }
 
         private boolean isPatternMatched(String labelText, Object element) {
@@ -949,6 +977,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             ((GridLayout) getLayout()).verticalSpacing = 0;
 
             UIUtils.addDefaultEditActionsSupport(UIUtils.getActiveWorkbenchWindow(), getFilterControl());
+
+            treeFilter = (TreeFilter) super.getPatternFilter();
         }
 
         @Override
