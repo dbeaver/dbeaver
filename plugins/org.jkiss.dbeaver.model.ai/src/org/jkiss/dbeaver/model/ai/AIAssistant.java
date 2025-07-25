@@ -17,7 +17,10 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -53,4 +56,10 @@ public interface AIAssistant {
      * Returns whether the AI assistant has a valid configuration.
      */
     boolean hasValidConfiguration() throws DBException;
+
+    @NotNull
+    AIEngine getActiveEngine() throws DBException;
+
+    @Nullable
+    AIEngineDescriptor getActiveEngineDescriptor();
 }

@@ -34,6 +34,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
 
     private final IConfigurationElement contributorConfig;
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
+    private final ObjectType objectType;
 
     protected AIEngineDescriptor(IConfigurationElement contributorConfig) {
         super(contributorConfig);
@@ -41,6 +42,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         for (IConfigurationElement propGroup : ArrayUtils.safeArray(contributorConfig.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
             properties.addAll(PropertyDescriptor.extractProperties(propGroup));
         }
+        objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
     }
 
     public String getId() {
@@ -51,7 +53,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         return contributorConfig.getAttribute("label");
     }
 
-    String getReplaces() {
+    public String getReplaces() {
         return contributorConfig.getAttribute("replaces");
     }
 
@@ -64,7 +66,6 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     }
 
     public AIEngine createInstance() throws DBException {
-        ObjectType objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
         AIEngineFactory<?> instance = objectType.createInstance(AIEngineFactory.class);
         return instance.createEngine(AISettingsRegistry.getInstance());
     }
