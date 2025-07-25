@@ -174,7 +174,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
                 tableSymbolClass
             );
             context = context.resetAsUnresolved();
-            if (candidates.isEmpty() || (candidates.size() == 1 && table != null)) {
+            if (candidates.isEmpty() || candidates.size() == 1) {
                 statistics.appendError(this.name.syntaxNode, "Table " + this.name.getNameString() + " not found");
             }
         }

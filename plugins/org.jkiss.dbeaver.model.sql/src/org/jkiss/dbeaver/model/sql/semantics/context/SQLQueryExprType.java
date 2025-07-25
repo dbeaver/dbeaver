@@ -265,7 +265,9 @@ public abstract class SQLQueryExprType {
         }
 
         return switch (typeDesc.getKind()) {
-            case UNKNOWN -> typeDesc.getUnderlyingType() == null ? null : forTypedObjectImpl(monitor, typeDesc.getUnderlyingType(), declaratorDefinition);
+            case UNKNOWN -> typeDesc.getUnderlyingType() == null
+                ? null
+                : forTypedObjectImpl(monitor, typeDesc.getUnderlyingType(), declaratorDefinition);
             case INDEXABLE -> typedObj == null
                 ? new SQLQueryExprDescribedIndexableType(declaratorDefinition, typeDesc)
                 : new SQLQueryExprDescribedIndexableType(declaratorDefinition, typedObj, typeDesc);

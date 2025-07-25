@@ -80,7 +80,9 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
 
             SQLQuerySymbolOrigin nameOrigin = new SQLQuerySymbolOrigin.DbObjectRef(context, RelationalObjectType.TYPE_TABLE);
             if (realTable != null) {
-                SQLQuerySemanticUtils.setNamePartsDefinition(context, this.tableName, realTable, nameOrigin, SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT);
+                SQLQuerySemanticUtils.setNamePartsDefinition(
+                    context, this.tableName, realTable, nameOrigin, SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT
+                );
             } else {
                 SQLQuerySemanticUtils.performPartialResolution(
                     context,

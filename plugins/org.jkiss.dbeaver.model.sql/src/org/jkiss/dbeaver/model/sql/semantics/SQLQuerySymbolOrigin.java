@@ -84,7 +84,11 @@ public abstract class SQLQuerySymbolOrigin {
         @NotNull
         private final DbObjectFilterMode  filterMode;
 
-        public DbObjectFromDbObject(@NotNull DBSObject object, @NotNull SQLQueryRowsSourceContext rowsContext, @NotNull DbObjectFilterMode filterMode) {
+        public DbObjectFromDbObject(
+            @NotNull DBSObject object,
+            @NotNull SQLQueryRowsSourceContext rowsContext,
+            @NotNull DbObjectFilterMode filterMode
+        ) {
             this.object = object;
             this.objectTypes = Collections.emptySet();
             this.rowsContext = rowsContext;

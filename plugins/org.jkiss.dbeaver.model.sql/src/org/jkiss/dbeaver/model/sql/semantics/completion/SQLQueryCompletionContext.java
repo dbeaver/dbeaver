@@ -816,7 +816,10 @@ public abstract class SQLQueryCompletionContext {
                         };
                     }
 
-                    private void prepareDefaultObjectCompletion(SQLQueryCompletionItem.ContextObjectInfo prefix, Set<DBSObjectType> memberTypes) {
+                    private void prepareDefaultObjectCompletion(
+                        @NotNull SQLQueryCompletionItem.ContextObjectInfo prefix,
+                        @NotNull Set<DBSObjectType> memberTypes
+                    ) {
                         if (memberTypes.size() == 1 && (memberTypes.contains(RelationalObjectType.TYPE_UNKNOWN) || memberTypes.isEmpty())) {
                             makeFilteredCompletionSet(
                                 filterOrNull,

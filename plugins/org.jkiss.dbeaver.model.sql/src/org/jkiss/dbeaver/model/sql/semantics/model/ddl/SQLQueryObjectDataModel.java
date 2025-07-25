@@ -124,7 +124,9 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
             return context.resetAsUnresolved();
         } else {
             this.object = candidates.getFirst();
-            SQLQuerySemanticUtils.setNamePartsDefinition(context, this.name, this.object, this.objectNameOrigin, SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT);
+            SQLQuerySemanticUtils.setNamePartsDefinition(
+                context, this.name, this.object, this.objectNameOrigin, SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT
+            );
             if (!this.objectType.getTypeClass().isAssignableFrom(this.object.getClass())) {
                 statistics.appendError(
                     this.getSyntaxNode(),

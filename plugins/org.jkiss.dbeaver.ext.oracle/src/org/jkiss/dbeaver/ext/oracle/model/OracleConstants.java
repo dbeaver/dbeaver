@@ -89,7 +89,7 @@ public class OracleConstants {
     public static final String PROP_METADATA_USE_SIMPLE_CONSTRAINTS = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-simple-constraints@";
     public static final String PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-alternative-table-query@";
     public static final String PROP_SEARCH_METADATA_IN_SYNONYMS = "oracle.meta-search-in-synonyms"; //$NON-NLS-1$
-    public static final String PROP_SEARCH_METADATA_IN_SEQUENCES= "oracle.meta-search-in-sequences"; //$NON-NLS-1$
+    public static final String PROP_SEARCH_METADATA_IN_SEQUENCES = "oracle.meta-search-in-sequences"; //$NON-NLS-1$
     public static final String PROP_SHOW_DATE_AS_DATE = "oracle.show-date-as-date"; //$NON-NLS-1$
     public static final String PROP_ID_LOCKED = "locked";
     public static final String PROP_ID_PASSWORD = "password";
