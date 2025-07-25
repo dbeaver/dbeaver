@@ -443,6 +443,7 @@ public abstract class SQLQueryCompletionContext {
                     expectedTypes.add(DBSCatalog.class);
                     expectedTypes.add(DBSTable.class);
                     expectedTypes.add(DBSView.class);
+                    expectedTypes.add(DBSAlias.class);
                     if (request.getContext().isSearchProcedures()) {
                         expectedTypes.add(DBSProcedure.class);
                         expectedTypes.add(DBSPackage.class);

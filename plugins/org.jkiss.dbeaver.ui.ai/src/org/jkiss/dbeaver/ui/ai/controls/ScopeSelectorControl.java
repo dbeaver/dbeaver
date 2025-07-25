@@ -194,9 +194,10 @@ public class ScopeSelectorControl extends Composite {
     public static List<String> chooseCustomEntities(
         @NotNull Shell shell,
         @NotNull DBRRunnableContext context,
-        @NotNull DBPDataSource dataSource,
+        @NotNull DBCExecutionContext executionContext,
         @NotNull Set<String> ids
     ) {
+        DBPDataSource dataSource = executionContext.getDataSource();
         DBNModel navigator = Objects.requireNonNull(dataSource.getContainer().getProject().getNavigatorModel());
         List<DBNDatabaseNode> nodes = new ArrayList<>();
 
@@ -214,7 +215,7 @@ public class ScopeSelectorControl extends Composite {
             log.warn("Error loading custom entities", e);
         }
 
-        ScopeSelectorDialog dialog = new ScopeSelectorDialog(shell, context, dataSource.getContainer(), nodes);
+        ScopeSelectorDialog dialog = new ScopeSelectorDialog(shell, context, dataSource.getContainer(), executionContext, nodes);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -239,7 +240,7 @@ public class ScopeSelectorControl extends Composite {
             List<String> ids = chooseCustomEntities(
                 getShell(),
                 UIUtils.getDefaultRunnableContext(),
-                executionContext.getDataSource(),
+                executionContext,
                 checkedObjectIds
             );
 

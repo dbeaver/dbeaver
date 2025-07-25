@@ -335,9 +335,24 @@ public class AISettingsRegistry {
 
     private static List<AIEngineSettingsSerDe<?>> getSerDes() {
         List<AIEngineSettingsSerDe<?>> result = new ArrayList<>();
-        for (IConfigurationElement iConfigurationElement : Platform.getExtensionRegistry()
-            .getConfigurationElementsFor(AIEngineConfigurationSerDeDescriptor.EXTENSION_ID)) {
+        IConfigurationElement[] serDeElements = Platform.getExtensionRegistry()
+            .getConfigurationElementsFor(AIEngineConfigurationSerDeDescriptor.EXTENSION_ID);
+
+        Map<String, String> replacements = new HashMap<>();
+        for (IConfigurationElement cfg : serDeElements) {
+            String id = cfg.getAttribute("id");
+            String replaces = cfg.getAttribute("replaces");
+            if (!CommonUtils.isEmpty(replaces)) {
+                replacements.put(replaces, id);
+            }
+        }
+
+        for (IConfigurationElement iConfigurationElement : serDeElements) {
             AIEngineConfigurationSerDeDescriptor descriptor = new AIEngineConfigurationSerDeDescriptor(iConfigurationElement);
+            if (replacements.containsKey(descriptor.getId())) {
+                // Skip
+                continue;
+            }
             try {
                 result.add(descriptor.createInstance());
             } catch (DBException e) {

@@ -81,9 +81,11 @@ public class CopilotProperties implements AIEngineProperties {
      * Save secrets to the secret controller.
      */
     public void saveSecrets() throws DBException {
-        DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
-            CopilotConstants.COPILOT_ACCESS_TOKEN, token
-        );
+        if (token != null) {
+            DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
+                CopilotConstants.COPILOT_ACCESS_TOKEN, token
+            );
+        }
     }
 
     @Override

@@ -29,12 +29,20 @@ public class OpenAIRequestFilter implements OpenAIClient.HttpRequestFilter {
 
     @NotNull
     @Override
-    public HttpRequest filter(@NotNull HttpRequest request) {
-        return HttpRequest.newBuilder(request.uri())
+    public HttpRequest filter(@NotNull HttpRequest request, boolean setContentType) {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(request.uri())
             .uri(request.uri())
             .method(request.method(), request.bodyPublisher().orElse(HttpRequest.BodyPublishers.noBody()))
-            .header("Content-Type", "application/json")
-            .headers("Authorization", "Bearer " + token)
-            .build();
+            .headers("Authorization", "Bearer " + token);
+        for (var headerEntry : request.headers().map().entrySet()) {
+            for (String value : headerEntry.getValue()) {
+                builder.header(headerEntry.getKey(), value);
+            }
+        }
+
+        if (setContentType) {
+            builder.header("Content-Type", "application/json");
+        }
+        return builder.build();
     }
 }
