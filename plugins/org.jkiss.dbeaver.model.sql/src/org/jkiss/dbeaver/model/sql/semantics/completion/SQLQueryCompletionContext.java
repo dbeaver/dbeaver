@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -431,7 +432,7 @@ public abstract class SQLQueryCompletionContext {
             private List<SQLQueryCompletionItem> accomplishTableReferences(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
-                @NotNull  SQLQuerySourcesInfoCollection knownSources,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
                 @NotNull DBSObject prefixContext,
                 @Nullable SQLQueryCompletionItem.ContextObjectInfo prefixInfo,
                 @Nullable SQLQueryWordEntry filterOrNull
@@ -467,7 +468,7 @@ public abstract class SQLQueryCompletionContext {
 
             private void collectImmediateChildren(
                 @NotNull DBRProgressMonitor monitor,
-                @NotNull  SQLQuerySourcesInfoCollection knownSources,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
                 @NotNull Collection<DBSObjectContainer> containers,
                 @Nullable Predicate<DBSObject> filter,
                 @Nullable SQLQueryCompletionItem.ContextObjectInfo contextObjext,
@@ -584,6 +585,59 @@ public abstract class SQLQueryCompletionContext {
                 if (byFullNameItems.size() > 0) {
                     this.makeFilteredCompletionSet(prefix.get(0), byFullNameItems, results);
                 }
+            }
+
+
+            private List<SQLQueryCompletionItem> accomplishQualifiedValueReferences(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
+                @NotNull DBSObject prefixContext,
+                @Nullable SQLQueryCompletionItem.ContextObjectInfo prefixInfo,
+                @Nullable SQLQueryWordEntry filterOrNull
+            ) {
+                Map<DBSObject, SourceResolutionResult> knownTables = knownSources.getResolutionResults()
+                    .values().stream()
+                    .filter(rr -> rr.referenceName != null && rr.tableOrNull != null)
+                    .collect(Collectors.toMap(rr -> rr.tableOrNull, Function.identity()));
+                LinkedList<SQLQueryCompletionItem> items = new LinkedList<>();
+                SourceResolutionResult currentTableSource = knownTables.get(prefixContext);
+                if (currentTableSource != null) {
+                    for (SQLQueryResultColumn c : currentTableSource.source.getRowsDataContext().getColumnsList()) {
+                        SQLQueryWordEntry key = makeFilterInfo(filterOrNull, c.symbol.getName());
+                        int nameScore = key.matches(filterOrNull, this.searchInsideWords);
+                        if (nameScore > 0) {
+                            items.addLast(SQLQueryCompletionItem.forSubsetColumn(nameScore, key, c, currentTableSource, false));
+                        }
+                    }
+                } else if (prefixContext instanceof DBSObjectContainer container) {
+                    Set<Class<?>> expectedTypes = new HashSet<>();
+                    expectedTypes.add(DBSSchema.class);
+                    expectedTypes.add(DBSCatalog.class);
+                    expectedTypes.add(DBSTable.class);
+                    expectedTypes.add(DBSView.class);
+                    if (request.getContext().isSearchProcedures()) {
+                        expectedTypes.add(DBSProcedure.class);
+                        expectedTypes.add(DBSPackage.class);
+                    }
+                    expectedTypes.add(DBSSequence.class);
+                    try {
+                        this.collectImmediateChildren(
+                            monitor,
+                            knownSources,
+                            List.of(container),
+                            o -> expectedTypes.stream().anyMatch(c -> c.isAssignableFrom(o.getClass())) && (
+                                !(o instanceof DBSView || o instanceof DBSTable) || knownTables.containsKey(o)
+                            ),
+                            prefixInfo,
+                            filterOrNull,
+                            items
+                        );
+                    } catch (DBException e) {
+                        log.error(e);
+                    }
+                }
+                return items;
             }
 
             private void prepareObjectComponentCompletions(
@@ -706,27 +760,84 @@ public abstract class SQLQueryCompletionContext {
                             origin.getObject(),
                             true
                         );
-                        if (origin.getMemberTypes().size() == 1 && origin.getMemberTypes().contains(RelationalObjectType.TYPE_UNKNOWN)) {
+                        SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getRowsContext());
+                        setContextInfo(contextInfo);
+                        switch (origin.getFilterMode()) {
+                            case DEFAULT -> this.prepareDefaultObjectCompletion(prefix, origin.getMemberTypes());
+                            case ROWSET -> {
+                                makeFilteredCompletionSet(
+                                    filterOrNull,
+                                    accomplishTableReferences(
+                                        monitor,
+                                        request,
+                                        deepestContext.getKnownSources(),
+                                        prefix.object(),
+                                        prefix,
+                                        filterOrNull
+                                    ),
+                                    results
+                                );
+                                if (origin.getObject() instanceof DBSObjectContainer c) {
+                                    prepareProceduresCompletions(monitor, request, contextInfo.getKnownSources(), List.of(c), filterOrNull);
+                                }
+                            }
+                            case VALUE, FUNCTION -> {
+                                makeFilteredCompletionSet(
+                                    filterOrNull,
+                                    accomplishQualifiedValueReferences(
+                                        monitor,
+                                        request,
+                                        deepestContext.getKnownSources(),
+                                        prefix.object(),
+                                        prefix,
+                                        filterOrNull
+                                    ),
+                                    results
+                                );
+                                if (origin.getObject() instanceof DBSObjectContainer c) {
+                                    prepareProceduresCompletions(monitor, request, contextInfo.getKnownSources(), List.of(c), filterOrNull);
+                                }
+                            }
+                            case OBJECT -> {
+                                if (origin.getObject() instanceof DBSObjectContainer objectContainer) {
+                                    prepareObjectCompletions(
+                                        monitor,
+                                        request,
+                                        deepestContext.getKnownSources(),
+                                        List.of(objectContainer),
+                                        prefix,
+                                        Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                                        filterOrNull,
+                                        results
+                                    );
+                                }
+                            }
+                            default -> throw new UnsupportedOperationException("Unexpected filter mode: " + origin.getFilterMode());
+                        };
+                    }
+
+                    private void prepareDefaultObjectCompletion(SQLQueryCompletionItem.ContextObjectInfo prefix, Set<DBSObjectType> memberTypes) {
+                        if (memberTypes.size() == 1 && (memberTypes.contains(RelationalObjectType.TYPE_UNKNOWN) || memberTypes.isEmpty())) {
                             makeFilteredCompletionSet(
                                 filterOrNull,
                                 accomplishTableReferences(
                                     monitor,
                                     request,
                                     deepestContext.getKnownSources(),
-                                    origin.getObject(),
+                                    prefix.object(),
                                     prefix,
                                     filterOrNull
                                 ),
                                 results
                             );
-                        } else if (origin.getObject() instanceof DBSObjectContainer container) {
+                        } else if (prefix.object() instanceof DBSObjectContainer container) {
                             prepareObjectCompletions(
                                 monitor,
                                 request,
                                 deepestContext.getKnownSources(),
                                 List.of(container),
                                 prefix,
-                                origin.getMemberTypes(),
+                                memberTypes,
                                 filterOrNull,
                                 results
                             );
@@ -867,7 +978,7 @@ public abstract class SQLQueryCompletionContext {
                             } else if (member.attribute() != null) {
                                 item = SQLQueryCompletionItem.forCompositeField(score, itemKey, member.attribute(), member);
                             } else {
-                                throw new UnsupportedOperationException("Unexpected named member kind to complete.");
+                                item = SQLQueryCompletionItem.forSpecialCompositeField(score, itemKey, member);
                             }
                             items.addLast(item);
                         }
@@ -1020,9 +1131,16 @@ public abstract class SQLQueryCompletionContext {
                     null,
                     filterOrNull
                 );
+                LinkedList<SQLQueryCompletionItem> sequenceItems = this.prepareSequencesCompletions(
+                    monitor,
+                    request,
+                    context.getKnownSources(),
+                    null,
+                    filterOrNull
+                );
                 this.makeFilteredCompletionSet(
                     filterOrNull,
-                    Stream.of(joinConditions, subsetColumns, tableRefs, procedureItems).flatMap(Collection::stream).toList(),
+                    Stream.of(joinConditions, subsetColumns, tableRefs, procedureItems, sequenceItems).flatMap(Collection::stream).toList(),
                     results
                 );
             }
@@ -1047,6 +1165,31 @@ public abstract class SQLQueryCompletionContext {
                     log.error(ex);
                 }
                 return proceduresItems;
+            }
+
+            @NotNull
+            private LinkedList<SQLQueryCompletionItem> prepareSequencesCompletions(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
+                @Nullable List<DBSObjectContainer> container,
+                @Nullable SQLQueryWordEntry filterOrNull
+            ) {
+                Collection<DBSObjectContainer> objectContainers = container;
+                if (objectContainers == null) {
+                    objectContainers = this.obtainDefaultContext(monitor, request);
+                }
+                LinkedList<SQLQueryCompletionItem> sequenceItems = new LinkedList<>();
+                try {
+                    this.collectImmediateChildren(
+                        monitor, knownSources, objectContainers,
+                        o -> o instanceof DBSSequence,
+                        null, filterOrNull, sequenceItems
+                    );
+                } catch (DBException ex) {
+                    log.error(ex);
+                }
+                return sequenceItems;
             }
 
             @Override
