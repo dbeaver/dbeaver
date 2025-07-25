@@ -61,15 +61,25 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
 
         Composite leftPanel = UIUtils.createComposite(settingsPanel, 1);
         leftPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        createLeftPanel(leftPanel, propertyChangeListener);
 
-        Group generalComposite = UIUtils.createControlGroup(leftPanel, UIMessages.ui_properties_tree_viewer_category_general, 2,
-            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
+        Composite rightPanel = UIUtils.createComposite(settingsPanel, 1);
+        rightPanel.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        createRightPanel(rightPanel);
+    }
+
+    protected void createLeftPanel(Composite leftPanel, Runnable propertyChangeListener) {
+        Group generalComposite = UIUtils.createControlGroup(
+            leftPanel, UIMessages.ui_properties_tree_viewer_category_general, 2,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT
+        );
         languageText = UIUtils.createLabelCombo(
             generalComposite,
             UIMessages.controls_locale_selector_label_language,
-            SWT.DROP_DOWN);
+            SWT.DROP_DOWN
+        );
         languageText.setToolTipText(
-                """
+            """
                 Language AI engine should use in chat by default.
                 You can enter any natural language name.
                 If not specified then AI will reply in the same language you use for prompts."""
@@ -80,21 +90,21 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         }
         languageText.setItems(languages.toArray(new String[0]));
 
-        Group completionComposite = UIUtils.createControlGroup(leftPanel, "SQL Completion", 1,
-            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
-        UIUtils.createControlLabel(completionComposite, AIUIMessages.gpt_preference_page_advanced_appearance_group, 2);
-        Composite appearanceSettings = UIUtils.createComposite(completionComposite, 2);
+        Group completionGroup = UIUtils.createControlGroup(
+            leftPanel, "SQL Completion", 1,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+            SWT.DEFAULT
+        );
+        UIUtils.createControlLabel(completionGroup, AIUIMessages.gpt_preference_page_advanced_appearance_group, 2);
+        Composite appearanceSettings = UIUtils.createComposite(completionGroup, 2);
         appearanceSettings.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
 
         createAppearanceSettings(appearanceSettings, propertyChangeListener);
-        UIUtils.createControlLabel(completionComposite, AIUIMessages.gpt_preference_page_completion_group, 2);
-        Composite completionGroup = UIUtils.createComposite(completionComposite, 2);
-        completionGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        createCompletionSettings(completionGroup, propertyChangeListener);
+        UIUtils.createControlLabel(completionGroup, AIUIMessages.gpt_preference_page_completion_group, 2);
 
-        Composite rightPanel = UIUtils.createComposite(settingsPanel, 1);
-        rightPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        createRightPanel(rightPanel);
+        Composite completionComposite = UIUtils.createComposite(completionGroup, 2);
+        completionComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        createCompletionSettings(completionComposite, propertyChangeListener);
     }
 
     protected void createRightPanel(Composite rightPanel) {
