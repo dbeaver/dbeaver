@@ -53,6 +53,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
@@ -1158,6 +1159,28 @@ public class UIUtils {
     @NotNull
     public static CustomSashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style) {
         return new CustomSashForm(parent, style);
+    }
+
+    /**
+     * Checks the style of the sash.
+     * <p>
+     * This method removes the {@link SWT#SMOOTH} style if the device zoom is not 100%,
+     * addressing the bug in the SWT implementation for Windows that causes the sash to
+     * operate on its bounds in pixels rather than points.
+     * <p>
+     * This method can later be removed when migrated to a newer version of Eclipse that includes a fix for this issue.
+     *
+     * @param style the style of the sash
+     * @return the modified style if necessary
+     * @see <a href="https://github.com/eclipse-platform/eclipse.platform.swt/issues/2329">https://github.com/eclipse-platform/eclipse.platform.swt/issues/2329</a>
+     */
+    public static int checkSashStyle(int style) {
+        // https://github.com/eclipse-platform/eclipse.platform.swt/issues/2329
+        if (DPIUtil.getDeviceZoom() != 100) {
+            return style & ~SWT.SMOOTH;
+        }
+
+        return style;
     }
 
     @NotNull
