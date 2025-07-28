@@ -198,7 +198,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
 
         } else {
-            long[] inArgTypes = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "proargtypes"));
+            long[] inArgTypes = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "proargtypes"), dataSource);
 
             if (!ArrayUtils.isEmpty(inArgTypes)) {
                 for (int i = 0; i < inArgTypes.length; i++) {

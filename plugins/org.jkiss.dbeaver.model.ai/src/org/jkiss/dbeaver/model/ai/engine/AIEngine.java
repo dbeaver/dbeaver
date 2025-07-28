@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsEventListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -36,6 +37,11 @@ public interface AIEngine extends AISettingsEventListener {
      * @return the context window size
      */
     int getMaxContextSize(@NotNull DBRProgressMonitor monitor) throws DBException;
+
+    default int getMaxRequestSize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        int maxContextSize = getMaxContextSize(monitor);
+        return maxContextSize - AIConstants.MAX_RESPONSE_TOKENS;
+    }
 
     /**
      * Requests completions from the completion engine.
