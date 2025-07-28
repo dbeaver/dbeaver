@@ -54,7 +54,7 @@ public class SQLStandardAnalyzer extends LSMAnalyzerImpl<SQLStandardLexer, SQLSt
     protected STMTreeRuleNode parseSqlQueryImpl(@NotNull SQLStandardParser parser) {
         STMTreeRuleNode root = parser.sqlQuery();
         TokenStream tokens = parser.getInputStream();
-        for (int i = tokens.index(); i < tokens.size(); i++) {
+        for (int i = tokens.index(); i < tokens.size() && tokens.get(i).getType() != SQLStandardLexer.EOF; i++) {
             root.addErrorNode(new STMTreeTermErrorNode(tokens.get(i)));
         }
         return root;
