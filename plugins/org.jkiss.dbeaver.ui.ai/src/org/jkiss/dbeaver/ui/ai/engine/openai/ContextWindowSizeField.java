@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.ai.engine.openai;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -31,8 +33,16 @@ public class ContextWindowSizeField {
     @NotNull
     private final Text text;
 
+    private Integer value;
+
     private ContextWindowSizeField(@NotNull Text text) {
         this.text = text;
+        this.text.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                value = CommonUtils.toInteger(text.getText(), null);
+            }
+        });
     }
 
     @NotNull
@@ -46,7 +56,7 @@ public class ContextWindowSizeField {
 
     @Nullable
     public Integer getValue() {
-        return CommonUtils.toInteger(text.getText(), null);
+        return value;
     }
 
     public boolean isComplete() {

@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.ai.engine.openai;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
@@ -35,11 +37,20 @@ public class ModelSelectorField {
     @NotNull
     private final Supplier<List<String>> modelListSupplier;
 
+    private String selectedModel;
+
     private ModelSelectorField(
         @NotNull Combo combo,
         @NotNull Supplier<List<String>> modelListSupplier
     ) {
         this.combo = combo;
+        this.combo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                selectedModel = combo.getText();
+            }
+        });
+
         this.modelListSupplier = modelListSupplier;
     }
 
@@ -49,7 +60,7 @@ public class ModelSelectorField {
 
     @Nullable
     public String getSelectedModel() {
-        return combo.getText();
+        return selectedModel;
     }
 
     public void setSelectedModel(@Nullable String model) {
