@@ -76,10 +76,13 @@ public class ContextWindowSizeField {
             Text text = UIUtils.createLabelText(
                 parent,
                 "Context window size",
-                "Context window size in tokens",
+                "",
                 SWT.BORDER
             );
-            text.addVerifyListener(new IntegerValidator(1, Integer.MAX_VALUE));
+            IntegerValidator integerValidator = new IntegerValidator(1, Integer.MAX_VALUE);
+            text.addVerifyListener(e -> {
+                integerValidator.verifyText(e, text.getText() + e.text);
+            });
             text.setLayoutData(gridData);
 
             return new ContextWindowSizeField(text);

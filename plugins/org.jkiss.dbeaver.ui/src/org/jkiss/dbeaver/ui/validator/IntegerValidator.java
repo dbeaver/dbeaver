@@ -30,13 +30,16 @@ public class IntegerValidator implements VerifyListener {
 
     @Override
     public void verifyText(VerifyEvent e) {
-        String newText = e.text;
-        if (newText.isEmpty()) {
+        verifyText(e, e.text);
+    }
+
+    public void verifyText(VerifyEvent e, String text) {
+        if (text.isEmpty()) {
             return; // Allow empty input
         }
 
         try {
-            int value = Integer.parseInt(newText);
+            int value = Integer.parseInt(text);
             if (value < minValue || value > maxValue) {
                 e.doit = false; // Reject input outside of range
             }
