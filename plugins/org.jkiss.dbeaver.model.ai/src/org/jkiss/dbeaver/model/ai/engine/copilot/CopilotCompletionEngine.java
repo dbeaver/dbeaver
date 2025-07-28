@@ -44,7 +44,7 @@ public class CopilotCompletionEngine implements AIEngine {
         }
 
         @Override
-        protected void onDispose(CopilotClient disposedValue) {
+        protected void onDispose(@NotNull CopilotClient disposedValue) {
             disposedValue.close();
         }
     };

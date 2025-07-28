@@ -43,7 +43,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> implemen
         }
 
         @Override
-        protected void onDispose(OpenAIClient disposedValue) {
+        protected void onDispose(@NotNull OpenAIClient disposedValue) {
             disposedValue.close();
         }
     };
