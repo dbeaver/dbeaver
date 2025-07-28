@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ai.FieldValidationException;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -45,13 +44,9 @@ public class ContextWindowSizeField {
         text.setText(value == null ? "" : value.toString());
     }
 
-    @NotNull
-    public Integer getValue() throws FieldValidationException {
-        if (!isComplete()) {
-            throw new FieldValidationException("Context window size must be a positive integer");
-        }
-
-        return CommonUtils.toInt(text.getText(), 0);
+    @Nullable
+    public Integer getValue() {
+        return CommonUtils.toInteger(text.getText(), null);
     }
 
     public boolean isComplete() {

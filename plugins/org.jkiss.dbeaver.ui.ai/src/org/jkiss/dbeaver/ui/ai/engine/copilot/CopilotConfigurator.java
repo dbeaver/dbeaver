@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceAuth;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ai.FieldValidationException;
 import org.jkiss.dbeaver.ui.ai.engine.openai.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.engine.openai.ModelSelectorField;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
@@ -94,20 +93,11 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
 
     @Override
     public void saveSettings(@NotNull LegacyAISettings<CopilotProperties> copilotSettings) {
-        try {
-            copilotSettings.getProperties().setToken(accessToken);
-            copilotSettings.getProperties().setModel(modelSelectorField.getSelectedModel());
-            copilotSettings.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
-            copilotSettings.getProperties().setTemperature(Double.parseDouble(temperature));
-            copilotSettings.getProperties().setLoggingEnabled(logQuery);
-        } catch (FieldValidationException e) {
-            DBWorkbench.getPlatformUI().showError(
-                "Invalid settings",
-                "Failed to save Copilot settings: " + e.getMessage(),
-                e
-            );
-            return;
-        }
+        copilotSettings.getProperties().setToken(accessToken);
+        copilotSettings.getProperties().setModel(modelSelectorField.getSelectedModel());
+        copilotSettings.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
+        copilotSettings.getProperties().setTemperature(Double.parseDouble(temperature));
+        copilotSettings.getProperties().setLoggingEnabled(logQuery);
     }
 
     @Override

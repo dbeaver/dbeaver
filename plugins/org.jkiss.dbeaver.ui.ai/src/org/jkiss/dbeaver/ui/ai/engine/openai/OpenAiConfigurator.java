@@ -37,10 +37,8 @@ import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ai.FieldValidationException;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -97,19 +95,11 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
 
     @Override
     public void saveSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
-        try {
-            configuration.getProperties().setToken(token);
-            configuration.getProperties().setModel(modelSelectorField.getSelectedModel());
-            configuration.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
-            configuration.getProperties().setTemperature(Double.parseDouble(temperature));
-            configuration.getProperties().setLoggingEnabled(logQuery);
-        } catch (FieldValidationException e) {
-            DBWorkbench.getPlatformUI().showError(
-                "Invalid settings",
-                "Failed to save OpenAI settings: " + e.getMessage(),
-                e
-            );
-        }
+        configuration.getProperties().setToken(token);
+        configuration.getProperties().setModel(modelSelectorField.getSelectedModel());
+        configuration.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
+        configuration.getProperties().setTemperature(Double.parseDouble(temperature));
+        configuration.getProperties().setLoggingEnabled(logQuery);
     }
 
     @Override
