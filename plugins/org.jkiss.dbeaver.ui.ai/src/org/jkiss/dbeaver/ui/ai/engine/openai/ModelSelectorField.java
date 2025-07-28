@@ -78,6 +78,7 @@ public class ModelSelectorField {
         // If the model is not in the list, add it
         combo.add(model);
         combo.select(combo.getItemCount() - 1);
+        selectedModel = model;
     }
 
     public void refreshModelList() {

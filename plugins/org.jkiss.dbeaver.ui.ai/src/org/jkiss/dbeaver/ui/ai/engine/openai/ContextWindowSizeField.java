@@ -17,17 +17,14 @@
 package org.jkiss.dbeaver.ui.ai.engine.openai;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.validator.IntegerValidator;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Locale;
 
 public class ContextWindowSizeField {
     @NotNull
@@ -37,12 +34,7 @@ public class ContextWindowSizeField {
 
     private ContextWindowSizeField(@NotNull Text text) {
         this.text = text;
-        this.text.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                value = CommonUtils.toInteger(text.getText(), null);
-            }
-        });
+        this.text.addModifyListener(e -> value = CommonUtils.toInteger(text.getText(), null));
     }
 
     @NotNull
@@ -51,7 +43,8 @@ public class ContextWindowSizeField {
     }
 
     public void setValue(@Nullable Integer value) {
-        text.setText(value == null ? "" : value.toString());
+        this.text.setText(value == null ? "" : value.toString());
+        this.value = value;
     }
 
     @Nullable
@@ -86,7 +79,7 @@ public class ContextWindowSizeField {
                 "Context window size in tokens",
                 SWT.BORDER
             );
-            text.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
+            text.addVerifyListener(new IntegerValidator(1, Integer.MAX_VALUE));
             text.setLayoutData(gridData);
 
             return new ContextWindowSizeField(text);
