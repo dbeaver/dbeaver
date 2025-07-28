@@ -195,7 +195,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
 
         List<Path> allLibraryFiles = validateFilesPresence(monitor, false);
 
-        List<URL> libraryURLs = new ArrayList<>();
+        Set<URL> libraryURLs = new LinkedHashSet<>();
         // Load libraries
         for (Path file : allLibraryFiles) {
             URL url;
@@ -376,13 +376,13 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
 
     @NotNull
     private List<DBPDriverLibrary> getAllLibraries() {
-        Set<DBPDriverLibrary> libraries = new LinkedHashSet<>(driver.getDriverLibraries());
+        List<DBPDriverLibrary> libraries = new ArrayList<>(driver.getDriverLibraries());
         if (!libraryProviders.isEmpty()) {
             for (DBPDriverLibraryProvider dlp : libraryProviders) {
                 libraries.addAll(dlp.getDriverLibraries());
             }
         }
-        return new ArrayList<>(libraries);
+        return libraries;
     }
 
     @Override
