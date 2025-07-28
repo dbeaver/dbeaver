@@ -36,7 +36,7 @@ public class CopilotProperties implements AIEngineProperties {
     private String model;
 
     @Nullable
-    @SerializedName("gpt.model.context.window.size")
+    @SerializedName("gpt.contextWindowSize")
     private Integer contextWindowSize;
 
     @SerializedName("gpt.model.temperature")
