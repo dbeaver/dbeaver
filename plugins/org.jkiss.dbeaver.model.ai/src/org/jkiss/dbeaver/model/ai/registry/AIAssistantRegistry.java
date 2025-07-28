@@ -51,10 +51,14 @@ public class AIAssistantRegistry {
     }
 
     @NotNull
-    public <T extends AIAssistant> T createAssistant(@NotNull DBPWorkspace workspace) throws DBException {
+    public <T extends AIAssistant> T createAssistant(@NotNull DBPWorkspace workspace) throws IllegalStateException {
         AIAssistant assistant;
         if (customDescriptor != null) {
-            assistant = customDescriptor.createInstance();
+            try {
+                assistant = customDescriptor.createInstance();
+            } catch (DBException e) {
+                throw new IllegalStateException(e);
+            }
         } else {
             assistant = new AIAssistantImpl();
         }

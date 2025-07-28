@@ -325,7 +325,8 @@ public class SQLEditor extends SQLEditorBase implements
             TEXT_EDITOR_CONTEXT,
             SQLEditorContributions.SQL_EDITOR_CONTEXT,
             SQLEditorContributions.SQL_EDITOR_SCRIPT_CONTEXT,
-            IResultSetController.RESULTS_CONTEXT_ID
+            IResultSetController.RESULTS_CONTEXT_ID,
+            SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT
         };
     }
 
@@ -772,6 +773,14 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
+        public boolean belongsTo(Object family) {
+            if (family == this || family == dataSourceContainer) {
+                return true;
+            }
+            return super.belongsTo(family);
+        }
+
+        @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             monitor.beginTask("Open SQLEditor isolated connection", 1);
             try {
@@ -987,14 +996,18 @@ public class SQLEditor extends SQLEditorBase implements
                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
                 if (serviceConnections != null) {
                     // Start connect visualizer
-                    ConnectVisualizer connectVisualizer = new ConnectVisualizer();
-                    serviceConnections.connectDataSource(dataSourceContainer, status -> {
-                        // We must reload syntax to refresh context
-                        UIUtils.syncExec(this::reloadSyntaxRules);
-                        if (onFinish != null) {
-                            onFinish.onTaskFinished(status);
-                        }
-                        connectVisualizer.stop();
+                    UIUtils.asyncExec(() -> {
+                        ConnectVisualizer connectVisualizer = new ConnectVisualizer();
+                        serviceConnections.connectDataSource(
+                            dataSourceContainer, status -> {
+                                // We must reload syntax to refresh context
+                                UIUtils.asyncExec(this::reloadSyntaxRules);
+                                if (onFinish != null) {
+                                    onFinish.onTaskFinished(status);
+                                }
+                                connectVisualizer.stop();
+                            }
+                        );
                     });
                 }
             }
@@ -1161,6 +1174,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         this.isPartControlInitialized = true;
+
+        // Context listener
+        EditorUtils.trackControlContext(getSite(), textWidget, SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
     }
 
     protected boolean isHideQueryText() {
