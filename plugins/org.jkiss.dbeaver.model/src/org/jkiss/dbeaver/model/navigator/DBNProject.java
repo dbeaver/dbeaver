@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.file.Path;
@@ -139,7 +138,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
 
     @Override
     public boolean supportsRename() {
-        return DBWorkbench.isDistributed() || !project.isVirtual();
+        return !project.isVirtual();
     }
 
     @Override

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.rm.RMProjectInfo;
 import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEvent {
@@ -27,15 +28,19 @@ public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEv
 
     @NotNull
     protected final String projectId;
+    @Nullable
+    protected final RMProjectInfo projectInfo;
 
     public WSProjectUpdateEvent(
         @NotNull String eventId,
         @Nullable String sessionId,
         @Nullable String userId,
-        @NotNull String projectId
+        @NotNull String projectId,
+        @Nullable RMProjectInfo projectInfo
     ) {
         super(eventId, WSConstants.TOPIC_PROJECTS, sessionId, userId);
         this.projectId = projectId;
+        this.projectInfo = projectInfo;
     }
 
     public static WSProjectUpdateEvent create(
@@ -47,20 +52,23 @@ public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEv
             ADDED,
             sessionId,
             userId,
-            projectId
+            projectId,
+            null
         );
     }
 
     public static WSProjectUpdateEvent update(
         @Nullable String sessionId,
         @Nullable String userId,
-        @NotNull String projectId
+        @NotNull String projectId,
+        @NotNull RMProjectInfo projectInfo
     ) {
         return new WSProjectUpdateEvent(
             UPDATED,
             sessionId,
             userId,
-            projectId
+            projectId,
+            projectInfo
         );
     }
 
@@ -73,7 +81,8 @@ public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEv
             REMOVED,
             sessionId,
             userId,
-            projectId
+            projectId,
+            null
         );
     }
 
@@ -81,5 +90,10 @@ public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEv
     @Override
     public String getProjectId() {
         return projectId;
+    }
+
+    @Nullable
+    public RMProjectInfo getProjectInfo() {
+        return projectInfo;
     }
 }

@@ -60,6 +60,9 @@ public interface DBPProject extends DBPObject, SMAuthSpace, DBAPermissionRealm {
     @NotNull
     String getName();
 
+    @Nullable
+    String getDescription();
+
     @NotNull
     String getDisplayName();
 

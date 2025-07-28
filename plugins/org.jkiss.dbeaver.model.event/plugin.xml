@@ -60,6 +60,7 @@
                class="org.jkiss.dbeaver.model.websocket.event.resource.WSResourceUpdatedEvent"/>
 
         <event topicId="cb_projects" id="cb_rm_project_added" class="org.jkiss.dbeaver.model.websocket.event.WSProjectUpdateEvent"/>
+        <event topicId="cb_projects" id="cb_rm_project_updated" class="org.jkiss.dbeaver.model.websocket.event.WSProjectUpdateEvent"/>
         <event topicId="cb_projects" id="cb_rm_project_removed" class="org.jkiss.dbeaver.model.websocket.event.WSProjectUpdateEvent"/>
 
         <event topicId="cb_user_secret" id="cb_user_secret_updated" class="org.jkiss.dbeaver.model.websocket.event.WSUserSecretEvent"/>
