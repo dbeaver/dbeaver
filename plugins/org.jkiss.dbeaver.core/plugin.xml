@@ -1031,14 +1031,14 @@
             label="Test"
             categoryId="org.jkiss.dbeaver.ui.presentation.colors.connectionTypes"
             id="org.jkiss.dbeaver.color.connectionType.qa.background"
-            value="196,255,181">
+            value="251,199,180">
             <description>QA/Test/Stage server</description>
         </colorDefinition>
         <colorDefinition
             label="Production"
             categoryId="org.jkiss.dbeaver.ui.presentation.colors.connectionTypes"
             id="org.jkiss.dbeaver.color.connectionType.prod.background"
-            value="247,159,129">
+            value="205,251,203">
             <description>Production server</description>
         </colorDefinition>
 
