@@ -34,6 +34,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPlugin;
+import org.eclipse.ui.internal.e4.compatibility.CompatibilityEditor;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
 import org.eclipse.ui.internal.menus.MenuHelper;
@@ -73,8 +74,11 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
+import org.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.xml.XMLUtils;
 import org.osgi.framework.Version;
-import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -1004,25 +1008,30 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
     }
 
-    private static boolean patchPartIconsRecursively(@NotNull Node node, @NotNull Map<String, PartDescriptor> parts) {
+    private static boolean patchPartIconsRecursively(@NotNull Node node, @NotNull Map<String, PartDescriptor> parts) throws XMLException {
         NodeList children = node.getChildNodes();
         boolean modified = false;
 
         for (int i = 0; i < children.getLength(); i++) {
-            Node child = children.item(i);
+            if (!(children.item(i) instanceof Element child)) {
+                continue;
+            }
 
-            NamedNodeMap attributes = child.getAttributes();
-            if (attributes != null) {
-                Node elementId = attributes.getNamedItem("elementId");
-                Node iconURI = attributes.getNamedItem("iconURI");
+            if (child.hasAttribute("elementId") && child.hasAttribute("iconURI")) {
+                Attr iconURI = child.getAttributeNode("iconURI");
+                String elementId = child.getAttribute("elementId");
 
-                if (elementId != null && iconURI != null) {
-                    PartDescriptor part = parts.get(elementId.getNodeValue());
-                    if (part != null && !iconURI.getNodeValue().equals(part.icon())) {
-                        log.debug("Replacing icon for part '" + part.id() + "' with '" + part.icon() + "'");
-                        iconURI.setNodeValue(part.icon());
-                        modified = true;
-                    }
+                if (elementId.equals(CompatibilityEditor.MODEL_ELEMENT_ID)) {
+                    // CompatibilityEditor is not an editor itself
+                    // See org.eclipse.ui.internal.WorkbenchPage.createEditorReferenceForPart
+                    elementId = extractCompatibilityEditorId(child);
+                }
+
+                PartDescriptor part = parts.get(elementId);
+                if (part != null && !iconURI.getNodeValue().equals(part.icon())) {
+                    log.debug("Replacing icon for part '" + part.id() + "' with '" + part.icon() + "'");
+                    iconURI.setNodeValue(part.icon());
+                    modified = true;
                 }
             }
 
@@ -1030,6 +1039,34 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         }
 
         return modified;
+    }
+
+    @Nullable
+    private static String extractCompatibilityEditorId(@NotNull Element element) {
+        // For explanation behind this logic, see org.eclipse.ui.internal.EditorReference#EditorReference
+
+        Element persistedState = XMLUtils.getChildElement(element, "persistedState");
+        if (persistedState == null) {
+            return null;
+        }
+
+        String key = persistedState.getAttribute("key");
+        String value = persistedState.getAttribute("value");
+        if (!"memento".equals(key)) {
+            return null;
+        }
+
+        try {
+            var memento = XMLUtils.parseDocument(new StringReader(value));
+            var editor = memento.getDocumentElement();
+            if (editor.getTagName().equals("editor") && editor.hasAttribute("id")) {
+                return editor.getAttribute("id");
+            }
+        } catch (XMLException e) {
+            log.debug("Error parsing editor memento", e);
+        }
+
+        return null;
     }
 
     /**
