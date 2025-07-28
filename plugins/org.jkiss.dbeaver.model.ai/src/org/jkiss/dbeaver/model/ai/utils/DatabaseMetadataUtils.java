@@ -17,232 +17,33 @@
 package org.jkiss.dbeaver.model.ai.utils;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
-import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.prompt.AIPromptFormatter;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
-import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
+public final class DatabaseMetadataUtils {
 
-public class DatabaseMetadataUtils {
-    private static final Log log = Log.getLog(DatabaseMetadataUtils.class);
-
-    private static final boolean SUPPORTS_ATTRS = true;
-
+    @NotNull
     public static String generateObjectDescription(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSObject object,
-        @Nullable DBCExecutionContext context,
-        @NotNull AIPromptFormatter formatter,
-        int maxRequestLength,
-        boolean useFullyQualifiedName
-    ) throws DBException {
-        if (DBNUtils.getNodeByObject(monitor, object, false) == null) {
-            // Skip hidden objects
+        @NotNull DBPObjectWithDescription object
+    ) {
+        if (!CommonUtils.isEmptyTrimmed(object.getDescription())) {
             return "";
         }
 
         StringBuilder description = new StringBuilder();
-        if (object instanceof DBSEntity entity) {
-            String name = useFullyQualifiedName && context != null ? DBUtils.getObjectFullName(
-                context.getDataSource(),
-                object,
-                DBPEvaluationContext.DDL
-            ) : DBUtils.getQuotedIdentifier(object);
-            //description.append('\n');
-            formatter.addObjectDescriptionIfNeeded(description, object, monitor);
-            if (object instanceof DBSTable table) {
-                description.append(table.isView() ? "CREATE VIEW" : "CREATE TABLE");
-            }
-            description.append(" ").append(name).append("(");
-            DBSEntityAttribute firstAttr = addPromptAttributes(monitor, entity, description, formatter);
-            formatter.addExtraDescription(monitor, entity, description, firstAttr);
-            description.append(");\n");
-            if (object instanceof DBSDataContainer dataContainer) {
-                formatter.addDataSample(monitor, dataContainer, description);
-            }
-
-        } else if (object instanceof DBSObjectContainer objectContainer) {
-            monitor.subTask("Load cache of " + object.getName());
-            objectContainer.cacheStructure(
-                monitor,
-                DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES);
-            for (DBSObject child : objectContainer.getChildren(monitor)) {
-                if (DBUtils.isSystemObject(child) || DBUtils.isHiddenObject(child) || child instanceof DBSTablePartition) {
-                    continue;
-                }
-                String childText = generateObjectDescription(
-                    monitor,
-                    child,
-                    context,
-                    formatter,
-                    maxRequestLength,
-                    isRequiresFullyQualifiedName(child, context)
-                );
-                if (description.length() + childText.length() > maxRequestLength * 3) {
-                    log.debug("Trim AI metadata prompt  at table '" + child.getName() + "' - too long request");
-                    break;
-                }
-                description.append(childText);
-            }
+        boolean isAttribute = object instanceof DBSEntityAttribute;
+        String objectComment = object.getDescription().replace("\n", isAttribute ? "\n\t" : "\n");
+        if (isAttribute) {
+            description.append(" ");
         }
+        description.append("-- ").append(objectComment);
+        if (!isAttribute) {
+            description.append("\n");
+        }
+
         return description.toString();
-    }
-
-    /**
-     * Creates a new message containing completion metadata for the request
-     */
-    @NotNull
-    public static String describeContext(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull AIDatabaseContext context,
-        @NotNull AIPromptFormatter formatter,
-        int maxRequestTokens
-    ) throws DBException {
-        DBSObjectContainer mainObject = context.getScopeObject();
-
-        if (mainObject == null || mainObject.getDataSource() == null) {
-            throw new DBException("Invalid completion request");
-        }
-
-        final DBCExecutionContext executionContext = context.getExecutionContext();
-        final StringBuilder sb = new StringBuilder();
-
-        final int remainingRequestTokens = maxRequestTokens - sb.length() - 20;
-
-        if (context.getScope() == AIDatabaseScope.CUSTOM) {
-            List<DBSObject> normalizeCustomEntities = normalizeCustomEntities(context.getCustomEntities());
-            cacheStructuresForCustomEntities(monitor, normalizeCustomEntities);
-
-            for (DBSObject entity : normalizeCustomEntities) {
-                sb.append(generateObjectDescription(
-                    monitor,
-                    entity,
-                    executionContext,
-                    formatter,
-                    remainingRequestTokens,
-                    isRequiresFullyQualifiedName(entity, executionContext)
-                ));
-            }
-        } else {
-            sb.append(
-                generateObjectDescription(
-                monitor,
-                mainObject,
-                executionContext,
-                formatter,
-                remainingRequestTokens,
-                false
-            ));
-        }
-
-        return sb.toString();
-    }
-
-    protected static DBSEntityAttribute addPromptAttributes(
-        DBRProgressMonitor monitor,
-        DBSEntity entity,
-        StringBuilder prompt,
-        AIPromptFormatter formatter
-    ) throws DBException {
-        DBSEntityAttribute prevAttribute = null;
-        if (SUPPORTS_ATTRS) {
-            List<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
-            if (attributes != null) {
-                for (DBSEntityAttribute attribute : attributes) {
-                    if (DBUtils.isHiddenObject(attribute)) {
-                        continue;
-                    }
-                    if (prevAttribute != null) {
-                        prompt.append(",");
-                        formatter.addObjectDescriptionIfNeeded(prompt, prevAttribute, monitor);
-                        //prompt.append("\n\t");
-                    }
-                    prompt.append(attribute.getName());
-                    formatter.addColumnTypeIfNeeded(prompt, attribute, monitor);
-                    prevAttribute = attribute;
-                }
-            }
-        }
-        return prevAttribute;
-    }
-
-    private static boolean isRequiresFullyQualifiedName(@NotNull DBSObject object, @Nullable DBCExecutionContext context) {
-        if (context == null || context.getContextDefaults() == null) {
-            return false;
-        }
-        DBSObject parent = object.getParentObject();
-        DBCExecutionContextDefaults<?,?> contextDefaults = context.getContextDefaults();
-        return parent != null && !(parent.equals(contextDefaults.getDefaultCatalog())
-            || parent.equals(contextDefaults.getDefaultSchema()));
-    }
-
-    private DatabaseMetadataUtils() {
-
-    }
-
-    /**
-     * Normalizes the given list by removing a DBSObject if any of its ancestors
-     * (database, schema, container, etc.) are already present in the same list.
-     * The result therefore contains only the highest-level objects, with no
-     * duplicates, ordered alphabetically by name.
-     *
-     * @param customEntities list that may contain databases, schemas, tables, etc.
-     * @return normalized, alphabetically sorted list of top-level objects
-     */
-    private static List<DBSObject> normalizeCustomEntities(@NotNull List<DBSObject> customEntities) {
-        Set<DBSObject> input = new HashSet<>(customEntities);
-
-        return input.stream()
-            // skip the object if any ancestor is also present in the input
-            .filter(obj -> {
-                DBSObject parent = obj.getParentObject();
-                while (parent != null) {
-                    if (input.contains(parent)) {
-                        return false;
-                    }
-                    parent = parent.getParentObject();
-                }
-                return true;
-            })
-            .sorted(Comparator.comparing(DBPNamedObject::getName, String.CASE_INSENSITIVE_ORDER))
-            .toList();
-    }
-
-    /**
-     * Caches for custom entities if there are multiple entities in the same container.
-     * This is needed to avoid multiple calls to the same container.
-     */
-    private static void cacheStructuresForCustomEntities(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull List<DBSObject> customEntities
-    ) throws DBException {
-        Set<Map.Entry<DBSObjectContainer, Long>> objectContainers = customEntities.stream()
-            .filter(it -> it instanceof DBSEntity)
-            .map(it -> (DBSObjectContainer) it.getParentObject())
-            .collect(Collectors.groupingBy(it -> it, Collectors.counting()))
-            .entrySet();
-
-        for (Map.Entry<DBSObjectContainer, Long> entry : objectContainers) {
-            if (entry.getValue() > 1) {
-                entry.getKey().cacheStructure(
-                    monitor,
-                    DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ATTRIBUTES
-                );
-            }
-        }
     }
 }

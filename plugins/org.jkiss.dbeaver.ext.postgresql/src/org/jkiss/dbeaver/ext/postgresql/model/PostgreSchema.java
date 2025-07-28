@@ -1140,12 +1140,12 @@ public class PostgreSchema implements
             JDBCSession session,
             PostgreTableBase parent, PostgreIndex object, JDBCResultSet dbResult)
             throws SQLException, DBException {
-            long[] keyNumbers = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "keys"));
+            long[] keyNumbers = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "keys"), getDataSource());
             if (keyNumbers == null) {
                 return null;
             }
-            long[] indColClasses = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "indclass"));
-            int[] keyOptions = PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, "indoption"));
+            long[] indColClasses = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "indclass"), getDataSource());
+            int[] keyOptions = PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, "indoption"), getDataSource());
             String expr = JDBCUtils.safeGetString(dbResult, "expr");
             Collection<? extends PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
             assert attributes != null;

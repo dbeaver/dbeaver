@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -261,7 +261,8 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
         }
     }
 
-    private static boolean canOrderByName(@NotNull DBPDataSource dataSource,
+    protected static boolean canOrderByName(
+        @NotNull DBPDataSource dataSource,
         @NotNull DBDAttributeConstraint constraint,
         @NotNull String constraintName
     ) {
@@ -412,7 +413,7 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
         }
     }
 
-    private static String getStringValue(
+    public static String getStringValue(
         @NotNull DBPDataSource dataSource,
         @NotNull DBDAttributeConstraint constraint,
         boolean inlineCriteria,
@@ -436,7 +437,7 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
     }
 
     @NotNull
-    public static String getConstraintAttributeName(
+    public String getConstraintAttributeName(
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull DBDAttributeConstraint constraint,
@@ -490,7 +491,7 @@ public class StandardSQLDialectQueryGenerator implements SQLQueryGenerator {
         }
     }
 
-    private StandardSQLDialectQueryGenerator() {
+    protected StandardSQLDialectQueryGenerator() {
 
     }
 
