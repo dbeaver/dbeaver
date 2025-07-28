@@ -172,6 +172,9 @@ public abstract class SQLQueryExprType {
         return new SQLQueryExprSynthesizedIndexableType(displayName, declaratorDefinition, elementType);
     }
 
+    /**
+     * Prepare type info based on the data type description, not covered by the database model
+     */
     @NotNull
     public static SQLQueryExprType forTypedObject(
         @NotNull DBRProgressMonitor monitor,
@@ -243,6 +246,9 @@ public abstract class SQLQueryExprType {
         return new SQLQueryExprSimpleType(declaratorDefinition, typedObj);
     }
 
+    /**
+     * Prepare type info based on the data type description
+     */
     @NotNull
     private static SQLQueryExprType forDescribed(
         @NotNull DBRProgressMonitor monitor,
@@ -711,13 +717,19 @@ public abstract class SQLQueryExprType {
         }
     }
 
+    /**
+     * The type based on the type descriptor and treated as atomic
+     */
     private static class SQLQueryExprSimpleDescribedType extends SQLQueryExprType {
 
         @NotNull
         private final DBSTypeDescriptor typeDesc;
 
-        public SQLQueryExprSimpleDescribedType(@Nullable SQLQuerySymbolDefinition declaratorDefinition, @NotNull DBSTypeDescriptor typeDesc) {
-            super(declaratorDefinition, typeDesc.getDataKind() != null ? typeDesc.getDataKind() : DBPDataKind.UNKNOWN );
+        public SQLQueryExprSimpleDescribedType(
+            @Nullable SQLQuerySymbolDefinition declaratorDefinition,
+            @NotNull DBSTypeDescriptor typeDesc
+        ) {
+            super(declaratorDefinition, typeDesc.getDataKind() != null ? typeDesc.getDataKind() : DBPDataKind.UNKNOWN);
             this.typeDesc = typeDesc;
         }
 

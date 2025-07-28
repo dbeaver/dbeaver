@@ -429,6 +429,9 @@ public abstract class SQLQueryCompletionItem {
         }
     }
 
+    /**
+     * Completion item that describes field of the composite entity, which is not backed by the database metadata
+     */
     public static class SQLSpecialCompositeFieldCompletionItem extends SQLQueryCompletionItem {
         @NotNull
         public final SQLQueryExprType.SQLQueryExprTypeMemberInfo memberInfo;

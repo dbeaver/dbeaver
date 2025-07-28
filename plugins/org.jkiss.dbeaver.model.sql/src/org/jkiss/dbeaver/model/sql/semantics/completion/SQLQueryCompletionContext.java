@@ -587,7 +587,22 @@ public abstract class SQLQueryCompletionContext {
                 }
             }
 
-
+            /**
+             * Prepare list of completion items intended to accomplish complex name
+             * referencing relevant entity for the value expression context
+             * based on existing prefix resolved for a certain database object:
+             * <pre>
+             *     dbName.schemaName.|
+             *                ^     ^
+             *                |     |
+             *    [prefixContext] [objFromObj origin of the member access entry]
+             *
+             *     dbName.schemaName.something|
+             *                          ^
+             *                          |
+             *                       [filter word]
+             * </pre>
+             */
             private List<SQLQueryCompletionItem> accomplishQualifiedValueReferences(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
@@ -744,6 +759,9 @@ public abstract class SQLQueryCompletionContext {
                 }
             }
 
+            /**
+             * Provide completion sets to the results list based on the current query symbols origin
+             */
             private void accomplishFromKnownOrigin(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
@@ -816,6 +834,9 @@ public abstract class SQLQueryCompletionContext {
                         };
                     }
 
+                    /**
+                     * Default completion proposals preparation behavior for object-from-object symbols origin
+                     */
                     private void prepareDefaultObjectCompletion(
                         @NotNull SQLQueryCompletionItem.ContextObjectInfo prefix,
                         @NotNull Set<DBSObjectType> memberTypes
@@ -1170,6 +1191,9 @@ public abstract class SQLQueryCompletionContext {
                 return proceduresItems;
             }
 
+            /**
+            * Prepare list of completion items intended to accomplish sequence object name
+            */
             @NotNull
             private LinkedList<SQLQueryCompletionItem> prepareSequencesCompletions(
                 @NotNull DBRProgressMonitor monitor,

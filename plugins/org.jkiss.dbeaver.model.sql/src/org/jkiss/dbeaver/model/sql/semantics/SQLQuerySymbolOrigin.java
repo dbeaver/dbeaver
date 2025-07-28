@@ -59,6 +59,9 @@ public abstract class SQLQuerySymbolOrigin {
 
     public abstract void apply(Visitor visitor);
 
+    /**
+     * Purpose of the objects produced by the origin in the corresponding lexical context
+     */
     public enum DbObjectFilterMode {
         DEFAULT,
         ROWSET,

@@ -76,16 +76,25 @@ public interface DBSTypeDescriptor {
         return null;
     }
 
+    /**
+     * Returns collection for containing type descriptions for all the known named members of this type
+     */
     @Nullable
     default Collection<CompositeMemberInfo> getCompositeMembers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
+    /**
+     * Returns type description for the member having given name if such a member exists
+     */
     @Nullable
     default DBSTypeDescriptor findCompositeMember(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
         return null;
     }
 
+    /**
+     * Named member type information
+     */
     record CompositeMemberInfo(
         @NotNull String name,
         @NotNull DBSTypeDescriptor type
