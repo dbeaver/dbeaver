@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
@@ -199,6 +200,20 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
 
     public static DBNBrowseSettings getDefaultSettings() {
         DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
+        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+        if (activeProject != null) {
+            Object connectionView = activeProject.getProjectProperty("navigator.default.view");
+            if (connectionView != null) {
+                String presetId = connectionView.toString();
+                if (!CommonUtils.isNotEmpty(presetId)) {
+                    for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {
+                        if (p.getId().equals(presetId)) {
+                            return p.getSettings();
+                        }
+                    }
+                }
+            }
+        }
 
         String defPreset = preferences.getString(DEFAULT_NAVIGATOR_SETTINGS_PRESET);
         if (!CommonUtils.isEmpty(defPreset)) {
