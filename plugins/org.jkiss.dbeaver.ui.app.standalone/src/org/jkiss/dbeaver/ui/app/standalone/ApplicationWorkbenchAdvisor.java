@@ -552,7 +552,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         page.resetPerspective();
 
         store.setValue(PROP_PERSPECTIVE_VERSION, actualVersion);
-        store.setValue(PROP_WORKBENCH_VERSION, null);
+        store.setValue(PROP_WORKBENCH_VERSION, ""); // removes the property
 
         DBeaverNotifications.showNotification(
             DBeaverNotifications.NT_PERSPECTIVE_RESET,
