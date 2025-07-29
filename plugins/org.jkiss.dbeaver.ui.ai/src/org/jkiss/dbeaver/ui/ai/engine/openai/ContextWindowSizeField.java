@@ -79,10 +79,7 @@ public class ContextWindowSizeField {
                 "",
                 SWT.BORDER
             );
-            IntegerValidator integerValidator = new IntegerValidator(1, Integer.MAX_VALUE);
-            text.addVerifyListener(e -> {
-                integerValidator.verifyText(e, text.getText() + e.text);
-            });
+            text.addVerifyListener(new IntegerValidator(1, Integer.MAX_VALUE));
             text.setLayoutData(gridData);
 
             return new ContextWindowSizeField(text);
