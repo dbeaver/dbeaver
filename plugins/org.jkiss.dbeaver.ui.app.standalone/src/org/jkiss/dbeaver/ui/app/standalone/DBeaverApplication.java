@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.apache.commons.cli.CommandLine;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -34,11 +32,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.e4.compatibility.CompatibilityEditor;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
-import org.eclipse.ui.internal.menus.MenuHelper;
-import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -64,6 +59,7 @@ import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
+import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateDialog;
@@ -74,13 +70,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
-import org.jkiss.utils.xml.XMLException;
-import org.jkiss.utils.xml.XMLUtils;
 import org.osgi.framework.Version;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -88,15 +78,8 @@ import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 /**
  * This class controls all aspects of the application's execution
@@ -301,7 +284,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         DBWorkbench.getPlatform();
 
-        patchWorkbenchXmi(instanceLoc);
+        WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
         initializeApplication();
 
         // Run instance server
@@ -968,154 +951,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 return FileVisitResult.CONTINUE;
             }
         });
-    }
-
-    private void patchWorkbenchXmi(@NotNull Location instance) {
-        Path path = getWorkbenchSaveLocation(instance);
-        if (path == null) {
-            return;
-        }
-
-        try {
-            patchWorkbenchXmi(path);
-        } catch (Exception e) {
-            log.error("Failed to patch workbench save file: " + path, e);
-        }
-    }
-
-    private static void patchWorkbenchXmi(@NotNull Path workbenchXmi) throws Exception {
-        var documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-
-        var documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        var document = documentBuilder.parse(workbenchXmi.toFile());
-
-        var parts = collectContributedParts();
-        var transformed = patchPartIconsRecursively(document, parts);
-
-        if (transformed) {
-            var transformerFactory = TransformerFactory.newInstance();
-            var transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
-
-            try (OutputStream os = Files.newOutputStream(workbenchXmi)) {
-                var source = new DOMSource(document);
-                var result = new StreamResult(os);
-
-                transformer.transform(source, result);
-            }
-        }
-    }
-
-    private static boolean patchPartIconsRecursively(@NotNull Node node, @NotNull Map<String, PartDescriptor> parts) throws XMLException {
-        NodeList children = node.getChildNodes();
-        boolean modified = false;
-
-        for (int i = 0; i < children.getLength(); i++) {
-            if (!(children.item(i) instanceof Element child)) {
-                continue;
-            }
-
-            if (child.hasAttribute("elementId") && child.hasAttribute("iconURI")) {
-                Attr iconURI = child.getAttributeNode("iconURI");
-                String elementId = child.getAttribute("elementId");
-
-                if (elementId.equals(CompatibilityEditor.MODEL_ELEMENT_ID)) {
-                    // CompatibilityEditor is not an editor itself
-                    // See org.eclipse.ui.internal.WorkbenchPage.createEditorReferenceForPart
-                    elementId = extractCompatibilityEditorId(child);
-                }
-
-                PartDescriptor part = parts.get(elementId);
-                if (part != null && !iconURI.getNodeValue().equals(part.icon())) {
-                    log.debug("Replacing icon for part '" + part.id() + "' with '" + part.icon() + "'");
-                    iconURI.setNodeValue(part.icon());
-                    modified = true;
-                }
-            }
-
-            modified |= patchPartIconsRecursively(child, parts);
-        }
-
-        return modified;
-    }
-
-    @Nullable
-    private static String extractCompatibilityEditorId(@NotNull Element element) {
-        // For explanation behind this logic, see org.eclipse.ui.internal.EditorReference#EditorReference
-
-        Element persistedState = XMLUtils.getChildElement(element, "persistedState");
-        if (persistedState == null) {
-            return null;
-        }
-
-        String key = persistedState.getAttribute("key");
-        String value = persistedState.getAttribute("value");
-        if (!"memento".equals(key)) {
-            return null;
-        }
-
-        try {
-            var memento = XMLUtils.parseDocument(new StringReader(value));
-            var editor = memento.getDocumentElement();
-            if (editor.getTagName().equals("editor") && editor.hasAttribute("id")) {
-                return editor.getAttribute("id");
-            }
-        } catch (XMLException e) {
-            log.debug("Error parsing editor memento", e);
-        }
-
-        return null;
-    }
-
-    /**
-     * Collects all contributed views and editors that have icons set.
-     *
-     * @return a map of part IDs to their descriptors.
-     */
-    @NotNull
-    private static Map<String, PartDescriptor> collectContributedParts() {
-        var registry = Platform.getExtensionRegistry();
-
-        var views = Stream.of(registry.getExtensionPoint("org.eclipse.ui.views").getExtensions())
-            .map(IExtension::getConfigurationElements).flatMap(Stream::of)
-            .filter(e -> e.getName().equals("view") && e.getAttribute("icon") != null)
-            .map(PartDescriptor::of)
-            .toList();
-
-        var editors = Stream.of(registry.getExtensionPoint("org.eclipse.ui.editors").getExtensions())
-            .map(IExtension::getConfigurationElements).flatMap(Stream::of)
-            .filter(e -> e.getName().equals("editor") && e.getAttribute("icon") != null)
-            .map(PartDescriptor::of)
-            .toList();
-
-        return Stream.concat(views.stream(), editors.stream())
-            .collect(Collectors.toMap(
-                PartDescriptor::id,
-                Function.identity(),
-                (a, b) -> b
-            ));
-    }
-
-    @Nullable
-    private Path getWorkbenchSaveLocation(@NotNull Location instance) {
-        try {
-            var path = RuntimeUtils.getLocalPathFromURL(instance.getURL());
-            return path.resolve(".metadata/.plugins/org.eclipse.e4.workbench/workbench.xmi"); //$NON-NLS-1$
-        } catch (IOException e) {
-            log.error("Unable to resolve workbench save location: " + instance.getURL(), e);
-            return null;
-        }
-    }
-
-    private record PartDescriptor(@NotNull IConfigurationElement element, @NotNull String id, @NotNull String icon) {
-        @NotNull
-        static PartDescriptor of(@NotNull IConfigurationElement element) {
-            String id = element.getAttribute("id");
-            String icon = MenuHelper.getIconURI(element, IWorkbenchRegistryConstants.ATT_ICON);
-            return new PartDescriptor(element, id, icon);
-        }
     }
 
     private class ProxyPrintStream extends OutputStream {
