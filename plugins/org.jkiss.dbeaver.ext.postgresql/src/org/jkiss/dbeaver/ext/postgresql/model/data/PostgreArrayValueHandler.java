@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -57,10 +56,16 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy, boolean validateValue) throws DBCException
-    {
+    public Object getValueFromObject(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        Object object,
+        boolean copy,
+        boolean validateValue
+    ) throws DBCException {
         if (object != null) {
-            final PostgreDataType arrayType = PostgreUtils.findDataType(session, (PostgreDataSource) session.getDataSource(), type);
+            PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
+            final PostgreDataType arrayType = PostgreUtils.findDataType(session, dataSource, type);
             if (arrayType == null) {
                 throw new DBCException("Can't resolve data type " + type.getFullTypeName());
             }
@@ -71,36 +76,36 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
             }
 
             String className = object.getClass().getName();
+            boolean isPgObject = PostgreUtils.isPgObject(dataSource, object);
             if (object instanceof String ||
-                PostgreUtils.isPGObject(object) ||
-                className.equals(PostgreConstants.PG_ARRAY_CLASS))
-            {
+                isPgObject ||
+                className.equals(PostgreConstants.PG_ARRAY_CLASS)) {
                 if (className.equals(PostgreConstants.PG_ARRAY_CLASS)) {
                     // Convert arrays to string representation (#7468)
                     // Otherwise we may have problems with domain types decoding (as they come in form of PgObject)
                     String strValue = object.toString();
                     return convertStringArrayToCollection(session, arrayType, itemType, strValue);
-                } else if (PostgreUtils.isPGObject(object)) {
-                    final Object value = PostgreUtils.extractPGObjectValue(object);
-                    if (value instanceof String) {
-                        return convertStringArrayToCollection(session, arrayType, itemType, (String) value);
+                } else if (isPgObject) {
+                    final Object value = PostgreUtils.extractPGObjectValue(object, dataSource);
+                    if (value instanceof String stringValue) {
+                        return convertStringArrayToCollection(session, arrayType, itemType, stringValue);
                     } else {
                         log.error("Can't parse array");
                         return new JDBCCollection(
-                                session.getProgressMonitor(), itemType,
+                            session.getProgressMonitor(), itemType,
                             DBUtils.findValueHandler(session, itemType),
-                            value == null ? null : new Object[]{value}
+                            value == null ? null : new Object[] {value}
                         );
                     }
                 } else {
                     return convertStringArrayToCollection(session, arrayType, itemType, (String) object);
                 }
-            } else if (object instanceof Object[]) {
+            } else if (object instanceof Object[] objects) {
                 return new JDBCCollection(
                     session.getProgressMonitor(),
                     itemType,
                     DBUtils.findValueHandler(session, itemType),
-                    (Object[]) object
+                    objects
                 );
             }
         }

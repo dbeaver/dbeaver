@@ -96,10 +96,10 @@ public class LockManagerViewer {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        SashForm sashMain = UIUtils.createPartDivider(part, composite, SWT.HORIZONTAL | SWT.SMOOTH);
+        SashForm sashMain = UIUtils.createPartDivider(part, composite, UIUtils.checkSashStyle(SWT.HORIZONTAL | SWT.SMOOTH));
         sashMain.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        SashForm sash = UIUtils.createPartDivider(part, sashMain, SWT.VERTICAL | SWT.SMOOTH);
+        SashForm sash = UIUtils.createPartDivider(part, sashMain, UIUtils.checkSashStyle(SWT.VERTICAL | SWT.SMOOTH));
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         lockTable = new LockListControl(sash, part.getSite(), lockManager, lockManager.getLocksType());
@@ -109,7 +109,7 @@ public class LockManagerViewer {
 
         lockTable.loadData();
 
-        SashForm infoSash = UIUtils.createPartDivider(part, sash, SWT.HORIZONTAL | SWT.SMOOTH);
+        SashForm infoSash = UIUtils.createPartDivider(part, sash, UIUtils.checkSashStyle(SWT.HORIZONTAL | SWT.SMOOTH));
         infoSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Composite cBlocked = UIUtils.createPlaceholder(infoSash, 1, 5);

@@ -1173,4 +1173,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     public boolean supportsUserEdit() {
         return false;
     }
+
+    public boolean supportsSchedulerJobEdit() {
+        return false;
+    }
 }
