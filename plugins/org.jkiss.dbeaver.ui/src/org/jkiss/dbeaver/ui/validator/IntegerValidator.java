@@ -32,7 +32,14 @@ public class IntegerValidator implements VerifyListener {
     @Override
     public void verifyText(VerifyEvent e) {
         if (e.getSource() instanceof Text text) {
-            verifyText(e, text.getText() + e.text);
+            String current = text.getText();
+
+            String prospective =
+                current.substring(0, e.start)
+                    + e.text
+                    + current.substring(e.end);
+
+            verifyText(e, prospective);
         } else {
             verifyText(e, e.text);
         }
