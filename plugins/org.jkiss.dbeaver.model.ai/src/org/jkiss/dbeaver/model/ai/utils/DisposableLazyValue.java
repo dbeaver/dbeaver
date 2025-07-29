@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai.utils;
 
+import org.jkiss.code.NotNull;
+
 public abstract class DisposableLazyValue<T, E extends Exception> extends LazyValue<T, E> {
 
     /**
@@ -28,6 +30,11 @@ public abstract class DisposableLazyValue<T, E extends Exception> extends LazyVa
         // Clear the cached value and exception to force re-evaluation
         this.value = null;
         this.exception = null;
+
+        if (disposedValue == null) {
+            return; // Nothing to dispose
+        }
+
         onDispose(disposedValue);
     }
 
@@ -37,5 +44,5 @@ public abstract class DisposableLazyValue<T, E extends Exception> extends LazyVa
      * @param disposedValue the value that was disposed.
      * @throws E if an exception occurs during disposal.
      */
-    protected abstract void onDispose(T disposedValue) throws E;
+    protected abstract void onDispose(@NotNull T disposedValue) throws E;
 }

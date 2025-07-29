@@ -37,6 +37,7 @@ import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.SaveableHelper;
+import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.dialogs.WorkbenchWizardElement;
@@ -56,10 +57,12 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -76,6 +79,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.awt.*;
 import java.awt.desktop.SystemEventListener;
@@ -97,6 +101,10 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     protected static final String WORKBENCH_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
     protected static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
     private static final String EDITORS_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Editors";
+
+    /** @see DBeaverPerspective#PERSPECTIVE_VERSION */
+    private static final String PROP_PERSPECTIVE_VERSION = "dbeaver.perspectiveVersion"; //$NON-NLS-1$
+    private static final String PROP_WORKBENCH_VERSION = "dbeaver.workbenchVersion"; //$NON-NLS-1$
 
     private static final String[] EXCLUDE_PREF_PAGES = {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Globalization",
@@ -266,6 +274,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         filterPreferencePages();
         filterWizards();
         patchJFaceIcons();
+        resetPerspectiveIfNeeded();
 
         if (AWTUtils.isDesktopSupported()) {
             // System events
@@ -507,6 +516,51 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     public void eventLoopIdle(Display display) {
         processor.catchUp();
         super.eventLoopIdle(display);
+    }
+
+    private void resetPerspectiveIfNeeded() {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+
+        String actualVersion = DBeaverPerspective.PERSPECTIVE_VERSION;
+        String savedVersion = store.getString(PROP_PERSPECTIVE_VERSION);
+      
+        if (CommonUtils.isEmpty(savedVersion)) {
+            // Backward compatibility
+            savedVersion = store.getString(PROP_WORKBENCH_VERSION);
+        }
+        
+        if (!CommonUtils.isEmpty(savedVersion) && savedVersion.equals(actualVersion)) {
+            return;
+        }
+
+        IWorkbenchWindow window = Workbench.getInstance().getActiveWorkbenchWindow();
+        if (window == null) {
+            return;
+        }
+
+        IWorkbenchPage page = window.getActivePage();
+        if (page == null) {
+            return;
+        }
+
+        IPerspectiveDescriptor perspective = page.getPerspective();
+        if (perspective != null && !perspective.getId().equals(DBeaverPerspective.PERSPECTIVE_ID)) {
+            return;
+        }
+
+        log.debug("Resetting perspective due to the version change (" + savedVersion + " -> " + actualVersion + ")");
+        page.resetPerspective();
+
+        store.setValue(PROP_PERSPECTIVE_VERSION, actualVersion);
+        store.setValue(PROP_WORKBENCH_VERSION, ""); // removes the property
+
+        DBeaverNotifications.showNotification(
+            DBeaverNotifications.NT_PERSPECTIVE_RESET,
+            CoreApplicationMessages.notification_perspective_reset_title,
+            CoreApplicationMessages.notification_perspective_reset_message,
+            null,
+            null
+        );
     }
 
     public static boolean isIsForcedRestart() {
