@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
  */
 public class QMMDataSourceConnectErrorInfo extends QMMObject implements QMMDataSourceInfo {
     @NotNull
+    private final String projectId;
+    @NotNull
     private final String containerId;
     @NotNull
     private final String containerName;
@@ -43,6 +45,7 @@ public class QMMDataSourceConnectErrorInfo extends QMMObject implements QMMDataS
         @Nullable String errorMessage
     ) {
         super(QMMetaObjectType.CONNECTION_ERROR_INFO);
+        this.projectId = container.getProject().getId();
         this.containerId = container.getId();
         this.containerName = container.getName();
         this.driverId = container.getDriver().getId();
@@ -51,6 +54,11 @@ public class QMMDataSourceConnectErrorInfo extends QMMObject implements QMMDataS
         this.errorMessage = errorMessage;
     }
 
+    @NotNull
+    @Override
+    public String getProjectId() {
+        return projectId;
+    }
 
     @NotNull
     @Override

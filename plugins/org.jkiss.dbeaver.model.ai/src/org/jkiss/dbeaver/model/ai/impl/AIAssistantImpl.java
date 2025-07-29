@@ -174,7 +174,16 @@ public class AIAssistantImpl implements AIAssistant {
      */
     @Override
     public boolean hasValidConfiguration() throws DBException {
-        return getActiveEngine().hasValidConfiguration();
+        AISettings settings = settingsRegistry.getSettings();
+        String activeEngine = settings.activeEngine();
+        if (activeEngine == null || activeEngine.isEmpty()) {
+            log.warn("No active AI engine configured");
+            return false;
+        }
+
+        AIEngineSettings<?> engineConfiguration = settings.getEngineConfiguration(activeEngine);
+
+        return engineConfiguration.isValid();
     }
 
     protected MessageChunk[] processAndSplitCompletion(
@@ -229,13 +238,14 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIEngineRequest request
     ) throws DBException {
         try {
-            if (engine.isLoggingEnabled()) {
+            boolean loggingEnabled = isLoggingEnabled();
+            if (loggingEnabled) {
                 log.debug("Requesting completion [request=" + request + "]");
             }
 
             AIEngineResponse completionResponse = callWithRetry(() -> engine.requestCompletion(monitor, request));
 
-            if (engine.isLoggingEnabled()) {
+            if (loggingEnabled) {
                 log.debug("Received completion [response=" + completionResponse + "]");
             }
 
@@ -256,7 +266,7 @@ public class AIAssistantImpl implements AIAssistant {
     ) throws DBException {
         try {
             Flow.Publisher<AIEngineResponseChunk> publisher = callWithRetry(() -> engine.requestCompletionStream(monitor, request));
-            boolean loggingEnabled = engine.isLoggingEnabled();
+            boolean loggingEnabled = isLoggingEnabled();
 
             return subscriber -> {
                 if (loggingEnabled) {
@@ -288,9 +298,22 @@ public class AIAssistantImpl implements AIAssistant {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
 
         return AIDdlGenerationOptions.builder()
-            .withMaxRequestTokens(engine.getMaxRequestSize(monitor))
+            .withMaxRequestTokens(engine.getContextWindowSize(monitor))
             .withSendObjectComment(preferenceStore.getBoolean(AIConstants.AI_SEND_DESCRIPTION))
             .withSendColumnTypes(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_SEND_TYPE_INFO))
             .build();
+    }
+
+    protected boolean isLoggingEnabled() throws DBException {
+        AISettings settings = settingsRegistry.getSettings();
+        String activeEngine = settings.activeEngine();
+        if (activeEngine == null || activeEngine.isEmpty()) {
+            log.warn("No active AI engine configured");
+            return false;
+        }
+
+        AIEngineSettings<?> engineConfiguration = settings.getEngineConfiguration(activeEngine);
+
+        return engineConfiguration.isLoggingEnabled();
     }
 }
