@@ -153,6 +153,11 @@ public interface DBPDataSourceRegistry extends DBPObject, DBPSecretHolder {
     void updateAuthProfile(@NotNull DBAAuthProfile profile);
     void removeAuthProfile(@NotNull DBAAuthProfile profile);
 
+    @NotNull
+    String getNavigatorViewPreset();
+
+    void setNavigatorViewPreset(@NotNull String presetId);
+
     /**
      * Set collection of profiles.
      *

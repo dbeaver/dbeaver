@@ -104,7 +104,7 @@
                 <adapt type="org.jkiss.dbeaver.model.navigator.fs.DBNPath"/>
             </enabledWhen>
         </page>
-        <page class="org.jkiss.dbeaver.ui.project.NavigatorViewPropertyPage" id="org.jkiss.dbeaver.preferences.connectionViewSettings" name="%page.org.jkiss.dbeaver.preferences.connectionViewSettings.name" >
+        <page class="org.jkiss.dbeaver.ui.project.PrefPageProjectNavigatorView" id="org.jkiss.dbeaver.preferences.connectionViewSettings" name="%page.org.jkiss.dbeaver.preferences.projectNavigatorSettings.name" >
             <enabledWhen>
                 <adapt type="org.eclipse.core.resources.IProject">
                     <test property="org.eclipse.core.resources.projectNature" value="org.jkiss.dbeaver.DBeaverNature"/>

@@ -277,7 +277,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
                 break;
             }
         }
-        defaultNavigatorSettings = DataSourceNavigatorSettings.getDefaultSettings();
+        defaultNavigatorSettings = DataSourceNavigatorSettings.getDefaultSettings(false);
         ConnectionPageGeneral.updateNavigatorSettingsPreset(navigatorSettingsCombo, defaultNavigatorSettings);
         super.performDefaults();
     }
@@ -287,7 +287,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage implements IWor
         if (defaultConnectionType != DBPConnectionType.getDefaultConnectionType()) {
             DBPConnectionType.setDefaultConnectionType(defaultConnectionType);
         }
-        if (!defaultNavigatorSettings.equals(DataSourceNavigatorSettings.getDefaultSettings())) {
+        if (!defaultNavigatorSettings.equals(DataSourceNavigatorSettings.getDefaultSettings(false))) {
             DataSourceNavigatorSettings.setDefaultSettings(defaultNavigatorSettings);
         }
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();

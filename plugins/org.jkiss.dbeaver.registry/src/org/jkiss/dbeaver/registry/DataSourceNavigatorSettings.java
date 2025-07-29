@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -190,31 +191,29 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     }
 
     public static final String DEFAULT_NAVIGATOR_SETTINGS_PRESET = "navigator.settings.default.preset";
-    private static final String DEFAULT_SHOW_SYSTEM_OBJECTS = "navigator.settings.default.showSystemObjects";
-    private static final String DEFAULT_SHOW_UTILITY_OBJECTS = "navigator.settings.default.showUtilityObjects";
-    private static final String DEFAULT_SHOW_ONLY_ENTITIES = "navigator.settings.default.showOnlyEntities";
-    private static final String DEFAULT_MERGE_ENTITIES = "navigator.settings.default.mergeEntities";
-    private static final String DEFAULT_HIDE_FOLDERS = "navigator.settings.default.hideFolders";
-    private static final String DEFAULT_MERGE_SCHEMAS = "navigator.settings.default.hideSchemas";
-    private static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
+    public static final String DEFAULT_SHOW_SYSTEM_OBJECTS = "navigator.settings.default.showSystemObjects";
+    public static final String DEFAULT_SHOW_UTILITY_OBJECTS = "navigator.settings.default.showUtilityObjects";
+    public static final String DEFAULT_SHOW_ONLY_ENTITIES = "navigator.settings.default.showOnlyEntities";
+    public static final String DEFAULT_MERGE_ENTITIES = "navigator.settings.default.mergeEntities";
+    public static final String DEFAULT_HIDE_FOLDERS = "navigator.settings.default.hideFolders";
+    public static final String DEFAULT_MERGE_SCHEMAS = "navigator.settings.default.hideSchemas";
+    public static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
-    public static DBNBrowseSettings getDefaultSettings() {
-        DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
+    public static DBNBrowseSettings getDefaultSettings(boolean forceUpdate) {
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        if (activeProject != null) {
-            Object connectionView = activeProject.getProjectProperty("navigator.default.view");
-            if (connectionView != null) {
-                String presetId = connectionView.toString();
-                if (!CommonUtils.isNotEmpty(presetId)) {
-                    for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {
-                        if (p.getId().equals(presetId)) {
-                            return p.getSettings();
-                        }
+        if (forceUpdate) {
+            DBPDataSourceRegistry dataSourceRegistry = activeProject.getDataSourceRegistry();
+            String navigatorViewPreset = dataSourceRegistry.getNavigatorViewPreset();
+            if (CommonUtils.isNotEmpty(navigatorViewPreset)) {
+                for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {
+                    if (p.getId().equals(navigatorViewPreset)) {
+                        return p.getSettings();
                     }
                 }
             }
         }
 
+        DBPPreferenceStore preferences = DBWorkbench.getPlatform().getPreferenceStore();
         String defPreset = preferences.getString(DEFAULT_NAVIGATOR_SETTINGS_PRESET);
         if (!CommonUtils.isEmpty(defPreset)) {
             for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {

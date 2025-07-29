@@ -83,6 +83,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
     private volatile ConfigSaver configSaver;
     private DBACredentialsProvider authCredentialsProvider;
+    private String navigatorView;
     protected Throwable lastError;
 
     public DataSourceRegistry(DBPProject project) {
@@ -578,6 +579,17 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         synchronized (authProfiles) {
             authProfiles.remove(profile.getProfileId());
         }
+    }
+
+    @NotNull
+    @Override
+    public String getNavigatorViewPreset() {
+        return navigatorView;
+    }
+
+    @Override
+    public void setNavigatorViewPreset(@NotNull String presetId) {
+        navigatorView = presetId;
     }
 
     ////////////////////////////////////////////////////

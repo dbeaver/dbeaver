@@ -228,7 +228,7 @@ public class DataSourceDescriptor
         this.extensions = new LinkedHashMap<>();
         this.preferenceStore = new DataSourcePreferenceStore(registry.getPreferenceStore(), this);
         this.virtualModel = new DBVModel(this);
-        this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings());
+        this.navigatorSettings = new DataSourceNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings(false));
         this.forceUseSingleConnection = driver.isSingleConnection();
     }
 
