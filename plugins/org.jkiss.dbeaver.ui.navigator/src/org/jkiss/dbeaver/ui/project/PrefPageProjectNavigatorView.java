@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -146,11 +145,6 @@ public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IW
         combo.select(selectedIndex);
     }
 
-
-    private String getSecretId() {
-        return SECRET_PREFIX + KEY_NAV_VIEW + "." + projectMeta.getName();
-    }
-
     @Override
     public boolean performOk() {
         if (projectMeta == null || combo == null) {
@@ -179,10 +173,10 @@ public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IW
                     descriptor.setNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings(true));
                 }
             }
-
-            DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(projectMeta);
-            UIUtils.syncExec(() -> NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(projectNode)));
             dataSourceRegistry.flushConfig();
+
+            DBNProject projectNode = projectMeta.getNavigatorModel().getRoot().getProjectNode(projectMeta);
+            UIUtils.syncExec(() -> NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(projectNode)));
         } catch (Exception e) {
             log.error("Error saving connection view setting", e);
             DBWorkbench.getPlatformUI().showError(
@@ -212,26 +206,5 @@ public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IW
         if (project != null) {
             this.projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
         }
-    }
-
-    @Override
-    protected void performDefaults() {
-        if (combo != null) {
-            combo.select(0);
-            if (projectMeta != null) {
-                try {
-                    if (DBWorkbench.isDistributed() && projectMeta.isUseSecretStorage()) {
-                        DBSSecretController secretController = DBSSecretController.getProjectSecretController(projectMeta);
-                        secretController.setPrivateSecretValue(getSecretId(), null);
-                        secretController.flushChanges();
-                    } else {
-                        projectMeta.setProjectProperty(KEY_NAV_VIEW, null);
-                    }
-                } catch (Exception e) {
-                    log.error("Error resetting navigator settings to defaults", e);
-                }
-            }
-        }
-        super.performDefaults();
     }
 }
