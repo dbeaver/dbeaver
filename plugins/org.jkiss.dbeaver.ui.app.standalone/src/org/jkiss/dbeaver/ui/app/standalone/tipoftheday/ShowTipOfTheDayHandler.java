@@ -82,7 +82,9 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
             try (InputStream tipsInputStream = url.openConnection().getInputStream()) {
 
                 SAXParserFactory factory = SAXParserFactory.newInstance();
-                factory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
+                factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+                factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 
                 SAXParser saxParser = factory.newSAXParser();
 
