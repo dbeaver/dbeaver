@@ -147,7 +147,7 @@ public class AIDatabaseSnapshotService {
 
         if (obj instanceof DBSEntity entity) {
             String ddl = generatorRegistry.getDdlGenerator()
-                .generateSchema(monitor, entity, execCtx, options, useFqn) + "\n\n";
+                .generateSchema(monitor, entity, execCtx, options, useFqn) + "\n";
             return out.append(ddl);
         }
 

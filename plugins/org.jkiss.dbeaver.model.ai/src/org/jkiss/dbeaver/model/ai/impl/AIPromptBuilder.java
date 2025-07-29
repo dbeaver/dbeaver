@@ -107,8 +107,10 @@ public class AIPromptBuilder {
             prompt.append(databaseSnapshot).append("\n");
         }
 
-        prompt.append("\nOutput Format:\n");
-        outputFormats.forEach(outputFormat -> prompt.append("- ").append(outputFormat).append("\n"));
+        if (!outputFormats.isEmpty()) {
+            prompt.append("\nOutput Format:\n");
+            outputFormats.forEach(outputFormat -> prompt.append("- ").append(outputFormat).append("\n"));
+        }
 
         return prompt.toString();
     }
