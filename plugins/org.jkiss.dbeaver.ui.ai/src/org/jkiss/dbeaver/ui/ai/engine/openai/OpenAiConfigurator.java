@@ -90,7 +90,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
 
         contextWindowSizeField.setValue(configuration.getProperties().getContextWindowSize());
 
-        modelSelectorField.refreshModelList();
+        modelSelectorField.refreshModelList(false);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
             .withModelListSupplier(
-                () -> modelsCache.get(true).stream()
+                forceRefresh -> modelsCache.get(forceRefresh).stream()
                     .filter(it -> it.features().contains(AIModelFeature.CHAT))
                     .map(AIModel::name)
                     .toList()
@@ -153,6 +153,11 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
     }
 
     private List<AIModel> fetchOpenAiModels() {
+        if (tokenText == null || tokenText.isDisposed()) {
+            return List.of();
+        }
+
+        String token = tokenText.getText();
         if (token == null || token.isEmpty()) {
             return List.of();
         }
@@ -230,7 +235,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         public T get(boolean refresh) {
             if (value == null || refresh) {
                 synchronized (this) {
-                    if (value == null) {
+                    if (value == null || refresh) {
                         value = supplier.get();
                     }
                 }

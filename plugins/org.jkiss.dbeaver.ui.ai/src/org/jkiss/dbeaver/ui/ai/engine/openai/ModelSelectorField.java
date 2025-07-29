@@ -29,19 +29,18 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 public class ModelSelectorField {
     @NotNull
     private final Combo combo;
     @NotNull
-    private final Supplier<List<String>> modelListSupplier;
+    private final ModelListProvider modelListProvider;
 
     private String selectedModel;
 
     private ModelSelectorField(
         @NotNull Combo combo,
-        @NotNull Supplier<List<String>> modelListSupplier
+        @NotNull ModelListProvider modelListProvider
     ) {
         this.combo = combo;
         this.combo.addSelectionListener(new SelectionAdapter() {
@@ -51,7 +50,7 @@ public class ModelSelectorField {
             }
         });
 
-        this.modelListSupplier = modelListSupplier;
+        this.modelListProvider = modelListProvider;
     }
 
     public static Builder builder() {
@@ -81,8 +80,8 @@ public class ModelSelectorField {
         selectedModel = model;
     }
 
-    public void refreshModelList() {
-        List<String> models = modelListSupplier.get();
+    public void refreshModelList(boolean refresh) {
+        List<String> models = modelListProvider.getModels(refresh);
         if (models.isEmpty()) {
             return;
         }
@@ -106,10 +105,8 @@ public class ModelSelectorField {
         @Nullable
         private SelectionListener selectionListener;
 
-        private boolean withRefreshButton = true;
-
         @NotNull
-        private Supplier<List<String>> modelListSupplier;
+        private ModelListProvider modelListSupplier;
 
         public Builder withParent(@NotNull Composite parent) {
             this.parent = parent;
@@ -126,8 +123,8 @@ public class ModelSelectorField {
             return this;
         }
 
-        public Builder withModelListSupplier(@NotNull Supplier<List<String>> modelListSupplier) {
-            this.modelListSupplier = modelListSupplier;
+        public Builder withModelListSupplier(@NotNull ModelListProvider modelListProvider) {
+            this.modelListSupplier = modelListProvider;
             return this;
         }
 
@@ -144,10 +141,14 @@ public class ModelSelectorField {
             UIUtils.createDialogButton(
                 parent,
                 AIUIMessages.gpt_preference_page_refresh_models,
-                SelectionListener.widgetSelectedAdapter((e) -> modelSelectorField.refreshModelList())
+                SelectionListener.widgetSelectedAdapter((e) -> modelSelectorField.refreshModelList(true))
             );
 
             return modelSelectorField;
         }
+    }
+
+    public interface ModelListProvider {
+        List<String> getModels(boolean forceRefresh);
     }
 }

@@ -48,7 +48,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine, LegacyAISettings<CopilotProperties>> {
 
@@ -88,7 +87,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         accessTokenText.setText(accessToken);
         applySettings();
 
-        modelSelectorField.refreshModelList();
+        modelSelectorField.refreshModelList(true);
     }
 
     @Override
@@ -111,10 +110,10 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     }
 
     private void createModelParameters(@NotNull Composite parent) {
-        Supplier<List<String>> modelListSupplier = () -> {
+        ModelSelectorField.ModelListProvider modelListProvider = forceRefresh -> {
             try {
                 return UIUtils.runWithMonitor(
-                    monitor -> CopilotClient.getModels(monitor, accessToken, true)
+                    monitor -> CopilotClient.getModels(monitor, accessToken, forceRefresh)
                 );
             } catch (DBException e) {
                 return List.of();
@@ -126,7 +125,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
             .withSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
                 contextWindowSizeField.setValue(CopilotModels.getContextWindowSize(modelSelectorField.getSelectedModel()));
             }))
-            .withModelListSupplier(modelListSupplier)
+            .withModelListSupplier(modelListProvider)
             .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
@@ -207,7 +206,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
                 accessTokenText.setText(accessToken);
                 accessTokenText = UIUtils.recreateTextControl(accessTokenText, SWT.BORDER);
             }
-            modelSelectorField.refreshModelList();
+            modelSelectorField.refreshModelList(true);
         }));
     }
 
