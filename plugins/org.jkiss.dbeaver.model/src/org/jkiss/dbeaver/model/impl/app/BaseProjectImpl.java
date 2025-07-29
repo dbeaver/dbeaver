@@ -116,16 +116,6 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         return getName();
     }
 
-    @NotNull
-    public String getName() {
-        Object projectName = this.getProjectProperty(PROP_PROJECT_NAME);
-        if (projectName != null) {
-            return projectName.toString();
-        }
-        Path absolutePath = getAbsolutePath();
-        return absolutePath.getFileName() == null ? "" : absolutePath.getFileName().toString();
-    }
-
     @Nullable
     @Override
     public String getDescription() {
@@ -139,6 +129,10 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
     @NotNull
     @Override
     public String getDisplayName() {
+        Object projectName = this.getProjectProperty(PROP_PROJECT_NAME);
+        if (projectName != null) {
+            return projectName.toString();
+        }
         return getName();
     }
 
