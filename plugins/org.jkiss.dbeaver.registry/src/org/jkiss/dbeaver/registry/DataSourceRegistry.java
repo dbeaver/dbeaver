@@ -581,17 +581,6 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
-    @NotNull
-    @Override
-    public String getNavigatorViewPreset() {
-        return navigatorView;
-    }
-
-    @Override
-    public void setNavigatorViewPreset(@NotNull String presetId) {
-        navigatorView = presetId;
-    }
-
     ////////////////////////////////////////////////////
     // Data sources
 

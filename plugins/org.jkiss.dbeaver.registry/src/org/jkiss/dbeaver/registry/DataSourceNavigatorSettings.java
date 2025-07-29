@@ -16,8 +16,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.internal.RegistryMessages;
@@ -199,16 +198,16 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     public static final String DEFAULT_MERGE_SCHEMAS = "navigator.settings.default.hideSchemas";
     public static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
-    public static DBNBrowseSettings getDefaultSettings(boolean forceUpdate) {
-        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        if (forceUpdate) {
-            DBPDataSourceRegistry dataSourceRegistry = activeProject.getDataSourceRegistry();
-            String navigatorViewPreset = dataSourceRegistry.getNavigatorViewPreset();
-            if (CommonUtils.isNotEmpty(navigatorViewPreset)) {
-                for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {
-                    if (p.getId().equals(navigatorViewPreset)) {
-                        return p.getSettings();
-                    }
+    public static DBNBrowseSettings getDefaultSettings() {
+        return getDefaultSettings(false, null);
+    }
+
+
+    public static DBNBrowseSettings getDefaultSettings(boolean forceUpdate, @Nullable String presetId) {
+        if (forceUpdate && CommonUtils.isNotEmpty(presetId)) {
+            for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {
+                if (p.getId().equals(presetId)) {
+                    return p.getSettings();
                 }
             }
         }

@@ -165,18 +165,19 @@ public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IW
         try {
             projectMeta.setProjectProperty(KEY_NAV_VIEW, selectedValue);
             DBPDataSourceRegistry dataSourceRegistry = projectMeta.getDataSourceRegistry();
-            dataSourceRegistry.setNavigatorViewPreset(selectedValue);
 
             var dataSources = dataSourceRegistry.getDataSources();
             for (DBPDataSourceContainer ds : dataSources) {
                 if (ds instanceof DataSourceDescriptor descriptor) {
-                    descriptor.setNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings(true));
+                    descriptor.setNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings(true, selectedValue));
                 }
             }
             dataSourceRegistry.flushConfig();
 
-            DBNProject projectNode = projectMeta.getNavigatorModel().getRoot().getProjectNode(projectMeta);
-            UIUtils.syncExec(() -> NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(projectNode)));
+            if (DBWorkbench.isDistributed()) {
+                DBNProject projectNode = projectMeta.getNavigatorModel().getRoot().getProjectNode(projectMeta);
+                UIUtils.syncExec(() -> NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(projectNode)));
+            }
         } catch (Exception e) {
             log.error("Error saving connection view setting", e);
             DBWorkbench.getPlatformUI().showError(

@@ -172,7 +172,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     }
 
     public DBNBrowseSettings getNavigatorSettings() {
-        return DataSourceNavigatorSettings.getDefaultSettings(false);
+        return DataSourceNavigatorSettings.getDefaultSettings();
     }
 
     @Override
