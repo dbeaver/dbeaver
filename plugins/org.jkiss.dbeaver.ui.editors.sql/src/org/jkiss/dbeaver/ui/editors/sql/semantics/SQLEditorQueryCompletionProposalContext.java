@@ -35,9 +35,11 @@ public class SQLEditorQueryCompletionProposalContext extends SQLQueryCompletionP
     private static final EnumMap<SQLQueryCompletionItemKind, String> registryStyleByItemKind = new EnumMap<>(SQLQueryCompletionItemKind.class) {{
         put(SQLQueryCompletionItemKind.RESERVED, ThemeConstants.SQL_EDITOR_COLOR_KEYWORD);
         put(SQLQueryCompletionItemKind.SUBQUERY_ALIAS, ThemeConstants.SQL_EDITOR_COLOR_TABLE_ALIAS);
+        put(SQLQueryCompletionItemKind.RELATED_SUBQUERY_ALIAS, ThemeConstants.SQL_EDITOR_COLOR_TABLE_ALIAS);
         put(SQLQueryCompletionItemKind.DERIVED_COLUMN_NAME, ThemeConstants.SQL_EDITOR_COLOR_COLUMN_DERIVED);
         put(SQLQueryCompletionItemKind.NEW_TABLE_NAME, ThemeConstants.SQL_EDITOR_COLOR_TABLE);
         put(SQLQueryCompletionItemKind.USED_TABLE_NAME, ThemeConstants.SQL_EDITOR_COLOR_TABLE);
+        put(SQLQueryCompletionItemKind.RELATED_TABLE_NAME, ThemeConstants.SQL_EDITOR_COLOR_TABLE);
         put(SQLQueryCompletionItemKind.TABLE_COLUMN_NAME, ThemeConstants.SQL_EDITOR_COLOR_COLUMN);
         put(SQLQueryCompletionItemKind.PROCEDURE, ThemeConstants.SQL_EDITOR_COLOR_FUNCTION);
         put(SQLQueryCompletionItemKind.COMPOSITE_FIELD_NAME, ThemeConstants.SQL_EDITOR_COLOR_COMPOSITE_FIELD);

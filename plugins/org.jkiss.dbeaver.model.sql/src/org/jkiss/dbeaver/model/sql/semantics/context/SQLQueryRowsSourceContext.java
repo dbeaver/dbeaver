@@ -388,7 +388,8 @@ public class SQLQueryRowsSourceContext {
             private final Map<SQLQueryRowsSourceModel, SourceResolutionResult> resolutionResults =
                 allSourceResolutions.stream().collect(Collectors.toMap(s -> s.source, Function.identity()));
 
-            private final Set<DBSObject> referencedTables = allSourceResolutions.stream()
+            @NotNull
+            private final Set<DBSEntity> referencedTables = allSourceResolutions.stream()
                 .map(s -> s.tableOrNull)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -408,7 +409,7 @@ public class SQLQueryRowsSourceContext {
 
             @NotNull
             @Override
-            public Set<DBSObject> getReferencedTables() {
+            public Set<DBSEntity> getReferencedTables() {
                 return this.referencedTables;
             }
 
