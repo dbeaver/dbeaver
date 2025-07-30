@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.utils.Pair;
 
-import java.io.File;
 import java.lang.reflect.AccessFlag;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -88,8 +87,11 @@ public class SQLQuerySemanticUtils {
             setNamePartsDefinition(context, nameFragment, object, inferSymbolClass(object), origin, filterMode);
             if (name.parts.size() > nameFragment.size()) {
                 SQLQuerySymbolEntry part = name.parts.get(nameFragment.size());
+                SQLQuerySymbolOrigin lastPartOrigin = new SQLQuerySymbolOrigin.DbObjectFromDbObject(object, context, filterMode);
                 if (part != null) {
-                    part.setOrigin(new SQLQuerySymbolOrigin.DbObjectFromDbObject(object, context, filterMode));
+                    part.setOrigin(lastPartOrigin);
+                } else if (name.parts.size() == nameFragment.size() + 1 && name.endingPeriodNode != null) {
+                    name.endingPeriodNode.setOrigin(lastPartOrigin);
                 }
             }
         } else if (!name.parts.isEmpty()) {

@@ -309,6 +309,12 @@ public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
 
     @NotNull
     @Override
+    public String getProjectId() {
+        return projectInfo.getId();
+    }
+
+    @NotNull
+    @Override
     public String getContainerId() {
         return containerId;
     }
