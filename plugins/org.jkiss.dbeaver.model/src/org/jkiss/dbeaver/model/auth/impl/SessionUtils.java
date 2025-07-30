@@ -21,10 +21,9 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class SessionUtils {
     /**
-     * Checks if the session has export privileges.
-     * Returns true if export is allowed, false otherwise.
+     * Checks if the session has permission.
      */
-    public static boolean hasPrivilege(String permission) {
+    public static boolean hasPermission(String permission) {
         SMSession session = DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession();
         if (session instanceof AbstractSessionPersistent sessionPersistent) {
             return sessionPersistent.hasGlobalPermission(permission);

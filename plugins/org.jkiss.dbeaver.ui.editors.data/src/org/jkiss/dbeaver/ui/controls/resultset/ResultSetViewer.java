@@ -1875,7 +1875,7 @@ public class ResultSetViewer extends Viewer
 
         {
             ToolBarManager addToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            if (SessionUtils.hasPrivilege(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+            if (SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
                 menuService.populateContributionManager(addToolBarManager, TOOLBAR_EXPORT_CONTRIBUTION_ID);
             }
 
@@ -2991,7 +2991,7 @@ public class ResultSetViewer extends Viewer
 
         // Fill general menu
         if (dataContainer != null) {
-            if (SessionUtils.hasPrivilege(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+            if (SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
                 manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
             }
             MenuManager openWithMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerOpenWith.CMD_OPEN_WITH));

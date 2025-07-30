@@ -419,7 +419,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 break;
             }
             case IWorkbenchCommandConstants.EDIT_COPY:
-                if (!SessionUtils.hasPrivilege(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_COPY)) {
+                if (!SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_COPY)) {
                     UIUtils.showMessageBox(
                         HandlerUtil.getActiveShell(event),
                         UIMessages.dialog_policy_data_copy_title,
@@ -559,7 +559,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 break;
             }
             case CMD_EXPORT: {
-                if (!SessionUtils.hasPrivilege(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+                if (!SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
                     UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                         UIMessages.dialog_policy_data_export_title,
                         UIMessages.dialog_policy_data_export_msg,

@@ -38,7 +38,7 @@ public class SQLEditorHandlerExportData extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        if (!SessionUtils.hasPrivilege(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+        if (!SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 UIMessages.dialog_policy_data_export_title,
                 UIMessages.dialog_policy_data_export_msg,

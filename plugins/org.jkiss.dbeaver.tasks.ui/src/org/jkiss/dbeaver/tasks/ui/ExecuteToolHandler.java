@@ -76,7 +76,7 @@ public class ExecuteToolHandler implements IActionDelegate {
                             NLS.bind(TaskUIMessages.task_execute_handler_tool_warn_readonly_message, dataSource.getName())
                         );
                     } else if (taskForObjs.requiresExportPrivileges()
-                        && !SessionUtils.hasPrivilege(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+                        && !SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
                         DBWorkbench.getPlatformUI().showWarningMessageBox(
                             UIMessages.dialog_policy_data_export_title,
                             UIMessages.dialog_policy_data_export_msg

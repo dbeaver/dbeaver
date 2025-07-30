@@ -64,7 +64,7 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        if (!SessionUtils.hasPrivilege(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_COPY)) {
+        if (!SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_COPY)) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 UIMessages.dialog_policy_data_copy_title,
                 UIMessages.dialog_policy_data_copy_msg,

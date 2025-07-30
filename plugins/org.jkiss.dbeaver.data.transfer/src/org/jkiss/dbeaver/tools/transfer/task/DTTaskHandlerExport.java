@@ -44,7 +44,7 @@ public class DTTaskHandlerExport extends DTTaskHandlerTransfer {
         @NotNull PrintStream logStream,
         @NotNull DBTTaskExecutionListener listener
     ) throws DBException {
-        if (!SessionUtils.hasPrivilege(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+        if (!SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
             throw new DBException("Error: Data export operation is restricted by policy"); //$NON-NLS-1$
         }
         return super.executeTask(runnableContext, task, locale, log, logStream, listener);

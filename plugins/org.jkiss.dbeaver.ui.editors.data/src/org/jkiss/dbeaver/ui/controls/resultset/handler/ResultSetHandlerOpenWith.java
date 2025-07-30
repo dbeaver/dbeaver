@@ -83,7 +83,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        if (!SessionUtils.hasPrivilege(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+        if (!SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 UIMessages.dialog_policy_data_export_title,
                 UIMessages.dialog_policy_data_export_msg,
@@ -318,7 +318,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             }
             ContributionManager menu = new MenuManager();
             // Def processor is null
-            if (SessionUtils.hasPrivilege(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+            if (SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
                 menu.add(new Action(ActionUtils.findCommandDescription(
                     ResultSetHandlerMain.CMD_EXPORT, rsv.getSite(), false),
                     Action.AS_RADIO_BUTTON) {
