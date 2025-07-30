@@ -41,6 +41,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericStructContainer> /*implements DBEObjectRenamer<OracleSchema>*/
 {
@@ -114,7 +115,11 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
         }
         if (group != null && !CommonUtils.isEmpty((List<String>) properties.get("GROUPS"))) {
             builder.append(" GROUPS ");
-            builder.append(String.join(", ", (List<String>) properties.get("GROUPS")));
+            List<String> groups = (List<String>) properties.get("GROUPS");
+            List<String> quotedGroups = groups.stream()
+                .map(quoteGroup -> DBUtils.getQuotedIdentifier(user.getDataSource(), quoteGroup))
+                .collect(Collectors.toList());
+            builder.append(String.join(", ", quotedGroups));
         }
 
         if (description != null && CommonUtils.isNotEmpty(description.toString())) {

@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPrivilage>
@@ -104,7 +103,7 @@ public class CubridPrivilageEditor extends AbstractDatabaseObjectEditor<CubridPr
             t.setLayoutData(gd1);
 
             if (CommonUtils.isNotEmpty(loginedUser)) {
-                boolean allowEditPassword = new ArrayList<>(Arrays.asList("DBA", user.getName())).contains(loginedUser.toUpperCase());
+                boolean allowEditPassword = user.getDataSource().isDBAGroup();
                 t.setEditable(allowEditPassword);
             }
             ControlPropertyCommandListener.create(this, t, CubridPrivilageHandler.PASSWORD);

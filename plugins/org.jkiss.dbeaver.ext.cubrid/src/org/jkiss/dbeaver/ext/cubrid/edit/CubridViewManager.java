@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridView;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.edit.GenericViewManager;
@@ -26,6 +28,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -41,6 +45,16 @@ import java.util.List;
 import java.util.Map;
 
 public class CubridViewManager extends GenericViewManager implements DBEObjectRenamer<GenericTableBase> {
+
+    @Override
+    public boolean canCreateObject(@NotNull Object container) {
+        CubridUser user = (CubridUser) container;
+        CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
+        boolean isDBAGroup = dataSource.isDBAGroup();
+        boolean supportsMultiSchema = dataSource.getSupportMultiSchema();
+        boolean isCurrentUser = user.getName().equalsIgnoreCase(dataSource.getCurrentUser());
+        return isDBAGroup || supportsMultiSchema || isCurrentUser;
+    }
 
     @NotNull
     @Override
@@ -91,7 +105,7 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
             viewDDL = "";
         }
         if (!view.isPersisted()) {
-            query.append("CREATE VIEW " + view.getUniqueName() + "\nAS ");
+            query.append("CREATE VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) + "\nAS ");
             query.append(viewDDL);
             if (hasComment && view.getDescription() != null) {
                 query.append("\nCOMMENT = " + SQLUtils.quoteString(view, CommonUtils.notEmpty(view.getDescription())));
@@ -101,8 +115,11 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
                 query.append(viewDDL).append("\n");
             }
             if (hasComment || view.getDescription() != null) {
-                query.append("ALTER VIEW " + view.getUniqueName()
-                        + " COMMENT = " + SQLUtils.quoteString(view, CommonUtils.notEmpty(view.getDescription())));
+                boolean isSupportMultiSchema = view.getDataSource().getSupportMultiSchema();
+                String viewName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(view.getContainer()) + "."
+                        + DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName())
+                        : DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName());
+                query.append("ALTER VIEW " + viewName + " COMMENT = " + SQLUtils.quoteString(view, CommonUtils.notEmpty(view.getDescription())));
             }
         }
         actions.add(new SQLDatabasePersistAction("Create view", query.toString()));
@@ -116,9 +133,12 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
             @NotNull ObjectRenameCommand command,
             @NotNull Map<String, Object> options) {
         CubridView view = (CubridView) command.getObject();
+        boolean isSupportMultiSchema = view.getDataSource().getSupportMultiSchema();
+        String schemaName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(view.getContainer()) + "." : "";
         actions.add(new SQLDatabasePersistAction(
-                "Rename table",
-                "RENAME VIEW " + view.getContainer() + "." + command.getOldName() + " TO " + command.getNewName()));
+                "Rename view",
+                "RENAME VIEW " + schemaName + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName())
+                + " TO " + schemaName + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getNewName())));
     }
 
     @Override
@@ -139,10 +159,19 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
             @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
             @NotNull Map<String, Object> options) {
         CubridView view = (CubridView) command.getObject();
-        if (view.isPersisted() && view.getContainer() != view.getSchema()) {
-            actions.add(new SQLDatabasePersistAction(
-                    "Change Owner",
-                    "ALTER VIEW " + view.getContainer() + "." + view.getName() + " OWNER TO " + view.getSchema()));
+        boolean isDBAGroup = view.getDataSource().isDBAGroup();
+        boolean isSupportMultiSchema = view.getDataSource().getSupportMultiSchema();
+        String currentUser = view.getDataSource().getCurrentUser();
+        String schemaName = view.getSchema().getName();
+        if (view.isPersisted()) {
+            if (view.getContainer() == view.getSchema()) return;
+        } else {
+            if (!isDBAGroup || isSupportMultiSchema || currentUser.equalsIgnoreCase(schemaName)) return;
         }
+        actions.add(new SQLDatabasePersistAction(
+                "Change Owner",
+                "ALTER VIEW " + (isSupportMultiSchema ? DBUtils.getQuotedIdentifier(view.getContainer()) + "." : "")
+                + DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName()) + " OWNER TO "
+                + DBUtils.getQuotedIdentifier(view.getSchema())));
     }
 }

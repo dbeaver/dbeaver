@@ -161,7 +161,7 @@ public class CubridServer implements DBSObject, DBPNamedObject2 {
     }
 
     @Override
-    public DBPDataSource getDataSource() {
+    public CubridDataSource getDataSource() {
         return container;
     }
 

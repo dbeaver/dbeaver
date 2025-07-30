@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridServer;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -76,7 +77,7 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
         CubridServer server = command.getObject();
         StringBuilder query = new StringBuilder();
         query.append("CREATE SERVER ");
-        query.append(server.getOwner() + "." + server.getName());
+        query.append(DBUtils.getQuotedIdentifier(server.getOwner()) + "." + DBUtils.getFullQualifiedName(server.getDataSource(), server));
         query.append(" (HOST=").append(SQLUtils.quoteString(server, server.getHost()));
         if (server.getPort() != null) {
             query.append(", PORT=").append(server.getPort());
@@ -115,7 +116,7 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
         String suffix = ",";
         StringBuilder query = new StringBuilder();
         query.append("ALTER SERVER ");
-        query.append(server.getOwner() + "." + server.getName());
+        query.append(DBUtils.getQuotedIdentifier(server.getOwner()) + "." + DBUtils.getFullQualifiedName(server.getDataSource(), server));
         if (command.getProperty("host") != null && server.getHost() != null) {
             query.append(" CHANGE HOST=").append(SQLUtils.quoteString(server, server.getHost())).append(suffix);
         }
@@ -158,7 +159,7 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
             throws DBException {
         CubridServer server = command.getObject();
         actions.add(new SQLDatabasePersistAction("Drop Server",
-        "DROP SERVER " + server.getOwner() + "." + server.getName()));
+        "DROP SERVER " + DBUtils.getQuotedIdentifier(server.getOwner()) + "." + DBUtils.getFullQualifiedName(server.getDataSource(), server)));
     }
 
     @Override
@@ -170,7 +171,9 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
             @NotNull Map<String, Object> options) {
         CubridServer server = command.getObject();
         actions.add(new SQLDatabasePersistAction("Rename Server",
-        "RENAME SERVER " + server.getOwner() + "." + command.getOldName() + " TO " + command.getNewName()));
+        "RENAME SERVER " + DBUtils.getQuotedIdentifier(server.getOwner()) + "."
+        + DBUtils.getQuotedIdentifier(server.getDataSource(), command.getOldName()) + " TO "
+        + DBUtils.getQuotedIdentifier(server.getDataSource(), command.getNewName())));
     }
 
     @Override

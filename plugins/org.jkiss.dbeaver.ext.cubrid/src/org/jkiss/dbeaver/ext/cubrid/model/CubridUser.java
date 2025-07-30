@@ -66,6 +66,11 @@ public class CubridUser extends GenericSchema
         this.cubridIndexCache = new CubridIndexCache(this.getTableCache());
     }
 
+    @Override
+    public CubridDataSource getDataSource() {
+        return (CubridDataSource) super.getDataSource();
+    }
+
     @NotNull
     @Property(viewable = true, order = 1)
     public String getName() {
@@ -80,12 +85,12 @@ public class CubridUser extends GenericSchema
 
     @NotNull
     public boolean supportsSystemTable() {
-        return name.equals("DBA");
+        return getDataSource().isDBAGroup();
     }
 
     @NotNull
     public boolean supportsSystemView() {
-        return name.equals("DBA");
+        return getDataSource().isDBAGroup();
     }
 
     @NotNull
@@ -95,12 +100,12 @@ public class CubridUser extends GenericSchema
 
     @NotNull
     public boolean supportsSynonym() {
-        return ((CubridDataSource) this.getDataSource()).getSupportMultiSchema();
+        return getDataSource().getSupportMultiSchema();
     }
 
     @NotNull
     public boolean supportsTrigger() {
-        return CubridConstants.DBA.equals(getDataSource().getContainer().getConnectionConfiguration().getUserName());
+        return getDataSource().isDBAGroup();
     }
 
     @NotNull
