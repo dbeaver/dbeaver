@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.model.stm;
 
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenSource;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.misc.IntervalSet;
 import org.antlr.v4.runtime.tree.RuleNode;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -141,14 +144,28 @@ public class LSMInspections {
     @NotNull
     private final STMTreeNode root;
 
+    private enum TermNodeKind {
+        IDENTIFIER,
+        PERIOD,
+        OTHER
+    }
+
+    private record TermItem(
+        @NotNull
+        STMTreeNode term,
+        @NotNull
+        TermNodeKind kind
+    ) {
+    }
+
     @NotNull
-    private final List<STMTreeNode> allTerms;
+    private final List<TermItem> allTerms;
     private final List<STMTreeTermNode> allNonErrorTerms;
 
     public LSMInspections(@NotNull SQLDialect dialect, @NotNull STMTreeNode root) {
         this.dialect = dialect;
         this.root = root;
-        Pair<List<STMTreeNode>, List<STMTreeTermNode>> termLists = this.prepareTerms(root);
+        Pair<List<TermItem>, List<STMTreeTermNode>> termLists = this.prepareTerms(root);
         this.allTerms = termLists.getFirst();
         this.allNonErrorTerms = termLists.getSecond();
     }
@@ -161,7 +178,7 @@ public class LSMInspections {
     }
 
     @NotNull
-    public static SyntaxInspectionResult prepareOffquerySyntaxInspectionInternal() {
+    private static SyntaxInspectionResult prepareOffquerySyntaxInspectionInternal() {
         ATN atn = SQLStandardParser._ATN;
         ListNode<Integer> emptyStack = ListNode.of(null);
         ATNState initialState = atn.states.get(atn.ruleToStartState[SQLStandardParser.RULE_sqlQueries].stateNumber);
@@ -253,7 +270,6 @@ public class LSMInspections {
         SQLStandardParser.RULE_anyWordWithAnyValue,
         SQLStandardParser.RULE_anyProperty,
         SQLStandardParser.RULE_anyWordsWithProperty,
-        SQLStandardParser.RULE_functionCallExpression,
         SQLStandardParser.RULE_anyUnexpected
     );
 
@@ -267,27 +283,50 @@ public class LSMInspections {
     }
 
     @NotNull
-    public static Pair<List<STMTreeNode>, List<STMTreeTermNode>> prepareTerms(@NotNull STMTreeNode root) {
-        List<STMTreeNode> allTerms = new ArrayList<>();
+    private static TermNodeKind classifyTermNode(@NotNull STMTreeNode term, boolean isAnySomething) {
+        if (term instanceof STMTreeTermNode t && t.symbol.getType() == SQLStandardLexer.Period) {
+            return TermNodeKind.PERIOD;
+        } else if (term instanceof STMTreeTermNode t && KNOWN_IDENTIFIER_PART_TOKENS.contains(t.symbol.getType())
+            || (term.getParentNode() != null && term.getParentNode().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
+            || (term instanceof STMTreeTermErrorNode e && anyWordPattern.matcher(e.getText()).matches())
+            || isAnySomething
+        ) {
+            return TermNodeKind.IDENTIFIER;
+        } else {
+            return TermNodeKind.OTHER;
+        }
+    }
+
+    private static boolean isAnySomethingNode(@NotNull STMTreeNode node) {
+        return KNOWN_ANY_RULES.contains(node.getNodeKindId());
+    }
+
+    @NotNull
+    public static Pair<List<TermItem>, List<STMTreeTermNode>> prepareTerms(@NotNull STMTreeNode root) {
+        List<TermItem> allTerms = new ArrayList<>();
         List<STMTreeTermNode> allNonErrorTerms = new ArrayList<>();
 
-        ListNode<STMTreeNode> stack = ListNode.of(root);
-        while (ListNode.hasAny(stack)) {
-            STMTreeNode node = stack.data;
+        record NodesStackItem(STMTreeNode node, boolean isAnySomething, NodesStackItem next) { }
+        NodesStackItem stack = new NodesStackItem(root, false, null);
+        while (stack != null) {
+            NodesStackItem nodeItem = stack;
+            STMTreeNode node = nodeItem.node();
             stack = stack.next;
 
             if (node instanceof STMTreeTermNode term) {
                 if (node.getRealInterval().a >= 0 && node.getRealInterval().b >= 0) {
-                    allTerms.add(term);
+                    allTerms.add(new TermItem(term, classifyTermNode(term, nodeItem.isAnySomething())));
                     allNonErrorTerms.add(term);
                 }
             } else if (node instanceof STMTreeTermErrorNode err) {
                 if (node.getRealInterval().a >= 0 && node.getRealInterval().b >= 0) {
-                    allTerms.add(err);
+                    allTerms.add(new TermItem(err, classifyTermNode(err, nodeItem.isAnySomething())));
                 }
             } else {
                 for (int i = node.getChildCount() - 1; i >= 0; i--) {
-                    stack = ListNode.push(stack, node.getChildNode(i));
+                    STMTreeNode childNode = node.getChildNode(i);
+                    boolean isAnySomething = nodeItem.isAnySomething || isAnySomethingNode(childNode);
+                    stack = new NodesStackItem(childNode, isAnySomething, stack);
                 }
             }
         }
@@ -360,46 +399,43 @@ public class LSMInspections {
 
     public NameInspectionResult collectNameNodes(int position) {
         ArrayDeque<STMTreeNode> nameNodes = new ArrayDeque<>();
-        int index = STMUtils.binarySearchByKey(this.allTerms, t -> t.getRealInterval().a, position, Comparator.comparingInt(k -> k));
+        int index = STMUtils.binarySearchByKey(this.allTerms, t -> t.term.getRealInterval().a, position, Comparator.comparingInt(k -> k));
         if (index < 0) {
             index = ~index - 1;
         }
 
         int positionToInspect = position;
         boolean hasPeriod = false;
-        STMTreeNode currentTerm = null;
+        TermItem currentTerm = null;
         if (index >= 0) {
-            STMTreeNode immTerm = allTerms.get(index);
+            TermItem immItem = allTerms.get(index);
             // position is actually considered to be right _after_ the term of interest,
             // so use we the previous one on the exact match
-            if (immTerm.getRealInterval().a >= position) {
+            if (immItem.term.getRealInterval().a >= position) {
                 if (index > 0) {
-                    immTerm = allTerms.get(index - 1);
+                    immItem = allTerms.get(index - 1);
                     index--;
                 } else  {
-                    immTerm = null;
+                    immItem = null;
                 }
             }
-            if (immTerm != null && immTerm.getRealInterval().properlyContains(Interval.of(position - 1, position - 1))) {
-                if (anyWordPattern.matcher(immTerm.getTextContent()).matches()) {
-                    currentTerm = immTerm;
+            if (immItem != null && immItem.term.getRealInterval().properlyContains(Interval.of(position - 1, position - 1))) {
+                if (anyWordPattern.matcher(immItem.term.getTextContent()).matches()) {
+                    currentTerm = immItem;
                 }
-                if (dialect.getReservedWords().contains(immTerm.getTextContent().toUpperCase())) {
-                    positionToInspect = immTerm.getRealInterval().a;
+                if (dialect.getReservedWords().contains(immItem.term.getTextContent().toUpperCase())) {
+                    positionToInspect = immItem.term.getRealInterval().a;
                 }
-                if (immTerm instanceof STMTreeTermNode t && t.symbol.getType() == SQLStandardLexer.Period) {
+                if (immItem.kind == TermNodeKind.PERIOD) {
                     hasPeriod = true;
                     index--; // skip identifier separator immediately before the cursor
                 }
                 for (int i = index; i >= 0; i--) {
-                    STMTreeNode term = allTerms.get(i);
-                    if (term instanceof STMTreeTermNode t && KNOWN_IDENTIFIER_PART_TOKENS.contains(t.symbol.getType())
-                        || (term.getParentNode() != null && term.getParentNode().getNodeKindId() == SQLStandardParser.RULE_nonReserved)
-                        || term instanceof STMTreeTermErrorNode
-                    ) {
-                        nameNodes.addFirst(term);
+                    TermItem item = allTerms.get(i);
+                    if (item.kind == TermNodeKind.IDENTIFIER) {
+                        nameNodes.addFirst(item.term);
                         i--;
-                        if (i < 0 || (allTerms.get(i) instanceof STMTreeTermNode t && t.symbol.getType() != SQLStandardLexer.Period)) {
+                        if (i < 0 || allTerms.get(i).kind == TermNodeKind.PERIOD) {
                             break; // not followed by an identifier separator part
                         }
                     } else {
@@ -409,7 +445,7 @@ public class LSMInspections {
             }
         }
 
-        return new NameInspectionResult(nameNodes, hasPeriod, currentTerm, positionToInspect);
+        return new NameInspectionResult(nameNodes, hasPeriod, currentTerm != null ? currentTerm.term : null, positionToInspect);
     }
 
     private static Map<Integer, Boolean> performPresenceTests(ListNode<Integer> stateStack) {

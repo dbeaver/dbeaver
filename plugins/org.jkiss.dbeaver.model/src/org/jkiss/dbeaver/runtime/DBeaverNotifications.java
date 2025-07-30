@@ -34,7 +34,7 @@ public class DBeaverNotifications
     public static final String NT_RECONNECT_SUCCESS = "reconnect.success";
     public static final String NT_RECONNECT_FAILURE = "reconnect.failure";
     public static final String NT_GENERIC = "generic";
-    public static final String NT_WORKBENCH_RESET = "workbench.reset";
+    public static final String NT_PERSPECTIVE_RESET = "perspective.reset";
 
     @NotNull
     private static NotificationHandler notificationHandler = new ConsoleHandler();

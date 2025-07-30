@@ -208,11 +208,6 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             });
         }
 
-        {
-            // Try to load initial drivers config
-            readDriversConfig();
-        }
-
         // Load connection types
         {
             for (DBPConnectionType ct : DBPConnectionType.SYSTEM_TYPES) {
@@ -244,7 +239,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
         }
 
-        // Load external resources information
+        // Load auth models
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceAuthModelDescriptor.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
@@ -261,6 +256,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 dataSourceConfigurationStorageDescriptors.add(descriptor);
             }
         }
+
+        // Load initial drivers config
+        readDriversConfig();
     }
 
     public void readDriversConfig() {

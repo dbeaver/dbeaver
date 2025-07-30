@@ -380,6 +380,16 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         }
                         curDriverLoader = curDriver.getDefaultDriverLoader();
                     }
+                    if (loaderId != null) {
+                        DBPDriverLibraryProvider libProvider = DataSourceProviderRegistry.getInstance().getAuthModel(loaderId);
+                        if (libProvider == null) {
+                            log.warn("Auth model '" + loaderId + "' not found");
+                        } else {
+                            if (!curDriverLoader.getLibraryProviders().contains(libProvider)) {
+                                curDriverLoader.addLibraryProvider(libProvider);
+                            }
+                        }
+                    }
 
                     DBPDriverLibrary.FileType type;
                     String typeStr = atts.getValue(RegistryConstants.ATTR_TYPE);

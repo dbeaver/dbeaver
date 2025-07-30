@@ -1252,11 +1252,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public DBPDriver createOriginalCopy() {
         DriverDescriptor driverCopy = getProviderDescriptor().createDriver(this);
         for (DBPDriverLibrary lib : this.origLibraries) {
-            if (lib instanceof DriverLibraryLocal && !lib.isCustom()) {
-                DBPDriverLibrary libCopy = ((DriverLibraryLocal) lib).copyLibrary(this);
+            if (lib instanceof DriverLibraryLocal libraryLocal && !lib.isCustom()) {
+                DBPDriverLibrary libCopy = libraryLocal.copyLibrary(this);
                 libCopy.setDisabled(false);
-                if (libCopy instanceof DriverLibraryLocal) {
-                    ((DriverLibraryLocal) libCopy).setUseOriginalJar(true);
+                if (libCopy instanceof DriverLibraryLocal libraryLocal2) {
+                    libraryLocal2.setUseOriginalJar(true);
                 }
                 driverCopy.libraries.add(libCopy);
             }

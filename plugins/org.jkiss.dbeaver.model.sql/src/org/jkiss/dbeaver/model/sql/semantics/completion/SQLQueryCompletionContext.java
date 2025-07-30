@@ -989,9 +989,11 @@ public abstract class SQLQueryCompletionContext {
             ) {
                 // directly available column
                 List<? extends SQLQueryCompletionItem> subsetColumns = this.prepareTupleColumns(context, filterOrNull, true);
-                // already referenced tables
-                LinkedList<SQLQueryCompletionItem> tableRefs = new LinkedList<>();
+
+                List<? extends SQLQueryCompletionItem> resultItems;
                 if (syntaxInspectionResult.expectingColumnReference()) {
+                    // already referenced tables
+                    LinkedList<SQLQueryCompletionItem> tableRefs = new LinkedList<>();
                     for (SourceResolutionResult rr : context.getKnownSources().getResolutionResults().values()) {
                         if (rr.aliasOrNull != null && !rr.isCteSubquery) {
                             SQLQueryWordEntry sourceAlias = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
@@ -1007,24 +1009,24 @@ public abstract class SQLQueryCompletionContext {
                             }
                         }
                     }
+
+                    List<SQLQueryCompletionItem> joinConditions = syntaxInspectionResult.expectingJoinCondition()
+                        ? this.prepareJoinConditionCompletions(monitor, context, filterOrNull)
+                        : Collections.emptyList();
+
+                    LinkedList<SQLQueryCompletionItem> procedureItems = this.prepareProceduresCompletions(
+                        monitor,
+                        request,
+                        context.getKnownSources(),
+                        null,
+                        filterOrNull
+                    );
+                    resultItems = Stream.of(joinConditions, subsetColumns, tableRefs, procedureItems).flatMap(Collection::stream).toList();
+                } else {
+                    resultItems = subsetColumns;
                 }
 
-                List<SQLQueryCompletionItem> joinConditions = syntaxInspectionResult.expectingJoinCondition()
-                    ? this.prepareJoinConditionCompletions(monitor, context, filterOrNull)
-                    : Collections.emptyList();
-
-                LinkedList<SQLQueryCompletionItem> procedureItems = this.prepareProceduresCompletions(
-                    monitor,
-                    request,
-                    context.getKnownSources(),
-                    null,
-                    filterOrNull
-                );
-                this.makeFilteredCompletionSet(
-                    filterOrNull,
-                    Stream.of(joinConditions, subsetColumns, tableRefs, procedureItems).flatMap(Collection::stream).toList(),
-                    results
-                );
+                this.makeFilteredCompletionSet(filterOrNull, resultItems, results);
             }
 
             @NotNull
