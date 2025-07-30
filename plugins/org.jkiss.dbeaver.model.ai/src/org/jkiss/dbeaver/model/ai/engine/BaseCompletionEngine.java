@@ -16,14 +16,27 @@
  */
 package org.jkiss.dbeaver.model.ai.engine;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 
-import java.util.Set;
+public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> implements AIEngine {
 
-public record AIModel(
-    @NotNull String name,
-    @Nullable Integer contextWindowSize,
-    @NotNull Set<AIModelFeature> features
-) {
+    protected final AISettingsRegistry registry;
+
+    protected BaseCompletionEngine(AISettingsRegistry registry) {
+        this.registry = registry;
+    }
+
+    @Override
+    public boolean hasValidConfiguration() throws DBException {
+        return getProperties().isValidConfiguration();
+    }
+
+    @Override
+    public boolean isLoggingEnabled() throws DBException {
+        return getProperties().isLoggingEnabled();
+    }
+
+    protected abstract PROPS getProperties() throws DBException;
+
 }

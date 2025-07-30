@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.ai.engine.copilot;
 
 
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -25,22 +24,22 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotClient;
-import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotModels;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceAuth;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ai.engine.openai.ContextWindowSizeField;
-import org.jkiss.dbeaver.ui.ai.engine.openai.ModelSelectorField;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,15 +49,16 @@ import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine, LegacyAISettings<CopilotProperties>> {
+    private static final Log log = Log.getLog(CopilotConfigurator.class);
 
     private Text temperatureText;
-    private ContextWindowSizeField contextWindowSizeField;
-    private ModelSelectorField modelSelectorField;
+    private Combo modelCombo;
     private Button logQueryCheck;
     private Text accessTokenText;
 
     private String accessToken;
     protected String token = "";
+    protected String model = "";
     private String temperature = "0.0";
     private boolean logQuery = false;
 
@@ -79,22 +79,38 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     @Override
     public void loadSettings(@NotNull LegacyAISettings<CopilotProperties> configuration) {
         token = CommonUtils.toString(configuration.getProperties().getToken());
-        modelSelectorField.setSelectedModel(configuration.getProperties().getModel());
-        contextWindowSizeField.setValue(configuration.getProperties().getContextWindowSize());
+        model = CommonUtils.toString(configuration.getProperties().getModel());
         temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
         logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
         accessToken = CommonUtils.toString(configuration.getProperties().getToken(), "");
         accessTokenText.setText(accessToken);
+        populateModelsCombo(false);
         applySettings();
+    }
 
-        modelSelectorField.refreshModelList(true);
+    private void populateModelsCombo(boolean forceRefresh) {
+        List<String> models = null;
+        try {
+            models = UIUtils.runWithMonitor(monitor -> CopilotClient.getModels(monitor, accessToken, forceRefresh));
+        } catch (DBException e) {
+            log.error("Error reading model list", e);
+        }
+        if (!CommonUtils.isEmpty(models)) {
+            modelCombo.setItems(models.toArray(new String[0]));
+            modelCombo.select(0);
+            for (int i = 0; i < modelCombo.getItemCount(); i++) {
+                if (modelCombo.getItem(i).equals(model)) {
+                    modelCombo.select(i);
+                    break;
+                }
+            }
+        }
     }
 
     @Override
     public void saveSettings(@NotNull LegacyAISettings<CopilotProperties> copilotSettings) {
         copilotSettings.getProperties().setToken(accessToken);
-        copilotSettings.getProperties().setModel(modelSelectorField.getSelectedModel());
-        copilotSettings.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
+        copilotSettings.getProperties().setModel(model);
         copilotSettings.getProperties().setTemperature(Double.parseDouble(temperature));
         copilotSettings.getProperties().setLoggingEnabled(logQuery);
     }
@@ -109,29 +125,27 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         return true;
     }
 
-    private void createModelParameters(@NotNull Composite parent) {
-        ModelSelectorField.ModelListProvider modelListProvider = forceRefresh -> {
-            try {
-                return UIUtils.runWithMonitor(
-                    monitor -> CopilotClient.getModels(monitor, accessToken, forceRefresh)
-                );
-            } catch (DBException e) {
-                return List.of();
-            }
+    @NotNull
+    protected OpenAIModel[] getSupportedGPTModels() {
+        return new OpenAIModel[] {
+            OpenAIModel.GPT_4,
+            OpenAIModel.GPT_TURBO
         };
-        modelSelectorField = ModelSelectorField.builder()
-            .withParent(parent)
-            .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
-                contextWindowSizeField.setValue(CopilotModels.getContextWindowSize(modelSelectorField.getSelectedModel()));
-            }))
-            .withModelListSupplier(modelListProvider)
-            .build();
+    }
 
-        contextWindowSizeField = ContextWindowSizeField.builder()
-            .withParent(parent)
-            .withGridData(GridDataFactory.fillDefaults().span(2, 1).create())
-            .build();
+    private void createModelParameters(@NotNull Composite parent) {
+        modelCombo = UIUtils.createLabelCombo(parent, AIUIMessages.gpt_preference_page_combo_engine, SWT.READ_ONLY);
+        for (OpenAIModel model : getSupportedGPTModels()) {
+            if (model.getDeprecationReplacementModel() == null) {
+                modelCombo.add(model.getName());
+            }
+        }
+        modelCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> model = modelCombo.getText()));
+        UIUtils.createDialogButton(
+            parent,
+            AIUIMessages.gpt_preference_page_refresh_models,
+            SelectionListener.widgetSelectedAdapter((e) -> populateModelsCombo(true))
+        );
 
         GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
         gridData.horizontalSpan = 2;
@@ -160,6 +174,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     }
 
     private void applySettings() {
+        modelCombo.setText(model);
         temperatureText.setText(temperature);
         logQueryCheck.setSelection(logQuery);
     }
@@ -206,7 +221,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
                 accessTokenText.setText(accessToken);
                 accessTokenText = UIUtils.recreateTextControl(accessTokenText, SWT.BORDER);
             }
-            modelSelectorField.refreshModelList(true);
+            populateModelsCombo(true);
         }));
     }
 

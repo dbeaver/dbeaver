@@ -17,49 +17,12 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsEventListener;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 
-import java.util.concurrent.atomic.AtomicReference;
-
-public abstract class AIEngineFactory<T extends AIEngine> implements AISettingsEventListener {
-    private static final Log log = Log.getLog(AIEngineFactory.class);
-
-    protected final @NotNull AISettingsRegistry registry;
-    private final AtomicReference<T> engine = new AtomicReference<>();
-
-    public AIEngineFactory(@NotNull AISettingsRegistry registry) {
-        this.registry = registry;
-        this.registry.addChangedListener(this);
-    }
-
-    public T getEngine() throws DBException {
-        return engine.updateAndGet(currentEngine -> {
-            if (currentEngine == null) {
-                try {
-                    return createEngine();
-                } catch (DBException e) {
-                    throw new RuntimeException("Failed to create AI engine", e);
-                }
-            }
-            return currentEngine;
-        });
-    }
-
+public interface AIEngineFactory<T extends AIEngine> {
+    /**
+     * Creates new engine
+     */
     @NotNull
-    protected abstract T createEngine() throws DBException;
-
-    @Override
-    public void onSettingsUpdate(@NotNull AISettingsRegistry registry) {
-        T andSet = engine.getAndSet(null);
-        if (andSet != null) {
-            try {
-                andSet.close();
-            } catch (DBException e) {
-                log.error("Failed to close AI engine", e);
-            }
-        }
-    }
+    T createEngine(@NotNull AISettingsRegistry registry);
 }
