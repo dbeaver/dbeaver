@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.ai.engine.openai;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -23,26 +25,38 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 
 import java.util.List;
 
 public class ModelSelectorField {
+    private static final Log log = Log.getLog(ModelSelectorField.class);
+
     @NotNull
     private final Combo combo;
     @NotNull
     private final ModelListProvider modelListProvider;
+    @NotNull
+    private final Runnable onModelSelected;
 
-    private String selectedModel;
+    private volatile String selectedModel;
 
     private ModelSelectorField(
         @NotNull Combo combo,
-        @NotNull ModelListProvider modelListProvider
+        @NotNull ModelListProvider modelListProvider,
+        @NotNull Runnable onModelSelected
     ) {
         this.combo = combo;
+        this.onModelSelected = onModelSelected;
         this.combo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -80,19 +94,43 @@ public class ModelSelectorField {
         selectedModel = model;
     }
 
-    public void refreshModelList(boolean refresh) {
-        List<String> models = modelListProvider.getModels(refresh);
+    public void refreshModelListSilently(boolean refresh) {
+        new AbstractJob("Refreshing model list silently") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                try {
+                    refreshModelList(monitor, refresh);
+                    return Status.OK_STATUS;
+                } catch (DBException e) {
+                    log.debug("Error reading model list", e);
+                    return Status.CANCEL_STATUS;
+                }
+            }
+        }.schedule();
+    }
+
+    public void refreshModelList(DBRProgressMonitor monitor, boolean refresh) throws DBException {
+        List<String> models = modelListProvider.getModels(monitor, refresh)
+            .stream()
+            .sorted()
+            .toList();
+
         if (models.isEmpty()) {
             return;
         }
 
-        String selectedItem = combo.getText();
-        combo.setItems(models.toArray(new String[0]));
-        if (models.contains(selectedItem)) {
-            combo.setText(selectedItem);
-        } else {
-            combo.select(0); // Select the first item if the previous selection is not available
-        }
+        UIUtils.syncExec(() -> {
+            String selectedItem = combo.getText();
+            combo.setItems(models.toArray(new String[0]));
+            if (models.contains(selectedItem)) {
+                combo.setText(selectedItem);
+            } else {
+                combo.select(0); // Select the first item if the previous selection is not available
+            }
+
+            selectedModel = combo.getText();
+            onModelSelected.run();
+        });
     }
 
     public static class Builder {
@@ -129,19 +167,54 @@ public class ModelSelectorField {
         }
 
         public ModelSelectorField build() {
-            Combo combo = UIUtils.createLabelCombo(parent, AIUIMessages.gpt_preference_page_combo_engine, SWT.READ_ONLY);
+            Combo combo = UIUtils.createLabelCombo(
+                parent,
+                AIUIMessages.gpt_preference_page_combo_engine,
+                SWT.DROP_DOWN
+            );
             combo.setLayoutData(gridData);
 
             if (selectionListener != null) {
                 combo.addSelectionListener(selectionListener);
             }
 
-            ModelSelectorField modelSelectorField = new ModelSelectorField(combo, modelListSupplier);
+            ModelSelectorField modelSelectorField = new ModelSelectorField(
+                combo,
+                modelListSupplier,
+                () -> {
+                    if (selectionListener != null) {
+                        Event event = new Event();
+                        event.widget = combo;
+                        event.type = SWT.Selection;
+
+                        selectionListener.widgetSelected(new SelectionEvent(event));
+                    }
+                }
+
+            );
 
             UIUtils.createDialogButton(
                 parent,
                 AIUIMessages.gpt_preference_page_refresh_models,
-                SelectionListener.widgetSelectedAdapter((e) -> modelSelectorField.refreshModelList(true))
+                SelectionListener.widgetSelectedAdapter((e) -> {
+                    new AbstractJob("Refreshing model list") {
+                        @Override
+                        protected IStatus run(DBRProgressMonitor monitor) {
+                            try {
+                                modelSelectorField.refreshModelList(monitor, true);
+                                return Status.OK_STATUS;
+                            } catch (DBException exception) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    "Error reading model list",
+                                    null,
+                                    exception
+                                );
+
+                                return Status.CANCEL_STATUS;
+                            }
+                        }
+                    }.schedule();
+                })
             );
 
             return modelSelectorField;
@@ -149,6 +222,6 @@ public class ModelSelectorField {
     }
 
     public interface ModelListProvider {
-        List<String> getModels(boolean forceRefresh);
+        List<String> getModels(DBRProgressMonitor monitor, boolean forceRefresh) throws DBException;
     }
 }

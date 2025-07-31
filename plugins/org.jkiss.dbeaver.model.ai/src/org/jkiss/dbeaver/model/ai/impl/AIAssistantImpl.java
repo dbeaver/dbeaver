@@ -174,16 +174,13 @@ public class AIAssistantImpl implements AIAssistant {
      */
     @Override
     public boolean hasValidConfiguration() throws DBException {
-        AISettings settings = settingsRegistry.getSettings();
-        String activeEngine = settings.activeEngine();
-        if (activeEngine == null || activeEngine.isEmpty()) {
-            log.warn("No active AI engine configured");
+        AIEngineSettings<?> activeEngineConfiguration = getActiveEngineConfiguration();
+        if (activeEngineConfiguration == null) {
+            log.warn("No active AI engine configuration found");
             return false;
         }
 
-        AIEngineSettings<?> engineConfiguration = settings.getEngineConfiguration(activeEngine);
-
-        return engineConfiguration.isValid();
+        return activeEngineConfiguration.isValid();
     }
 
     protected MessageChunk[] processAndSplitCompletion(
@@ -304,16 +301,23 @@ public class AIAssistantImpl implements AIAssistant {
             .build();
     }
 
-    protected boolean isLoggingEnabled() throws DBException {
-        AISettings settings = settingsRegistry.getSettings();
-        String activeEngine = settings.activeEngine();
-        if (activeEngine == null || activeEngine.isEmpty()) {
-            log.warn("No active AI engine configured");
+    private boolean isLoggingEnabled() throws DBException {
+        AIEngineSettings<?> activeEngineConfiguration = getActiveEngineConfiguration();
+        if (activeEngineConfiguration == null) {
+            log.warn("No active AI engine configuration found");
             return false;
         }
 
-        AIEngineSettings<?> engineConfiguration = settings.getEngineConfiguration(activeEngine);
+        return activeEngineConfiguration.isLoggingEnabled();
+    }
 
-        return engineConfiguration.isLoggingEnabled();
+    @Nullable
+    private AIEngineSettings<?> getActiveEngineConfiguration() throws DBException {
+        String activeEngine = settingsRegistry.getSettings().activeEngine();
+        if (activeEngine == null || activeEngine.isEmpty()) {
+            log.warn("No active AI engine configured");
+            return null;
+        }
+        return settingsRegistry.getSettings().getEngineConfiguration(activeEngine);
     }
 }

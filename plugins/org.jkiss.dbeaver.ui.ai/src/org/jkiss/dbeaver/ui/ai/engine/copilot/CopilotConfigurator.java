@@ -30,8 +30,10 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
+import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotClient;
+import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotModels;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -45,7 +47,6 @@ import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
@@ -57,7 +58,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     private Button logQueryCheck;
     private Text accessTokenText;
 
-    private String accessToken;
+    private volatile String accessToken;
     protected String token = "";
     private String temperature = "0.0";
     private boolean logQuery = false;
@@ -87,7 +88,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         accessTokenText.setText(accessToken);
         applySettings();
 
-        modelSelectorField.refreshModelList(true);
+        modelSelectorField.refreshModelListSilently(true);
     }
 
     @Override
@@ -110,15 +111,22 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     }
 
     private void createModelParameters(@NotNull Composite parent) {
-        ModelSelectorField.ModelListProvider modelListProvider = forceRefresh -> {
-            try {
-                return UIUtils.runWithMonitor(
-                    monitor -> CopilotClient.getModels(monitor, accessToken, forceRefresh)
-                );
-            } catch (DBException e) {
-                return List.of();
+        ModelSelectorField.ModelListProvider modelListProvider = (monitor, forceRefresh) -> {
+            if (accessToken == null || accessToken.isEmpty()) {
+                throw new DBException("Access token is not set");
+            }
+
+            CopilotProperties properties = new CopilotProperties();
+            properties.setToken(accessToken);
+
+            try (CopilotCompletionEngine engine = new CopilotCompletionEngine(properties)) {
+                return engine.getModels(monitor)
+                    .stream()
+                    .map(AIModel::name)
+                    .toList();
             }
         };
+
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
@@ -206,7 +214,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
                 accessTokenText.setText(accessToken);
                 accessTokenText = UIUtils.recreateTextControl(accessTokenText, SWT.BORDER);
             }
-            modelSelectorField.refreshModelList(true);
+            modelSelectorField.refreshModelListSilently(true);
         }));
     }
 

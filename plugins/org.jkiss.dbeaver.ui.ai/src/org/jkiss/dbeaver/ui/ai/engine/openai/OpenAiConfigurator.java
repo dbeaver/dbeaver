@@ -37,19 +37,20 @@ import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.function.ThrowableFunction;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Supplier;
 
 public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends OpenAIProperties>
     implements IObjectPropertyConfigurator<ENGINE, LegacyAISettings<PROPERTIES>> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
-    protected String token = "";
+    protected volatile String token = "";
     private String temperature = "0.0";
     private boolean logQuery = false;
 
@@ -90,7 +91,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
 
         contextWindowSizeField.setValue(configuration.getProperties().getContextWindowSize());
 
-        modelSelectorField.refreshModelList(false);
+        modelSelectorField.refreshModelListSilently(false);
     }
 
     @Override
@@ -128,7 +129,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
             .withModelListSupplier(
-                forceRefresh -> modelsCache.get(forceRefresh).stream()
+                (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
                     .filter(it -> it.features().contains(AIModelFeature.CHAT))
                     .map(AIModel::name)
                     .toList()
@@ -152,23 +153,16 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
 
-    private List<AIModel> fetchOpenAiModels() {
-        if (tokenText == null || tokenText.isDisposed()) {
-            return List.of();
-        }
-
-        String token = tokenText.getText();
+    private List<AIModel> fetchOpenAiModels(DBRProgressMonitor monitor) throws DBException {
         if (token == null || token.isEmpty()) {
-            return List.of();
+            throw new DBException("Token is not set");
         }
 
         OpenAIProperties properties = new OpenAIProperties();
         properties.setToken(token);
 
         try (OpenAICompletionEngine<OpenAIProperties> engine = new OpenAICompletionEngine<>(properties)) {
-            return UIUtils.runWithMonitor(engine::getModels);
-        } catch (DBException e) {
-            return List.of();
+            return engine.getModels(monitor);
         }
     }
 
@@ -226,17 +220,17 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
     protected static class CachedValue<T> {
         private volatile T value;
 
-        private final Supplier<T> supplier;
+        private final ThrowableFunction<DBRProgressMonitor, T, DBException> supplier;
 
-        protected CachedValue(Supplier<T> supplier) {
+        protected CachedValue(ThrowableFunction<DBRProgressMonitor, T, DBException> supplier) {
             this.supplier = supplier;
         }
 
-        public T get(boolean refresh) {
+        public T get(DBRProgressMonitor monitor, boolean refresh) throws DBException {
             if (value == null || refresh) {
                 synchronized (this) {
                     if (value == null || refresh) {
-                        value = supplier.get();
+                        value = supplier.apply(monitor);
                     }
                 }
             }
