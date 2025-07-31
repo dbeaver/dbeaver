@@ -421,6 +421,36 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
             Assert.assertTrue(proposals.contains("Col3"));
         }
     }
+
+    @Test
+    public void testColumnsCompletionInUpdate() throws DBException {
+        final RequestResult request = RequestBuilder
+            .databases(x -> {
+                x.database(
+                    "db", d -> {
+                        d.schema(
+                            "sch", s -> {
+                                s.table(
+                                    "tbl", t -> {
+                                        t.attribute("col1");
+                                        t.attribute("col2");
+                                        t.attribute("col3");
+                                    }
+                                );
+                            }
+                        );
+                    }
+                );
+            })
+            .prepare();
+
+        {
+            final Set<String> proposals = request.requestNewStrings("UPDATE db.sch.tbl t SET |");
+            Assert.assertTrue(proposals.contains("col1"));
+            Assert.assertTrue(proposals.contains("col2"));
+            Assert.assertTrue(proposals.contains("col3"));
+        }
+    }
     
     @Test
     public void testCompleteTablesWithAliasesPositive() throws DBException {
