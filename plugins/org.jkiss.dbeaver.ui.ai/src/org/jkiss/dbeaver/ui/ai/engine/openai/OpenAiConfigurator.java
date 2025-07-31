@@ -16,51 +16,38 @@
  */
 package org.jkiss.dbeaver.ui.ai.engine.openai;
 
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
-import org.jkiss.dbeaver.model.ai.engine.AIModel;
-import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.Locale;
-import java.util.function.Supplier;
 
 public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends OpenAIProperties>
     implements IObjectPropertyConfigurator<ENGINE, LegacyAISettings<PROPERTIES>> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String token = "";
+    protected String model = "";
     private String temperature = "0.0";
     private boolean logQuery = false;
 
     @Nullable
     protected Text tokenText;
     private Text temperatureText;
-    private ModelSelectorField modelSelectorField;
-    private ContextWindowSizeField contextWindowSizeField;
+    private Combo modelCombo;
     private Button logQueryCheck;
-
-    protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchOpenAiModels);
 
     @Override
     public void createControl(
@@ -68,7 +55,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         AIEngine object,
         @NotNull Runnable propertyChangeListener
     ) {
-        Composite composite = UIUtils.createComposite(parent, 3);
+        Composite composite = UIUtils.createComposite(parent, 2);
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createConnectionParameters(composite);
 
@@ -81,23 +68,16 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
     @Override
     public void loadSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
         token = CommonUtils.toString(configuration.getProperties().getToken());
-        modelSelectorField.setSelectedModel(
-            CommonUtils.toString(configuration.getProperties().getModel(), OpenAIModels.DEFAULT_MODEL)
-        );
+        model = readModel(configuration).getName();
         temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
         logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
         applySettings();
-
-        contextWindowSizeField.setValue(configuration.getProperties().getContextWindowSize());
-
-        modelSelectorField.refreshModelList(false);
     }
 
     @Override
     public void saveSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
         configuration.getProperties().setToken(token);
-        configuration.getProperties().setModel(modelSelectorField.getSelectedModel());
-        configuration.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
+        configuration.getProperties().setModel(model);
         configuration.getProperties().setTemperature(Double.parseDouble(temperature));
         configuration.getProperties().setLoggingEnabled(logQuery);
     }
@@ -124,52 +104,30 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
     }
 
     protected void createModelParameters(@NotNull Composite parent) {
-        modelSelectorField = ModelSelectorField.builder()
-            .withParent(parent)
-            .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withModelListSupplier(
-                forceRefresh -> modelsCache.get(forceRefresh).stream()
-                    .filter(it -> it.features().contains(AIModelFeature.CHAT))
-                    .map(AIModel::name)
-                    .toList()
-            )
-            .withSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                contextWindowSizeField.setValue(OpenAIModels.getContextWindowSize(modelSelectorField.getSelectedModel()));
-            }))
-            .build();
-
-        contextWindowSizeField = ContextWindowSizeField.builder()
-            .withParent(parent)
-            .withGridData(GridDataFactory.fillDefaults().span(2, 1).create())
-            .build();
-
+        if (isUsesModel()) {
+            modelCombo = UIUtils.createLabelCombo(parent, AIUIMessages.gpt_preference_page_combo_engine, SWT.READ_ONLY);
+            for (OpenAIModel model : getSupportedGPTModels()) {
+                if (model.getDeprecationReplacementModel() == null) {
+                    modelCombo.add(model.getName());
+                }
+            }
+            modelCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    model = modelCombo.getText();
+                }
+            });
+        }
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
-        temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
-
-        UIUtils.createInfoLabel(parent, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 3);
+        UIUtils.createInfoLabel(parent, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 2);
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
 
-    private List<AIModel> fetchOpenAiModels() {
-        if (tokenText == null || tokenText.isDisposed()) {
-            return List.of();
-        }
-
-        String token = tokenText.getText();
-        if (token == null || token.isEmpty()) {
-            return List.of();
-        }
-
-        OpenAIProperties properties = new OpenAIProperties();
-        properties.setToken(token);
-
-        try (OpenAICompletionEngine<OpenAIProperties> engine = new OpenAICompletionEngine<>(properties)) {
-            return UIUtils.runWithMonitor(engine::getModels);
-        } catch (DBException e) {
-            return List.of();
-        }
+    @NotNull
+    protected OpenAIModel[] getSupportedGPTModels() {
+        return OpenAIModel.values();
     }
 
     protected void createConnectionParameters(@NotNull Composite parent) {
@@ -199,7 +157,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
             }
         );
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
+        gd.horizontalSpan = 2;
         link.setLayoutData(gd);
     }
 
@@ -207,40 +165,31 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         return API_KEY_URL;
     }
 
+    private OpenAIModel readModel(@NotNull LegacyAISettings<PROPERTIES> configuration) {
+        return OpenAIModel.getByName(CommonUtils.toString(configuration.getProperties().getModel(), getDefaultModel()));
+    }
+
+    protected String getDefaultModel() {
+        return OpenAIModel.GPT_TURBO.getName();
+    }
+
     protected void applySettings() {
         if (tokenText != null) {
             tokenText.setText(token);
         }
-
+        if (isUsesModel()) {
+            modelCombo.setText(model);
+        }
         temperatureText.setText(temperature);
         logQueryCheck.setSelection(logQuery);
     }
 
-    @Override
-    public boolean isComplete() {
-        return tokenText != null
-            && !tokenText.getText().isEmpty()
-            && contextWindowSizeField.isComplete();
+    protected boolean isUsesModel() {
+        return true;
     }
 
-    protected static class CachedValue<T> {
-        private volatile T value;
-
-        private final Supplier<T> supplier;
-
-        protected CachedValue(Supplier<T> supplier) {
-            this.supplier = supplier;
-        }
-
-        public T get(boolean refresh) {
-            if (value == null || refresh) {
-                synchronized (this) {
-                    if (value == null || refresh) {
-                        value = supplier.get();
-                    }
-                }
-            }
-            return value;
-        }
+    @Override
+    public boolean isComplete() {
+        return tokenText == null || !tokenText.getText().isEmpty();
     }
 }

@@ -74,14 +74,4 @@ public class LegacyAISettings<P extends AIEngineProperties> implements AIEngineS
         P newProperties = (P) GSON.fromJson(GSON.toJsonTree(engineProperties), properties.getClass());
         return new LegacyAISettings<>(newProperties);
     }
-
-    @Override
-    public boolean isValid() {
-        return properties.isValidConfiguration();
-    }
-
-    @Override
-    public boolean isLoggingEnabled() {
-        return properties.isLoggingEnabled();
-    }
 }

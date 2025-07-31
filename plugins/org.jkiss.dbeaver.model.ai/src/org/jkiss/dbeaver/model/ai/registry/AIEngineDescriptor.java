@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.ai.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineFactory;
@@ -27,7 +26,6 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.LazyValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,23 +35,14 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     private final IConfigurationElement contributorConfig;
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
     private final ObjectType objectType;
-    private final LazyValue<AIEngineFactory<?>, DBException> factoryInstance;
 
     protected AIEngineDescriptor(IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.contributorConfig = contributorConfig;
-        this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
-        this.factoryInstance = new LazyValue<>() {
-            @NotNull
-            @Override
-            protected AIEngineFactory<?> initialize() throws DBException {
-                return objectType.createInstance(AIEngineFactory.class, AISettingsRegistry.getInstance());
-            }
-        };
-
         for (IConfigurationElement propGroup : ArrayUtils.safeArray(contributorConfig.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
             properties.addAll(PropertyDescriptor.extractProperties(propGroup));
         }
+        objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
     }
 
     public String getId() {
@@ -77,6 +66,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     }
 
     public AIEngine createInstance() throws DBException {
-        return factoryInstance.getInstance().getEngine();
+        AIEngineFactory<?> instance = objectType.createInstance(AIEngineFactory.class);
+        return instance.createEngine(AISettingsRegistry.getInstance());
     }
 }

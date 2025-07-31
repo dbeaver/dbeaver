@@ -24,16 +24,16 @@ import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatChunk;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotMessage;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModel;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Flow;
 
-public class CopilotCompletionEngine implements AIEngine {
+public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotProperties> {
     private static final Log log = Log.getLog(CopilotCompletionEngine.class);
 
     private final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
@@ -44,28 +44,20 @@ public class CopilotCompletionEngine implements AIEngine {
         }
 
         @Override
-        protected void onDispose(@NotNull CopilotClient disposedValue) {
+        protected void onDispose(CopilotClient disposedValue) {
             disposedValue.close();
         }
     };
 
-    private final CopilotProperties properties;
-
     private volatile CopilotSessionToken sessionToken;
 
-    public CopilotCompletionEngine(CopilotProperties properties) {
-        this.properties = properties;
+    public CopilotCompletionEngine(AISettingsRegistry registry) {
+        super(registry);
     }
 
-    @NotNull
     @Override
-    public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return client.getInstance().loadModels(monitor, requestSessionToken(monitor).token()).stream()
-            .map(model -> CopilotModels.KNOWN_MODELS.getOrDefault(
-                model.id(),
-                new AIModel(model.id(), null, Set.of())
-            ))
-            .toList();
+    public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return OpenAIModel.getByName(getModelName()).getMaxTokens();
     }
 
     @NotNull
@@ -77,7 +69,7 @@ public class CopilotCompletionEngine implements AIEngine {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
             .withModel(getModelName())
             .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
-            .withTemperature(properties.getTemperature())
+            .withTemperature(getProperties().getTemperature())
             .withStream(false)
             .withIntent(false)
             .withTopP(1)
@@ -102,7 +94,7 @@ public class CopilotCompletionEngine implements AIEngine {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
             .withModel(getModelName())
             .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
-            .withTemperature(properties.getTemperature())
+            .withTemperature(getProperties().getTemperature())
             .withStream(true)
             .withIntent(false)
             .withTopP(1)
@@ -146,19 +138,17 @@ public class CopilotCompletionEngine implements AIEngine {
     }
 
     @Override
-    public int getContextWindowSize(DBRProgressMonitor monitor) throws DBException {
-        Integer contextWindowSize = properties.getContextWindowSize();
-        if (contextWindowSize != null) {
-            return contextWindowSize;
+    public void onSettingsUpdate(@NotNull AISettingsRegistry registry) {
+
+        try {
+            client.dispose();
+        } catch (DBException e) {
+            log.error("Error disposing client", e);
         }
 
-        throw new DBException("Context window size is not defined in Copilot properties. " +
-            "Please set it explicitly or use a known model with a predefined context window size.");
-    }
-
-    @Override
-    public void close() throws DBException {
-        client.dispose();
+        synchronized (this) {
+            sessionToken = null;
+        }
     }
 
     private CopilotSessionToken requestSessionToken(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -171,14 +161,21 @@ public class CopilotCompletionEngine implements AIEngine {
                 return sessionToken;
             }
 
-            return client.getInstance().requestSessionToken(monitor, properties.getToken());
+            return client.getInstance().requestSessionToken(monitor, getProperties().getToken());
         }
     }
 
     public String getModelName() throws DBException {
         return CommonUtils.toString(
-            properties.getModel(),
-            OpenAIConstants.DEFAULT_MODEL
+            getProperties().getModel(),
+            OpenAIModel.GPT_TURBO.getName()
         );
+    }
+
+    @Override
+    protected CopilotProperties getProperties() throws DBException {
+        return registry.getSettings().<LegacyAISettings<CopilotProperties>> getEngineConfiguration(
+            CopilotConstants.COPILOT_ENGINE
+        ).getProperties();
     }
 }
