@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Flow;
 
-public class CopilotCompletionEngine implements AIEngine {
+public class CopilotCompletionEngine extends BaseCompletionEngine {
     private static final Log log = Log.getLog(CopilotCompletionEngine.class);
 
     private final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {

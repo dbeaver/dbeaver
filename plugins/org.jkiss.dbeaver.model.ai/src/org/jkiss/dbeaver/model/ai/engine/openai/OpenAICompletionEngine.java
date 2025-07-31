@@ -33,7 +33,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.List;
 import java.util.concurrent.Flow;
 
-public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> implements AIEngine {
+public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
+    extends BaseCompletionEngine {
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
