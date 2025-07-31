@@ -33,8 +33,10 @@ import org.jkiss.utils.Pair;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.xml.crypto.Data;
 
 public class SQLQueryRowsSourceContext {
 
@@ -60,16 +62,25 @@ public class SQLQueryRowsSourceContext {
     @Nullable
     private ListNode<SQLQueryRowsDataContext> targetDataContexts = null;
 
+    @Nullable
+    private Supplier<SQLQueryRowsDataContext> relatedContextProvider = null;
+
     public SQLQueryRowsSourceContext(@NotNull SQLQueryConnectionContext connectionInfo) {
-        this(connectionInfo, false);
+        this(connectionInfo, false, Collections.emptyMap(), null);
     }
 
-    private SQLQueryRowsSourceContext(@NotNull SQLQueryConnectionContext connectionInfo, boolean hasUnresolvedSource) {
+    private SQLQueryRowsSourceContext(
+        @NotNull SQLQueryConnectionContext connectionInfo,
+        boolean hasUnresolvedSource,
+        @NotNull Map<String, SourceResolutionResult> dynamicTableSources,
+        @Nullable Supplier<SQLQueryRowsDataContext> relatedContextProvider
+    ) {
         this.connectionInfo = connectionInfo;
         this.hasUnresolvedSource = hasUnresolvedSource;
         this.rowsSources = Collections.emptyMap();
-        this.dynamicTableSources = Collections.emptyMap();
+        this.dynamicTableSources = dynamicTableSources;
         this.sourcesByLoweredAlias = Collections.emptyMap();
+        this.relatedContextProvider = relatedContextProvider;
     }
 
     private SQLQueryRowsSourceContext(
@@ -77,7 +88,8 @@ public class SQLQueryRowsSourceContext {
         boolean hasUnresolvedSource,
         @NotNull Map<SQLQueryComplexName, SourceResolutionResult> rowsSources,
         @NotNull Map<String, SourceResolutionResult> dynamicTableSources,
-        @NotNull Map<String, SourceResolutionResult> sourcesByLoweredAlias
+        @NotNull Map<String, SourceResolutionResult> sourcesByLoweredAlias,
+        @Nullable Supplier<SQLQueryRowsDataContext> relatedContextProvider
     ) {
         parent.registerConsumingContext(this);
         this.connectionInfo = parent.connectionInfo;
@@ -85,6 +97,7 @@ public class SQLQueryRowsSourceContext {
         this.rowsSources = rowsSources;
         this.dynamicTableSources = dynamicTableSources;
         this.sourcesByLoweredAlias = sourcesByLoweredAlias;
+        this.relatedContextProvider = relatedContextProvider;
     }
 
     private void registerConsumingContext(@NotNull SQLQueryRowsSourceContext context) {
@@ -110,7 +123,7 @@ public class SQLQueryRowsSourceContext {
      */
     @NotNull
     public final SQLQueryRowsSourceContext reset() {
-        return new SQLQueryRowsSourceContext(this.connectionInfo, false);
+        return new SQLQueryRowsSourceContext(this.connectionInfo, false, this.dynamicTableSources, this.relatedContextProvider);
     }
 
     /**
@@ -118,7 +131,24 @@ public class SQLQueryRowsSourceContext {
      */
     @NotNull
     public final SQLQueryRowsSourceContext resetAsUnresolved() {
-        return new SQLQueryRowsSourceContext(this.connectionInfo, true);
+        return new SQLQueryRowsSourceContext(this.connectionInfo, true, this.dynamicTableSources, this.relatedContextProvider);
+    }
+
+    @NotNull
+    public SQLQueryRowsSourceContext setRelatedContextProvider(@NotNull Supplier<SQLQueryRowsDataContext>  relatedContextProvider) {
+        return new SQLQueryRowsSourceContext(
+            this,
+            this.hasUnresolvedSource,
+            this.rowsSources,
+            this.dynamicTableSources,
+            this.sourcesByLoweredAlias,
+            relatedContextProvider
+        );
+    }
+
+    @Nullable
+    public Supplier<SQLQueryRowsDataContext> getRelatedContextProvider() {
+        return this.relatedContextProvider;
     }
 
     /**
@@ -213,7 +243,7 @@ public class SQLQueryRowsSourceContext {
                 putAll(other.sourcesByLoweredAlias);
                 putAll(SQLQueryRowsSourceContext.this.sourcesByLoweredAlias);
             }
-        }, this.hasUnresolvedSource || other.hasUnresolvedSource);
+        }, this.hasUnresolvedSource || other.hasUnresolvedSource, null);
     }
 
     /**
@@ -243,14 +273,18 @@ public class SQLQueryRowsSourceContext {
                 rowsSources.put(synthesizedName, srr);
             }
         }
-        return this.setRowsSources(rowsSources, this.sourcesByLoweredAlias, this.hasUnresolvedSource);
+        return this.setRowsSources(rowsSources, this.sourcesByLoweredAlias, this.hasUnresolvedSource, this.relatedContextProvider);
     }
 
     /**
      * Associate alias with the resolved query source
      */
     @NotNull
-    public final SQLQueryRowsSourceContext replaceWithAlias(@NotNull SQLQueryRowsSourceModel oldSource, @NotNull SQLQueryRowsSourceModel newSource, @NotNull SQLQuerySymbolEntry alias) {
+    public final SQLQueryRowsSourceContext replaceWithAlias(
+        @NotNull SQLQueryRowsSourceModel oldSource,
+        @NotNull SQLQueryRowsSourceModel newSource,
+        @NotNull SQLQuerySymbolEntry alias
+    ) {
         SourceResolutionResult oldEntry = this.rowsSources.values().stream().filter(s -> s.source == oldSource).findFirst().orElse(null);
         DBSEntity oldEntryTable = oldEntry == null ? null : oldEntry.tableOrNull;
         SourceResolutionResult newEntry = new SourceResolutionResult(newSource, null, oldEntryTable, alias.getSymbol());
@@ -262,7 +296,9 @@ public class SQLQueryRowsSourceContext {
             new HashMap<>() {{
                 putAll(SQLQueryRowsSourceContext.this.sourcesByLoweredAlias);
                 put(alias.getName().toLowerCase(), newEntry);
-            }}, this.hasUnresolvedSource
+            }},
+            this.hasUnresolvedSource,
+            this.relatedContextProvider
         );
     }
 
@@ -425,14 +461,16 @@ public class SQLQueryRowsSourceContext {
     private SQLQueryRowsSourceContext setRowsSources(
         @NotNull Map<SQLQueryComplexName, SourceResolutionResult> rowsSources,
         @NotNull Map<String, SourceResolutionResult> sourcesByLoweredAlias,
-        boolean hasUnresolvedSource
+        boolean hasUnresolvedSource,
+        @Nullable Supplier<SQLQueryRowsDataContext> relatedContextProvider
     ) {
         return new SQLQueryRowsSourceContext(
             this,
             hasUnresolvedSource,
             rowsSources,
             this.dynamicTableSources,
-            sourcesByLoweredAlias
+            sourcesByLoweredAlias,
+            relatedContextProvider
         );
     }
 
@@ -443,7 +481,8 @@ public class SQLQueryRowsSourceContext {
             this.hasUnresolvedSource,
             this.rowsSources,
             dynamicTableSources,
-            this.sourcesByLoweredAlias
+            this.sourcesByLoweredAlias,
+            this.relatedContextProvider
         );
     }
 

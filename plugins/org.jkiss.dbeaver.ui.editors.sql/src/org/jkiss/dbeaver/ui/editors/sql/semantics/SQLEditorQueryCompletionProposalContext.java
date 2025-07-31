@@ -47,7 +47,7 @@ public class SQLEditorQueryCompletionProposalContext extends SQLQueryCompletionP
 
     // per completion request initialized to be in sync with actual preferences, consider listening for preference event
     private final EnumMap<SQLQueryCompletionItemKind, StyledString.Styler> stylerByItemKind = new EnumMap<>(SQLQueryCompletionItemKind.class) {{
-        registryStyleByItemKind.forEach((k , v) -> put(k, StyledString.createColorRegistryStyler(v, null)));
+        registryStyleByItemKind.forEach((k, v) -> put(k, StyledString.createColorRegistryStyler(v, null)));
     }};
 
     private final boolean insertSpaceAfterProposal;

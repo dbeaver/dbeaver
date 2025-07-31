@@ -222,7 +222,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         }
 
         if (this.tailScope != null) {
-            this.setTailOrigin(this.tailScope.getSymbolsOrigin());
+            this.setTailOrigin(this.tailScope == this.fromScope ? this.fromSource.getTailOrigin() : this.tailScope.getSymbolsOrigin());
         }
 
         return resolvedResult;
