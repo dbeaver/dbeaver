@@ -233,17 +233,22 @@ public class SQLQueryRowsSourceContext {
      */
     @NotNull
     public SQLQueryRowsSourceContext combine(@NotNull SQLQueryRowsSourceContext other) {
-        return this.setRowsSources(new HashMap<>() {
-            {
+        return this.setRowsSources(
+            new HashMap<>() {{
                 putAll(other.rowsSources);
                 putAll(SQLQueryRowsSourceContext.this.rowsSources);
-            }
-        }, new HashMap<>() {
-            {
+            }},
+            new HashMap<>() {{
                 putAll(other.sourcesByLoweredAlias);
                 putAll(SQLQueryRowsSourceContext.this.sourcesByLoweredAlias);
-            }
-        }, this.hasUnresolvedSource || other.hasUnresolvedSource, null);
+            }},
+            new HashMap<>() {{
+                putAll(other.dynamicTableSources);
+                putAll(SQLQueryRowsSourceContext.this.dynamicTableSources);
+            }},
+            SQLQueryRowsSourceContext.this.hasUnresolvedSource || other.hasUnresolvedSource,
+            null
+        );
     }
 
     /**
@@ -273,7 +278,7 @@ public class SQLQueryRowsSourceContext {
                 rowsSources.put(synthesizedName, srr);
             }
         }
-        return this.setRowsSources(rowsSources, this.sourcesByLoweredAlias, this.hasUnresolvedSource, this.relatedContextProvider);
+        return this.setRowsSources(rowsSources, this.sourcesByLoweredAlias, this.dynamicTableSources, this.hasUnresolvedSource, this.relatedContextProvider);
     }
 
     /**
@@ -297,6 +302,7 @@ public class SQLQueryRowsSourceContext {
                 putAll(SQLQueryRowsSourceContext.this.sourcesByLoweredAlias);
                 put(alias.getName().toLowerCase(), newEntry);
             }},
+            this.dynamicTableSources,
             this.hasUnresolvedSource,
             this.relatedContextProvider
         );
@@ -461,6 +467,7 @@ public class SQLQueryRowsSourceContext {
     private SQLQueryRowsSourceContext setRowsSources(
         @NotNull Map<SQLQueryComplexName, SourceResolutionResult> rowsSources,
         @NotNull Map<String, SourceResolutionResult> sourcesByLoweredAlias,
+        @NotNull Map<String, SourceResolutionResult> dynamicTableSources,
         boolean hasUnresolvedSource,
         @Nullable Supplier<SQLQueryRowsDataContext> relatedContextProvider
     ) {
@@ -468,7 +475,7 @@ public class SQLQueryRowsSourceContext {
             this,
             hasUnresolvedSource,
             rowsSources,
-            this.dynamicTableSources,
+            dynamicTableSources,
             sourcesByLoweredAlias,
             relatedContextProvider
         );

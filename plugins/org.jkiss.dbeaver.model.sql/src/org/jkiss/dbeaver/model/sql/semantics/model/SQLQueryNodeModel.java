@@ -132,7 +132,7 @@ public abstract class SQLQueryNodeModel {
         if (this.subnodes != null) {
             if (this.subnodes.size() == 1) {
                 SQLQueryNodeModel node = this.subnodes.get(0);
-                return node.region.a <= position && node.region.b >= position - 1 ? node : null;
+                return node.region.a <= position ? node : null;
             } else {
                 int index = STMUtils.binarySearchByKey(this.subnodes, n -> n.region.a, position, Comparator.comparingInt(x -> x));
                 if (index >= 0) {
@@ -149,12 +149,17 @@ public abstract class SQLQueryNodeModel {
                     }
                     return node;
                 } else {
-                    for (int i = ~index - 1; i >= 0; i--) {
-                        SQLQueryNodeModel node = this.subnodes.get(i);
-                        if (node.region.a <= position && node.region.b >= position - 1) {
-                            return node;
-                        } else if (node.region.b < position) {
-                            break;
+                    if (~index == this.subnodes.size()) {
+                        SQLQueryNodeModel node = this.subnodes.getLast();
+                        return node.region.a <= position ? node : null;
+                    } else {
+                        for (int i = ~index - 1; i >= 0; i--) {
+                            SQLQueryNodeModel node = this.subnodes.get(i);
+                            if (node.region.a <= position && node.region.b >= position - 1) {
+                                return node;
+                            } else if (node.region.b < position) {
+                                break;
+                            }
                         }
                     }
                 }

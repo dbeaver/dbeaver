@@ -903,29 +903,34 @@ public abstract class SQLQueryCompletionContext {
             ) {
                 LinkedList<SQLQueryCompletionItem> result = new LinkedList<>();
 
-                if (context.getKnownSources().getReferencedTables().size() > 1 &&
-                    context.getKnownSources().getResolutionResults().size() > 1 &&
-                    context.isJoin()
-                ) {
+                Map<SQLQueryRowsSourceModel, SourceResolutionResult> resolutionResults = context.getKnownSources().getResolutionResults();
+                if (resolutionResults.size() > 1 && context.isJoin()) {
                     AssociationsResolutionContext associations = this.getAssociationsContext(context, filterOrNull);
-                    for (SQLQueryResultColumn joinedColumn : context.getRightParentColumnsList()) {
-                        if (joinedColumn.realAttr != null) {
-                            for (DBSEntityAttribute otherColumnAttribute : associations.findAssociatedAttributes(monitor, joinedColumn.realAttr)) {
-                                List<SQLQueryCompletionItem.SQLColumnNameCompletionItem> otherColumnRefs = associations.getRealColumnRefsByEntityAttribute(otherColumnAttribute);
-                                for (SQLQueryCompletionItem.SQLColumnNameCompletionItem thisColumnRef : associations.getRealColumnRefsByEntityAttribute(joinedColumn.realAttr)) {
-                                    if (thisColumnRef.columnInfo == joinedColumn) {
-                                        for (SQLQueryCompletionItem.SQLColumnNameCompletionItem otherColumnRef : otherColumnRefs) {
-                                            int thisScore = thisColumnRef.getScore();
-                                            int otherScore = otherColumnRef.getScore();
-                                            if (thisScore > 0 || otherScore > 0) {
-                                                int score = Math.max(thisScore, otherScore);
-                                                SQLQueryWordEntry word = (thisScore >= otherScore ? thisColumnRef : otherColumnRef).getFilterInfo();
-                                                result.addLast(SQLQueryCompletionItem.forJoinCondition(
-                                                    score, word,
-                                                    thisColumnRef,
-                                                    otherColumnRef
-                                                ));
-                                            }
+                    for (SQLQueryResultColumn leftColumn : context.getLeftParentColumnsList()) {
+                        if (leftColumn.realAttr != null) {
+                            var leftRels = associations.findAssociatedAttributes(monitor, leftColumn.realAttr);
+                            for (SQLQueryResultColumn rightColumn : context.getRightParentColumnsList()) {
+                                if (rightColumn.realAttr != null) {
+                                    var rightRels = associations.findAssociatedAttributes(monitor, rightColumn.realAttr);
+                                    if (leftRels.contains(rightColumn.realAttr) || rightRels.contains(leftColumn.realAttr)) {
+                                        SQLQueryWordEntry leftWord = makeFilterInfo(null, leftColumn.symbol.getName());
+                                        int leftScore = leftWord.matches(filterOrNull, searchInsideWords);
+                                        SQLQueryWordEntry rightWord = makeFilterInfo(null, rightColumn.symbol.getName());
+                                        int rightScore = rightWord.matches(filterOrNull, searchInsideWords);
+                                        if (leftScore > 0 || rightScore > 0) {
+                                            var leftColumnRef = SQLQueryCompletionItem.forSubsetColumn(
+                                                leftScore, leftWord, leftColumn, resolutionResults.get(leftColumn.source), true
+                                            );
+                                            var rightColumnRef = SQLQueryCompletionItem.forSubsetColumn(
+                                                rightScore, rightWord, rightColumn, resolutionResults.get(rightColumn.source), true
+                                            );
+                                            int score = Math.max(leftScore, rightScore);
+                                            SQLQueryWordEntry matchedWord = (
+                                                leftScore >= rightScore ? leftColumnRef : rightColumnRef
+                                            ).getFilterInfo();
+                                            result.addLast(
+                                                SQLQueryCompletionItem.forJoinCondition(score, matchedWord, leftColumnRef, rightColumnRef)
+                                            );
                                         }
                                     }
                                 }
@@ -1415,6 +1420,9 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         List<? extends SQLQueryResultColumn> getRightParentColumnsList();
 
+        @NotNull
+        List<? extends SQLQueryResultColumn> getLeftParentColumnsList();
+
         @Nullable
         SQLQueryDataContextInfo getRelatedContext();
 
@@ -1475,6 +1483,12 @@ public abstract class SQLQueryCompletionContext {
             return Collections.emptyList();
         }
 
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getLeftParentColumnsList() {
+            return Collections.emptyList();
+        }
+
         @Nullable
         @Override
         public final SQLQueryDataContextInfo getRelatedContext() {
@@ -1516,13 +1530,13 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         @Override
         public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
-            if (this.isJoin()) {
-                SQLQueryRowsDataContext.JoinInfo joinInfo = this.rowsDataContext.getJoinInfo();
-                if (joinInfo != null) {
-                    return joinInfo.right().getColumnsList();
-                }
-            }
-            return Collections.emptyList();
+            return this.isJoin() ? this.rowsDataContext.getJoinInfo().right().getColumnsList() : Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getLeftParentColumnsList() {
+            return this.isJoin() ? this.rowsDataContext.getJoinInfo().left().getColumnsList() : Collections.emptyList();
         }
 
         @NotNull
@@ -1582,6 +1596,12 @@ public abstract class SQLQueryCompletionContext {
             return Collections.emptyList();
         }
 
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getLeftParentColumnsList() {
+            return Collections.emptyList();
+        }
+
         @Nullable
         @Override
         public SQLQueryDataContextInfo getRelatedContext() {
@@ -1614,6 +1634,8 @@ public abstract class SQLQueryCompletionContext {
         private Map<DBSEntityAttribute, List<SQLQueryCompletionItem.SQLColumnNameCompletionItem>> realColumnRefsByEntityAttribute = null;
         @NotNull
         private final Map<DBSEntity, EntityAssociationsInfo> associatedAttrsByEntity = new HashMap<>();
+        @Nullable
+        private Set<DBSEntity> allAssociatedEntitiesOfColumnsList = null;
 
         public AssociationsResolutionContext(@NotNull SQLQueryDataContextInfo context, @Nullable SQLQueryWordEntry filterOrNull) {
             this.context = context;
@@ -1621,29 +1643,51 @@ public abstract class SQLQueryCompletionContext {
             this.filterOrNull = filterOrNull;
         }
 
+        private Set<DBSEntity> getAssociatedEntitiesOfColumnsList(@NotNull DBRProgressMonitor monitor) {
+            if (this.allAssociatedEntitiesOfColumnsList == null) {
+                this.allAssociatedEntitiesOfColumnsList = this.relatedContext.getColumnsList().stream()
+                    .filter(a -> a.realAttr != null)
+                    .flatMap(a -> this.findAssociatedEntities(monitor, a.realAttr).stream())
+                    .collect(Collectors.toUnmodifiableSet());
+            }
+            return this.allAssociatedEntitiesOfColumnsList;
+        }
+
+        private Set<DBSEntityAttribute> extractRealAttributes(@NotNull List<SQLQueryResultColumn> columnsList) {
+            return columnsList.stream()
+                .filter(c -> c.realAttr != null)
+                .map(c -> c.realAttr)
+                .collect(Collectors.toSet());
+        }
+
         public boolean hasRelatedAssociationsWithTable(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table) {
             EntityAssociationsInfo tableAssociations = this.findAssociationsInfo(monitor, table);
-            boolean result = this.relatedContext.getColumnsList().stream()
-                .filter(a -> a.realAttr != null)
-                .anyMatch(
-                     a -> this.findAssociatedEntities(monitor, a.realAttr).contains(table)
-                         || tableAssociations.allAssociatedAttributes.contains(a.realAttr)
-                );
-            return result;
+            return this.getAssociatedEntitiesOfColumnsList(monitor).contains(table)
+                || this.extractRealAttributes(this.relatedContext.getColumnsList()).stream()
+                       .anyMatch(tableAssociations.allAssociatedAttributes::contains);
         }
 
         public boolean hasRelatedAssociationsWithTable(@NotNull DBRProgressMonitor monitor, @NotNull SQLQueryRowsSourceModel source) {
-            boolean result = this.relatedContext.getColumnsList().stream()
-                .filter(a -> a.realAttr != null)
-                .anyMatch(
-                    a -> source.getRowsDataContext().getColumnsList().stream()
-                        .filter(b -> b.realAttr != null)
-                        .anyMatch(
-                            b -> this.findAssociatedAttributes(monitor, a.realAttr).contains(b.realAttr)
-                                || this.findAssociatedAttributes(monitor, b.realAttr).contains(a.realAttr)
-                        )
-                );
-            return result;
+            Set<DBSEntityAttribute> tupleAttributes = this.extractRealAttributes(this.relatedContext.getColumnsList());
+            Set<DBSEntityAttribute> sourceAttributes = this.extractRealAttributes(source.getRowsDataContext().getColumnsList());
+
+            Set<DBSEntityAttribute> tupleAssociations = tupleAttributes.stream()
+                .flatMap(a -> this.findAssociatedAttributes(monitor, a).stream())
+                .collect(Collectors.toSet());
+
+            if (sourceAttributes.stream().anyMatch(tupleAssociations::contains)) {
+                return true;
+            }
+
+            Set<DBSEntityAttribute> sourceAssociations = sourceAttributes.stream()
+                .flatMap(a -> this.findAssociatedAttributes(monitor, a).stream())
+                .collect(Collectors.toSet());
+
+            if (tupleAttributes.stream().anyMatch(sourceAssociations::contains)) {
+                return true;
+            }
+
+            return false;
         }
 
         @NotNull
