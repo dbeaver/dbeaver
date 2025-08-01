@@ -125,7 +125,11 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
         } else {
             this.object = candidates.getFirst();
             SQLQuerySemanticUtils.setNamePartsDefinition(
-                context, this.name, this.object, this.objectNameOrigin, SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT
+                context,
+                this.name,
+                this.object,
+                this.objectNameOrigin,
+                SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT
             );
             if (!this.objectType.getTypeClass().isAssignableFrom(this.object.getClass())) {
                 statistics.appendError(

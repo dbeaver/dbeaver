@@ -78,60 +78,19 @@ public class OracleSequence extends OracleSchemaObject implements DBSSequence, D
     }
 
     public OracleDataType getValueType() {
-        return this.valueType != null
-            ? this.valueType
-            : (this.valueType = this.getSchema().getDataSource().getLocalDataType(OracleConstants.TYPE_NUMBER));
+        if (valueType == null) {
+            this.valueType = this.getSchema().getDataSource().getLocalDataType(OracleConstants.TYPE_NUMBER);
+        }
+        return this.valueType;
     }
 
     @Nullable
     @Override
     public DBSTypeDescriptor getTypeDescriptor(@NotNull DBRProgressMonitor monitor) {
-        return this.typeDescriptor != null ? this.typeDescriptor : (this.typeDescriptor = new DBSTypeDescriptor() {
-
-            final DBSTypeDescriptor valueTypeDescriptor = new DBSTypeDescriptor() {
-                @NotNull
-                @Override
-                public String getTypeName() {
-                    return OracleSequence.this.getValueType().getName();
-                }
-
-                @Nullable
-                @Override
-                public DBSDataType getUnderlyingType() {
-                    return OracleSequence.this.getValueType();
-                }
-            };
-
-            final List<CompositeMemberInfo> members = List.of(
-                new CompositeMemberInfo(OracleConstants.SEQ_CURRVAL, valueTypeDescriptor),
-                new CompositeMemberInfo(OracleConstants.SEQ_NEXTVAL, valueTypeDescriptor)
-            );
-
-            @NotNull
-            @Override
-            public Kind getKind() {
-                return Kind.COMPOSITE;
-            }
-
-            @Override
-            public Collection<CompositeMemberInfo> getCompositeMembers(@NotNull DBRProgressMonitor monitor) throws DBException {
-                return this.members;
-            }
-
-            @Nullable
-            @Override
-            public DBSTypeDescriptor findCompositeMember(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
-                return this.members.stream()
-                    .filter(m -> m.name().equalsIgnoreCase(name))
-                    .findFirst().map(CompositeMemberInfo::type).orElse(null);
-            }
-
-            @NotNull
-            @Override
-            public String getTypeName() {
-                return OracleSequence.this.getName();
-            }
-        });
+        if (this.typeDescriptor == null) {
+            this.typeDescriptor = new OracleSequenceTypeDescriptor();
+        }
+        return this.typeDescriptor;
     }
 
     @NotNull
@@ -259,4 +218,51 @@ public class OracleSequence extends OracleSchemaObject implements DBSSequence, D
         }
         return sourceText;
     }
+
+    private class OracleSequenceTypeDescriptor implements DBSTypeDescriptor {
+        final DBSTypeDescriptor valueTypeDescriptor = new DBSTypeDescriptor() {
+            @NotNull
+            @Override
+            public String getTypeName() {
+                return OracleSequence.this.getValueType().getName();
+            }
+
+            @Nullable
+            @Override
+            public DBSDataType getUnderlyingType() {
+                return OracleSequence.this.getValueType();
+            }
+        };
+
+        final List<CompositeMemberInfo> members = List.of(
+            new CompositeMemberInfo(OracleConstants.SEQ_CURRVAL, valueTypeDescriptor),
+            new CompositeMemberInfo(OracleConstants.SEQ_NEXTVAL, valueTypeDescriptor)
+        );
+
+        @NotNull
+        @Override
+        public Kind getKind() {
+            return Kind.COMPOSITE;
+        }
+
+        @Override
+        public Collection<CompositeMemberInfo> getCompositeMembers(@NotNull DBRProgressMonitor monitor) throws DBException {
+            return this.members;
+        }
+
+        @Nullable
+        @Override
+        public DBSTypeDescriptor findCompositeMember(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+            return this.members.stream()
+                .filter(m -> m.name().equalsIgnoreCase(name))
+                .findFirst().map(CompositeMemberInfo::type).orElse(null);
+        }
+
+        @NotNull
+        @Override
+        public String getTypeName() {
+            return OracleSequence.this.getName();
+        }
+    }
+
 }

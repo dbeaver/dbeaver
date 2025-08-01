@@ -101,11 +101,6 @@ public class SQLQuerySemanticUtils {
         if (name.parts.getLast() != null && name.parts.getLast().isNotClassified()) {
             name.parts.getLast().getSymbol().setSymbolClass(entityNameClass);
         }
-        if (name.parts.size() - 1 == fragmentStrings.size() && name.parts.getLast() == null
-            && name.endingPeriodNode != null && object != null
-        ) {
-            name.endingPeriodNode.setOrigin(new SQLQuerySymbolOrigin.DbObjectFromDbObject(object, context, filterMode));
-        }
     }
 
     public static void setNamePartsDefinition(

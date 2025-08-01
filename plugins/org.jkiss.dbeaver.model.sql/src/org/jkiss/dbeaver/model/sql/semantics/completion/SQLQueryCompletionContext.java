@@ -641,9 +641,7 @@ public abstract class SQLQueryCompletionContext {
                             monitor,
                             knownSources,
                             List.of(container),
-                            o -> expectedTypes.stream().anyMatch(c -> c.isAssignableFrom(o.getClass())) && (
-                                !(o instanceof DBSView || o instanceof DBSTable) || knownTables.containsKey(o)
-                            ),
+                            makeObjectForValueRefFilterPredicate(expectedTypes, knownTables),
                             prefixInfo,
                             filterOrNull,
                             items
@@ -653,6 +651,15 @@ public abstract class SQLQueryCompletionContext {
                     }
                 }
                 return items;
+            }
+
+            @NotNull
+            private static Predicate<DBSObject> makeObjectForValueRefFilterPredicate(
+                Set<Class<?>> expectedTypes,
+                Map<DBSObject, SourceResolutionResult> knownTables
+            ) {
+                return object -> expectedTypes.stream().anyMatch(expectedTypeClass -> expectedTypeClass.isAssignableFrom(object.getClass()))
+                    && (!(object instanceof DBSView || object instanceof DBSTable) || knownTables.containsKey(object));
             }
 
             private void prepareObjectComponentCompletions(
