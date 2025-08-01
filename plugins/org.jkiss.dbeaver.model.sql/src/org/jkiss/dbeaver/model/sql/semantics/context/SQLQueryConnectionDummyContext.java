@@ -423,31 +423,44 @@ public class SQLQueryConnectionDummyContext extends SQLQueryConnectionContext {
     @NotNull
     @Override
     public List<DBSEntity> findRealTables(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
-        return List.of(this.getOrPrepareDummyTable(tableName));
+        DBSEntity table = this.getOrPrepareDummyTable(tableName);
+        return table != null ? List.of(table) : Collections.emptyList();
     }
 
-    @NotNull
+    @Nullable
     private DBSEntity getOrPrepareDummyTable(@NotNull List<String> tableName) {
-        List<String> rawTableName = tableName.stream().map(this.dialect::getUnquotedIdentifier).toList();
+        List<String> rawTableName = tableName.stream().map(s -> s == null ? null : this.dialect.getUnquotedIdentifier(s)).toList();
         DummyDbObject container = this.dummyDataSource;
 
         // create catalogs
         for (int i = 0; i < rawTableName.size() - 2; i++) {
             DummyDbObject catalog = container;
             Map<String, DummyDbObject> children  = catalog.getChildrenMapImpl();
-            container = children.computeIfAbsent(rawTableName.get(i), k -> prepareCatalog(catalog, k, children.size()));
+            String namePart = rawTableName.get(i);
+            if (namePart == null) {
+                return null;
+            }
+            container = children.computeIfAbsent(namePart, k -> prepareCatalog(catalog, k, children.size()));
         }
         // create schema
         if (rawTableName.size() > 1) {
             DummyDbObject catalog = container;
             Map<String, DummyDbObject> children  = catalog.getChildrenMapImpl();
-            container = children.computeIfAbsent(rawTableName.get(rawTableName.size() - 2), k -> prepareSchema(catalog, k, children.size()));
+            String namePart = rawTableName.get(rawTableName.size() - 2);
+            if (namePart == null) {
+                return null;
+            }
+            container = children.computeIfAbsent(namePart, k -> prepareSchema(catalog, k, children.size()));
         }
         // create table
         {
             DummyDbObject schema = container;
             Map<String, DummyDbObject> children  = schema.getChildrenMapImpl();
-            return children.computeIfAbsent(rawTableName.get(rawTableName.size() - 1), k -> prepareTable(schema, k, children.size()));
+            String namePart = rawTableName.get(rawTableName.size() - 1);
+            if (namePart == null) {
+                return null;
+            }
+            return children.computeIfAbsent(namePart, k -> prepareTable(schema, k, children.size()));
         }
     }
 

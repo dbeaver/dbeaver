@@ -722,8 +722,6 @@ public class NavigatorUtils {
                     ) {
                         item.dispose();
                     }
-                } else {
-                    item.dispose();
                 }
             }
         }
