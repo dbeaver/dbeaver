@@ -36,7 +36,10 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ModelSelectorField {
     private static final Log log = Log.getLog(ModelSelectorField.class);
@@ -45,8 +48,6 @@ public class ModelSelectorField {
     private final Combo combo;
     @NotNull
     private final ModelListProvider modelListProvider;
-    @NotNull
-    private final Runnable onModelSelected;
 
     private volatile String selectedModel;
 
@@ -56,7 +57,6 @@ public class ModelSelectorField {
         @NotNull Runnable onModelSelected
     ) {
         this.combo = combo;
-        this.onModelSelected = onModelSelected;
         this.combo.addModifyListener(e -> selectedModel = combo.getText());
         this.combo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -112,10 +112,7 @@ public class ModelSelectorField {
     }
 
     public void refreshModelList(DBRProgressMonitor monitor, boolean refresh) throws DBException {
-        List<String> models = modelListProvider.getModels(monitor, refresh)
-            .stream()
-            .sorted()
-            .toList();
+        Set<String> models = new HashSet<>(modelListProvider.getModels(monitor, refresh));
 
         if (models.isEmpty()) {
             return;
@@ -123,15 +120,14 @@ public class ModelSelectorField {
 
         UIUtils.syncExec(() -> {
             String selectedItem = combo.getText();
-            combo.setItems(models.toArray(new String[0]));
-            if (models.contains(selectedItem)) {
-                combo.setText(selectedItem);
-            } else {
-                combo.select(0); // Select the first item if the previous selection is not available
-            }
+            models.add(selectedItem);
 
-            selectedModel = combo.getText();
-            onModelSelected.run();
+            List<String> sortedModels = new ArrayList<>(models).stream()
+                .sorted(String::compareToIgnoreCase)
+                .toList();
+
+            combo.setItems(sortedModels.toArray(new String[0]));
+            combo.select(sortedModels.indexOf(selectedItem));
         });
     }
 

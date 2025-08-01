@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.utils;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.utils.LazyValue;
 
 public abstract class DisposableLazyValue<T, E extends Exception> extends LazyValue<T, E> {
 
