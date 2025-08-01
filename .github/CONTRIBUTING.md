@@ -2,19 +2,18 @@
 
 #### **Did you find a bug?**
 
-* **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/dbeaver/dbeaver/issues).
+* **Ensure the bug has not already been reported** by searching on GitHub [Issues](https://github.com/dbeaver/dbeaver/issues).
 
-* If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/dbeaver/dbeaver/issues/new). Be sure to include a **title and clear description**, as much relevant information as possible.
+* If there is no open issue about the bug, [open a new one](https://github.com/dbeaver/dbeaver/issues/new). Include as much relevant information as possible and clear steps to reproduce the problem.
 
-#### **Did you fix whitespace, format code, or make a purely cosmetic patch?**
+#### **Do you intend to add a new feature or fix the bug?**
 
-Changes that are cosmetic in nature and do not add anything substantial to the stability, functionality, or testability of Rails will generally not be accepted. You could try to add unit tests if you want you PR to have a value.  
+* Create a [feature request](https://github.com/dbeaver/dbeaver/issues/new?&labels=feature+request%2C+wait+for+review&template=feature_request.md) and discuss it with other users (dev team will reply your shortly).
 
-#### **Do you intend to add a new feature or change an existing one?**
+* If you want to contribute a feature by yourself then see [code contribution guide](https://github.com/dbeaver/dbeaver/wiki/Contribute-your-code).
 
-* Create a [feature request](https://github.com/dbeaver/dbeaver/issues/new?&labels=feature+request%2C+wait+for+review&template=feature_request.md) and discuss it with other users (dev team will reply your shortly).  
+* We can only merge your PR with essential changes - fixing typos, formatting or making small refactoring will not be accepted.
 
-* If you want to contribute a feature by yourself then see [code contribition guide](https://github.com/dbeaver/dbeaver/wiki/Contribute-your-code).
 
 Thanks! :heart: :heart: :heart:
 
