@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2024 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -249,26 +249,6 @@ public abstract class AbstractDescriptor {
                 }
             }
             return true;
-        }
-
-        public <T> T createInstance(Class<T> type, Object... args) throws DBException {
-            if (implName == null) {
-                throw new DBException("No implementation class name set for '" + type.getName() + "'");
-            }
-            Class<? extends T> objectClass = getObjectClass(type);
-            if (objectClass == null) {
-                throw new DBException("Can't load class '" + getImplName() + "'");
-            }
-            try {
-                Class[] argClasses = Arrays.stream(args)
-                    .map(Object::getClass)
-                    .toArray(Class[]::new);
-
-                return objectClass.getDeclaredConstructor(argClasses).newInstance(args);
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
-                     InvocationTargetException e) {
-                throw new DBException("Can't instantiate class '" + getImplName() + "'", e);
-            }
         }
 
         public <T> T createInstance(Class<T> type)

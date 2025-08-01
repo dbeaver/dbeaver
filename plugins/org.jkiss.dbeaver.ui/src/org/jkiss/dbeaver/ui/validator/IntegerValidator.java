@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.validator;
 
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
-import org.eclipse.swt.widgets.Text;
 
 public class IntegerValidator implements VerifyListener {
     private final int minValue;
@@ -31,27 +30,13 @@ public class IntegerValidator implements VerifyListener {
 
     @Override
     public void verifyText(VerifyEvent e) {
-        if (e.getSource() instanceof Text text) {
-            String current = text.getText();
-
-            String prospective =
-                current.substring(0, e.start)
-                    + e.text
-                    + current.substring(e.end);
-
-            verifyText(e, prospective);
-        } else {
-            verifyText(e, e.text);
-        }
-    }
-
-    private void verifyText(VerifyEvent e, String text) {
-        if (text.isEmpty()) {
+        String newText = e.text;
+        if (newText.isEmpty()) {
             return; // Allow empty input
         }
 
         try {
-            int value = Integer.parseInt(text);
+            int value = Integer.parseInt(newText);
             if (value < minValue || value > maxValue) {
                 e.doit = false; // Reject input outside of range
             }
