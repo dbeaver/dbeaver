@@ -24,6 +24,7 @@ import java.util.Set;
 
 /**
  * Category of a query type
+ *
  * @see SQLQueryType
  */
 public enum SQLQueryCategory {
