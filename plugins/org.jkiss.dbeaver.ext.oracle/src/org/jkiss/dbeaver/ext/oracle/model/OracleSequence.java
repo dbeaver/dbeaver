@@ -220,7 +220,7 @@ public class OracleSequence extends OracleSchemaObject implements DBSSequence, D
     }
 
     private class OracleSequenceTypeDescriptor implements DBSTypeDescriptor {
-        final DBSTypeDescriptor valueTypeDescriptor = new DBSTypeDescriptor() {
+        private final DBSTypeDescriptor valueTypeDescriptor = new DBSTypeDescriptor() {
             @NotNull
             @Override
             public String getTypeName() {
@@ -234,7 +234,7 @@ public class OracleSequence extends OracleSchemaObject implements DBSSequence, D
             }
         };
 
-        final List<CompositeMemberInfo> members = List.of(
+        private final List<CompositeMemberInfo> members = List.of(
             new CompositeMemberInfo(OracleConstants.SEQ_CURRVAL, valueTypeDescriptor),
             new CompositeMemberInfo(OracleConstants.SEQ_NEXTVAL, valueTypeDescriptor)
         );
