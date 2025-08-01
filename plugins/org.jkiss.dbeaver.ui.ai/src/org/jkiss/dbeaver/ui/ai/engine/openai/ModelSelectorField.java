@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.ai.engine.openai;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -57,6 +58,13 @@ public class ModelSelectorField {
         this.combo = combo;
         this.onModelSelected = onModelSelected;
         this.combo.addModifyListener(e -> selectedModel = combo.getText());
+        this.combo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                selectedModel = combo.getText();
+                onModelSelected.run();
+            }
+        });
 
         this.modelListProvider = modelListProvider;
     }
@@ -167,10 +175,6 @@ public class ModelSelectorField {
                 SWT.DROP_DOWN
             );
             combo.setLayoutData(gridData);
-
-            if (selectionListener != null) {
-                combo.addSelectionListener(selectionListener);
-            }
 
             ModelSelectorField modelSelectorField = new ModelSelectorField(
                 combo,
