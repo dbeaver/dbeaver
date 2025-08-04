@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
@@ -549,7 +550,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         }
 
         log.debug("Resetting perspective due to the version change (" + savedVersion + " -> " + actualVersion + ")");
-        page.resetPerspective();
+        UIExecutionQueue.queueExec(page::resetPerspective);
 
         store.setValue(PROP_PERSPECTIVE_VERSION, actualVersion);
         store.setValue(PROP_WORKBENCH_VERSION, ""); // removes the property
