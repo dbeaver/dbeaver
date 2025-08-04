@@ -14,7 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine;
+package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
-public abstract class BaseCompletionEngine implements AIEngine {
+import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
+
+public record CopilotModelList(@SerializedName("data") List<CopilotModel> data) {
 }
