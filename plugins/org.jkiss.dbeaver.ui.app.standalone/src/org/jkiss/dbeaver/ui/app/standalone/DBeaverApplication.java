@@ -112,6 +112,9 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String RESET_USER_PREFERENCES = "reset_user_preferences";
     private static final String RESET_WORKSPACE_CONFIGURATION = "reset_workspace_configuration";
 
+    // See org.eclipse.ui.internal.ide.ChooseWorkspaceData.RECENT_MAX_LENGTH
+    private static final int RECENT_MAX_LENGTH = 10;
+
     private final String WORKSPACE_DIR_6; //$NON-NLS-1$
     private final Path FILE_WITH_WORKSPACES;
     public final String WORKSPACE_DIR_CURRENT;
@@ -365,12 +368,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (!isWorkspaceSwitchingAllowed()) {
             return false;
         }
-        Collection<String> recentWorkspaces = getRecentWorkspaces(instanceLoc);
-        if (recentWorkspaces.isEmpty()) {
-            return false;
-        }
-        String lastWorkspace = recentWorkspaces.iterator().next();
-        if (!CommonUtils.isEmpty(lastWorkspace) && !WORKSPACE_DIR_CURRENT.equals(lastWorkspace)) {
+        String lastWorkspace = fetchRecentWorkspaces(instanceLoc).getFirst();
+        if (!WORKSPACE_DIR_CURRENT.equals(lastWorkspace)) {
             try {
                 final URL selectedWorkspaceURL = new URL(
                     "file",  //$NON-NLS-1$
@@ -380,81 +379,94 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
                 return true;
             } catch (Exception e) {
-                System.err.println("Can't set IDE workspace to '" + lastWorkspace + "'");
-                e.printStackTrace();
+                log.debug("Can't set IDE workspace to '" + lastWorkspace + "'", e);
             }
         }
         return false;
     }
 
     @NotNull
-    private Collection<String> getRecentWorkspaces(@NotNull Location instanceLoc) {
-        ChooseWorkspaceData launchData = new ChooseWorkspaceData(instanceLoc.getDefault());
-        String[] arrayOfRecentWorkspaces = launchData.getRecentWorkspaces();
-        Collection<String> recentWorkspaces;
-        int maxSize;
-        if (arrayOfRecentWorkspaces == null) {
-            maxSize = 0;
-            recentWorkspaces = new ArrayList<>();
+    private List<String> fetchRecentWorkspaces(@NotNull Location instanceLoc) {
+        ChooseWorkspaceData data = new ChooseWorkspaceData(instanceLoc.getDefault());
+
+        List<String> backedUpWorkspaces = getBackedUpWorkspaces();
+        List<String> eclipseWorkspaces = Stream.of(data.getRecentWorkspaces())
+            .filter(Objects::nonNull)
+            .toList();
+
+        List<String> workspaces;
+        if (!backedUpWorkspaces.isEmpty()) {
+            // We have our .workspaces file, prioritize it
+            workspaces = backedUpWorkspaces;
         } else {
-            maxSize = arrayOfRecentWorkspaces.length;
-            recentWorkspaces = new ArrayList<>(Arrays.asList(arrayOfRecentWorkspaces));
-        }
-        recentWorkspaces.removeIf(Objects::isNull);
-        Collection<String> backedUpWorkspaces = getBackedUpWorkspaces();
-        if (recentWorkspaces.equals(backedUpWorkspaces) && backedUpWorkspaces.contains(WORKSPACE_DIR_CURRENT)) {
-            return backedUpWorkspaces;
+            // Otherwise, grab workspaces Eclipse knows about
+            workspaces = eclipseWorkspaces;
         }
 
-        List<String> workspaces = Stream.concat(recentWorkspaces.stream(), backedUpWorkspaces.stream())
+        workspaces = workspaces.stream()
             .distinct()
-            .limit(maxSize)
+            .limit(RECENT_MAX_LENGTH)
             .collect(Collectors.toList());
-        if (!recentWorkspaces.contains(WORKSPACE_DIR_CURRENT)) {
-            if (recentWorkspaces.size() < maxSize) {
-                recentWorkspaces.add(WORKSPACE_DIR_CURRENT);
-            } else if (maxSize > 1) {
-                workspaces.set(recentWorkspaces.size() - 1, WORKSPACE_DIR_CURRENT);
+
+        if (!workspaces.contains(WORKSPACE_DIR_CURRENT)) {
+            if (workspaces.size() == RECENT_MAX_LENGTH) {
+                workspaces.set(workspaces.size() - 1, WORKSPACE_DIR_CURRENT);
+            } else {
+                workspaces.add(WORKSPACE_DIR_CURRENT);
             }
         }
-        launchData.setRecentWorkspaces(Arrays.copyOf(workspaces.toArray(new String[0]), maxSize));
-        launchData.writePersistedData();
-        saveWorkspacesToBackup(workspaces);
+
+        if (!eclipseWorkspaces.equals(workspaces)) {
+            data.setRecentWorkspaces(workspaces.toArray(new String[RECENT_MAX_LENGTH]));
+            data.writePersistedData();
+        }
+
+        if (!backedUpWorkspaces.equals(workspaces)) {
+            saveWorkspacesToBackup(workspaces);
+        }
+
         return workspaces;
     }
 
+    /**
+     * Flushes the list of recent workspaces
+     */
+    private void flushRecentWorkspaces() {
+        var location = Platform.getInstanceLocation();
+        var data = new ChooseWorkspaceData(location.getDefault());
+        var workspaces = Stream.of(data.getRecentWorkspaces())
+            .filter(Objects::nonNull)
+            .toList();
+        saveWorkspacesToBackup(workspaces);
+    }
+
     @NotNull
-    private Collection<String> getBackedUpWorkspaces() {
+    private List<String> getBackedUpWorkspaces() {
         if (!Files.exists(FILE_WITH_WORKSPACES) || Files.isDirectory(FILE_WITH_WORKSPACES)) {
             return Collections.emptyList();
         }
         try {
             return Files.readAllLines(FILE_WITH_WORKSPACES);
         } catch (IOException e) {
-            System.err.println("Unable to read backed up workspaces"); //$NON-NLS-1$
-            e.printStackTrace();
+            log.debug("Unable to read backed up workspaces", e); //$NON-NLS-1$
             return Collections.emptyList();
         }
     }
 
-    private void saveWorkspacesToBackup(@NotNull List<? extends CharSequence> workspaces) {
+    private void saveWorkspacesToBackup(@NotNull List<String> workspaces) {
         try {
             if (!Files.exists(FILE_WITH_WORKSPACES.getParent())) {
                 Files.createDirectories(FILE_WITH_WORKSPACES.getParent());
             } else if (Files.isDirectory(FILE_WITH_WORKSPACES)) {
                 // Bug in 22.0.5
-                try {
-                    Files.delete(FILE_WITH_WORKSPACES);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                Files.delete(FILE_WITH_WORKSPACES);
             }
             Files.write(FILE_WITH_WORKSPACES, workspaces, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
-            System.err.println("Unable to save backed up workspaces"); //$NON-NLS-1$
-            e.printStackTrace();
+            log.debug("Unable to save backed up workspaces", e); //$NON-NLS-1$
         }
     }
+
     @Nullable
     public Path getDefaultWorkingFolder() {
         return  Path.of(WORKSPACE_DIR_CURRENT);
@@ -695,6 +707,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         log.debug("DBeaver is stopping"); //$NON-NLS-1$
 
         saveStartupActions();
+        flushRecentWorkspaces();
 
         try {
             DBeaverInstanceServer server = instanceServer;
