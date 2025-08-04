@@ -20,5 +20,5 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public record CopilotModelList(@SerializedName("data") List<CopilotModel> data) {
+public record CopilotModels(@SerializedName("data") List<CopilotModel> data) {
 }

@@ -421,7 +421,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         updatePageCompletion();
         updateControlsEnablement();
 
-        UIUtils.asyncExec(this::loadSettings);
+        UIUtils.syncExec(this::loadSettings);
     }
 
     private void loadSettings() {

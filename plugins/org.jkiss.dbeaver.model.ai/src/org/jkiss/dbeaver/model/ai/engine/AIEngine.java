@@ -19,18 +19,29 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsEventListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.List;
 import java.util.concurrent.Flow;
 
 /**
  * Completion engine
  */
-public interface AIEngine extends AutoCloseable {
+public interface AIEngine extends AISettingsEventListener {
 
-    @NotNull
-    List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException;
+    /**
+     * Returns the context size for the completion engine.
+     *
+     * @param monitor progress monitor
+     * @return the context window size
+     */
+    int getMaxContextSize(@NotNull DBRProgressMonitor monitor) throws DBException;
+
+    default int getMaxRequestSize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        int maxContextSize = getMaxContextSize(monitor);
+        return maxContextSize - AIConstants.MAX_RESPONSE_TOKENS;
+    }
 
     /**
      * Requests completions from the completion engine.
@@ -62,8 +73,12 @@ public interface AIEngine extends AutoCloseable {
         @NotNull AIEngineRequest request
     ) throws DBException;
 
-    int getContextWindowSize(DBRProgressMonitor monitor) throws DBException;
+    /**
+     * Checks if the completion engine has a valid configuration.
+     *
+     * @return true if the completion engine has a valid configuration
+     */
+    boolean hasValidConfiguration() throws DBException;
 
-    @Override
-    void close() throws DBException;
+    boolean isLoggingEnabled() throws DBException;
 }

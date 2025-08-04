@@ -17,23 +17,13 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineFactory;
-import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 
-public class OpenAIEngineFactory extends AIEngineFactory<OpenAICompletionEngine<OpenAIProperties>> {
-    public OpenAIEngineFactory(@NotNull AISettingsRegistry registry) {
-        super(registry);
-    }
-
+public class OpenAIEngineFactory implements AIEngineFactory<OpenAICompletionEngine> {
     @NotNull
     @Override
-    public OpenAICompletionEngine<OpenAIProperties> createEngine() throws DBException {
-        OpenAIProperties properties = registry.getSettings()
-            .<LegacyAISettings<OpenAIProperties>> getEngineConfiguration(OpenAIConstants.OPENAI_ENGINE)
-            .getProperties();
-
-        return new OpenAICompletionEngine<>(properties);
+    public OpenAICompletionEngine createEngine(@NotNull AISettingsRegistry registry) {
+        return new OpenAICompletionEngine(registry);
     }
 }

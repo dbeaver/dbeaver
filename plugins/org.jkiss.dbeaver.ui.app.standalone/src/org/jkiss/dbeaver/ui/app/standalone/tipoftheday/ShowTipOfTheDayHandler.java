@@ -19,30 +19,23 @@ package org.jkiss.dbeaver.ui.app.standalone.tipoftheday;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
-import org.xml.sax.SAXException;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 public class ShowTipOfTheDayHandler extends AbstractHandler {
 
     private static final Log log = Log.getLog(ShowTipOfTheDayHandler.class);
+    private static final String TIPS_XML_FILE = "tips.xml";
 
     static void showTipOfTheDay(IWorkbenchWindow window) {
         if (UIUtils.isWindowVisible(window.getShell().getDisplay(), ShowTipOfTheDayDialog.class)) {
@@ -65,42 +58,20 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
 
     private static List<String> loadTips() {
         List<String> result = new ArrayList<>();
+        try (InputStream tipsInputStream = ShowTipOfTheDayHandler.class.getResourceAsStream(TIPS_XML_FILE)) {
+            SAXParserFactory factory = SAXParserFactory.newInstance();
 
-        String pathToTipsFile = Platform.getProduct().getProperty("tipsFile");
-        if (pathToTipsFile == null) {
-            return result;
-        }
+            SAXParser saxParser = factory.newSAXParser();
 
-        URL url;
-        try {
-            url = FileLocator.find(new URL(pathToTipsFile));
-        } catch (MalformedURLException e) {
-            log.debug(e);
-            return null;
-        }
-        if (url != null) {
-            try (InputStream tipsInputStream = url.openConnection().getInputStream()) {
+            TipsXmlHandler handler = new TipsXmlHandler();
+            saxParser.parse(tipsInputStream, handler);
+            result.addAll(handler.getTips());
 
-                SAXParserFactory factory = SAXParserFactory.newInstance();
-                factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-                factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-                factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-
-                SAXParser saxParser = factory.newSAXParser();
-
-
-                TipsXmlHandler handler = new TipsXmlHandler();
-                saxParser.parse(tipsInputStream, handler);
-                result.addAll(handler.getTips());
-
-            } catch (SAXException | ParserConfigurationException e) {
-                log.error("Unable to parse tips file:", e);
-            } catch (IOException ioe) {
-                log.error("Tips file wasn't found", ioe);
-            }
             if (!result.isEmpty() && result.size() > 1) {
                 Collections.shuffle(result);
             }
+        } catch (Throwable e) {
+            log.error("Error reading tips", e);
         }
         return result;
     }

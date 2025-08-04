@@ -17,25 +17,13 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineFactory;
-import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 
-public class CopilotFactory extends AIEngineFactory<CopilotCompletionEngine> {
-
-    public CopilotFactory(@NotNull AISettingsRegistry registry) {
-        super(registry);
-    }
-
+public class CopilotFactory implements AIEngineFactory<CopilotCompletionEngine> {
     @NotNull
     @Override
-    public CopilotCompletionEngine createEngine() throws DBException {
-        CopilotProperties properties = registry.getSettings().<LegacyAISettings<CopilotProperties>> getEngineConfiguration(
-                CopilotConstants.COPILOT_ENGINE
-            )
-            .getProperties();
-
-        return new CopilotCompletionEngine(properties);
+    public CopilotCompletionEngine createEngine(@NotNull AISettingsRegistry registry) {
+        return new CopilotCompletionEngine(registry);
     }
 }
