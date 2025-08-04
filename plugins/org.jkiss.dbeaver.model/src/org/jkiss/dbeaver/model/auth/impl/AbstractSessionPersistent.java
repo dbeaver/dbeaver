@@ -58,8 +58,4 @@ public abstract class AbstractSessionPersistent implements SMSessionPersistent {
     public void close() {
 
     }
-
-    public boolean hasGlobalPermission(String permissionId) {
-        return true;
-    }
 }

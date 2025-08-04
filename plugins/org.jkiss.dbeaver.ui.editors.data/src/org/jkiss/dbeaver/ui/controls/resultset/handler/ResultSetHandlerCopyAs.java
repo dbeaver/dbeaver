@@ -32,7 +32,6 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.auth.impl.SessionUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -75,7 +74,7 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        if (!SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_COPY)) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_COPY)) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 UIMessages.dialog_policy_data_copy_title,
                 UIMessages.dialog_policy_data_copy_msg,

@@ -35,7 +35,6 @@ import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.auth.impl.SessionUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -83,7 +82,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        if (!SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 UIMessages.dialog_policy_data_export_title,
                 UIMessages.dialog_policy_data_export_msg,
@@ -318,7 +317,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             }
             ContributionManager menu = new MenuManager();
             // Def processor is null
-            if (SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+            if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
                 menu.add(new Action(ActionUtils.findCommandDescription(
                     ResultSetHandlerMain.CMD_EXPORT, rsv.getSite(), false),
                     Action.AS_RADIO_BUTTON) {

@@ -50,7 +50,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.auth.impl.SessionUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueDefaultGenerator;
@@ -66,6 +65,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
@@ -419,7 +419,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 break;
             }
             case IWorkbenchCommandConstants.EDIT_COPY:
-                if (!SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_COPY)) {
+                if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_COPY)) {
                     UIUtils.showMessageBox(
                         HandlerUtil.getActiveShell(event),
                         UIMessages.dialog_policy_data_copy_title,
@@ -559,7 +559,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                 break;
             }
             case CMD_EXPORT: {
-                if (!SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+                if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
                     UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                         UIMessages.dialog_policy_data_export_title,
                         UIMessages.dialog_policy_data_export_msg,

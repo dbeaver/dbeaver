@@ -30,7 +30,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.auth.impl.SessionUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.task.TaskTypeDescriptor;
@@ -76,7 +75,7 @@ public class ExecuteToolHandler implements IActionDelegate {
                             NLS.bind(TaskUIMessages.task_execute_handler_tool_warn_readonly_message, dataSource.getName())
                         );
                     } else if (taskForObjs.requiresExportPrivileges()
-                        && !SessionUtils.hasPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+                        && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
                         DBWorkbench.getPlatformUI().showWarningMessageBox(
                             UIMessages.dialog_policy_data_export_title,
                             UIMessages.dialog_policy_data_export_msg
