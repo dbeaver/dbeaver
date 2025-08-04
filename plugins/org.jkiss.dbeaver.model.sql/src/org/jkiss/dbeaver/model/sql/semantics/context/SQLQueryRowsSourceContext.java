@@ -233,19 +233,16 @@ public class SQLQueryRowsSourceContext {
      */
     @NotNull
     public SQLQueryRowsSourceContext combine(@NotNull SQLQueryRowsSourceContext other) {
+        Map<SQLQueryComplexName, SourceResolutionResult> rowsSources = new HashMap<>(other.rowsSources);
+        rowsSources.putAll(SQLQueryRowsSourceContext.this.rowsSources);
+        Map<String, SourceResolutionResult> sourcesByLoweredAlias = new HashMap<>(other.sourcesByLoweredAlias);
+        sourcesByLoweredAlias.putAll(SQLQueryRowsSourceContext.this.sourcesByLoweredAlias);
+        Map<String, SourceResolutionResult> dynamicTableSources = new HashMap<>(other.dynamicTableSources);
+        sourcesByLoweredAlias.putAll(SQLQueryRowsSourceContext.this.dynamicTableSources);
         return this.setRowsSources(
-            new HashMap<>() {{
-                putAll(other.rowsSources);
-                putAll(SQLQueryRowsSourceContext.this.rowsSources);
-            }},
-            new HashMap<>() {{
-                putAll(other.sourcesByLoweredAlias);
-                putAll(SQLQueryRowsSourceContext.this.sourcesByLoweredAlias);
-            }},
-            new HashMap<>() {{
-                putAll(other.dynamicTableSources);
-                putAll(SQLQueryRowsSourceContext.this.dynamicTableSources);
-            }},
+            rowsSources,
+            sourcesByLoweredAlias,
+            dynamicTableSources,
             SQLQueryRowsSourceContext.this.hasUnresolvedSource || other.hasUnresolvedSource,
             null
         );

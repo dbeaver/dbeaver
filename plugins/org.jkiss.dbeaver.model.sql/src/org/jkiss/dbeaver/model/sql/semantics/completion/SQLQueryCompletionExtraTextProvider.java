@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionItemVisitor<String> {
 
@@ -63,7 +64,7 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     public String visitTableName(@NotNull SQLTableNameCompletionItem tableName) {
         String tail;
         if (tableName.isRelated || tableName.isUsed) {
-            ArrayList<String> tags = new ArrayList<>();
+            List<String> tags = new ArrayList<>();
             if (tableName.isRelated) {
                 tags.add("related");
             }
