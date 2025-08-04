@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -45,7 +46,7 @@ public class PostgreJSONValueHandler extends JDBCContentValueHandler {
     public DBDContent getValueFromObject(
         @NotNull DBCSession session,
         @NotNull DBSTypedObject type,
-        Object object,
+        @Nullable Object object,
         boolean copy,
         boolean validateValue
     ) throws DBCException {

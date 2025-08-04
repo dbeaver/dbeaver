@@ -89,8 +89,11 @@ public class SQLQuerySemanticUtils {
             setNamePartsDefinition(nameFragment, object, inferSymbolClass(object), origin);
             if (name.parts.size() > nameFragment.size()) {
                 SQLQuerySymbolEntry part = name.parts.get(nameFragment.size());
+                SQLQuerySymbolOrigin lastPartOrigin = new SQLQuerySymbolOrigin.DbObjectFromDbObject(object, objectTypes);
                 if (part != null) {
-                    part.setOrigin(new SQLQuerySymbolOrigin.DbObjectFromDbObject(object, objectTypes));
+                    part.setOrigin(lastPartOrigin);
+                } else if (name.parts.size() == nameFragment.size() + 1 && name.endingPeriodNode != null) {
+                    name.endingPeriodNode.setOrigin(lastPartOrigin);
                 }
             }
         } else if (!name.parts.isEmpty()) {

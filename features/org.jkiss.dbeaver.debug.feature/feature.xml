@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.debug.feature"
       label="DBeaver Debugger"
-      version="6.1.150.qualifier"
+      version="6.1.151.qualifier"
       provider-name="DBeaver Corp">
 
     <copyright>DBeaver Corp and others</copyright>
