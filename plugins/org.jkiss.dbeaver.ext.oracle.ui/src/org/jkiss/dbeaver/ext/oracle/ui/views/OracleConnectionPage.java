@@ -163,6 +163,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
         gd.widthHint = UIUtils.getFontHeight(portText) * 5;
         portText.setLayoutData(gd);
+        UIUtils.setWidgetWidthHint(portText, 150);
         portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(controlModifyListener);
 
@@ -172,6 +173,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         serviceNameCombo.setLayoutData(gd);
+        UIUtils.setWidgetWidthHint(serviceNameCombo, 150);
         serviceNameCombo.addModifyListener(controlModifyListener);
 
         sidServiceCombo = new Combo(targetContainer, SWT.DROP_DOWN | SWT.READ_ONLY);

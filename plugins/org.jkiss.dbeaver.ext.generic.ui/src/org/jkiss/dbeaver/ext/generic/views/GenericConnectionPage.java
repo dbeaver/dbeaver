@@ -184,6 +184,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             serverText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
+            UIUtils.setWidgetWidthHint(serverText, 150);
             //gd.widthHint = 270;
             serverText.setLayoutData(gd);
             serverText.addModifyListener(textListener);
@@ -213,6 +214,7 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
             //gd.widthHint = 270;
             //gd.horizontalSpan = 3;
             dbText.setLayoutData(gd);
+            UIUtils.setWidgetWidthHint(hostText, 150);
             dbText.addModifyListener(textListener);
 
             Control emptyLabel = UIUtils.createEmptyLabel(settingsGroup, 2, 1);

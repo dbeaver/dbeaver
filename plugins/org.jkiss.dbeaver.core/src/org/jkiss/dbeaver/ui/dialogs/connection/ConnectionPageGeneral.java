@@ -317,6 +317,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             UIUtils.setContentProposalToolTip(connectionNameText, "Connection name patterns",
                 ConnectionNameResolver.getConnectionVariables());
             descriptionText = UIUtils.createLabelText(miscGroup, CoreMessages.dialog_connection_wizard_description, null);
+            UIUtils.setWidgetWidthHint(descriptionText, 150);
             {
                 connectionTypeCombo = createConnectionTypeCombo(miscGroup);
                 connectionTypeCombo.addSelectionListener(new SelectionAdapter() {

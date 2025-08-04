@@ -149,6 +149,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         dbText.setLayoutData(gd);
+        UIUtils.setWidgetWidthHint(dbText, 150);
         dbText.addModifyListener(textListener);
         dbText.setMessage(PostgreMessages.dialog_database_name_hint);
         addControlToGroup(GROUP_CONNECTION, dbLabel, dbText);
