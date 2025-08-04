@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -199,11 +200,11 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     public static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
     public static DBNBrowseSettings getDefaultSettings() {
-        return getDefaultSettings(false, null);
+        return getDefaultSettings(null, false);
     }
 
-
-    public static DBNBrowseSettings getDefaultSettings(boolean forceUpdate, @Nullable String presetId) {
+    @NotNull
+    public static DBNBrowseSettings getDefaultSettings(@Nullable String presetId, boolean forceUpdate) {
         if (forceUpdate && CommonUtils.isNotEmpty(presetId)) {
             for (DataSourceNavigatorSettings.Preset p : DataSourceNavigatorSettings.PRESETS.values()) {
                 if (p.getId().equals(presetId)) {

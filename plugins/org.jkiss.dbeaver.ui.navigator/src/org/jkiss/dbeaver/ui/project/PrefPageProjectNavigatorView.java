@@ -53,7 +53,6 @@ import java.util.Map;
 public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
 
     private static final Log log = Log.getLog(PrefPageProjectNavigatorView.class);
-    private static final String SECRET_PREFIX = "dbeaver.ui.navigator.";
     private static final String KEY_NAV_VIEW = "navigator.default.view";
 
     private static final Map<DataSourceNavigatorSettings.Preset, Integer> PRESETS = Map.of(
@@ -85,8 +84,11 @@ public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IW
             2, GridData.FILL_HORIZONTAL, 0
         );
 
-        UIUtils.createControlLabel(group, UINavigatorMessages.pref_page_navigator_view_label_connection_view);
-        combo = new Combo(group, SWT.DROP_DOWN | SWT.READ_ONLY);
+        combo = UIUtils.createLabelCombo(
+            group,
+            UINavigatorMessages.pref_page_navigator_view_label_connection_view,
+            SWT.DROP_DOWN | SWT.READ_ONLY
+        );
         combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
         combo.add(DataSourceNavigatorSettings.PRESET_SIMPLE.getName());
@@ -169,7 +171,7 @@ public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IW
             var dataSources = dataSourceRegistry.getDataSources();
             for (DBPDataSourceContainer ds : dataSources) {
                 if (ds instanceof DataSourceDescriptor descriptor) {
-                    descriptor.setNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings(true, selectedValue));
+                    descriptor.setNavigatorSettings(DataSourceNavigatorSettings.getDefaultSettings(selectedValue, true));
                 }
             }
             dataSourceRegistry.flushConfig();
