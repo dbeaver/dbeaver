@@ -973,7 +973,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private boolean isAppInstallationFile(Path localFilePath) {
         try {
             Path appInstallPath = RuntimeUtils.getLocalPathFromURL(Platform.getInstallLocation().getURL());
-            if (localFilePath.toString().startsWith(appInstallPath.toString())) {
+            if (localFilePath.startsWith(appInstallPath)) {
                 // Skip files which are part of app installation (e.g. licenses)
                 return true;
             }
