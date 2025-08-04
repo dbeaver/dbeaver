@@ -191,13 +191,13 @@ public class DataSourceNavigatorSettings implements DBNBrowseSettings {
     }
 
     public static final String DEFAULT_NAVIGATOR_SETTINGS_PRESET = "navigator.settings.default.preset";
-    public static final String DEFAULT_SHOW_SYSTEM_OBJECTS = "navigator.settings.default.showSystemObjects";
-    public static final String DEFAULT_SHOW_UTILITY_OBJECTS = "navigator.settings.default.showUtilityObjects";
-    public static final String DEFAULT_SHOW_ONLY_ENTITIES = "navigator.settings.default.showOnlyEntities";
-    public static final String DEFAULT_MERGE_ENTITIES = "navigator.settings.default.mergeEntities";
-    public static final String DEFAULT_HIDE_FOLDERS = "navigator.settings.default.hideFolders";
-    public static final String DEFAULT_MERGE_SCHEMAS = "navigator.settings.default.hideSchemas";
-    public static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
+    private static final String DEFAULT_SHOW_SYSTEM_OBJECTS = "navigator.settings.default.showSystemObjects";
+    private static final String DEFAULT_SHOW_UTILITY_OBJECTS = "navigator.settings.default.showUtilityObjects";
+    private static final String DEFAULT_SHOW_ONLY_ENTITIES = "navigator.settings.default.showOnlyEntities";
+    private static final String DEFAULT_MERGE_ENTITIES = "navigator.settings.default.mergeEntities";
+    private static final String DEFAULT_HIDE_FOLDERS = "navigator.settings.default.hideFolders";
+    private static final String DEFAULT_MERGE_SCHEMAS = "navigator.settings.default.hideSchemas";
+    private static final String DEFAULT_HIDE_VIRTUAL_MODEL = "navigator.settings.default.hideVirtualModel";
 
     public static DBNBrowseSettings getDefaultSettings() {
         return getDefaultSettings(null, false);
