@@ -154,6 +154,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         hostText.setLayoutData(gd);
+        UIUtils.setWidgetWidthHint(hostText, 150);
         hostText.addModifyListener(controlModifyListener);
 
         UIUtils.createControlLabel(targetContainer, OracleUIMessages.dialog_connection_port);
