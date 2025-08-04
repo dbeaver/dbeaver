@@ -14,7 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-public abstract class BaseCompletionEngine implements AIEngine {
+import org.jkiss.code.NotNull;
+
+public record Model(
+    @NotNull String id,
+    @NotNull String object,
+    long created,
+    @NotNull String ownedBy
+) {
 }
