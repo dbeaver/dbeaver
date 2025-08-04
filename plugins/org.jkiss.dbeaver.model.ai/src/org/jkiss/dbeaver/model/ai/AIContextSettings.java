@@ -22,6 +22,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
@@ -60,6 +61,7 @@ public abstract class AIContextSettings {
         this.settings.confirmed = metaTransferConfirmed;
     }
 
+    @Nullable
     public AIDatabaseScope getScope() {
         return settings.scope;
     }
@@ -68,6 +70,7 @@ public abstract class AIContextSettings {
         this.settings.scope = scope;
     }
 
+    @Nullable
     public String[] getCustomObjectIds() {
         return settings.objects;
     }
