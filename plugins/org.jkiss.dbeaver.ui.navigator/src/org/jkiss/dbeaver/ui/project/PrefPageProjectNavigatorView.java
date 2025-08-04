@@ -48,19 +48,18 @@ import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 
 public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
 
     private static final Log log = Log.getLog(PrefPageProjectNavigatorView.class);
     private static final String KEY_NAV_VIEW = "navigator.default.view";
 
-    private static final Map<DataSourceNavigatorSettings.Preset, Integer> PRESETS = Map.of(
-        DataSourceNavigatorSettings.PRESET_SIMPLE, 0,
-        DataSourceNavigatorSettings.PRESET_FULL, 1,
-        DataSourceNavigatorSettings.PRESET_CUSTOM, 2
+    private static final List<DataSourceNavigatorSettings.Preset> PRESETS = List.of(
+        DataSourceNavigatorSettings.PRESET_SIMPLE,
+        DataSourceNavigatorSettings.PRESET_FULL,
+        DataSourceNavigatorSettings.PRESET_CUSTOM
     );
-
 
     private Combo combo;
     private DBPProject projectMeta;
@@ -91,9 +90,10 @@ public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IW
         );
         combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-        combo.add(DataSourceNavigatorSettings.PRESET_SIMPLE.getName());
-        combo.add(DataSourceNavigatorSettings.PRESET_FULL.getName());
-        combo.add(DataSourceNavigatorSettings.PRESET_CUSTOM.getName());
+
+        for (DataSourceNavigatorSettings.Preset preset : PRESETS) {
+            combo.add(preset.getName());
+        }
 
         loadValues();
 
@@ -135,11 +135,11 @@ public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IW
         int selectedIndex = 0;
 
         if (!allSame) {
-            selectedIndex = PRESETS.get(DataSourceNavigatorSettings.PRESET_CUSTOM);
+            selectedIndex = PRESETS.indexOf(DataSourceNavigatorSettings.PRESET_CUSTOM);
         } else {
             for (var preset : DataSourceNavigatorSettings.PRESETS.values()) {
                 if (preset.getSettings().equals(firstSettings)) {
-                    selectedIndex = PRESETS.get(preset);
+                    selectedIndex = PRESETS.indexOf(preset);
                     break;
                 }
             }
@@ -156,9 +156,9 @@ public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IW
         String selectedValue;
         int selectedIndex = combo.getSelectionIndex();
 
-        if (selectedIndex == PRESETS.get(DataSourceNavigatorSettings.PRESET_SIMPLE)) {
+        if (selectedIndex == PRESETS.indexOf(DataSourceNavigatorSettings.PRESET_SIMPLE)) {
             selectedValue = DataSourceNavigatorSettings.PRESET_SIMPLE.getId();
-        } else if (selectedIndex == PRESETS.get(DataSourceNavigatorSettings.PRESET_FULL)) {
+        } else if (selectedIndex == PRESETS.indexOf(DataSourceNavigatorSettings.PRESET_FULL)) {
             selectedValue = DataSourceNavigatorSettings.PRESET_FULL.getId();
         } else {
             selectedValue = DataSourceNavigatorSettings.PRESET_CUSTOM.getId();
