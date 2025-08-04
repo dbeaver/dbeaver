@@ -21,16 +21,9 @@ import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSUserDisabledEvent extends WSAbstractEvent {
     public static final String ID = "cb_user_disabled";
-    @NotNull
-    private final String disabledUserId;
 
+    @NotNull
     public WSUserDisabledEvent(@NotNull String userId) {
-        super(ID, WSConstants.TOPIC_USER);
-        this.disabledUserId = userId;
-    }
-
-    @NotNull
-    public String getDisabledUserId() {
-        return disabledUserId;
+        super(ID, WSConstants.TOPIC_USER, null, userId);
     }
 }
