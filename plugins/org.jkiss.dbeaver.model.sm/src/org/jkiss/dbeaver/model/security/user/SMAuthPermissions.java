@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.security.user;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.access.DBAPermissionRealm;
 
 import java.util.Objects;
 import java.util.Set;
@@ -55,10 +54,6 @@ public class SMAuthPermissions {
     @NotNull
     public Set<String> getPermissions() {
         return permissions;
-    }
-
-    public boolean hasPermission(@NotNull String permission) {
-        return permission.contains(DBAPermissionRealm.PERMISSION_ADMIN) || permissions.contains(permission);
     }
 
     @Override

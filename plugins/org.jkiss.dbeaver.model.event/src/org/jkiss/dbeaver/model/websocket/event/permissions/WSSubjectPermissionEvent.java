@@ -29,7 +29,7 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
 
     protected WSSubjectPermissionEvent(
         @NotNull SMSubjectType subjectType,
-        @Nullable String subjectId,
+        @NotNull String subjectId,
         @Nullable String sessionId,
         @Nullable String userId
     ) {
@@ -42,7 +42,7 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull SMSubjectType subjectType,
-        @Nullable String subjectId
+        @NotNull String subjectId
     ) {
         return new WSSubjectPermissionEvent(
             subjectType,
@@ -52,7 +52,7 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
         );
     }
 
-    @Nullable
+    @NotNull
     public String getSubjectId() {
         return subjectId;
     }
