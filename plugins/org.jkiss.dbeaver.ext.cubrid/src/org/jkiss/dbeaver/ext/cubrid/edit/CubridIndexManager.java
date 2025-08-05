@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.edit;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableIndex;
@@ -31,28 +28,35 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
+import java.util.List;
+import java.util.Map;
+
 public class CubridIndexManager extends GenericIndexManager {
 
     @Override
     protected CubridTableIndex createDatabaseObject(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBECommandContext context,
-            final Object container,
-            Object from,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        final Object container,
+        Object from,
+        @NotNull Map<String, Object> options
+    ) {
         CubridTable table = (CubridTable) container;
         return new CubridTableIndex(table, true, null, 0, null, DBSIndexType.OTHER, false);
     }
 
     @Override
     protected void addObjectDeleteActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectDeleteCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         GenericTableIndex index = command.getObject();
-        actions.add(new SQLDatabasePersistAction("Drop Index",
-        "DROP INDEX " + index.getName() + " ON " + ((CubridTable) index.getTable()).getUniqueName()));
+        actions.add(new SQLDatabasePersistAction(
+            "Drop Index",
+            "DROP INDEX " + index.getName() + " ON " + ((CubridTable) index.getTable()).getUniqueName()
+        ));
     }
 }
