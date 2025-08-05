@@ -150,16 +150,8 @@ public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IW
             return super.performOk();
         }
 
-        String selectedValue;
         int selectedIndex = combo.getSelectionIndex();
-
-        if (selectedIndex == PRESETS.indexOf(DataSourceNavigatorSettings.PRESET_SIMPLE)) {
-            selectedValue = DataSourceNavigatorSettings.PRESET_SIMPLE.getId();
-        } else if (selectedIndex == PRESETS.indexOf(DataSourceNavigatorSettings.PRESET_FULL)) {
-            selectedValue = DataSourceNavigatorSettings.PRESET_FULL.getId();
-        } else {
-            selectedValue = DataSourceNavigatorSettings.PRESET_CUSTOM.getId();
-        }
+        String selectedValue = PRESETS.get(selectedIndex).getId();
 
         try {
             projectMeta.setProjectProperty(KEY_NAV_VIEW, selectedValue);
