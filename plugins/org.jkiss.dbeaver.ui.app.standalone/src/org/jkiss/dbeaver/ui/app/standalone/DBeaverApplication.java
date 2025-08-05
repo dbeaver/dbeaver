@@ -32,7 +32,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -77,8 +76,8 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -112,12 +111,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String RESET_USER_PREFERENCES = "reset_user_preferences";
     private static final String RESET_WORKSPACE_CONFIGURATION = "reset_workspace_configuration";
 
-    // See org.eclipse.ui.internal.ide.ChooseWorkspaceData.RECENT_MAX_LENGTH
-    private static final int RECENT_MAX_LENGTH = 10;
-
-    private final String WORKSPACE_DIR_6; //$NON-NLS-1$
     private final Path FILE_WITH_WORKSPACES;
-    public final String WORKSPACE_DIR_CURRENT;
+    private final String WORKSPACE_DIR_CURRENT;
 
     static boolean WORKSPACE_MIGRATED = false;
 
@@ -157,8 +152,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         String workingDirectory = RuntimeUtils.getWorkingDirectory(defaultWorkspaceLocation);
 
         // Workspace dir
-        WORKSPACE_DIR_6 = new File(workingDirectory, defaultAppWorkspaceName).getAbsolutePath();
-        WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_6;
+        WORKSPACE_DIR_CURRENT = new File(workingDirectory, defaultAppWorkspaceName).getAbsolutePath();
         FILE_WITH_WORKSPACES = Paths.get(workingDirectory, defaultWorkspacesFile); //$NON-NLS-1$
     }
 
@@ -368,7 +362,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (!isWorkspaceSwitchingAllowed()) {
             return false;
         }
-        String lastWorkspace = fetchRecentWorkspaces(instanceLoc).getFirst();
+        String lastWorkspace = DBeaverWorkspaces.fetchRecentWorkspaces(this, instanceLoc).getFirst();
         if (!WORKSPACE_DIR_CURRENT.equals(lastWorkspace)) {
             try {
                 final URL selectedWorkspaceURL = new URL(
@@ -385,91 +379,17 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return false;
     }
 
-    @NotNull
-    private List<String> fetchRecentWorkspaces(@NotNull Location instanceLoc) {
-        ChooseWorkspaceData data = new ChooseWorkspaceData(instanceLoc.getDefault());
-
-        List<String> backedUpWorkspaces = getBackedUpWorkspaces();
-        List<String> eclipseWorkspaces = Stream.of(data.getRecentWorkspaces())
-            .filter(Objects::nonNull)
-            .toList();
-
-        List<String> workspaces;
-        if (!backedUpWorkspaces.isEmpty()) {
-            // We have our .workspaces file, prioritize it
-            workspaces = backedUpWorkspaces;
-        } else {
-            // Otherwise, grab workspaces Eclipse knows about
-            workspaces = eclipseWorkspaces;
-        }
-
-        workspaces = workspaces.stream()
-            .distinct()
-            .limit(RECENT_MAX_LENGTH)
-            .collect(Collectors.toList());
-
-        if (!workspaces.contains(WORKSPACE_DIR_CURRENT)) {
-            if (workspaces.size() == RECENT_MAX_LENGTH) {
-                workspaces.set(workspaces.size() - 1, WORKSPACE_DIR_CURRENT);
-            } else {
-                workspaces.add(WORKSPACE_DIR_CURRENT);
-            }
-        }
-
-        if (!eclipseWorkspaces.equals(workspaces)) {
-            data.setRecentWorkspaces(workspaces.toArray(new String[RECENT_MAX_LENGTH]));
-            data.writePersistedData();
-        }
-
-        if (!backedUpWorkspaces.equals(workspaces)) {
-            saveWorkspacesToBackup(workspaces);
-        }
-
-        return workspaces;
-    }
-
     /**
-     * Flushes the list of recent workspaces
+     * Returns path to the {@code .workspaces} file.
      */
-    private void flushRecentWorkspaces() {
-        var location = Platform.getInstanceLocation();
-        var data = new ChooseWorkspaceData(location.getDefault());
-        var workspaces = Stream.of(data.getRecentWorkspaces())
-            .filter(Objects::nonNull)
-            .toList();
-        saveWorkspacesToBackup(workspaces);
+    @NotNull
+    public Path getWorkspacesFile() {
+        return FILE_WITH_WORKSPACES;
     }
 
     @NotNull
-    private List<String> getBackedUpWorkspaces() {
-        if (!Files.exists(FILE_WITH_WORKSPACES) || Files.isDirectory(FILE_WITH_WORKSPACES)) {
-            return Collections.emptyList();
-        }
-        try {
-            return Files.readAllLines(FILE_WITH_WORKSPACES);
-        } catch (IOException e) {
-            log.debug("Unable to read backed up workspaces", e); //$NON-NLS-1$
-            return Collections.emptyList();
-        }
-    }
-
-    private void saveWorkspacesToBackup(@NotNull List<String> workspaces) {
-        try {
-            if (!Files.exists(FILE_WITH_WORKSPACES.getParent())) {
-                Files.createDirectories(FILE_WITH_WORKSPACES.getParent());
-            } else if (Files.isDirectory(FILE_WITH_WORKSPACES)) {
-                // Bug in 22.0.5
-                Files.delete(FILE_WITH_WORKSPACES);
-            }
-            Files.write(FILE_WITH_WORKSPACES, workspaces, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (IOException e) {
-            log.debug("Unable to save backed up workspaces", e); //$NON-NLS-1$
-        }
-    }
-
-    @Nullable
     public Path getDefaultWorkingFolder() {
-        return  Path.of(WORKSPACE_DIR_CURRENT);
+        return Path.of(WORKSPACE_DIR_CURRENT);
     }
 
     @NotNull
@@ -707,7 +627,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         log.debug("DBeaver is stopping"); //$NON-NLS-1$
 
         saveStartupActions();
-        flushRecentWorkspaces();
+
+        Location location = Platform.getInstanceLocation();
+        if (location.isSet()) {
+            DBeaverWorkspaces.flushRecentWorkspaces(this, location);
+        }
 
         try {
             DBeaverInstanceServer server = instanceServer;
