@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
@@ -215,15 +214,15 @@ public final class AIUtils {
     public static boolean confirmQueryExecutionIfNeeded(@NotNull List<SQLScriptElement> scriptElements) {
         Set<SQLQueryCategory> queryCategories = SQLQueryCategory.categorizeScript(scriptElements);
         if (queryCategories.contains(SQLQueryCategory.DDL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
-            return isDdlActionConfirmed();
+            return confirmDdlQueryExecute();
         }
         if (queryCategories.contains(SQLQueryCategory.DML) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DML)) {
-            return isDmlActionConfirmed();
+            return confirmDmlQueryExecute();
         }
         boolean isSqlOrUnknown = queryCategories.contains(SQLQueryCategory.SQL) ||
             queryCategories.contains(SQLQueryCategory.UNKNOWN);
         if (isSqlOrUnknown && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
-            return isSqlActionConfirmed();
+            return confirmSqlQueryExecute();
         }
         return true;
     }
@@ -232,7 +231,7 @@ public final class AIUtils {
         @NotNull DBRProgressMonitor monitor,
         @NotNull List<SQLScriptElement> scriptElements,
         @Nullable DBCExecutionContext context
-    ) {
+    ) throws DBException {
         if (!SQLQueryCategory.categorizeScript(scriptElements).contains(SQLQueryCategory.DML)) {
             return;
         }
@@ -244,13 +243,9 @@ public final class AIUtils {
         );
         if (dmlRule == AIQueryConfirmationRule.DISABLE_AUTOCOMMIT) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-            try {
-                if (txnManager != null && txnManager.isAutoCommit()) {
-                    txnManager.setAutoCommit(monitor, false);
-                    showAutoCommitDisabledNotification();
-                }
-            } catch (DBCException e) {
-                log.error(e);
+            if (txnManager != null && txnManager.isAutoCommit()) {
+                txnManager.setAutoCommit(monitor, false);
+                showAutoCommitDisabledNotification();
             }
         }
     }
@@ -276,7 +271,7 @@ public final class AIUtils {
         ) == AIQueryConfirmationRule.CONFIRM;
     }
 
-    private static boolean isSqlActionConfirmed() {
+    private static boolean confirmSqlQueryExecute() {
         return DBWorkbench.getPlatformUI().confirmAction(
             AIMessages.ai_execute_query_title,
             AIMessages.ai_execute_query_confirm_sql_message,
@@ -284,7 +279,7 @@ public final class AIUtils {
         );
     }
 
-    private static boolean isDmlActionConfirmed() {
+    private static boolean confirmDmlQueryExecute() {
         return DBWorkbench.getPlatformUI().confirmAction(
             AIMessages.ai_execute_query_title,
             AIMessages.ai_execute_query_confirm_dml_message,
@@ -292,7 +287,7 @@ public final class AIUtils {
         );
     }
 
-    private static boolean isDdlActionConfirmed() {
+    private static boolean confirmDdlQueryExecute() {
         return DBWorkbench.getPlatformUI().confirmAction(
             AIMessages.ai_execute_query_title,
             AIMessages.ai_execute_query_confirm_ddl_message,
