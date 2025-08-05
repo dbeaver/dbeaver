@@ -274,7 +274,7 @@ public class CopilotClient implements AutoCloseable {
 
         HttpResponse<String> response = client.send(monitor, request);
         if (response.statusCode() == 200) {
-            CopilotModels copilotModels = GSON.fromJson(response.body(), CopilotModels.class);
+            CopilotModelList copilotModels = GSON.fromJson(response.body(), CopilotModelList.class);
             return copilotModels.data().stream().filter(CopilotModel::isEnabled).toList();
         } else {
             throw new DBException("Request failed: status=" + response.statusCode() + ", body=" + response.body());

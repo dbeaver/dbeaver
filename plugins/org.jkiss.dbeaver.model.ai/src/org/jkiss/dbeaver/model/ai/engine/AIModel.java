@@ -14,11 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
+package org.jkiss.dbeaver.model.ai.engine;
 
-import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
-import java.util.List;
+import java.util.Set;
 
-public record CopilotModels(@SerializedName("data") List<CopilotModel> data) {
+public record AIModel(
+    @NotNull String name,
+    @Nullable Integer contextWindowSize,
+    @NotNull Set<AIModelFeature> features
+) {
 }

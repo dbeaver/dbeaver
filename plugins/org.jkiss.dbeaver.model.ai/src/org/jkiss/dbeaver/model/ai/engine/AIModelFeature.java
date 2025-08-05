@@ -16,5 +16,16 @@
  */
 package org.jkiss.dbeaver.model.ai.engine;
 
-public abstract class BaseCompletionEngine implements AIEngine {
+public enum AIModelFeature {
+    COMPLETION,
+    CHAT,
+    EMBEDDING,
+    IMAGE_GENERATION,
+    IMAGE_EDITING,
+    IMAGE_VARIATION,
+    SPEECH_TO_TEXT,
+    TEXT_TO_SPEECH,
+    CODE_INTERPRETER,
+    FUNCTION_CALLING,
+    MULTIMODAL_INPUT_OUTPUT;
 }
