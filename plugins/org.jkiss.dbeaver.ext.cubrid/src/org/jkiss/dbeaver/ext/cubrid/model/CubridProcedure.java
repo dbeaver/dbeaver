@@ -168,6 +168,7 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
     public void loadProcedureColumns(@NotNull DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure parameter")) {
             String stmt = "select * from db_stored_procedure_args where sp_name = ?";
+            stmt = ((CubridDataSource) getDataSource()).wrapShardQuery(stmt);
             try (JDBCPreparedStatement dbStat = session.prepareStatement(stmt)) {
                 dbStat.setString(1, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
