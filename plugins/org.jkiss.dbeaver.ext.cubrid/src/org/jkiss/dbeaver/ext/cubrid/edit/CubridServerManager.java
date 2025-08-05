@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.ext.cubrid.edit;
-
-import java.util.List;
-import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -37,6 +34,9 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
+import java.util.Map;
 
 public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericStructContainer> implements DBEObjectRenamer<CubridServer> {
 
@@ -58,21 +58,23 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
 
     @Override
     protected CubridServer createDatabaseObject(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBECommandContext context,
-            @Nullable Object container,
-            @Nullable Object copyFrom,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         return new CubridServer((CubridDataSource) container, BASE_SERVER_NAME);
     }
 
     @Override
     protected void addObjectCreateActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectCreateCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridServer server = command.getObject();
         StringBuilder query = new StringBuilder();
         query.append("CREATE SERVER ");
@@ -106,11 +108,12 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
 
     @Override
     protected void addObjectModifyActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectChangeCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridServer server = command.getObject();
         String suffix = ",";
         StringBuilder query = new StringBuilder();
@@ -131,10 +134,11 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
     }
 
     public void additionalModifyActions(
-            @NotNull CubridServer server,
-            @NotNull StringBuilder query,
-            @NotNull ObjectChangeCommand command,
-            @NotNull String suffix) {
+        @NotNull CubridServer server,
+        @NotNull StringBuilder query,
+        @NotNull ObjectChangeCommand command,
+        @NotNull String suffix
+    ) {
         if (command.getProperty("userName") != null && server.getUserName() != null) {
             query.append(" CHANGE USER=").append(server.getUserName()).append(suffix);
         }
@@ -142,44 +146,74 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
             query.append(" CHANGE PASSWORD=").append(SQLUtils.quoteString(server, server.getPassword())).append(suffix);
         }
         if (command.hasProperty("properties") || server.getProperties() != null) {
-            query.append(" CHANGE PROPERTIES=").append(SQLUtils.quoteString(server, CommonUtils.notEmpty(server.getProperties()))).append(suffix);
+            query.append(" CHANGE PROPERTIES=").append(SQLUtils.quoteString(server, CommonUtils.notEmpty(server.getProperties())))
+                .append(suffix);
         }
         if (command.hasProperty("description") || server.getDescription() != null) {
-            query.append(" CHANGE COMMENT=").append(SQLUtils.quoteString(server, CommonUtils.notEmpty(server.getDescription()))).append(suffix);
+            query.append(" CHANGE COMMENT=").append(SQLUtils.quoteString(server, CommonUtils.notEmpty(server.getDescription())))
+                .append(suffix);
         }
     }
 
     @Override
     protected void addObjectDeleteActions(
-            @NotNull DBRProgressMonitor monitor, DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectDeleteCommand command,
-            @NotNull Map<String, Object> options)
-            throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         CubridServer server = command.getObject();
-        actions.add(new SQLDatabasePersistAction("Drop Server",
-        "DROP SERVER " + server.getOwner() + "." + server.getName()));
+        actions.add(new SQLDatabasePersistAction(
+            "Drop Server",
+            "DROP SERVER " + server.getOwner() + "." + server.getName()
+        ));
     }
 
     @Override
     protected void addObjectRenameActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectRenameCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridServer server = command.getObject();
-        actions.add(new SQLDatabasePersistAction("Rename Server",
-        "RENAME SERVER " + server.getOwner() + "." + command.getOldName() + " TO " + command.getNewName()));
+        actions.add(new SQLDatabasePersistAction(
+            "Rename Server",
+            "RENAME SERVER " + server.getOwner() + "." + command.getOldName() + " TO " + command.getNewName()
+        ));
     }
 
     @Override
     public void renameObject(
-            @NotNull DBECommandContext commandContext,
-            @NotNull CubridServer object,
-            @NotNull Map<String, Object> options,
-            @NotNull String newName) throws DBException {
-        processObjectRename(commandContext, object, options, newName);
+        @NotNull DBECommandContext commandContext,
+        @NotNull CubridServer object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    ) throws DBException {
+        if (!object.getDataSource().isShard()) {
+            processObjectRename(commandContext, object, options, newName);
+        }
     }
 
+    @Override
+    public boolean canCreateObject(@NotNull Object container) {
+        return !((CubridDataSource) container).isShard();
+    }
+
+    @Override
+    public boolean canEditObject(CubridServer object) {
+        return !object.getDataSource().isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(CubridServer object) {
+        return !object.getDataSource().isShard();
+    }
+
+    @Override
+    public boolean canRenameObject(CubridServer object) {
+        return !object.getDataSource().isShard();
+    }
 }
