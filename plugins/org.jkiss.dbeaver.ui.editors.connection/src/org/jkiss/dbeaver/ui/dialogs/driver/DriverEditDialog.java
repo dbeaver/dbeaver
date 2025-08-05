@@ -65,6 +65,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -1022,7 +1023,10 @@ public class DriverEditDialog extends HelpEnabledDialog {
             driverFilePath = driver.getId() + "/" + shortFileName;
         } else {
             Path driversStorageFolder = DriverDescriptor.getExternalDriversStorageFolder();
-            driverFilePath = driversStorageFolder.relativize(Path.of(localFilePath.toString())).toString();
+            if (!Objects.equals(driversStorageFolder.getFileSystem(), localFilePath.getFileName())) {
+                throw new DBException("File system '" + localFilePath.getFileName() + "' doesn't match '" + driversStorageFolder.getFileSystem() + "'");
+            }
+            driverFilePath = driversStorageFolder.relativize(localFilePath).toString();
         }
 
         if (library instanceof DriverLibraryLocal libraryLocal && isNewLib) {
