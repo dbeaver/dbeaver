@@ -220,7 +220,9 @@ public final class AIUtils {
         if (queryCategories.contains(SQLQueryCategory.DML) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DML)) {
             return isDmlActionConfirmed();
         }
-        if (isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
+        boolean isSqlOrUnknown = queryCategories.contains(SQLQueryCategory.SQL) ||
+            queryCategories.contains(SQLQueryCategory.UNKNOWN);
+        if (isSqlOrUnknown && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
             return isSqlActionConfirmed();
         }
         return true;
