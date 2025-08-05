@@ -124,9 +124,9 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             return SQLControlResult.failure();
         }
         AIUtils.disableAutoCommitIfNeeded(
+            new VoidProgressMonitor(),
             scriptElements,
-            scriptContext.getExecutionContext(),
-            new VoidProgressMonitor()
+            scriptContext.getExecutionContext()
         );
 
         scriptContext.getOutputWriter().println(AI_OUTPUT_SEVERITY, prompt + " ==> " + script + "\n");

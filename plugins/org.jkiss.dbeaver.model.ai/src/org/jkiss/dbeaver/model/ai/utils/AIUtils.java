@@ -229,9 +229,9 @@ public final class AIUtils {
     }
 
     public static void disableAutoCommitIfNeeded(
+        @NotNull DBRProgressMonitor monitor,
         @NotNull List<SQLScriptElement> scriptElements,
-        @Nullable DBCExecutionContext context,
-        @NotNull DBRProgressMonitor monitor
+        @Nullable DBCExecutionContext context
     ) {
         if (!SQLQueryCategory.categorizeScript(scriptElements).contains(SQLQueryCategory.DML)) {
             return;
