@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -181,16 +180,6 @@ public final class AIUtils {
             || dbpObject instanceof DBSProcedure
             || dbpObject instanceof DBSTrigger
             || dbpObject instanceof DBSEntityConstraint;
-    }
-
-    /**
-     * Computes the maximum number of tokens available for a request based on the engine's context size.
-     *
-     * @param engine  the completion engine
-     * @param monitor the progress monitor
-     */
-    public static int getMaxRequestTokens(@NotNull AIEngine engine, @NotNull DBRProgressMonitor monitor) throws DBException {
-        return engine.getMaxContextSize(monitor) - AIConstants.MAX_RESPONSE_TOKENS;
     }
 
     /**
