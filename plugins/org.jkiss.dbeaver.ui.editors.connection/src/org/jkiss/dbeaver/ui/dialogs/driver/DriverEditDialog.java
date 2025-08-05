@@ -998,7 +998,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         DBFileController fileController = DBWorkbench.getPlatform().getFileController();
 
         String driverFilePath;
-        boolean isNewLib = Path.of(library.getPath()).isAbsolute();
+        boolean isNewLib = localFilePath.isAbsolute();
         if (isNewLib) {
             driverFilePath = driver.getId() + "/" + shortFileName;
         } else {
