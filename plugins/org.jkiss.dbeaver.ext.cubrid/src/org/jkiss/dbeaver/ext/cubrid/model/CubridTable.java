@@ -228,6 +228,7 @@ public class CubridTable extends GenericTable
             if(table.getDataSource().getSupportMultiSchema()) {
                 sql.append(" and owner_name = ?");
             }
+            sql = table.getDataSource().wrapShardQuery(sql);
             final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setString(1, table.getName());
             if(table.getDataSource().getSupportMultiSchema()) {
