@@ -1021,7 +1021,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
         if (isNewLib) {
             driverFilePath = driver.getId() + "/" + shortFileName;
         } else {
-            driverFilePath = DriverDescriptor.getExternalDriversStorageFolder().relativize(localFilePath).toString();
+            Path storageFolder = DriverDescriptor.getExternalDriversStorageFolder();
+            if (localFilePath.startsWith(storageFolder)) {
+                driverFilePath = storageFolder.relativize(localFilePath).toString();
+            } else {
+                driverFilePath = localFilePath.toString();
+            }
         }
 
         if (library instanceof DriverLibraryLocal libraryLocal && isNewLib) {
