@@ -83,7 +83,6 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
     private volatile ConfigSaver configSaver;
     private DBACredentialsProvider authCredentialsProvider;
-    private String navigatorView;
     protected Throwable lastError;
 
     public DataSourceRegistry(DBPProject project) {

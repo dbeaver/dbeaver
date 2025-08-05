@@ -36,18 +36,15 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
-import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.util.Collections;
 import java.util.List;
 
 public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
@@ -175,11 +172,6 @@ public class PrefPageProjectNavigatorView extends AbstractPrefPage implements IW
                 }
             }
             dataSourceRegistry.flushConfig();
-
-            if (DBWorkbench.isDistributed()) {
-                DBNProject projectNode = projectMeta.getNavigatorModel().getRoot().getProjectNode(projectMeta);
-                UIUtils.syncExec(() -> NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(projectNode)));
-            }
         } catch (Exception e) {
             log.error("Error saving connection view setting", e);
             DBWorkbench.getPlatformUI().showError(
