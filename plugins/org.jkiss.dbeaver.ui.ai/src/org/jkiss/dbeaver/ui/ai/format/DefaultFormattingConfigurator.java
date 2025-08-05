@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.utils.NLS;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -49,6 +51,9 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     protected Composite settingsPanel;
     private Combo languageText;
 
+    private Combo confirmSQLCombo;
+    private Combo confirmDDLCombo;
+    private Combo confirmDMLCombo;
 
     @Override
     public void createControl(
@@ -105,6 +110,45 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         Composite completionComposite = UIUtils.createComposite(completionGroup, 2);
         completionComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createCompletionSettings(completionComposite, propertyChangeListener);
+
+        Group queryExecutionSettingsGroup = UIUtils.createControlGroup(
+            leftPanel,
+            AIUIMessages.gpt_preference_page_ai_query_confirm_group,
+            2,
+            GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+            SWT.DEFAULT
+        );
+        createQueryExecutionSettings(queryExecutionSettingsGroup);
+    }
+
+    protected void createQueryExecutionSettings(@NotNull Composite chatSettingsGroup) {
+        confirmSQLCombo = createConfirmQueryCombo(chatSettingsGroup, "SQL");
+        confirmSQLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_execute);
+        confirmSQLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_confirm);
+        confirmSQLCombo.select(0);
+
+        confirmDMLCombo = createConfirmQueryCombo(chatSettingsGroup, "DML");
+        confirmDMLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_execute);
+        confirmDMLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_confirm);
+        confirmDMLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_disable_autocommit);
+        confirmDMLCombo.select(1);
+
+        confirmDDLCombo = createConfirmQueryCombo(chatSettingsGroup, "DDL");
+        confirmDDLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_execute);
+        confirmDDLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_confirm);
+        confirmDDLCombo.select(1);
+    }
+
+    @NotNull
+    private Combo createConfirmQueryCombo(@NotNull Composite group, @NotNull String queryType) {
+        Combo combo =  UIUtils.createLabelCombo(
+            group,
+            NLS.bind(AIUIMessages.gpt_preference_page_ai_query_confirm_label, queryType),
+            NLS.bind(AIUIMessages.gpt_preference_page_ai_query_confirm_tip, queryType),
+            SWT.READ_ONLY | SWT.DROP_DOWN
+        );
+        combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        return combo;
     }
 
     protected void createRightPanel(Composite rightPanel) {
@@ -163,6 +207,25 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         executeQueryImmediatelyCheck.setSelection(store.getBoolean(AIConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY));
         sendTypeInfoCheck.setSelection(store.getBoolean(AIConstants.AI_SEND_TYPE_INFO));
         sendDescriptionCheck.setSelection(store.getBoolean(AIConstants.AI_SEND_DESCRIPTION));
+
+        AIQueryConfirmationRule confirmSqlRule = CommonUtils.valueOf(
+            AIQueryConfirmationRule.class,
+            store.getString(AIConstants.AI_CONFIRM_SQL),
+            AIQueryConfirmationRule.EXECUTE
+        );
+        confirmSQLCombo.select(confirmSqlRule.ordinal());
+        AIQueryConfirmationRule confirmDmlRule = CommonUtils.valueOf(
+            AIQueryConfirmationRule.class,
+            store.getString(AIConstants.AI_CONFIRM_DML),
+            AIQueryConfirmationRule.CONFIRM
+        );
+        confirmDMLCombo.select(confirmDmlRule.ordinal());
+        AIQueryConfirmationRule confirmDdlRule = CommonUtils.valueOf(
+            AIQueryConfirmationRule.class,
+            store.getString(AIConstants.AI_CONFIRM_DDL),
+            AIQueryConfirmationRule.CONFIRM
+        );
+        confirmDDLCombo.select(confirmDdlRule.ordinal());
     }
 
     @Override
@@ -173,11 +236,26 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
         store.setValue(AIConstants.AI_COMPLETION_EXECUTE_IMMEDIATELY, executeQueryImmediatelyCheck.getSelection());
         store.setValue(AIConstants.AI_SEND_TYPE_INFO, sendTypeInfoCheck.getSelection());
         store.setValue(AIConstants.AI_SEND_DESCRIPTION, sendDescriptionCheck.getSelection());
+        store.setValue(
+            AIConstants.AI_CONFIRM_SQL,
+            CommonUtils.fromOrdinal(AIQueryConfirmationRule.class, confirmSQLCombo.getSelectionIndex()).name()
+        );
+        store.setValue(
+            AIConstants.AI_CONFIRM_DML,
+            CommonUtils.fromOrdinal(AIQueryConfirmationRule.class, confirmDMLCombo.getSelectionIndex()).name()
+        );
+        store.setValue(
+            AIConstants.AI_CONFIRM_DDL,
+            CommonUtils.fromOrdinal(AIQueryConfirmationRule.class, confirmDDLCombo.getSelectionIndex()).name()
+        );
     }
 
     @Override
     public void resetSettings(@NotNull AISettings aiSettings) {
-
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        store.setToDefault(AIConstants.AI_CONFIRM_SQL);
+        store.setToDefault(AIConstants.AI_CONFIRM_DML);
+        store.setToDefault(AIConstants.AI_CONFIRM_DDL);
     }
 
     @Override

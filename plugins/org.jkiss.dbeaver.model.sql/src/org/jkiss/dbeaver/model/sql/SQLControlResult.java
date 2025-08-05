@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+
 /**
  * Control command result.
  *
@@ -29,19 +32,25 @@ public class SQLControlResult {
         return new SQLControlResult();
     }
 
-    public static SQLControlResult transform(SQLScriptElement element) {
+    public static SQLControlResult failure() {
+        return new SQLControlResult();
+    }
+
+    public static SQLControlResult transform(@NotNull SQLScriptElement element) {
         return new SQLControlResult(element);
     }
 
+    @Nullable
     private SQLScriptElement transformed;
 
     private SQLControlResult() {
     }
 
-    private SQLControlResult(SQLScriptElement transformed) {
+    private SQLControlResult(@NotNull SQLScriptElement transformed) {
         this.transformed = transformed;
     }
 
+    @Nullable
     public SQLScriptElement getTransformed() {
         return transformed;
     }

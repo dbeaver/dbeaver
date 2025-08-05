@@ -22,22 +22,33 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class AIUtils {
     /**
@@ -212,9 +223,88 @@ public final class AIUtils {
         return null;
     }
 
+    public static boolean confirmQueryExecutionIfNeeded(@NotNull List<SQLScriptElement> scriptElements) {
+        Set<SQLQueryCategory> queryCategories = SQLQueryCategory.categorizeScript(scriptElements);
+        if (queryCategories.contains(SQLQueryCategory.DDL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
+            return isDdlActionConfirmed();
+        }
+        if (queryCategories.contains(SQLQueryCategory.DML) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DML)) {
+            return isDmlActionConfirmed();
+        }
+        if (isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
+            return isSqlActionConfirmed();
+        }
+        return true;
+    }
+
+    public static void disableAutoCommitIfNeeded(
+        @NotNull List<SQLScriptElement> scriptElements,
+        @Nullable DBCExecutionContext context
+    ) {
+        if (!SQLQueryCategory.categorizeScript(scriptElements).contains(SQLQueryCategory.DML)) {
+            return;
+        }
+
+        AIQueryConfirmationRule dmlRule = CommonUtils.valueOf(
+            AIQueryConfirmationRule.class,
+            DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_CONFIRM_DML),
+            AIQueryConfirmationRule.CONFIRM
+        );
+        if (dmlRule == AIQueryConfirmationRule.DISABLE_AUTOCOMMIT) {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+            try {
+                if (txnManager != null && txnManager.isAutoCommit()) {
+                    txnManager.setAutoCommit(new VoidProgressMonitor(), false);
+                    showAutoCommitDisabledNotification();
+                }
+            } catch (DBCException e) {
+                log.error(e);
+            }
+        }
+    }
+
     private static List<AIMessage> filterEmptyMessages(@NotNull List<AIMessage> messages) {
         return messages.stream()
             .filter(message -> !message.getContent().isBlank())
             .toList();
+    }
+
+    private static void showAutoCommitDisabledNotification() {
+        DBWorkbench.getPlatformUI().showWarningNotification(
+            AIMessages.ai_execute_query_auto_commit_disabled_title,
+            AIMessages.ai_execute_query_auto_commit_disabled_message
+        );
+    }
+
+    private static boolean isConfirmationNeeded(@NotNull String actionName) {
+        return CommonUtils.valueOf(
+            AIQueryConfirmationRule.class,
+            DBWorkbench.getPlatform().getPreferenceStore().getString(actionName),
+            AIQueryConfirmationRule.EXECUTE
+        ) == AIQueryConfirmationRule.CONFIRM;
+    }
+
+    private static boolean isSqlActionConfirmed() {
+        return DBWorkbench.getPlatformUI().confirmAction(
+            AIMessages.ai_execute_query_title,
+            AIMessages.ai_execute_query_confirm_sql_message,
+            true
+        );
+    }
+
+    private static boolean isDmlActionConfirmed() {
+        return DBWorkbench.getPlatformUI().confirmAction(
+            AIMessages.ai_execute_query_title,
+            AIMessages.ai_execute_query_confirm_dml_message,
+            true
+        );
+    }
+
+    private static boolean isDdlActionConfirmed() {
+        return DBWorkbench.getPlatformUI().confirmAction(
+            AIMessages.ai_execute_query_title,
+            AIMessages.ai_execute_query_confirm_ddl_message,
+            true
+        );
     }
 }
