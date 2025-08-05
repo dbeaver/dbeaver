@@ -33,7 +33,7 @@ public record AIEngineRequest(
         AIEngine engine,
         List<AIMessage> messages
     ) throws DBException {
-        int maxRequestSize = engine.getMaxRequestSize(monitor);
+        int maxRequestSize = engine.getContextWindowSize(monitor);
         List<AIMessage> truncatedMessages = AIUtils.truncateMessages(messages, maxRequestSize);
         return new AIEngineRequest(truncatedMessages);
     }

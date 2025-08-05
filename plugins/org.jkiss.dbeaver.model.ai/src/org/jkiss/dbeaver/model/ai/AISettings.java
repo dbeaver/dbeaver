@@ -93,8 +93,13 @@ public class AISettings implements IAdaptable {
     }
 
     public void saveSecrets() throws DBException {
-        for (AIEngineSettings<?> engineConfiguration : engineConfigurations.values()) {
-            engineConfiguration.saveSecrets();
+        for (Map.Entry<String, AIEngineSettings<?>> entry : engineConfigurations.entrySet()) {
+            String engineId = entry.getKey();
+            AIEngineSettings<?> engineConfiguration = entry.getValue();
+
+            if (resolvedSecrets.contains(engineId)) {
+                engineConfiguration.saveSecrets();
+            }
         }
     }
 
