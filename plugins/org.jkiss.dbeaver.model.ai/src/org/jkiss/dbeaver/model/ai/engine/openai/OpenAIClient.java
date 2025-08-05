@@ -22,13 +22,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.TooManyRequestsException;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionResult;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.io.Closeable;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -37,7 +36,8 @@ import java.util.List;
 import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
 
-public class OpenAIClient {
+public class OpenAIClient implements Closeable {
+    public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
 
     private static final String DATA_EVENT = "data: ";
     private static final String DONE_EVENT = "[DONE]";
@@ -61,6 +61,30 @@ public class OpenAIClient {
         return client.getHttpClient();
     }
 
+    public static OpenAIClient createClient(String token) {
+        return new OpenAIClient(
+            OPENAI_ENDPOINT,
+            List.of(new OpenAIRequestFilter(token))
+        );
+    }
+
+    @NotNull
+    public List<Model> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(AIHttpUtils.resolve(baseUrl, "models"))
+            .GET()
+            .timeout(TIMEOUT)
+            .build();
+
+        HttpRequest modifiedRequest = applyFilters(request);
+        HttpResponse<String> response = client.send(monitor, modifiedRequest);
+        if (response.statusCode() == 200) {
+            return GSON.fromJson(response.body(), ModelList.class).data();
+        } else {
+            throw new DBException("Request failed: " + response.statusCode() + ", body=" + response.body());
+        }
+    }
+
     @NotNull
     public ChatCompletionResult createChatCompletion(
         @NotNull DBRProgressMonitor monitor,
@@ -75,7 +99,7 @@ public class OpenAIClient {
         HttpRequest modifiedRequest = applyFilters(request);
         HttpResponse<String> response = client.send(monitor, modifiedRequest);
         if (response.statusCode() == 200) {
-            return deserializeValue(response.body(), ChatCompletionResult.class);
+            return GSON.fromJson(response.body(), ChatCompletionResult.class);
         } else if (response.statusCode() == 429) {
             throw new TooManyRequestsException("Too many requests: " + response.body());
         } else {
@@ -122,6 +146,7 @@ public class OpenAIClient {
         return publisher;
     }
 
+    @Override
     public void close() {
         client.close();
     }
@@ -143,15 +168,6 @@ public class OpenAIClient {
             return GSON.toJson(value);
         } catch (Exception e) {
             throw new DBException("Error serializing value", e);
-        }
-    }
-
-    @NotNull
-    private static <T> T deserializeValue(@NotNull String value, @NotNull Class<T> type) throws DBException {
-        try {
-            return GSON.fromJson(value, type);
-        } catch (Exception e) {
-            throw new DBException("Error deserializing value", e);
         }
     }
 

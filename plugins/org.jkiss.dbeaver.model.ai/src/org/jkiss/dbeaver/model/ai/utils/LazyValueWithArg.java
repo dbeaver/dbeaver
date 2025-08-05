@@ -18,21 +18,21 @@ package org.jkiss.dbeaver.model.ai.utils;
 
 import org.jkiss.code.NotNull;
 
-public abstract class LazyValue<T, E extends Exception> {
-    protected T value;
+public abstract class LazyValueWithArg<I, O, E extends Exception> {
+    protected O value;
     protected E exception;
 
     /**
-     * Evaluates the value. If the value has not been initialized yet, it is initialized by calling {@link #initialize()}.
+     * Evaluates the value. If the value has not been initialized yet, it is initialized by calling {@link #initialize(Object)} ()}.
      *
      * @return the value
      * @throws E if an exception occurred during initialization.
      */
     @NotNull
-    public synchronized T getInstance() throws E {
+    public synchronized O getInstance(I input) throws E {
         if (value == null) {
             try {
-                value = initialize();
+                value = initialize(input);
                 exception = null;
             } catch (Exception e) {
                 exception = (E) e;
@@ -51,5 +51,5 @@ public abstract class LazyValue<T, E extends Exception> {
      * @throws E if an exception occurred during initialization.
      */
     @NotNull
-    protected abstract T initialize() throws E;
+    protected abstract O initialize(I input) throws E;
 }

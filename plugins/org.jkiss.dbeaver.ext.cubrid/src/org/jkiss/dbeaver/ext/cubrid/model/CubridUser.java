@@ -197,6 +197,7 @@ public class CubridUser extends GenericSchema
             boolean autoIncrement = false;
             String tableName = table.isSystem() ? table.getName() : ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table);
             String sql = "show columns from " + DBUtils.getQuotedIdentifier(getDataSource(), tableName) + " where Field = ?";
+            sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 dbStat.setString(1, columnName);
                 try (JDBCResultSet result = dbStat.executeQuery()) {
