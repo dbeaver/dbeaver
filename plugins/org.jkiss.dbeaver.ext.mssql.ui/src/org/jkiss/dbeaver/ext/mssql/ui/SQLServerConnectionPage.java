@@ -136,6 +136,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
+            UIUtils.setWidgetWidthHint(hostText, 150);
             hostText.addModifyListener(textListener);
             addControlToGroup(GROUP_CONNECTION, hostLabel, hostText);
 
