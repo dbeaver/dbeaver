@@ -230,7 +230,8 @@ public final class AIUtils {
 
     public static void disableAutoCommitIfNeeded(
         @NotNull List<SQLScriptElement> scriptElements,
-        @Nullable DBCExecutionContext context
+        @Nullable DBCExecutionContext context,
+        @NotNull DBRProgressMonitor monitor
     ) {
         if (!SQLQueryCategory.categorizeScript(scriptElements).contains(SQLQueryCategory.DML)) {
             return;
@@ -245,7 +246,7 @@ public final class AIUtils {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
             try {
                 if (txnManager != null && txnManager.isAutoCommit()) {
-                    txnManager.setAutoCommit(new VoidProgressMonitor(), false);
+                    txnManager.setAutoCommit(monitor, false);
                     showAutoCommitDisabledNotification();
                 }
             } catch (DBCException e) {

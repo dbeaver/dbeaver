@@ -28,14 +28,17 @@ import org.jkiss.code.Nullable;
  */
 public class SQLControlResult {
 
+    @NotNull
     public static SQLControlResult success() {
         return new SQLControlResult();
     }
 
+    @NotNull
     public static SQLControlResult failure() {
         return new SQLControlResult();
     }
 
+    @NotNull
     public static SQLControlResult transform(@NotNull SQLScriptElement element) {
         return new SQLControlResult(element);
     }

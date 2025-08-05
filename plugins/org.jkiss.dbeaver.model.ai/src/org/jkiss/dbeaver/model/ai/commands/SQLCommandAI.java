@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -122,7 +123,11 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         if (!AIUtils.confirmQueryExecutionIfNeeded(scriptElements)) {
             return SQLControlResult.failure();
         }
-        AIUtils.disableAutoCommitIfNeeded(scriptElements, scriptContext.getExecutionContext());
+        AIUtils.disableAutoCommitIfNeeded(
+            scriptElements,
+            scriptContext.getExecutionContext(),
+            new VoidProgressMonitor()
+        );
 
         scriptContext.getOutputWriter().println(AI_OUTPUT_SEVERITY, prompt + " ==> " + script + "\n");
         return SQLControlResult.transform(new SQLQuery(dataSource, script));
