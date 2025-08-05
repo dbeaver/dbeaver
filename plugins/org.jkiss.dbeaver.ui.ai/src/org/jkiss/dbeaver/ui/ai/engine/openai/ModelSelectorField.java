@@ -143,6 +143,7 @@ public class ModelSelectorField {
 
         @NotNull
         private ModelListProvider modelListSupplier;
+        private String modelLabel = AIUIMessages.gpt_preference_page_combo_engine;
 
         public Builder withParent(@NotNull Composite parent) {
             this.parent = parent;
@@ -164,10 +165,15 @@ public class ModelSelectorField {
             return this;
         }
 
+        public Builder withModelLabel(@NotNull String modelLabel) {
+            this.modelLabel = modelLabel;
+            return this;
+        }
+
         public ModelSelectorField build() {
             Combo combo = UIUtils.createLabelCombo(
                 parent,
-                AIUIMessages.gpt_preference_page_combo_engine,
+                modelLabel,
                 SWT.DROP_DOWN
             );
             combo.setLayoutData(gridData);
