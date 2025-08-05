@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.code.NotNull;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
-public class DataSourceParseResults {
-    public final Set<DBPDataSourceContainer> updatedDataSources = new LinkedHashSet<>();
-    public final Set<DBPDataSourceContainer> addedDataSources = new LinkedHashSet<>();
-    public final Set<DBPDataSourceFolder> addedFolders = new LinkedHashSet<>();
-    public final Set<DBPDataSourceFolder> updatedFolders = new LinkedHashSet<>();
+public record ModelList(
+    @NotNull String object,
+    @NotNull List<Model> data
+) {
 }

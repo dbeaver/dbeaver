@@ -14,17 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.ai.engine;
 
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-public class DataSourceParseResults {
-    public final Set<DBPDataSourceContainer> updatedDataSources = new LinkedHashSet<>();
-    public final Set<DBPDataSourceContainer> addedDataSources = new LinkedHashSet<>();
-    public final Set<DBPDataSourceFolder> addedFolders = new LinkedHashSet<>();
-    public final Set<DBPDataSourceFolder> updatedFolders = new LinkedHashSet<>();
+public enum AIModelFeature {
+    COMPLETION,
+    CHAT,
+    EMBEDDING,
+    IMAGE_GENERATION,
+    IMAGE_EDITING,
+    IMAGE_VARIATION,
+    SPEECH_TO_TEXT,
+    TEXT_TO_SPEECH,
+    CODE_INTERPRETER,
+    FUNCTION_CALLING,
+    MULTIMODAL_INPUT_OUTPUT;
 }
