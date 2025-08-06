@@ -165,9 +165,9 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             dbText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
-            //gd.widthHint = 270;
             gd.horizontalSpan = 3;
             dbText.setLayoutData(gd);
+            UIUtils.setWidgetWidthHint(dbText, 150);
             dbText.addModifyListener(textListener);
             addControlToGroup(GROUP_CONNECTION, dbLabel, dbText);
         }
