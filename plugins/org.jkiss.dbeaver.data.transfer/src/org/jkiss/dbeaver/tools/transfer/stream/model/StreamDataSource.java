@@ -58,6 +58,7 @@ public class StreamDataSource extends AbstractSimpleDataSource<StreamExecutionCo
         return new StreamDataSourceInfo();
     }
 
+    @NotNull
     @Override
     public SQLDialect getSQLDialect() {
         return dialect;

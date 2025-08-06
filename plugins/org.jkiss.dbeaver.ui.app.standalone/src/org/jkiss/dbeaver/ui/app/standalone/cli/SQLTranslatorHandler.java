@@ -24,14 +24,14 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
-import org.jkiss.dbeaver.ui.app.standalone.CommandLineParameterHandler;
+import org.jkiss.dbeaver.ui.app.standalone.ICommandLineParameterHandler;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.FileReader;
 import java.io.IOException;
 
-public class SQLTranslatorHandler implements CommandLineParameterHandler {
+public class SQLTranslatorHandler implements ICommandLineParameterHandler {
     private static final Log log = Log.getLog(SQLTranslatorHandler.class);
 
     @Override

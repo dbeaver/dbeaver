@@ -18,17 +18,15 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateFactory;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateNode;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@RunWith(MockitoJUnitRunner.class)
-public class TokenPredicatesConditionTest {
+public class TokenPredicatesConditionTest extends DBeaverUnitTest {
 
     private TokenPredicateNode makeTestPredicateTree() {
         TokenPredicateFactory tt = TokenPredicateFactory.makeDefaultFactory();

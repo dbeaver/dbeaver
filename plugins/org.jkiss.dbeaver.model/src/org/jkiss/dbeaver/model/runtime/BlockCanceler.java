@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.runtime;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 
@@ -28,12 +27,12 @@ public class BlockCanceler
 {
     private static final Log log = Log.getLog(BlockCanceler.class);
 
-    public static void cancelBlock(@NotNull DBRProgressMonitor monitor, @NotNull DBRBlockingObject block, @Nullable Thread blockActiveThread) throws DBException {
+    public static void cancelBlock(@NotNull DBRProgressMonitor monitor, @NotNull DBRBlockingObject block) throws DBException {
         final Thread thread = Thread.currentThread();
         final String threadOldName = thread.getName();
         thread.setName("Operation cancel [" + block + "]");
         try {
-            block.cancelBlock(monitor, blockActiveThread);
+            block.cancelBlock(monitor, block.getBlockThread());
         } catch (Throwable e) {
             if (e instanceof RuntimeException) {
                 throw e;

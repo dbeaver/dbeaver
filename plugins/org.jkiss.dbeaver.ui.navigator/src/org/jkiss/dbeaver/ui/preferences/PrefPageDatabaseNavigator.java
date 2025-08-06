@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +63,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Button showStatisticsCheck;
     private Button showNodeActionsCheck;
     private Button colorAllNodesCheck;
+    private Button showChildCountCheck;
 
     private Button showObjectTipsCheck;
     private Button showToolTipsCheck;
@@ -136,6 +136,13 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_folders_first,
                 UINavigatorMessages.pref_page_database_general_label_folders_first_tip,
+                false,
+                2
+            );
+            showChildCountCheck = UIUtils.createCheckbox(
+                navigatorGroup,
+                UINavigatorMessages.pref_page_database_general_label_show_child_count,
+                UINavigatorMessages.pref_page_database_general_label_show_child_count_tip,
                 false,
                 2
             );
@@ -279,6 +286,11 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 ? store.getDefaultBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)
                 : store.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)
         );
+        showChildCountCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT)
+        );
         groupByDriverCheck.setSelection(
             useDefaultValues
                 ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER)
@@ -384,6 +396,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_CONTENTS_IN_TOOLTIP, showContentsInToolTipsContents.getSelection());
         store.setValue(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
         store.setValue(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, sortFoldersFirstCheck.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT, showChildCountCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME, showConnectionHostCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION, showObjectsDescriptionCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO, showStatisticsCheck.getSelection());

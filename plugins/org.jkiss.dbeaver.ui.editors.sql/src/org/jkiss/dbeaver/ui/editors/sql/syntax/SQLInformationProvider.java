@@ -21,7 +21,6 @@ import org.eclipse.jface.text.information.IInformationProvider;
 import org.eclipse.jface.text.information.IInformationProviderExtension;
 import org.eclipse.jface.text.information.IInformationProviderExtension2;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -37,13 +36,10 @@ import org.jkiss.utils.ArrayUtils;
 
 public class SQLInformationProvider implements IInformationProvider, IInformationProviderExtension, IInformationProviderExtension2 {
 
-    //private static final Log log = Log.getLog(SQLInformationProvider.class);
-
     class EditorWatcher extends AbstractPartListener {
 
         @Override
-        public void partClosed(IWorkbenchPart part)
-        {
+        public void partClosed(IWorkbenchPart part) {
             if (part == editor) {
                 editor.getSite().getWorkbenchWindow().getPartService().removePartListener(partListener);
                 partListener = null;
@@ -51,28 +47,25 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         }
 
         @Override
-        public void partActivated(IWorkbenchPart part)
-        {
+        public void partActivated(IWorkbenchPart part) {
             update();
         }
 
         @Override
-        public void partBroughtToTop(IWorkbenchPart part)
-        {
+        public void partBroughtToTop(IWorkbenchPart part) {
             update();
         }
     }
 
     protected SQLEditorBase editor;
-    private SQLContextInformer contextInformer;
+    private final SQLContextInformer contextInformer;
     private IPartListener partListener;
 
     private String currentPerspective;
     protected SQLAnnotationHover implementation;
     private IInformationControlCreator informationControlCreator;
 
-    public SQLInformationProvider(SQLEditorBase editor, SQLContextInformer contextInformer)
-    {
+    public SQLInformationProvider(SQLEditorBase editor, SQLContextInformer contextInformer) {
         this.editor = editor;
         this.contextInformer = contextInformer;
         this.implementation = new SQLAnnotationHover(editor);
@@ -87,8 +80,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         }
     }
 
-    protected void update()
-    {
+    protected void update() {
 
         IWorkbenchWindow window = editor.getSite().getWorkbenchWindow();
         if (window == null) {
@@ -111,8 +103,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
     }
 
     @Override
-    public IRegion getSubject(ITextViewer textViewer, int offset)
-    {
+    public IRegion getSubject(ITextViewer textViewer, int offset) {
         final Point selectedRange = textViewer.getSelectedRange();
         if (selectedRange.y > 1) {
             return new Region(selectedRange.x, selectedRange.y);
@@ -128,15 +119,13 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
      * @deprecated
      */
     @Override
-    public String getInformation(ITextViewer textViewer, IRegion subject)
-    {
+    public String getInformation(ITextViewer textViewer, IRegion subject) {
         Object information = getInformation2(textViewer, subject);
         return information == null ? null : information.toString();
     }
 
     @Override
-    public Object getInformation2(ITextViewer textViewer, IRegion subject)
-    {
+    public Object getInformation2(ITextViewer textViewer, IRegion subject) {
         if (implementation != null) {
             Object s = implementation.getHoverInfo2(textViewer, subject);
             if (s != null) {
@@ -169,22 +158,10 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
             contextInformer.getKeywordType());
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.jface.text.information.IInformationProviderExtension2#getInformationPresenterControlCreator()
-     */
     @Override
-    public IInformationControlCreator getInformationPresenterControlCreator()
-    {
+    public IInformationControlCreator getInformationPresenterControlCreator() {
         if (informationControlCreator == null) {
-            informationControlCreator = new IInformationControlCreator() {
-                @Override
-                public IInformationControl createInformationControl(Shell shell)
-                {
-                    return new DefaultInformationControl(shell, true);
-                }
-            };
+            informationControlCreator = shell -> new DefaultInformationControl(shell, true);
         }
         return informationControlCreator;
     }

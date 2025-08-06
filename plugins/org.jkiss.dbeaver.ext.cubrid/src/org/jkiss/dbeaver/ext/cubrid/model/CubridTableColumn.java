@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -31,16 +32,19 @@ import org.jkiss.dbeaver.model.meta.Property;
 public class CubridTableColumn extends GenericTableColumn
 {
     final static String [] customTypes = {"ENUM", "JSON"};
+    public boolean isForeignKey;
 
     public CubridTableColumn(
             @NotNull GenericTableBase table,
             @Nullable String columnName,
             @Nullable String dataType,
-            @Nullable Boolean autoIncrement,
+            boolean autoIncrement,
+            boolean isForeignKey,
             @Nullable JDBCResultSet dbResult)
             throws DBException {
         super(table);
         if (dbResult != null) {
+            this.isForeignKey = isForeignKey;
             setName(columnName);
             setDataType(dataType);
             setPrecision(JDBCUtils.safeGetInteger(dbResult, "prec"));
@@ -53,6 +57,16 @@ public class CubridTableColumn extends GenericTableColumn
             setOrdinalPosition(JDBCUtils.safeGetInteger(dbResult, "ref_order"));
             setPersisted(true);
         }
+    }
+
+    @Override
+    public void setName(String name) {
+        super.setName(name != null ? name.toLowerCase() : null);
+    }
+
+    @NotNull
+    public boolean isForeignKey() {
+        return isForeignKey;
     }
 
     public void setDataType(@NotNull String fullTypeName) throws DBException {
@@ -73,21 +87,24 @@ public class CubridTableColumn extends GenericTableColumn
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 40)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 40)
     public long getMaxLength() {
-        return super.getMaxLength();
+        if (getDataKind().equals(DBPDataKind.STRING)) {
+            return super.getMaxLength();
+        }
+        return 0;
     }
 
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 50)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 50)
     public boolean isRequired() {
         return super.isRequired();
     }
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 70)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 70)
     public String getDefaultValue() {
         return super.getDefaultValue();
     }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.w3c.dom.Document;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -31,11 +34,6 @@ import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
 
 /**
  * XML document
@@ -77,10 +75,10 @@ public class DBDDocumentXML implements DBDDocument {
     }
 
     @Override
-    public void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, Charset charset) throws DBException {
+    public void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull Writer writer) throws IOException, DBException {
         try {
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            Result output = new StreamResult(new OutputStreamWriter(stream, charset));
+            Result output = new StreamResult(writer);
 
             transformer.transform(
                 new DOMSource(document),
@@ -91,13 +89,13 @@ public class DBDDocumentXML implements DBDDocument {
     }
 
     @Override
-    public void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, Charset charset) throws DBException {
+    public void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull Reader reader) throws IOException, DBException {
         try {
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
             DOMResult output = new DOMResult();
 
             transformer.transform(
-                new StreamSource(new InputStreamReader(stream, charset)),
+                new StreamSource(reader),
                 output);
             document = (Document) output.getNode();
             modified = true;

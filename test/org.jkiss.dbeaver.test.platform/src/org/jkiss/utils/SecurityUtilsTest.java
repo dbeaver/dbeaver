@@ -16,10 +16,11 @@
  */
 package org.jkiss.utils;
 
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Test;
 
 //@RunWith(PowerMockRunner.class)
-public class SecurityUtilsTest {
+public class SecurityUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void dummyTest() throws Exception {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,27 +21,33 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TableAttributeContainerBuilder extends Builder<DBSEntity, DBSEntityAttribute> {
-    private final DBSEntity entity;
+public class TableAttributeContainerBuilder extends Builder<DBSTable, DBSEntityAttribute> {
+    private final DBSTable entity;
 
     public TableAttributeContainerBuilder(@NotNull DBPDataSource dataSource, @NotNull DBSObject parent, @NotNull String name) throws DBException {
         super(dataSource, parent);
-        this.entity = mock(DBSEntity.class);
+        this.entity = mock(DBSTable.class);
         when(entity.getDataSource()).thenReturn(dataSource);
         when(entity.getParentObject()).thenReturn(parent);
         when(entity.getName()).thenReturn(name);
         when(entity.getEntityType()).thenReturn(DBSEntityType.TABLE);
         when(entity.getAttributes(any())).then(x -> children);
         when(entity.getAttribute(any(), any())).then(x -> DBUtils.findObject(children, x.getArgument(1, String.class)));
+        when(entity.getFullyQualifiedName(any()))
+            .then(x -> DBUtils.getFullyQualifiedName(
+                dataSource,
+                SQLQueryCompletionItem.prepareQualifiedNameParts(entity, null).toArray(String[]::new)
+            ));
     }
 
     public TableAttributeContainerBuilder(@NotNull DBPDataSource dataSource, @NotNull String name) throws DBException {
@@ -62,7 +68,7 @@ public class TableAttributeContainerBuilder extends Builder<DBSEntity, DBSEntity
 
     @NotNull
     @Override
-    public DBSEntity build() {
+    public DBSTable build() {
         return entity;
     }
 }

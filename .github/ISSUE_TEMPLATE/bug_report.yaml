@@ -1,6 +1,7 @@
-name: 🐛 Bug Report 
+name: 🐛 Bug Report
 description: Report a reproducible bug or regression in DBeaver
-labels: [bug, wait for review]
+labels: [wait for review]
+type: Bug
 body:
   - type: markdown
     attributes:
@@ -11,7 +12,7 @@ body:
     attributes:
       label: Description
       description: |
-        Describe the issue you are experiencing. 
+        Describe the issue you are experiencing.
         Attach log files if possible ([read how to provide log files on our wiki](https://github.com/dbeaver/dbeaver/wiki/Log-files))
       placeholder: |
         Please enter a description of the issue. Here you can also attach log files, screenshots or a video
@@ -37,9 +38,9 @@ body:
     id: database-driver
     attributes:
       label: Database and driver
-      description: | 
+      description: |
         What database and driver do you use?
-        You can check it in the connection settings dialog. 
+        You can check it in the connection settings dialog.
       placeholder: |
         Example:
         1. Database name and version: PostgreSQL 14.0

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.data;
 import org.eclipse.jface.text.Document;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -88,9 +89,17 @@ public class SQLQueryDataContainer implements DBSDataContainer, SQLQueryContaine
         SQLQuery sqlQuery = query;
         String queryText = sqlQuery.getText();//.trim();
         if (dataFilter != null && dataFilter.hasFilters()) {
-            String filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
-                session.getProgressMonitor(),
-                dataSource, queryText, dataFilter);
+            String filteredQueryText;
+            try {
+                filteredQueryText = dataSource.getSQLDialect().addFiltersToQuery(
+                    session.getProgressMonitor(),
+                    dataSource,
+                    queryText,
+                    dataFilter
+                );
+            } catch (DBException e) {
+                throw new DBCException("Unable to apply filters to query", e, session.getExecutionContext());
+            }
             sqlQuery = new SQLQuery(dataSource, filteredQueryText, sqlQuery);
         } else {
             sqlQuery = new SQLQuery(dataSource, queryText, sqlQuery);

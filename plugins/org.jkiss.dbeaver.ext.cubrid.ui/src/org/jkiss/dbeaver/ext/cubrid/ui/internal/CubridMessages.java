@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.ui.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class CubridMessages extends NLS {
 
@@ -29,4 +29,12 @@ public class CubridMessages extends NLS {
     public static String dialog_struct_create_procedure_container;
     public static String dialog_struct_create_procedure_label_name;
     public static String dialog_struct_create_procedure_combo_type;
+    public static String statistic_trace_info;
+    public static String statistic_info;
+    public static String statistic_all_info;
+    public static String statistic_group_editor_title;
+    public static String statistic_instruction_message;
+    public static String pref_page_cubrid_group_dbms_output;
+    public static String pref_page_cubrid_checkbox_enable_dbms_output;
+    public static String pref_page_cubrid_label_buffer_size;
 }

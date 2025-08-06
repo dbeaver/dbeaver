@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -30,9 +31,14 @@ import static org.mockito.Mockito.when;
 public class SchemaContainerBuilder extends Builder<DBSObjectContainer, DBSObjectContainer> {
     private final DBSObjectContainer container;
 
-    public SchemaContainerBuilder(@NotNull DBPDataSource dataSource, @NotNull DBSObject parent, @NotNull String name) throws DBException {
+    public SchemaContainerBuilder(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBSObject parent,
+        @NotNull String name,
+        @NotNull Class<? extends DBSObjectContainer> tableContainerType
+    ) throws DBException {
         super(dataSource, parent);
-        this.container = mock(DBSObjectContainer.class);
+        this.container = mock(tableContainerType);
         when(container.getDataSource()).thenReturn(dataSource);
         when(container.getParentObject()).thenReturn(parent);
         when(container.getName()).thenReturn(name);
@@ -41,8 +47,12 @@ public class SchemaContainerBuilder extends Builder<DBSObjectContainer, DBSObjec
         when(container.getChild(any(), any())).then(x -> DBUtils.findObject(children, x.getArgument(1, String.class)));
     }
 
+    public SchemaContainerBuilder(@NotNull DBPDataSource dataSource, @NotNull DBSObject parent, @NotNull String name) throws DBException {
+        this(dataSource, parent, name, DBSCatalog.class);
+    }
+
     public SchemaContainerBuilder(@NotNull DBPDataSource dataSource, @NotNull String name) throws DBException {
-        this(dataSource, dataSource, name);
+        this(dataSource, dataSource, name, DBSObjectContainer.class);
     }
 
     @NotNull

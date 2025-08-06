@@ -18,10 +18,11 @@ package org.jkiss.dbeaver.model.websocket.event.client;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
-import org.jkiss.dbeaver.model.websocket.event.WSClientEventType;
 
 public class WSSessionPingClientEvent extends WSClientEvent {
+    public static final String ID = "cb_client_session_ping";
+
     protected WSSessionPingClientEvent(@Nullable String topicId) {
-        super(WSClientEventType.SESSION_PING.getEventId(), topicId);
+        super(ID, topicId);
     }
 }

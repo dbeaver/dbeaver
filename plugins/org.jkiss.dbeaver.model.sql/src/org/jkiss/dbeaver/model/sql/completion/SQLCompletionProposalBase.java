@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import java.util.Map;
 /**
  * SQL Completion proposal
  */
-public class SQLCompletionProposalBase {
+public class SQLCompletionProposalBase extends CompletionProposalBase {
 
     public static final String PARAM_EXEC = "exec";
 
@@ -89,8 +89,8 @@ public class SQLCompletionProposalBase {
         DBPKeywordType proposalType,
         String description,
         DBPNamedObject object,
-        Map<String, Object> params)
-    {
+        Map<String, Object> params
+    ) {
         this.request = request;
         DBPDataSource dataSource = request.getContext().getDataSource();
 

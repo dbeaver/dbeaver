@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.messages;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class ModelMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.messages.ModelResources"; //$NON-NLS-1$
@@ -207,7 +206,9 @@ public class ModelMessages extends NLS {
     public static String controls_querylog_column_type_name;
     public static String controls_querylog_column_type_tooltip;
     public static String controls_querylog_column_schema_name;
+    public static String controls_querylog_column_schema_tip;
     public static String controls_querylog_column_catalog_name;
+    public static String controls_querylog_column_catalog_tip;
     public static String controls_querylog_column_connection_name;
     public static String controls_querylog_column_connection_tooltip;
     public static String controls_querylog_column_context_name;

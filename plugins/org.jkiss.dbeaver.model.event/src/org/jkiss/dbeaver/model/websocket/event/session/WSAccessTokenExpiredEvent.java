@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.model.websocket.event.session;
 
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSAccessTokenExpiredEvent extends WSAbstractSessionEvent {
+    public static final String ID = "cb_access_token_expired";
+
     public WSAccessTokenExpiredEvent() {
-        super(WSEventType.ACCESS_TOKEN_EXPIRED);
+        super("cb_access_token_expired", WSConstants.TOPIC_SESSION);
     }
 }

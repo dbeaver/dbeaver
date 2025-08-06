@@ -66,7 +66,7 @@ public class GlobalProxySelector extends ProxySelector {
         if (SocksConstants.SOCKET_SCHEME.equals(uri.getScheme())) {
             // 2. Check for connections' proxy config
             List<Proxy> proxies = null;
-            for (DBWHandlerConfiguration networkHandler : dataSourceContainer.getConnectionConfiguration().getHandlers()) {
+            for (DBWHandlerConfiguration networkHandler : dataSourceContainer.getActualConnectionConfiguration().getHandlers()) {
                 if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
                     String proxyHost = networkHandler.getStringProperty(SocksConstants.PROP_HOST);
                     int proxyPort = networkHandler.getIntProperty(SocksConstants.PROP_PORT);
@@ -81,9 +81,7 @@ public class GlobalProxySelector extends ProxySelector {
                     }
                 }
             }
-            if (proxies != null) {
-                return proxies;
-            }
+            return proxies;
         }
         return null;
     }

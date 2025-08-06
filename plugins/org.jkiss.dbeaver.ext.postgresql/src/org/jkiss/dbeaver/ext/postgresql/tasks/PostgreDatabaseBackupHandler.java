@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,7 +138,9 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
             log.debug("Can't find specific schemas/tables for the backup");
             return;
         }
-        if (!CommonUtils.isEmpty(arg.getTables())) {
+        if (settings.isFullSchemaBackup()) {
+            return;
+        } else if (!CommonUtils.isEmpty(arg.getTables())) {
             for (PostgreTableBase table : arg.getTables()) {
                 cmd.add("-t");
                 // Use explicit quotes in case of quoted identifiers (#5950)
@@ -163,11 +165,20 @@ public class PostgreDatabaseBackupHandler extends PostgreNativeToolHandler<Postg
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, PostgreDatabaseBackupSettings settings, PostgreDatabaseBackupInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException, DBException {
+    protected void startProcessHandler(
+        DBRProgressMonitor monitor,
+        DBTTask task,
+        PostgreDatabaseBackupSettings settings,
+        PostgreDatabaseBackupInfo arg,
+        ProcessBuilder processBuilder,
+        Process process,
+        Log log
+    ) throws IOException, DBException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
         String outFileName = settings.getOutputFile(arg);
         if (isUseStreamTransfer(outFileName) && settings.getFormat() != PostgreBackupRestoreSettings.ExportFormat.DIRECTORY) {
             Path outFile = DBFUtils.resolvePathFromString(monitor, task.getProject(), outFileName);
+            log.debug("Dump database into " + outFile.toUri());
             DumpCopierJob job = new DumpCopierJob(monitor, "Export database", process.getInputStream(), outFile, log);
             job.start();
         }

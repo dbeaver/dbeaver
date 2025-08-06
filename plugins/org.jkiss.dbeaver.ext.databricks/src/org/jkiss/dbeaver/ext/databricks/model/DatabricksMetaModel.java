@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.databricks.DatabricksConstants;
 import org.jkiss.dbeaver.ext.databricks.DatabricksDataSource;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -62,8 +63,9 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         return null;
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new DatabricksDataSource(monitor, container, this);
     }
 
@@ -74,6 +76,32 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         @NotNull String schemaName
     ) {
         return new DatabricksSchema(dataSource, catalog, schemaName);
+    }
+
+    @Nullable
+    @Override
+    public List<GenericSchema> loadSchemas(
+        JDBCSession session,
+        GenericDataSource dataSource,
+        GenericCatalog catalog
+    ) throws DBException {
+        List<GenericSchema> schemas = new ArrayList<>();
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SHOW SCHEMAS IN " + catalog.getName()
+        )) {
+            dbStat.executeStatement();
+            try (JDBCResultSet dbResult = dbStat.getResultSet()) {
+                while (dbResult.next()) {
+                    String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, DatabricksConstants.SCHEMA_NAME);
+                    schemas.add(new DatabricksSchema(dataSource, catalog, schemaName));
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("Cannot load schemas with query", e);
+            return super.loadSchemas(session, dataSource, catalog);
+        }
+
+        return schemas;
     }
 
     @Override
@@ -135,10 +163,9 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         GenericStructContainer container,
         @Nullable String tableName,
         @Nullable String tableType,
-        @Nullable JDBCResultSet dbResult)
-    {
+        @Nullable JDBCResultSet dbResult) {
         if ((CommonUtils.isNotEmpty(tableName) && !tempViewsList.isEmpty()
-            && tempViewsList.stream().anyMatch(e -> e.name.equalsIgnoreCase(tableName))) ||
+             && tempViewsList.stream().anyMatch(e -> e.name.equalsIgnoreCase(tableName))) ||
             tableType != null && isView(tableType))
         {
             return new DatabricksView(
@@ -156,7 +183,7 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
     }
 
     @Override
-    public boolean supportsTableDDLSplit(GenericTableBase sourceObject) {
+    public boolean supportsTableDDLSplit(@NotNull GenericTableBase sourceObject) {
         return false;
     }
 

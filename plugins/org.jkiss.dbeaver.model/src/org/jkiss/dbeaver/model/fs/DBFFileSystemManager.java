@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.fs.event.DBFEvent;
 import org.jkiss.dbeaver.model.fs.event.DBFEventListener;
 import org.jkiss.dbeaver.model.fs.event.DBFEventManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -50,7 +50,7 @@ public class DBFFileSystemManager implements DBFEventListener {
         DBFEventManager.getInstance().addListener(this);
     }
 
-    public synchronized void reloadFileSystems(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public synchronized boolean reloadFileSystems(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (dbfFileSystems != null) {
             for (DBFVirtualFileSystem fs : dbfFileSystems.values()) {
                 try {
@@ -69,6 +69,7 @@ public class DBFFileSystemManager implements DBFEventListener {
             }
         }
         dbfFileSystems = fsList;
+        return true;
     }
 
     @NotNull
@@ -106,17 +107,17 @@ public class DBFFileSystemManager implements DBFEventListener {
     }
 
     @NotNull
-    public synchronized Collection<DBFVirtualFileSystem> getVirtualFileSystems() throws DBException {
+    public synchronized Collection<DBFVirtualFileSystem> getVirtualFileSystems(DBRProgressMonitor monitor) throws DBException {
         if (dbfFileSystems == null) {
-            reloadFileSystems(new LoggingProgressMonitor());
+            reloadFileSystems(monitor);
         }
         return dbfFileSystems.values();
     }
 
     @Override
-    public void handleFSEvent() {
+    public void handleFileSystemEvent(@NotNull DBFEvent event) {
         try {
-            reloadFileSystems(new LoggingProgressMonitor());
+            DBWorkbench.getPlatformUI().runWithMonitor(this::reloadFileSystems);
         } catch (DBException e) {
             log.error(e);
         }

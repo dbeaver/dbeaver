@@ -21,11 +21,11 @@ public class UIFonts {
     /**
      * Monospace font
      */
-    public static String DBEAVER_FONTS_MONOSPACE =  "org.jkiss.dbeaver.dbeaver.ui.fonts.monospace";
+    public static final String DBEAVER_FONTS_MONOSPACE =  "org.jkiss.dbeaver.dbeaver.ui.fonts.monospace";
     
     /**
      * Main font
      */
-    public static String DBEAVER_FONTS_MAIN_FONT =  "org.jkiss.dbeaver.dbeaver.ui.fonts.main";
+    public static final String DBEAVER_FONTS_MAIN_FONT =  "org.jkiss.dbeaver.dbeaver.ui.fonts.main";
 
 }

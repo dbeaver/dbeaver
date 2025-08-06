@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,6 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
 
 public class DatabaseEditorInputFactory implements IElementFactory
 {
@@ -35,6 +31,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
     static final String TAG_NODE_NAME = "node-name"; //$NON-NLS-1$
     static final String TAG_ACTIVE_PAGE = "page"; //$NON-NLS-1$
     static final String TAG_ACTIVE_FOLDER = "folder"; //$NON-NLS-1$
+    static final String TAG_CONNECTION_COLOR = "connection-color"; //$NON-NLS-1$
 
     private static volatile boolean lookupEditor;
 
@@ -50,32 +47,4 @@ public class DatabaseEditorInputFactory implements IElementFactory
     public IAdaptable createElement(IMemento memento) {
         return new DatabaseLazyEditorInput(memento);
     }
-
-    public static void saveState(IMemento memento, DatabaseEditorInput input) {
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DatabaseEditorPreferences.PROP_SAVE_EDITORS_STATE)) {
-            return;
-        }
-        final DBCExecutionContext context = input.getExecutionContext();
-        if (context == null) {
-            // Detached - nothing to save
-            return;
-        }
-        if (input.getDatabaseObject() != null && !input.getDatabaseObject().isPersisted()) {
-            return;
-        }
-
-        final DBNDatabaseNode node = input.getNavigatorNode();
-        memento.putString(TAG_CLASS, input.getClass().getName());
-        memento.putString(TAG_PROJECT, context.getDataSource().getContainer().getProject().getName());
-        memento.putString(TAG_DATA_SOURCE, context.getDataSource().getContainer().getId());
-        memento.putString(TAG_NODE, node.getNodeUri());
-        memento.putString(TAG_NODE_NAME, node.getNodeDisplayName());
-        if (!CommonUtils.isEmpty(input.getDefaultPageId())) {
-            memento.putString(TAG_ACTIVE_PAGE, input.getDefaultPageId());
-        }
-        if (!CommonUtils.isEmpty(input.getDefaultFolderId())) {
-            memento.putString(TAG_ACTIVE_FOLDER, input.getDefaultFolderId());
-        }
-    }
-
 }

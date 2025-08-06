@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.AbstractObjectCache;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -91,6 +92,10 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         throws DBException
     {
         if (isFullyCached() || monitor.isForceCacheUsage() || monitor.isCanceled()) {
+            return;
+        }
+        if (DBWorkbench.getPlatform().isUnitTestMode()) {
+            log.debug("[TEST] Skip cache read in test mode");
             return;
         }
 
@@ -163,20 +168,21 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         this.invalidateObjects(monitor, owner, new CacheIterator());
     }
 
-    public void beforeCacheLoading(JDBCSession session, OWNER owner) throws DBException {
+    public void beforeCacheLoading(@NotNull JDBCSession session, OWNER owner) throws DBException {
         // Do nothing
     }
 
-    public void afterCacheLoading(JDBCSession session, OWNER owner) throws DBException {
+    public void afterCacheLoading(@NotNull JDBCSession session, OWNER owner) throws DBException {
         // Do nothing
     }
 
+    @NotNull
     protected String getCacheName() {
         return getClass().getSimpleName();
     }
 
     // Can be implemented to provide custom cache error handler
-    protected boolean handleCacheReadError(Exception error) {
+    protected boolean handleCacheReadError(@NotNull Exception error) {
         return false;
     }
 

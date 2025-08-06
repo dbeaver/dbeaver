@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,13 +42,14 @@ import org.eclipse.ui.part.EditorInputTransfer;
 import org.eclipse.ui.part.MarkerTransfer;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
@@ -342,19 +343,24 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 
 
         try {
-            DBeaverCommandLine.executeCommandLineCommands(
-                DBeaverCommandLine.getCommandLine(),
+            DBeaverCommandLine.getInstance().executeCommandLineCommands(
+                DBeaverCommandLine.getInstance().getCommandLine(),
                 DBeaverApplication.getInstance().getInstanceServer(),
-                true);
+                true
+            );
         } catch (Exception e) {
             log.error("Error processing command line", e);
         }
     }
 
     protected void initWorkbenchWindows() {
-        UIUtils.asyncExec(() -> {
-            for (IWorkbenchWindowInitializer wwInit : WorkbenchHandlerRegistry.getInstance().getWorkbenchWindowInitializers()) {
-                wwInit.initializeWorkbenchWindow(getWindowConfigurer().getWindow());
+        UIExecutionQueue.queueExec(() -> {
+            for (var descriptor : WorkbenchHandlerRegistry.getInstance().getWorkbenchWindowInitializers()) {
+                try {
+                    descriptor.newInstance().initializeWorkbenchWindow(getWindowConfigurer());
+                } catch (DBException e) {
+                    log.error("Error creating workbench window initializer", e);
+                }
             }
         });
     }

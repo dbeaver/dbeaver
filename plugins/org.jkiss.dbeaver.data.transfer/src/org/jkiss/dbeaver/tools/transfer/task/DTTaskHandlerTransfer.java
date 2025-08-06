@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -72,7 +73,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
             });
         } catch (InvocationTargetException e) {
             throw new DBException("Error loading task settings", e.getTargetException());
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | OperationCanceledException e) {
             return new DBTTaskRunStatus();
         }
         executeWithSettings(runnableContext, task, locale, log, logStream, listener, settings[0]);
@@ -102,7 +103,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                 e.getCause()
             );
             throw new DBException("Error starting data transfer", e);
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | OperationCanceledException e) {
             //ignore
         } finally {
             restoreReferentialIntegrity(
@@ -169,71 +170,22 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         if (totalJobs == 0) {
             return null;
         }
-        final Throwable[] error = new Throwable[1];
+        TaskExecutor taskExecutor = new TaskExecutor(
+            settings, task, listener, log, logStream, dataPipes, totalJobs);
         try {
-            runnableContext.run(true, true, monitor -> {
-                final JobGroup group;
-                if (totalJobs > 1) {
-                    group = new JobGroup("Data transfer", totalJobs, totalJobs);
-                } else {
-                    group = null;
-                }
-
-                final DataTransferJob[] jobs = new DataTransferJob[totalJobs];
-                for (int i = 0; i < totalJobs; i++) {
-                    DataTransferJob job = new DataTransferJob(settings, task, log, logStream, totalJobs == 1 ? monitor : null, i);
-                    job.setJobGroup(group);
-                    job.schedule();
-                    jobs[i] = job;
-                }
-
-                monitor.beginTask("Performing data transfer in parallel", settings.getDataPipes().size());
-
-                if (group != null) {
-                    try {
-                        group.join(0, new ProxyProgressMonitor(monitor));
-                    } catch (InterruptedException | OperationCanceledException e) {
-                        group.cancel();
-                        return;
-                    }
-                }
-
-                for (DataTransferJob job : jobs) {
-                    if (group == null) {
-                        try {
-                            job.join();
-                        } catch (InterruptedException e) {
-                            break;
-                        }
-                    }
-                    final IStatus result = job.getResult();
-                    if (result.getException() != null) {
-                        if (error[0] == null) {
-                            error[0] = result.getException();
-                        } else {
-                            error[0].addSuppressed(result.getException());
-                        }
-                    }
-                    totalStatistics.accumulate(job.getTotalStatistics());
-                }
-                monitor.done();
-                monitor.beginTask("Finalizing data transfer", 1);
-                try {
-                    // End of transfer - signal last pipe about it
-                    dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer(monitor, error[0], task, true);
-                } finally {
-                    monitor.done();
-                }
-            });
+            runnableContext.run(true, true, taskExecutor);
         } catch (InvocationTargetException e) {
-            if (error[0] == null) {
-                error[0] = e.getTargetException();
+            Throwable error = taskExecutor.error;
+            if (error == null) {
+                error = e.getTargetException();
             } else {
-                error[0].addSuppressed(e.getTargetException());
+                error.addSuppressed(e.getTargetException());
             }
-        } catch (InterruptedException ignored) {
+            return error;
+        } catch (InterruptedException | OperationCanceledException e) {
+            log.debug("Data transfer was interrupted", e);
         }
-        return error[0];
+        return taskExecutor.error;
     }
 
     private void restoreReferentialIntegrity(@NotNull DBRRunnableContext runnableContext,
@@ -258,7 +210,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                     monitor.done();
                 }
             });
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | OperationCanceledException e) {
             //ignore
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
@@ -294,4 +246,109 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
         DataTransferSettings.collectTaskInfo(task, information);
     }
 
+    private class TaskExecutor implements DBRRunnableWithProgress {
+        private final DataTransferSettings settings;
+        private final DBTTask task;
+        private final DBTTaskExecutionListener listener;
+        private final Log log;
+        private final PrintStream logStream;
+        private final List<DataTransferPipe> dataPipes;
+        private final int totalJobs;
+        private Throwable error;
+
+        public TaskExecutor(
+            DataTransferSettings settings,
+            DBTTask task,
+            DBTTaskExecutionListener listener,
+            Log log,
+            PrintStream logStream,
+            List<DataTransferPipe> dataPipes,
+            int totalJobs
+        ) {
+            this.totalJobs = totalJobs;
+            this.settings = settings;
+            this.task = task;
+            this.listener = listener;
+            this.log = log;
+            this.logStream = logStream;
+            this.dataPipes = dataPipes;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor) {
+            final JobGroup group;
+            if (totalJobs > 1) {
+                group = new JobGroup("Data transfer", totalJobs, totalJobs);
+            } else {
+                group = null;
+            }
+
+            final DataTransferJob[] jobs = new DataTransferJob[totalJobs];
+            for (int i = 0; i < totalJobs; i++) {
+                DataTransferJob job = new DataTransferJob(settings, task, log, logStream, totalJobs == 1 ? monitor : null, i);
+                job.setJobGroup(group);
+                job.schedule();
+                jobs[i] = job;
+            }
+
+            monitor.beginTask("Performing data transfer in parallel", settings.getDataPipes().size());
+
+            if (group != null) {
+                try {
+                    group.join(0, new ProxyProgressMonitor(monitor));
+                } catch (InterruptedException | OperationCanceledException e) {
+                    group.cancel();
+                    return;
+                }
+            }
+
+            try {
+                for (DataTransferJob job : jobs) {
+                    if (group == null) {
+                        try {
+                            while (true) {
+                                // Try to join with monitor checks
+                                if (!job.join(1000, monitor.getNestedMonitor())) {
+                                    if (monitor.isCanceled()) {
+                                        break;
+                                    }
+                                    continue;
+                                }
+                                break;
+                            }
+                        } catch (InterruptedException | OperationCanceledException e) {
+                            break;
+                        }
+                    }
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
+                    final IStatus result = job.getResult();
+                    if (result.getException() != null) {
+                        if (error == null) {
+                            error = result.getException();
+                        } else {
+                            error.addSuppressed(result.getException());
+                        }
+                    }
+                    totalStatistics.accumulate(job.getTotalStatistics());
+                }
+                if (monitor.isCanceled()) {
+                    monitor.subTask("Canceling ");
+                    // Cancel all nested jobs
+                    for (DataTransferJob job : jobs) {
+                        job.cancel();
+                    }
+                }
+
+                monitor.done();
+                monitor.beginTask("Finalizing data transfer", 1);
+
+                // End of transfer - signal last pipe about it
+                dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer(monitor, error, task, true);
+            } finally {
+                monitor.done();
+            }
+        }
+    }
 }

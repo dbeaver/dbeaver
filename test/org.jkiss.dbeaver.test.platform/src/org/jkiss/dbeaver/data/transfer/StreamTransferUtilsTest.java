@@ -16,14 +16,17 @@
  */
 package org.jkiss.dbeaver.data.transfer;
 
+
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class StreamTransferUtilsTest {
+public class StreamTransferUtilsTest extends DBeaverUnitTest {
+
     @Test
     public void testDelimiterString() {
         Map<String, Object> props = new HashMap<>();

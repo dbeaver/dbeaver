@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +26,7 @@ import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -93,14 +93,19 @@ public class PrefPageMetaData extends TargetPrefPage
             separateMetaConnectionCombo = UIUtils.createLabelCombo(
                 UIUtils.createComposite(metadataGroup, 3),
                 CoreMessages.pref_page_database_general_separate_meta_connection,
+                NLS.bind(CoreMessages.pref_page_database_general_separate_meta_connection_tip, DriverUtils.collectSingleConnectionDrivers()),
                 SWT.READ_ONLY | SWT.DROP_DOWN
             );
+            if (this.getDataSourceContainer() != null && this.getDataSourceContainer().getDriver().isEmbedded()) {
+                separateMetaConnectionCombo.setEnabled(false);
+            } else {
+                separateMetaConnectionCombo.setItems(metaUseSeparateConnectionValues.stream()
+                    .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
+            }
             separateMetaConnectionCombo.setToolTipText(
-                NLS.bind(CoreMessages.pref_page_database_general_separate_meta_connection_tip, PrefUtils.collectSingleConnectionDrivers())
+                NLS.bind(CoreMessages.pref_page_database_general_separate_meta_connection_tip, DriverUtils.collectSingleConnectionDrivers())
             );
             ((GridData) separateMetaConnectionCombo.getLayoutData()).grabExcessHorizontalSpace = false;
-            separateMetaConnectionCombo.setItems(metaUseSeparateConnectionValues.stream()
-                .map(SeparateConnectionBehavior::getTitle).toArray(String[]::new));
             caseSensitiveNamesCheck = UIUtils.createCheckbox(
                 metadataGroup,
                 CoreMessages.pref_page_database_general_checkbox_case_sensitive_names,

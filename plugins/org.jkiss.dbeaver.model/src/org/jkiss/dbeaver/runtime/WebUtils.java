@@ -184,6 +184,8 @@ public class WebUtils {
         Path localFile,
         DBPAuthInfo authInfo
     ) throws IOException, InterruptedException {
+        monitor.subTask("Download file '" + externalURL + "'");
+
         try (final OutputStream outputStream = Files.newOutputStream(localFile)) {
             return downloadRemoteFile(monitor, taskName, externalURL, outputStream, authInfo);
         }
@@ -198,7 +200,7 @@ public class WebUtils {
     ) throws IOException, InterruptedException {
         final URLConnection connection = openConnection(externalURL, authInfo, null);
         final int contentLength = connection.getContentLength();
-        final byte[] buffer = new byte[8192];
+        final byte[] buffer = new byte[8192 * 4];
         final NumberFormat numberFormat = new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO);
 
         // The value of getContentLength() may be -1 and this should not be handled, see IProgressMonitor#UNKNOWN

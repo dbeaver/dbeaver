@@ -130,8 +130,11 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler implements DBDV
             }
 
             return timestampFormatter.formatValue(value);
-        }
-        if (value instanceof byte[] && column.getDataKind() == DBPDataKind.STRING) {
+        } else if (value instanceof String string && column.getDataKind() == DBPDataKind.DATETIME) {
+            if (format == DBDDisplayFormat.NATIVE && !string.startsWith("'") && !string.endsWith("'")) {
+                return "'" + value + "'";
+            }
+        } else if (value instanceof byte[] && column.getDataKind() == DBPDataKind.STRING) {
             return new String((byte[]) value);
         }
         return super.getValueDisplayString(column, value, format);

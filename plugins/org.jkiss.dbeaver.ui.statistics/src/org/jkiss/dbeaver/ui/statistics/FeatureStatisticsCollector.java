@@ -131,7 +131,7 @@ public class FeatureStatisticsCollector implements DBRFeatureTracker {
 
     private BufferedWriter getTrackStream() throws IOException {
         if (trackStream == null) {
-            Path logsDir = getLogsFolder();
+            Path logsDir = getActivityLogsFolder();
             Path logFile = logsDir
                 .resolve((System.currentTimeMillis() / 1000) + "_" + DBWorkbench.getPlatform().getApplication().getApplicationRunId() + ".log");
             trackStream = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8);
@@ -140,7 +140,7 @@ public class FeatureStatisticsCollector implements DBRFeatureTracker {
     }
 
     @NotNull
-    static Path getLogsFolder() throws IOException {
+    static Path getActivityLogsFolder() throws IOException {
         Path logsDir = GeneralUtils.getMetadataFolder().resolve(ACTIVITY_LOGS_DIR);
         if (!Files.exists(logsDir)) {
             Files.createDirectories(logsDir);

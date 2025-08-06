@@ -25,13 +25,16 @@ import java.util.List;
 public class PostgreDefaultPrivilege extends PostgreObjectPrivilege {
 
     private PostgrePrivilegeGrant.Kind underKind;
+    private final PostgreRoleReference grantor;
 
     public PostgreDefaultPrivilege(
         @Nullable PostgrePrivilegeOwner owner,
         @Nullable PostgreRoleReference grantee,
+        @Nullable PostgreRoleReference grantor,
         @NotNull List<PostgrePrivilegeGrant> privileges
     ) {
         super(owner, grantee, privileges);
+        this.grantor = grantor;
     }
 
     @Nullable
@@ -53,6 +56,11 @@ public class PostgreDefaultPrivilege extends PostgreObjectPrivilege {
         } else if ("T".equals(kind)) { // Here "T" is not from RelKind
             underKind = PostgrePrivilegeGrant.Kind.TYPE;
         }
+    }
+
+    @Nullable
+    public PostgreRoleReference getGrantor() {
+        return grantor;
     }
 
     @Property(viewable = true, order = 1)

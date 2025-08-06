@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,10 @@ public class SQLTokenPredicateEvaluator {
      */
     private ListNode<TrieNode<TokenEntry, SQLTokenPredicate>> statementPrefixPredicates;
 
+    private SQLTokenPredicate lastMatchedPredicate = null;
+
+    private final HashMap<String, TokenEntry> prefixCaptures = new HashMap<>();
+
     public SQLTokenPredicateEvaluator(@NotNull SQLTokenPredicateSet predicatesSet) {
         this.predicatesSet = predicatesSet;
         this.statementPrefixTokens = new ArrayDeque<>(predicatesSet.getMaxPrefixLength());
@@ -68,7 +72,6 @@ public class SQLTokenPredicateEvaluator {
     /**
      * Captures given token entry accumulating information about the SQL statement under analysis and
      * performs incremental part of the work on its recognition by the dialect-specific feature conditions
-     * @param entry
      */
     public void captureToken(@NotNull TokenEntry entry) {
         // accumulating statement prefix until there is no more prefix conditions to judge on at this position
@@ -95,8 +98,17 @@ public class SQLTokenPredicateEvaluator {
             }
             // incrementally reducing total set of plausibly matching conditions according to the token being consumed
             statementPrefixPredicates = accumulator;
+
+            if (this.predicatesSet.hasCaptures()) {
+                for (var node = statementPrefixPredicates; node != null; node = node.next) {
+                    if (node.data.getTerm() instanceof CaptureTokenPredicateNode capture) {
+                        this.prefixCaptures.put(capture.key, entry);
+                    }
+                }
+            }
         }
-        // accumulating statement suffix dropping the unnecessary part of token's sequence fading out of range of analyzable suffix under conditions
+        // accumulating statement suffix dropping the unnecessary part of token's sequence
+        // fading out of range of analyzable suffix under conditions
         if (predicatesSet.getMaxSuffixLength() > 0) {
             if (statementSuffixTokens.size() >= predicatesSet.getMaxSuffixLength()) {
                 statementSuffixTokens.removeFirst();
@@ -109,7 +121,6 @@ public class SQLTokenPredicateEvaluator {
      * Checks for a presence of conditions matching accumulated prefix and suffix.
      * Suffix is already incrementally matched during its accumulation, so here we're just matching the suffix predicates.
      * If sets of conditions being met are not disjoint, then some conditions are actually matched by both the prefix and suffix.
-     * @return
      */
     @Nullable
     public SQLParserActionKind evaluatePredicates() {
@@ -122,11 +133,14 @@ public class SQLTokenPredicateEvaluator {
 
         if (tailConditionsMatched.size() + plausiblePrefixOnlyConditions.size() > 1) {
             log.warn("Ambiguous token predicates match");
-        } else if (tailConditionsMatched.size() > 0) {
-            return tailConditionsMatched.iterator().next().getActionKind();
-        } else if (plausiblePrefixOnlyConditions.size() > 0){
+        } else if (!tailConditionsMatched.isEmpty()) {
+            SQLTokenPredicate matchedBySuffix = tailConditionsMatched.iterator().next();
+            this.lastMatchedPredicate = matchedBySuffix;
+            return matchedBySuffix.getActionKind();
+        } else if (!plausiblePrefixOnlyConditions.isEmpty()) {
             SQLTokenPredicate matchedByPrefix = plausiblePrefixOnlyConditions.iterator().next();
             plausiblePrefixOnlyConditions.clear();
+            this.lastMatchedPredicate = matchedByPrefix;
             return matchedByPrefix.getActionKind();
         }
         return null;
@@ -141,6 +155,25 @@ public class SQLTokenPredicateEvaluator {
         plausibleConditions.clear();
         plausiblePrefixOnlyConditions.clear();
         statementPrefixPredicates = ListNode.of(predicatesSet.getPrefixTreeRoot());
+        this.lastMatchedPredicate = null;
+        this.prefixCaptures.clear();
+    }
+
+    @Nullable
+    public SQLTokenPredicate getLastMatchedPredicate() {
+        return this.lastMatchedPredicate;
+    }
+
+    /**
+     * Returns key-value pairs of the capture token predicate keys and captured values
+     */
+    @NotNull
+    public Map<String, String> obtainPrefixCaptures() {
+        Map<String, String> result = new HashMap<>(this.prefixCaptures.size());
+        for (Map.Entry<String, TokenEntry> kv : this.prefixCaptures.entrySet()) {
+            result.put(kv.getKey(), kv.getValue().getString());
+        }
+        return result;
     }
 }
 

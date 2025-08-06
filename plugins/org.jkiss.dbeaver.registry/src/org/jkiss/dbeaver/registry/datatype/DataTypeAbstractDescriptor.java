@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,11 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
 
     private final Class<DESCRIPTOR> instanceType;
     private final String id;
-    private ObjectType implType;
-    private Set<Object> supportedTypes = new HashSet<>();
-    private List<String> supportedDataSources = new ArrayList<>();
+    private final ObjectType implType;
+    private final Set<Object> supportedTypes = new HashSet<>();
+    private final List<String> supportedDataSources = new ArrayList<>();
 
-    private boolean hasAll, hasTypeIds, hasDataKinds, hasTypeNames;
+    private boolean hasAll, hasTypeIds, hasDataKinds, hasTypeNames, hasTypesWithTypedParams;
 
     protected DESCRIPTOR instance;
 
@@ -64,6 +64,9 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
                 if (typeName.equals(ALL_TYPES_PATTERN)) {
                     hasAll = true;
                 } else {
+                    if (typeName.endsWith(ALL_TYPES_PATTERN)) {
+                        hasTypesWithTypedParams = true;
+                    }
                     supportedTypes.add(typeName.toLowerCase(Locale.ENGLISH));
                     hasTypeNames = true;
                 }
@@ -133,6 +136,10 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         return instance;
     }
 
+    List<String> getSupportedDataSources() {
+        return supportedDataSources;
+    }
+
     protected DESCRIPTOR createInstance() {
         try {
             return implType.createInstance(instanceType);
@@ -148,8 +155,21 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         }
         if (hasTypeNames) {
             String typeName = typedObject.getTypeName();
-            if (typeName != null && supportedTypes.contains(typeName.toLowerCase(Locale.ENGLISH))) {
-                return true;
+            if (typeName != null) {
+                final String lowerCaseTypeName = typeName.toLowerCase(Locale.ENGLISH);
+                if (supportedTypes.contains(lowerCaseTypeName)) {
+                    return true;
+                }
+                if (hasTypesWithTypedParams) {
+                    boolean matchesTypeWithTypesParams = supportedTypes.stream()
+                        .map(Object::toString)
+                        .filter(t -> t.endsWith(ALL_TYPES_PATTERN))
+                        .map(t -> t.substring(0, t.length() - 1))
+                        .anyMatch(lowerCaseTypeName::startsWith);
+                    if (matchesTypeWithTypesParams) {
+                        return true;
+                    }
+                }
             }
         }
         return hasDataKinds && supportedTypes.contains(typedObject.getDataKind());

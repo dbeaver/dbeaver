@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,9 +105,32 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     private final Map<String, Boolean> availableViews = new HashMap<>();
 
-    public OracleDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
-        throws DBException {
+    public OracleDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         super(monitor, container, new OracleSQLDialect());
+        this.init();
+    }
+
+    public OracleDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull OracleSQLDialect dialect
+    ) throws DBException {
+        super(monitor, container, dialect);
+        this.init();
+    }
+
+    // Constructor for tests
+    @ForTest
+    public OracleDataSource(@NotNull DBPDataSourceContainer container) {
+        super(container, new OracleSQLDialect());
+        this.init();
+        this.hasStatistics = false;
+
+        OracleSchema defSchema = new OracleSchema(this, -1, "TEST_SCHEMA");
+        schemaCache.setCache(Collections.singletonList(defSchema));
+    }
+
+    private void init() {
         this.outputReader = new OracleOutputReader();
 
         OracleConfigurator configurator = GeneralUtils.adapt(this, OracleConfigurator.class);
@@ -116,20 +139,14 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
-    // Constructor for tests
-    @ForTest
-    public OracleDataSource(DBPDataSourceContainer container) {
-        super(container, new OracleSQLDialect());
-        this.outputReader = new OracleOutputReader();
+    @NotNull
+    OracleSchema getPublicSchema() {
+        return this.publicSchema;
+    }
 
-        OracleConfigurator configurator = GeneralUtils.adapt(this, OracleConfigurator.class);
-        if (configurator != null) {
-            resolveGeometryAsStruct = configurator.resolveGeometryAsStruct();
-        }
-        this.hasStatistics = false;
-
-        OracleSchema defSchema = new OracleSchema(this, -1, "TEST_SCHEMA");
-        schemaCache.setCache(Collections.singletonList(defSchema));
+    @NotNull
+    public UserCache getUserCache() {
+        return this.userCache;
     }
 
     @Override
@@ -215,7 +232,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             throw e;
         }
     }
-    
+
     private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {
         if (warning != null && warning.getErrorCode() == OracleConstants.EC_PASSWORD_WILL_EXPIRE) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
@@ -291,7 +308,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
             try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Set connection parameters")) {
                 try {
-                    readDatabaseServerVersion(session.getMetaData());
+                    readDatabaseServerVersion(session, session.getMetaData());
                 } catch (SQLException e) {
                     log.debug("Error reading metadata", e);
                 }
@@ -321,7 +338,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 setNLSParameter(session, connectionInfo, "NLS_TIMESTAMP_FORMAT", OracleConstants.PROP_SESSION_NLS_TIMESTAMP_FORMAT);
                 setNLSParameter(session, connectionInfo, "NLS_LENGTH_SEMANTICS", OracleConstants.PROP_SESSION_NLS_LENGTH_FORMAT);
                 setNLSParameter(session, connectionInfo, "NLS_CURRENCY", OracleConstants.PROP_SESSION_NLS_CURRENCY_FORMAT);
-                
+
                 SeparateConnectionBehavior behavior = SeparateConnectionBehavior.parse(
                     getContainer().getPreferenceStore().getString(ModelPreferences.META_SEPARATE_CONNECTION)
                 );
@@ -352,10 +369,22 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                             JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_push_pred_cost_based\" = FALSE");
                             JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_squ_bottomup\" = FALSE");
                             JDBCUtils.executeSQL(session, "ALTER SESSION SET \"_optimizer_cost_based_transformation\" = 'OFF'");
-                            if (isServerVersionAtLeast(10, 2)) {
-                                JDBCUtils.executeSQL(session, "ALTER SESSION SET OPTIMIZER_FEATURES_ENABLE='10.2.0.5'");
+                            String optimiserVersion = null;
+                            if (isServerVersionAtLeast(23, 1)) {
+                                optimiserVersion = "23.1.0";
+                            } else if (isServerVersionAtLeast(19, 1)) {
+                                optimiserVersion = "19.1.0";
+                            } else if (isServerVersionAtLeast(18, 1)) {
+                                optimiserVersion = "18.1.0";
+                            } else if (isServerVersionAtLeast(12, 1)) {
+                                optimiserVersion = "12.1.0.1";
+                            } else if (isServerVersionAtLeast(10, 2)) {
+                                optimiserVersion = "10.2.0.1";
                             }
-                        } catch (Throwable e) {
+                            if (optimiserVersion != null) {
+                                JDBCUtils.executeSQL(session, "ALTER SESSION SET OPTIMIZER_FEATURES_ENABLE='%s'".formatted(optimiserVersion));
+                            }
+                        } catch (SQLException e) {
                             log.warn("Can't set session optimizer parameters", e);
                         }
                     }
@@ -383,12 +412,12 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
-        return new OracleDataSourceInfo(this, metaData);
+        return new OracleDataSourceInfo(metaData);
     }
 
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
-        Throwable rootCause = GeneralUtils.getRootCause(error);
+        Throwable rootCause = CommonUtils.getRootCause(error);
         if (rootCause instanceof SQLException) {
             switch (((SQLException) rootCause).getErrorCode()) {
                 case OracleConstants.EC_NO_RESULTSET_AVAILABLE:
@@ -561,8 +590,11 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         {
             List<OracleDataType> dtList = new ArrayList<>();
             for (Map.Entry<String, OracleDataType.TypeDesc> predefinedType : OracleDataType.PREDEFINED_TYPES.entrySet()) {
-                OracleDataType dataType = new OracleDataType(this, predefinedType.getKey(), true);
-                dtList.add(dataType);
+                OracleDataType.TypeDesc typeDesc = predefinedType.getValue();
+                if (this.isServerVersionAtLeast(typeDesc.serverAtLeastMajor, typeDesc.serverAtLeastMinor)) {
+                    OracleDataType dataType = new OracleDataType(this, predefinedType.getKey(), true);
+                    dtList.add(dataType);
+                }
             }
             this.dataTypeCache.setCache(dtList);
         }
@@ -643,6 +675,16 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             } catch (Throwable e) {
                 throw new DBDatabaseException("Can't cancel session queries", e, this);
             }
+        }
+    }
+
+    @Override
+    public boolean cancelCurrentExecution(@NotNull Connection connection, @Nullable Thread connectionThread) throws DBException {
+        try {
+            BeanUtils.invokeObjectMethod(connection, "cancel");
+            return true;
+        } catch (Throwable e) {
+            throw new DBDatabaseException("Can't cancel session queries", e, this);
         }
     }
 
@@ -968,7 +1010,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 //                    schemasQuery.append(
 //                        "WHERE (U.USER_ID IN (SELECT DISTINCT OWNER# FROM SYS.OBJ$) ");
 //                } else {
-            
+
             schemasQuery.append(
                 "WHERE (");
             if (showOnlyOneSchema) {
@@ -1126,5 +1168,13 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     @Override
     public DBDPseudoAttribute[] getAllPseudoAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return KNOWN_GLOBAL_PSEUDO_ATTRS;
+    }
+
+    public boolean supportsUserEdit() {
+        return false;
+    }
+
+    public boolean supportsSchedulerJobEdit() {
+        return false;
     }
 }

@@ -21,10 +21,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableColumn;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -33,6 +36,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -46,8 +51,8 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
     private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
         SQLiteTableColumn.class,
         GenericUniqueKey.class,
-        GenericTableIndex.class,
-        SQLiteTableForeignKey.class
+        SQLiteTableForeignKey.class,
+        GenericTableIndex.class
     );
 
     @NotNull
@@ -79,7 +84,32 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
     }
 
     @Override
+    protected boolean isIncludeConstraintInDDL(DBRProgressMonitor monitor, DBSEntityConstraint constraint) {
+        if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY && constraint instanceof GenericUniqueKey key) {
+			List<GenericTableConstraintColumn> columns = key.getAttributeReferences(monitor);
+            if (columns.size() == 1 && columns.get(0).getAttribute().isAutoIncrement()) {
+                return false;
+            }
+        }
+        return super.isIncludeConstraintInDDL(monitor, constraint);
+    }
+
+    @Override
     protected boolean isIncludeDropInDDL(@NotNull GenericTableBase tableBase) {
         return false;
+    }
+
+    @Override
+    protected void appendTableModifiers(
+        DBRProgressMonitor monitor,
+        GenericTableBase table,
+        NestedObjectCommand tableProps,
+        StringBuilder ddl,
+        boolean alter,
+        Map<String, Object> options
+    ) {
+        if (table instanceof SQLiteTable sqliteTable && sqliteTable.isHasStrictTyping()) {
+            ddl.append(" STRICT"); //$NON-NLS-1$
+        }
     }
 }

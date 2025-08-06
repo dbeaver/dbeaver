@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,37 @@ package org.jkiss.dbeaver.model.sql.parser.tokens.predicates;
 
 import org.jkiss.code.NotNull;
 
-interface TokenPredicateNodeVisitor<T, R> {
+/**
+ * A simple predicate tokens tree visitor
+ *
+ * @param <T> - argument type
+ * @param <R> - return type
+ */
+public interface TokenPredicateNodeVisitor<T, R> {
 
+    /**
+     * Invoked for a node of token predicate describing a sequence of some tokens
+     */
     R visitSequence(@NotNull SequenceTokenPredicateNode sequence, T arg);
 
+    /**
+     * Invoked for a node of token predicate describing one possible of alternatives of token subsequences
+     */
     R visitAlternative(@NotNull AlternativeTokenPredicateNode alternative, T arg);
 
+    /**
+     * Invoked for a node of token predicate describing optional token subsequence
+     */
     R visitOptional(@NotNull OptionalTokenPredicateNode optional, T arg);
 
+    /**
+     * Invoked for a node of token predicate capable of capturing matching text parts
+     */
+    R visitCapture(@NotNull CaptureTokenPredicateNode captureToken, T arg);
+
+    /**
+     * Invoked for a node representing SQL token in the text
+     */
     R visitTokenEntry(@NotNull SQLTokenEntry token, T arg);
 
 }

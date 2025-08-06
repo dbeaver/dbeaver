@@ -18,19 +18,22 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEvent {
+    public static final String ADDED = "cb_rm_project_added";
+    public static final String REMOVED = "cb_rm_project_removed";
 
     @NotNull
     protected final String projectId;
 
     public WSProjectUpdateEvent(
-        @NotNull WSEventType eventType,
+        @NotNull String eventId,
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId
     ) {
-        super(eventType, sessionId, userId);
+        super(eventId, WSConstants.TOPIC_PROJECTS, sessionId, userId);
         this.projectId = projectId;
     }
 
@@ -40,7 +43,7 @@ public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEv
         @NotNull String projectId
     ) {
         return new WSProjectUpdateEvent(
-            WSEventType.RM_PROJECT_ADDED,
+            ADDED,
             sessionId,
             userId,
             projectId
@@ -53,7 +56,7 @@ public class WSProjectUpdateEvent extends WSAbstractEvent implements WSProjectEv
         @NotNull String projectId
     ) {
         return new WSProjectUpdateEvent(
-            WSEventType.RM_PROJECT_REMOVED,
+            REMOVED,
             sessionId,
             userId,
             projectId

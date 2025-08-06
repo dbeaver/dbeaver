@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexOrdering;
 
 import java.util.List;
 import java.util.Locale;
@@ -117,6 +118,9 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableCons
                     if (!firstColumn) decl.append(","); //$NON-NLS-1$
                     firstColumn = false;
                     decl.append(DBUtils.getQuotedIdentifier(attribute));
+                    if (isPrimaryKeyOrdered() && constraintColumn instanceof DBSTableIndexOrdering ordering && !ordering.isAscending()) {
+                        decl.append(" DESC");
+                    }
                 }
             }
         } catch (DBException e) {
@@ -143,6 +147,10 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends AbstractTableCons
     }
 
     protected boolean isShortNotation(TABLE_TYPE owner) {
+        return false;
+    }
+
+    protected boolean isPrimaryKeyOrdered() {
         return false;
     }
 }

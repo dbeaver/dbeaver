@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.tasks.ui.view;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.MenuManager;
@@ -48,6 +51,8 @@ import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -59,7 +64,6 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
@@ -147,7 +151,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                 ActionUtils.runCommand(EDIT_TASK_CMD_ID, getSite().getSelectionProvider().getSelection(), getSite());
             }
         });
-        tasksTree.getViewer().addSelectionChangedListener(event -> loadTaskRuns(false));
+        tasksTree.getViewer().addSelectionChangedListener(event -> UIUtils.asyncExec(() -> loadTaskRuns(false)));
 
         DatabaseTasksTree.addDragAndDropSourceSupport(tasksTree.getViewer());
     }
@@ -181,15 +185,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskRunColumnController.addColumn(TaskUIViewMessages.db_tasks_view_column_controller_add_name_result, TaskUIViewMessages.db_tasks_view_column_controller_add_descr_task_result, SWT.LEFT, true, false, new TaskRunLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
-                String resultMessage =
-                    taskRun.isFinished() ?
-                        (taskRun.isRunSuccess() ? TaskUIViewMessages.db_tasks_view_cell_text_success : CommonUtils.notEmpty(taskRun.getErrorMessage())) :
-                        "In progress";
-
-                String extraMessage = taskRun.getExtraMessage();
-                if (CommonUtils.isNotEmpty(extraMessage)) {
-                    resultMessage += " (" + extraMessage + ")";
-                }
+                String resultMessage = getStatus(taskRun);
 
                 cell.setText(resultMessage);
             }
@@ -204,6 +200,26 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         taskRunViewer.addDoubleClickListener(event -> new ViewRunLogAction().run());
     }
+
+    public static String getStatus(@NotNull DBTTaskRun taskRun) {
+        if (!taskRun.isFinished()) {
+            return "In progress";
+        }
+
+        String resultMessage = getBriefStatus(taskRun);
+
+        String extraMessage = taskRun.getExtraMessage();
+        return CommonUtils.isNotEmpty(extraMessage)
+            ? resultMessage + " (" + extraMessage + ")"
+            : resultMessage;
+    }
+
+    public static String getBriefStatus(@NotNull DBTTaskRun run) {
+        return run.isRunSuccess()
+            ? TaskUIViewMessages.db_tasks_view_cell_text_success
+            : CommonUtils.notEmpty(run.getErrorMessage());
+    }
+
 
     private MenuManager createTaskContextMenu(TreeViewer viewer) {
         final MenuManager menuMgr = new MenuManager(null, TASKS_VIEW_MENU_ID);
@@ -357,6 +373,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
                     }
                 }
                 case TASK_EXECUTE -> refresh();
+                case TASK_ACTIVATE -> tasksTree.getViewer().setSelection(new StructuredSelection(task), true);
             }
         });
     }
@@ -418,16 +435,24 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         currentTask = selectedTask;
         if (selectedTask == null) {
             taskRunViewer.setInput(EMPTY_TASK_RUN_LIST);
-        } else {
-            selectedTask.refreshRunStatistics();
-            DBTTaskRun[] runs = selectedTask.getAllRuns();
-            if (ArrayUtils.isEmpty(runs)) {
-                taskRunViewer.setInput(EMPTY_TASK_RUN_LIST);
-            } else {
-                Arrays.sort(runs, Comparator.comparing(DBTTaskRun::getStartTime).reversed());
-                taskRunViewer.setInput(Arrays.asList(runs));
-            }
+            return;
         }
+        new AbstractJob("Refresh task runs") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                monitor.beginTask("Refresh task runs", IProgressMonitor.UNKNOWN);
+                try {
+                    selectedTask.refreshRunStatistics();
+                    List<DBTTaskRun> runs = Arrays.stream(selectedTask.getAllRuns())
+                        .sorted(Comparator.comparing(DBTTaskRun::getStartTime).reversed())
+                        .toList();
+                    UIUtils.asyncExec(() -> taskRunViewer.setInput(runs));
+                } finally {
+                    monitor.done();
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     private static class TreeRunContentProvider implements ITreeContentProvider {
@@ -598,7 +623,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             DBTTaskRun taskRun = getSelectedTaskRun();
             if (task != null && taskRun != null &&
                 UIUtils.confirmAction(
-                	TaskUIViewMessages.db_tasks_view_run_log_confirm_remove,
+                    TaskUIViewMessages.db_tasks_view_run_log_confirm_remove,
                     NLS.bind(TaskUIViewMessages.db_tasks_view_run_log_confirm_delete_task, task.getName(), tasksTree.getDateFormat().format(taskRun.getStartTime()))))
             {
                 task.removeRun(taskRun);

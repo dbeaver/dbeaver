@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,8 +93,7 @@ public class ConnectionNameResolver implements IVariableResolver {
         String newName = descriptor == null ? "" : getDataSourceContainer().getName(); //$NON-NLS-1$
         if (CommonUtils.isEmpty(newName)) {
             newName = getConfiguration().getDatabaseName();
-            if (CommonUtils.isEmpty(newName) || newName.length() < 3 || CommonUtils.isInt(newName)) {
-                // Database name is too short or not a string
+            if (CommonUtils.isEmpty(newName) || newName.isBlank()) {
                 newName = getConfiguration().getHostName();
             }
             if (CommonUtils.isEmpty(newName)) {
@@ -120,14 +119,15 @@ public class ConnectionNameResolver implements IVariableResolver {
         return newName;
     }
 
+    @Nullable
     @Override
-    public String get(String name) {
+    public String get(@NotNull String name) {
         if (configuration != null) {
             switch (name) {
                 case DBPConnectionConfiguration.VARIABLE_HOST:
                     return configuration.getHostName();
                 case DBPConnectionConfiguration.VARIABLE_HOST_TUNNEL:
-                    return DBWUtils.getTargetTunnelHostName(configuration);
+                    return DBWUtils.getTargetTunnelHostName(dataSourceContainer, configuration);
                 case DBPConnectionConfiguration.VARIABLE_PORT:
                     return configuration.getHostPort();
                 case DBPConnectionConfiguration.VARIABLE_SERVER:

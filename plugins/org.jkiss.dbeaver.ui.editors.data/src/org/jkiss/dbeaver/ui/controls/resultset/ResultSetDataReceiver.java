@@ -181,11 +181,11 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
         monitor.beginTask("Populate data", 1);
         if (!nextSegmentRead) {
             monitor.subTask("Set data");
-            resultSetViewer.setData(tmpRows, focusRow);
+            resultSetViewer.setData(monitor, tmpRows, focusRow);
         } else {
             monitor.subTask("Append data");
             boolean resetOldRows = getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING);
-            resultSetViewer.appendData(tmpRows, resetOldRows);
+            resultSetViewer.appendData(monitor, tmpRows, resetOldRows);
         }
         // Check for more data
         hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;

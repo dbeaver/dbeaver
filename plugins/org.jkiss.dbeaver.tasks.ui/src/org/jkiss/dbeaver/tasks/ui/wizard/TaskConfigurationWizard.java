@@ -240,13 +240,13 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     @Override
     public boolean performFinish() {
         if (currentTask != null && !currentTask.isTemporary()) {
-            saveTask();
+            if (!saveTask()) {
+                return false;
+            }
         }
 
         if (isRunTaskOnFinish()) {
-            if (!runTask()) {
-                return false;
-            }
+            return runTask();
         }
 
         return true;
@@ -279,7 +279,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         return true;
     }
 
-    private void saveTask() {
+    private boolean saveTask() {
         IWizardPage currentPage = getContainer().getCurrentPage();
         // Save current page settings
         if (currentPage instanceof IWizardPageActive) {
@@ -293,13 +293,13 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             DBTTaskType taskType = getTaskType();
             if (taskType == null) {
                 DBWorkbench.getPlatformUI().showError("No task type", "Can't find task type " + getTaskTypeId());
-                return;
+                return false;
             }
             EditTaskConfigurationDialog dialog = new EditTaskConfigurationDialog(getContainer().getShell(), getProject(), taskType);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 setCurrentTask(currentTask = dialog.getTask());
             } else {
-                return;
+                return false;
             }
         } else {
             TaskConfigurationWizardPageTask taskPage = getContainer().getTaskPage();
@@ -308,10 +308,10 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             }
         }
         DBTTask theTask = currentTask;
-        saveConfigurationToTask(theTask);
+        return saveConfigurationToTask(theTask);
     }
 
-    protected void saveConfigurationToTask(DBTTask theTask) {
+    protected boolean saveConfigurationToTask(DBTTask theTask) {
         try {
             Map<String, Object> state = new LinkedHashMap<>();
             saveTaskState(getRunnableContext(), theTask, state);
@@ -331,7 +331,9 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             theTask.getProject().getTaskManager().updateTaskConfiguration(theTask);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Task save error", "Error saving task configuration", e);
+            return false;
         }
+        return true;
     }
 
     public void createTaskSaveButtons(Composite parent, boolean horizontal, int hSpan) {

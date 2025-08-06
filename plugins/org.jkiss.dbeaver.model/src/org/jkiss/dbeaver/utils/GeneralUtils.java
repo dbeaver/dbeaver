@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,7 @@ public class GeneralUtils {
 
     public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyyMMddHHmm";
     public static final String DEFAULT_DATE_PATTERN = "yyyyMMdd";
+    public static final String DEFAULT_TIME_PATTERN = "HHmmss";
     public static final String RESOURCE_NAME_FORBIDDEN_SYMBOLS_REGEX = "(?U)[^/:'\"\\\\<>|?*]+";
 
     public static final String[] byteToHex = new String[256];
@@ -106,10 +107,6 @@ public class GeneralUtils {
         return UTF8_ENCODING;
     }
 
-    public static String getDefaultLocalFileEncoding() {
-        return System.getProperty(StandardConstants.ENV_FILE_ENCODING, getDefaultFileEncoding());
-    }
-
     public static String getDefaultConsoleEncoding() {
         String consoleEncoding = System.getProperty(StandardConstants.ENV_CONSOLE_ENCODING);
         if (CommonUtils.isEmpty(consoleEncoding)) {
@@ -123,6 +120,14 @@ public class GeneralUtils {
 
     public static String getDefaultLineSeparator() {
         return System.getProperty(StandardConstants.ENV_LINE_SEPARATOR, "\n");
+    }
+
+    /**
+     * Replaces all line separators with system line separators
+     */
+    @NotNull
+    public static String normalizeLineSeparators(@NotNull String str) {
+        return str.replaceAll("\r\n|\r|\n", getDefaultLineSeparator());
     }
 
     public static void writeBytesAsHex(Writer out, byte[] buf, int off, int len) throws IOException {
@@ -246,23 +251,6 @@ public class GeneralUtils {
     private static String normalizeIntegerString(String value) {
         int divPos = value.lastIndexOf('.');
         return divPos == -1 ? value : value.substring(0, divPos);
-    }
-
-    public static Throwable getRootCause(Throwable ex) {
-        for (Throwable e = ex; ; e = e.getCause()) {
-            if (e.getCause() == null) {
-                return e;
-            }
-        }
-    }
-
-    public static boolean hasCause(Throwable ex, Class<? extends Throwable> causeClass) {
-        for (Throwable e = ex; e != null; e = e.getCause()) {
-            if (causeClass.isAssignableFrom(e.getClass())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @NotNull
@@ -455,20 +443,6 @@ public class GeneralUtils {
         boolean setParameter(String name, String value);
     }
 
-    public static class MapResolver implements IVariableResolver {
-        private final Map<String, Object> variables;
-
-        public MapResolver(Map<String, Object> variables) {
-            this.variables = variables;
-        }
-
-        @Override
-        public String get(String name) {
-            Object value = variables.get(name);
-            return value == null ? null : CommonUtils.toString(value);
-        }
-    }
-
     public static String replaceSystemPropertyVariables(String string) {
         if (string == null) {
             return null;
@@ -519,6 +493,36 @@ public class GeneralUtils {
             matcher = VAR_PATTERN.matcher(s);
         }
         return name;
+    }
+
+    public record VariableEntryInfo(
+        @NotNull String name,
+        int start,
+        int end
+    ) {
+    }
+
+    /**
+     * Returns information about all variable entries in the provided text
+     */
+    @NotNull
+    public static List<VariableEntryInfo> findAllVariableEntries(@NotNull String string) {
+        if (CommonUtils.isEmpty(string)) {
+            return Collections.emptyList();
+        }
+        List<VariableEntryInfo> variables = new LinkedList<>();
+        try {
+            Matcher matcher = GeneralUtils.VAR_PATTERN.matcher(string);
+            int pos = 0;
+            while (matcher.find(pos)) {
+                pos = matcher.end();
+                String varName = matcher.group(2);
+                variables.add(new VariableEntryInfo(varName, matcher.start(), matcher.end()));
+            }
+        } catch (Exception e) {
+            log.warn("Error matching regex", e);
+        }
+        return variables;
     }
 
     @NotNull
@@ -707,7 +711,7 @@ public class GeneralUtils {
     public static String getStatusText(IStatus status) {
         StringBuilder text = new StringBuilder(status.getMessage());
         IStatus[] children = status.getChildren();
-        if (children != null && children.length > 0) {
+        if (children != null) {
             for (IStatus child : children) {
                 text.append("\n").append(getStatusText(child));
             }
@@ -775,20 +779,26 @@ public class GeneralUtils {
     }
 
     public static Path getMetadataFolder() {
-        if (!DBWorkbench.isPlatformStarted()) {
-            log.warn("Platform not initialized: metadata folder may be not set");
-        }
-        DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
         Path workspacePath;
-        if (workspace == null) {
-            log.warn("Metadata is read before workspace initialization");
+        if (!DBWorkbench.isPlatformStarted()) {
+            log.debug("Platform not initialized: metadata folder may be not set");
             try {
                 workspacePath = RuntimeUtils.getLocalPathFromURL(Platform.getInstanceLocation().getURL());
             } catch (IOException e) {
                 throw new IllegalStateException("Can't parse workspace location URL", e);
             }
         } else {
-            workspacePath = workspace.getAbsolutePath();
+            DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+            if (workspace == null) {
+                log.debug("Metadata is read before workspace initialization");
+                try {
+                    workspacePath = RuntimeUtils.getLocalPathFromURL(Platform.getInstanceLocation().getURL());
+                } catch (IOException e) {
+                    throw new IllegalStateException("Can't parse workspace location URL", e);
+                }
+            } else {
+                workspacePath = workspace.getAbsolutePath();
+            }
         }
         Path metaDir = getMetadataFolder(workspacePath);
         if (!Files.exists(metaDir)) {

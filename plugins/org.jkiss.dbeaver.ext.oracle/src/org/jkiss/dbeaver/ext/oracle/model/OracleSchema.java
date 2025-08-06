@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSVisibilityScopeProvider;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -57,7 +58,8 @@ public class OracleSchema extends OracleGlobalObject implements
     DBPSystemObject,
     DBSProcedureContainer,
     DBPObjectStatisticsCollector,
-    DBPScriptObject
+    DBPScriptObject,
+    DBSVisibilityScopeProvider
 {
     private static final Log log = Log.getLog(OracleSchema.class);
 
@@ -407,6 +409,11 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Override
+    public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) {
+        return List.of(this.getDataSource().getPublicSchema());
+    }
+
+    @Override
     public synchronized void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
         throws DBException
     {
@@ -522,7 +529,7 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
         sql.append("-- DROP USER ").append(DBUtils.getQuotedIdentifier(this)).append(";\n\n");
         sql.append("CREATE USER ").append(DBUtils.getQuotedIdentifier(this)).append("\n-- IDENTIFIED BY <password>\n").append(";\n");
@@ -536,7 +543,7 @@ public class OracleSchema extends OracleGlobalObject implements
         if (!monitor.isCanceled()) {
             monitor.beginTask("Load data types", dataTypes.size());
             for (OracleDataType dataType : dataTypes) {
-                addDDLLine(sql, dataType.getObjectDefinitionText(monitor, options));
+                OracleUtils.addDDLLine(sql, dataType.getObjectDefinitionText(monitor, options));
                 monitor.worked(1);
                 if (monitor.isCanceled()) {
                     break;
@@ -555,7 +562,7 @@ public class OracleSchema extends OracleGlobalObject implements
                     continue;
                 }
                 monitor.subTask("Load table '" + tableBase.getName() + "' DDL");
-                addDDLLine(sql, tableBase.getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()), options));
+                OracleUtils.addDDLLine(sql, tableBase.getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()), options));
                 if (monitor.isCanceled()) {
                     break;
                 }
@@ -568,7 +575,7 @@ public class OracleSchema extends OracleGlobalObject implements
             monitor.beginTask("Load procedures", procedures.size());
             for (OracleProcedureStandalone procedure : procedures) {
                 monitor.subTask(procedure.getName());
-                addDDLLine(sql, procedure.getObjectDefinitionText(monitor, options));
+                OracleUtils.addDDLLine(sql, procedure.getObjectDefinitionText(monitor, options));
                 monitor.worked(1);
                 if (monitor.isCanceled()) {
                     break;
@@ -582,7 +589,7 @@ public class OracleSchema extends OracleGlobalObject implements
             monitor.beginTask("Load triggers", triggers.size());
             for (OracleSchemaTrigger trigger : triggers) {
                 monitor.subTask(trigger.getName());
-                addDDLLine(sql, trigger.getObjectDefinitionText(monitor, options));
+                OracleUtils.addDDLLine(sql, trigger.getObjectDefinitionText(monitor, options));
                 monitor.worked(1);
                 if (monitor.isCanceled()) {
                     break;
@@ -596,7 +603,7 @@ public class OracleSchema extends OracleGlobalObject implements
             monitor.beginTask("Load sequences", sequences.size());
             for (OracleSequence sequence : sequences) {
                 monitor.subTask(sequence.getName());
-                addDDLLine(sql, sequence.getObjectDefinitionText(monitor, options));
+                OracleUtils.addDDLLine(sql, sequence.getObjectDefinitionText(monitor, options));
                 monitor.worked(1);
                 if (monitor.isCanceled()) {
                     break;
@@ -608,15 +615,7 @@ public class OracleSchema extends OracleGlobalObject implements
         return sql.toString();
     }
 
-    private void addDDLLine(StringBuilder sql, String ddl) {
-        if (!CommonUtils.isEmpty(ddl)) {
-            sql.append("\n").append(ddl);
-            if (!ddl.endsWith(";")) {
-                sql.append(";");
-            }
-            sql.append("\n");
-        }
-    }
+
 
     public class TableCache extends JDBCStructLookupCache<OracleSchema, OracleTableBase, OracleTableColumn> {
 
@@ -1200,7 +1199,7 @@ public class OracleSchema extends OracleGlobalObject implements
             } else {
                 sql.append("i.TABLE_OWNER=? AND i.TABLE_NAME=?");
             }
-            sql.append("\nORDER BY i.INDEX_NAME,ic.COLUMN_POSITION");
+            sql.append("\nORDER BY i.TABLE_NAME,i.INDEX_NAME,ic.COLUMN_POSITION");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             if (forTable == null) {

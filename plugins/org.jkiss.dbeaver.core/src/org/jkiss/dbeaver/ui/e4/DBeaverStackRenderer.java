@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.renderers.swt.StackRenderer;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -34,14 +35,18 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -51,9 +56,11 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.HolidayDecorations;
+import org.jkiss.dbeaver.ui.actions.common.AddBookmarkHandler;
+import org.jkiss.dbeaver.ui.controls.decorations.HolidayDecorations;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
@@ -69,6 +76,7 @@ public class DBeaverStackRenderer extends StackRenderer {
     private static final Log log = Log.getLog(DBeaverStackRenderer.class);
 
     private static final String ONBOARDING_CONTAINER = "EditorStack.OnboardingContainer"; //$NON-NLS-1$
+    private static final String ONBOARDING_COMPOSITE = "EditorStack.OnboardingComposite"; //$NON-NLS-1$
     private static final String EDITOR_STACK_ID = "EditorStack"; //$NON-NLS-1$
     private static final String ID = "id"; //$NON-NLS-1$
 
@@ -139,8 +147,8 @@ public class DBeaverStackRenderer extends StackRenderer {
             }
 
             IEditorInput editorInput = ((IEditorPart) workbenchPart).getEditorInput();
-            if (editorInput instanceof IDatabaseEditorInput) {
-                populateEditorMenu(menu, (IDatabaseEditorInput) editorInput);
+            if (editorInput instanceof IDatabaseEditorInput databaseEditorInput) {
+                populateEditorMenu(menu, workbenchPart, databaseEditorInput);
             }
 
             IFile file = EditorUtils.getFileFromInput(editorInput);
@@ -229,17 +237,16 @@ public class DBeaverStackRenderer extends StackRenderer {
 
         new MenuItem(menu, SWT.SEPARATOR);
 
-        if (inputFile!= null && !inputFile.isReadOnly()) {
+        if (inputFile != null && !inputFile.isReadOnly()) {
             if (workbenchPart instanceof SQLEditor) {
                 addActionItem(workbenchPart, menu, SQLEditorCommands.CMD_SQL_DELETE_THIS_SCRIPT);
             }
 
-            {
+            if (workbenchPart instanceof SQLEditor editor && editor.supportsRename()) {
                 MenuItem menuItemOthers = new MenuItem(menu, SWT.NONE);
                 String renameText = CoreMessages.editor_file_rename;
-                if (workbenchPart instanceof SQLEditor) {
-                    renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true); //$NON-NLS-1$
-                }
+                renameText += "\t" + ActionUtils.findCommandDescription(SQLEditorCommands.CMD_SQL_RENAME, workbenchPart.getSite(), true); //$NON-NLS-1$
+
                 menuItemOthers.setText(renameText);
                 menuItemOthers.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -251,7 +258,7 @@ public class DBeaverStackRenderer extends StackRenderer {
         }
     }
 
-    private void populateEditorMenu(@NotNull Menu menu, @NotNull IDatabaseEditorInput input) {
+    private void populateEditorMenu(@NotNull Menu menu, @NotNull IWorkbenchPart workbenchPart, @NotNull IDatabaseEditorInput input) {
         final DBSObject object = input.getDatabaseObject();
         final DBNDatabaseNode node = input.getNavigatorNode();
 
@@ -269,6 +276,33 @@ public class DBeaverStackRenderer extends StackRenderer {
                         DBWorkbench.getPlatformUI().copyTextToClipboard(DBUtils.getObjectFullName(object, DBPEvaluationContext.UI), false);
                     }
                 });
+                if (workbenchPart instanceof EntityEditor) {
+                    final MenuItem addBookmarkItem = new MenuItem(menu, SWT.NONE);
+                    String actionText = ActionUtils.findCommandName(CoreCommands.CMD_ADD_BOOKMARK);
+                    String shortcut = ActionUtils.findCommandDescription(CoreCommands.CMD_ADD_BOOKMARK, workbenchPart.getSite(), true);
+                    if (shortcut != null) {
+                        actionText += "\t" + shortcut;
+                    }
+                    addBookmarkItem.setText(actionText);
+                    ImageDescriptor imageDescriptor = ActionUtils.findCommandImage(CoreCommands.CMD_ADD_BOOKMARK);
+                    if (imageDescriptor != null) {
+                        Image itemImage = imageDescriptor.createImage();
+                        addBookmarkItem.setImage(itemImage);
+                        addBookmarkItem.addDisposeListener(e -> itemImage.dispose());
+                    }
+                    addBookmarkItem.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            try {
+                                AddBookmarkHandler.createBookmarkDialog(node, menu.getShell());
+                            } catch (DBException ex) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    CoreMessages.actions_navigator_bookmark_error_title,
+                                    CoreMessages.actions_navigator_bookmark_error_message, ex);
+                            }
+                        }
+                    });
+                }
             }
         }
     }
@@ -329,16 +363,28 @@ public class DBeaverStackRenderer extends StackRenderer {
             // See StackRenderer#initializeOnboardingInformationInEditorStack (2024-06)
             if (element instanceof MPerspective perspective) {
                 for (MPartStack stack : modelService.findElements(perspective, null, MPartStack.class, List.of(EDITOR_STACK_ID))) {
-                    if (stack.getWidget() instanceof CTabFolder parent) {
-                        for (Control child : parent.getChildren()) {
-                            if (child instanceof Composite composite && ONBOARDING_CONTAINER.equals(child.getData(ID))) {
-                                HolidayDecorations.install(composite);
-                                break;
-                            }
-                        }
+                    Control container = getChild(stack.getWidget(), ONBOARDING_CONTAINER);
+                    if (container == null || !HolidayDecorations.install(container)) {
+                        continue;
+                    }
+                    Control composite = getChild(container, ONBOARDING_COMPOSITE);
+                    if (composite != null && composite.getLayoutData() instanceof GridData data) {
+                        data.exclude = true;
                     }
                 }
             }
         });
+    }
+
+    @Nullable
+    private static Control getChild(@Nullable Object widget, @NotNull String id) {
+        if (widget instanceof Composite composite) {
+            for (Control child : composite.getChildren()) {
+                if (id.equals(child.getData(ID))) {
+                    return child;
+                }
+            }
+        }
+        return null;
     }
 }

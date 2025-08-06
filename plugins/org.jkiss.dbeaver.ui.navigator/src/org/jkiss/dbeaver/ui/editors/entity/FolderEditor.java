@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -60,17 +61,20 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
     public void createPartControl(Composite parent) {
         itemControl = new FolderListControl(parent);
         itemControl.createProgressPanel();
+        getSite().setSelectionProvider(itemControl.getSelectionProvider());
 
         UIExecutionQueue.queueExec(() -> {
             final DBNNode navigatorNode = getEditorInput().getNavigatorNode();
-            setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIcon()));
+            setTitleImage(DBeaverIcons.getImage(navigatorNode.getNodeIconDefault()));
             setPartName(navigatorNode.getNodeDisplayName());
 
+            itemControl.setRootNode(navigatorNode);
             itemControl.loadData();
-            getSite().setSelectionProvider(itemControl.getSelectionProvider());
 
             DBNNode rootNode = getRootNode();
             history.add(rootNode.getNodeUri());
+
+            itemControl.getSelectionProvider().setDefaultSelection(new StructuredSelection(navigatorNode));
 
             parent.layout(true, true);
         });
@@ -186,7 +190,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
 
     private class FolderListControl extends ItemListControl {
         public FolderListControl(Composite parent) {
-            super(parent, SWT.SHEET, FolderEditor.this.getSite(), FolderEditor.this.getEditorInput().getNavigatorNode(), null);
+            super(parent, SWT.SHEET, FolderEditor.this.getSite(), DBWorkbench.getPlatform().getNavigatorModel().getRoot(), null);
         }
 
         @Override
@@ -249,7 +253,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
             setRootNode(node);
             loadData();
             setPartName(node.getNodeDisplayName());
-            setTitleImage(DBeaverIcons.getImage(node.getNodeIcon()));
+            setTitleImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
             updateActions();
 
             // Update editor input

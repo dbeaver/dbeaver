@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.altibase.ui.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class AltibaseUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.altibase.ui.internal.AltibaseUIMessages"; //$NON-NLS-1$

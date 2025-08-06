@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
@@ -58,6 +57,7 @@ import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -96,22 +96,21 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
             UIUtils.createControlLabel(inputFilesGroup, DTMessages.data_transfer_wizard_settings_group_input_files);
 
-            final Composite inputFilesTableGroup = new Composite(inputFilesGroup, SWT.BORDER);
+            final Composite inputFilesTableGroup = new Composite(inputFilesGroup, SWT.NONE);
             inputFilesTableGroup.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
             inputFilesTableGroup.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
             DBPProject project = getWizard().getProject();
-            boolean showLocalFS = true;//!DBWorkbench.isDistributed();
             boolean showRemoteFS = project != null && DBFUtils.supportsMultiFileSystems(project);
 
-            if (showLocalFS || showRemoteFS) {
+            {
                 final ToolBar toolbar = new ToolBar(inputFilesTableGroup, SWT.HORIZONTAL | SWT.FLAT | SWT.RIGHT);
-                if (showLocalFS) {
+                {
                     tiOpenLocal = UIUtils.createToolItem(
                         toolbar,
                         UIMessages.text_with_open_dialog_browse,
                         UIMessages.text_with_open_dialog_browse,
-                        DBIcon.TREE_FOLDER,
+                        UIIcon.OPEN,
                         SelectionListener.widgetSelectedAdapter(e -> new SelectInputFileAction(false).run())
                     );
                 }
@@ -133,9 +132,9 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             filesTable.setHeaderVisible(true);
             filesTable.setLinesVisible(true);
 
-            if (showLocalFS || showRemoteFS) {
+            {
                 UIWidgets.setControlContextMenu(filesTable, manager -> {
-                    if (showLocalFS) {
+                    {
                         manager.add(new SelectInputFileAction(false));
                     }
                     if (showRemoteFS) {
@@ -181,7 +180,16 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
                     @Override
                     public void widgetDefaultSelected(SelectionEvent e) {
-                        new SelectInputFileAction(!showLocalFS).run();
+                        DataTransferPipe pipe = (DataTransferPipe) filesTable.getSelection()[0].getData();
+                        if (pipe.getProducer() instanceof StreamTransferProducer stp) {
+                            Action action;
+                            if (stp.getInputFile() != null) {
+                                action = new SelectInputFileAction(!IOUtils.isLocalPath(stp.getInputFile()));
+                            } else {
+                                action = new SelectInputFileAction(false);
+                            }
+                            action.run();
+                        }
                     }
                 });
             }
@@ -192,6 +200,11 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             UIUtils.createControlLabel(exporterSettings, DTMessages.data_transfer_wizard_settings_group_importer);
 
             propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
+            Object layoutData = propsEditor.getControl().getLayoutData();
+            if (layoutData instanceof GridData gd) {
+                // Avoid vertical grab to maximum
+                gd.heightHint = 150;
+            }
 
             UIUtils.createInfoLink(
                 exporterSettings,
@@ -224,9 +237,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                 extensions,
                 pipe.getConsumer().getObjectName());
             if (selected != null) {
-                initializer = monitor -> {
-                    updateSingleConsumer(monitor, pipe, selected.getPath());
-                };
+                initializer = monitor -> updateSingleConsumer(monitor, pipe, selected.getPath());
             }
         } else if (pipe.getConsumer() != null && pipe.getConsumer().getTargetObjectContainer() != null) {
             File[] files = DialogUtils.openFileList(
@@ -364,8 +375,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             item.setText(0, DTUIMessages.stream_consumer_page_settings_item_text_none);
         } else {
             item.setImage(0, DBeaverIcons.getImage(getProducerProcessor().getIcon()));
-            item.setText(0, producer instanceof StreamTransferProducer stp ?
-                stp.getInputFile().toString() : String.valueOf(producer.getObjectName()));
+            if (producer instanceof StreamTransferProducer stp) {
+                Path inputFile = stp.getInputFile();
+                item.setText(0, DBFUtils.convertPathToString(inputFile));
+            } else {
+                item.setText(0, String.valueOf(producer.getObjectName()));
+            }
         }
 
         IDataTransferConsumer<?, ?> consumer = pipe.getConsumer();
@@ -465,7 +480,6 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     }
 
     private void reloadPipes() {
-        boolean firstTime = filesTable.getItemCount() == 0;
         DataTransferSettings settings = getWizard().getSettings();
         int selectionIndex = filesTable.getSelectionIndex();
         filesTable.removeAll();
@@ -481,13 +495,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             } else if (selectionIndex >= dataPipes.size()) {
                 selectionIndex = dataPipes.size() - 1;
             }
-            DataTransferPipe pipe = dataPipes.get(selectionIndex);
             filesTable.select(selectionIndex);
-            if (firstTime) {
-                if (pipe.getProducer() instanceof StreamTransferProducer stp && stp.getInputFile() == null) {
-                    UIUtils.asyncExec(() -> chooseSourceFile(pipe, DBWorkbench.isDistributed() && getWizard().getCurrentTask() != null));
-                }
-            }
         }
         updateBrowseButtons();
     }
@@ -527,7 +535,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             lastChar = c;
             name.append(c);
         }
-        if (name.length() > 0 && name.charAt(name.length() - 1) == '_') {
+        if (!name.isEmpty() && name.charAt(name.length() - 1) == '_') {
             name.deleteCharAt(name.length() - 1);
         }
         return name.toString();
@@ -539,7 +547,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     }
 
     private class SelectInputFileAction extends Action {
-        private boolean remote;
+        private final boolean remote;
         public SelectInputFileAction(boolean remote) {
             super(remote ? UIMessages.text_with_open_dialog_browse_remote : UIMessages.text_with_open_dialog_browse);
             this.remote = remote;

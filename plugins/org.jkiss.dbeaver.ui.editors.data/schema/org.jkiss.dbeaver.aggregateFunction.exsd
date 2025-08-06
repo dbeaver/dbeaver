@@ -2,7 +2,7 @@
 <schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.aggregateFunction" name="Aggregate functions"/>
+         <meta.schema plugin="org.jkiss.dbeaver.ui.editors.data" id="org.jkiss.dbeaver.aggregateFunction" name="Aggregate functions"/>
       </appInfo>
       <documentation>
          [Enter description of this extension point.]

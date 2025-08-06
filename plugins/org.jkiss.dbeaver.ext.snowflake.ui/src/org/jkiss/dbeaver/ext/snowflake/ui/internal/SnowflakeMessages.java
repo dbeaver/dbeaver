@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.snowflake.ui.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class SnowflakeMessages extends NLS {
 	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.snowflake.ui.internal.SnowflakeResources"; //$NON-NLS-1$

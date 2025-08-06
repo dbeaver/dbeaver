@@ -122,6 +122,7 @@ public class DBAAuthProfile extends DBPConfigurationProfile {
         secretController.setPrivateSecretValue(
             getSecretKeyId(),
             secretValue);
+        secretController.flushChanges();
     }
 
     @Override

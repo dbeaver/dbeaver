@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool.messages;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class NativeToolMessages extends NLS {
 

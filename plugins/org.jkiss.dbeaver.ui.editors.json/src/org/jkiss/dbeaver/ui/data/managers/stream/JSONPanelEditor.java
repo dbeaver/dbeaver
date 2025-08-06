@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.stream;
 
+import com.google.gson.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.AbstractTextPanelEditor;
+import org.jkiss.dbeaver.ui.editors.json.JSONFormattingStrategy;
 import org.jkiss.dbeaver.ui.editors.json.JSONTextEditor;
 
 /**
@@ -55,5 +57,20 @@ public class JSONPanelEditor extends AbstractTextPanelEditor<JSONTextEditor> {
         return ".json";
     }
 
+    @Override
+    public boolean supportMinify() {
+        return true;
+    }
 
+    @Override
+    public String minify(String value) {
+        JsonElement jsonElement;
+        try {
+            jsonElement = JsonParser.parseString(value);
+        } catch (JsonSyntaxException ex) {
+            return value;
+        }
+
+        return JSONFormattingStrategy.GSON_UNFORMATTED.toJson(jsonElement);
+    }
 }

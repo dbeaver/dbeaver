@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.security.user.*;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -93,7 +91,15 @@ public interface SMAdminController extends SMController {
 
     int countUsers(@NotNull SMUserFilter filter) throws DBException;
 
-    void enableUser(String userId, boolean enabled) throws DBException;
+    /**
+     * Method for enabling/disabling user.
+     */
+    void enableUser(
+        @NotNull String userId,
+        boolean enabled,
+        @Nullable String disabledBy,
+        @Nullable String disableReason
+    ) throws DBException;
 
     void setUserAuthRole(@NotNull String userId, @Nullable String authRole) throws DBException;
 
@@ -105,7 +111,15 @@ public interface SMAdminController extends SMController {
 
     SMTeam findTeam(String teamId) throws DBException;
 
-    void createTeam(String teamId, String name, String description, String grantor) throws DBException;
+    /**
+     * Creates a new team with specified team id that will be in lower-case.
+     */
+    SMTeam createTeam(
+        @NotNull String teamId,
+        @Nullable String name,
+        @Nullable String description,
+        @NotNull String grantor
+    ) throws DBException;
 
     void updateTeam(String teamId, String name, String description) throws DBException;
 

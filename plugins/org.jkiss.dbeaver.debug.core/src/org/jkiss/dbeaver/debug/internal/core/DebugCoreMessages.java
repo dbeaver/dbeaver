@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.debug.internal.core;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class DebugCoreMessages extends NLS {
 

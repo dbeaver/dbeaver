@@ -103,7 +103,8 @@ public class DataSourceHandler {
             }
 
             ConnectionFeatures.CONNECTION_OPEN.use(Map.of(
-                "driver", dataSourceContainer.getDriver().getPreconfiguredId()
+                "driver", dataSourceContainer.getDriver().getPreconfiguredId(),
+                "origin", dataSourceContainer.getOrigin().getFullType()
             ));
             final ConnectJob connectJob = new ConnectJob(dataSource);
             final JobChangeAdapter jobChangeAdapter = new JobChangeAdapter() {
@@ -171,7 +172,8 @@ public class DataSourceHandler {
             }
 
             ConnectionFeatures.CONNECTION_CLOSE.use(Map.of(
-                "driver", dataSourceContainer.getDriver().getPreconfiguredId()
+                "driver", dataSourceContainer.getDriver().getPreconfiguredId(),
+                "origin", dataSourceContainer.getOrigin().getFullType()
             ));
 
             final DisconnectJob disconnectJob = new DisconnectJob(dataSourceDescriptor);

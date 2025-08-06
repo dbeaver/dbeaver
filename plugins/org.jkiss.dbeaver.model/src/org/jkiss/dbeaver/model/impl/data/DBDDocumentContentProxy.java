@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDocument;
-import org.jkiss.dbeaver.model.data.storage.BytesContentStorage;
+import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.IOUtils;
 
-import java.io.*;
-import java.nio.charset.Charset;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.Writer;
 
 /**
  * Content proxy document
@@ -71,30 +73,20 @@ public abstract class DBDDocumentContentProxy implements DBDDocument {
     }
 
     @Override
-    public void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, Charset charset) throws DBException {
+    public void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull Writer writer) throws IOException, DBException {
         DBDContentStorage contents = content.getContents(monitor);
         if (contents != null) {
-            try {
-                try (InputStream contentStream = contents.getContentStream()) {
-                    ContentUtils.copyStreams(contentStream, content.getContentLength(), stream, monitor);
-                }
-            } catch (IOException e) {
-                throw new DBException("Error copying content stream", e);
+            try (Reader reader = contents.getContentReader()) {
+                reader.transferTo(writer);
             }
         }
     }
 
     @Override
-    public void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, Charset charset) throws DBException {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ContentUtils.copyStreams(stream, -1, baos, monitor);
-            content.updateContents(monitor, new BytesContentStorage(baos.toByteArray(), charset));
-
-            document.updateDocument(monitor, new ByteArrayInputStream(baos.toByteArray()), charset);
-        } catch (IOException e) {
-            throw new DBException("Error transforming XML document", e);
-        }
+    public void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull Reader reader) throws IOException, DBException {
+        var data = IOUtils.readToString(reader);
+        content.updateContents(monitor, new StringContentStorage(data));
+        document.updateDocument(monitor, new StringReader(data));
     }
 
     @Override

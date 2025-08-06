@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class WMIMessages extends NLS {
 	private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.wmi.WMIMessages"; //$NON-NLS-1$

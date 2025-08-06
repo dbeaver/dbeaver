@@ -28,6 +28,19 @@ public class JSONFormattingStrategy extends ContextBasedFormattingStrategy {
     private ISourceViewer sourceViewer;
     private JSONSourceViewerConfiguration svConfig;
 
+    public static Gson GSON_FORMATTED = new GsonBuilder()
+            .serializeNulls()
+            .disableHtmlEscaping()
+            .setPrettyPrinting()
+            .setStrictness(Strictness.LENIENT)
+            .create();
+
+    public static Gson GSON_UNFORMATTED = new GsonBuilder()
+        .serializeNulls()
+        .disableHtmlEscaping()
+        .setStrictness(Strictness.LENIENT)
+        .create();
+
     JSONFormattingStrategy(ISourceViewer sourceViewer, JSONSourceViewerConfiguration svConfig) {
         this.sourceViewer = sourceViewer;
         this.svConfig = svConfig;
@@ -44,13 +57,7 @@ public class JSONFormattingStrategy extends ContextBasedFormattingStrategy {
         }
         JsonElement jsonElement = JsonParser.parseString(content);
 
-        Gson gson = new GsonBuilder()
-            .serializeNulls()
-            .disableHtmlEscaping()
-            .setPrettyPrinting()
-            .setStrictness(Strictness.LENIENT)
-            .create();
-        return gson.toJson(jsonElement);
+        return GSON_FORMATTED.toJson(jsonElement);
     }
 
     @Override

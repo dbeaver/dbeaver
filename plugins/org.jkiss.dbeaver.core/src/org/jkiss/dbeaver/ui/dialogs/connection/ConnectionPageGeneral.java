@@ -22,7 +22,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -46,6 +45,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -102,7 +102,6 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
     private final List<FilterInfo> filters = new ArrayList<>();
     private Group filtersGroup;
-    private Font boldFont;
 
     ConnectionPageGeneral(ConnectionWizard wizard)
     {
@@ -147,9 +146,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     @Override
-    public void dispose()
-    {
-        UIUtils.dispose(boldFont);
+    public void dispose() {
         super.dispose();
     }
 
@@ -243,7 +240,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
             filterInfo.link.setToolTipText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_tooltip, filterInfo.title));
             if (filterInfo.filter != null && !filterInfo.filter.isNotApplicable()) {
-                filterInfo.link.setFont(boldFont);
+                filterInfo.link.setFont(BaseThemeSettings.instance.baseFontBold);
             } else {
                 filterInfo.link.setFont(getFont());
             }
@@ -291,10 +288,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
-
+    public void createControl(Composite parent) {
         if (navigatorSettings == null) {
             navigatorSettings = new DataSourceNavigatorSettings(getWizard().getSelectedNavigatorSettings());
         }
@@ -407,7 +401,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                         if (dialog.open() == IDialogConstants.OK_ID) {
                             filterInfo.filter = dialog.getFilter();
                             if (filterInfo.filter != null && !filterInfo.filter.isNotApplicable()) {
-                                filterInfo.link.setFont(boldFont);
+                                filterInfo.link.setFont(BaseThemeSettings.instance.baseFontBold);
                             } else {
                                 filterInfo.link.setFont(getFont());
                             }

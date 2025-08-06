@@ -18,13 +18,14 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSWorkspaceConfigurationChangedEvent extends WSAbstractEvent {
 
     private final String configFilePath;
 
     public WSWorkspaceConfigurationChangedEvent(@NotNull String configFilePath, @Nullable String sessionId, @Nullable String userId) {
-        super(WSEventType.WORKSPACE_CONFIG_CHANGED, sessionId, userId);
+        super("cb_workspace_config_changed", WSConstants.TOPIC_WORKSPACE_CONFIGURATION, sessionId, userId);
         this.configFilePath = configFilePath;
     }
 

@@ -36,7 +36,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -63,7 +62,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetPreferences;
-import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetThemeSettings;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
@@ -114,11 +113,10 @@ public class ComplexObjectEditor extends TreeViewer {
         this.parentController = parentController;
         this.editor = editor;
 
-        ITheme currentTheme = parentController.getValueSite().getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme();
-        this.backgroundAdded = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK);
-        this.backgroundDeleted = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
-        this.backgroundModified = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
-        this.foregroundReadOnly = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_NULL_FOREGROUND);
+        this.backgroundAdded = ResultSetThemeSettings.instance.backgroundAdded;
+        this.backgroundDeleted = ResultSetThemeSettings.instance.backgroundDeleted;
+        this.backgroundModified = ResultSetThemeSettings.instance.backgroundModified;
+        this.foregroundReadOnly = ResultSetThemeSettings.instance.foregroundNull;
 
         final Tree treeControl = super.getTree();
         treeControl.setHeaderVisible(true);
@@ -517,8 +515,7 @@ public class ComplexObjectEditor extends TreeViewer {
             return cache.get(object);
         }
 
-        if (object instanceof Collection<?>) {
-            final Collection<?> collection = (Collection<?>) object;
+        if (object instanceof Collection<?> collection) {
             final CollectionElement element;
 
             if (parent == null) {
@@ -559,6 +556,14 @@ public class ComplexObjectEditor extends TreeViewer {
 
             cache.put(object, element);
 
+            return element;
+        }
+
+        if (parent == null) {
+            CollectionElement element = new CollectionRootElement(new ArrayList<>());
+            element.items.add(new CollectionElement.Item(element, object));
+
+            cache.put(object, element);
             return element;
         }
 

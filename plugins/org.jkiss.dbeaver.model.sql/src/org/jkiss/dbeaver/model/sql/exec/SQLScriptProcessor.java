@@ -170,10 +170,15 @@ public class SQLScriptProcessor {
     }
 
     private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLScriptElement element) {
-        if (element instanceof SQLControlCommand) {
+        if (element instanceof SQLControlCommand controlCommand) {
             log.debug(STAT_LOG_PREFIX + "Execute command\n" + element.getText());
             try {
-                return scriptContext.executeControlCommand((SQLControlCommand) element);
+                SQLControlResult controlResult = scriptContext.executeControlCommand(session.getProgressMonitor(), controlCommand);
+                if (controlResult.getTransformed() != null) {
+                    element = controlResult.getTransformed();
+                } else {
+                    return true;
+                }
             } catch (Throwable e) {
                 if (!(e instanceof DBException)) {
                     log.error("Unexpected error while processing SQL command", e);
@@ -182,7 +187,10 @@ public class SQLScriptProcessor {
                 return false;
             }
         }
-        SQLQuery sqlQuery = (SQLQuery) element;
+        if (!(element instanceof SQLQuery sqlQuery)) {
+            log.error("Unsupported SQL element type: " + element);
+            return false;
+        }
         scriptContext.fillQueryParameters(sqlQuery, () -> dataReceiver, true);
         lastError = null;
 

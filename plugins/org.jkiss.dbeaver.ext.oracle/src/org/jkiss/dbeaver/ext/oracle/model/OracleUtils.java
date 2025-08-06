@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -43,7 +45,6 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.sql.Clob;
@@ -112,37 +113,8 @@ public class OracleUtils {
                 return "";
             }
 
-            String ddl;
-            // Read main object DDL
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT DBMS_METADATA.GET_DDL(?,?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
-                dbStat.setString(1, objectType);
-                dbStat.setString(2, object.getName());
-                if (schema != null) {
-                    dbStat.setString(3, schema.getName());
-                }
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        Object ddlValue = dbResult.getObject(1);
-                        if (ddlValue instanceof Clob) {
-                            StringWriter buf = new StringWriter();
-                            try (Reader clobReader = ((Clob) ddlValue).getCharacterStream()) {
-                                IOUtils.copyText(clobReader, buf);
-                            } catch (IOException e) {
-                                e.printStackTrace(new PrintWriter(buf, true));
-                            }
-                            ddl = buf.toString();
-
-                        } else {
-                            ddl = CommonUtils.toString(ddlValue);
-                        }
-                    } else {
-                        log.warn("No DDL for " + objectType + " '" + objectFullName + "'");
-                        return "-- EMPTY DDL";
-                    }
-                }
-            }
-            ddl = ddl.trim();
+            String ddl = fetchDDL(session, objectType, object.getName(), schema);
+            if (ddl == null) return "-- EMPTY DDL";
 
             if (monitor.isCanceled()) return ddl;
 
@@ -189,6 +161,56 @@ public class OracleUtils {
         }
     }
 
+    @Nullable
+    public static String fetchDDL(
+        JDBCSession session,
+        String objectType,
+        String objectName
+    ) throws SQLException {
+        return fetchDDL(session, objectType, objectName, null);
+    }
+
+    @Nullable
+    public static String fetchDDL(
+        JDBCSession session,
+        String objectType,
+        String objectName,
+        @Nullable OracleSchema schema
+    ) throws SQLException {
+        String ddl;
+        // Read main object DDL
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT DBMS_METADATA.GET_DDL(?,?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
+            dbStat.setString(1, objectType);
+            dbStat.setString(2, objectName);
+            if (schema != null) {
+                dbStat.setString(3, schema.getName());
+            }
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                if (dbResult.next()) {
+                    Object ddlValue = dbResult.getObject(1);
+                    if (ddlValue instanceof Clob) {
+                        StringWriter buf = new StringWriter();
+                        try (Reader clobReader = ((Clob) ddlValue).getCharacterStream()) {
+                            IOUtils.copyText(clobReader, buf);
+                        } catch (IOException e) {
+                            log.warn("Can't write ddl query response to string", e);
+                        }
+                        ddl = buf.toString();
+
+                    } else {
+                        ddl = CommonUtils.toString(ddlValue);
+                    }
+                } else {
+                    log.warn("No DDL for " + objectType + " '" + objectName + "'");
+                    return null;
+                }
+            }
+        }
+        ddl = ddl.trim();
+        return ddl;
+    }
+
     private enum DBMSMetaDependentObjectType {
         INDEX,
         CONSTRAINT,
@@ -216,6 +238,72 @@ public class OracleUtils {
                 "' for '" + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + "': " + e.getMessage());
         }
         return ddl;
+    }
+
+    /**
+     * Enumeration of granted object types supported by Oracle's DBMS_METADATA.GET_GRANTED_DDL function.
+     * These represent different categories of privileges that can be extracted as DDL statements.
+     *
+     * <ul>
+     *     <li><b>SYSTEM_GRANT</b> - System-level privileges granted to a user or role (e.g., CREATE SESSION).</li>
+     *     <li><b>ROLE_GRANT</b> - Roles granted to a user or another role.</li>
+     *     <li><b>OBJECT_GRANT</b> - Object-level privileges (e.g., SELECT, INSERT on specific tables or views).</li>
+     * </ul>
+     */
+    public enum DBMSMetaGrantedObjectType {
+        SYSTEM_GRANT,
+        ROLE_GRANT,
+        OBJECT_GRANT
+    }
+
+    /**
+     * Retrieves the granted DDL for a specific grantee and object type
+     * using Oracle's DBMS_METADATA.GET_GRANTED_DDL function.
+     *
+     * @param session              the active JDBC session connected to the Oracle database
+     * @param grantee              the grantee (user or role) whose granted privileges are to be fetched
+     * @param dependentObjectType  the type of granted object (e.g., SYSTEM_GRANT, ROLE_GRANT, OBJECT_GRANT)
+     * @return the DDL string representing the granted privileges, or an empty string if none found or an error occurs
+     */
+    @NotNull
+    public static String invokeDBMSMetadataGetGrantedDDL(
+        @NotNull JDBCSession session,
+        @NotNull OracleGrantee grantee,
+        @NotNull DBMSMetaGrantedObjectType dependentObjectType
+    ) {
+        String ddl = "";
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT DBMS_METADATA.GET_GRANTED_DDL(?,?) TXT FROM DUAL")) {
+            dbStat.setString(1, dependentObjectType.name());
+            dbStat.setString(2, grantee.getName());
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                if (dbResult.next()) {
+                    ddl = dbResult.getString(1).trim();
+                }
+            }
+        } catch (Exception e) {
+            // No dependent index DDL or something went wrong
+            log.debug("Error reading dependent DDL '" + dependentObjectType +
+                "' for '" + grantee.getName() + "': " + e.getMessage());
+        }
+        return ddl;
+    }
+
+    /**
+     * Appends the provided DDL statement to the given SQL buffer with proper formatting.
+     * Adds a semicolon at the end if it's not already present.
+     *
+     * @param sql the StringBuilder to append the DDL to
+     * @param ddl the DDL string to append; if null or empty, nothing is added
+     */
+    public static void addDDLLine(@NotNull StringBuilder sql, @Nullable String ddl) {
+        if (CommonUtils.isNotEmpty(ddl)) {
+            sql.append("\n").append(ddl);
+            if (!ddl.endsWith(";")) {
+                sql.append(";");
+            }
+            sql.append("\n");
+        }
     }
 
     private static String addCommentsToDDL(DBRProgressMonitor monitor, OracleTableBase object, String ddl) {
@@ -269,12 +357,11 @@ public class OracleUtils {
             "SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
     }
 
-    public static String normalizeSourceName(OracleSourceObject object, boolean body)
-    {
+    public static String normalizeSourceName(@NotNull DBRProgressMonitor monitor, @NotNull OracleSourceObject object, boolean body) {
         try {
             String source = body ?
-                ((DBPScriptObjectExt)object).getExtendedDefinitionText(null) :
-                object.getObjectDefinitionText(null, DBPScriptObject.EMPTY_OPTIONS);
+                ((DBPScriptObjectExt)object).getExtendedDefinitionText(monitor) :
+                object.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS);
             if (source == null) {
                 return null;
             }

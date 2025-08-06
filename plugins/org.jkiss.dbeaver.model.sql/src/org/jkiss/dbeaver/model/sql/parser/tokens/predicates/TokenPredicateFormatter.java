@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.util.Iterator;
  * Implements token predicate tree formatter responsible for collecting its string representation
  * (mainly for a debugging visualization purposes)
  */
-class TokenPredicateFormatter implements TokenPredicateNodeVisitor<StringBuilder, StringBuilder>{
+class TokenPredicateFormatter implements TokenPredicateNodeVisitor<StringBuilder, StringBuilder> {
 
     private static final TokenPredicateFormatter INSTANCE = new TokenPredicateFormatter();
 
@@ -102,5 +102,11 @@ class TokenPredicateFormatter implements TokenPredicateNodeVisitor<StringBuilder
     @NotNull
     public StringBuilder visitTokenEntry(@NotNull SQLTokenEntry token, @NotNull StringBuilder sb) {
         return token.format(sb);
+    }
+
+    @Override
+    @NotNull
+    public StringBuilder visitCapture(@NotNull CaptureTokenPredicateNode captureToken, @NotNull StringBuilder sb) {
+        return captureToken.format(sb);
     }
 }

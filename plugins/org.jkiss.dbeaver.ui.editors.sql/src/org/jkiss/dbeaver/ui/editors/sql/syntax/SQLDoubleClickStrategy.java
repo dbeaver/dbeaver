@@ -43,7 +43,7 @@ public class SQLDoubleClickStrategy implements ITextDoubleClickStrategy {
     }
 
     /**
-     * Handles a double-click action by selecting the current word.
+     * Handles a double click action by selecting the current word.
      *
      * @see org.eclipse.jface.text.ITextDoubleClickStrategy#doubleClicked(ITextViewer)
      */
@@ -52,7 +52,7 @@ public class SQLDoubleClickStrategy implements ITextDoubleClickStrategy {
         // Get the viewer we are dealing with.
         fText = viewer;
 
-        // Get the double-click location in the document.
+        // Get the double click location in the document.
         curPos = viewer.getSelectedRange().x;
 
         if (curPos < 0 || curPos >= fText.getDocument().getLength()) {
@@ -66,7 +66,7 @@ public class SQLDoubleClickStrategy implements ITextDoubleClickStrategy {
 
     /**
      * Attempts to find and match opening or closing brackets just ahead of the
-     * double-click location.  Sets fStartPos and fEndPos to the bracket locations
+     * double click location.  Sets fStartPos and fEndPos to the bracket locations
      * if found.
      *
      * @return true if brackets found and matched, otherwise false

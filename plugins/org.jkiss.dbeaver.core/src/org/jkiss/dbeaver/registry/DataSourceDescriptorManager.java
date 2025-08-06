@@ -84,11 +84,11 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
             } else {
                 registry = dsTpl.getRegistry();
             }
-            DataSourceDescriptor dataSource = new DataSourceDescriptor(
-                registry,
+            DataSourceDescriptor dataSource = registry.createDataSource(
                 DataSourceDescriptor.generateNewId(dsTpl.getDriver()),
                 dsTpl.getDriver(),
-                new DBPConnectionConfiguration(dsTpl.getConnectionConfiguration()));
+                new DBPConnectionConfiguration(dsTpl.getConnectionConfiguration())
+            );
             dataSource.copyFrom(dsTpl);
             if (folder != null) {
                 dataSource.setFolder(folder);

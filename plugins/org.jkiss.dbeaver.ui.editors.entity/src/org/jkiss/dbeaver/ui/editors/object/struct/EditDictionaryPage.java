@@ -60,7 +60,7 @@ public class EditDictionaryPage extends AttributesSelectorPage<DBSEntity, DBSEnt
     public EditDictionaryPage(
         final DBSEntity entity)
     {
-        super("Edit dictionary", entity);
+        super("Edit description", entity);
         this.entity = entity;
         this.dictionary = DBVUtils.getVirtualEntity(entity, true);
         UIUtils.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), monitor -> {

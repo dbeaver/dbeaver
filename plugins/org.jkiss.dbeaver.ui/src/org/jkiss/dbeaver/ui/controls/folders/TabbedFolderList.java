@@ -1,17 +1,6 @@
 /*
- * Copyright (c) 2001, 2012 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Mariot Chauvin <mariot.chauvin@obeo.fr> - bug 259553
- *     Amit Joglekar <joglekar@us.ibm.com> - Support for dynamic images (bug 385795)
- *
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +27,7 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -72,8 +62,8 @@ public class TabbedFolderList extends Composite {
     private int topVisibleIndex = NONE;
     private int bottomVisibleIndex = NONE;
 
-    private TopNavigationElement topNavigationElement;
-    private BottomNavigationElement bottomNavigationElement;
+    private final TopNavigationElement topNavigationElement;
+    private final BottomNavigationElement bottomNavigationElement;
 
     private int widestLabelIndex = NONE;
     private int tabsThatFitInComposite = NONE;
@@ -91,8 +81,6 @@ public class TabbedFolderList extends Composite {
     private Color bottomNavigationElementShadowStroke1;
     private Color bottomNavigationElementShadowStroke2;
 
-    private Font boldFont;
-
     private final Map<Image, Image> grayedImages = new IdentityHashMap<>();
 
     /**
@@ -100,8 +88,8 @@ public class TabbedFolderList extends Composite {
      */
     public class ListElement extends Canvas {
 
-        private TabbedFolderInfo tab;
-        private int index;
+        private final TabbedFolderInfo tab;
+        private final int index;
         private boolean selected;
         private boolean hover;
 
@@ -241,7 +229,9 @@ public class TabbedFolderList extends Composite {
             e.gc.setForeground(widgetForeground);
             if (selected) {
 				/* selected tab is bold font */
-                e.gc.setFont(boldFont);
+                e.gc.setFont(BaseThemeSettings.instance.baseFontBold);
+            } else {
+                e.gc.setFont(BaseThemeSettings.instance.baseFont);
             }
             e.gc.drawText(tab.getText(), textIndent, textMiddle, true);
             if (((TabbedFolderList) getParent()).focus && selected) {
@@ -455,8 +445,6 @@ public class TabbedFolderList extends Composite {
         initColours();
         initAccessible();
 
-        boldFont = UIUtils.makeBoldFont(getFont());
-
         this.addFocusListener(new FocusListener() {
 
             public void focusGained(FocusEvent e) {
@@ -487,7 +475,6 @@ public class TabbedFolderList extends Composite {
                 UIUtils.dispose(di);
             }
             grayedImages.clear();
-            UIUtils.dispose(boldFont);
         });
 
         UIUtils.installAndUpdateMainFont(this);
@@ -704,7 +691,7 @@ public class TabbedFolderList extends Composite {
      */
     private Point getTextDimension(String text) {
         GC gc = new GC(this);
-        gc.setFont(boldFont);
+        gc.setFont(BaseThemeSettings.instance.baseFontBold);
         Point point = gc.textExtent(text);
         point.x++;
         gc.dispose();
@@ -729,7 +716,7 @@ public class TabbedFolderList extends Composite {
         } else {
             widgetBackground = getBackground();
         }
-        widgetForeground = UIStyles.isDarkHighContrastTheme() ? UIUtils.COLOR_WHITE : UIStyles.getDefaultTextForeground();
+        widgetForeground = UIStyles.isDarkHighContrastTheme() ? UIStyles.COLOR_WHITE : UIStyles.getDefaultTextForeground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
@@ -791,16 +778,6 @@ public class TabbedFolderList extends Composite {
     @Override
     public void setFont(Font font) {
         super.setFont(font);
-
-        if (boldFont != null) {
-            boldFont.dispose();
-            boldFont = null;
-        }
-
-        if (font != null) {
-            boldFont = UIUtils.makeBoldFont(font);
-        }
-
         computeTabsWidth();
     }
 

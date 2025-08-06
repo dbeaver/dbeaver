@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -52,6 +53,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.sql.SQLState;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -63,10 +65,7 @@ import org.osgi.framework.Version;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -178,7 +177,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             String zeroDateTimeBehavior = connectionInfo.getProperty(MySQLConstants.PROP_ZERO_DATETIME_BEHAVIOR);
             if (zeroDateTimeBehavior == null) {
                 try {
-                    Driver driverInstance = (Driver) driver.getDriverInstance(monitor);
+                    Driver driverInstance = driver.getDriverLoader(getContainer()).getDriverInstance(monitor);
                     if (driverInstance != null) {
                         if (driverInstance.getMajorVersion() >= 8) {
                             props.put(MySQLConstants.PROP_ZERO_DATETIME_BEHAVIOR, "CONVERT_TO_NULL");
@@ -241,10 +240,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         final boolean retrievePublicKey = sslConfig.getBooleanProperty(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE);
         if (retrievePublicKey) {
             props.put("allowPublicKeyRetrieval", "true");
-        }
-
-        if (sslConfig.getBooleanProperty(MySQLConstants.PROP_SSL_DEBUG)) {
-            System.setProperty("javax.net.debug", "all");
         }
     }
 
@@ -374,6 +369,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             String charsetName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHARSET);
+                            if (charsetName == null) {
+                                continue;
+                            }
                             MySQLCharset charset = getCharset(charsetName);
                             if (charset == null) {
                                 log.warn("Charset '" + charsetName + "' not found.");
@@ -511,6 +509,15 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         Connection mysqlConnection;
         try {
             mysqlConnection = super.openConnection(monitor, context, purpose);
+
+            if (isMariaDB()) {
+                // Execute a dummy statement that will cause an exception to be thrown if the password is expired
+                try (Statement stmt = mysqlConnection.createStatement()) {
+                    stmt.execute("SELECT 1");
+                } catch (SQLException e) {
+                    throw new DBCException(e, context);
+                }
+            }
         } catch (DBCException e) {
             if (e.getCause() instanceof SQLException &&
                 SQLState.SQL_01S00.getCode().equals (((SQLException) e.getCause()).getSQLState()) &&
@@ -525,6 +532,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     inServerTimezoneHandle = false;
                     throw e2;
                 }
+            } else if (
+                isPasswordExpired(e) &&
+                DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, container, this::changeUserPassword)
+            ) {
+                return openConnection(monitor, context, purpose);
             } else {
                 throw e;
             }
@@ -873,6 +885,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             return createCatalogInstance(owner, resultSet);
         }
 
+        @Override
+        protected boolean handleCacheReadError(@NotNull Exception error) {
+            String sqlState = SQLState.getStateFromException(error);
+            return SQLState.SQL_42000.getCode().equals(sqlState);
+        }
+
     }
 
     @NotNull
@@ -1105,9 +1123,44 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             if (propertyValue == null) {
                 connectProps.remove(prohibitedDriverProperty);
             } else {
-                log.debug("Set " + prohibitedDriverProperty + ":" + propertyValue);
+                log.trace("Set " + prohibitedDriverProperty + ":" + propertyValue);
                 connectProps.put(prohibitedDriverProperty, propertyValue);
             }
+        }
+    }
+
+    private boolean isPasswordExpired(@NotNull DBCException e) {
+        int code = SQLState.getCodeFromException(e);
+        if (isMariaDB()) {
+            return code == MySQLConstants.MARIA_ER_MUST_CHANGE_PASSWORD_LOGIN;
+        } else {
+            return code == MySQLConstants.ER_MUST_CHANGE_PASSWORD_LOGIN;
+        }
+    }
+
+    private void changeUserPassword(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String userName,
+        @NotNull String newPassword,
+        @NotNull String oldPassword
+    ) throws DBException {
+        container.getActualConnectionConfiguration().setProperty("disconnectOnExpiredPasswords", "false");
+        try (Connection connection = super.openConnection(monitor, null, "Change expired password")) {
+            try (Statement stmt = connection.createStatement()) {
+                if (isMariaDB()) {
+                    stmt.execute("SET PASSWORD FOR %s = PASSWORD(%s)".formatted(
+                        SQLUtils.quoteString(this, userName),
+                        SQLUtils.quoteString(this, newPassword)
+                    ));
+                } else {
+                    stmt.execute("SET PASSWORD = %s REPLACE %s".formatted(
+                        SQLUtils.quoteString(this, newPassword),
+                        SQLUtils.quoteString(this, oldPassword)
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException("Unable to change expired password", e);
         }
     }
 }

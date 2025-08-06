@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,17 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -189,11 +195,11 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         }
     }
 
-    private void createDictionaryPage(TabFolder tabFolder) {
+    private void createDictionaryPage(CTabFolder tabFolder) {
         if (entity != null) {
             editDictionaryPage = new EditDictionaryPage(entity);
             editDictionaryPage.createControl(tabFolder);
-            TabItem dictItem = new TabItem(tabFolder, SWT.NONE);
+            CTabItem dictItem = new CTabItem(tabFolder, SWT.NONE);
             dictItem.setText(DataEditorsMessages.virtual_structure_editor_dictionary_page_text);
             dictItem.setControl(editDictionaryPage.getControl());
             dictItem.setData(EditVirtualEntityDialog.InitPage.DICTIONARY);
@@ -228,19 +234,26 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         {
             Composite buttonsPanel = UIUtils.createComposite(group, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
             Button btnAdd = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_add, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    DBVEntityConstraint newConstraint = new DBVEntityConstraint(vEntity, DBSEntityConstraintType.VIRTUAL_KEY, vEntity.getName() + "_uk");
-                    EditConstraintPage editPage = new EditConstraintPage(DataEditorsMessages.virtual_structure_editor_constraint_page_edit_key, newConstraint);
-                    if (editPage.edit()) {
-                        changeConstraint(newConstraint, editPage);
-                        vEntity.addConstraint(newConstraint);
-                        createUniqueKeyItem(ukTable, newConstraint);
-                        vEntity.persistConfiguration();
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DBVEntityConstraint newConstraint = new DBVEntityConstraint(vEntity, DBSEntityConstraintType.VIRTUAL_KEY, vEntity.getName() + "_uk");
+                        EditConstraintPage editPage = new EditConstraintPage(DataEditorsMessages.virtual_structure_editor_constraint_page_edit_key, newConstraint);
+                        if (editPage.edit()) {
+                            changeConstraint(newConstraint, editPage);
+                            // Show error if a constraint with the same name already exists
+                            if (!vEntity.addConstraint(newConstraint)) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    "Virtual Unique Key Creation Failed",
+                                    "Duplicate constraint '" + newConstraint.getName()
+                                        + "' in entity '" + vEntity.getName()
+                                );
+                            } else {
+                                createUniqueKeyItem(ukTable, newConstraint);
+                                vEntity.persistConfiguration();
+                            }
+                        }
                     }
-                }
             });
 
             SelectionAdapter ukEditListener = new SelectionAdapter() {
@@ -458,7 +471,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     @Override
-    public void handleDataSourceEvent(DBPEvent event) {
+    public void handleDataSourceEvent(@NotNull DBPEvent event) {
         if (event.getObject() == vEntity) {
             UIUtils.asyncExec(() -> refreshPart(event, true));
         }

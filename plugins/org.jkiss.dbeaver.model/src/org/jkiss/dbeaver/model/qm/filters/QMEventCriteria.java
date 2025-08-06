@@ -50,6 +50,8 @@ public class QMEventCriteria {
     @NotNull
     private Set<String> projectIds = Collections.emptySet();
     @NotNull
+    private Set<String> dataSourceIds = Collections.emptySet();
+    @NotNull
     private Set<String> schemas = Collections.emptySet();
     @NotNull
     private Set<String> catalogs = Collections.emptySet();
@@ -186,11 +188,11 @@ public class QMEventCriteria {
     }
 
     @Nullable
-    public QMDateRange getStartDateRange() {
+    public QMDateRange getDateRange() {
         return startDateRange;
     }
 
-    public void setStartDateRange(@Nullable QMDateRange startDateRange) {
+    public void setDateRange(@Nullable QMDateRange startDateRange) {
         this.startDateRange = startDateRange;
     }
 
@@ -218,6 +220,15 @@ public class QMEventCriteria {
 
     public boolean hasProjectIds() {
         return !projectIds.isEmpty();
+    }
+
+    @NotNull
+    public Set<String> getDataSourceIds() {
+        return dataSourceIds;
+    }
+
+    public void setDataSourceIds(@NotNull Set<String> dataSourceIds) {
+        this.dataSourceIds = dataSourceIds;
     }
 
     @NotNull

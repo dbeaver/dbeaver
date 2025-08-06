@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -218,8 +217,8 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
     @Nullable
     @Override
     public String getObjectInformation(@NotNull DBPObject object, @NotNull String infoType) {
-        if (object instanceof DBPDataSourceContainer && infoType.equals(INFO_TARGET_ADDRESS)) {
-            DBPConnectionConfiguration connectionInfo = ((DBPDataSourceContainer) object).getConnectionConfiguration();
+        if (object instanceof DBPDataSourceContainer ds && infoType.equals(INFO_TARGET_ADDRESS)) {
+            DBPConnectionConfiguration connectionInfo = ds.getConnectionConfiguration();
             OracleConstants.ConnectionType connectionType = getConnectionType(connectionInfo);
             if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
                 return DatabaseURL.generateUrlByTemplate(connectionInfo.getUrl(), connectionInfo);
@@ -228,7 +227,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements
             if (connectionType == OracleConstants.ConnectionType.TNS) {
                 return databaseName;
             } else {
-                String hostName = DBWUtils.getTargetTunnelHostName(connectionInfo);
+                String hostName = DBWUtils.getTargetTunnelHostName(ds, connectionInfo);
                 String hostPort = connectionInfo.getHostPort();
                 if (CommonUtils.isEmpty(hostName)) {
                     return null;

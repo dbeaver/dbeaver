@@ -21,19 +21,21 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.junit.DBeaverUnitTest;
+import org.jkiss.junit.osgi.annotation.RunnerProxy;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
 import static org.jkiss.dbeaver.model.sql.analyzer.builder.Builder.Consumer.empty;
 
-public class SQLCompletionAnalyzerTest {
+@RunnerProxy(MockitoJUnitRunner.Silent.class)
+public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
     private static RequestResult modelDataRequest;
-    private static final String ENABLE_EXPERIMENTAL_FEATURES = "SQLEditor.ContentAssistant.experimental.enable";
 
     @Before
     public void init() throws DBException {
@@ -466,7 +468,6 @@ public class SQLCompletionAnalyzerTest {
     
     @Test
     public void testCompleteTablesWithAliasesPositive() throws DBException {
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(ENABLE_EXPERIMENTAL_FEATURES, true);
         List<SQLCompletionProposalBase> proposals = modelDataRequest
             .request("SELECT * FROM table1 a, table2 b WHERE |");
         
@@ -531,7 +532,6 @@ public class SQLCompletionAnalyzerTest {
     
     @Test
     public void testCompleteTablesWithAliasesQuotedPositive() throws DBException {
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(ENABLE_EXPERIMENTAL_FEATURES, true);
         List<SQLCompletionProposalBase> proposals = modelDataRequest
             .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE |");
         // alias from a and b
@@ -557,7 +557,6 @@ public class SQLCompletionAnalyzerTest {
 
     @Test
     public void testCompleteTablesByAliaseNegative() throws DBException {
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(ENABLE_EXPERIMENTAL_FEATURES, true);
         List<SQLCompletionProposalBase> proposals = modelDataRequest
             .request("SELECT * FROM table1 a, table2 b WHERE c.|");
         Assert.assertTrue(proposals.isEmpty());

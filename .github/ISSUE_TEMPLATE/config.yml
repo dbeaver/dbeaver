@@ -1,5 +1,5 @@
 blank_issues_enabled: false
-contact_links: 
+contact_links:
   - name: How to extract log files from DBeaver
     url: https://github.com/dbeaver/dbeaver/wiki/Log-files
     about: Common things you should know before creating a bug report.
@@ -9,6 +9,6 @@ contact_links:
   - name: Learn how to use DBeaver effectively with our tutorial videos
     url: https://www.youtube.com/channel/UC-yOjsQLSaJVEghg6UB3N7A
     about: Subscribe to our youtube channel and watch new tutorials every week
-  - name: Follow us on the Facebook
-    url: https://www.facebook.com/DBeaverCorporation
-    about: Get everyday tips, detailed manuals, and DBeaver feature overviews.
+  - name: Follow us on X (ex. Twitter)
+    url: https://x.com/dbeaver_news
+    about: Get everyday tips, fresh news, and DBeaver feature overviews.

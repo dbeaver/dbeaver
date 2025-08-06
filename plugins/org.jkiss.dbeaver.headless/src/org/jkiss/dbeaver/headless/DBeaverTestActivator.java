@@ -56,12 +56,6 @@ public class DBeaverTestActivator extends Plugin {
         Bundle bundle = getBundle();
         ModelPreferences.setMainBundle(bundle);
         preferences = new BundlePreferenceStore(bundle);
-
-        // Headless application is never started as it is used
-        // for integration tests only.
-        // But we need to instantiate it to initialize platform and UI.
-        // Headless plugin must be auto-started
-        DBeaverHeadlessApplication.getInstance();
     }
 
     @Override

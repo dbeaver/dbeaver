@@ -69,7 +69,7 @@ public class LocalConfigurationController implements DBConfigurationController {
     public void saveConfigurationFile(@NotNull String filePath, @NotNull String data) throws DBException {
         Path localPath = configFolder.resolve(filePath);
         if (!localPath.normalize().startsWith(configFolder)) {
-            throw new DBException("Invalid configuration path");
+            throw new DBException("Invalid configuration path '" + localPath + "'");
         }
         try {
             Path localFolder = localPath.getParent();

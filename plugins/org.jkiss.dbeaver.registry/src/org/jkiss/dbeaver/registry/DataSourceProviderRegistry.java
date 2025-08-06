@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     }
 
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<>();
+    private final Map<String, DataSourceProviderDescriptor> dataSourceProvidersMap = new HashMap<>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<>();
     private final List<DataSourceHandlerDescriptor> dataSourceHandlers = new ArrayList<>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
@@ -128,6 +129,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                     case RegistryConstants.TAG_DATASOURCE: {
                         DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, ext);
                         dataSourceProviders.add(provider);
+                        dataSourceProvidersMap.put(provider.getId(), provider);
                         break;
                     }
                     case RegistryConstants.TAG_DATASOURCE_ORIGIN: {
@@ -206,11 +208,6 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             });
         }
 
-        {
-            // Try to load initial drivers config
-            readDriversConfig();
-        }
-
         // Load connection types
         {
             for (DBPConnectionType ct : DBPConnectionType.SYSTEM_TYPES) {
@@ -242,7 +239,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
         }
 
-        // Load external resources information
+        // Load auth models
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceAuthModelDescriptor.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
@@ -259,9 +256,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 dataSourceConfigurationStorageDescriptors.add(descriptor);
             }
         }
+
+        // Load initial drivers config
+        readDriversConfig();
     }
 
-    private void readDriversConfig() {
+    public void readDriversConfig() {
         String providedDriversConfig = System.getProperty("dbeaver.drivers.configuration-file");
         if (!CommonUtils.isEmpty(providedDriversConfig)) {
             Path configFile = Path.of(providedDriversConfig);
@@ -290,6 +290,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 }
             }
         }
+
+        // Set provider properties to drivers
+        dataSourceProviders.forEach(DataSourceProviderDescriptor::setDriverProviderProperties);
 
         int driverCount = 0;
         int customDriverCount = 0;
@@ -331,18 +334,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     @Override
     @Nullable
     public DataSourceProviderDescriptor getDataSourceProvider(String id) {
-        for (DataSourceProviderDescriptor provider : dataSourceProviders) {
-            if (provider.getId().equals(id)) {
-                return provider;
-            }
-        }
-        return null;
+        return dataSourceProvidersMap.get(id);
     }
 
     @Override
     public DBPDataSourceProviderDescriptor makeFakeProvider(String providerID) {
         DataSourceProviderDescriptor provider = new DataSourceProviderDescriptor(this, providerID);
         dataSourceProviders.add(provider);
+        dataSourceProvidersMap.put(providerID, provider);
         return provider;
     }
 
@@ -505,8 +504,10 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 if (driver.isDisabled() || driver.getReplacedBy() != null) {
                     continue;
                 }
-                if (driver.resolveDriverFiles(targetFileLocation)) {
-                    didResolve = true;
+                for (DBPDriverLoader driverLoader : driver.getAllDriverLoaders()) {
+                    if (driverLoader.resolveDriverFiles(targetFileLocation)) {
+                        didResolve = true;
+                    }
                 }
             }
         }

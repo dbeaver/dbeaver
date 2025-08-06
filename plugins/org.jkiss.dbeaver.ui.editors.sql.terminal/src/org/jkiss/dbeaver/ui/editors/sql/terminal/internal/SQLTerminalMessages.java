@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.terminal.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class SQLTerminalMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.sql.terminal.internal.SQLTerminalMessages"; //$NON-NLS-1$

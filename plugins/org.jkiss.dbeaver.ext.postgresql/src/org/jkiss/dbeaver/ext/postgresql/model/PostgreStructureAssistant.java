@@ -99,6 +99,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
     public DBSObjectType[] getSearchObjectTypes() {
         //TODO: currently, we do not search for data types, although it's absolutely possible.
         return new DBSObjectType[]{
+            RelationalObjectType.TYPE_SCHEMA,
             RelationalObjectType.TYPE_TABLE,
             RelationalObjectType.TYPE_CONSTRAINT,
             RelationalObjectType.TYPE_PROCEDURE,
@@ -161,6 +162,8 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
                     findProceduresByMask(session, database, nsList, params, references);
                 } else if (type == RelationalObjectType.TYPE_TABLE_COLUMN) {
                     findTableColumnsByMask(session, database, nsList, params, references);
+                } else if (type == RelationalObjectType.TYPE_SCHEMA) {
+                    findSchemaByMask(session, database, params, references);
                 }
                 if (references.size() >= params.getMaxResults()) {
                     break;
@@ -170,6 +173,58 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
             throw new DBDatabaseException(ex, getDataSource());
         }
         return references;
+    }
+
+    private void findSchemaByMask(
+        JDBCSession session,
+        PostgreDatabase database,
+        ObjectsSearchParams params,
+        List<DBSObjectReference> references
+    ) throws SQLException, DBException {
+
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        QueryParams queryParams = buildQueryParamsForSchemaSearch(params, references);
+        String sql = buildFindQuery(queryParams);
+
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            dbStat.setString(1, params.getMask());
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (!monitor.isCanceled() && dbResult.next()) {
+                    final long schemaId = JDBCUtils.safeGetLong(dbResult, "oid");
+                    final String schemaName = JDBCUtils.safeGetString(dbResult, "schema_name");
+                    final PostgreSchema schema = database.getSchema(session.getProgressMonitor(), schemaId);
+                    if (schema == null) {
+                        log.debug("Can't resolve schema '" + schemaName + " not found");
+                        continue;
+                    }
+                    references.add(new AbstractObjectReference<>(schemaName, database, null,
+                        PostgreSchema.class,
+                        RelationalObjectType.TYPE_SCHEMA) {
+                        @Override
+                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                            return schema;
+                        }
+                    });
+                }
+            }
+        }
+
+    }
+
+    @NotNull
+    private QueryParams buildQueryParamsForSchemaSearch(ObjectsSearchParams params, List<DBSObjectReference> references) {
+        QueryParams queryParams = new QueryParams(
+            "n.oid AS oid, n.nspname AS schema_name",
+            "pg_namespace n",
+            "n.nspname",
+            Collections.emptyList(),
+            "",
+            "n.nspname"
+        );
+        queryParams.setWhereClause("has_schema_privilege(n.nspname, 'USAGE')");
+        queryParams.setCaseSensitive(params.isCaseSensitive());
+        queryParams.setMaxResults(params.getMaxResults() - references.size());
+        return queryParams;
     }
 
     private static void findTablesByMask(@NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull final List<PostgreSchema> schemas,

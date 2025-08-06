@@ -118,7 +118,7 @@ public class SQLEditorSemanticMarkersManager {
                 try {
                     resource.deleteMarkers(SQLSemanticErrorAnnotation.MARKER_TYPE, false, IResource.DEPTH_ONE);
                 } catch (CoreException e) {
-                    log.error("Error deleting problem markers", e);
+                    log.error("Error deleting problem markers: " + e.getMessage());
                 }
                 this.resetAnnotations = false;
             }

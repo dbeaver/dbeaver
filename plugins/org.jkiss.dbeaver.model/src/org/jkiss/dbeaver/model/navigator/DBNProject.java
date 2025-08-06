@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.navigator.registry.DBNRegistry;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.file.Path;
@@ -53,9 +52,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     public DBNProject(DBNNode parentNode, DBPProject project) {
         super(parentNode);
         this.project = project;
-        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
-            DBNRegistry.getInstance().extendNode(this, false);
-        }
+        DBNRegistry.getInstance().extendNode(this, false);
     }
 
     @NotNull
@@ -211,9 +208,6 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     }
 
     public <T> T getExtraNode(Class<T> nodeType) {
-        if (extraNodes == null) {
-            DBNRegistry.getInstance().extendNode(this, false);
-        }
         if (extraNodes != null) {
             for (DBNNode node : extraNodes) {
                 if (nodeType.isAssignableFrom(node.getClass())) {

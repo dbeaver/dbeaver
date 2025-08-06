@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -79,10 +80,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private final List<DriverDescriptor> drivers = new ArrayList<>();
     private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
     private final List<DBPDataSourceProviderDescriptor> childrenProviders = new ArrayList<>();
+    private final List<ProviderPropertiesInto> providerProperties = new ArrayList<>();
+
     @NotNull
     private SQLDialectMetadata scriptDialect;
     private boolean inheritClients;
     private boolean inheritAuthModels = true;
+    private boolean inheritProviderProperties;
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config) {
         super(config);
@@ -194,21 +198,17 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
                 // Load provider properties
                 {
+                    inheritProviderProperties = CommonUtils.getBoolean(config.getAttribute("inheritProviderProperties"), false);
                     for (IConfigurationElement propsElement : driversElement.getChildren(RegistryConstants.TAG_PROVIDER_PROPERTIES)) {
                         String driversSpec = propsElement.getAttribute("drivers");
                         List<ProviderPropertyDescriptor> providerProperties = new ArrayList<>();
                         for (IConfigurationElement prop : propsElement.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
                             providerProperties.addAll(ProviderPropertyDescriptor.extractProviderProperties(prop));
                         }
-                        List<DriverDescriptor> appDrivers;
-                        if (CommonUtils.isEmpty(driversSpec) || driversSpec.equals("*")) {
-                            appDrivers = drivers;
-                        } else {
-                            String[] driverIds = driversSpec.split(",");
-                            appDrivers = drivers.stream()
-                                .filter(d -> ArrayUtils.contains(driverIds, d.getId())).collect(Collectors.toList());
-                        }
-                        appDrivers.forEach(d -> d.addProviderPropertyDescriptors(providerProperties));
+                        this.providerProperties.add(new ProviderPropertiesInto(driversSpec, providerProperties));
+                    }
+                    if (inheritProviderProperties && parentProvider != null) {
+                        this.providerProperties.addAll(parentProvider.providerProperties);
                     }
                 }
             }
@@ -436,6 +436,14 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         } else {
             return this.drivers.remove(driver);
         }
+    }
+
+    public boolean removeDriver(@NotNull String driverId) {
+        return drivers.stream()
+            .filter(d -> d.getId().equals(driverId))
+            .findFirst()
+            .map(this::removeDriver)
+            .orElse(false);
     }
 
     @NotNull
@@ -738,6 +746,22 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             }
         }
         return false;
+    }
+
+    public void setDriverProviderProperties() {
+        providerProperties.forEach(propInfo -> {
+            String driversSpec = propInfo.driverIds();
+            Predicate<DriverDescriptor> predicate =
+                (CommonUtils.isEmpty(driversSpec) || driversSpec.equals("*"))
+                    ? d -> true
+                    : d -> ArrayUtils.contains(driversSpec.split(","), d.getId());
+            this.drivers.stream()
+                .filter(predicate)
+                .forEach(d -> d.addProviderPropertyDescriptors(propInfo.providerProperties()));
+        });
+    }
+
+    public record ProviderPropertiesInto(@Nullable String driverIds, @NotNull List<ProviderPropertyDescriptor> providerProperties) {
     }
 
 }

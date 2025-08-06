@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class DTMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.tools.transfer.internal.DTMessages"; //$NON-NLS-1$
@@ -112,8 +111,8 @@ public class DTMessages extends NLS {
     public static String data_transfer_db_consumer_existing_table_description;
     public static String data_transfer_db_consumer_new_table;
     public static String data_transfer_db_consumer_new_table_description;
-    public static String data_transfer_db_consumer_button_configure;
-    public static String data_transfer_db_consumer_button_configure_description;
+    public static String data_transfer_db_consumer_button_customise;
+    public static String data_transfer_db_consumer_button_customise_description;
     public static String data_transfer_db_consumer_column_mappings;
     public static String data_transfer_db_consumer_column_mappings_description;
     public static String data_transfer_db_consumer_ddl;

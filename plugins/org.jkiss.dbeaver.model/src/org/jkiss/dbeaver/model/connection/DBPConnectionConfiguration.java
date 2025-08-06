@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VARIABLE_PREFIX_TAG = "tag.";
 
     public static final String VARIABLE_DATE = "date";
+    public static final String VARIABLE_TIME = "time";
 
     public static final String[][] CONNECT_VARIABLES = new String[][]{
         {VARIABLE_HOST, "target database host"},
@@ -156,7 +157,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.configurationType = info.configurationType;
         this.properties = new LinkedHashMap<>(info.properties);
         this.providerProperties = new LinkedHashMap<>(info.providerProperties);
-        this.runtimeAttributes = new HashMap<>(info.runtimeAttributes);
+        this.runtimeAttributes = info.runtimeAttributes;
         this.events = new LinkedHashMap<>(info.events.size());
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
             this.events.put(entry.getKey(), new DBRShellCommand(entry.getValue()));
@@ -342,7 +343,7 @@ public class DBPConnectionConfiguration implements DBPObject {
         }
     }
 
-    public void updateHandler(DBWHandlerConfiguration handler) {
+    public void updateHandler(@NotNull DBWHandlerConfiguration handler) {
         synchronized (handlers) {
             for (int i = 0; i < handlers.size(); i++) {
                 if (handlers.get(i).getId().equals(handler.getId())) {
@@ -355,7 +356,7 @@ public class DBPConnectionConfiguration implements DBPObject {
     }
 
     @Nullable
-    public DBWHandlerConfiguration getHandler(String id) {
+    public DBWHandlerConfiguration getHandler(@NotNull String id) {
         synchronized (handlers) {
             for (DBWHandlerConfiguration cfg : handlers) {
                 if (cfg.getId().equals(id)) {
@@ -364,6 +365,16 @@ public class DBPConnectionConfiguration implements DBPObject {
             }
             return null;
         }
+    }
+
+    public void removeHandler(@NotNull String id) {
+        synchronized (handlers) {
+            handlers.removeIf(handler -> handler.getId().equals(id));
+        }
+    }
+
+    public boolean hasHandler(@NotNull String id) {
+        return getHandler(id) != null;
     }
 
     ////////////////////////////////////////////////////
@@ -432,31 +443,48 @@ public class DBPConnectionConfiguration implements DBPObject {
         this.closeIdleInterval = closeIdleInterval;
     }
 
+    @Nullable
     public String getConfigProfileSource() {
         return configProfileSource;
     }
 
-    public void setConfigProfileSource(String configProfileSource) {
+    public void setConfigProfileSource(@Nullable String configProfileSource) {
         this.configProfileSource = configProfileSource;
     }
 
+    @Nullable
     public String getConfigProfileName() {
         return configProfileName;
     }
 
-    public void setConfigProfileName(String configProfileName) {
+    public void setConfigProfileName(@Nullable String configProfileName) {
         this.configProfileName = configProfileName;
     }
 
-    public void setConfigProfile(DBWNetworkProfile profile) {
+    /**
+     * Sets the network profile for this configuration.
+     * <p>
+     * If {@code null} is passed, only the profile configuration is cleared.
+     * Otherwise, the profile configuration is updated, and the connection's
+     * network handlers are replaced with the profile's.
+     *
+     * @param profile the network profile
+     */
+    public void setConfigProfile(@Nullable DBWNetworkProfile profile) {
         if (profile == null) {
+            configProfileSource = null;
             configProfileName = null;
         } else {
             configProfileSource = profile.getProfileSource();
             configProfileName = profile.getProfileId();
-            for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
-                if (handlerConfig.isEnabled()) {
-                    updateHandler(new DBWHandlerConfiguration(handlerConfig));
+
+            synchronized (handlers) {
+                handlers.clear();
+
+                for (DBWHandlerConfiguration handlerConfig : profile.getConfigurations()) {
+                    if (handlerConfig.isEnabled()) {
+                        updateHandler(new DBWHandlerConfiguration(handlerConfig));
+                    }
                 }
             }
         }

@@ -20,9 +20,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -35,8 +38,7 @@ import java.util.List;
 /**
  * GenericCatalog
  */
-public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
-{
+public class GenericCatalog extends GenericObjectContainer implements DBSCatalog, DBPSystemObject {
     private final String catalogName;
     private List<GenericSchema> schemas;
     private boolean isInitialized = false;
@@ -98,7 +100,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true, order = 1, labelProvider = CatalogNameTermProvider.class)
     public String getName()
     {
         return catalogName;
@@ -167,4 +169,19 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         return super.refreshObject(monitor);
     }
 
+    @Override
+    public boolean isSystem() {
+        return false;
+    }
+
+    public static class CatalogNameTermProvider implements IPropertyValueTransformer<DBSObject, String> {
+        @Override
+        public String transform(DBSObject object, String value) throws IllegalArgumentException {
+            String catalogTerm = object.getDataSource().getInfo().getCatalogTerm();
+            if (!CommonUtils.isEmpty(catalogTerm)) {
+                return catalogTerm + " " + ModelMessages.model_navigator_Name;
+            }
+            return ModelMessages.model_navigator_Name;
+        }
+    }
 }

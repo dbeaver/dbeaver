@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.impl.local;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -97,7 +98,7 @@ public class LocalStatement extends AbstractStatement<DBCSession>
     }
 
     @Override
-    public void cancelBlock(DBRProgressMonitor monitor, Thread blockThread) throws DBException {
+    public void cancelBlock(@NotNull DBRProgressMonitor monitor, Thread blockThread) throws DBException {
 
     }
 }

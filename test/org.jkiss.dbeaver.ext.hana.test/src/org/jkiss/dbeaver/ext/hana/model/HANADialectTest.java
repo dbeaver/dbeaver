@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.hana.model;
 
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
-public class HANADialectTest {
+public class HANADialectTest extends DBeaverUnitTest {
     @Test
     public void quoteStatusStringTest() {
         final HANASQLDialect dialect = new HANASQLDialect();
@@ -31,7 +29,6 @@ public class HANADialectTest {
         Assert.assertFalse(dialect.mustBeQuoted("testNAME", false));
         Assert.assertFalse(dialect.mustBeQuoted("Test", false));
         Assert.assertFalse(dialect.mustBeQuoted("TEST", false));
-
         Assert.assertTrue(dialect.mustBeQuoted("тест", false));
         Assert.assertTrue(dialect.mustBeQuoted("  test  ", false));
         Assert.assertTrue(dialect.mustBeQuoted("њен", false));

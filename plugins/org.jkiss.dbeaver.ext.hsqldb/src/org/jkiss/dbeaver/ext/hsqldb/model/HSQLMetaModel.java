@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * HSQLMetaModel
@@ -49,18 +51,23 @@ import java.util.Map;
 public class HSQLMetaModel extends GenericMetaModel
 {
     private static final Log log = Log.getLog(HSQLMetaModel.class);
-    private static final String PROHIBITED_FUNCTION = "jdbc:hsqldb:file";
+    private static final Pattern PROHIBITED_PATTERN = Pattern.compile("jdbc:hsqldb:(file|mem|res)", Pattern.CASE_INSENSITIVE);
 
     public HSQLMetaModel() {
         super();
     }
 
+    @NotNull
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             String url = container.getConnectionConfiguration().getUrl();
-            if (!container.getDriver().isEmbedded() && url != null && url.contains(PROHIBITED_FUNCTION)) {
-                throw new DBException("File is forbidden for this driver, use embedded driver");
+            if (!container.getDriver().isEmbedded() && url != null) {
+                final Matcher matcher = PROHIBITED_PATTERN.matcher(url);
+                if (matcher.find()) {
+                    throw new DBException("File access is not allowed for this driver. " +
+                        "Please use the embedded driver to access server files.");
+                }
             }
         }
         return new HSQLDataSource(monitor, container, this);
@@ -89,7 +96,7 @@ public class HSQLMetaModel extends GenericMetaModel
     }
 
     @Override
-    public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
+    public void loadProcedures(@NotNull DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
         GenericDataSource dataSource = container.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read HSQLDB procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -121,7 +128,7 @@ public class HSQLMetaModel extends GenericMetaModel
     }
 
     @Override
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+    public String getProcedureDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read HSQLDB procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -185,6 +192,7 @@ public class HSQLMetaModel extends GenericMetaModel
         return true;
     }
 
+    @NotNull
     @Override
     public JDBCStatement prepareTableTriggersLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @Nullable GenericTableBase forParent) throws SQLException {
         JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -197,6 +205,7 @@ public class HSQLMetaModel extends GenericMetaModel
         return dbStat;
     }
 
+    @NotNull
     @Override
     public GenericTrigger createTableTriggerImpl(
         @NotNull JDBCSession session,
@@ -219,7 +228,7 @@ public class HSQLMetaModel extends GenericMetaModel
     }
 
     @Override
-    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
+    public List<GenericTrigger> loadTriggers(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         if (table == null) {
             throw new DBException("Database level triggers aren't supported for HSQLDB");
         }
@@ -279,6 +288,7 @@ public class HSQLMetaModel extends GenericMetaModel
         return new HSQLSynonym(container, dbResult);
     }
 
+    @Nullable
     @Override
     public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
         return new HSQLQueryPlanner((HSQLDataSource) dataSource);

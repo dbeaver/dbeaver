@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmlns:menu="http://www.eclipse.org/ui/2010/UIModel/application/ui/menu" xmi:id="_aQY2AmHLjRFm4qqQGwncq9">
+  <imports xsi:type="basic:TrimBar" xmi:id="_prgbsNNREe-gL-jF7DiACA" elementId="org.eclipse.ui.trim.status"/>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_q-H6INNREe-gL-jF7DiACA" featurename="children" parentElementId="org.eclipse.ui.trim.status" positionInList="before:org.eclipse.ui.StatusLine">
+    <elements xsi:type="menu:ToolControl" xmi:id="_trXjgNNREe-gL-jF7DiACA" elementId="org.jkiss.dbeaver.core.ui.Breadcrumb" contributionURI="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.controls.BreadcrumbTrim">
+      <tags>stretch</tags>
+    </elements>
+  </fragments>
+</fragment:ModelFragments>

@@ -37,4 +37,8 @@ public interface DBRBlockingObject {
      */
     void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread) throws DBException;
 
+    default Thread getBlockThread() {
+        return null;
+    }
+
 }

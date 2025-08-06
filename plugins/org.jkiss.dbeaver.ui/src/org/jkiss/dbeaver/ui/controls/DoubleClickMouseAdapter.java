@@ -34,14 +34,19 @@ public class DoubleClickMouseAdapter extends MouseAdapter {
 
     @Override
     public final void mouseDoubleClick(MouseEvent e) {
+        if (e.button != 1) {
+            return;
+        }
         singleClick = false;
         onMouseDoubleClick(e);
     }
 
     @Override
     public final void mouseDown(MouseEvent e) {
+        if (e.button != 1) {
+            return;
+        }
         singleClick = true;
-
         UIUtils.timerExec(UIUtils.getDisplay().getDoubleClickTime(), () -> {
             if (singleClick) {
                 onMouseSingleClick(e);

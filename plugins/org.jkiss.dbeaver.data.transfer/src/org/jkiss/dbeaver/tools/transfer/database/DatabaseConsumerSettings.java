@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -279,8 +279,7 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
                     IDataTransferProducer producer = pipe.getProducer();
                     if (producer != null) {
                         DBSObject dbObject = producer.getDatabaseObject();
-                        if (dbObject instanceof DBSDataContainer) {
-                            DBSDataContainer sourceDC = (DBSDataContainer) dbObject;
+                        if (dbObject instanceof DBSDataContainer sourceDC) {
                             Map<String, Object> dmcSettings = (Map<String, Object>) mappings.get(DBUtils.getObjectFullId(dbObject));
                             if (dmcSettings != null) {
                                 DatabaseMappingContainer dmc = new DatabaseMappingContainer(this, sourceDC);

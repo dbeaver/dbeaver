@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDatabaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -73,7 +72,8 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        if (SelectActiveDataSourceHandler.getDataSourceContainerProvider(HandlerUtil.getActiveEditor(event)) == null) {
+        IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
+        if (SelectActiveDataSourceHandler.getDataSourceContainerProvider(activeEditor) == null) {
             return null;
         }
 
@@ -83,7 +83,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             return null;
         }
 
-        DBCExecutionContext executionContext = getExecutionContextFromPart(HandlerUtil.getActiveEditor(event));
+        DBCExecutionContext executionContext = getExecutionContextFromPart(activeEditor);
         ContextDefaultObjectsReader contextDefaultObjectsReader = new ContextDefaultObjectsReader(dataSourceContainer.getDataSource(), executionContext);
         try {
             UIUtils.runInProgressService(contextDefaultObjectsReader);
@@ -117,7 +117,9 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         DBNDatabaseNode node = dialog.getSelectedObject();
         if (node != null && node.getObject() != defaultObject) {
             // Change current schema
-            changeDataBaseSelection(dataSourceContainer,
+            changeDataBaseSelection(
+                activeEditor,
+                dataSourceContainer,
                 executionContext,
                 contextDefaultObjectsReader.getDefaultCatalogName(),
                 dialog.getCurrentInstanceName(),
@@ -141,11 +143,12 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
             return;
         }
 
+        DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
+
         String schemaName = "< N/A >";
         DBIcon schemaIcon = DBIcon.TREE_SCHEMA;
-        String schemaTooltip = UINavigatorMessages.toolbar_datasource_selector_combo_database_tooltip;
+        String schemaTooltip = UIUtils.getCatalogSchemaTerms(dataSource, true);
 
-        DBPDataSourceContainer dataSource = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
         if (dataSource != null && dataSource.isConnected()) {
             //schemaName = "<no schema>";
 
@@ -201,7 +204,14 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         element.setTooltip(schemaTooltip);
     }
 
-    private static void changeDataBaseSelection(DBPDataSourceContainer dsContainer, DBCExecutionContext executionContext, @Nullable String curInstanceName, @Nullable String newInstanceName, @Nullable String newObjectName) {
+    private static void changeDataBaseSelection(
+        @Nullable IEditorPart activeEditor,
+        DBPDataSourceContainer dsContainer,
+        DBCExecutionContext executionContext,
+        @Nullable String curInstanceName,
+        @Nullable String newInstanceName,
+        @Nullable String newObjectName
+    ) {
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             new AbstractJob("Change active database") {
@@ -228,9 +238,8 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
         @Override
         protected void fillContributionItems(List<IContributionItem> menuItems) {
             IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-            if (workbenchWindow.getActivePage() == null ||
-                SelectActiveDataSourceHandler.getDataSourceContainerProvider(workbenchWindow.getActivePage().getActiveEditor()) == null)
-            {
+            IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+            if (SelectActiveDataSourceHandler.getDataSourceContainerProvider(activeEditor) == null) {
                 return;
             }
             DBPDataSourceContainer dataSourceContainer = DataSourceToolbarUtils.getCurrentDataSource(workbenchWindow);
@@ -238,7 +247,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                 return;
             }
 
-            DBCExecutionContext executionContext = getExecutionContextFromPart(workbenchWindow.getActivePage().getActiveEditor());
+            DBCExecutionContext executionContext = getExecutionContextFromPart(activeEditor);
             ContextDefaultObjectsReader contextDefaultObjectsReader = new ContextDefaultObjectsReader(dataSourceContainer.getDataSource(), executionContext);
             contextDefaultObjectsReader.setReadNodes(true);
             RuntimeUtils.runTask(contextDefaultObjectsReader, "Read database list", DB_LIST_READ_TIMEOUT);
@@ -270,6 +279,7 @@ public class SelectActiveSchemaHandler extends AbstractDataSourceHandler impleme
                         @Override
                         public void run() {
                             changeDataBaseSelection(
+                                activeEditor,
                                 dataSourceContainer,
                                 executionContext,
                                 contextDefaultObjectsReader.getDefaultCatalogName(),

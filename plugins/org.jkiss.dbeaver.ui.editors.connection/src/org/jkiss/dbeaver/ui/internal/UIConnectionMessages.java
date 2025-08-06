@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class UIConnectionMessages extends NLS {
 
@@ -59,6 +58,7 @@ public class UIConnectionMessages extends NLS {
 
     public static String dialog_setting_ssl_configurator_label_optional;
     public static String dialog_setting_ssl_configurator_label_description;
+    public static String dialog_setting_ssl_configurator_label_note;
     public static String dialog_setting_ssl_configurator_legend_parameters;
     public static String dialog_setting_ssl_configurator_method;
     public static String dialog_setting_ssl_configurator_method_certs;
@@ -227,6 +227,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_manager_message_delete_driver_text;
     public static String dialog_driver_manager_message_delete_driver_title;
     public static String dialog_driver_manager_title;
+    public static String dialog_driver_manager_preferences_link;
 
     public static String viewer_selector_control_text_classic;
     public static String viewer_selector_control_text_gallery;
@@ -235,6 +236,7 @@ public class UIConnectionMessages extends NLS {
     // Drivers
     public static String pref_page_ui_general_group_settings;
     public static String pref_page_ui_general_check_new_driver_versions;
+    public static String pref_page_ui_general_check_new_driver_versions_tip;
     public static String pref_page_drivers_local_folder;
     public static String pref_page_drivers_group_file_repositories;
     public static String pref_page_drivers_button_add;

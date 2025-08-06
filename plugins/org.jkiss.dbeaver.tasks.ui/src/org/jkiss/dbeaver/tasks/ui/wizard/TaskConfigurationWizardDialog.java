@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.DBTTaskConfigurator;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.IWizardPageNavigable;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -113,7 +114,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         if (getWizard().isCurrentTaskSaved()) {
             return EnumSet.noneOf(PageCompletionMark.class);
         } else {
-            return EnumSet.of(PageCompletionMark.COMPLETE);
+            return EnumSet.of(PageCompletionMark.COMPLETE, PageCompletionMark.CURRENT);
         }
     }
 
@@ -159,8 +160,10 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         {
             if (getWizard().isNewTaskEditor() || getNavPagesCount() > 1) {
                 createButton(parent, IDialogConstants.BACK_ID, IDialogConstants.BACK_LABEL, false);
-                Button nextButton = createButton(parent, IDialogConstants.NEXT_ID, IDialogConstants.NEXT_LABEL, true);
-                getShell().setDefaultButton(nextButton);
+                Button nextButton = createButton(parent, IDialogConstants.NEXT_ID, IDialogConstants.NEXT_LABEL, false);
+                // JFace dialog moves default button to the right of buttons panel (if default button assigned initially)
+                // We don't want it so we assign it in async mode
+                UIUtils.asyncExec(() -> getShell().setDefaultButton(nextButton));
             }
         }
 
@@ -354,9 +357,12 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
             }
             DBTTaskConfigurator configurator = TaskUIRegistry.getInstance().createConfigurator(taskType);
             TaskConfigurationWizard<?> configWizard = configurator.createTaskConfigWizard(task);
-
-            TaskConfigurationWizardDialog dialog = configWizard.createWizardDialog(window, selection);
-            return dialog.open();
+            if (configWizard != null) {
+                TaskConfigurationWizardDialog dialog = configWizard.createWizardDialog(window, selection);
+                return dialog.open();
+            } else {
+                return IDialogConstants.ABORT_ID;
+            }
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError("Task create error", "Error creating task '" + taskTypeId + "'", e);
             return IDialogConstants.CANCEL_ID;

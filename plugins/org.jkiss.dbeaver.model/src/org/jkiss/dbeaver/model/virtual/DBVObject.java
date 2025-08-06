@@ -68,6 +68,9 @@ public abstract class DBVObject implements DBSObject {
 
     public void setProperty(String name, @Nullable Object value) {
         if (properties == null) {
+            if (value == null) {
+                return;
+            }
             properties = new LinkedHashMap<>();
         }
         if (value == null) {

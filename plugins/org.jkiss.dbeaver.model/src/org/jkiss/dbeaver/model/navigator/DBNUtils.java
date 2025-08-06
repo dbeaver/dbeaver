@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.DBPDataSourcePermission;
-import org.jkiss.dbeaver.model.DBPHiddenObject;
-import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
@@ -36,8 +33,11 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.AlphanumericComparator;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -123,28 +123,58 @@ public class DBNUtils {
         return result;
     }
 
-    private static void sortNodes(DBNNode[] children)
-    {
-        final DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
-
-        // Sort children is we have this feature on in preferences
-        // and if children are not folders
-        if (children.length > 0) {
-            DBNNode firstChild = children[0];
-            boolean isResources = firstChild.getAdapter(Path.class) != null;
-            {
-                if (isResources) {
-                    Arrays.sort(children, NodeFolderComparator.INSTANCE);
-                } else if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY) || isMergedEntity(firstChild)) {
-                    if (!(firstChild instanceof DBNContainer)) {
-                        Arrays.sort(children, NodeNameComparator.INSTANCE);
-                    }
-                } else if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST)) {
-                    Arrays.sort(children, NodeFolderComparator.INSTANCE);
-                }
-            }
+    private static void sortNodes(DBNNode[] children) {
+        if (children.length == 0) {
+            return;
         }
 
+        DBPPreferenceStore prefStore = DBWorkbench.getPlatform().getPreferenceStore();
+        DBNNode firstChild = children[0];
+        // Sort children is we have this feature on in preferences
+        // and if children are not folders
+
+        if (firstChild.getAdapter(Path.class) != null) {
+            Arrays.sort(children, NodeFolderComparator.INSTANCE);
+            return;
+        }
+
+        if (firstChild instanceof DBNContainer) {
+            return;
+        }
+
+        if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBSTableColumn) {
+            if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
+                Arrays.sort(children, NodeNameComparator.INSTANCE);
+            }
+            return;
+        }
+
+        if (firstChild instanceof DBNDatabaseItem item && item.getObject() instanceof DBPObjectWithOrdinalPosition) {
+            return;
+        }
+
+        Comparator<DBNNode> comparator = null;
+
+        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
+            comparator = NodeNameComparator.INSTANCE;
+        }
+
+        if (prefStore.getBoolean(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST) || isMergedEntity(firstChild)) {
+            comparator = NodeFolderComparator.INSTANCE.thenComparing((o1, o2) -> {
+                if (o1 instanceof DBNContainer && o2 instanceof DBNContainer) {
+                    return 0;
+                } else if (o1 instanceof DBNContainer) {
+                    return 1;
+                } else if (o2 instanceof DBNContainer) {
+                    return -1;
+                }
+                return AlphanumericComparator.getInstance()
+                    .compare(o1.getNodeDisplayName(), o2.getNodeDisplayName());
+            });
+        }
+        if (comparator != null) {
+            Arrays.sort(children, comparator);
+        }
     }
 
     private static boolean isMergedEntity(DBNNode node) {
@@ -216,16 +246,9 @@ public class DBNUtils {
         return itemsMeta;
     }
 
-    private static class NodeNameComparator implements Comparator<DBNNode> {
-        static NodeNameComparator INSTANCE = new NodeNameComparator();
-        @Override
-        public int compare(DBNNode node1, DBNNode node2) {
-            return node1.getNodeDisplayName().compareToIgnoreCase(node2.getNodeDisplayName());
-        }
-    }
-
     private static class NodeFolderComparator implements Comparator<DBNNode> {
-        static NodeFolderComparator INSTANCE = new NodeFolderComparator();
+        static final NodeFolderComparator INSTANCE = new NodeFolderComparator();
+
         @Override
         public int compare(DBNNode node1, DBNNode node2) {
             int first = isFolderNode(node1) ? -1 : 1;
@@ -238,6 +261,15 @@ public class DBNUtils {
                 return false;
             }
             return node instanceof DBNContainer || node.allowsChildren();
+        }
+    }
+
+    private static class NodeNameComparator implements Comparator<DBNNode> {
+        static NodeNameComparator INSTANCE = new NodeNameComparator();
+
+        @Override
+        public int compare(DBNNode node1, DBNNode node2) {
+            return node1.getNodeDisplayName().compareToIgnoreCase(node2.getNodeDisplayName());
         }
     }
 
@@ -313,4 +345,43 @@ public class DBNUtils {
         node.dispose(reflect);
     }
 
+    /**
+     * Get default node to open. Useful in case of open flat files with one table.
+     */
+    @Nullable
+    public static DBNDatabaseNode getDefaultDatabaseNodeToOpen(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBException {
+        List<DBSEntity> entities = new ArrayList<>();
+        if (dataSource instanceof DBSObjectContainer container) {
+            getConnectionEntities(monitor, container, entities);
+        }
+
+        DBSObject objectToOpen;
+        if (entities.size() == 1) {
+            objectToOpen = entities.get(0);
+        } else {
+            if (entities.size() > 1) {
+                objectToOpen = entities.get(0).getParentObject();
+            } else {
+                objectToOpen = dataSource;
+            }
+        }
+        if (objectToOpen == null) {
+            throw new DBException("No entities found in file datasource");
+        }
+        return DBNUtils.getNodeByObject(monitor, objectToOpen, true);
+    }
+
+    private static void getConnectionEntities(
+        DBRProgressMonitor monitor,
+        DBSObjectContainer container,
+        List<DBSEntity> entities
+    ) throws DBException {
+        for (DBSObject child : container.getChildren(monitor)) {
+            if (child instanceof DBSEntity entity) {
+                entities.add(entity);
+            } else if (child instanceof DBSObjectContainer oc) {
+                getConnectionEntities(monitor, oc, entities);
+            }
+        }
+    }
 }

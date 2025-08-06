@@ -21,8 +21,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.AbstractObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 /**
@@ -46,14 +49,20 @@ public abstract class SSLConfiguratorAbstractUI extends AbstractObjectPropertyCo
         if (optional) {
             tip.append(UIConnectionMessages.dialog_setting_ssl_configurator_label_optional + "\n");
         }
-        tip.append(UIConnectionMessages.dialog_setting_ssl_configurator_label_description + "\n\n");
+        tip.append(UIConnectionMessages.dialog_setting_ssl_configurator_label_description + "\n");
         tipLabel.setText(tip.toString());
+
         if (hSpan > 1) {
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = hSpan;
             tipLabel.setLayoutData(gd);
         }
+
+        UIUtils.createInfoLabel(
+            composite,
+            UIConnectionMessages.dialog_setting_ssl_configurator_label_note,
+            SWT.NONE,
+            hSpan
+        );
     }
-
-
 }

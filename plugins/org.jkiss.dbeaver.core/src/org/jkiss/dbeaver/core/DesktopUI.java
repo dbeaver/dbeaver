@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,20 +33,21 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.fs.DBNFileSystems;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
@@ -59,7 +60,6 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.dialogs.*;
 import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditHelpers;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -71,6 +71,7 @@ import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -78,7 +79,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 /**
  * DBeaver UI core
@@ -87,7 +88,6 @@ public class DesktopUI extends ConsoleUserInterface {
 
     private static final Log log = Log.getLog(DesktopUI.class);
 
-    private TrayIconHandler trayItem;
     private WorkbenchContextListener contextListener;
 
     public static DesktopUI getInstance() {
@@ -106,55 +106,24 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     private void dispose() {
-        if (trayItem != null) {
-            trayItem.hide();
+        if (contextListener != null) {
+            contextListener.dispose();
         }
     }
 
     // This method is called during startup thru @ComponentReference in workbench
     public void initialize() {
-        this.trayItem = new TrayIconHandler();
-
         new AbstractJob("Workbench listener") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 if (PlatformUI.isWorkbenchRunning() && !PlatformUI.getWorkbench().isStarting()) {
-                    UIUtils.asyncExec(() -> {
-                        contextListener = WorkbenchContextListener.registerInWorkbench();
-                    });
+                    UIUtils.asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
                 } else {
                     schedule(50);
                 }
                 return Status.OK_STATUS;
             }
         }.schedule();
-    }
-
-    public void refreshPartContexts(IWorkbenchPart part) {
-        if (contextListener != null) {
-            contextListener.deactivatePartContexts(part);
-            contextListener.activatePartContexts(part);
-        }
-    }
-
-    @Override
-    public void notifyAgent(String message, int status) {
-        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY)) {
-            // Notifications disabled
-            return;
-        }
-        if (TrayIconHandler.isSupported()) {
-            UIUtils.syncExec(() -> Display.getCurrent().beep());
-            getInstance().trayItem.notify(message, status);
-        } else {
-            DBeaverNotifications.showNotification(
-                "agent.notify",
-                "Agent Notification",
-                message,
-                status == IStatus.INFO ? DBPMessageType.INFORMATION :
-                    (status == IStatus.ERROR ? DBPMessageType.ERROR : DBPMessageType.WARNING),
-                null);
-        }
     }
 
     @Override
@@ -166,16 +135,6 @@ public class DesktopUI extends ConsoleUserInterface {
                     UIUtils.getActiveWorkbenchShell(),
                     message,
                     licenseText);
-            }
-        }.execute();
-    }
-
-    @Override
-    public boolean downloadDriverFiles(DBPDriver driver, DBPDriverDependencies dependencies) {
-        return new UITask<Boolean>() {
-            @Override
-            protected Boolean runTask() {
-                return DriverDownloadDialog.downloadDriverFiles(null, driver, dependencies);
             }
         }.execute();
     }
@@ -350,18 +309,18 @@ public class DesktopUI extends ConsoleUserInterface {
         }
         final List<Reply> reply = labels.stream()
             .map(s -> CommonUtils.isEmpty(s) ? null : new Reply(s))
-            .collect(Collectors.toList());
+            .toList();
 
-        return UIUtils.syncExec(new RunnableWithResult<UserChoiceResponse>() {
+        return UIUtils.syncExec(new RunnableWithResult<>() {
             public UserChoiceResponse runWithResult() {
                 List<Button> extraCheckboxes = new ArrayList<>(forAllLabels.size());
-                Integer[] selectedCheckboxIndex = { null };
+                Integer[] selectedCheckboxIndex = {null};
                 MessageBoxBuilder mbb = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
                     .setTitle(title)
                     .setMessage(message)
                     .setReplies(reply.stream().filter(Objects::nonNull).toArray(Reply[]::new))
                     .setPrimaryImage(DBIcon.STATUS_WARNING);
-                
+
                 if (previousChoice != null && reply.get(previousChoice) != null) {
                     mbb.setDefaultReply(reply.get(previousChoice));
                 }
@@ -386,7 +345,7 @@ public class DesktopUI extends ConsoleUserInterface {
                         }
                     });
                 }
-                
+
                 Reply result = mbb.showMessageBox();
                 int choiceIndex = reply.indexOf(result);
                 return new UserChoiceResponse(choiceIndex, selectedCheckboxIndex[0]);
@@ -397,11 +356,6 @@ public class DesktopUI extends ConsoleUserInterface {
     @Override
     public UserResponse showErrorStopRetryIgnore(String task, Throwable error, boolean queue) {
         return ExecutionQueueErrorJob.showError(task, error, queue);
-    }
-
-    @Override
-    public long getLongOperationTimeout() {
-        return DBWorkbench.getPlatform().getPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT);
     }
 
     private static UserResponse showDatabaseError(String message, DBException error)
@@ -465,7 +419,7 @@ public class DesktopUI extends ConsoleUserInterface {
                 final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly, showSavePassword);
                 authDialog.setUserNameLabel(userNameLabel);
                 authDialog.setPasswordLabel(passwordLabel);
-                authDialog.setDescription(description);
+                authDialog.setDescription(description == null ? prompt : description);
                 if (!passwordOnly) {
                     authDialog.setUserName(userName);
                 }
@@ -685,21 +639,27 @@ public class DesktopUI extends ConsoleUserInterface {
         } catch (InterruptedException ex) {
             return CompletableFuture.failedFuture(ex);
         }
-        
-        return job.getResult().isOK() ? runnable.getResult() : CompletableFuture.failedFuture(job.getResult().getException());
+
+        IStatus result = job.getResult();
+        if (result == null) {
+            return CompletableFuture.failedFuture(new DBException("the result of the job is null. Has it finished?"));
+        }
+        if (result.isOK()) {
+            return runnable.getResult();
+        }
+        return CompletableFuture.failedFuture(result.getException());
     }
-    
+
+    @Override
+    public <T> T runWithMonitor(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
+        return UIUtils.runWithMonitor(runnable);
+    }
+
+
     @NotNull
     @Override
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
         return LoadingJob.createService(loadingService, visualizer);
-    }
-
-    @Override
-    public void refreshPartState(Object part) {
-        if (part instanceof IWorkbenchPart) {
-            UIUtils.asyncExec(() -> DesktopUI.getInstance().refreshPartContexts((IWorkbenchPart)part));
-        }
     }
 
     @Override
@@ -743,14 +703,60 @@ public class DesktopUI extends ConsoleUserInterface {
         String[] filterExt,
         String defaultValue
     ) {
+        DBNFileSystems fileSystemsNode = FileSystemExplorerView.getFileSystemsNode();
+        if (fileSystemsNode == null) {
+            log.error("File system root node not found");
+            return null;
+        }
+        DBNNode selectedNode = null;
+        if (defaultValue != null) {
+            try {
+                selectedNode = UIUtils.runWithMonitor(monitor -> {
+                    monitor.beginTask("Locate file", 1);
+                    monitor.subTask("Locate '" + defaultValue + "'");
+                    try {
+                        return fileSystemsNode.findNodeByPath(monitor, defaultValue);
+                    } finally {
+                        monitor.done();
+                    }
+                });
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        List<String> allExtensions = new ArrayList<>();
+        if (filterExt != null && filterExt.length > 0) {
+            for (String maskList : filterExt) {
+                for (String mask : maskList.split(";")) {
+                    String ext = IOUtils.getFileExtension(mask);
+                    if (ext != null) {
+                        allExtensions.add(ext);
+                    }
+                }
+            }
+        }
+
+        Predicate<String> extFilter = s -> {
+            if (allExtensions.contains("*")) {
+                return true;
+            }
+            if (!allExtensions.isEmpty()) {
+                int i = s.lastIndexOf('.');
+                if (i < 0) return false;
+                return allExtensions.contains(s.substring(i + 1).toLowerCase());
+            }
+            return true;
+        };
         DBNNode object = ObjectBrowserDialog.selectObject(
             UIUtils.getActiveWorkbenchShell(),
             title,
-            FileSystemExplorerView.getFileSystemsNode(),
-            null,
-            null,
+            fileSystemsNode,
+            selectedNode,
             new Class[] { DBNPathBase.class },
-            null);
+            new Class[] { DBNPathBase.class },
+            null,
+            extFilter);
         if (object instanceof DBNPathBase path) {
             return path;
         }
@@ -777,7 +783,7 @@ public class DesktopUI extends ConsoleUserInterface {
             return false;
         }
     }
-    
+
     private static long getLongOperationTime() {
         try {
             return PlatformUI.getWorkbench().getProgressService().getLongOperationTime();

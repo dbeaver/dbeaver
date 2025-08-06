@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.rules.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -36,7 +35,9 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * SQLRuleScanner.
@@ -48,20 +49,14 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
 
     @NotNull
     private final IThemeManager themeManager;
-    @NotNull
-    private TreeMap<Integer, SQLScriptPosition> positions = new TreeMap<>();
-    private Set<SQLScriptPosition> addedPositions = new HashSet<>();
-    private Set<SQLScriptPosition> removedPositions = new HashSet<>();
-    
     private final HashMap<SQLTokenType, IToken> extraSyntaxTokens = new HashMap<>();
     private SQLEditorBase editor = null;
 
     private final Map<TPToken, IToken> tokenMap = new IdentityHashMap<>();
 
-    private boolean evalMode;
     private int keywordStyle = SWT.NORMAL;
 
-    private final boolean DEBUG = false;
+    private static final boolean DEBUG = false;
 
     public SQLRuleScanner() {
         this.themeManager = PlatformUI.getWorkbench().getThemeManager();
@@ -72,29 +67,6 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
     }
 
     public void dispose() {
-    }
-
-    @NotNull
-    public Collection<? extends Position> getPositions(int offset, int length) {
-        return positions.subMap(offset, offset + length).values();
-    }
-
-    @NotNull
-    public synchronized Set<SQLScriptPosition> getRemovedPositions(boolean clear) {
-        Set<SQLScriptPosition> posList = removedPositions;
-        if (clear) {
-            removedPositions = new HashSet<>();
-        }
-        return posList;
-    }
-
-    @NotNull
-    public synchronized Set<SQLScriptPosition> getAddedPositions(boolean clear) {
-        Set<SQLScriptPosition> posList = addedPositions;
-        if (clear) {
-            addedPositions = new HashSet<>();
-        }
-        return posList;
     }
 
     public void refreshRules(@Nullable DBPDataSourceContainer dataSourceContainer, SQLRuleManager ruleManager, SQLEditorBase editor) {
@@ -117,7 +89,7 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
         if (rule instanceof TPPredicateRule) {
             return new PredicateRuleAdapter((TPPredicateRule)rule);
         } else {
-            return new SimpleRuleAdapter(rule);
+            return new SimpleRuleAdapter<>(rule);
         }
     }
 
@@ -181,7 +153,7 @@ public class SQLRuleScanner extends RuleBasedScanner implements TPCharacterScann
                         }
                         sb.append((char) c);
                     }
-                    System.out.println("found @" + offset + "-" + end + " " + entry + " = " + sb.toString());
+                    System.out.println("found @" + offset + "-" + end + " " + entry + " = " + sb);
                 } else {
                     while (this.getOffset() < end) {
                         if (super.read() == RuleBasedScanner.EOF) {

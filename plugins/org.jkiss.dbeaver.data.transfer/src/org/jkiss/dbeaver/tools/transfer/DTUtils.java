@@ -79,35 +79,66 @@ public class DTUtils {
         }
     }
 
-    public static String getTableName(DBPDataSource dataSource, DBPNamedObject source, boolean shortName) {
+    /**
+     * Retrieves the name of a table or equivalent object with a default fallback.
+     *
+     * @param dataSource   the data source associated with the object.
+     * @param source       the object to retrieve the table name from (e.g., {@link DBSEntity}, {@link SQLQueryContainer}).
+     * @param useShortName whether to return the short (quoted) name or the full name of the table.
+     * @return the table name, or a default value if it cannot be resolved.
+     */
+    @NotNull
+    public static String getTableName(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBPNamedObject source,
+        boolean useShortName
+    ) {
+        return getTableName(dataSource, source, useShortName,
+            useShortName ?
+                DBUtils.getQuotedIdentifier(dataSource, source.getName()) :
+                DBUtils.getObjectFullName(source, DBPEvaluationContext.DML));
+    }
+
+    /**
+     * Retrieves the name of a table or equivalent object based on the provided source.
+     *
+     * @param dataSource   the data source associated with the object.
+     * @param source       the object to retrieve the table name from (e.g., {@link DBSEntity}, {@link SQLQueryContainer}).
+     * @param useShortName whether to return the short (quoted) name or the full name of the table.
+     * @param defaultValue the value to return if the table name cannot be determined.
+     * @return the table name, or {@code defaultValue} if it cannot be resolved.
+     */
+    @NotNull
+    public static String getTableName(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBPNamedObject source,
+        boolean useShortName,
+        @NotNull String defaultValue
+    ) {
         if (source instanceof DBSEntity) {
-            return shortName ?
+            return useShortName ?
                 DBUtils.getQuotedIdentifier((DBSObject) source) :
                 DBUtils.getObjectFullName(source, DBPEvaluationContext.UI);
         } else {
             String tableName = null;
             if (source instanceof SQLQueryContainer queryContainer) {
-                tableName = getTableNameFromQuery(dataSource, queryContainer, shortName);
+                tableName = getTableNameFromQuery(dataSource, queryContainer, useShortName);
             } else if (source instanceof IAdaptable adaptable) {
                 SQLQueryContainer queryContainer = adaptable.getAdapter(SQLQueryContainer.class);
                 if (queryContainer != null) {
-                    tableName = getTableNameFromQuery(dataSource, queryContainer, shortName);
+                    tableName = getTableNameFromQuery(dataSource, queryContainer, useShortName);
                 }
             }
             if (tableName == null && source instanceof IAdaptable adaptable) {
                 DBSDataContainer dataContainer = adaptable.getAdapter(DBSDataContainer.class);
                 if (dataContainer instanceof DBSEntity) {
-                    tableName = shortName ?
+                    tableName = useShortName ?
                         DBUtils.getQuotedIdentifier(dataContainer) :
                         DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.UI);
                 }
             }
-            if (tableName == null) {
-                return shortName ?
-                    DBUtils.getQuotedIdentifier(dataSource, source.getName()) :
-                    DBUtils.getObjectFullName(source, DBPEvaluationContext.DML);
-            }
-            return tableName;
+
+            return tableName == null ? defaultValue : tableName;
         }
     }
 

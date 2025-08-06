@@ -85,6 +85,8 @@ public class UUIDAttributeTransformer implements DBDAttributeTransformer {
                 Object cachedValue = ((DBDContentCached) value).getCachedValue();
                 if (cachedValue instanceof byte[]) {
                     bytes = (byte[]) cachedValue;
+                } else if (cachedValue instanceof String string) {
+                    bytes = string.getBytes();
                 }
             }
             if (bytes != null) {

@@ -18,26 +18,29 @@ package org.jkiss.dbeaver.model.websocket.event.datasource;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 import org.jkiss.dbeaver.model.websocket.event.WSProjectResourceEvent;
 
 import java.util.List;
 
 public class WSDataSourceEvent extends WSProjectResourceEvent {
+    public static final String CREATED = "cb_datasource_created";
+    public static final String DELETED = "cb_datasource_deleted";
+    public static final String UPDATED = "cb_datasource_updated";
     @NotNull
     private final List<String> dataSourceIds;
     @NotNull
     private final WSDataSourceProperty property;
 
     private WSDataSourceEvent(
-        @NotNull WSEventType eventType,
+        @NotNull String eventId,
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId,
         @NotNull List<String> dataSourceIds,
         @NotNull WSDataSourceProperty property
     ) {
-        super(eventType, sessionId, userId, projectId);
+        super(eventId, WSConstants.TOPIC_DATASOURCE, sessionId, userId, projectId);
         this.dataSourceIds = dataSourceIds;
         this.property = property;
     }
@@ -50,7 +53,7 @@ public class WSDataSourceEvent extends WSProjectResourceEvent {
         @NotNull WSDataSourceProperty property
     ) {
         return new WSDataSourceEvent(
-            WSEventType.DATASOURCE_CREATED,
+            CREATED,
             sessionId,
             userId,
             projectId,
@@ -66,7 +69,7 @@ public class WSDataSourceEvent extends WSProjectResourceEvent {
         @NotNull WSDataSourceProperty property
     ) {
         return new WSDataSourceEvent(
-            WSEventType.DATASOURCE_DELETED,
+            DELETED,
             sessionId,
             userId,
             projectId,
@@ -82,7 +85,7 @@ public class WSDataSourceEvent extends WSProjectResourceEvent {
         @NotNull WSDataSourceProperty property
     ) {
         return new WSDataSourceEvent(
-            WSEventType.DATASOURCE_UPDATED,
+            UPDATED,
             sessionId,
             userId,
             projectId,

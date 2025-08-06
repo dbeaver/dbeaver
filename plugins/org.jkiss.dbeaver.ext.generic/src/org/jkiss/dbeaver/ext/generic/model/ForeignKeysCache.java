@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
@@ -83,13 +84,20 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     protected GenericTableForeignKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTableBase parent, String fkName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
+        DBSCatalog parentCatalog = DBUtils.getParentOfType(DBSCatalog.class, owner);
         String pkTableCatalog = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_CAT);
+        if (CommonUtils.isEmpty(pkTableCatalog) && parentCatalog != null) {
+            pkTableCatalog = parentCatalog.getName();
+        }
         String pkTableSchema = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_SCHEM);
         boolean trimNames = owner.getDataSource().getMetaModel().isTrimObjectNames();
         String pkTableName = trimNames ?
             GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME)
             : GenericUtils.safeGetString(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME);
         String fkTableCatalog = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKTABLE_CAT);
+        if (CommonUtils.isEmpty(fkTableCatalog) && parentCatalog != null) {
+            fkTableCatalog = parentCatalog.getName();
+        }
         String fkTableSchema = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKTABLE_SCHEM);
 
         int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);

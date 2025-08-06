@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.imageview;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class ImageViewMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.imageview.ImageViewMessages"; //$NON-NLS-1$

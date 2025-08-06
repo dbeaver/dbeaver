@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,11 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     }
 
     @Override
+    public boolean supportsRename() {
+        return false;
+    }
+
+    @Override
     public String getNodeType() {
         return NodePathType.dbvfs.name() + ".folder";
     }
@@ -80,17 +85,12 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
     }
 
     @Override
-    public String getNodeDescription() {
-        return null;
-    }
-
-    @Override
     public DBPImage getNodeIcon() {
-        return DBIcon.TREE_FOLDER_INFO;
+        return DBIcon.TREE_FOLDER_CONSTRAINT;
     }
 
     @Override
-    public boolean allowsChildren() {
+    public boolean isDirectory() {
         return true;
     }
 
@@ -118,4 +118,16 @@ public class DBNFileSystemRoot extends DBNPathBase implements DBNLazyNode
         this.path = path;
     }
 
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter.isInstance(root)) {
+            return adapter.cast(root);
+        }
+        return super.getAdapter(adapter);
+    }
+
+    @Override
+    public String toString() {
+        return root.getRootId() + "@" + root.getFileSystem().getId() + "->" + super.toString();
+    }
 }

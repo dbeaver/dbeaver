@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.ui;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class SQLServerUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIMessages"; //$NON-NLS-1$

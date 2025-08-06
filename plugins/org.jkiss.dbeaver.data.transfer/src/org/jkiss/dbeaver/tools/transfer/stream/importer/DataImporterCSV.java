@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
+import org.jkiss.utils.csv.CSVParser;
 import org.jkiss.utils.csv.CSVReader;
 import org.jkiss.utils.io.BOMInputStream;
 
@@ -94,7 +95,13 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     if (CommonUtils.isEmptyTrimmed(column)) {
                         column = "Column" + (i + 1);
                     }
-                    StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(entityMapping, i, column, null, columnMinimalLength, DBPDataKind.UNKNOWN);
+                    StreamDataImporterColumnInfo columnInfo = new StreamDataImporterColumnInfo(
+                        entityMapping,
+                        i,
+                        column,
+                        STRING_DATA_TYPE,
+                        columnMinimalLength,
+                        DBPDataKind.UNKNOWN);
                     columnInfo.setMappingMetadataPresent(headerPosition != HeaderPosition.none);
                     columnsInfo.add(columnInfo);
                 }
@@ -134,7 +141,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
                 for (StreamDataImporterColumnInfo columnInfo : columnsInfo) {
                     if (columnInfo.getDataKind() == DBPDataKind.UNKNOWN) {
-                        log.warn("Cannot guess data type for column '" + columnInfo.getName() + "', defaulting to VARCHAR");
+                        log.debug("Cannot guess data type for column '" + columnInfo.getName() + "', defaulting to VARCHAR");
                         columnInfo.updateType(DBPDataKind.STRING, "VARCHAR");
                     }
                 }
@@ -161,11 +168,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
         String delimiter = StreamTransferUtils.getDelimiterString(processorProperties, PROP_DELIMITER);
         String quoteChar = CommonUtils.toString(processorProperties.get(PROP_QUOTE_CHAR));
         if (CommonUtils.isEmpty(quoteChar)) {
-            quoteChar = "'";
+            quoteChar = String.valueOf(CSVParser.NULL_CHARACTER);
         }
         String escapeChar = CommonUtils.toString(processorProperties.get(PROP_ESCAPE_CHAR));
         if (CommonUtils.isEmpty(escapeChar)) {
-            escapeChar = "\\";
+            escapeChar = String.valueOf(CSVParser.NULL_CHARACTER);
         }
         return new CSVReader(reader, delimiter.charAt(0), quoteChar.charAt(0), escapeChar.charAt(0));
     }

@@ -37,7 +37,7 @@
                         singleConnection="true">
                     <replace provider="generic" driver="yandex_clickhouse"/>
                     <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE[0.3.2]"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
@@ -59,16 +59,15 @@
                     webURL="https://github.com/ClickHouse/clickhouse-java"
                     databaseDocumentationSuffixURL="Clickhouse"
                     categories="sql,analytic,columns"
-                    singleConnection="true">
-                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.6.1]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
-                    <file type="jar" path="maven:/org.apache.httpcomponents.client5:httpclient5:RELEASE[5.2.3]" bundle="!drivers.clickhouse_com"/>
-                    <file type="license" path="https://www.apache.org/licenses/LICENSE-2.0.txt" bundle="!drivers.clickhouse_com"/>
+                    singleConnection="true"
+                    allowsEmptyPassword="true">
+                    <file type="jar" path="maven:/com.clickhouse:clickhouse-jdbc:RELEASE[0.8.5]" load-optional-dependencies="true" bundle="!drivers.clickhouse_com" />
+                    <file type="jar" path="maven:/org.apache.httpcomponents.client5:httpclient5:RELEASE[5.3.1]" bundle="!drivers.clickhouse_com"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/clickhouse_com" bundle="drivers.clickhouse_com"/>
-                    <file type="license" path="drivers/apache_lic/LICENSE.txt" bundle="drivers.clickhouse_com"/>
                     <!-- Disable server timezone as it confuses during timestamp edit -->
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <property name="use_server_time_zone" value="false"/>
-                    <property name="use_time_zone" value="false"/>
 
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
@@ -98,8 +97,7 @@
                 description="SSL settings"
                 secured="false"
                 desktop="false"
-                pinned="true"
-                order="100"
+                order="2"
                 handlerClass="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSSLImpl">
             <propertyGroup label="SSL Settings">
                 <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
@@ -114,7 +112,8 @@
     </extension>
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <provider
-                id="org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseValueHandlerProvider"
+                id="ClickhouseValueHandlerProvider"
+                parent="GenericValueHandlerProvider"
                 class="org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseValueHandlerProvider"
                 label="ClickHouse data types provider"
                 description="ClickHouse data types provider">
@@ -132,6 +131,8 @@
             <type name="UUID"/>
             <type name="IPV4"/>
             <type name="IPV6"/>
+            <type name="TUPLE*"/>
+            <type name="MAP*"/>
         </provider>
     </extension>
 

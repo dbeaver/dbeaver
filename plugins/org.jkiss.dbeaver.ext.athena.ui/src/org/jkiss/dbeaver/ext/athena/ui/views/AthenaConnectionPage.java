@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.ext.athena.model.AWSRegion;
 import org.jkiss.dbeaver.ext.athena.model.AthenaConstants;
 import org.jkiss.dbeaver.ext.athena.ui.AthenaActivator;
 import org.jkiss.dbeaver.ext.athena.ui.internal.AthenaMessages;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -49,6 +48,7 @@ import org.jkiss.dbeaver.registry.fs.FileSystemProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
@@ -112,65 +112,69 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
 
             if (FileSystemProviderRegistry.getInstance().getProvider("aws-s3") != null) {
                 ((GridLayout) s3Group.getLayout()).numColumns++;
-                UIUtils.createPushButton(s3Group, UIConnectionMessages.controls_client_home_selector_browse, DBeaverIcons.getImage(DBIcon.TREE_FOLDER), new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(getSite().getProject());
-                        DBNFileSystems fsRootNode = projectNode.getExtraNode(DBNFileSystems.class);
-                        if (fsRootNode == null) {
-                            DBWorkbench.getPlatformUI().showMessageBox("Cloud support required", "Project file system node not found", true);
-                            return;
-                        }
-                        DBNNode selectedNode = null;
-                        String oldS3Path = s3LocationText.getText();
-                        if (!CommonUtils.isEmpty(oldS3Path) && oldS3Path.startsWith("s3:/")) {
-                            selectedNode = findFileSystemNode(fsRootNode, oldS3Path);
-                        }
-                        ObjectBrowserDialogBase dialog = new ObjectBrowserDialogBase(
-                            s3LocationText.getShell(), "S3 browser",
-                            fsRootNode,
-                            CommonUtils.singletonOrEmpty(selectedNode),
-                            true
-                        ) {
-                            @Override
-                            protected boolean matchesResultNode(DBNNode node) {
-                                return node instanceof DBNPathBase &&
-                                    Files.isDirectory(((DBNPathBase) node).getPath());
+                UIUtils.createPushButton(
+                    s3Group,
+                    UIConnectionMessages.controls_client_home_selector_browse,
+                    DBeaverIcons.getImage(UIIcon.OPEN),
+                    new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            DBNProject projectNode = DBWorkbench.getPlatform().getNavigatorModel().getRoot().getProjectNode(getSite().getProject());
+                            DBNFileSystems fsRootNode = projectNode.getExtraNode(DBNFileSystems.class);
+                            if (fsRootNode == null) {
+                                DBWorkbench.getPlatformUI().showMessageBox("Cloud support required", "Project file system node not found", true);
+                                return;
                             }
+                            DBNNode selectedNode = null;
+                            String oldS3Path = s3LocationText.getText();
+                            if (!CommonUtils.isEmpty(oldS3Path) && oldS3Path.startsWith("s3:/")) {
+                                selectedNode = findFileSystemNode(fsRootNode, oldS3Path);
+                            }
+                            ObjectBrowserDialogBase dialog = new ObjectBrowserDialogBase(
+                                s3LocationText.getShell(), "S3 browser",
+                                fsRootNode,
+                                CommonUtils.singletonOrEmpty(selectedNode),
+                                true
+                            ) {
+                                @Override
+                                protected boolean matchesResultNode(DBNNode node) {
+                                    return node instanceof DBNPathBase &&
+                                        Files.isDirectory(((DBNPathBase) node).getPath());
+                                }
 
-                            @Override
-                            protected ViewerFilter createViewerFilter() {
-                                return new ViewerFilter() {
-                                    @Override
-                                    public boolean select(Viewer viewer, Object parentElement, Object element) {
-                                        return
-                                            element instanceof TreeNodeSpecial ||
-                                                element instanceof DBNFileSystem ||
-                                                (element instanceof DBNNode && matchesResultNode((DBNNode) element));
-                                    }
-                                };
-                            }
-                        };
-                        if (dialog.open() == IDialogConstants.OK_ID) {
-                            List<DBNNode> selectedObjects = dialog.getSelectedObjects();
-                            if (selectedObjects.size() == 1) {
-                                DBNNode s3Node = selectedObjects.get(0);
-                                if (s3Node instanceof DBNPathBase) {
-                                    String newS3Path = ((DBNPathBase) s3Node).getPath().toString();
-                                    if (newS3Path.startsWith("s3:/")) {
-                                        try {
-                                            URI uri = new URI(newS3Path);
-                                            URI patchedURI = new URI(uri.getScheme(), null, null, 0, uri.getPath(), uri.getQuery(), null);
-                                            s3LocationText.setText(patchedURI.toString());
-                                        } catch (URISyntaxException ex) {
-                                            DBWorkbench.getPlatformUI().showError("Bad URI", "Bad URI '" + newS3Path + "'", ex);
+                                @Override
+                                protected ViewerFilter createViewerFilter() {
+                                    return new ViewerFilter() {
+                                        @Override
+                                        public boolean select(Viewer viewer, Object parentElement, Object element) {
+                                            return
+                                                element instanceof TreeNodeSpecial ||
+                                                    element instanceof DBNFileSystem ||
+                                                    (element instanceof DBNNode && matchesResultNode((DBNNode) element));
+                                        }
+                                    };
+                                }
+                            };
+                            if (dialog.open() == IDialogConstants.OK_ID) {
+                                List<DBNNode> selectedObjects = dialog.getSelectedObjects();
+                                if (selectedObjects.size() == 1) {
+                                    DBNNode s3Node = selectedObjects.get(0);
+                                    if (s3Node instanceof DBNPathBase) {
+                                        String newS3Path = ((DBNPathBase) s3Node).getPath().toString();
+                                        if (newS3Path.startsWith("s3:/")) {
+                                            try {
+                                                URI uri = new URI(newS3Path);
+                                                URI patchedURI = new URI(uri.getScheme(), null, null, 0, uri.getPath(), uri.getQuery(), null);
+                                                s3LocationText.setText(patchedURI.toString());
+                                            } catch (URISyntaxException ex) {
+                                                DBWorkbench.getPlatformUI().showError("Bad URI", "Bad URI '" + newS3Path + "'", ex);
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                });
+                    });
             }
 
             UIUtils.addVariablesToControl(s3LocationText, getAvailableVariables(), "S3 location pattern");

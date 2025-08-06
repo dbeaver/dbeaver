@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.charts.internal;
 
-import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.utils.NLS;
 
 public class UIChartsMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.charts.internal.UIChartsMessages"; //$NON-NLS-1$

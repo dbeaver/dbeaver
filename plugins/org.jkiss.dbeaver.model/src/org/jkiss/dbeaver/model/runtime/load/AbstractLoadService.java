@@ -66,8 +66,9 @@ public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT
             try {
                 List<DBRBlockingObject> activeBlocks = progressMonitor.getActiveBlocks();
                 if (!CommonUtils.isEmpty(activeBlocks)) {
-                    BlockCanceler.cancelBlock(progressMonitor, activeBlocks.get(activeBlocks.size() - 1), null);
+                    BlockCanceler.cancelBlock(progressMonitor, activeBlocks.get(activeBlocks.size() - 1));
                 }
+                Thread.currentThread().interrupt();
                 return true;
             } catch (DBException e) {
                 throw new InvocationTargetException(e);

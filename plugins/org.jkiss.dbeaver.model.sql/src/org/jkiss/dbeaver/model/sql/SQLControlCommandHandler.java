@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Control command handler
@@ -24,12 +26,16 @@ import org.jkiss.dbeaver.DBException;
 public interface SQLControlCommandHandler
 {
     /**
-     *
+     * @param monitor
      * @param command       command
      * @param scriptContext script context
      * @return false if command failed and execution has to be stopped
      */
-    boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext)
+    @NotNull
+    SQLControlResult handleCommand(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLControlCommand command,
+        @NotNull SQLScriptContext scriptContext)
         throws DBException;
 
 }

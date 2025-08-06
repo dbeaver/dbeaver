@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,6 +89,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     private QMLogFileWriter qmLogWriter;
     private DBACertificateStorage certificateStorage;
     private DBPPlatformLanguage language;
+    private volatile boolean workbenchStarted;
 
     public static boolean isStandalone() {
         return BaseApplicationImpl.getInstance().isStandalone();
@@ -129,7 +130,8 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         }
 
         this.certificateStorage = new DefaultCertificateStorage(
-            DBeaverActivator.getInstance().getStateLocation().toFile().toPath().resolve(DBConstants.CERTIFICATE_STORAGE_FOLDER));
+            RuntimeUtils.getPluginStateLocation(DBeaverActivator.getInstance())
+                .resolve(DBConstants.CERTIFICATE_STORAGE_FOLDER));
 
         // Create workspace
         getApplication().beforeWorkspaceInitialization();
@@ -322,6 +324,17 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     @Override
     public DBPExternalFileManager getExternalFileManager() {
         return workspace;
+    }
+
+    @Override
+    public boolean isWorkbenchStarted() {
+        // In plugin mode it is always true
+        // We don't have any specific security providers which are activated during startup so it is safe
+        return workbenchStarted || !getApplication().isStandalone();
+    }
+
+    public void setWorkbenchStarted(boolean started) {
+        this.workbenchStarted = started;
     }
 
     @NotNull

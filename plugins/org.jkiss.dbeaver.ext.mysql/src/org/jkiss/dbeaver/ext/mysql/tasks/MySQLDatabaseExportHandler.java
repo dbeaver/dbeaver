@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -95,11 +95,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
 
     @Override
     public void fillProcessParameters(MySQLExportSettings settings, MySQLDatabaseExportInfo arg, List<String> cmd) throws IOException {
-        DBPNativeClientLocation nativeClientLocation = settings.getClientHome();
-        if (nativeClientLocation == null) {
-            throw new IllegalArgumentException("Client home can not be null!");
-        }
-        File dumpBinary = RuntimeUtils.getNativeClientBinary(settings.getClientHome(), MySQLConstants.BIN_FOLDER, "mysqldump"); //$NON-NLS-1$
+        File dumpBinary = MySQLUtils.getDumpExecutablePath(settings);
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
         cmd.add(settings.getMethod().getCliOption());
@@ -109,7 +105,7 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
         if (settings.isNoCreateStatements()) {
             cmd.add("--no-create-info"); //$NON-NLS-1$
         } else {
-            if (CommonUtils.isEmpty(arg.getTables())) {
+            if (CommonUtils.isEmpty(arg.getTables()) && !settings.isNoRoutines()) {
                 cmd.add("--routines"); //$NON-NLS-1$
             }
         }
@@ -147,7 +143,15 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, DBTTask task, MySQLExportSettings settings, final MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process, Log log) throws IOException, DBException {
+    protected void startProcessHandler(
+        DBRProgressMonitor monitor,
+        DBTTask task,
+        MySQLExportSettings settings,
+        final MySQLDatabaseExportInfo arg,
+        ProcessBuilder processBuilder,
+        Process process,
+        Log log
+    ) throws IOException, DBException {
         super.startProcessHandler(monitor, task, settings, arg, processBuilder, process, log);
         String outFileStr = settings.getOutputFile(arg);
         Path outFile = DBFUtils.resolvePathFromString(monitor, task.getProject(), outFileStr);
@@ -157,6 +161,8 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
             // https://github.com/dbeaver/dbeaver/issues/11532
             throw new IOException("Output file already exists");
         }
+
+        log.debug("Dump database into " + outFile.toUri());
         boolean isFiltering = settings.isRemoveDefiner();
         Thread job = isFiltering ?
             new DumpFilterJob(monitor, process.getInputStream(), outFile, log) :
@@ -166,10 +172,10 @@ public class MySQLDatabaseExportHandler extends MySQLNativeToolHandler<MySQLExpo
 
 
     static class DumpFilterJob extends DumpJob {
-        private final Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`[^*]*`@`[0-9a-z\\-_\\.%]*`", Pattern.CASE_INSENSITIVE);
+        private final Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`.*?`@`.*?`", Pattern.CASE_INSENSITIVE);
 
         DumpFilterJob(DBRProgressMonitor monitor, InputStream stream, Path outFile, Log log) {
-            super("MySQL databasse dump filter", monitor, stream, outFile, log);
+            super("MySQL database dump filter", monitor, stream, outFile, log);
         }
 
         @Override

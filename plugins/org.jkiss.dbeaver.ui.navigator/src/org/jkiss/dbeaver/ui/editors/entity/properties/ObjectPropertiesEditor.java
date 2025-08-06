@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,6 +114,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             @Override
             public void fillCustomActions(IContributionManager contributionManager) {
                 super.fillCustomActions(contributionManager);
+
                 if (propertiesPanel != null && folderComposite == null) {
                     // We have object editor and no folders - contribute default actions
                     DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
@@ -268,7 +269,18 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
             }
         });
-        
+
+        boolean validFolder = false;
+        for (TabbedFolderInfo folder : folders) {
+            if (folder.getId().equals(curFolderId)) {
+                validFolder = true;
+                break;
+            }
+        }
+        if (!validFolder && folders.length > 0) {
+            curFolderId = folders[0].getId();
+        }
+
         UIUtils.syncExec(() -> folderComposite.switchFolder(curFolderId));
         
         return foldersPlaceholder;
@@ -516,20 +528,29 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
-        if (propertiesPanel != null) {
-            if (propertiesPanel.refreshPart(source, force) == RefreshResult.CANCELED) {
-                return RefreshResult.CANCELED;
-            }
-        }
-        if (folderComposite != null && folderComposite.getFolders() != null) {
-            for (TabbedFolderInfo folder : folderComposite.getFolders()) {
-                if (folder.getContents() instanceof IRefreshablePart) {
-                    if (((IRefreshablePart) folder.getContents()).refreshPart(source, force) == RefreshResult.CANCELED) {
-                        return RefreshResult.CANCELED;
+
+        Runnable afterRefresh = () -> {
+            if (folderComposite != null && folderComposite.getFolders() != null) {
+                for (TabbedFolderInfo folder : folderComposite.getFolders()) {
+                    if (folder.getContents() instanceof IRefreshablePart) {
+                        ((IRefreshablePart) folder.getContents()).refreshPart(source, force);
                     }
                 }
             }
+        };
+
+        if (propertiesPanel != null) {
+            RefreshResult result = propertiesPanel.refreshPart(force, afterRefresh);
+            if (result == RefreshResult.CANCELED) {
+                return RefreshResult.CANCELED;
+            } else if (result == RefreshResult.IGNORED) {
+                UIUtils.asyncExec(afterRefresh);
+            }
+        } else {
+            // we still have to refresh folders in that way
+            UIUtils.asyncExec(afterRefresh);
         }
+
         return RefreshResult.REFRESHED;
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 
 package org.jkiss.dbeaver.model.meta;
+
+import org.jkiss.code.NotNull;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -81,7 +83,10 @@ public @interface Property
      */
     boolean editable() default false;
 
-    String editableExpr() default "";
+    /**
+     * Expression to verify editable status
+     */
+    @NotNull String editableExpr() default "";
 
     /**
      * Updatable flag. If set to true then property can be changed on any object
@@ -89,7 +94,10 @@ public @interface Property
      */
     boolean updatable() default false;
 
-    String updatableExpr() default "";
+    /**
+     * Expression to verify updatable status
+     */
+    @NotNull String updatableExpr() default "";
 
     /**
      * Viewable flag. Viewable properties are displayed in lists.
@@ -147,6 +155,16 @@ public @interface Property
 
     boolean required() default false;
 
+    /**
+     * Expression for determining the visibility of a property.
+     */
+    String hideExpr() default "";
+
+    /**
+     * Expression for determining the activity of a property.
+     */
+    String readOnlyExpr() default "";
+
     int order() default Integer.MAX_VALUE;
 
     String helpContextId() default ""; //NON-NLS-1
@@ -159,11 +177,20 @@ public @interface Property
     String[] features() default {};
 
     /**
+     * List of required application features to enable property
+     *
+     * @return the string
+     */
+    String[] requiredFeatures() default {};
+
+    /**
      * Can be used to format numbers and date/time property values
      */
     String format() default ""; //NON-NLS-1
 
     Class<? extends Format> formatter() default Format.class; //NON-NLS-1
+
+    Class<? extends IPropertyValueTransformer> labelProvider() default IPropertyValueTransformer.class;
 
     Class<? extends IPropertyValueTransformer> valueTransformer() default IPropertyValueTransformer.class;
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.sql.eval;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.commands.SQLCommandSet;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
@@ -32,8 +34,9 @@ public class ScriptVariablesResolver implements IVariableResolver {
         this.scriptContext = scriptContext;
     }
 
+    @Nullable
     @Override
-    public String get(String name) {
+    public String get(@NotNull String name) {
         String varName = SQLCommandSet.prepareVarName(
             scriptContext.getExecutionContext().getDataSource().getSQLDialect(),
             name
