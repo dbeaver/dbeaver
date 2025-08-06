@@ -23,15 +23,18 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -102,7 +105,8 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             .createAssistant(dataSourceContainer.getProject().getWorkspace())
             .command(monitor, new AICommandRequest(prompt, aiContext));
 
-        if (result.sql() == null) {
+        String script = result.sql();
+        if (script == null) {
             if (!CommonUtils.isEmpty(result.message())) {
                 throw new DBException(result.message());
             }
@@ -110,12 +114,21 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         }
 
         SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);
-        if (!result.sql().contains("\n") && SQLUtils.isCommentLine(dialect, result.sql())) {
-            throw new DBException(result.sql());
+        if (!script.contains("\n") && SQLUtils.isCommentLine(dialect, script)) {
+            throw new DBException(script);
         }
 
-        scriptContext.getOutputWriter().println(AI_OUTPUT_SEVERITY, prompt + " ==> " + result.sql() + "\n");
+        List<SQLScriptElement> scriptElements = SQLScriptParser.parseScript(dataSource, script);
+        if (!AIUtils.confirmExecutionIfNeeded(scriptElements, true)) {
+            return SQLControlResult.failure();
+        }
+        AIUtils.disableAutoCommitIfNeeded(
+            monitor,
+            scriptElements,
+            scriptContext.getExecutionContext()
+        );
 
-        return SQLControlResult.transform(new SQLQuery(dataSource, result.sql()));
+        scriptContext.getOutputWriter().println(AI_OUTPUT_SEVERITY, prompt + " ==> " + script + "\n");
+        return SQLControlResult.transform(new SQLQuery(dataSource, script));
     }
 }
