@@ -77,15 +77,15 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
             ddl.append("CREATE TABLE ");
         }
 
-        ddl.append(name).append(" (\n");
+        ddl.append(name);
 
         List<? extends DBSEntityAttribute> attributes = table.getAttributes(monitor);
 
         if (attributes == null || attributes.isEmpty()) {
-            return ddl.append(");\n").toString();
+            return ddl.append(");").toString();
         }
 
-        StringJoiner columnsJoiner = new StringJoiner(",\n");
+        StringJoiner columnsJoiner = new StringJoiner(",", " (", ") ");
         attributes.forEach(attr -> {
             if (DBUtils.isHiddenObject(attr)) {
                 return;
@@ -98,8 +98,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
             );
         });
 
-        ddl.append(columnsJoiner);
-        return ddl.append("\n)").toString();
+        return ddl.append(columnsJoiner).toString();
     }
 
     @NotNull
