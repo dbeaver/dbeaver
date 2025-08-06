@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,29 +22,27 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IEnvironmentPathMapper;
 import org.jkiss.dbeaver.ui.ShellUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class NavigatorHandlerShowInExplorer extends NavigatorHandlerObjectBase {
-    
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final IStructuredSelection structSelection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
         final Object element = structSelection.getFirstElement();
-        if (element instanceof DBNResource) {
-            final IResource resource = ((DBNResource) element).getResource();
-            if (resource != null) {
-                IPath location = resource.getLocation();
-                if (location != null) {
-                    String filePath = location.toString();
-                    IEnvironmentPathMapper envPathMapper = DBWorkbench.getService(IEnvironmentPathMapper.class);
-                    if (envPathMapper != null && envPathMapper.isApplicable(filePath)) {
-                        filePath = envPathMapper.map(filePath);
-                    }
-                    ShellUtils.showInSystemExplorer(filePath);
+        IResource resource = GeneralUtils.adapt(element, IResource.class);
+        if (resource != null) {
+            IPath location = resource.getLocation();
+            if (location != null) {
+                String filePath = location.toString();
+                IEnvironmentPathMapper envPathMapper = DBWorkbench.getService(IEnvironmentPathMapper.class);
+                if (envPathMapper != null && envPathMapper.isApplicable(filePath)) {
+                    filePath = envPathMapper.map(filePath);
                 }
+                ShellUtils.showInSystemExplorer(filePath);
             }
         }
         return null;

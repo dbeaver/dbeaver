@@ -19,18 +19,11 @@ package org.jkiss.dbeaver.model.websocket.event;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.websocket.WSConstants;
 
-public class WSUserDeletedEvent extends WSAbstractEvent {
-    public static final String ID = "cb_user_deleted";
-    @NotNull
-    private final String deletedUserId;
+public class WSUserDisabledEvent extends WSAbstractEvent {
+    public static final String ID = "cb_user_disabled";
 
-    public WSUserDeletedEvent(@NotNull String userId) {
+    @NotNull
+    public WSUserDisabledEvent(@NotNull String userId) {
         super(ID, WSConstants.TOPIC_USER, null, userId);
-        this.deletedUserId = userId;
-    }
-
-    @NotNull
-    public String getDeletedUserId() {
-        return deletedUserId;
     }
 }
