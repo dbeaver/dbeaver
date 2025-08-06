@@ -40,11 +40,6 @@ public class DBeaverPerspective implements IPerspectiveFactory
     public static final String BOTTOM_BOTTOM_LEFT = "bottomLeft"; //$NON-NLS-1$
     public static final String FOLDER_BOTTOM_RIGHT = "bottomRight"; //$NON-NLS-1$
 
-    // Every time the perspective changes, the version must be bumped.
-    // This also includes perspective extensions that contribute views.
-    // The version is not incremental.
-    public static final String PERSPECTIVE_VERSION = "25.1.2"; //$NON-NLS-1$
-
     @Override
     public void createInitialLayout(IPageLayout layout)
     {

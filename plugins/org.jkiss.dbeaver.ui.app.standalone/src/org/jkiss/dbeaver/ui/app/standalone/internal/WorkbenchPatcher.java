@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.internal;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtension;
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.*;
 import org.eclipse.osgi.service.datalocation.Location;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityEditor;
 import org.eclipse.ui.internal.menus.MenuHelper;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
@@ -39,12 +39,12 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -78,15 +78,36 @@ public final class WorkbenchPatcher {
         }
     }
 
+    /**
+     * Checks whether the {@code workbench.xmi} file is missing any view
+     * references available via the extension registry.
+     * <p>
+     * A missing view reference may cause the view to appear in a wrong
+     * location in the workbench, as the workbench doesn't know where
+     * it should be placed.
+     * <p>
+     * If this method returns {@code true}, it's advised to call {@link IWorkbenchPage#resetPerspective()}.
+     *
+     * @param instance workbench location
+     * @return {@code true} if the perspective must be reset, {@code false} otherwise
+     */
+    public static boolean needsPerspectiveReset(@NotNull Location instance) {
+        Path path = getWorkbenchSaveLocation(instance);
+        if (path == null) {
+            return false;
+        }
+
+        try {
+            return needsPerspectiveReset(path);
+        } catch (XMLException e) {
+            log.error("Failed to parse workbench save file: " + path, e);
+            return false;
+        }
+    }
+
     private static void patchWorkbenchXmi(@NotNull Path workbenchXmi) throws Exception {
-        var documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-
-        var documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        var document = documentBuilder.parse(workbenchXmi.toFile());
-
-        var parts = collectContributedParts();
-        var transformed = patchPartIconsRecursively(document, parts);
+        var document = XMLUtils.parseDocument(workbenchXmi);
+        var transformed = patchPartIconsRecursively(document, collectContributedParts());
 
         if (transformed) {
             var transformerFactory = TransformerFactory.newInstance();
@@ -101,6 +122,30 @@ public final class WorkbenchPatcher {
                 transformer.transform(source, result);
             }
         }
+    }
+
+    private static boolean needsPerspectiveReset(@NotNull Path workbenchXmi) throws XMLException {
+        var document = XMLUtils.parseDocument(workbenchXmi);
+
+        // Collect a set of "descriptors" elements from the workbench file
+        Set<String> descriptors = XMLUtils.getChildElementList(document.getDocumentElement(), "descriptors").stream()
+            .filter(e -> e.hasAttribute("elementId"))
+            .map(e -> e.getAttribute("elementId"))
+            .collect(Collectors.toSet());
+
+        // Collect a set of registered views via perspective extensions
+        Set<String> views = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_PERSPECTIVE_EXTENSIONS)
+            // extension.forEach(perspectiveExtension)
+            .map(IExtension::getConfigurationElements).flatMap(Stream::of)
+            .filter(e -> e.getName().equals(IWorkbenchRegistryConstants.TAG_PERSPECTIVE_EXTENSION))
+            // perspectiveExtension.forEach(view)
+            .map(IConfigurationElement::getChildren).flatMap(Stream::of)
+            .filter(e -> e.getName().equals(IWorkbenchRegistryConstants.TAG_VIEW))
+            // view.id
+            .map(x -> x.getAttribute(IWorkbenchRegistryConstants.ATT_ID))
+            .collect(Collectors.toSet());
+
+        return !descriptors.containsAll(views);
     }
 
     private static boolean patchPartIconsRecursively(@NotNull Node node, @NotNull Map<String, PartDescriptor> parts) {
@@ -166,15 +211,13 @@ public final class WorkbenchPatcher {
 
     @NotNull
     private static Map<String, PartDescriptor> collectContributedParts() {
-        var registry = Platform.getExtensionRegistry();
-
-        var views = Stream.of(registry.getExtensionPoint("org.eclipse.ui.views").getExtensions())
+        var views = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_VIEWS)
             .map(IExtension::getConfigurationElements).flatMap(Stream::of)
             .filter(e -> e.getName().equals("view") && e.getAttribute("icon") != null)
             .map(PartDescriptor::of)
             .toList();
 
-        var editors = Stream.of(registry.getExtensionPoint("org.eclipse.ui.editors").getExtensions())
+        var editors = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_EDITOR)
             .map(IExtension::getConfigurationElements).flatMap(Stream::of)
             .filter(e -> e.getName().equals("editor") && e.getAttribute("icon") != null)
             .map(PartDescriptor::of)
@@ -197,6 +240,13 @@ public final class WorkbenchPatcher {
             log.error("Unable to resolve workbench save location: " + instance.getURL(), e);
             return null;
         }
+    }
+
+    @NotNull
+    private static Stream<IExtension> getExtensions(@NotNull String namespace, @NotNull String extensionPointName) {
+        IExtensionRegistry registry = Platform.getExtensionRegistry();
+        IExtensionPoint point = registry.getExtensionPoint(namespace, extensionPointName);
+        return Arrays.stream(point.getExtensions());
     }
 
     private record PartDescriptor(@NotNull IConfigurationElement element, @NotNull String id, @NotNull String icon) {
