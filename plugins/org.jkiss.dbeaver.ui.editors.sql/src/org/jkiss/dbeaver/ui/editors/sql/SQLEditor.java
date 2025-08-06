@@ -2241,9 +2241,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void run() {
-            if (!isHideQueryText() && resultsSash.getMaximizedControl() != null) {
-                resultsSash.setMaximizedControl(null);
-            }
             setChecked(!isChecked());
             SQLEditorPresentationPanel panelInstance = extraPresentationManager.panels.get(panel);
             if (panelInstance != null && !isChecked()) {
@@ -2289,6 +2286,9 @@ public class SQLEditor extends SQLEditorBase implements
                         break;
                     }
                 }
+            }
+            if (!isHideQueryText() && resultsSash.getMaximizedControl() != null) {
+                UIUtils.asyncExec(() -> resultsSash.setMaximizedControl(null));
             }
         }
     }

@@ -238,7 +238,8 @@ public abstract class SQLQuerySymbolOrigin {
             return false;
         }
 
-        public @NotNull SQLQueryRowsSourceContext getRowsSourceContext() {
+        @NotNull
+        public SQLQueryRowsSourceContext getRowsSourceContext() {
             return this.rowsSourceContext;
         }
 
