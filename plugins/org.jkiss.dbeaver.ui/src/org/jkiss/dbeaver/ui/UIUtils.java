@@ -2511,6 +2511,10 @@ public class UIUtils {
 
     /**
      * Creates an {@link ExpandableComposite} that paints a separator on top.
+     *
+     * @param parent         the parent
+     * @param style          the control style (as expected by SWT subclass)
+     * @param expansionStyle the style of the expansion widget (see {@link ExpandableComposite})
      */
     @NotNull
     public static ExpandableComposite createExpandableCompositeWithSeparator(
