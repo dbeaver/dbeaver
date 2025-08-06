@@ -60,7 +60,7 @@ public class AICompletionSettings extends AIContextSettings {
         return dataSourceContainer;
     }
 
-    private void loadSettings() {
+    protected void loadSettings() {
         Object dsConfig = dataSourceContainer.getExtension(AI_DS_EXTENSION);
         if (dsConfig == null) {
             loadLegacySettings();

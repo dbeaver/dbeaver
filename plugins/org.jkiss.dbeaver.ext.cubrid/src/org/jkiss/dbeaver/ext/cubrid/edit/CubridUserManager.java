@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,13 +42,13 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.Map;
 
-public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericStructContainer> /*implements DBEObjectRenamer<OracleSchema>*/
-{
+public class CubridUserManager
+    extends SQLObjectEditor<CubridPrivilage, GenericStructContainer> /*implements DBEObjectRenamer<OracleSchema>*/ {
 
     private static final int MAX_NAME_GEN_ATTEMPTS = 100;
 
     @Override
-    public long getMakerOptions(DBPDataSource dataSource) {
+    public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
@@ -64,26 +64,27 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
 
     @Override
     protected CubridPrivilage createDatabaseObject(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBECommandContext context,
-            @NotNull final Object container,
-            @Nullable Object copyFrom,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull final Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
 
         String newName = this.getNewName((CubridDataSource) container, "NEW_USER");
-        CubridPrivilage user = new CubridPrivilage((CubridDataSource) container, newName, null);
-        return user;
+        return new CubridPrivilage((CubridDataSource) container, newName, null);
     }
 
 
     @Override
     protected void addObjectCreateActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectCreateCommand command,
-            @NotNull Map<String, Object> options) {
-        CubridPrivilage user = (CubridPrivilage) command.getObject();
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
+        CubridPrivilage user = command.getObject();
         StringBuilder builder = new StringBuilder();
         builder.append("CREATE USER ");
         builder.append(DBUtils.getQuotedIdentifier(user.getDataSource(), this.getUserName(user, command.getProperties())));
@@ -93,15 +94,15 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
 
     @Override
     protected void addObjectDeleteActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectDeleteCommand command,
-            @NotNull Map<String, Object> options) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("DROP USER ");
-        builder.append(DBUtils.getQuotedIdentifier(command.getObject()));
-        actions.add(new DeletePersistAction(command.getObject(), builder.toString()));
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) {
+        String builder = "DROP USER "
+            + DBUtils.getQuotedIdentifier(command.getObject());
+        actions.add(new DeletePersistAction(command.getObject(), builder));
     }
 
     private void buildBody(CubridPrivilage user, StringBuilder builder, Map<Object, Object> properties) {
@@ -133,8 +134,7 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
 
     }
 
-    private class DeletePersistAction extends SQLDatabasePersistActionAtomic
-    {
+    private static class DeletePersistAction extends SQLDatabasePersistActionAtomic {
         CubridPrivilage database;
 
         public DeletePersistAction(CubridPrivilage privilage, String script) {
@@ -155,7 +155,10 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
     @NotNull
     private String getNewName(@NotNull CubridDataSource container, @NotNull String baseName) {
         for (int i = 0; i < MAX_NAME_GEN_ATTEMPTS; i++) {
-            String transform = DBObjectNameCaseTransformer.transformName(container.getDataSource(), i == 0 ? baseName : (baseName + "_" + i));
+            String transform = DBObjectNameCaseTransformer.transformName(
+                container.getDataSource(),
+                i == 0 ? baseName : (baseName + "_" + i)
+            );
             DBSObject child = container.getCubridPrivilageCache().getCachedObject(transform);
             if (child == null) {
                 return transform;
@@ -166,4 +169,17 @@ public class CubridUserManager extends SQLObjectEditor<CubridPrivilage, GenericS
 
     }
 
+    public boolean canCreateObject(@NotNull Object container) {
+        return !((CubridDataSource) container).isShard();
+    }
+
+    @Override
+    public boolean canEditObject(CubridPrivilage object) {
+        return !object.getDataSource().isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(CubridPrivilage object) {
+        return !object.getDataSource().isShard();
+    }
 }

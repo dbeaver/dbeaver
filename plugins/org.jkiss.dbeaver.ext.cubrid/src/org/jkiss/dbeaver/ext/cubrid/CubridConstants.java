@@ -40,6 +40,9 @@ public class CubridConstants
     public static final String STATISTIC_TRACE = "statistic_trace";
     public static final String STATISTIC_INFO = "statistic_info";
     public static final String STATISTIC_ALL_INFO = "statistic_all_info";
+    public static final String REGEX_PATTERN_SHARD_ID = "/\\*\\+[ \\t\\r\\n]*shard_id[ \\t\\r\\n]*\\([0-9 \\t\\r\\n]+\\)[ \\t\\r\\n]*\\*/";
+    public static final String REGEX_PATTERN_SHARD_VAL = "/\\*\\+[ \\t\\r\\n]*shard_val[ \\t\\r\\n]*\\([0-9 \\t\\r\\n]+\\)[ \\t\\r\\n]*\\*/";
+    public static final String[] SHARD_TYPE = {"SHARD ID", "SHARD VAL"};
     public static final String PREF_DBMS_OUTPUT = "pref.dbms.output";
     public static final String PREF_DBMS_OUTPUT_BUFFER_SIZE = "pref.dbms.output.buffer.size";
 }
