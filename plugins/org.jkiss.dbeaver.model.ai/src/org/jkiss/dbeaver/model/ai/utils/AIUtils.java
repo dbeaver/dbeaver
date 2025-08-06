@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -211,18 +210,27 @@ public final class AIUtils {
         return null;
     }
 
-    public static boolean confirmQueryExecutionIfNeeded(@NotNull List<SQLScriptElement> scriptElements) {
+    public static boolean confirmExecutionIfNeeded(
+        @NotNull List<SQLScriptElement> scriptElements,
+        boolean isCommand
+    ) {
         Set<SQLQueryCategory> queryCategories = SQLQueryCategory.categorizeScript(scriptElements);
         if (queryCategories.contains(SQLQueryCategory.DDL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
-            return confirmDdlQueryExecute();
+            String message = isCommand ? AIMessages.ai_execute_command_confirm_ddl_message :
+                AIMessages.ai_execute_query_confirm_ddl_message;
+            return confirmExecute(AIMessages.ai_execute_query_title, message);
         }
         if (queryCategories.contains(SQLQueryCategory.DML) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DML)) {
-            return confirmDmlQueryExecute();
+            String message = isCommand ? AIMessages.ai_execute_command_confirm_dml_message :
+                AIMessages.ai_execute_query_confirm_dml_message;
+            return confirmExecute(AIMessages.ai_execute_query_title, message);
         }
         boolean isSqlOrUnknown = queryCategories.contains(SQLQueryCategory.SQL) ||
             queryCategories.contains(SQLQueryCategory.UNKNOWN);
         if (isSqlOrUnknown && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
-            return confirmSqlQueryExecute();
+            String message = isCommand ? AIMessages.ai_execute_command_confirm_sql_message :
+                AIMessages.ai_execute_query_confirm_sql_message;
+            return confirmExecute(AIMessages.ai_execute_query_title, message);
         }
         return true;
     }
@@ -271,27 +279,7 @@ public final class AIUtils {
         ) == AIQueryConfirmationRule.CONFIRM;
     }
 
-    private static boolean confirmSqlQueryExecute() {
-        return DBWorkbench.getPlatformUI().confirmAction(
-            AIMessages.ai_execute_query_title,
-            AIMessages.ai_execute_query_confirm_sql_message,
-            true
-        );
-    }
-
-    private static boolean confirmDmlQueryExecute() {
-        return DBWorkbench.getPlatformUI().confirmAction(
-            AIMessages.ai_execute_query_title,
-            AIMessages.ai_execute_query_confirm_dml_message,
-            true
-        );
-    }
-
-    private static boolean confirmDdlQueryExecute() {
-        return DBWorkbench.getPlatformUI().confirmAction(
-            AIMessages.ai_execute_query_title,
-            AIMessages.ai_execute_query_confirm_ddl_message,
-            true
-        );
+    private static boolean confirmExecute(String title, String message) {
+        return DBWorkbench.getPlatformUI().confirmAction(title, message, true);
     }
 }

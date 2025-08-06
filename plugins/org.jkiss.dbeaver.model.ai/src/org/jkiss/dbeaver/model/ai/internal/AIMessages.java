@@ -32,6 +32,9 @@ public class AIMessages extends NLS {
     public static String ai_execute_query_confirm_ddl_message;
     public static String ai_execute_query_auto_commit_disabled_title;
     public static String ai_execute_query_auto_commit_disabled_message;
+    public static String ai_execute_command_confirm_sql_message;
+    public static String ai_execute_command_confirm_dml_message;
+    public static String ai_execute_command_confirm_ddl_message;
 
     static {
         // initialize resource bundle

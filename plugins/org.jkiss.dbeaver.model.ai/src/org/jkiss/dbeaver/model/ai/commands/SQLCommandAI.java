@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -120,7 +119,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         }
 
         List<SQLScriptElement> scriptElements = SQLScriptParser.parseScript(dataSource, script);
-        if (!AIUtils.confirmQueryExecutionIfNeeded(scriptElements)) {
+        if (!AIUtils.confirmExecutionIfNeeded(scriptElements, true)) {
             return SQLControlResult.failure();
         }
         AIUtils.disableAutoCommitIfNeeded(
