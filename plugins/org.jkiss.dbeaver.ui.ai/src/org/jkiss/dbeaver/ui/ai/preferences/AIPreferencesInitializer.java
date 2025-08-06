@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -40,5 +41,9 @@ public class AIPreferencesInitializer extends AbstractPreferenceInitializer {
         PrefUtils.setDefaultPreferenceValue(store, OpenAIConstants.GPT_MODEL, OpenAIModels.DEFAULT_MODEL);
         PrefUtils.setDefaultPreferenceValue(store, OpenAIConstants.AI_TEMPERATURE, 0.0f);
         PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_LOG_QUERY, false);
+
+        PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_CONFIRM_SQL, AIQueryConfirmationRule.EXECUTE.name());
+        PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_CONFIRM_DML, AIQueryConfirmationRule.CONFIRM.name());
+        PrefUtils.setDefaultPreferenceValue(store, AIConstants.AI_CONFIRM_DML, AIQueryConfirmationRule.CONFIRM.name());
     }
 }
