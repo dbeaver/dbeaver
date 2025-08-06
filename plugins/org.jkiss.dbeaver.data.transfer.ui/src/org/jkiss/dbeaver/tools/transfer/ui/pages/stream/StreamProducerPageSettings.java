@@ -62,8 +62,8 @@ import org.jkiss.utils.IOUtils;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -522,8 +522,12 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
     private void updateBrowseButtons() {
         boolean hasSelection = filesTable.getSelection().length > 0;
-        if (tiOpenLocal != null) tiOpenLocal.setEnabled(hasSelection);
-        if (tiOpenRemote != null) tiOpenRemote.setEnabled(hasSelection);
+        if (tiOpenLocal != null) {
+            tiOpenLocal.setEnabled(hasSelection);
+        }
+        if (tiOpenRemote != null) {
+            tiOpenRemote.setEnabled(hasSelection);
+        }
     }
 
     private DataTransferProcessorDescriptor getProducerProcessor() {
