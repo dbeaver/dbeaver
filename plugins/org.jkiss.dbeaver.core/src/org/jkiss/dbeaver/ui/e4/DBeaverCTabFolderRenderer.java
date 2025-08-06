@@ -53,6 +53,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     private static final FieldReflection<CTabItem, Rectangle> closeRectField;
     private static final FieldReflection<CTabFolderRenderer, Integer> curveWidth;
     private static final FieldReflection<CTabFolderRenderer, Integer> curveIndent;
+    private static volatile boolean isInColor;
 
     static {
         selectedTabHighlightColorField = FieldReflection.of(CTabRendering.class, "selectedTabHighlightColor");
@@ -142,25 +143,36 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
     @Nullable
     private static Color getConnectionColor(@NotNull MPart part) {
-        if (part.getObject() instanceof CompatibilityEditor editor) {
-            return getConnectionColor(editor.getEditor());
+        if (isInColor) {
+            // FIXME: this is a dirty workaround for UI freeze (dbeaver/pro#6519)
+            // Freeze happens because we may trigger master password dialog in ref.getEditorInput()
+            // We fix it by avoiding UI double entrance
+            return null;
         }
-
-        // See org.eclipse.ui.internal.WorkbenchPartReference.WorkbenchPartReference
-        if (part.getTransientData().get(IWorkbenchPartReference.class.getName()) instanceof IEditorReference ref) {
-            IEditorPart editor = ref.getEditor(false);
-            if (editor != null) {
-                return getConnectionColor(editor);
+        isInColor = true;
+        try {
+            if (part.getObject() instanceof CompatibilityEditor editor) {
+                return getConnectionColor(editor.getEditor());
             }
 
-            try {
-                return getConnectionColor(ref.getEditorInput());
-            } catch (PartInitException e) {
-                log.debug("Cannot get editor input for part: " + part.getElementId(), e);
-            }
-        }
+            // See org.eclipse.ui.internal.WorkbenchPartReference.WorkbenchPartReference
+            if (part.getTransientData().get(IWorkbenchPartReference.class.getName()) instanceof IEditorReference ref) {
+                IEditorPart editor = ref.getEditor(false);
+                if (editor != null) {
+                    return getConnectionColor(editor);
+                }
 
-        return null;
+                try {
+                    return getConnectionColor(ref.getEditorInput());
+                } catch (PartInitException e) {
+                    log.debug("Cannot get editor input for part: " + part.getElementId(), e);
+                }
+            }
+
+            return null;
+        } finally {
+            isInColor = false;
+        }
     }
 
     @Nullable
