@@ -92,6 +92,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
                     {
                         if (error == null) {
                             getObject().setPersisted(true);
+                            getObject().getDataSource().resetUsers();
                         }
                     }
                 });
