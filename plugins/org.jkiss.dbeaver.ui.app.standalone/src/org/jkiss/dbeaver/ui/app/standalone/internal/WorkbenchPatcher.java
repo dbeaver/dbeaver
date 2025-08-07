@@ -67,14 +67,14 @@ public final class WorkbenchPatcher {
      */
     public static void patchWorkbenchXmi(@NotNull Location instance) {
         Path path = getWorkbenchSaveLocation(instance);
-        if (path == null) {
+        if (path == null || !Files.exists(path)) {
             return;
         }
 
         try {
             patchWorkbenchXmi(path);
-        } catch (Exception e) {
-            log.error("Failed to patch workbench save file: " + path, e);
+        } catch (Throwable e) {
+            log.error("Failed to patch workbench state file: " + path, e);
         }
     }
 
