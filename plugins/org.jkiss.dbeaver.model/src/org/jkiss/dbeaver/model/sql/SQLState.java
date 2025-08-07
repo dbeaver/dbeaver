@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,6 +69,7 @@ public enum SQLState {
     SQL_25S03("25S03", "Transaction has been rolled back"),
     SQL_26000("26000", "Invalid SQL statement identifier"),
     SQL_28000("28000", "Invalid authorization specification"),
+    SQL_28P01("28P01", "Invalid password"),
     SQL_34000("34000", "Invalid cursor name"),
     SQL_3C000("3C000", "Duplicate cursor name"),
     SQL_40000("40000", "Commit transaction resulted in rollback transaction"),
