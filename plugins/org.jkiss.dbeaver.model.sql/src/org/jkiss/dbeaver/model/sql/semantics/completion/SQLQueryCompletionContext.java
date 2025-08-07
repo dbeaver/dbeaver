@@ -52,6 +52,7 @@ import org.jkiss.utils.Pair;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -247,6 +248,8 @@ public abstract class SQLQueryCompletionContext {
             private SQLQueryDataContextInfo nearestContext = SQLQueryDataContextInfo.empty();
             private SQLQueryDataContextInfo deepestContext = SQLQueryDataContextInfo.empty();
 
+            private AssociationsResolutionContext associationsResolutionContext = null;
+
             private void setContextInfo(SQLQueryDataContextInfo contextInfo) {
                 this.nearestContext = contextInfo;
                 this.deepestContext = contextInfo;
@@ -258,6 +261,18 @@ public abstract class SQLQueryCompletionContext {
                 } else if (context.symbolsOrigin() instanceof SQLQuerySymbolOrigin.RowsDataRef rowsDataOrigin) {
                     this.setContextInfo(SQLQueryDataContextInfo.makeFor(rowsDataOrigin.getRowsDataContext()));
                 }
+            }
+
+            @NotNull
+            private AssociationsResolutionContext getAssociationsContext(
+                @NotNull SQLQueryDataContextInfo context,
+                @Nullable SQLQueryWordEntry filterOrNull
+            ) {
+                return this.associationsResolutionContext != null
+                    && this.associationsResolutionContext.context == context
+                    && this.associationsResolutionContext.filterOrNull == filterOrNull ? this.associationsResolutionContext : (
+                        this.associationsResolutionContext = new AssociationsResolutionContext(context, filterOrNull)
+                    );
             }
 
             @NotNull
@@ -474,6 +489,7 @@ public abstract class SQLQueryCompletionContext {
                 @Nullable SQLQueryWordEntry filterOrNull,
                 @NotNull LinkedList<SQLQueryCompletionItem> accumulator
             ) throws DBException {
+                AssociationsResolutionContext associations = this.getAssociationsContext(this.deepestContext, filterOrNull);
                 for (DBSObjectContainer container : containers) {
                     Collection<? extends DBSObject> children = container.getChildren(monitor);
                     for (DBSObject child : children) {
@@ -482,8 +498,10 @@ public abstract class SQLQueryCompletionContext {
                             int score = childName.matches(filterOrNull, this.searchInsideWords);
                             if (score > 0) {
                                 if (child instanceof DBSEntity o && (child instanceof DBSTable || child instanceof DBSView)) {
-                                    accumulator.addLast(SQLQueryCompletionItem.forRealTable(score, childName, contextObjext, o,
-                                        knownSources.getReferencedTables().contains(o)
+                                    accumulator.addLast(SQLQueryCompletionItem.forRealTable(
+                                        score, childName, contextObjext, o,
+                                        knownSources.getReferencedTables().contains(o),
+                                        associations.hasRelatedAssociationsWithTable(monitor, o)
                                     ));
                                 } else {
                                     accumulator.addLast(this.makeDbObjectCompletionItem(score, childName, contextObjext, child));
@@ -883,93 +901,36 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull SQLQueryDataContextInfo context,
                 @Nullable SQLQueryWordEntry filterOrNull
             ) {
-                class AssociationsResolutionContext {
-                    public final Map<DBSEntityAttribute, List<SQLQueryCompletionItem.SQLColumnNameCompletionItem>> realColumnRefsByEntityAttribute = context.getColumnsList().stream()
-                        .filter(rc -> rc.realAttr != null && rc.realAttr.getParentObject() == rc.realSource)
-                        .collect(Collectors.groupingBy(rc -> rc.realAttr)).entrySet().stream()
-                        .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, g -> g.getValue().stream().map(rc -> {
-                            SQLQueryWordEntry word = makeFilterInfo(null, rc.symbol.getName());
-                            int score = word.matches(filterOrNull, searchInsideWords);
-                            return SQLQueryCompletionItem.forSubsetColumn(
-                                score, word, rc, context.getKnownSources().getResolutionResults().get(rc.source), true
-                            );
-                        }).toList()));
-
-                    private final Map<DBSEntity, Map<DBSEntityAttribute, List<DBSEntityAttribute>>> associatedAttrsByEntity = new HashMap<>();
-
-                    public List<DBSEntityAttribute> findAssociations(DBSEntityAttribute key) {
-                        return Optional.ofNullable(this.associatedAttrsByEntity.computeIfAbsent(key.getParentObject(), this::prepareAllAssociations).get(key)).orElse(Collections.emptyList());
-                    }
-
-                    private Map<DBSEntityAttribute, List<DBSEntityAttribute>> prepareAllAssociations(DBSEntity entity) {
-                        try {
-                            return Stream.concat(
-                                Optional.ofNullable(entity.getAssociations(monitor)).stream().flatMap(Collection::stream)
-                                    .filter(a -> context.getKnownSources().getReferencedTables().contains(a.getAssociatedEntity())),
-                                Optional.ofNullable(entity.getReferences(monitor)).stream().flatMap(Collection::stream)
-                                    .filter(r -> context.getKnownSources().getReferencedTables().contains(r.getParentObject()))
-                            ).filter(c -> c instanceof DBSTableForeignKey)
-                             .map(c -> {
-                                 try {
-                                     return ((DBSTableForeignKey) c).getAttributeReferences(new VoidProgressMonitor());
-                                 } catch (DBException e) {
-                                     return null;
-                                 }
-                             })
-                             .filter(aa -> aa != null && aa.size() == 1 && aa.get(0) instanceof DBSTableForeignKeyColumn)
-                             // TODO consider compound keys and filtered by the common path to the context of origin
-                             .map(aa -> (DBSTableForeignKeyColumn) aa.get(0))
-                             .map(attrRef -> {
-                                 DBSEntityAttribute sourceAttr = attrRef.getAttribute();
-                                 DBSEntityAttribute targetAttr = attrRef.getReferencedColumn();
-                                 if (targetAttr != null && sourceAttr != null) {
-                                     if (sourceAttr.getParentObject() == entity) {
-                                         return Pair.of(sourceAttr, targetAttr);
-                                     } else {
-                                         return Pair.of(targetAttr, sourceAttr);
-                                     }
-                                 } else {
-                                     return null;
-                                 }
-                             })
-                             .filter(Objects::nonNull)
-                             .collect(Collectors.groupingBy(Pair::getFirst, Collectors.mapping(Pair::getSecond, Collectors.toList())));
-                        } catch (DBException e) {
-                            return Collections.emptyMap();
-                        }
-                    }
-                }
-
                 LinkedList<SQLQueryCompletionItem> result = new LinkedList<>();
 
-                if (context.getKnownSources().getReferencedTables().size() > 1 &&
-                    context.getKnownSources().getResolutionResults().size() > 1 &&
-                    context.isJoin()
-                ) {
-
-                    AssociationsResolutionContext associations = new AssociationsResolutionContext();
-
-                    for (SQLQueryResultColumn joinedColumn : context.getRightParentColumnsList()) {
-                        if (joinedColumn.realAttr != null) {
-                            for (DBSEntityAttribute otherColumnAttribute : associations.findAssociations(joinedColumn.realAttr)) {
-                                List<SQLQueryCompletionItem.SQLColumnNameCompletionItem> otherColumnRefs = associations.realColumnRefsByEntityAttribute.get(otherColumnAttribute);
-                                if (otherColumnRefs != null) {
-                                    for (SQLQueryCompletionItem.SQLColumnNameCompletionItem thisColumnRef : associations.realColumnRefsByEntityAttribute.get(joinedColumn.realAttr)) {
-                                        if (thisColumnRef.columnInfo == joinedColumn) {
-                                            for (SQLQueryCompletionItem.SQLColumnNameCompletionItem otherColumnRef : otherColumnRefs) {
-                                                int thisScore = thisColumnRef.getScore();
-                                                int otherScore = otherColumnRef.getScore();
-                                                if (thisScore > 0 || otherScore > 0) {
-                                                    int score = Math.max(thisScore, otherScore);
-                                                    SQLQueryWordEntry word = (thisScore >= otherScore ? thisColumnRef : otherColumnRef).getFilterInfo();
-
-                                                    result.addLast(SQLQueryCompletionItem.forJoinCondition(
-                                                        score, word,
-                                                        thisColumnRef,
-                                                        otherColumnRef
-                                                    ));
-                                                }
-                                            }
+                Map<SQLQueryRowsSourceModel, SourceResolutionResult> resolutionResults = context.getKnownSources().getResolutionResults();
+                if (resolutionResults.size() > 1 && context.isJoin()) {
+                    AssociationsResolutionContext associations = this.getAssociationsContext(context, filterOrNull);
+                    for (SQLQueryResultColumn leftColumn : context.getLeftParentColumnsList()) {
+                        if (leftColumn.realAttr != null) {
+                            var leftRels = associations.findAssociatedAttributes(monitor, leftColumn.realAttr);
+                            for (SQLQueryResultColumn rightColumn : context.getRightParentColumnsList()) {
+                                if (rightColumn.realAttr != null) {
+                                    var rightRels = associations.findAssociatedAttributes(monitor, rightColumn.realAttr);
+                                    if (leftRels.contains(rightColumn.realAttr) || rightRels.contains(leftColumn.realAttr)) {
+                                        SQLQueryWordEntry leftWord = makeFilterInfo(null, leftColumn.symbol.getName());
+                                        int leftScore = leftWord.matches(filterOrNull, searchInsideWords);
+                                        SQLQueryWordEntry rightWord = makeFilterInfo(null, rightColumn.symbol.getName());
+                                        int rightScore = rightWord.matches(filterOrNull, searchInsideWords);
+                                        if (leftScore > 0 || rightScore > 0) {
+                                            var leftColumnRef = SQLQueryCompletionItem.forSubsetColumn(
+                                                leftScore, leftWord, leftColumn, resolutionResults.get(leftColumn.source), true
+                                            );
+                                            var rightColumnRef = SQLQueryCompletionItem.forSubsetColumn(
+                                                rightScore, rightWord, rightColumn, resolutionResults.get(rightColumn.source), true
+                                            );
+                                            int score = Math.max(leftScore, rightScore);
+                                            SQLQueryWordEntry matchedWord = (
+                                                leftScore >= rightScore ? leftColumnRef : rightColumnRef
+                                            ).getFilterInfo();
+                                            result.addLast(
+                                                SQLQueryCompletionItem.forJoinCondition(score, matchedWord, leftColumnRef, rightColumnRef)
+                                            );
                                         }
                                     }
                                 }
@@ -999,13 +960,13 @@ public abstract class SQLQueryCompletionContext {
                             SQLQueryWordEntry sourceAlias = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
                             int score = sourceAlias.matches(filterOrNull, this.searchInsideWords);
                             if (score > 0) {
-                                tableRefs.add(SQLQueryCompletionItem.forRowsSourceAlias(score, sourceAlias, rr.aliasOrNull, rr));
+                                tableRefs.add(SQLQueryCompletionItem.forRowsSourceAlias(score, sourceAlias, rr.aliasOrNull, rr, false));
                             }
                         } else if (rr.tableOrNull != null) {
                             SQLQueryWordEntry tableName = makeFilterInfo(filterOrNull, rr.tableOrNull.getName());
                             int score = tableName.matches(filterOrNull, this.searchInsideWords);
                             if (score > 0) {
-                                tableRefs.add(SQLQueryCompletionItem.forRealTable(score, tableName, null, rr.tableOrNull, true));
+                                tableRefs.add(SQLQueryCompletionItem.forRealTable(score, tableName, null, rr.tableOrNull, true, false));
                             }
                         }
                     }
@@ -1088,12 +1049,17 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull List<SQLQueryCompletionSet> results
             ) {
                 LinkedList<SQLQueryCompletionItem> completions = new LinkedList<>();
+
+                AssociationsResolutionContext associations = this.getAssociationsContext(this.deepestContext, filterOrNull);
                 for (SourceResolutionResult rr : knownSources.getResolutionResults().values()) {
                     if (rr.aliasOrNull != null && rr.isCteSubquery) {
                         SQLQueryWordEntry aliasName = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
                         int score = aliasName.matches(filterOrNull, this.searchInsideWords);
                         if (score > 0) {
-                            completions.add(SQLQueryCompletionItem.forRowsSourceAlias(score, aliasName, rr.aliasOrNull, rr));
+                            completions.add(SQLQueryCompletionItem.forRowsSourceAlias(
+                                score, aliasName, rr.aliasOrNull, rr,
+                                associations.hasRelatedAssociationsWithTable(monitor, rr.source)
+                            ));
                         }
                     }
                 }
@@ -1454,6 +1420,12 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         List<? extends SQLQueryResultColumn> getRightParentColumnsList();
 
+        @NotNull
+        List<? extends SQLQueryResultColumn> getLeftParentColumnsList();
+
+        @Nullable
+        SQLQueryDataContextInfo getRelatedContext();
+
         static SQLQueryDataContextInfo empty() {
             return EMPTY_DATA_CONTEXT_INFO;
         }
@@ -1472,6 +1444,8 @@ public abstract class SQLQueryCompletionContext {
         private final SQLQueryRowsSourceContext rowsSourceContext;
         @NotNull
         private final SQLQuerySourcesInfoCollection subquerySources;
+        @Nullable
+        private Supplier<SQLQueryDataContextInfo> relatedContextInfoProvider = null;
 
         public SQLQueryRowsSourceContextInfo(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
             this.rowsSourceContext = rowsSourceContext;
@@ -1508,6 +1482,29 @@ public abstract class SQLQueryCompletionContext {
         public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
             return Collections.emptyList();
         }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getLeftParentColumnsList() {
+            return Collections.emptyList();
+        }
+
+        @Nullable
+        @Override
+        public final SQLQueryDataContextInfo getRelatedContext() {
+            if (this.relatedContextInfoProvider == null) {
+                this.relatedContextInfoProvider = this.prepareRelatedContextInfoProvider();
+            }
+            return this.relatedContextInfoProvider.get();
+        }
+
+        @NotNull
+        protected Supplier<SQLQueryDataContextInfo> prepareRelatedContextInfoProvider() {
+            SQLQueryDataContextInfo relatedContextInfo = this.rowsSourceContext.getRelatedContextProvider() == null
+                ? null
+                : SQLQueryDataContextInfo.makeFor(this.rowsSourceContext.getRelatedContextProvider().get());
+            return () -> relatedContextInfo;
+        }
     }
 
     private static class SQLQueryRowsDataContextInfo extends SQLQueryRowsSourceContextInfo {
@@ -1535,6 +1532,18 @@ public abstract class SQLQueryCompletionContext {
         public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
             return this.isJoin() ? this.rowsDataContext.getJoinInfo().right().getColumnsList() : Collections.emptyList();
         }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getLeftParentColumnsList() {
+            return this.isJoin() ? this.rowsDataContext.getJoinInfo().left().getColumnsList() : Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        protected Supplier<SQLQueryDataContextInfo> prepareRelatedContextInfoProvider() {
+            return () -> this;
+        }
     }
 
     private static final SQLQueryDataContextInfo EMPTY_DATA_CONTEXT_INFO = new SQLQueryDataContextInfo() {
@@ -1547,7 +1556,7 @@ public abstract class SQLQueryCompletionContext {
 
             @NotNull
             @Override
-            public Set<DBSObject> getReferencedTables() {
+            public Set<DBSEntity> getReferencedTables() {
                 return Collections.emptySet();
             }
 
@@ -1586,5 +1595,203 @@ public abstract class SQLQueryCompletionContext {
         public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
             return Collections.emptyList();
         }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getLeftParentColumnsList() {
+            return Collections.emptyList();
+        }
+
+        @Nullable
+        @Override
+        public SQLQueryDataContextInfo getRelatedContext() {
+            return null;
+        }
     };
+
+    private record EntityAssociationTargetsInfo(
+        @NotNull Set<DBSEntityAttribute> attributes,
+        @NotNull Set<DBSEntity> entities
+    ) {
+    }
+
+    private record EntityAssociationsInfo(
+        @NotNull DBSEntity entity,
+        @NotNull Map<DBSEntityAttribute, EntityAssociationTargetsInfo> associationsByAttribute,
+        @NotNull Set<DBSEntity> allAssociatedEntities,
+        @NotNull Set<DBSEntityAttribute> allAssociatedAttributes
+    ) {
+    }
+
+    private class AssociationsResolutionContext {
+        @NotNull
+        private final SQLQueryDataContextInfo context;
+        @NotNull
+        private final SQLQueryDataContextInfo relatedContext;
+        @Nullable
+        private final SQLQueryWordEntry filterOrNull;
+        @Nullable
+        private Map<DBSEntityAttribute, List<SQLQueryCompletionItem.SQLColumnNameCompletionItem>> realColumnRefsByEntityAttribute = null;
+        @NotNull
+        private final Map<DBSEntity, EntityAssociationsInfo> associatedAttrsByEntity = new HashMap<>();
+        @Nullable
+        private Set<DBSEntity> allAssociatedEntitiesOfColumnsList = null;
+
+        public AssociationsResolutionContext(@NotNull SQLQueryDataContextInfo context, @Nullable SQLQueryWordEntry filterOrNull) {
+            this.context = context;
+            this.relatedContext = this.context.getRelatedContext() == null ? this.context : this.context.getRelatedContext();
+            this.filterOrNull = filterOrNull;
+        }
+
+        private Set<DBSEntity> getAssociatedEntitiesOfColumnsList(@NotNull DBRProgressMonitor monitor) {
+            if (this.allAssociatedEntitiesOfColumnsList == null) {
+                this.allAssociatedEntitiesOfColumnsList = this.relatedContext.getColumnsList().stream()
+                    .filter(a -> a.realAttr != null)
+                    .flatMap(a -> this.findAssociatedEntities(monitor, a.realAttr).stream())
+                    .collect(Collectors.toUnmodifiableSet());
+            }
+            return this.allAssociatedEntitiesOfColumnsList;
+        }
+
+        private Set<DBSEntityAttribute> extractRealAttributes(@NotNull List<SQLQueryResultColumn> columnsList) {
+            return columnsList.stream()
+                .filter(c -> c.realAttr != null)
+                .map(c -> c.realAttr)
+                .collect(Collectors.toSet());
+        }
+
+        public boolean hasRelatedAssociationsWithTable(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table) {
+            EntityAssociationsInfo tableAssociations = this.findAssociationsInfo(monitor, table);
+            return this.getAssociatedEntitiesOfColumnsList(monitor).contains(table)
+                || this.extractRealAttributes(this.relatedContext.getColumnsList()).stream()
+                       .anyMatch(tableAssociations.allAssociatedAttributes::contains);
+        }
+
+        public boolean hasRelatedAssociationsWithTable(@NotNull DBRProgressMonitor monitor, @NotNull SQLQueryRowsSourceModel source) {
+            Set<DBSEntityAttribute> tupleAttributes = this.extractRealAttributes(this.relatedContext.getColumnsList());
+            Set<DBSEntityAttribute> sourceAttributes = this.extractRealAttributes(source.getRowsDataContext().getColumnsList());
+
+            Set<DBSEntityAttribute> tupleAssociations = tupleAttributes.stream()
+                .flatMap(a -> this.findAssociatedAttributes(monitor, a).stream())
+                .collect(Collectors.toSet());
+
+            if (sourceAttributes.stream().anyMatch(tupleAssociations::contains)) {
+                return true;
+            }
+
+            Set<DBSEntityAttribute> sourceAssociations = sourceAttributes.stream()
+                .flatMap(a -> this.findAssociatedAttributes(monitor, a).stream())
+                .collect(Collectors.toSet());
+
+            if (tupleAttributes.stream().anyMatch(sourceAssociations::contains)) {
+                return true;
+            }
+
+            return false;
+        }
+
+        @NotNull
+        private Map<DBSEntityAttribute, List<SQLQueryCompletionItem.SQLColumnNameCompletionItem>> getRealColumnNameCompletionItems() {
+            return this.realColumnRefsByEntityAttribute != null
+                ? this.realColumnRefsByEntityAttribute
+                : (
+                    this.realColumnRefsByEntityAttribute = this.context.getColumnsList().stream()
+                        .filter(rc -> rc.realAttr != null && rc.realAttr.getParentObject() == rc.realSource)
+                        .collect(Collectors.groupingBy(rc -> rc.realAttr)).entrySet().stream()
+                        .collect(Collectors.toUnmodifiableMap(
+                            Map.Entry::getKey, g -> g.getValue().stream().map(rc -> {
+                                SQLQueryWordEntry word = makeFilterInfo(null, rc.symbol.getName());
+                                int score = word.matches(filterOrNull, searchInsideWords);
+                                return SQLQueryCompletionItem.forSubsetColumn(
+                                    score, word, rc, context.getKnownSources().getResolutionResults().get(rc.source), true
+                                );
+                            }).toList()
+                        ))
+                );
+        }
+
+        @NotNull
+        public List<SQLQueryCompletionItem.SQLColumnNameCompletionItem> getRealColumnRefsByEntityAttribute(
+            @NotNull DBSEntityAttribute attr
+        ) {
+            return Optional.ofNullable(this.getRealColumnNameCompletionItems().get(attr)).orElse(Collections.emptyList());
+        }
+
+        @NotNull
+        public EntityAssociationsInfo findAssociationsInfo(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table) {
+            return this.associatedAttrsByEntity.computeIfAbsent(table, e -> this.prepareAllAssociations(monitor, e));
+        }
+
+        @NotNull
+        public Set<DBSEntityAttribute> findAssociatedAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute key) {
+            return Optional.ofNullable(this.findAssociationsInfo(monitor, key.getParentObject()).associationsByAttribute.get(key))
+                .map(t -> t.attributes)
+                .orElse(Collections.emptySet());
+        }
+
+        @NotNull
+        public Set<DBSEntity> findAssociatedEntities(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute key) {
+            return Optional.ofNullable(this.findAssociationsInfo(monitor, key.getParentObject()).associationsByAttribute.get(key))
+                .map(t -> t.entities)
+                .orElse(Collections.emptySet());
+        }
+
+        @NotNull
+        private EntityAssociationsInfo prepareAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) {
+            try {
+                Map<DBSEntityAttribute, EntityAssociationTargetsInfo> associatedAttributes = Stream.concat(
+                        Optional.ofNullable(entity.getAssociations(monitor)).stream().flatMap(Collection::stream),
+                        Optional.ofNullable(entity.getReferences(monitor)).stream().flatMap(Collection::stream)
+                    ).filter(c -> c instanceof DBSTableForeignKey)
+                    .map(c -> {
+                        try {
+                            return ((DBSTableForeignKey) c).getAttributeReferences(monitor);
+                        } catch (DBException e) {
+                            return null;
+                        }
+                    })
+                    .filter(aa -> aa != null && aa.size() == 1 && aa.getFirst() instanceof DBSTableForeignKeyColumn)
+                    // TODO consider compound keys and filtered by the common path to the context of origin
+                    .map(aa -> (DBSTableForeignKeyColumn) aa.getFirst())
+                    .map(attrRef -> {
+                        DBSEntityAttribute sourceAttr = attrRef.getAttribute();
+                        DBSEntityAttribute targetAttr = attrRef.getReferencedColumn();
+                        if (targetAttr != null && sourceAttr != null) {
+                            if (sourceAttr.getParentObject() == entity) {
+                                return Pair.of(sourceAttr, targetAttr);
+                            } else {
+                                return Pair.of(targetAttr, sourceAttr);
+                            }
+                        } else {
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.groupingBy(
+                        Pair::getFirst, // relation source attr is a key
+                        Collectors.mapping(
+                            Pair::getSecond,
+                            Collectors.collectingAndThen(
+                                Collectors.toSet(),
+                                (Set<DBSEntityAttribute> targetAttrs) -> new EntityAssociationTargetsInfo(
+                                    targetAttrs,
+                                    targetAttrs.stream()
+                                        .map(DBSEntityElement::getParentObject)
+                                        .collect(Collectors.toUnmodifiableSet())
+                                )
+                            )
+                        )
+                    ));
+                Set<DBSEntity> allAssociationTargets = associatedAttributes.values().stream()
+                    .flatMap(t -> t.entities.stream())
+                    .collect(Collectors.toUnmodifiableSet());
+                Set<DBSEntityAttribute> allAssociatedAttributes = associatedAttributes.values().stream()
+                    .flatMap(t -> t.attributes.stream())
+                    .collect(Collectors.toUnmodifiableSet());
+                return new EntityAssociationsInfo(entity, associatedAttributes, allAssociationTargets, allAssociatedAttributes);
+            } catch (DBException e) {
+                return new EntityAssociationsInfo(entity, Collections.emptyMap(), Collections.emptySet(), Collections.emptySet());
+            }
+        }
+    }
 }
