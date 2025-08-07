@@ -101,6 +101,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
 
             awsRegionCombo = UIUtils.createLabelCombo(addrGroup, AthenaMessages.label_region, SWT.DROP_DOWN);
             awsRegionCombo.addModifyListener(textListener);
+            UIUtils.setWidgetWidthHint(awsRegionCombo, 150);
 
             UIUtils.createControlLabel(addrGroup, AthenaMessages.label_s3_location); //$NON-NLS-2$ //$NON-NLS-1$ //$NON-NLS-1$ //$NON-NLS-1$
             Composite s3Group = UIUtils.createComposite(addrGroup, 1);
@@ -109,6 +110,7 @@ public class AthenaConnectionPage extends ConnectionPageWithAuth implements IDia
             s3LocationText.setToolTipText(AthenaMessages.label_s3_output_location);
             s3LocationText.addModifyListener(textListener);
             s3LocationText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.setWidgetWidthHint(s3LocationText, 150);
 
             if (FileSystemProviderRegistry.getInstance().getProvider("aws-s3") != null) {
                 ((GridLayout) s3Group.getLayout()).numColumns++;

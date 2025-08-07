@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
+            UIUtils.setWidgetWidthHint(hostText, 150);
             hostText.addModifyListener(textListener);
 
             Label portLabel = UIUtils.createControlLabel(hostGroup,
@@ -103,6 +104,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 3;
             databaseText.setLayoutData(gd);
+            UIUtils.setWidgetWidthHint(databaseText, 150);
             databaseText.addModifyListener(textListener);
 
             Label tenantLabel = UIUtils.createControlLabel(hostGroup,
@@ -114,6 +116,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 3;
             tenantText.setLayoutData(gd);
+            UIUtils.setWidgetWidthHint(tenantText, 150);
             tenantText.addModifyListener(textListener);
         }
 

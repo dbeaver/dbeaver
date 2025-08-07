@@ -140,6 +140,7 @@ public class DB2ConnectionPage extends ConnectionPageWithAuth implements IDialog
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 3;
             dbText.setLayoutData(gd);
+            UIUtils.setWidgetWidthHint(dbText, 150);
             dbText.addModifyListener(textListener);
             addControlToGroup(GROUP_CONNECTION, dbText);
         }
