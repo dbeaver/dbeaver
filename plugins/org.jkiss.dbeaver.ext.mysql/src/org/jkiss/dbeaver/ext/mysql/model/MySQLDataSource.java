@@ -864,6 +864,15 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException {
             StringBuilder catalogQuery = new StringBuilder("show databases");
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
+            DBPConnectionConfiguration configuration = owner.getContainer().getConnectionConfiguration();
+            boolean showAllDatabases = CommonUtils.getBoolean(configuration.getProviderProperty(MySQLConstants.PROP_SHOW_ALL_DBS), false);
+            if (!showAllDatabases &&
+                configuration.getDatabaseName() != null &&
+                !configuration.getDatabaseName().isEmpty()
+            ) {
+                catalogFilters = new DBSObjectFilter();
+                catalogFilters.addInclude(configuration.getDatabaseName());
+            }
             if (catalogFilters != null) {
                 boolean supportsCondition = owner.supportsConditionForShowDatabasesStatement();
                 if (!supportsCondition) {
@@ -875,7 +884,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     catalogFilters,
                     supportsCondition ? MySQLConstants.COL_DATABASE_NAME : MySQLConstants.COL_SCHEMA_NAME,
                     true,
-                    owner);
+                    owner
+                );
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
             if (catalogFilters != null) {
