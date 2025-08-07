@@ -131,14 +131,22 @@ public abstract class SQLQueryNodeModel {
     protected SQLQueryNodeModel findChildNodeContaining(int position) { // TODO check it
         if (this.subnodes != null) {
             if (this.subnodes.size() == 1) {
+                // ...[node:...]...
+                //    │          └── tail scope of the one and only node
+                //    └── region.a of this node
                 SQLQueryNodeModel node = this.subnodes.get(0);
-                return node.region.a <= position && node.region.b >= position - 1 ? node : null;
+                return node.region.a <= position ? node : null;
             } else {
                 int index = STMUtils.binarySearchByKey(this.subnodes, n -> n.region.a, position, Comparator.comparingInt(x -> x));
-                if (index >= 0) {
+                if (index >= 0) { // Index belongs to the node in question.
+                    // ...[...]...[node:...]...[...]...
+                    //            └── exact region.a position match
                     SQLQueryNodeModel node = this.subnodes.get(index);
                     int i = index + 1;
                     while (i < this.subnodes.size()) {
+                        // Excluding overlapping regions by following forward through unwanted ones.
+                        // May happen when range.a position shared between a few nodes for some reason.
+                        // For example scenarios with 0-width regions [][..] due to parse errors for incomplete queries.
                         SQLQueryNodeModel next = this.subnodes.get(i++);
                         if (next.region.a > position - 1) {
                             break;
@@ -148,13 +156,37 @@ public abstract class SQLQueryNodeModel {
                         }
                     }
                     return node;
-                } else {
-                    for (int i = ~index - 1; i >= 0; i--) {
-                        SQLQueryNodeModel node = this.subnodes.get(i);
-                        if (node.region.a <= position && node.region.b >= position - 1) {
-                            return node;
-                        } else if (node.region.b < position) {
-                            break;
+                } else { // Insertion point index belongs to the next node after the node in question.
+                    if (~index == 0) {
+                        // When the insertion point is the first node:
+                        //  - either no nodes presented at all,
+                        //  - or all the children nodes' range.a>position,
+                        //  so no children node covering the position.
+                        return null;
+                    } else if (~index == this.subnodes.size()) {
+                        // When the insertion point is after the last existing node, the node in question is the last one.
+                        // ...[...]...[...]...[node:...]...
+                        //                           │   └── position belongs to the tail scope of the last node
+                        //                           └── or the actually covered region
+                        // So taking the last node.
+                        SQLQueryNodeModel node = this.subnodes.getLast();
+                        return node.region.a <= position ? node : null;
+                    } else {
+                        // When the insertion point belongs to the existing index, the node in question is the previous one,
+                        // because the existing would have been to the right of the inserted at the insertion point itself.
+                        // So taking existing at indexToInsertAt-1.
+                        // ...[...]...[node:...]...[]...[...]...
+                        //                   └── position belongs to the actually covered region
+                        // Ignoring tail scopes because we are in the middle of the known text fragment,
+                        // which should be correctly described by the known node intervals.
+                        for (int i = ~index - 1; i >= 0; i--) {
+                            SQLQueryNodeModel node = this.subnodes.get(i);
+                            if (node.region.a <= position && node.region.b >= position - 1) { // if it actually contains position, then ok
+                                return node;
+                            } else if (node.region.b < position) { // if not, then its region is actually ends earlier than the position
+                                break;
+                            }
+                            // otherwise try previous, because the current one may be of zero-length
                         }
                     }
                 }
