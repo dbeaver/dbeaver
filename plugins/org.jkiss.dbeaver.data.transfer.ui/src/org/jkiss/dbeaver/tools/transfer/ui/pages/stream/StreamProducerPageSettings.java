@@ -410,7 +410,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             getWizard().getSettings().getProcessorProperties());
         propsEditor.loadProperties(propertySource);
 
-        initPipes();
+        reloadPipes();
 
         updatePageCompletion();
 
@@ -498,26 +498,6 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             filesTable.select(selectionIndex);
         }
         updateBrowseButtons();
-    }
-
-    private void initPipes() {
-        DataTransferSettings settings = getWizard().getSettings();
-        boolean producersAreNotInitialized = settings.getDataPipes().stream().anyMatch(
-            pipe ->
-                pipe.getProducer() instanceof StreamTransferProducer streamProducer &&
-                streamProducer.getEntityMapping() == null
-        );
-
-        IDataTransferProducer<?>[] initProducers = settings.getInitProducers();
-        IDataTransferConsumer<?, ?>[] initConsumers = settings.getInitConsumers();
-        if (producersAreNotInitialized && initConsumers != null && initProducers.length == initConsumers.length) {
-            List<DataTransferPipe> dataPipes = IntStream.range(0, initProducers.length)
-                .mapToObj(i -> new DataTransferPipe(initProducers[i], initConsumers[i]))
-                .collect(Collectors.toList());
-            settings.setDataPipes(dataPipes, false);
-        }
-
-        reloadPipes();
     }
 
     private void updateBrowseButtons() {
