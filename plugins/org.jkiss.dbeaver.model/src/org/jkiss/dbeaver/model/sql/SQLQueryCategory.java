@@ -14,17 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.code.NotNull;
 
-import java.util.LinkedHashSet;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-public class DataSourceParseResults {
-    public final Set<DBPDataSourceContainer> updatedDataSources = new LinkedHashSet<>();
-    public final Set<DBPDataSourceContainer> addedDataSources = new LinkedHashSet<>();
-    public final Set<DBPDataSourceFolder> addedFolders = new LinkedHashSet<>();
-    public final Set<DBPDataSourceFolder> updatedFolders = new LinkedHashSet<>();
+/**
+ * Category of a query type
+ *
+ * @see SQLQueryType
+ */
+public enum SQLQueryCategory {
+    SQL,
+    DML,
+    DDL,
+    TCL,
+    UNKNOWN;
+
+    @NotNull
+    public static Set<SQLQueryCategory> categorizeScript(@NotNull List<SQLScriptElement> scriptElements) {
+        Set<SQLQueryCategory> categories = new HashSet<>();
+        for (SQLScriptElement element : scriptElements) {
+            if (element instanceof SQLQuery sqlQuery) {
+                categories.add(sqlQuery.getType().getCategory());
+            }
+        }
+        return categories;
+    }
 }
