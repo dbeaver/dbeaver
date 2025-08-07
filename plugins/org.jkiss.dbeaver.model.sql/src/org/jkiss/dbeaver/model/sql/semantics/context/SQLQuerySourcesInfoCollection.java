@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +38,7 @@ public interface SQLQuerySourcesInfoCollection {
      * Returns a set of tables used in the query
      */
     @NotNull
-    Set<DBSObject> getReferencedTables();
+    Set<DBSEntity> getReferencedTables();
 
     /**
      * Returns a set of aliases used in the query
