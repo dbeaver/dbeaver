@@ -151,8 +151,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -5255,8 +5255,6 @@ public class SQLEditor extends SQLEditorBase implements
                         setLastQueryErrorPosition(errorQueryOffset);
                     }
                 }
-            } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
-                selectionProvider.setSelection(originalSelection);
             }
             notifyOnQueryResultListeners(curResultsContainer, result);
             // Get results window (it is possible that it was closed till that moment
