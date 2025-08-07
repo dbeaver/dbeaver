@@ -7,9 +7,7 @@ Bundle-Version: 1.0.6.qualifier
 Bundle-Release-Date: 20250818
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Export-Package: org.jkiss.dbeaver.model.cli,
- org.jkiss.dbeaver.model.cli.registry
+Export-Package: org.jkiss.dbeaver.model.cli
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
- org.apache.commons.cli;visibility:=reexport,
- com.google.gson
+ org.apache.commons.cli;visibility:=reexport
 Automatic-Module-Name: org.jkiss.dbeaver.model.cli
