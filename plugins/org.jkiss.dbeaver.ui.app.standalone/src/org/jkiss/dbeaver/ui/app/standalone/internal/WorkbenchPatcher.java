@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.app.standalone.internal;
 
 import org.eclipse.core.runtime.*;
+import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.MApplicationElement;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
@@ -57,6 +59,40 @@ public final class WorkbenchPatcher {
     }
 
     /**
+     * Checks whether the workbench model is missing any view
+     * references available via the extension registry.
+     * <p>
+     * A missing view reference may cause the view to appear in a wrong
+     * location in the workbench, as the workbench doesn't know where
+     * it should be placed.
+     * <p>
+     * If this method returns {@code true}, it's advised to call {@link IWorkbenchPage#resetPerspective()}.
+     *
+     * @param application the application model driving the workbench
+     * @return {@code true} if the perspective must be reset, {@code false} otherwise
+     */
+    public static boolean needsPerspectiveReset(@NotNull MApplication application) {
+        // Collect a set of descriptors from the application model
+        Set<String> descriptors = application.getDescriptors().stream()
+            .map(MApplicationElement::getElementId)
+            .collect(Collectors.toSet());
+
+        // Collect a set of registered views via perspective extensions
+        Set<String> views = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_PERSPECTIVE_EXTENSIONS)
+            // extension.forEach(perspectiveExtension)
+            .map(IExtension::getConfigurationElements).flatMap(Stream::of)
+            .filter(e -> e.getName().equals(IWorkbenchRegistryConstants.TAG_PERSPECTIVE_EXTENSION))
+            // perspectiveExtension.forEach(view)
+            .map(IConfigurationElement::getChildren).flatMap(Stream::of)
+            .filter(e -> e.getName().equals(IWorkbenchRegistryConstants.TAG_VIEW))
+            // view.id
+            .map(x -> x.getAttribute(IWorkbenchRegistryConstants.ATT_ID))
+            .collect(Collectors.toSet());
+
+        return !descriptors.containsAll(views);
+    }
+
+    /**
      * Patches the {@code workbench.xmi} file, updating all view and editor
      * parts' icons to their actual values taken directly from contributed
      * extensions.
@@ -78,33 +114,6 @@ public final class WorkbenchPatcher {
         }
     }
 
-    /**
-     * Checks whether the {@code workbench.xmi} file is missing any view
-     * references available via the extension registry.
-     * <p>
-     * A missing view reference may cause the view to appear in a wrong
-     * location in the workbench, as the workbench doesn't know where
-     * it should be placed.
-     * <p>
-     * If this method returns {@code true}, it's advised to call {@link IWorkbenchPage#resetPerspective()}.
-     *
-     * @param instance workbench location
-     * @return {@code true} if the perspective must be reset, {@code false} otherwise
-     */
-    public static boolean needsPerspectiveReset(@NotNull Location instance) {
-        Path path = getWorkbenchSaveLocation(instance);
-        if (path == null) {
-            return false;
-        }
-
-        try {
-            return needsPerspectiveReset(path);
-        } catch (XMLException e) {
-            log.error("Failed to parse workbench save file: " + path, e);
-            return false;
-        }
-    }
-
     private static void patchWorkbenchXmi(@NotNull Path workbenchXmi) throws Exception {
         var document = XMLUtils.parseDocument(workbenchXmi);
         var transformed = patchPartIconsRecursively(document, collectContributedParts());
@@ -122,30 +131,6 @@ public final class WorkbenchPatcher {
                 transformer.transform(source, result);
             }
         }
-    }
-
-    private static boolean needsPerspectiveReset(@NotNull Path workbenchXmi) throws XMLException {
-        var document = XMLUtils.parseDocument(workbenchXmi);
-
-        // Collect a set of "descriptors" elements from the workbench file
-        Set<String> descriptors = XMLUtils.getChildElementList(document.getDocumentElement(), "descriptors").stream()
-            .filter(e -> e.hasAttribute("elementId"))
-            .map(e -> e.getAttribute("elementId"))
-            .collect(Collectors.toSet());
-
-        // Collect a set of registered views via perspective extensions
-        Set<String> views = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_PERSPECTIVE_EXTENSIONS)
-            // extension.forEach(perspectiveExtension)
-            .map(IExtension::getConfigurationElements).flatMap(Stream::of)
-            .filter(e -> e.getName().equals(IWorkbenchRegistryConstants.TAG_PERSPECTIVE_EXTENSION))
-            // perspectiveExtension.forEach(view)
-            .map(IConfigurationElement::getChildren).flatMap(Stream::of)
-            .filter(e -> e.getName().equals(IWorkbenchRegistryConstants.TAG_VIEW))
-            // view.id
-            .map(x -> x.getAttribute(IWorkbenchRegistryConstants.ATT_ID))
-            .collect(Collectors.toSet());
-
-        return !descriptors.containsAll(views);
     }
 
     private static boolean patchPartIconsRecursively(@NotNull Node node, @NotNull Map<String, PartDescriptor> parts) {

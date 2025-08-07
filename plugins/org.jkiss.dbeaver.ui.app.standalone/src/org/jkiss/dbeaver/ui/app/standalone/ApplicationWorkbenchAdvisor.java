@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -537,7 +536,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             return;
         }
 
-        if (!WorkbenchPatcher.needsPerspectiveReset(Platform.getInstanceLocation())) {
+        if (!WorkbenchPatcher.needsPerspectiveReset(Workbench.getInstance().getApplication())) {
             return;
         }
 
