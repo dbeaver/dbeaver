@@ -1089,7 +1089,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         if (localFile != null) {
             if (DBWorkbench.isDistributed() && !localFile.isAbsolute()) {
-                localFile = DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(localFile);
+                localFile = DriverDescriptor.getExternalDriversStorageFolder().resolve(localFile);
             }
             tooltip = localFile.toString();
         }
