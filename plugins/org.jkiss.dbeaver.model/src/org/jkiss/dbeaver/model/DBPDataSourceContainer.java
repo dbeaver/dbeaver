@@ -102,8 +102,6 @@ public interface DBPDataSourceContainer extends
      */
     boolean isExternallyProvided();
 
-    boolean isTemplate();
-
     /**
      * Temporary datasources are not saved in project. They exist until project refresh or application shutdown
      */
@@ -320,9 +318,9 @@ public interface DBPDataSourceContainer extends
      * Extension settings. Any custom attributes assigned by product plugins for internal configuration purposes
      */
     @Nullable
-    String getExtension(@NotNull String name);
+    <T> T getExtension(@NotNull String name);
 
-    void setExtension(@NotNull String name, @Nullable String value);
+    void setExtension(@NotNull String name, @Nullable Object value);
 
     void dispose();
 

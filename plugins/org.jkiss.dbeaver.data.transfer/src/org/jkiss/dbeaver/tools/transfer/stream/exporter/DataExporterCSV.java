@@ -137,8 +137,14 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             case "lower" -> DBPIdentifierCase.LOWER;
             default -> DBPIdentifierCase.UPPER;
         };
-        dataExporterArrayFormat = DataExporterArrayFormat.getArrayFormat(
-            CommonUtils.toString(properties.get(PROP_FORMAT_ARRAY), DEFAULT_ARRAY_BRACKETS));
+        String arrFormatProp = CommonUtils.toString(
+            properties.get(PROP_FORMAT_ARRAY),
+            DEFAULT_ARRAY_BRACKETS
+        ).trim();
+        if (arrFormatProp.isEmpty()) {
+            arrFormatProp = DEFAULT_ARRAY_BRACKETS;
+        }
+        dataExporterArrayFormat = DataExporterArrayFormat.getArrayFormat(arrFormatProp);
     }
 
     @Override
@@ -245,14 +251,13 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                     if (!(row[i] instanceof Number)) {
                         quote = true;
                     }
-                } else if (quoteStrategy == QuoteStrategy.ALL_BUT_NULLS) {
-                    if (!DBUtils.isNullValue(row[i])) {
-                        quote = true;
-                    }
                 }
+
                 if (DBUtils.isNullValue(row[i])) {
                     if (CommonUtils.isNotEmpty(nullString)) {
                         writeCellValue(nullString, quote);
+                    } else if (quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS) {
+                        writeCellValue("", true);
                     }
                 } else {
                     writeCellValue(stringValue, quote);
@@ -333,15 +338,18 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             }
         }
 
-        if (quoteStrategy == QuoteStrategy.ALL || (useQuotes && value.isEmpty())) {
+        if (quoteStrategy == QuoteStrategy.ALL ||
+            quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS ||
+            (useQuotes && value.isEmpty())
+        ) {
             quote = true;
         } else if (!quote) {
             if (hasQuotes ||
                 value.contains(delimiter) ||
                 value.indexOf('\r') != -1 ||
                 value.indexOf('\n') != -1 ||
-                value.contains(rowDelimiter))
-            {
+                value.contains(rowDelimiter)
+            ) {
                 quote = true;
             }
         }

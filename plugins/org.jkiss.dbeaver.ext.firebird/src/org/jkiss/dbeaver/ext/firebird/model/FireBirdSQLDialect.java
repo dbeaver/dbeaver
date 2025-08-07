@@ -20,14 +20,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 
 import java.util.Arrays;
 
 public class FireBirdSQLDialect extends GenericSQLDialect {
+
+    private boolean supportsAsBeforeTableAlias = true;
 
     private static final String[] FB_BLOCK_HEADERS = new String[]{
         "EXECUTE BLOCK",
@@ -100,6 +104,11 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
 
     public void initDriverSettings(JDBCSession session, JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(session, dataSource, metaData);
+        if (!dataSource.isServerVersionAtLeast(2, 0)) {
+            // we don't know the exact version actually
+            // it's probably in servers older than 2.0 https://www.firebirdsql.org/refdocs/langrefupd20-select.html
+            supportsAsBeforeTableAlias = false;
+        }
         turnFunctionIntoKeyword("TRUNCATE");
         addKeywords(Arrays.asList(FIREBIRD_KEYWORDS), DBPKeywordType.KEYWORD);
         addFunctions(Arrays.asList(FIREBIRD_FUNCTIONS));
@@ -116,6 +125,11 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     }
 
     @Override
+    public boolean supportsAsKeywordBeforeAliasInFromClause() {
+        return supportsAsBeforeTableAlias;
+    }
+
+    @Override
     public boolean validIdentifierPart(char c, boolean quoted) {
         return super.validIdentifierPart(c, quoted) || c == '$';
     }
@@ -128,5 +142,11 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     @Override
     public boolean supportsInsertAllDefaultValuesStatement() {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public DBDBinaryFormatter getNativeBinaryFormatter() {
+        return BinaryFormatterHexString.INSTANCE;
     }
 }

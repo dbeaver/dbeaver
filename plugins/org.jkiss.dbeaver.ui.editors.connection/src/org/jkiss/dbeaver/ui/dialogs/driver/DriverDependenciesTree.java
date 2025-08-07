@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.DBExceptionWithHistory;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.ProgressMonitorWithExceptionContext;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
+import org.jkiss.dbeaver.registry.driver.DriverLibraryMavenArtifact;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
@@ -45,7 +46,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -53,6 +53,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.net.ssl.SSLHandshakeException;
 
 class DriverDependenciesTree {
     private static final Log log = Log.getLog(DriverDependenciesTree.class);
@@ -328,7 +329,9 @@ class DriverDependenciesTree {
             public void widgetSelected(SelectionEvent e) {
                 String newVersion = editor.getItem(editor.getSelectionIndex());
                 disposeOldEditor();
-                setLibraryVersion(dependencyNode.library, newVersion);
+                if (dependencyNode.library instanceof DriverLibraryMavenArtifact mavenLib) {
+                    setLibraryVersion(mavenLib, newVersion);
+                }
             }
         });
 
@@ -337,7 +340,7 @@ class DriverDependenciesTree {
     }
 
     // This may be overridden
-    protected void setLibraryVersion(DBPDriverLibrary library, String version) {
+    protected void setLibraryVersion(DriverLibraryMavenArtifact library, String version) {
 
     }
 

@@ -369,6 +369,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             String charsetName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHARSET);
+                            if (charsetName == null) {
+                                continue;
+                            }
                             MySQLCharset charset = getCharset(charsetName);
                             if (charset == null) {
                                 log.warn("Charset '" + charsetName + "' not found.");
@@ -465,6 +468,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         this.initialize(monitor);
 
         return this;
+    }
+
+    public void resetUsers() {
+        this.users = null;
     }
 
     MySQLTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
@@ -883,7 +890,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             String sqlState = SQLState.getStateFromException(error);
             return SQLState.SQL_42000.getCode().equals(sqlState);
         }

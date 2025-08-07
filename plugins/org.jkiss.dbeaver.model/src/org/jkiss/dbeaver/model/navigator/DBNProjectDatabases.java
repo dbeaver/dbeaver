@@ -288,10 +288,6 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     private DBNDataSource addDataSource(@NotNull DBPDataSourceContainer descriptor, boolean reflect, boolean reveal)
     {
-        if (descriptor.isTemplate()) {
-            // Skip templates
-            return null;
-        }
         DBNDataSource newNode = new DBNDataSource(this, descriptor);
         if (!getModel().isNodeVisible(newNode)) {
             return null;
@@ -341,7 +337,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public void handleDataSourceEvent(DBPEvent event)
+    public void handleDataSourceEvent(@NotNull DBPEvent event)
     {
         DBNModel model = getModel();
         switch (event.getAction()) {
@@ -424,10 +420,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                             DBNEvent.NodeChange.BEFORE_LOAD : DBNEvent.NodeChange.AFTER_LOAD);
                 }
                 break;
-                }
+            }
             case OBJECT_UPDATE:
-            case OBJECT_SELECT:
-            {
+            case OBJECT_SELECT: {
                 DBNDatabaseNode dbmNode = model.getNodeByObject(event.getObject());
                 if (dbmNode != null) {
                     DBNEvent.NodeChange nodeChange;

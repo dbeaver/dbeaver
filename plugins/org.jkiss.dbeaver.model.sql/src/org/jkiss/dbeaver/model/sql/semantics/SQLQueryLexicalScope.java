@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class SQLQueryLexicalScope {
     };
 
     @Nullable
-    private SQLQuerySymbolOrigin.DataContextSymbolOrigin symbolsOrigin = null;
+    private SQLQuerySymbolOrigin symbolsOrigin = null;
     @NotNull
     private final List<SQLQueryLexicalScopeItem> items;
     @NotNull
@@ -94,11 +94,11 @@ public class SQLQueryLexicalScope {
      * Returns lexical scope context. If it is not set, then use context of the model node, from which the scope was obtained.
      */
     @Nullable
-    public SQLQuerySymbolOrigin.DataContextSymbolOrigin getSymbolsOrigin() {
+    public SQLQuerySymbolOrigin getSymbolsOrigin() {
         return this.symbolsOrigin;
     }
     
-    public void setSymbolsOrigin(@NotNull SQLQuerySymbolOrigin.DataContextSymbolOrigin symbolsOrigin) {
+    public void setSymbolsOrigin(@NotNull SQLQuerySymbolOrigin symbolsOrigin) {
         this.symbolsOrigin = symbolsOrigin;
     }
 
@@ -149,8 +149,6 @@ public class SQLQueryLexicalScope {
             return 0;
         } else if (item instanceof SQLQuerySymbolEntry) {
             return 1;
-        } else if (item instanceof SQLQueryQualifiedName) {
-            return 2;
         } else {
             return Integer.MAX_VALUE;
         }

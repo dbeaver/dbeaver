@@ -73,7 +73,6 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     protected ConnectionWizard() {
         setNeedsProgressMonitor(true);
-        //setDefaultPageImageDescriptor(DBeaverActivator.getImageDescriptor("icons/driver-logo.png"));
     }
 
     @Override
@@ -234,6 +233,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                         throw new InterruptedException("cancel");
                     }
                 });
+
                 var oldUserPassword = activeDataSource.getActualConnectionConfiguration().getUserPassword();
                 var newUserPassword = targetDataSource.getActualConnectionConfiguration().getUserPassword();
                 if (newUserPassword != null && !newUserPassword.equals(oldUserPassword)) {
@@ -246,7 +246,6 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                     op.getServerVersion(),
                     op.getClientVersion(),
                     op.getConnectTime()).open();
-
 
             } catch (InterruptedException ex) {
                 if (!"cancel".equals(ex.getMessage())) {

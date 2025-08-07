@@ -6,13 +6,12 @@ Bundle-Version: 2.0.0.qualifier
 Bundle-Release-Date: 20240722
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.eclipse.swt.tools.spies,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.model,
  org.eclipse.core.resources,
  com.sun.jna,
  com.sun.jna.platform
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Vendor: DBeaver Corp
 Automatic-Module-Name: org.jkiss.dbeaver.ui.app.devtools

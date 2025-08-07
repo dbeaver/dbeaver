@@ -34,13 +34,15 @@ public class HANAValueHandlerProvider implements DBDValueHandlerProvider {
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDFormatSettings preferences,
             DBSTypedObject typedObject) {
         switch (typedObject.getTypeName()) {
-        case HANAConstants.DATA_TYPE_NAME_REAL_VECTOR:
-            return HANAVectorValueHandler.INSTANCE;
-        case HANAConstants.DATA_TYPE_NAME_ST_GEOMETRY:
-        case HANAConstants.DATA_TYPE_NAME_ST_POINT:
-            return HANAGeometryValueHandler.INSTANCE;
-        default:
-            return null;
+            case HANAConstants.DATA_TYPE_NAME_HALF_VECTOR:
+                return HANAHalfVectorValueHandler.INSTANCE;
+            case HANAConstants.DATA_TYPE_NAME_REAL_VECTOR:
+                return HANARealVectorValueHandler.INSTANCE;
+            case HANAConstants.DATA_TYPE_NAME_ST_GEOMETRY:
+            case HANAConstants.DATA_TYPE_NAME_ST_POINT:
+                return HANAGeometryValueHandler.INSTANCE;
+            default:
+                return null;
         }
     }
 

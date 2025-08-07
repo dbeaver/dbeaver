@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * PostgreConstants
@@ -89,11 +90,6 @@ public class PostgreConstants {
     public static final String PG_ARRAY_CLASS = "org.postgresql.jdbc.PgArray";
     public static final String PG_INTERVAL_CLASS = "org.postgresql.util.PGInterval";
     public static final String PG_GEOMETRY_CLASS = "org.postgis.PGgeometry";
-
-    // Workaround for Redshift 2.x
-    public static final String RS_OBJECT_CLASS = "com.amazon.redshift.util.RedshiftObject";
-    // Workaround for EnterpriseDB
-    public static final String EDB_OBJECT_CLASS = "com.edb.util.PGobject";
 
     public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(
         DBDPseudoAttributeType.ROWID,
@@ -158,7 +154,12 @@ public class PostgreConstants {
     public static final String TYPE_FLOAT8 = "float8";
 
     public static final String ERROR_ADMIN_SHUTDOWN = "57P01";
+    public static final String ERROR_INVALID_AUTHORIZATION_SPECIFICATION = "28000";
+    public static final String ERROR_INVALID_PASSWORD = "28P01";
     public static final String ERROR_TRANSACTION_ABORTED = "25P02";
+
+    // Class 28 — Invalid Authorization Specification (PG doc)
+    public static final Set<String> AUTHORIZATION_ERRORS = Set.of(ERROR_INVALID_AUTHORIZATION_SPECIFICATION, ERROR_INVALID_PASSWORD);
 
     public static final String PSQL_EXCEPTION_CLASS_NAME = "org.postgresql.util.PSQLException";
     public static final String COLLATION_DEFAULT = "default";

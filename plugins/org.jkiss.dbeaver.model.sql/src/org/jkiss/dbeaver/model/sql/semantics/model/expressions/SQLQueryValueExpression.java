@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
@@ -31,8 +29,6 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
 
     @NotNull
     protected SQLQueryExprType type = SQLQueryExprType.UNKNOWN;
-    @Nullable
-    protected SQLQueryDataContext dataContext = null;
 
     public SQLQueryValueExpression(@NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
         this(syntaxNode.getRealInterval(), syntaxNode, subnodes);
@@ -42,7 +38,7 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
         super(region, syntaxNode, subnodes);
     }
 
-    @Nullable
+    @NotNull
     public String getExprContent() {
         return this.getSyntaxNode().getTextContent();
     }
@@ -62,26 +58,44 @@ public abstract class SQLQueryValueExpression extends SQLQueryNodeModel {
         return null;
     }
 
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return this.dataContext;
+    /**
+     * Propagate information about available tables down the model and about actually referenced tables back up
+     */
+    public final void resolveRowSources(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        this.resolveRowSourcesImpl(context, statistics);
     }
 
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return this.dataContext;
+    protected abstract void resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    );
+
+    /**
+     * Propagate information about values and row tuples across the query model
+     */
+    public final void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        traverseSubtreeSimple(
+            this,
+            SQLQueryValueExpression.class,
+            n -> n.resolveValueType(context, statistics),
+            () -> statistics.getMonitor().isCanceled()
+        );
     }
 
     /**
-     *  Propagate semantics context and establish relations through the query model
+     * Propagate information about scalar values the query model
      */
-    public final void propagateContext(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        this.dataContext = context;
-        this.propagateContextImpl(context, statistics);
+    public final void resolveValueType(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        this.type = this.resolveValueTypeImpl(context, statistics);
     }
-    
-    protected abstract void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics);
+
+    @NotNull
+    protected abstract SQLQueryExprType resolveValueTypeImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    );
 }
 

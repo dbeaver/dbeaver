@@ -1132,6 +1132,12 @@ public class ResultSetModel implements DBDResultSetModel {
         updateColorMapping(true);
     }
 
+    public void resetOrdering(@NotNull Collection<? extends DBDAttributeBinding> bindings) {
+        for (DBDAttributeBinding binding : bindings) {
+            resetOrdering(binding);
+        }
+    }
+
     public void resetOrdering(@NotNull DBDAttributeBinding columnElement) {
         final boolean hasOrdering = dataFilter.hasOrdering();
 

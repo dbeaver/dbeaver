@@ -133,7 +133,6 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
     }
 
-
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         boolean resetPassword = CREDENTIALS_SAVE_RESTRICTED || (this.savePasswordCheck != null && !this.savePasswordCheck.getSelection());

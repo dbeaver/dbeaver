@@ -19,10 +19,8 @@ package org.jkiss.dbeaver.ext.postgresql.ui;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -31,17 +29,22 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * PostgreConnectionPageAdvanced
  */
-public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
-{
+public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
+    private final PostgreConnectionPage mainPage;
+
+    private Text roleText; //TODO: make it a combo and fill it with appropriate roles
+    private ClientHomesSelector homesSelector;
+
     private Button showTemplates;
     private Button showUnavailable;
     private Button showDatabaseStatistics;
@@ -52,26 +55,51 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
     private Combo ddPlainBehaviorCombo;
     private Combo ddTagBehaviorCombo;
 
-    public PostgreConnectionPageAdvanced()
-    {
-        setTitle("PostgreSQL");
+    public PostgreConnectionPageAdvanced(@Nullable PostgreConnectionPage mainPage) {
+        this.mainPage = mainPage;
+        setTitle("Advanced");
         setDescription("PostgreSQL - " + PostgreMessages.dialog_setting_connection_settings);
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         super.dispose();
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         Composite cfgGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         cfgGroup.setLayout(gl);
         GridData gd = new GridData(GridData.FILL_BOTH);
         cfgGroup.setLayoutData(gd);
+
+        final DBPDriver driver = site.getDriver();
+        PostgreServerType serverType = PostgreUtils.getServerType(driver);
+
+        boolean sessionRoleSupported = mainPage != null && mainPage.isSessionRoleSupported();
+        if (sessionRoleSupported || serverType.supportsClient()) {
+            Group advancedGroup = UIUtils.createControlGroup(
+                cfgGroup,
+                PostgreMessages.dialog_setting_connection_advanced_group_label,
+                2,
+                GridData.HORIZONTAL_ALIGN_BEGINNING,
+                0);
+
+            if (sessionRoleSupported) {
+                roleText = UIUtils.createLabelText(advancedGroup, PostgreMessages.dialog_setting_session_role, null, SWT.BORDER);
+                roleText.setToolTipText(PostgreMessages.dialog_setting_session_role_tip);
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.widthHint = UIUtils.getFontHeight(roleText) * 15;
+                roleText.setLayoutData(gd);
+            }
+
+            if (DBWorkbench.hasFeature(DBConnectionConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION) && serverType.supportsClient()) {
+                homesSelector = new ClientHomesSelector(advancedGroup, PostgreMessages.dialog_setting_connection_localClient, false);
+                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+                homesSelector.getPanel().setLayoutData(gd);
+            }
+        }
 
         {
             Group secureGroup = new Group(cfgGroup, SWT.NONE);
@@ -79,23 +107,49 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
             secureGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             secureGroup.setLayout(new GridLayout(2, false));
 
-            showTemplates = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_show_templates, PostgreMessages.dialog_setting_connection_show_templates_tip, false, 2);
-            showUnavailable = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_show_not_available_for_conn, PostgreMessages.dialog_setting_connection_show_not_available_for_conn_tip, false, 2);
-            showDatabaseStatistics = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_database_statistics, PostgreMessages.dialog_setting_connection_database_statistics_tip, false, 2);
-            readAllDataTypes = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_read_all_data_types, PostgreMessages.dialog_setting_connection_read_all_data_types_tip, false, 2);
+            showTemplates = UIUtils.createCheckbox(
+                secureGroup,
+                PostgreMessages.dialog_setting_connection_show_templates,
+                PostgreMessages.dialog_setting_connection_show_templates_tip,
+                false,
+                2
+            );
+            showUnavailable = UIUtils.createCheckbox(
+                secureGroup,
+                PostgreMessages.dialog_setting_connection_show_not_available_for_conn,
+                PostgreMessages.dialog_setting_connection_show_not_available_for_conn_tip,
+                false,
+                2
+            );
+            showDatabaseStatistics = UIUtils.createCheckbox(
+                secureGroup,
+                PostgreMessages.dialog_setting_connection_database_statistics,
+                PostgreMessages.dialog_setting_connection_database_statistics_tip,
+                false,
+                2
+            );
+            readAllDataTypes = UIUtils.createCheckbox(
+                secureGroup,
+                PostgreMessages.dialog_setting_connection_read_all_data_types,
+                PostgreMessages.dialog_setting_connection_read_all_data_types_tip,
+                false,
+                2
+            );
 
             readKeysWithColumns = UIUtils.createCheckbox(
                 secureGroup,
                 PostgreMessages.dialog_setting_connection_read_keys_with_columns,
                 PostgreMessages.dialog_setting_connection_read_keys_with_columns_tip,
                 false,
-                2);
+                2
+            );
             replaceLegacyTimezone = UIUtils.createCheckbox(
                 secureGroup,
                 PostgreMessages.dialog_setting_connection_replace_legacy_timezone,
                 PostgreMessages.dialog_setting_connection_replace_legacy_timezone_tip,
                 false,
-                2);
+                2
+            );
         }
 
         {
@@ -104,24 +158,36 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
             secureGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             secureGroup.setLayout(new GridLayout(2, false));
 
-            ddPlainBehaviorCombo = UIUtils.createLabelCombo(secureGroup, PostgreMessages.dialog_setting_sql_dd_plain_label, PostgreMessages.dialog_setting_sql_dd_plain_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
+            ddPlainBehaviorCombo = UIUtils.createLabelCombo(
+                secureGroup,
+                PostgreMessages.dialog_setting_sql_dd_plain_label,
+                PostgreMessages.dialog_setting_sql_dd_plain_tip,
+                SWT.DROP_DOWN | SWT.READ_ONLY
+            );
             ddPlainBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_string);
             ddPlainBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_code_block);
-            ddTagBehaviorCombo = UIUtils.createLabelCombo(secureGroup, PostgreMessages.dialog_setting_sql_dd_tag_label, PostgreMessages.dialog_setting_sql_dd_tag_tip, SWT.DROP_DOWN | SWT.READ_ONLY);
+            ddTagBehaviorCombo = UIUtils.createLabelCombo(
+                secureGroup,
+                PostgreMessages.dialog_setting_sql_dd_tag_label,
+                PostgreMessages.dialog_setting_sql_dd_tag_tip,
+                SWT.DROP_DOWN | SWT.READ_ONLY
+            );
             ddTagBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_string);
             ddTagBehaviorCombo.add(PostgreMessages.dialog_setting_sql_dd_code_block);
         }
 
-        final DBPDriver driver = site.getDriver();
-        PostgreServerType serverType = PostgreUtils.getServerType(driver);
-
-        if (serverType.turnOffPreparedStatements())
-        {
+        if (serverType.turnOffPreparedStatements()) {
             Group performanceGroup = new Group(cfgGroup, SWT.NONE);
             performanceGroup.setText(PostgreMessages.dialog_setting_group_performance);
             performanceGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             performanceGroup.setLayout(new GridLayout(2, false));
-            usePreparedStatements = UIUtils.createCheckbox(performanceGroup, PostgreMessages.dialog_setting_connection_use_prepared_statements, PostgreMessages.dialog_setting_connection_use_prepared_statements_tip, false, 2);
+            usePreparedStatements = UIUtils.createCheckbox(
+                performanceGroup,
+                PostgreMessages.dialog_setting_connection_use_prepared_statements,
+                PostgreMessages.dialog_setting_connection_use_prepared_statements_tip,
+                false,
+                2
+            );
         }
 
         setControl(cfgGroup);
@@ -130,66 +196,85 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
     }
 
     @Override
-    public boolean isComplete()
-    {
+    public boolean isComplete() {
         return true;
     }
 
     @Override
-    public void setSite(IDataSourceConnectionEditorSite site) {
-        super.setSite(site);
-        if (site != null && site.getDriver() != null) {
-            setTitle(site.getDriver().getName());
-        }
-    }
-
-    @Override
-    public void loadSettings()
-    {
+    public void loadSettings() {
         // Load values from new connection info
         DBPPreferenceStore globalPrefs = DBWorkbench.getPlatform().getPreferenceStore();
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
-        setTitle(site.getActiveDataSource().getDriver().getName());
+
+        if (roleText != null) {
+            roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE)));
+        }
+        if (homesSelector != null) {
+            homesSelector.populateHomes(getSite().getDriver(), connectionInfo.getClientHomeId(), site.isNew());
+        }
 
         showTemplates.setSelection(
-            CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB),
-            globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB)));
+            CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB),
+                globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_TEMPLATES_DB)
+            ));
         showUnavailable.setSelection(
-            CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
-            globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB)));
+            CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB),
+                globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB)
+            ));
         showDatabaseStatistics.setSelection(
-            CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS),
-                globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS)));
+            CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS),
+                globalPrefs.getBoolean(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS)
+            ));
         readAllDataTypes.setSelection(
-                CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES),
-                        globalPrefs.getBoolean(PostgreConstants.PROP_READ_ALL_DATA_TYPES)));
+            CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES),
+                globalPrefs.getBoolean(PostgreConstants.PROP_READ_ALL_DATA_TYPES)
+            ));
         readKeysWithColumns.setSelection(
-            CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS),
-                globalPrefs.getBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS)));
+            CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS),
+                globalPrefs.getBoolean(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS)
+            ));
         replaceLegacyTimezone.setSelection(
-            CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE),
-                globalPrefs.getBoolean(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE)));
+            CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE),
+                globalPrefs.getBoolean(PostgreConstants.PROP_REPLACE_LEGACY_TIMEZONE)
+            ));
         if (usePreparedStatements != null) {
             usePreparedStatements.setSelection(
-                    CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS), false));
+                CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS), false));
         }
 
         ddPlainBehaviorCombo.select(CommonUtils.getBoolean(
             connectionInfo.getProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING),
-            globalPrefs.getBoolean(PostgreConstants.PROP_DD_PLAIN_STRING)) ? 0 : 1);
+            globalPrefs.getBoolean(PostgreConstants.PROP_DD_PLAIN_STRING)
+        ) ? 0 : 1);
         ddTagBehaviorCombo.select(CommonUtils.getBoolean(
             connectionInfo.getProviderProperty(PostgreConstants.PROP_DD_TAG_STRING),
-            globalPrefs.getBoolean(PostgreConstants.PROP_DD_TAG_STRING)) ? 0 : 1);
+            globalPrefs.getBoolean(PostgreConstants.PROP_DD_TAG_STRING)
+        ) ? 0 : 1);
     }
 
     @Override
-    public void saveSettings(DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionCfg = dataSource.getConnectionConfiguration();
+
+        if (roleText != null) {
+            connectionCfg.setProviderProperty(PostgreConstants.PROP_CHOSEN_ROLE, roleText.getText().trim());
+        }
+        if (homesSelector != null) {
+            connectionCfg.setClientHomeId(homesSelector.getSelectedHome());
+        }
 
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(showTemplates.getSelection()));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_UNAVAILABLE_DB, String.valueOf(showUnavailable.getSelection()));
-        connectionCfg.setProviderProperty(PostgreConstants.PROP_SHOW_DATABASE_STATISTICS, String.valueOf(showDatabaseStatistics.getSelection()));
+        connectionCfg.setProviderProperty(
+            PostgreConstants.PROP_SHOW_DATABASE_STATISTICS,
+            String.valueOf(showDatabaseStatistics.getSelection())
+        );
         connectionCfg.setProviderProperty(PostgreConstants.PROP_READ_ALL_DATA_TYPES, String.valueOf(readAllDataTypes.getSelection()));
         connectionCfg.setProviderProperty(PostgreConstants.PROP_READ_KEYS_WITH_COLUMNS, String.valueOf(readKeysWithColumns.getSelection()));
         connectionCfg.setProviderProperty(
@@ -197,10 +282,16 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract
             String.valueOf(replaceLegacyTimezone.getSelection())
         );
         if (usePreparedStatements != null) {
-            connectionCfg.setProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS, String.valueOf(usePreparedStatements.getSelection()));
+            connectionCfg.setProviderProperty(
+                PostgreConstants.PROP_USE_PREPARED_STATEMENTS,
+                String.valueOf(usePreparedStatements.getSelection())
+            );
         }
 
-        connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_PLAIN_STRING, String.valueOf(ddPlainBehaviorCombo.getSelectionIndex() == 0));
+        connectionCfg.setProviderProperty(
+            PostgreConstants.PROP_DD_PLAIN_STRING,
+            String.valueOf(ddPlainBehaviorCombo.getSelectionIndex() == 0)
+        );
         connectionCfg.setProviderProperty(PostgreConstants.PROP_DD_TAG_STRING, String.valueOf(ddTagBehaviorCombo.getSelectionIndex() == 0));
 
         saveConnectionURL(connectionCfg);

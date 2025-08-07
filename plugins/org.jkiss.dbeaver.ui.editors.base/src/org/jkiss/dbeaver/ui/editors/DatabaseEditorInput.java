@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
@@ -36,6 +38,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -194,6 +198,17 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
 
     @Nullable
     @Override
+    public Color getConnectionColor() {
+        DBPDataSourceContainer container = getDataSourceContainer();
+        if (container != null) {
+            return UIUtils.getConnectionColor(container.getConnectionConfiguration());
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
+    @Override
     public DBECommandContext getCommandContext()
     {
         return commandContext;
@@ -254,8 +269,38 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     }
 
     @Override
-    public void saveState(IMemento memento)
-    {
-        DatabaseEditorInputFactory.saveState(memento, this);
+    public void saveState(IMemento memento) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DatabaseEditorPreferences.PROP_SAVE_EDITORS_STATE)) {
+            return;
+        }
+
+        final DBCExecutionContext context = getExecutionContext();
+        if (context == null || context.getDataSource().getContainer().isTemporary()) {
+            // Detached - nothing to save
+            return;
+        }
+
+        if (getDatabaseObject() != null && !getDatabaseObject().isPersisted()) {
+            return;
+        }
+
+        memento.putString(DatabaseEditorInputFactory.TAG_CLASS, getClass().getName());
+        memento.putString(DatabaseEditorInputFactory.TAG_PROJECT, context.getDataSource().getContainer().getProject().getName());
+        memento.putString(DatabaseEditorInputFactory.TAG_DATA_SOURCE, context.getDataSource().getContainer().getId());
+        memento.putString(DatabaseEditorInputFactory.TAG_NODE, node.getNodeUri());
+        memento.putString(DatabaseEditorInputFactory.TAG_NODE_NAME, node.getNodeDisplayName());
+
+        if (!CommonUtils.isEmpty(getDefaultPageId())) {
+            memento.putString(DatabaseEditorInputFactory.TAG_ACTIVE_PAGE, getDefaultPageId());
+        }
+
+        if (!CommonUtils.isEmpty(getDefaultFolderId())) {
+            memento.putString(DatabaseEditorInputFactory.TAG_ACTIVE_FOLDER, getDefaultFolderId());
+        }
+
+        Color connectionColor = getConnectionColor();
+        if (connectionColor != null) {
+            memento.putString(DatabaseEditorInputFactory.TAG_CONNECTION_COLOR, StringConverter.asString(connectionColor.getRGB()));
+        }
     }
 }

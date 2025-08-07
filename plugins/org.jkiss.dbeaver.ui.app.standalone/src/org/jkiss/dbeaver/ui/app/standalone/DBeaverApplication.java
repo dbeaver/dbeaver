@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.app.DBPApplicationController;
 import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.cli.CmdProcessResult;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
@@ -58,6 +59,7 @@ import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
+import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateDialog;
@@ -102,6 +104,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
+    public static final String DEFAULT_WORKSPACES_FILE = ".workspaces";
 
     private static final String PLUGINS_FOLDER = ".plugins";
     private static final String CORE_RESOURCES_PLUGIN_FOLDER = "org.eclipse.core.resources";
@@ -134,10 +137,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private long lastUserActivityTime = -1;
 
     public DBeaverApplication() {
-        this(DesktopPlatform.DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER);
+        this(DesktopPlatform.DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER, DEFAULT_WORKSPACES_FILE);
     }
 
-    protected DBeaverApplication(String defaultWorkspaceLocation, String defaultAppWorkspaceName) {
+    protected DBeaverApplication(String defaultWorkspaceLocation, String defaultAppWorkspaceName, String defaultWorkspacesFile) {
 
         // Explicitly set UTF-8 as default file encoding
         // In some places Eclipse reads this property directly.
@@ -153,7 +156,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Workspace dir
         WORKSPACE_DIR_6 = new File(workingDirectory, defaultAppWorkspaceName).getAbsolutePath();
         WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_6;
-        FILE_WITH_WORKSPACES = Paths.get(workingDirectory, ".workspaces"); //$NON-NLS-1$
+        FILE_WITH_WORKSPACES = Paths.get(workingDirectory, defaultWorkspacesFile); //$NON-NLS-1$
     }
 
     /**
@@ -181,12 +184,21 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         Location instanceLoc = Platform.getInstanceLocation();
 
-        CommandLine commandLine = DBeaverCommandLine.getCommandLine();
+        CommandLine commandLine = DBeaverCommandLine.getInstance().getCommandLine();
         String defaultHomePath = getDefaultInstanceLocation();
-        if (DBeaverCommandLine.handleCommandLine(commandLine, defaultHomePath)) {
+        if (DBeaverCommandLine.getInstance()
+            .handleCommandLineAsClient(commandLine, defaultHomePath)
+            .getPostAction() == CmdProcessResult.PostAction.SHUTDOWN
+        ) {
             if (!Log.isQuietMode()) {
                 System.err.println("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
             }
+            return IApplication.EXIT_OK;
+        }
+
+        if (!isWorkspaceSwitchingAllowed() && !WORKSPACE_DIR_CURRENT.equals(defaultHomePath)) {
+            log.error("Workspace switching is not allowed when participating in the early access program. Exiting "
+                + GeneralUtils.getProductName() + ".");
             return IApplication.EXIT_OK;
         }
 
@@ -227,7 +239,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Custom parameters
         try {
             headlessMode = true;
-            if (DBeaverCommandLine.handleCustomParameters(commandLine)) {
+            CmdProcessResult cmdProcessResult = DBeaverCommandLine.getInstance().handleCustomParameters(commandLine);
+            if (cmdProcessResult.getPostAction() == CmdProcessResult.PostAction.SHUTDOWN) {
                 return IApplication.EXIT_OK;
             }
         } finally {
@@ -272,6 +285,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         DBWorkbench.getPlatform();
 
+        WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
         initializeApplication();
 
         // Run instance server
@@ -283,12 +297,13 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         TimezoneRegistry.overrideTimezone();
 
-        if (RuntimeUtils.isWindows()
-            && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
+        if (CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
-            && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
         ) {
-            System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
+            DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+            if (RuntimeUtils.isWindows() && preferenceStore.getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)) {
+                System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
+            }
         }
 
         // Prefs default
@@ -457,7 +472,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return isHeadlessMode() ? ConsoleUserInterface.class : DesktopUI.class;
     }
 
-    private String getDefaultInstanceLocation() {
+    public String getDefaultInstanceLocation() {
         String defaultHomePath = WORKSPACE_DIR_CURRENT;
         Location instanceLoc = Platform.getInstanceLocation();
         if (instanceLoc.isSet()) {
@@ -638,8 +653,22 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return true;
     }
 
-    public static void writeWorkspaceInfo() {
-        final Path metadataFolder = GeneralUtils.getMetadataFolder();
+    private void writeWorkspaceInfo() {
+        Path defaultDir = getDefaultWorkingFolder();
+        Path metadataFolder;
+        if (defaultDir != null) {
+            metadataFolder = defaultDir.resolve(DBPWorkspace.METADATA_FOLDER);
+            if (!Files.exists(metadataFolder)) {
+                try {
+                    Files.createDirectories(metadataFolder);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.err.println("Error creating metadata folder: " + metadataFolder);
+                }
+            }
+        } else {
+            metadataFolder = GeneralUtils.getMetadataFolder();
+        }
         Properties props = BaseWorkspaceImpl.readWorkspaceInfo(metadataFolder);
         props.setProperty(VERSION_PROP_PRODUCT_NAME, GeneralUtils.getProductName());
         props.setProperty(VERSION_PROP_PRODUCT_VERSION, GeneralUtils.getProductVersion().toString());
@@ -718,6 +747,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     @Nullable
+    @Override
     public IInstanceController getInstanceServer() {
         return instanceServer;
     }

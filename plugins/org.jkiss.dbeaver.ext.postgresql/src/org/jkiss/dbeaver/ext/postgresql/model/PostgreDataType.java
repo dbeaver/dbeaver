@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -440,6 +440,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @Property(viewable = true, optional = true, order = 13)
     public PostgreDataType getElementType(DBRProgressMonitor monitor) {
+        if (typeType == PostgreTypeType.d) {
+            return getBaseType(monitor).getElementType(monitor);
+        }
         return elementTypeId == 0 ? null : getDatabase().getDataType(monitor, elementTypeId);
     }
 
@@ -520,7 +523,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @Property(category = CAT_MODIFIERS)
     public PostgreCollation getCollationId(DBRProgressMonitor monitor) throws DBException {
-        if (collationId != 0) {
+        if (collationId != 0 && getDataSource().getServerType().supportsCollations()) {
             return getDatabase().getCollation(monitor, collationId);
         }
         return null;
@@ -692,7 +695,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         final PostgreSchema owner = getParentObject();
         if (owner == null || owner.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
             return getName();
@@ -711,7 +714,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
 
         if (typeType == PostgreTypeType.d) {

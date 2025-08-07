@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,10 +100,10 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
     @Override
     public void saveDataSources(
-        DBRProgressMonitor monitor,
-        DataSourceConfigurationManager configurationManager,
-        DBPDataSourceConfigurationStorage configurationStorage,
-        List<T> localDataSources
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull List<T> localDataSources
     ) throws DBException, IOException {
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
@@ -369,7 +369,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     public boolean parseDataSources(
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
-        @NotNull DataSourceRegistry.ParseResults parseResults,
+        @NotNull DataSourceParseResults parseResults,
         @Nullable Collection<String> dataSourceIds
     ) throws DBException, IOException {
         var connectionConfigurationChanged = false;
@@ -618,7 +618,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 dataSource.forceSetSharedCredentials(JSONUtils.getBoolean(conObject,
                     RegistryConstants.ATTR_SHARED_CREDENTIALS));
                 dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
-                dataSource.setTemplate(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_TEMPLATE));
                 dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
                     .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
                 dataSource.setDetachedProcessEnabled(JSONUtils.getBoolean(conObject, ATTR_DPI_ENABLED));
@@ -791,17 +790,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
                 }
 
-                {
-                    // Extensions
-                    if (conObject.containsKey(RegistryConstants.TAG_PROPERTIES)) {
-                        // Backward compatibility
-                        dataSource.setExtensions(
-                            JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_PROPERTIES));
-                    } else {
-                        dataSource.setExtensions(
-                            JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_EXTENSIONS));
-                    }
-                }
                 dataSource.setTags(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_TAGS));
 
@@ -811,6 +799,21 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 preferenceProperties.putAll(
                     JSONUtils.deserializeStringMap(conObject, RegistryConstants.TAG_CUSTOM_PROPERTIES)
                 );
+
+                {
+                    // Extensions
+                    Map<String, Object> extensions = null;
+                    if (conObject.containsKey(RegistryConstants.TAG_PROPERTIES)) {
+                        // Backward compatibility
+                        extensions = JSONUtils.deserializeProperties(conObject, RegistryConstants.TAG_PROPERTIES);
+                    } else if (conObject.containsKey(RegistryConstants.TAG_EXTENSIONS)) {
+                        extensions = JSONUtils.deserializeProperties(conObject, RegistryConstants.TAG_EXTENSIONS);
+                    }
+                    if (extensions == null) {
+                        extensions = new LinkedHashMap<>();
+                    }
+                    dataSource.setExtensions(extensions);
+                }
 
                 // Virtual model
                 String vmID = CommonUtils.toString(conObject.get("virtual-model-id"), id);
@@ -1095,7 +1098,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         JSONUtils.fieldNE(json, RegistryConstants.TAG_DESCRIPTION, dataSource.getDescription());
         if (dataSource.isSavePassword()) JSONUtils.field(json, RegistryConstants.ATTR_SAVE_PASSWORD, true);
         if (dataSource.isSharedCredentials()) JSONUtils.field(json, RegistryConstants.ATTR_SHARED_CREDENTIALS, true);
-        if (dataSource.isTemplate()) JSONUtils.field(json, RegistryConstants.ATTR_TEMPLATE, true);
 
         DataSourceNavigatorSettings navSettings = dataSource.getNavigatorSettings();
         if (navSettings.isShowSystemObjects()) JSONUtils.field(json, ATTR_NAVIGATOR_SHOW_SYSTEM_OBJECTS, true);
@@ -1265,8 +1267,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             }
         }
 
-        // Extensions
-        JSONUtils.serializeProperties(json, RegistryConstants.TAG_EXTENSIONS, dataSource.getExtensions(), true);
         // Tags
         JSONUtils.serializeProperties(json, RegistryConstants.TAG_TAGS, dataSource.getTags(), true);
 
@@ -1286,6 +1286,9 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                 JSONUtils.serializeProperties(json, RegistryConstants.TAG_CUSTOM_PROPERTIES, props, true);
             }
         }
+
+        // Extensions
+        JSONUtils.serializeProperties(json, RegistryConstants.TAG_EXTENSIONS, dataSource.getExtensions(), true);
     }
 
     private void serializeModifyPermissions(@NotNull JsonWriter json, DBPDataSourcePermissionOwner permissionOwner) throws IOException {

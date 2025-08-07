@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.dashboard;
 import org.jkiss.dbeaver.model.DBIcon;
 
 public class DashboardIcons {
-    public static final DBIcon DASHBOARD = new DBIcon("dashboard", "dashboard.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DASHBOARD = new DBIcon("dashboard", "dashboard.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     static {
         DBIcon.loadIcons(DashboardIcons.class);

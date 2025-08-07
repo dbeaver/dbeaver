@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -36,6 +32,10 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class CubridTrigger extends GenericTableTrigger {
 
@@ -202,7 +202,7 @@ public class CubridTrigger extends GenericTableTrigger {
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         if (getTable().getDataSource().getSupportMultiSchema()) {
             return DBUtils.getFullQualifiedName(getDataSource(), getTable().getSchema(), this);
         } else {
@@ -212,7 +212,7 @@ public class CubridTrigger extends GenericTableTrigger {
 
     @Nullable
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (persisted) {
             StringBuilder ddl = new StringBuilder();
             ddl.append("CREATE TRIGGER ");

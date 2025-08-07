@@ -214,70 +214,77 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         if (this.iconPlain == null) {
             this.iconPlain = DBIcon.DATABASE_DEFAULT;
         }
+        if (copyFrom != null) {
+            this.categories = new ArrayList<>(copyFrom.categories);
+        } else {
+            this.categories = new ArrayList<>();
+        }
 
         makeIconExtensions();
         if (copyFrom != null) {
             // Copy props from source
-            this.category = copyFrom.category;
-            this.categories = new ArrayList<>(copyFrom.categories);
-            this.name = copyFrom.name;
-            this.description = copyFrom.description;
-            this.driverClassName = copyFrom.driverClassName;
-            this.driverDefaultHost = copyFrom.driverDefaultHost;
-            this.driverDefaultPort = copyFrom.driverDefaultPort;
-            this.driverDefaultDatabase = copyFrom.driverDefaultDatabase;
-            this.driverDefaultServer = copyFrom.driverDefaultServer;
-            this.driverDefaultUser = copyFrom.driverDefaultUser;
-            this.sampleURL = copyFrom.sampleURL;
-            this.dialectId = copyFrom.dialectId;
-
-            this.webURL = copyFrom.webURL;
-            this.propertiesWebURL = copyFrom.webURL;
-            this.databaseDocumentationSuffixURL = copyFrom.databaseDocumentationSuffixURL;
-            this.embedded = copyFrom.embedded;
-            this.propagateDriverProperties = copyFrom.propagateDriverProperties;
-            this.singleConnection = copyFrom.singleConnection;
-            this.threadSafe = copyFrom.threadSafe;
-            this.clientRequired = copyFrom.clientRequired;
-            this.supportsDriverProperties = copyFrom.supportsDriverProperties;
-            this.anonymousAccess = copyFrom.anonymousAccess;
-            this.allowsEmptyPassword = copyFrom.allowsEmptyPassword;
-            this.licenseRequired = copyFrom.licenseRequired;
-            this.customDriverLoader = copyFrom.customDriverLoader;
-            this.useURLTemplate = copyFrom.useURLTemplate;
-            this.customEndpointInformation = copyFrom.customEndpointInformation;
-            this.instantiable = copyFrom.instantiable;
-            this.promoted = copyFrom.promoted;
-            this.nativeClientHomes.addAll(copyFrom.nativeClientHomes);
-            for (DriverFileSource fs : copyFrom.fileSources) {
-                this.fileSources.add(new DriverFileSource(fs));
-            }
-            for (DBPDriverLibrary library : copyFrom.libraries) {
-                if (library instanceof DriverLibraryAbstract) {
-                    this.libraries.add(((DriverLibraryAbstract) library).copyLibrary(this));
-                } else {
-                    this.libraries.add(library);
-                }
-            }
-            this.mainPropertyDescriptors.addAll(copyFrom.mainPropertyDescriptors);
-            this.providerPropertyDescriptors.addAll(copyFrom.providerPropertyDescriptors);
-
-            this.defaultParameters.putAll(copyFrom.defaultParameters);
-            this.customParameters.putAll(copyFrom.customParameters);
-
-            this.defaultConnectionProperties.putAll(copyFrom.defaultConnectionProperties);
-            this.customConnectionProperties.putAll(copyFrom.customConnectionProperties);
-            this.configurationTypes.addAll(copyFrom.configurationTypes);
-            this.supportedPageFields.addAll(copyFrom.supportedPageFields);
-            this.supportsDistributedMode = copyFrom.supportsDistributedMode;
-            this.notAvailableDriver = copyFrom.notAvailableDriver;
-            this.nonAvailabilityTitle = copyFrom.nonAvailabilityTitle;
-            this.nonAvailabilityDescription = copyFrom.nonAvailabilityDescription;
-            this.nonAvailabilityReason = copyFrom.nonAvailabilityReason;
+            applyFrom(copyFrom);
         } else {
-            this.categories = new ArrayList<>();
             this.name = "";
         }
+    }
+
+    public void applyFrom(@NotNull DriverDescriptor copyFrom) {
+        this.category = copyFrom.category;
+        this.name = copyFrom.name;
+        this.description = copyFrom.description;
+        this.driverClassName = copyFrom.driverClassName;
+        this.driverDefaultHost = copyFrom.driverDefaultHost;
+        this.driverDefaultPort = copyFrom.driverDefaultPort;
+        this.driverDefaultDatabase = copyFrom.driverDefaultDatabase;
+        this.driverDefaultServer = copyFrom.driverDefaultServer;
+        this.driverDefaultUser = copyFrom.driverDefaultUser;
+        this.sampleURL = copyFrom.sampleURL;
+        this.dialectId = copyFrom.dialectId;
+
+        this.webURL = copyFrom.webURL;
+        this.propertiesWebURL = copyFrom.webURL;
+        this.databaseDocumentationSuffixURL = copyFrom.databaseDocumentationSuffixURL;
+        this.embedded = copyFrom.embedded;
+        this.propagateDriverProperties = copyFrom.propagateDriverProperties;
+        this.singleConnection = copyFrom.singleConnection;
+        this.threadSafe = copyFrom.threadSafe;
+        this.clientRequired = copyFrom.clientRequired;
+        this.supportsDriverProperties = copyFrom.supportsDriverProperties;
+        this.anonymousAccess = copyFrom.anonymousAccess;
+        this.allowsEmptyPassword = copyFrom.allowsEmptyPassword;
+        this.licenseRequired = copyFrom.licenseRequired;
+        this.customDriverLoader = copyFrom.customDriverLoader;
+        this.useURLTemplate = copyFrom.useURLTemplate;
+        this.customEndpointInformation = copyFrom.customEndpointInformation;
+        this.instantiable = copyFrom.instantiable;
+        this.promoted = copyFrom.promoted;
+        this.nativeClientHomes.addAll(copyFrom.nativeClientHomes);
+        for (DriverFileSource fs : copyFrom.fileSources) {
+            this.fileSources.add(new DriverFileSource(fs));
+        }
+        for (DBPDriverLibrary library : copyFrom.libraries) {
+            if (library instanceof DriverLibraryAbstract) {
+                this.libraries.add(((DriverLibraryAbstract) library).copyLibrary(this));
+            } else {
+                this.libraries.add(library);
+            }
+        }
+        this.mainPropertyDescriptors.addAll(copyFrom.mainPropertyDescriptors);
+        this.providerPropertyDescriptors.addAll(copyFrom.providerPropertyDescriptors);
+
+        this.defaultParameters.putAll(copyFrom.defaultParameters);
+        this.customParameters.putAll(copyFrom.customParameters);
+
+        this.defaultConnectionProperties.putAll(copyFrom.defaultConnectionProperties);
+        this.customConnectionProperties.putAll(copyFrom.customConnectionProperties);
+        this.configurationTypes.addAll(copyFrom.configurationTypes);
+        this.supportedPageFields.addAll(copyFrom.supportedPageFields);
+        this.supportsDistributedMode = copyFrom.supportsDistributedMode;
+        this.notAvailableDriver = copyFrom.notAvailableDriver;
+        this.nonAvailabilityTitle = copyFrom.nonAvailabilityTitle;
+        this.nonAvailabilityDescription = copyFrom.nonAvailabilityDescription;
+        this.nonAvailabilityReason = copyFrom.nonAvailabilityReason;
     }
 
     // Predefined driver constructor
@@ -311,7 +318,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.singleConnection = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SINGLE_CONNECTION));
         this.origThreadSafe = this.threadSafe = CommonUtils.getBoolean(config.getAttribute("threadSafe"), true);
         this.origAnonymousAccess = this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
-        this.origAllowsEmptyPassword = this.allowsEmptyPassword = CommonUtils.getBoolean("allowsEmptyPassword");
+        this.origAllowsEmptyPassword = this.allowsEmptyPassword = CommonUtils.getBoolean(config.getAttribute("allowsEmptyPassword"));
         this.origPropagateDriverProperties = this.propagateDriverProperties =
             CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_PROPAGATE_DRIVER_PROPERTIES));
         this.licenseRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_LICENSE_REQUIRED));
@@ -927,8 +934,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public List<DBPNativeClientLocation> getNativeClientLocations() {
         List<DBPNativeClientLocation> ids = new ArrayList<>();
         for (NativeClientDescriptor nc : getProviderDescriptor().getNativeClients()) {
-            if (nc.findDistribution() != null) {
-                ids.add(new RemoteNativeClientLocation(nc));
+            if (nc.findDistribution(this) != null) {
+                ids.add(new RemoteNativeClientLocation(nc, this));
             }
         }
         ids.addAll(nativeClientHomes);
@@ -1001,8 +1008,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public boolean addDriverLibrary(DBPDriverLibrary descriptor, boolean resetCache) {
-        if (resetCache) {
-            descriptor.resetVersion();
+        if (resetCache && descriptor instanceof DriverLibraryMavenArtifact mavenLib) {
+            mavenLib.resetVersion();
             resetDriverInstance();
         }
         if (!libraries.contains(descriptor)) {
@@ -1245,11 +1252,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public DBPDriver createOriginalCopy() {
         DriverDescriptor driverCopy = getProviderDescriptor().createDriver(this);
         for (DBPDriverLibrary lib : this.origLibraries) {
-            if (lib instanceof DriverLibraryLocal && !lib.isCustom()) {
-                DBPDriverLibrary libCopy = ((DriverLibraryLocal) lib).copyLibrary(this);
+            if (lib instanceof DriverLibraryLocal libraryLocal && !lib.isCustom()) {
+                DBPDriverLibrary libCopy = libraryLocal.copyLibrary(this);
                 libCopy.setDisabled(false);
-                if (libCopy instanceof DriverLibraryLocal) {
-                    ((DriverLibraryLocal) libCopy).setUseOriginalJar(true);
+                if (libCopy instanceof DriverLibraryLocal libraryLocal2) {
+                    libraryLocal2.setUseOriginalJar(true);
                 }
                 driverCopy.libraries.add(libCopy);
             }
@@ -1486,6 +1493,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean supportsVirtualKeys() {
+        return true;
     }
 
 }

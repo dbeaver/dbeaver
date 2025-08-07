@@ -95,7 +95,8 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_rename_database_object;
     public static String actions_navigator_rename_database_object_exception_title;
     public static String actions_navigator_rename_database_object_exception_message;
-    
+    public static String actions_navigator_configure_filters;
+    public static String actions_navigator_reset_search;
 
     public static String dialog_project_create_wizard_error_already_exists;
     public static String dialog_project_create_wizard_error_cannot_create;
@@ -135,6 +136,8 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_statistics_tip;
     public static String pref_page_database_general_label_show_node_actions;
     public static String pref_page_database_general_label_show_node_actions_tip;
+    public static String pref_page_database_general_label_show_child_count;
+    public static String pref_page_database_general_label_show_child_count_tip;
     public static String pref_page_database_general_label_color_all_nodes;
     public static String pref_page_database_general_label_color_all_nodes_tip;
     public static String pref_page_database_general_label_show_folder_placeholders;
@@ -269,8 +272,12 @@ public class UINavigatorMessages extends NLS {
     public static String navigator_project_explorer_columns_owner_description;
     public static String navigator_project_explorer_columns_type_text;
     public static String navigator_project_explorer_columns_type_description;
-    public static String navigator_filtered_nodes_text;
-    public static String navigator_filtered_nodes_tip;
+    public static String navigator_nodes_filtered_by_settings_text;
+    public static String navigator_nodes_filtered_by_settings_tip;
+    public static String navigator_nodes_filtered_by_search_text;
+    public static String navigator_nodes_filtered_by_search_tip;
+    public static String navigator_nodes_filtered_by_search_and_filter_text;
+    public static String navigator_nodes_filtered_by_search_and_filter_tip;
 
     public static String datasource_list_action_empty;
     public static String filter_connection_name_placeholder;

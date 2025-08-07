@@ -22,20 +22,22 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatMessage;
+import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // All these ideally should be a part of a given AI engine
 public class AITextUtils {
@@ -46,16 +48,42 @@ public class AITextUtils {
         // prevents instantiation
     }
 
+    // Matches ```<optional language>\n ... \n```
+    private static final Pattern CODE_BLOCK_PATTERN =
+        Pattern.compile("```[\\w+]*\\R([\\s\\S]*?)\\R```");
+
+    /**
+     * Extracts the contents of the first Markdown code block in the input.
+     * If the code ends with a semicolon, it’s removed.
+     *
+     * @param markdown the full Markdown string
+     * @return the inner code without trailing semicolon, or an empty string if none found
+     */
+    public static String extractCode(String markdown) {
+        Matcher matcher = CODE_BLOCK_PATTERN.matcher(markdown);
+        if (matcher.find()) {
+            String code = matcher.group(1).trim();
+            // Remove trailing semicolon if present
+            if (code.endsWith(";")) {
+                code = code.substring(0, code.length() - 1);
+            }
+            return code;
+        }
+
+        return markdown;
+    }
+
+
     @NotNull
     public static String convertToSQL(
-        @NotNull DAIChatMessage prompt,
+        @NotNull AIMessage prompt,
         @NotNull MessageChunk[] response,
         @Nullable DBPDataSource dataSource
     ) {
         final StringBuilder builder = new StringBuilder();
 
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AICompletionConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
-            builder.append(SQLUtils.generateCommentLine(dataSource, prompt.content()));
+        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_INCLUDE_SOURCE_TEXT_IN_QUERY_COMMENT)) {
+            builder.append(SQLUtils.generateCommentLine(dataSource, prompt.getContent()));
         }
 
         for (MessageChunk chunk : response) {
@@ -138,7 +166,7 @@ public class AITextUtils {
     }
 
     @NotNull
-    public static List<DBSEntity> loadCustomEntities(
+    public static List<DBSObject> loadCustomEntities(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSource dataSource,
         @NotNull Set<String> ids
@@ -155,17 +183,15 @@ public class AITextUtils {
     }
 
     @NotNull
-    private static List<DBSEntity> loadCheckedEntitiesById(
+    private static List<DBSObject> loadCheckedEntitiesById(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPProject project,
         @NotNull Set<String> ids
     ) throws DBException {
-        final List<DBSEntity> output = new ArrayList<>();
+        final List<DBSObject> output = new ArrayList<>();
 
         for (String id : ids) {
-            if (DBUtils.findObjectById(monitor, project, id) instanceof DBSEntity entity) {
-                output.add(entity);
-            }
+            output.add(DBUtils.findObjectById(monitor, project, id));
             monitor.worked(1);
         }
 
