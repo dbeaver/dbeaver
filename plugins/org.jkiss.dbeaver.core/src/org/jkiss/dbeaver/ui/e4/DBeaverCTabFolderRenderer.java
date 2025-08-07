@@ -172,6 +172,9 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
                 try {
                     return getConnectionColor(ref.getEditorInput());
                 } catch (Exception e) {
+                    // If for whatever reason we failed to retrieve the editor input with an exception,
+                    // it's likely to happen again. To avoid such scenarios, we set this key so it will
+                    // cause all future calls for this part to return early.
                     part.getTransientData().put(PART_SKIP_KEY, Boolean.TRUE);
                     log.debug("Cannot get editor input for part: " + part.getElementId(), e);
                 }
