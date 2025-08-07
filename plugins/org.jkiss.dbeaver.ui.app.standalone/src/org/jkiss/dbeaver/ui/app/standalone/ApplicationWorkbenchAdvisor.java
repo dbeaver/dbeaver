@@ -536,7 +536,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             return;
         }
 
-        if (!WorkbenchPatcher.needsPerspectiveReset(Workbench.getInstance().getApplication())) {
+        if (!WorkbenchPatcher.needsPerspectiveReset(Workbench.getInstance())) {
             return;
         }
 

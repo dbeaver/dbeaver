@@ -17,11 +17,11 @@
 package org.jkiss.dbeaver.ui.app.standalone.internal;
 
 import org.eclipse.core.runtime.*;
-import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.MApplicationElement;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityEditor;
 import org.eclipse.ui.internal.menus.MenuHelper;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
@@ -68,12 +68,12 @@ public final class WorkbenchPatcher {
      * <p>
      * If this method returns {@code true}, it's advised to call {@link IWorkbenchPage#resetPerspective()}.
      *
-     * @param application the application model driving the workbench
+     * @param workbench the workbench
      * @return {@code true} if the perspective must be reset, {@code false} otherwise
      */
-    public static boolean needsPerspectiveReset(@NotNull MApplication application) {
+    public static boolean needsPerspectiveReset(@NotNull Workbench workbench) {
         // Collect a set of descriptors from the application model
-        Set<String> descriptors = application.getDescriptors().stream()
+        Set<String> descriptors = workbench.getApplication().getDescriptors().stream()
             .map(MApplicationElement::getElementId)
             .collect(Collectors.toSet());
 
