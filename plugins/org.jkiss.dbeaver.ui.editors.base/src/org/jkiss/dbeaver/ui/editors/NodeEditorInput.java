@@ -21,6 +21,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -46,6 +47,7 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
         this.nodePath = nodePath;
     }
 
+    @Nullable
     @Override
     public DBNNode getNavigatorNode() {
         if (node == null) {
@@ -75,7 +77,8 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
 
     @Override
     public ImageDescriptor getImageDescriptor() {
-        return DBeaverIcons.getImageDescriptor(getNavigatorNode().getNodeIconDefault());
+        DBNNode node = getNavigatorNode();
+        return node == null ? null : DBeaverIcons.getImageDescriptor(node.getNodeIconDefault());
     }
 
     @Override

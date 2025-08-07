@@ -124,6 +124,7 @@ public class FolderEditor extends EditorPart implements INavigatorModelView, IRe
         return false;
     }
 
+    @Nullable
     @Override
     public DBNNode getRootNode() {
         return getEditorInput().getNavigatorNode();
