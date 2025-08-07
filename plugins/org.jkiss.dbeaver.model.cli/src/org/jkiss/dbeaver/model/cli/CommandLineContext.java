@@ -55,7 +55,7 @@ public class CommandLineContext implements AutoCloseable {
 
     @NotNull
     public List<Object> getResults() {
-        return List.of(results);
+        return List.copyOf(results);
     }
 
     public void addCloseHandler(@NotNull Runnable closeHandler) {
