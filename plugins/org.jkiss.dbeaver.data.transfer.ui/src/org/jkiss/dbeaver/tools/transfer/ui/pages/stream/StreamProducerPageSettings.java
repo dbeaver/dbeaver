@@ -62,9 +62,10 @@ import org.jkiss.utils.IOUtils;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(StreamProducerPageSettings.class);
@@ -409,8 +410,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
             getWizard().getSettings().getProcessorProperties());
         propsEditor.loadProperties(propertySource);
 
-        // Init pipes
-        reloadPipes();
+        initPipes();
 
         updatePageCompletion();
 
@@ -500,10 +500,34 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
         updateBrowseButtons();
     }
 
+    private void initPipes() {
+        DataTransferSettings settings = getWizard().getSettings();
+        boolean producersAreNotInitialized = settings.getDataPipes().stream().anyMatch(
+            pipe ->
+                pipe.getProducer() instanceof StreamTransferProducer streamProducer &&
+                streamProducer.getEntityMapping() == null
+        );
+
+        IDataTransferProducer<?>[] initProducers = settings.getInitProducers();
+        IDataTransferConsumer<?, ?>[] initConsumers = settings.getInitConsumers();
+        if (producersAreNotInitialized && initConsumers != null && initProducers.length == initConsumers.length) {
+            List<DataTransferPipe> dataPipes = IntStream.range(0, initProducers.length)
+                .mapToObj(i -> new DataTransferPipe(initProducers[i], initConsumers[i]))
+                .collect(Collectors.toList());
+            settings.setDataPipes(dataPipes, false);
+        }
+
+        reloadPipes();
+    }
+
     private void updateBrowseButtons() {
         boolean hasSelection = filesTable.getSelection().length > 0;
-        if (tiOpenLocal != null) tiOpenLocal.setEnabled(hasSelection);
-        if (tiOpenRemote != null) tiOpenRemote.setEnabled(hasSelection);
+        if (tiOpenLocal != null) {
+            tiOpenLocal.setEnabled(hasSelection);
+        }
+        if (tiOpenRemote != null) {
+            tiOpenRemote.setEnabled(hasSelection);
+        }
     }
 
     private DataTransferProcessorDescriptor getProducerProcessor() {
