@@ -33,5 +33,9 @@ public class AIConstants {
     public static final String AI_RESPONSE_LANGUAGE = "ai.language";
 
     public static final String AI_MODEL_PLUGIN_ID = "org.jkiss.dbeaver.model.ai";
+
+    public static final String AI_CONFIRM_SQL = "ai.confirmation.sql";
+    public static final String AI_CONFIRM_DML = "ai.confirmation.dml";
+    public static final String AI_CONFIRM_DDL = "ai.confirmation.ddl";
 }
 

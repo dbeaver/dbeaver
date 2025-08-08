@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
@@ -38,7 +37,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Array;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.*;
 
 public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
@@ -127,32 +125,6 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
             }
         } catch (DBException e) {
             throw new DBCException("Can't extract array data from Java array", e);
-        }
-    }
-
-    @Override
-    protected void bindParameter(
-        JDBCSession session,
-        JDBCPreparedStatement statement,
-        DBSTypedObject paramType,
-        int paramIndex,
-        Object value
-    ) throws DBCException, SQLException {
-        if (value instanceof JDBCCollection collection && !collection.isNull()) {
-            String arrayTypeName = paramType.getTypeName();
-            boolean nonNullableComponentType = !arrayTypeName.contains("Nullable");
-            boolean arrayHasNullValues = Arrays.stream(collection.toArray()).anyMatch(Objects::isNull);
-            if (nonNullableComponentType && arrayHasNullValues) {
-                throw new DBCException("Array of non-nullable types \"" + arrayTypeName + "\" has null values");
-            }
-
-            statement.setObject(
-                paramIndex,
-                getValueDisplayString(paramType, value, DBDDisplayFormat.NATIVE),
-                Types.OTHER
-            );
-        } else {
-            super.bindParameter(session, statement, paramType, paramIndex, value);
         }
     }
 
@@ -267,7 +239,7 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
             arrayType = (ClickhouseArrayType) ClickhouseTypeParser.getType(
                 session.getProgressMonitor(),
                 (ClickhouseDataSource) session.getDataSource(),
-                type.getTypeName()
+                type.getFullTypeName()
             );
         } catch (DBException e) {
             throw new DBCException("Can't resolve array data type " + type.getFullTypeName());

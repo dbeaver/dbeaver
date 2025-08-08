@@ -181,9 +181,9 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput, ILazyEdito
         return null;
     }
 
+    @Nullable
     @Override
-    public DBNDatabaseNode getNavigatorNode()
-    {
+    public DBNDatabaseNode getNavigatorNode() {
         return null;
     }
 

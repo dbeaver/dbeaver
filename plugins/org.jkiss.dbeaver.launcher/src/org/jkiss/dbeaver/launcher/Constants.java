@@ -155,6 +155,8 @@ public class Constants {
     public static final String DBEAVER_INSTANCE_PROPS = "dbeaver-instance.properties";
     public static final String PROPERTY_PORT = "port";
 
+    public static final String ARG_FORCE_CLI_MODE = "-cli-mode";
+
     public static final String PRODUCT_TEAM = "com.dbeaver.app.team";
     public static final String PRODUCT_CLOUDBEAVER   = "io.cloudbeaver";
 

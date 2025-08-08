@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.app.standalone;
+package org.jkiss.dbeaver.model.cli.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.model.cli.ICommandLineParameterHandler;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
@@ -29,6 +30,7 @@ public class CommandLineParameterDescriptor {
     private final boolean exitAfterExecute;
     private final boolean exclusiveMode;
     private final boolean forceNewInstance;
+    private final boolean contextInitializer;
     private final ICommandLineParameterHandler handler;
 
     public CommandLineParameterDescriptor(IConfigurationElement config) throws Exception {
@@ -39,6 +41,7 @@ public class CommandLineParameterDescriptor {
         this.exitAfterExecute = CommonUtils.toBoolean(config.getAttribute("exitAfterExecute"));
         this.exclusiveMode = CommonUtils.toBoolean(config.getAttribute("exclusiveMode"));
         this.forceNewInstance = CommonUtils.toBoolean(config.getAttribute("forceNewInstance"));
+        this.contextInitializer = CommonUtils.toBoolean(config.getAttribute("contextInitializer"));
         Bundle cBundle = Platform.getBundle(config.getContributor().getName());
         Class<?> implClass = cBundle.loadClass(config.getAttribute("handler"));
         handler = (ICommandLineParameterHandler) implClass.getConstructor().newInstance();
@@ -74,6 +77,14 @@ public class CommandLineParameterDescriptor {
 
     public String getName() {
         return name;
+    }
+
+    /**
+     * Returns true if this parameter is used to initialize the CommandLineContext.
+     * Context initializers are executed before any other handlers.
+     */
+    public boolean isContextInitializer() {
+        return contextInitializer;
     }
 }
 

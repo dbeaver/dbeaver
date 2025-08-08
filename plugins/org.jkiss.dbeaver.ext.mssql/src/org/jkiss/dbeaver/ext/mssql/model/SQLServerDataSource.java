@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -134,6 +135,15 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
             info.setSupportsResultSetScroll(false);
         }
         return info;
+    }
+
+    @Override
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
+        int errorCode = SQLState.getCodeFromException(error);
+        if (errorCode == SQLServerConstants.EC_SQL_SERVER_LOGON_FAILED) {
+            return ErrorType.AUTHENTICATION_FAILED;
+        }
+        return super.discoverErrorType(error);
     }
 
     public boolean isDataWarehouseServer(DBRProgressMonitor monitor) {
