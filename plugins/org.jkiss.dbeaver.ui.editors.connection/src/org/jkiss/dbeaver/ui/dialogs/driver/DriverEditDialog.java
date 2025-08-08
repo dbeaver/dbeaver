@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.JFaceColors;
@@ -940,7 +941,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
         }
         for (DBPDriverLibrary newLib : libraries) {
-            if (newLib instanceof DriverLibraryMavenArtifact) {
+            if (newLib instanceof DriverLibraryMavenArtifact || newLib instanceof DriverLibraryBundle) {
                 continue;
             }
             if (!(newLib instanceof DriverLibraryLocal)) {
@@ -953,6 +954,11 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 log.error("Driver library doesn't exist: " + localFilePath + ".");
                 continue;
             }
+
+            if (isAppInstallationFile(localFilePath)) {
+                // Skip files which are part of app installation (e.g. licenses)
+                continue;
+            }
             String shortFileName = localFilePath.getFileName().toString();
 
             driver.getDefaultDriverLoader().removeLibraryFiles(newLib);
@@ -962,6 +968,19 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 syncAddDriverLibFile(newLib, localFilePath, shortFileName);
             }
         }
+    }
+
+    private boolean isAppInstallationFile(Path localFilePath) {
+        try {
+            Path appInstallPath = RuntimeUtils.getLocalPathFromURL(Platform.getInstallLocation().getURL());
+            if (localFilePath.startsWith(appInstallPath)) {
+                // Skip files which are part of app installation (e.g. licenses)
+                return true;
+            }
+        } catch (IOException e) {
+            log.error("Error detecting app path", e);
+        }
+        return false;
     }
 
     private void syncRemoveDriverLibFile(DBPDriverLibrary library) throws DBException {
@@ -1002,7 +1021,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
         if (isNewLib) {
             driverFilePath = driver.getId() + "/" + shortFileName;
         } else {
-            driverFilePath = DriverDescriptor.getExternalDriversStorageFolder().relativize(localFilePath).toString();
+            Path storageFolder = DriverDescriptor.getExternalDriversStorageFolder();
+            if (localFilePath.startsWith(storageFolder)) {
+                driverFilePath = storageFolder.relativize(localFilePath).toString();
+            } else {
+                driverFilePath = localFilePath.toString();
+            }
         }
 
         if (library instanceof DriverLibraryLocal libraryLocal && isNewLib) {

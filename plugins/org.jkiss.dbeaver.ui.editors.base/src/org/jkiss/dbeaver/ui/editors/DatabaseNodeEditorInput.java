@@ -60,8 +60,11 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
     }
 
     @Override
-    public String getToolTipText()
-    {
+    public String getToolTipText() {
+        if (getNavigatorNode() == null) {
+            return "";
+        }
+
         StringBuilder toolTip = new StringBuilder();
 
         for (DBNNode node = getNavigatorNode(); node != null; node = node.getParentNode()) {

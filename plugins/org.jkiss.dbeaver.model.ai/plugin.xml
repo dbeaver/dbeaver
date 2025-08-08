@@ -3,7 +3,8 @@
 
 <plugin>
     <extension-point id="com.dbeaver.ai.engine" name="AI integrations" schema="schema/com.dbeaver.ai.engine.exsd"/>
-    <extension-point id="com.dbeaver.ai.formatter" name="AI formatters" schema="schema/com.dbeaver.ai.formatter.exsd"/>
+    <extension-point id="com.dbeaver.ai.sql.formatter" name="AI SQL formatters" schema="schema/com.dbeaver.ai.sql.formatter.exsd"/>
+    <extension-point id="com.dbeaver.ai.schema.generator" name="AI Schema generators" schema="schema/com.dbeaver.ai.schema.generator.exsd"/>
     <extension-point id="com.dbeaver.ai.assistant" name="AI assistants" schema="schema/com.dbeaver.ai.assistant.exsd"/>
     <extension-point id="com.dbeaver.ai.engine.settingsSerDe" name="AI engine settings serde" schema="schema/com.dbeaver.ai.engine.settingsSerDe.exsd"/>
 
@@ -14,6 +15,7 @@
                 <property id="gpt.model" label="Model" type="string" validValues="gpt-3.5-turbo,gpt-3.5-turbo-instruct,gpt-4,gpt-4o,gpt-4-turbo,gpt-4o-mini" defaultValue="gpt-4o"/>
                 <property id="gpt.model.temperature" label="Temperature" type="integer" hint="Lower temperatures give more precise results"/>
                 <property id="gpt.log.query" label="Write AI queries to debug log" type="boolean" hint="Write GPT queries with metadata info in debug logs"/>
+                <property id="gpt.contextWindowSize" label="Context window size" type="integer" defaultValue="0" required="true"/>
             </propertyGroup>
         </completionEngine>
         <completionEngine id="copilot" label="Github Copilot" class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotFactory">
@@ -22,6 +24,7 @@
                 <property id="gpt.model.temperature" label="Temperature" type="integer" hint="Lower temperatures give more precise results"/>
                 <property id="gpt.model" label="Model" type="string" validValues="gpt-3.5-turbo,gpt-4" defaultValue="gpt-3.5-turbo"/>
                 <property id="gpt.log.query" label="Write AI queries to debug log" type="boolean" hint="Write GPT queries with metadata info in debug logs"/>
+                <property id="gpt.contextWindowSize" label="Context window size" type="integer" defaultValue="0" required="true"/>
             </propertyGroup>
         </completionEngine>
     </extension>
@@ -31,8 +34,12 @@
         <serde id="copilot" class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotSettingsSerDe"/>
     </extension>
 
-    <extension point="com.dbeaver.ai.formatter">
-        <formatter id="core" class="org.jkiss.dbeaver.model.ai.prompt.DefaultPromptFormatter"/>
+    <extension point="com.dbeaver.ai.sql.formatter">
+        <formatter id="core" class="org.jkiss.dbeaver.model.ai.impl.AISqlFormatterImpl"/>
+    </extension>
+
+    <extension point="com.dbeaver.ai.schema.generator">
+        <generator id="core" class="org.jkiss.dbeaver.model.ai.impl.AISchemaGeneratorImpl"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">

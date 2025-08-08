@@ -24,6 +24,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -74,7 +75,7 @@ public class SQLSuggestionTextPainter implements IPainter, PaintListener, LineBa
      * @param content the content of the hint to be displayed
      * @param cursorPosition the position of the cursor in editor
      */
-    public void showHint(String content, int cursorPosition) {
+    public void showHint(@NotNull String content, int cursorPosition) {
         if (!tryLock()) {
             return;
         }
