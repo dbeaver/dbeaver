@@ -18,16 +18,31 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.Collection;
 
 /**
  * Provides extra type description, not covered by the database model
  */
 public interface DBSTypeDescriptor {
+
+    enum Kind {
+        UNKNOWN,
+        SIMPLE,
+        INDEXABLE,
+        COMPOSITE
+    }
+
     /**
      * Returns underlying data type, if presented
      */
     @Nullable
-    DBSDataType getUnderlyingType();
+    default DBSDataType getUnderlyingType() {
+        return null;
+    }
 
     /**
      * Returns data type name
@@ -35,21 +50,54 @@ public interface DBSTypeDescriptor {
     @NotNull
     String getTypeName();
 
-    /**
-     * Returns true if described data type represents an indexable collection (like array)
-     */
-    boolean isIndexable();
+    @NotNull
+    default Kind getKind() {
+        return Kind.UNKNOWN;
+    }
+
+    @Nullable
+    default DBPDataKind getDataKind() {
+        return null;
+    }
 
     /**
      * Returns the amount of indexable dimensions for indexable data type
      */
-    int getIndexableDimensions();
+    default int getIndexableDimensions() {
+        return 0;
+    }
 
     /**
      * Returns type description for the result of the collection indexing
      * with the given amount of indexes or splicing specification
      */
     @Nullable
-    DBSTypeDescriptor getIndexableItemType(int depth, boolean[] slicingSpecOrNull);
+    default DBSTypeDescriptor getIndexableItemType(int depth, boolean[] slicingSpecOrNull) {
+        return null;
+    }
 
+    /**
+     * Returns collection for containing type descriptions for all the known named members of this type
+     */
+    @Nullable
+    default Collection<CompositeMemberInfo> getCompositeMembers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    /**
+     * Returns type description for the member having given name if such a member exists
+     */
+    @Nullable
+    default DBSTypeDescriptor findCompositeMember(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
+        return null;
+    }
+
+    /**
+     * Named member type information
+     */
+    record CompositeMemberInfo(
+        @NotNull String name,
+        @NotNull DBSTypeDescriptor type
+    ) {
+    }
 }
