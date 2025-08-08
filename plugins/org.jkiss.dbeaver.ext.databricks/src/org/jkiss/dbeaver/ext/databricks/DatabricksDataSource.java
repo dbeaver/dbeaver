@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,22 @@
  */
 package org.jkiss.dbeaver.ext.databricks;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 public class DatabricksDataSource extends GenericDataSource {
 
@@ -51,4 +59,19 @@ public class DatabricksDataSource extends GenericDataSource {
         return CommonUtils.equalObjects(DatabricksConstants.DRIVER_CLASS_LEGACY, getContainer().getDriver().getDriverClassName());
     }
 
+    @NotNull
+    @Override
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        JDBCExecutionContext context,
+        String purpose,
+        DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        String userAgent = URLEncoder.encode(
+            GeneralUtils.getProductName() + "/" + GeneralUtils.getProductVersion(),
+            StandardCharsets.UTF_8
+        );
+        connectionInfo.setProperty(DatabricksConstants.USER_AGENT_ENTRY, userAgent);
+        return super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+    }
 }

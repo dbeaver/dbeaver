@@ -14,11 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
+package org.jkiss.dbeaver.ui.navigator.database.load;
 
-import com.google.gson.annotations.SerializedName;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
-import java.util.List;
+public abstract class ContextMenuTreeNodeSpecial extends TreeNodeSpecial {
+    protected ContextMenuTreeNodeSpecial(DBNNode parent) {
+        super(parent);
+    }
 
-public record CopilotModels(@SerializedName("data") List<CopilotModel> data) {
+    @Override
+    public Image getImage(Object element) {
+        return null;
+    }
+
+    public abstract void fillContextMenu(@NotNull MenuManager menu, @NotNull DatabaseNavigatorTree navigatorTree);
 }
