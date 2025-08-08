@@ -833,6 +833,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 SQLState.SQL_23505.getCode().equals(sqlState)) {
                 return ErrorType.UNIQUE_KEY_VIOLATION;
             }
+            if (SQLState.SQL_28000.getCode().equals(sqlState) ||
+                SQLState.SQL_28P01.getCode().equals(sqlState)) {
+                return ErrorType.AUTHENTICATION_FAILED;
+            }
         }
         if (CommonUtils.getRootCause(error) instanceof SocketException) {
             return ErrorType.CONNECTION_LOST;

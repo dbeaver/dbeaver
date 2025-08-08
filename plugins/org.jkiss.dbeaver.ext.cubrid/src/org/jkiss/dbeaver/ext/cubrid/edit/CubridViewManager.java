@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
         boolean isDBAGroup = dataSource.isDBAGroup();
         boolean supportsMultiSchema = dataSource.getSupportMultiSchema();
         boolean isCurrentUser = user.getName().equalsIgnoreCase(dataSource.getCurrentUser());
-        return isDBAGroup || supportsMultiSchema || isCurrentUser;
+        return isDBAGroup || supportsMultiSchema || isCurrentUser || !dataSource.isShard();
     }
 
     @NotNull
@@ -63,11 +63,12 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
         @NotNull DBECommandContext context,
         @Nullable Object container,
         @Nullable Object copyFrom,
-        @NotNull Map<String, Object> options) {
+        @NotNull Map<String, Object> options
+    ) {
         GenericStructContainer structContainer = (GenericStructContainer) container;
         String tableName = getNewChildName(monitor, structContainer, SQLTableManager.BASE_VIEW_NAME);
         GenericTableBase viewImpl = structContainer.getDataSource().getMetaModel().createTableOrViewImpl(
-                structContainer, tableName, GenericConstants.TABLE_TYPE_VIEW, null);
+            structContainer, tableName, GenericConstants.TABLE_TYPE_VIEW, null);
         if (viewImpl instanceof GenericView) {
             ((GenericView) viewImpl).setObjectDefinitionText("\n");
         }
@@ -76,27 +77,30 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
 
     @Override
     protected void addObjectCreateActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectCreateCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         createOrReplaceViewQuery(actions, command);
     }
 
     @Override
     protected void addObjectModifyActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actionList,
-            @NotNull ObjectChangeCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         createOrReplaceViewQuery(actionList, command);
     }
 
     private void createOrReplaceViewQuery(
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull DBECommandComposite<GenericTableBase, PropertyHandler> command) {
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull DBECommandComposite<GenericTableBase, PropertyHandler> command
+    ) {
         CubridView view = (CubridView) command.getObject();
         StringBuilder query = new StringBuilder(200);
         String viewDDL = view.getDDL();
@@ -108,7 +112,7 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
             query.append("CREATE VIEW " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) + "\nAS ");
             query.append(viewDDL);
             if (hasComment && view.getDescription() != null) {
-                query.append("\nCOMMENT = " + SQLUtils.quoteString(view, CommonUtils.notEmpty(view.getDescription())));
+                query.append("\nCOMMENT = ").append(SQLUtils.quoteString(view, CommonUtils.notEmpty(view.getDescription())));
             }
         } else {
             if (command.hasProperty(DBConstants.PARAM_OBJECT_DEFINITION_TEXT)) {
@@ -127,11 +131,12 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
 
     @Override
     protected void addObjectRenameActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectRenameCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridView view = (CubridView) command.getObject();
         boolean isSupportMultiSchema = view.getDataSource().getSupportMultiSchema();
         String schemaName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(view.getContainer()) + "." : "";
@@ -143,21 +148,25 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
 
     @Override
     public void renameObject(
-            @NotNull DBECommandContext commandContext,
-            @NotNull GenericTableBase object,
-            @NotNull Map<String, Object> options,
-            @NotNull String newName)
-            throws DBException {
-        processObjectRename(commandContext, object, options, newName);
+        @NotNull DBECommandContext commandContext,
+        @NotNull GenericTableBase object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    )
+    throws DBException {
+        if (!((CubridDataSource) object.getDataSource()).isShard()) {
+            processObjectRename(commandContext, object, options, newName);
+        }
     }
 
     @Override
     protected void addObjectExtraActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridView view = (CubridView) command.getObject();
         boolean isDBAGroup = view.getDataSource().isDBAGroup();
         boolean isSupportMultiSchema = view.getDataSource().getSupportMultiSchema();
@@ -173,5 +182,20 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
                 "ALTER VIEW " + (isSupportMultiSchema ? DBUtils.getQuotedIdentifier(view.getContainer()) + "." : "")
                 + DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName()) + " OWNER TO "
                 + DBUtils.getQuotedIdentifier(view.getSchema())));
+    }
+
+    @Override
+    public boolean canRenameObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canEditObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
     }
 }

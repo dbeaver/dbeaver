@@ -174,7 +174,13 @@ public class AIAssistantImpl implements AIAssistant {
      */
     @Override
     public boolean hasValidConfiguration() throws DBException {
-        return getActiveEngine().hasValidConfiguration();
+        AIEngineSettings<?> activeEngineConfiguration = getActiveEngineConfiguration();
+        if (activeEngineConfiguration == null) {
+            log.warn("No active AI engine configuration found");
+            return false;
+        }
+
+        return activeEngineConfiguration.isValid();
     }
 
     protected MessageChunk[] processAndSplitCompletion(
@@ -229,13 +235,14 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIEngineRequest request
     ) throws DBException {
         try {
-            if (engine.isLoggingEnabled()) {
+            boolean loggingEnabled = isLoggingEnabled();
+            if (loggingEnabled) {
                 log.debug("Requesting completion [request=" + request + "]");
             }
 
             AIEngineResponse completionResponse = callWithRetry(() -> engine.requestCompletion(monitor, request));
 
-            if (engine.isLoggingEnabled()) {
+            if (loggingEnabled) {
                 log.debug("Received completion [response=" + completionResponse + "]");
             }
 
@@ -256,7 +263,7 @@ public class AIAssistantImpl implements AIAssistant {
     ) throws DBException {
         try {
             Flow.Publisher<AIEngineResponseChunk> publisher = callWithRetry(() -> engine.requestCompletionStream(monitor, request));
-            boolean loggingEnabled = engine.isLoggingEnabled();
+            boolean loggingEnabled = isLoggingEnabled();
 
             return subscriber -> {
                 if (loggingEnabled) {
@@ -288,9 +295,29 @@ public class AIAssistantImpl implements AIAssistant {
         DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
 
         return AIDdlGenerationOptions.builder()
-            .withMaxRequestTokens(engine.getMaxRequestSize(monitor))
+            .withMaxRequestTokens(engine.getContextWindowSize(monitor))
             .withSendObjectComment(preferenceStore.getBoolean(AIConstants.AI_SEND_DESCRIPTION))
             .withSendColumnTypes(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_SEND_TYPE_INFO))
             .build();
+    }
+
+    private boolean isLoggingEnabled() throws DBException {
+        AIEngineSettings<?> activeEngineConfiguration = getActiveEngineConfiguration();
+        if (activeEngineConfiguration == null) {
+            log.warn("No active AI engine configuration found");
+            return false;
+        }
+
+        return activeEngineConfiguration.isLoggingEnabled();
+    }
+
+    @Nullable
+    private AIEngineSettings<?> getActiveEngineConfiguration() throws DBException {
+        String activeEngine = settingsRegistry.getSettings().activeEngine();
+        if (activeEngine == null || activeEngine.isEmpty()) {
+            log.warn("No active AI engine configured");
+            return null;
+        }
+        return settingsRegistry.getSettings().getEngineConfiguration(activeEngine);
     }
 }

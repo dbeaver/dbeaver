@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,10 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridPartition;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn;
-import org.jkiss.dbeaver.ext.cubrid.model.CubridUser;
+import org.jkiss.dbeaver.ext.cubrid.model.*;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -45,13 +40,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class CubridTableManager extends GenericTableManager implements DBEObjectRenamer<GenericTableBase>
-{
+public class CubridTableManager extends GenericTableManager implements DBEObjectRenamer<GenericTableBase> {
     private static final Class<? extends DBSObject>[] CHILD_TYPES = CommonUtils.array(
-            CubridTableColumn.class,
-            GenericUniqueKey.class,
-            GenericTableForeignKey.class,
-            GenericTableIndex.class);
+        CubridTableColumn.class,
+        GenericUniqueKey.class,
+        GenericTableForeignKey.class,
+        CubridTableIndex.class
+    );
 
     @Override
     public boolean canCreateObject(@NotNull Object container) {
@@ -60,7 +55,7 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         boolean isDBAGroup = dataSource.isDBAGroup();
         boolean supportsMultiSchema = dataSource.getSupportMultiSchema();
         boolean isCurrentUser = user.getName().equalsIgnoreCase(dataSource.getCurrentUser());
-        return isDBAGroup || supportsMultiSchema || isCurrentUser;
+        return isDBAGroup || supportsMultiSchema || isCurrentUser || !dataSource.isShard();
     }
 
     @NotNull
@@ -71,7 +66,11 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
 
     @Nullable
     @Override
-    public Collection<? extends DBSObject> getChildObjects(DBRProgressMonitor monitor, GenericTableBase object, Class<? extends DBSObject> childType) throws DBException {
+    public Collection<? extends DBSObject> getChildObjects(
+        DBRProgressMonitor monitor,
+        GenericTableBase object,
+        Class<? extends DBSObject> childType
+    ) throws DBException {
         if (childType == CubridTableColumn.class) {
             return object.getAttributes(monitor);
         }
@@ -80,8 +79,8 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
 
     public void appendPartition(DBRProgressMonitor monitor, StringBuilder query, CubridTable table) throws DBException {
         List<CubridPartition> partitions = table.getPartitions(monitor);
-        String type = partitions.get(0).getTableType().toUpperCase();
-        String key = partitions.get(0).getExpression();
+        String type = partitions.getFirst().getTableType().toUpperCase();
+        String key = partitions.getFirst().getExpression();
         CubridTableColumn column = (CubridTableColumn) table.getAttribute(monitor, key);
 
         query.append(String.format("PARTITION BY %s (%s)", type, key));
@@ -117,11 +116,12 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
 
     @Override
     protected void addObjectModifyActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actionList,
-            @NotNull ObjectChangeCommand command,
-            @NotNull Map<String, Object> options) throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         if (command.getProperties().size() > 1 || command.getProperty("schema") == null) {
             CubridTable table = (CubridTable) command.getObject();
             boolean isSupportMultiSchema = table.getDataSource().getSupportMultiSchema();
@@ -137,12 +137,13 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
 
     @Override
     protected void appendTableModifiers(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull GenericTableBase genericTable,
-            @NotNull NestedObjectCommand command,
-            @NotNull StringBuilder query,
-            @NotNull boolean alter,
-            @NotNull Map<String, Object> options) throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase genericTable,
+        @NotNull NestedObjectCommand command,
+        @NotNull StringBuilder query,
+        boolean alter,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         CubridTable table = (CubridTable) genericTable;
         String delimiter = getDelimiter(options);
         String suffix = alter ? "," : delimiter;
@@ -154,7 +155,8 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
                 query.append(table.isReuseOID() ? "REUSE_OID" + suffix : "");
             }
         }
-        if ((!alter && table.getCollation().getName() != null) || (command.getProperty("charset") != null || command.getProperty("collation") != null)) {
+        if ((!alter && table.getCollation().getName() != null) || (command.getProperty("charset") != null
+            || command.getProperty("collation") != null)) {
             query.append("COLLATE ").append(table.getCollation().getName()).append(suffix);
         }
         if ((!alter || command.getProperty("autoIncrement") != null) && table.getAutoIncrement() > 0) {
@@ -174,11 +176,12 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
 
     @Override
     protected void addObjectExtraActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull NestedObjectCommand<GenericTableBase, PropertyHandler> command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridTable table = (CubridTable) command.getObject();
         boolean isDBAGroup = table.getDataSource().isDBAGroup();
         boolean isSupportMultiSchema = table.getDataSource().getSupportMultiSchema();
@@ -198,11 +201,12 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
 
     @Override
     protected void addObjectRenameActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectRenameCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridTable table = (CubridTable) command.getObject();
         boolean isSupportMultiSchema = table.getDataSource().getSupportMultiSchema();
         String schemaName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(table.getContainer()) + "." : "";
@@ -214,11 +218,28 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
 
     @Override
     public void renameObject(
-            @NotNull DBECommandContext commandContext,
-            @NotNull GenericTableBase object,
-            @NotNull Map<String, Object> options,
-            @NotNull String newName)
-            throws DBException {
-        processObjectRename(commandContext, object, options, newName);
+        @NotNull DBECommandContext commandContext,
+        @NotNull GenericTableBase object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    ) throws DBException {
+        if (!((CubridDataSource) object.getDataSource()).isShard()) {
+            processObjectRename(commandContext, object, options, newName);
+        }
+    }
+
+    @Override
+    public boolean canRenameObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canEditObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericTableBase object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
     }
 }

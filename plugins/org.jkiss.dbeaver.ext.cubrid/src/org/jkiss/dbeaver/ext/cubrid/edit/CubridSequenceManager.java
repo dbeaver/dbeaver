@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,17 +43,25 @@ public class CubridSequenceManager extends GenericSequenceManager {
 
     public static final String BASE_SERIAL_NAME = "new_serial";
 
-    @NotNull
     @Override
     public boolean canCreateObject(@NotNull Object container) {
         CubridUser user = (CubridUser) container;
         CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
         boolean supportsMultiSchema = dataSource.getSupportMultiSchema();
         boolean isCurrentUser = user.getName().equalsIgnoreCase(dataSource.getCurrentUser());
-        return supportsMultiSchema || isCurrentUser;
+        return supportsMultiSchema || isCurrentUser || !dataSource.isShard();
     }
 
-    @NotNull
+    @Override
+    public boolean canEditObject(GenericSequence object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericSequence object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
     @Override
     public long getMakerOptions(@NotNull DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
@@ -62,11 +70,12 @@ public class CubridSequenceManager extends GenericSequenceManager {
     @NotNull
     @Override
     protected GenericSequence createDatabaseObject(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBECommandContext context,
-            @Nullable Object container,
-            @Nullable Object copyFrom,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) {
         return new CubridSequence((GenericStructContainer) container, BASE_SERIAL_NAME);
     }
 
@@ -103,8 +112,7 @@ public class CubridSequenceManager extends GenericSequenceManager {
     public void buildOtherValue(@NotNull CubridSequence sequence, @NotNull StringBuilder sb, boolean hasComment) {
         if (sequence.getCycle()) {
             sb.append(" CYCLE");
-        }
-        else {
+        } else {
             sb.append(" NOCYCLE");
         }
         if (sequence.getCachedNum() != 0) {
@@ -117,11 +125,12 @@ public class CubridSequenceManager extends GenericSequenceManager {
 
     @Override
     protected void addObjectCreateActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectCreateCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridSequence sequence = (CubridSequence) command.getObject();
         boolean hasComment = command.hasProperty(DBConstants.PROP_ID_DESCRIPTION);
         actions.add(new SQLDatabasePersistAction("Create Serial", buildStatement(sequence, false, hasComment)));
@@ -129,11 +138,12 @@ public class CubridSequenceManager extends GenericSequenceManager {
 
     @Override
     protected void addObjectModifyActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actionList,
-            @NotNull ObjectChangeCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridSequence sequence = (CubridSequence) command.getObject();
         boolean hasComment = command.hasProperty(DBConstants.PROP_ID_DESCRIPTION);
         actionList.add(new SQLDatabasePersistAction("Alter Serial", buildStatement(sequence, true, hasComment)));
@@ -141,22 +151,26 @@ public class CubridSequenceManager extends GenericSequenceManager {
 
     @Override
     protected void addObjectDeleteActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull SQLObjectEditor<GenericSequence, GenericStructContainer>.ObjectDeleteCommand command,
-            @NotNull Map<String, Object> options) {
-        actions.add(new SQLDatabasePersistAction("Drop Serial",
-        "DROP SERIAL " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)));
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull SQLObjectEditor<GenericSequence, GenericStructContainer>.ObjectDeleteCommand command,
+        @NotNull Map<String, Object> options
+    ) {
+        actions.add(new SQLDatabasePersistAction(
+            "Drop Serial",
+            "DROP SERIAL " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)
+        ));
     }
 
     @Override
     protected void addObjectExtraActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull NestedObjectCommand<GenericSequence, SQLObjectEditor<GenericSequence, GenericStructContainer>.PropertyHandler> command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull NestedObjectCommand<GenericSequence, SQLObjectEditor<GenericSequence, GenericStructContainer>.PropertyHandler> command,
+        @NotNull Map<String, Object> options
+    ) {
         /* This body intentionally empty. */
     }
 }

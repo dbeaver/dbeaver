@@ -114,7 +114,8 @@ public class DriverLibraryBundle extends DriverLibraryAbstract {
                     } else if (Files.exists(libraryDir)) {
                         return libraryDir;
                     } else {
-                        log.error("Target path doesn't exist: " + localFilePath);
+                        // Extracted bundle?
+                        return localFilePath;
                     }
                 }
 

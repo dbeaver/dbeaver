@@ -41,36 +41,53 @@ public class CubridProcedureManager extends GenericProcedureManager {
         CubridUser user = (CubridUser) container;
         CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
         boolean isCurrentUser = user.getName().equalsIgnoreCase(dataSource.getCurrentUser());
-        return isCurrentUser;
+        return isCurrentUser || !dataSource.isShard();
+    }
+
+    @Override
+    public boolean canEditObject(GenericProcedure object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(GenericProcedure object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
     }
 
     @Override
     protected GenericProcedure createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final Object container,
-        Object from, Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        final Object container,
+        Object from,
+        Map<String, Object> options
+    ) {
         String type = options.get("container").toString();
         DBSProcedureType procedureType = type.equals("Functions")
-                ? DBSProcedureType.FUNCTION : DBSProcedureType.PROCEDURE;
+            ? DBSProcedureType.FUNCTION : DBSProcedureType.PROCEDURE;
         return new CubridProcedure((GenericStructContainer) container, procedureType);
     }
 
     @Override
     protected void addObjectCreateActions(
-        DBRProgressMonitor monitor,
-        DBCExecutionContext executionContext,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
         List<DBEPersistAction> actions,
         ObjectCreateCommand command,
-        Map<String, Object> options) throws DBCException {
+        @NotNull Map<String, Object> options
+    ) throws DBCException {
         CubridProcedure procedure = (CubridProcedure) command.getObject();
         actions.add(new SQLDatabasePersistAction("Create Procedure", procedure.getSource()));
     }
 
     @Override
-    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actionList,
-            @NotNull ObjectChangeCommand objectChangeCommand,
-            @NotNull Map<String, Object> options) {
+    protected void addObjectModifyActions(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand objectChangeCommand,
+        @NotNull Map<String, Object> options
+    ) {
         CubridProcedure procedure = (CubridProcedure) objectChangeCommand.getObject();
         actionList.add(new SQLDatabasePersistAction("Modify Procedure", procedure.getSource()));
     }

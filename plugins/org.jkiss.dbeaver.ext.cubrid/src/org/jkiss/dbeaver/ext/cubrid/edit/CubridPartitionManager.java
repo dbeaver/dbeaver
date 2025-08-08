@@ -16,11 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.edit;
 
-import java.util.Map;
-
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+
+import java.util.Map;
 
 public class CubridPartitionManager extends CubridTableManager {
 
@@ -41,10 +41,11 @@ public class CubridPartitionManager extends CubridTableManager {
 
     @Override
     public void renameObject(
-            @NotNull DBECommandContext commandContext,
-            @NotNull GenericTableBase object,
-            @NotNull Map<String, Object> options,
-            @NotNull String newName) {
+        @NotNull DBECommandContext commandContext,
+        @NotNull GenericTableBase object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    ) {
         /* This body intentionally empty. */
     }
 }

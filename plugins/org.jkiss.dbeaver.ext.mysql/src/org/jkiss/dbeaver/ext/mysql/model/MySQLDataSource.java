@@ -470,6 +470,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return this;
     }
 
+    public void resetUsers() {
+        this.users = null;
+    }
+
     MySQLTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
         throws DBException {
         if (CommonUtils.isEmpty(catalogName)) {
