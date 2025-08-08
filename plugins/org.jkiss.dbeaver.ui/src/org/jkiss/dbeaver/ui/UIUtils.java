@@ -2568,4 +2568,8 @@ public class UIUtils {
 
         gd.widthHint = widthHint;
     }
+
+    public static void setDefaultTextControlWidthHint(@NotNull Control widget) {
+        setWidgetWidthHint(widget, 150);
+    }
 }

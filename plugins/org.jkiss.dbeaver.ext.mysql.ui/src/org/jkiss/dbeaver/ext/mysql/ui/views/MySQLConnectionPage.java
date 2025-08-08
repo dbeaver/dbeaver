@@ -140,7 +140,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         hostText.setLayoutData(gd);
-        UIUtils.setWidgetWidthHint(hostText, 150);
+        UIUtils.setDefaultTextControlWidthHint(hostText);
         hostText.addModifyListener(textListener);
         addControlToGroup(GROUP_CONNECTION, hostLabel, hostText);
 
@@ -162,7 +162,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
-        UIUtils.setWidgetWidthHint(dbText, 150);
+        UIUtils.setDefaultTextControlWidthHint(dbText);
         dbText.addModifyListener(textListener);
         addControlToGroup(GROUP_CONNECTION, dbLabel, dbText);
 

@@ -90,7 +90,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
-            UIUtils.setWidgetWidthHint(hostText, 150);
+            UIUtils.setDefaultTextControlWidthHint(hostText);
             hostText.addModifyListener(textListener);
 
             UIUtils.createControlLabel(addrGroup, SnowflakeMessages.label_port);
@@ -99,7 +99,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
             gd.widthHint = UIUtils.getFontHeight(portText) * 7;
             portText.setLayoutData(gd);
-            UIUtils.setWidgetWidthHint(portText, 150);
+            UIUtils.setDefaultTextControlWidthHint(portText);
             portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
             portText.addModifyListener(textListener);
 
@@ -110,7 +110,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 3;
             dbText.setLayoutData(gd);
-            UIUtils.setWidgetWidthHint(dbText, 150);
+            UIUtils.setDefaultTextControlWidthHint(dbText);
             dbText.addModifyListener(textListener);
 
             UIUtils.createControlLabel(addrGroup, SnowflakeMessages.label_warehouse);
@@ -120,7 +120,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 3;
             warehouseText.setLayoutData(gd);
-            UIUtils.setWidgetWidthHint(warehouseText, 150);
+            UIUtils.setDefaultTextControlWidthHint(warehouseText);
             warehouseText.addModifyListener(textListener);
 
             UIUtils.createControlLabel(addrGroup, SnowflakeMessages.label_schema);
@@ -130,7 +130,7 @@ public class SnowflakeConnectionPage extends ConnectionPageWithAuth implements I
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 3;
             schemaText.setLayoutData(gd);
-            UIUtils.setWidgetWidthHint(schemaText, 150);
+            UIUtils.setDefaultTextControlWidthHint(schemaText);
             schemaText.addModifyListener(textListener);
         }
 

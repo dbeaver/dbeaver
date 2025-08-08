@@ -59,7 +59,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
             }
         }, () -> getSite().updateButtons(), true, this.getIntention());
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        UIUtils.setWidgetWidthHint(authModelSelector, 150);
+        UIUtils.setDefaultTextControlWidthHint(authModelSelector);
         ((GridData)authModelSelector.getLayoutData()).horizontalSpan = hSpan;
 
         if (site.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {

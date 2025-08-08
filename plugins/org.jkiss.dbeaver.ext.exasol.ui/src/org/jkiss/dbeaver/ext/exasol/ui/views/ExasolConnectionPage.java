@@ -84,7 +84,7 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
-            UIUtils.setWidgetWidthHint(hostText, 150);
+            UIUtils.setDefaultTextControlWidthHint(hostText);
             hostText.addModifyListener(textListener);
 
             backupHostLabel = UIUtils.createControlLabel(addrGroup, ExasolMessages.label_backup_host_list);
@@ -98,7 +98,7 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             backupHostText.setLayoutData(gd);
-            UIUtils.setWidgetWidthHint(backupHostText, 150);
+            UIUtils.setDefaultTextControlWidthHint(backupHostText);
             backupHostText.addModifyListener(textListener);
 
             useBackupHostList = UIUtils.createCheckbox(bhPlaceholder, ExasolMessages.label_use_backup_host_list, null, showBackupHosts, 1);

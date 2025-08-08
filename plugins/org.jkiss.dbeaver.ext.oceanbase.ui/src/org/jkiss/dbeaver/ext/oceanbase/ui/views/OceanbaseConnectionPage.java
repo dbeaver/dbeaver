@@ -81,7 +81,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
-            UIUtils.setWidgetWidthHint(hostText, 150);
+            UIUtils.setDefaultTextControlWidthHint(hostText);
             hostText.addModifyListener(textListener);
 
             Label portLabel = UIUtils.createControlLabel(hostGroup,
@@ -104,7 +104,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 3;
             databaseText.setLayoutData(gd);
-            UIUtils.setWidgetWidthHint(databaseText, 150);
+            UIUtils.setDefaultTextControlWidthHint(databaseText);
             databaseText.addModifyListener(textListener);
 
             Label tenantLabel = UIUtils.createControlLabel(hostGroup,
@@ -116,7 +116,7 @@ public class OceanbaseConnectionPage extends ConnectionPageWithAuth implements I
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalSpan = 3;
             tenantText.setLayoutData(gd);
-            UIUtils.setWidgetWidthHint(tenantText, 150);
+            UIUtils.setDefaultTextControlWidthHint(tenantText);
             tenantText.addModifyListener(textListener);
         }
 
