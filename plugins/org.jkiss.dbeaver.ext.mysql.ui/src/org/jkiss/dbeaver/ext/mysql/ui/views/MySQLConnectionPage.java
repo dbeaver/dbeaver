@@ -228,7 +228,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         if (showAllDatabases != null) {
             showAllDatabases.setSelection(CommonUtils.getBoolean(
                 connectionInfo.getProviderProperty(MySQLConstants.PROP_SHOW_ALL_DBS),
-                DBWorkbench.getPlatform().getPreferenceStore().getBoolean(MySQLConstants.PROP_SHOW_ALL_DBS)
+                MySQLConstants.PROP_SHOW_ALL_DBS_DEFAULT
             ));
         }
         final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;

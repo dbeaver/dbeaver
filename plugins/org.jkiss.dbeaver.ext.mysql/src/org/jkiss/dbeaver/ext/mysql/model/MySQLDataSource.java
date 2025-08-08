@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
@@ -865,13 +866,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             StringBuilder catalogQuery = new StringBuilder("show databases");
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
             DBPConnectionConfiguration configuration = owner.getContainer().getConnectionConfiguration();
-            boolean showAllDatabases = CommonUtils.getBoolean(configuration.getProviderProperty(MySQLConstants.PROP_SHOW_ALL_DBS), false);
-            if (!showAllDatabases &&
-                configuration.getDatabaseName() != null &&
-                !configuration.getDatabaseName().isEmpty()
-            ) {
+            boolean showAllDatabases = CommonUtils.getBoolean(
+                configuration.getProviderProperty(MySQLConstants.PROP_SHOW_ALL_DBS),
+                MySQLConstants.PROP_SHOW_ALL_DBS_DEFAULT
+            );
+            String databaseName = getDatabaseName(configuration);
+            if (!showAllDatabases && CommonUtils.isNotEmpty(databaseName)) {
                 catalogFilters = new DBSObjectFilter();
-                catalogFilters.addInclude(configuration.getDatabaseName());
+                catalogFilters.addInclude(databaseName);
             }
             if (catalogFilters != null) {
                 boolean supportsCondition = owner.supportsConditionForShowDatabasesStatement();
@@ -905,6 +907,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             return SQLState.SQL_42000.getCode().equals(sqlState);
         }
 
+        @Nullable
+        private String getDatabaseName(@NotNull DBPConnectionConfiguration configuration) {
+            try {
+                DBWUtils.ConnectivityParameters connectivityParameters = DBWUtils.getConnectivityParameters(
+                    configuration,
+                    getContainer().getDriver()
+                );
+                return connectivityParameters.databaseName();
+            } catch (DBException e) {
+                log.error(e);
+                return null;
+            }
+        }
     }
 
     @NotNull
