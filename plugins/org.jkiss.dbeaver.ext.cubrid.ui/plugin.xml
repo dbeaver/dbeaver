@@ -12,11 +12,8 @@
             description="General user settings"
             icon="#user">
         </editor>
-    </extension>
-    
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <configurator class="org.jkiss.dbeaver.ext.cubrid.ui.config.CubridProcedureConfigurator">
-            <objectType name="org.jkiss.dbeaver.ext.cubrid.model.CubridProcedure"/>
+        <configurator class="org.jkiss.dbeaver.ext.cubrid.ui.views.CubridTablePrimaryKeyConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey"/>
         </configurator>
     </extension>
 
