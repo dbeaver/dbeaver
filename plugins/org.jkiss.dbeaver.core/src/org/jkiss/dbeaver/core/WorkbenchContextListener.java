@@ -28,6 +28,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -118,8 +119,8 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
             }
 
             if (input instanceof NodeEditorInput nodeEditorInput) {
-                DBPProject editorProject = nodeEditorInput.getNavigatorNode().getOwnerProject();
-                if (Objects.equals(project, editorProject)) {
+                DBNNode node = nodeEditorInput.getNavigatorNode();
+                if (node != null && Objects.equals(project, node.getOwnerProject())) {
                     IEditorPart editor = editorReference.getEditor(false);
                     page.closeEditor(editor, false);
                     editor.dispose();

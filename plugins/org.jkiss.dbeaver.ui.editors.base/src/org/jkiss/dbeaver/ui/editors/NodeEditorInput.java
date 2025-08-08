@@ -20,7 +20,10 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -31,31 +34,33 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
  * NodeEditorInput
  */
 public class NodeEditorInput implements INavigatorEditorInput, IPersistableElement {
+    private static final Log log = Log.getLog(NodeEditorInput.class);
+
     private volatile DBNNode node;
     private String nodePath;
 
-    public NodeEditorInput(DBNNode node) {
+    public NodeEditorInput(@NotNull DBNNode node) {
         this.node = node;
     }
 
-    public NodeEditorInput(String nodePath) {
+    public NodeEditorInput(@NotNull String nodePath) {
         this.nodePath = nodePath;
     }
 
+    @Nullable
     @Override
     public DBNNode getNavigatorNode() {
         if (node == null) {
-            if (nodePath == null) {
-                throw new IllegalStateException("Invalid node input");
-            }
             try {
                 final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
                 node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), nodePath);
-                if (node == null) {
-                    throw new IllegalStateException("Navigator node '" + nodePath + "' not found");
-                }
             } catch (DBException e) {
-                throw new IllegalStateException("Cannot find navigator node '" + nodePath + "'", e);
+                log.debug("Cannot find navigator node '" + nodePath + "'", e);
+                return null;
+            }
+            if (node == null) {
+                log.debug("Navigator node '" + nodePath + "' not found");
+                return null;
             }
         }
         return node;
@@ -72,7 +77,8 @@ public class NodeEditorInput implements INavigatorEditorInput, IPersistableEleme
 
     @Override
     public ImageDescriptor getImageDescriptor() {
-        return DBeaverIcons.getImageDescriptor(getNavigatorNode().getNodeIconDefault());
+        DBNNode node = getNavigatorNode();
+        return node == null ? null : DBeaverIcons.getImageDescriptor(node.getNodeIconDefault());
     }
 
     @Override
