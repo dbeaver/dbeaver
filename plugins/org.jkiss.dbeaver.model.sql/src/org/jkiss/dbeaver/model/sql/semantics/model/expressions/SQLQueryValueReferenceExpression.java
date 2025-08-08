@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -25,8 +26,7 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 
 import java.util.Collections;
@@ -42,7 +42,7 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
 
     // change to Map<DBSObjectType, Function<DBSObject, SQLQueryExprType>> in need of multiple allowed object types
     private static final DBSObjectType ALLOWED_OBJECT_TYPE = RelationalObjectType.TYPE_SEQUENCE;
-    private static final SQLQueryExprType ALLOWED_OBJECT_EXPR_TYPE = SQLQueryExprType.NUMERIC;
+    private static final SQLQueryExprType ALLOWED_OBJECT_EXPR_TYPE = SQLQueryExprType.UNKNOWN;
 
     private static final Log log = Log.getLog(SQLQueryValueReferenceExpression.class);
 
@@ -115,6 +115,7 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
         SQLQuerySymbolEntry columnRefEntry;
         SQLQueryRowsDataContext columnContext;
         SQLQueryRowsSourceContext.SourceResolutionInfo tableRef;
+        List<String> objectName;
 
         if (this.name != null) {
             SQLQuerySymbolOrigin columnRefOrigin = new SQLQuerySymbolOrigin.RowsDataRef(context);
@@ -179,14 +180,22 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                 // 1.3: no columns and no rowsets, so try for db objects
                 if (context.getConnection().isDummy()) {
                     // no real database - no point to treat any random name as object
+                    objectName = null;
                     dbObjects = Collections.emptyList();
-                } else if (this.name.invalidPartsCount == 0) {
-                    dbObjects = context.getConnection().findRealObjects(
-                        statistics.getMonitor(),
-                        ALLOWED_OBJECT_TYPE,
-                        this.name.stringParts
-                    );
+                } else if (restParts.size() > 0) {
+                    objectName = this.name.stringParts.subList(0, restParts.size());
+                    dbObjects = context.getRowsSources().getConnectionInfo()
+                        .findRealObjects(statistics.getMonitor(), ALLOWED_OBJECT_TYPE, objectName);
+                    while (dbObjects.isEmpty() && objectName.size() > 1) {
+                        objectName = objectName.subList(0, objectName.size() - 1);
+                        dbObjects = context.getRowsSources().getConnectionInfo()
+                            .findRealObjects(statistics.getMonitor(), ALLOWED_OBJECT_TYPE, objectName);
+                    }
+                    if (dbObjects.size() == 1) {
+                        restParts = restParts.subList(objectName.size(), restParts.size());
+                    }
                 } else {
+                    objectName = null;
                     dbObjects = Collections.emptyList();
                 }
                 dbObject = dbObjects.size() == 1 ? dbObjects.getFirst() : null;
@@ -209,6 +218,7 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                 dbObjects = Collections.emptyList();
                 dbObject = null;
                 forcedClass = null;
+                objectName = null;
             }
 
             // 2: final classification applications based on findings
@@ -221,7 +231,33 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                 SQLQuerySymbolClass objClass;
                 if (ALLOWED_OBJECT_TYPE.getTypeClass().isAssignableFrom(dbObject.getClass())) {
                     objClass = SQLQuerySymbolClass.OBJECT;
-                    type = ALLOWED_OBJECT_EXPR_TYPE;
+                    try {
+                        if (dbObject instanceof DBSTypedObject typedObject) {
+                            type = SQLQueryExprType.forTypedObject(statistics.getMonitor(), typedObject, objClass);
+                        } else if (dbObject instanceof DBSTypedObjectEx2 typedObject) {
+                            type = SQLQueryExprType.forTypedObject(
+                                statistics.getMonitor(),
+                                typedObject,
+                                new SQLQuerySymbolByDbObjectDefinition(dbObject, objClass)
+                            );
+                        } else {
+                            type = ALLOWED_OBJECT_EXPR_TYPE;
+                        }
+                    } catch (DBException e) {
+                        type = ALLOWED_OBJECT_EXPR_TYPE;
+                        statistics.appendError(
+                            this.getName().syntaxNode,
+                            "Failed to resolve referenced object type info for " + dbObject.getName(),
+                            e
+                        );
+                    }
+                    if (restParts.isEmpty()) {
+                        // while only sequence object references allowed, it should be followed with a pseudoattribute name
+                        statistics.appendError(this.name.syntaxNode, "Incomplete sequence reference, pseudoattribute required");
+                        if (this.name.endingPeriodNode != null) {
+                            this.name.endingPeriodNode.setOrigin(new SQLQuerySymbolOrigin.MemberOfType(type));
+                        }
+                    }
                 } else {
                     objClass = SQLQuerySymbolClass.ERROR;
                     type = SQLQueryExprType.UNKNOWN;
@@ -229,7 +265,11 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                     String typeName = SQLQuerySemanticUtils.getObjectTypeName(dbObject);
                     statistics.appendError(this.name.syntaxNode, "Illegal database object reference " + typeName);
                 }
-                SQLQuerySemanticUtils.setNamePartsDefinition(this.name, dbObject, objClass, new SQLQuerySymbolOrigin.RowsDataRef(context));
+                SQLQuerySemanticUtils.setNamePartsDefinition(
+                    context.getRowsSources(),
+                    this.name.parts.subList(0, objectName.size()), dbObject, objClass, new SQLQuerySymbolOrigin.RowsDataRef(context),
+                    SQLQuerySymbolOrigin.DbObjectFilterMode.VALUE
+                );
             } else if (dbObjects.size() > 1) {
                 type = SQLQueryExprType.UNKNOWN;
                 SQLQuerySemanticUtils.performPartialResolution(
@@ -237,7 +277,7 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                     statistics,
                     this.name,
                     columnRefOrigin,
-                    Set.of(ALLOWED_OBJECT_TYPE),
+                    SQLQuerySymbolOrigin.DbObjectFilterMode.VALUE,
                     SQLQuerySymbolClass.OBJECT
                 );
             } else {
@@ -257,28 +297,20 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                             type = resultPseudoColumn.type;
                             columnRefEntry.setDefinition(resultPseudoColumn);
                             columnRefEntry.setOrigin(columnRefOrigin);
+                        } else if (tableRef == null && resultColumn == null) {
+                            SQLQuerySemanticUtils.performPartialResolution(
+                                context.getRowsSources(), statistics, this.name, columnRefOrigin,
+                                SQLQuerySymbolOrigin.DbObjectFilterMode.VALUE, SQLQuerySymbolClass.ERROR
+                            );
+                            type = SQLQueryExprType.UNKNOWN;
+                            statistics.appendError(this.getSyntaxNode(), "Invalid column reference");
                         } else {
                             SQLQuerySemanticUtils.propagateColumnDefinition(columnRefEntry, resultColumn, statistics, columnRefOrigin);
                             type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
                         }
-                        if (resultColumn != null || resultPseudoColumn != null) {
-                            // try on composite members
-                            if (restParts.size() > 1) {
-                                SQLQuerySymbolOrigin memberOrigin = new SQLQuerySymbolOrigin.MemberOfType(type);
-                                for (int i = 1; i < restParts.size() && type != null && restParts.get(i) != null; i++) {
-                                    type = SQLQuerySemanticUtils.tryResolveMemberReference(
-                                        statistics,
-                                        type,
-                                        restParts.get(i),
-                                        memberOrigin
-                                    );
-                                    memberOrigin = new SQLQuerySymbolOrigin.MemberOfType(type);
-                                }
-                                if (type == null) {
-                                    type = SQLQueryExprType.UNKNOWN;
-                                }
-                            }
-                        }
+                    }
+                    if (tableRef == null && resultColumn != null) {
+                        restParts = restParts.subList(1, restParts.size());
                     }
                 } else {
                     // 2.3: no column reference (if rowset-ref presented - it is already classified), so decide on column-related errors
@@ -302,6 +334,22 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                             this.name.parts.getFirst().setOrigin(new SQLQuerySymbolOrigin.RowsDataRef(context));
                         }
                     }
+                }
+            }
+            // try on composite members
+            if (restParts.size() >= 1 && type != SQLQueryExprType.UNKNOWN) {
+                SQLQuerySymbolOrigin memberOrigin = new SQLQuerySymbolOrigin.MemberOfType(type);
+                for (int i = 0; i < restParts.size() && type != null && restParts.get(i) != null; i++) {
+                    type = SQLQuerySemanticUtils.tryResolveMemberReference(
+                        statistics,
+                        type,
+                        restParts.get(i),
+                        memberOrigin
+                    );
+                    memberOrigin = new SQLQuerySymbolOrigin.MemberOfType(type);
+                }
+                if (type == null) {
+                    type = SQLQueryExprType.UNKNOWN;
                 }
             }
         } else {
