@@ -28,6 +28,12 @@ public enum SQLQueryCompletionItemKind {
      */
     SUBQUERY_ALIAS(true, false, 200),
     /**
+     * Subquery correlation alias when its underlying source is not a simple table reference
+     * and has a foreign key association with any other table in the current context
+     * <p> (simple identifier)
+     */
+    RELATED_SUBQUERY_ALIAS(true, false, 150),
+    /**
      * Column name when defined by the correlation or by the column alias
      * <p> (simple identifier or prefixed with subquery alias)
      */
@@ -42,6 +48,11 @@ public enum SQLQueryCompletionItemKind {
      * <p> (simple identifier or fullname)
      */
     USED_TABLE_NAME(true, false, 200),
+    /**
+     * Name of the table having foreign key association with any other table in the current context
+     * <p> (simple identifier or fullname)
+     */
+    RELATED_TABLE_NAME(true, false, 150),
     /**
      * Table column name when derived from the real table 
      * <p> (simple identifier, fullname, alias-prefixed)

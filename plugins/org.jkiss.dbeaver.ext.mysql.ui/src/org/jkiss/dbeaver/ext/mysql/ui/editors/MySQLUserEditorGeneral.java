@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.ui.editors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
@@ -155,6 +156,10 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         if (context != null) {
             context.addCommandListener(commandlistener);
         }
+
+        if (newUser) {
+            triggerModifyEvent(userNameText);
+        }
     }
 
     @Override
@@ -221,6 +226,12 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     {
         // do nothing
         return RefreshResult.IGNORED;
+    }
+
+    private void triggerModifyEvent(Text text) {
+        Event event = new Event();
+        event.widget = text;
+        text.notifyListeners(SWT.Modify, event);
     }
 
     private class PageControl extends UserPageControl {

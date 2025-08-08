@@ -71,6 +71,7 @@
         <event topicId="cb_database_output_log" id="cb_database_output_log_updated"
                class="org.jkiss.dbeaver.model.websocket.event.session.WSOutputDBLogEvent"/>
         <event topicId="cb_user" id="cb_user_deleted" class="org.jkiss.dbeaver.model.websocket.event.WSUserDeletedEvent"/>
+        <event topicId="cb_user" id="cb_user_disabled" class="org.jkiss.dbeaver.model.websocket.event.WSUserDisabledEvent"/>
 
         <event topicId="cb_session_task" id="cb_session_task_info_updated"
                class="org.jkiss.dbeaver.model.websocket.event.session.WSSessionTaskInfoEvent"/>
