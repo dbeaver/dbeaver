@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySemanticUtils;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolByDbObjectDefinition;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
@@ -44,6 +46,18 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
     public String visitCompositeField(@NotNull SQLCompositeFieldCompletionItem compositeField) {
         String ownerTypeName = SQLQueryCompletionExtraTextProvider.prepareTypeNameString(compositeField.memberInfo.declaratorType());
         return "Attribute " + compositeField.memberInfo.name() + " of the " + ownerTypeName + " composite type ";
+    }
+
+    @NotNull
+    public String visitSpecialCompositeField(@NotNull SQLSpecialCompositeFieldCompletionItem compositeField) {
+        String ownerTypeDesc;
+        if (compositeField.memberInfo.declaratorType().getDeclaratorDefinition() instanceof SQLQuerySymbolByDbObjectDefinition byDbObjDef) {
+            ownerTypeDesc = byDbObjDef.getDbObject().getName() + " " + SQLQuerySemanticUtils.getObjectTypeName(byDbObjDef.getDbObject());
+        } else {
+            ownerTypeDesc = SQLQueryCompletionExtraTextProvider.prepareTypeNameString(compositeField.memberInfo.declaratorType());
+        }
+
+        return "Attribute " + compositeField.memberInfo.name() + " provided by the " + ownerTypeDesc + " pseudocomposite ";
     }
 
     @Nullable
