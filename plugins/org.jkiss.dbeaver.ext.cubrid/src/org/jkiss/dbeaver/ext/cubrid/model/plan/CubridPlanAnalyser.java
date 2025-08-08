@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.cubrid.model.plan;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
@@ -30,21 +29,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CubridPlanAnalyser extends AbstractExecutionPlan
-{
+public class CubridPlanAnalyser extends AbstractExecutionPlan {
 
     private List<CubridPlanNode> rootNodes = new ArrayList<>();
-    private String queryPlan;
     private String query;
+    private String plan;
 
     public CubridPlanAnalyser(@NotNull JDBCSession session, @NotNull String query)
             throws DBCException {
         this.query = query;
         try {
-            String plan =
-                    CubridStatementProxy.getQueryplan(
+            plan = CubridStatementProxy.getQueryplan(
                             session.getOriginal().createStatement(), query);
-            this.queryPlan = plan;
             List<CubridPlanNode> tempNode = new ArrayList<>();
             CubridPlanNode parent = new CubridPlanNode();
             long totalCost = 0;
@@ -80,7 +76,7 @@ public class CubridPlanAnalyser extends AbstractExecutionPlan
 
     @NotNull
     @Override
-    public String getPlanQueryString() throws DBException {
-        return queryPlan;
+    public String getPlanQueryString() {
+        return plan;
     }
 }

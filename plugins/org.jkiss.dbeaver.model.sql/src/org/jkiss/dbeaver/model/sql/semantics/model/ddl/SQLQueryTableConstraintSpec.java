@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColumnReferenceExpression;
@@ -40,7 +41,7 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
     );
 
     @Nullable
-    private final SQLQueryQualifiedName constraintName;
+    private final SQLQueryComplexName constraintName;
     @NotNull
     private final SQLQueryTableConstraintKind constraintKind;
 
@@ -57,7 +58,7 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
 
     protected SQLQueryTableConstraintSpec(
         @NotNull STMTreeNode syntaxNode,
-        @Nullable SQLQueryQualifiedName constraintName,
+        @Nullable SQLQueryComplexName constraintName,
         @NotNull SQLQueryTableConstraintKind constraintKind,
         @Nullable List<SQLQuerySymbolEntry> tupleColumnsList,
         @Nullable SQLQueryRowsTableDataModel referencedTable,
@@ -74,7 +75,7 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
     }
 
     @Nullable
-    public SQLQueryQualifiedName getConstraintName() {
+    public SQLQueryComplexName getConstraintName() {
         return constraintName;
     }
 
@@ -86,20 +87,20 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
     /**
      * Propagate semantics context and establish relations through the query model
      */
-    public void propagateContext(
-        @NotNull SQLQueryDataContext sourceContext,
-        @Nullable SQLQueryDataContext tableContext,
+    public void resolveRelations(
+        @NotNull SQLQueryRowsSourceContext sourceContext,
+        @Nullable SQLQueryRowsDataContext tableContext,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         List<SQLQueryResultColumn> referenceKey;
         if (this.tupleColumnsList != null && !this.tupleColumnsList.isEmpty() && tableContext != null) {
-            SQLQuerySymbolOrigin columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(tableContext);
+            SQLQuerySymbolOrigin columnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromRowsData(tableContext);
             referenceKey = new ArrayList<>(this.tupleColumnsList.size());
             for (SQLQuerySymbolEntry columnRef : this.tupleColumnsList) {
                 if (columnRef.isNotClassified()) {
                     SQLQueryResultColumn rc = tableContext.resolveColumn(statistics.getMonitor(), columnRef.getName());
                     if (rc != null) {
-                        SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics, columnNameOrigin);
+                        SQLQuerySemanticUtils.propagateColumnDefinition(columnRef, rc, statistics, columnNameOrigin);
                     } else {
                         columnRef.getSymbol().setSymbolClass(SQLQuerySymbolClass.COLUMN);
                         statistics.appendWarning(columnRef, "Column " + columnRef.getName() + " not found");
@@ -112,7 +113,7 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
         }
 
         if (this.referencedTable != null) {
-            SQLQueryDataContext referencedContext = SQLQueryColumnConstraintSpec.propagateForReferencedEntity(
+            SQLQueryRowsDataContext referencedContext = SQLQueryColumnConstraintSpec.propagateForReferencedEntity(
                 this.referencedTable,
                 this.referencedColumns,
                 sourceContext,
@@ -128,7 +129,8 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
         }
 
         if (this.checkExpression != null && tableContext != null) {
-            this.checkExpression.propagateContext(tableContext, statistics);
+            this.checkExpression.resolveRowSources(tableContext.getRowsSources(), statistics);
+            this.checkExpression.resolveValueRelations(tableContext, statistics);
         }
     }
 
@@ -137,22 +139,9 @@ public class SQLQueryTableConstraintSpec extends SQLQueryNodeModel {
         return visitor.visitTableConstraintSpec(this, arg);
     }
 
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return null;
-    }
-
-
     @NotNull
     public static SQLQueryTableConstraintSpec recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
-        SQLQueryQualifiedName constraintName = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.constraintNameDefinition))
+        SQLQueryComplexName constraintName = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.constraintNameDefinition))
             .map(n -> n.findFirstChildOfName(STMKnownRuleNames.constraintName))
             .map(recognizer::collectQualifiedName).orElse(null);
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.internal.jobs.JobManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.content.IContentType;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
@@ -33,11 +35,15 @@ import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.commands.DisableSQLSyntaxParserHandler;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
@@ -58,6 +64,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * SQLEditor utils
@@ -627,6 +634,110 @@ public class SQLEditorUtils {
         return templateContextTypeId.equalsIgnoreCase(SQLContextTypeBase.ID_SQL) ||
             templateContextTypeId.equalsIgnoreCase(driverContextTypeId) ||
             templateContextTypeId.equalsIgnoreCase(providerContextTypeId);
+    }
+
+    private static class EditorConnector {
+
+        @NotNull
+        private final SQLEditorListener editorListener = new SQLEditorListenerDefault() {
+            @Override
+            public void onDataSourceChanged(DBPPreferenceListener.PreferenceChangeEvent event) {
+                EditorConnector.this.onMaybeConnected();
+            }
+        };
+
+        @NotNull
+        private final SQLEditor editor;
+        @NotNull
+        private final DBPDataSourceContainer dataSourceContainer;
+
+        @NotNull
+        private final Consumer<SQLEditor> onConnectedHandler;
+
+        private boolean isConnectionInitiated = false;
+        private boolean isHandled = false;
+
+        public EditorConnector(
+            @NotNull SQLEditor editor,
+            @NotNull DBPDataSourceContainer container,
+            @NotNull Consumer<SQLEditor> onConnectedHandler
+        ) {
+            this.editor = editor;
+            this.dataSourceContainer = container;
+            this.onConnectedHandler = onConnectedHandler;
+
+            this.setup();
+            editor.setDataSourceContainer(container); // without this line checkConnected doesn't detect container info
+        }
+
+        public void engage() {
+            UIUtils.asyncExec(() -> {
+                if (!this.isHandled) {
+                    boolean alreadyConnected = editor.checkConnected(
+                        true, status -> UIUtils.asyncExec(() -> {
+                            if (status.isOK()) {
+                                this.onMaybeConnected();
+                            }
+                        })
+                    );
+                    if (alreadyConnected && !editor.isDisposed()) {
+                        this.onMaybeConnected();
+                    }
+                }
+            });
+        }
+
+        private int countRelatedJobs() {
+            return Job.getJobManager().find(this.dataSourceContainer).length + Job.getJobManager().find(this.editor).length;
+        }
+
+        private void onMaybeConnected() {
+            UIUtils.asyncExec(() -> {
+                // there is no legitimate way to detect failure of the connection attempt, so watching for connection-related jobs
+                int relatedJobsCount = this.countRelatedJobs();
+                if (relatedJobsCount > 0) {
+                    this.isConnectionInitiated = true;
+                }
+
+                if (!this.isHandled) {
+                    DBCExecutionContext executionContext = this.editor.getExecutionContext();
+                    if (executionContext != null) {
+                        this.onFinished(true);
+                    } else if (this.isConnectionInitiated && relatedJobsCount == 0) {
+                        this.onFinished(false);
+                    }
+                }
+            });
+        }
+
+        private void onFinished(boolean result) {
+            this.isHandled = true;
+            this.cleanup();
+            if (!this.editor.isDisposed()) {
+                onConnectedHandler.accept(result ? this.editor :  null);
+            }
+        }
+
+        private void setup() {
+            this.editor.addListener(editorListener);
+        }
+
+        private void cleanup() {
+            this.editor.removeListener(editorListener);
+        }
+    }
+
+    public static boolean openSqlConsoleAndTryConnect(@NotNull DBPDataSourceContainer container, @NotNull Consumer<SQLEditor> onConnected) {
+        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+        if (serviceSQL != null) {
+            SQLEditor editor = (SQLEditor) serviceSQL.openSQLConsole(container, null, null, "Console", "");
+            onConnected.accept(editor);
+            EditorConnector connector = new EditorConnector(editor, container, onConnected);
+            connector.engage();
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

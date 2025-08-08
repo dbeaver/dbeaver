@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
+import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateDialog;
@@ -283,6 +284,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         DBWorkbench.getPlatform();
 
+        WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
         initializeApplication();
 
         // Run instance server
@@ -294,12 +296,13 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         TimezoneRegistry.overrideTimezone();
 
-        if (RuntimeUtils.isWindows()
-            && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
+        if (CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
-            && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
         ) {
-            System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
+            DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+            if (RuntimeUtils.isWindows() && preferenceStore.getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)) {
+                System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
+            }
         }
 
         // Prefs default

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
@@ -36,15 +35,14 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.sql.Array;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.*;
 
 public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
     public static final ClickhouseArrayValueHandler INSTANCE = new ClickhouseArrayValueHandler();
     public static final String ARRAY_DELIMITER = ",";
     public static final Set<Character> QUOTED_CHARS = Set.of('[', ']', '"', ' ', '\\');
-    public static final String DEFAULT_ARRAY_TYPE_NAME = "Array(String)";
 
     @Override
     protected boolean convertSingleValueToArray() {
@@ -73,24 +71,7 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
             return super.getValueFromObject(session, type, object, copy, validateValue);
         }
 
-        ClickhouseArrayType arrayType;
-        try {
-            arrayType = (ClickhouseArrayType) ClickhouseTypeParser.getType(
-                session.getProgressMonitor(),
-                (ClickhouseDataSource) session.getDataSource(),
-                type.getTypeName()
-            );
-            if (arrayType == null) {
-                arrayType = (ClickhouseArrayType) ClickhouseTypeParser.getType(
-                    session.getProgressMonitor(),
-                    (ClickhouseDataSource) session.getDataSource(),
-                    DEFAULT_ARRAY_TYPE_NAME
-                );
-            }
-        } catch (DBException e) {
-            throw new DBCException("Can't resolve data type " + type.getFullTypeName());
-        }
-
+        ClickhouseArrayType arrayType = getArrayType(session, type);
         DBSDataType itemType = arrayType.getComponentType(session.getProgressMonitor());
         if (itemType == null) {
             throw new DBCException("Array type " + arrayType.getFullTypeName() + " doesn't have a component type");
@@ -98,6 +79,9 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
 
         if (object instanceof List<?> list) {
             return makeCollectionFromNestedJavaCollection((JDBCSession) session, itemType, list);
+        } else if (object instanceof Array array && itemType.getName().startsWith("Tuple")) {
+            // Tuples are represented as Object[] and need to be handled separately to avoid confusion with nested arrays
+            return makeCollectionFromTupleArray(session, itemType, array);
         }
 
         return super.getValueFromObject(session, type, object, copy, validateValue);
@@ -141,25 +125,6 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
             }
         } catch (DBException e) {
             throw new DBCException("Can't extract array data from Java array", e);
-        }
-    }
-
-    @Override
-    protected void bindParameter(
-        JDBCSession session,
-        JDBCPreparedStatement statement,
-        DBSTypedObject paramType,
-        int paramIndex,
-        Object value
-    ) throws DBCException, SQLException {
-        if (value instanceof DBDCollection dbdCollection && !dbdCollection.isNull()) {
-            statement.setObject(
-                paramIndex,
-                getValueDisplayString(paramType, value, DBDDisplayFormat.NATIVE),
-                Types.OTHER
-            );
-        } else {
-            super.bindParameter(session, statement, paramType, paramIndex, value);
         }
     }
 
@@ -238,5 +203,50 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         }
 
         return value.contains(ARRAY_DELIMITER);
+    }
+
+    @NotNull
+    private Object makeCollectionFromTupleArray(
+        @NotNull DBCSession session,
+        @NotNull DBSDataType itemType,
+        @NotNull Array array
+    ) {
+        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, itemType);
+        try {
+            ArrayList<Object> tuples = new ArrayList<>();
+            for (Object tuple : (Object[]) array.getArray()) {
+                Object value = valueHandler.getValueFromObject(session, itemType, tuple, false, false);
+                tuples.add(value);
+            }
+            return new JDBCCollection(
+                session.getProgressMonitor(),
+                itemType,
+                valueHandler,
+                tuples.toArray()
+            );
+        } catch (DBCException | SQLException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @NotNull
+    private ClickhouseArrayType getArrayType(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type
+    ) throws DBCException {
+        ClickhouseArrayType arrayType;
+        try {
+            arrayType = (ClickhouseArrayType) ClickhouseTypeParser.getType(
+                session.getProgressMonitor(),
+                (ClickhouseDataSource) session.getDataSource(),
+                type.getFullTypeName()
+            );
+        } catch (DBException e) {
+            throw new DBCException("Can't resolve array data type " + type.getFullTypeName());
+        }
+        if (arrayType == null) {
+            throw new DBCException("Can't resolve array data type " + type.getFullTypeName());
+        }
+        return arrayType;
     }
 }

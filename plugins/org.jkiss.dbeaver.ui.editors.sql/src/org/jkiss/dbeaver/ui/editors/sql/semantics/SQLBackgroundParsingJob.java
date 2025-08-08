@@ -26,9 +26,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
@@ -568,7 +570,8 @@ public class SQLBackgroundParsingJob {
                 log.debug("}");
             }
 
-            boolean useRealMetadata = this.editor.isReadMetadataForQueryAnalysisEnabled();
+            boolean useRealMetadata = this.isReadMetadataEnabled();
+            boolean validateFunctions = this.isValidateFunctionsEnabled();
             DBCExecutionContext executionContext = this.editor.getExecutionContext();
 
             monitor.beginTask("Background query analysis for " + editor.getTitle(), 1 + elements.size());
@@ -577,7 +580,9 @@ public class SQLBackgroundParsingJob {
             SQLSyntaxManager syntaxManager = this.editor.getSyntaxManager();
             SQLDialect dialect = this.obtainCurrentSqlDialect(executionContext);
 
-            SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext(monitor, executionContext, useRealMetadata, syntaxManager, dialect);
+            SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext(
+                monitor, executionContext, useRealMetadata, validateFunctions, syntaxManager, dialect
+            );
 
             int i = 1;
             for (SQLScriptElement element : elements) {
@@ -685,6 +690,17 @@ public class SQLBackgroundParsingJob {
         } else {
             return r;
         }
+    }
+
+    private boolean isReadMetadataEnabled() {
+        DBPPreferenceStore prefStore = this.editor.getActivePreferenceStore();
+        return prefStore.getBoolean(SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS)
+            && !prefStore.getBoolean(ModelPreferences.META_DISABLE_EXTRA_READ);
+    }
+
+    private boolean isValidateFunctionsEnabled() {
+        DBPPreferenceStore prefStore = this.editor.getActivePreferenceStore();
+        return prefStore.getBoolean(SQLModelPreferences.VALIDATE_FUNCTIONS) && this.isReadMetadataEnabled();
     }
 
     private class DocumentLifecycleListener implements IDocumentListener, ITextInputListener, IViewportListener {

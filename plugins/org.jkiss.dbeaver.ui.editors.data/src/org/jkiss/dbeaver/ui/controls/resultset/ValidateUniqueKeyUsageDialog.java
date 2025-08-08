@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -109,9 +110,9 @@ final class ValidateUniqueKeyUsageDialog extends MessageDialog {
         constraint.setUseAllColumns(true);
 
         try {
-            identifier.reloadAttributes(
-                new VoidProgressMonitor(),
-                viewer.getModel().getAttributes());
+            viewer.reloadIdentifierAttributes();
+            viewer.persistConfig();
+            DBUtils.fireObjectUpdate(viewer.getModel().getVirtualEntity(false), constraint);
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(
                 ResultSetMessages.validate_unique_key_usage_dialog_use_all_columns,

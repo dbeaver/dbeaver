@@ -21,8 +21,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableValueModel;
@@ -35,18 +36,15 @@ import java.util.*;
 public class SQLQueryTableCreateModel extends SQLQueryModelContent {
 
     @Nullable
-    private final SQLQueryQualifiedName tableName;
+    private final SQLQueryComplexName tableName;
     @NotNull
     private final List<SQLQueryColumnSpec> columns;
     @NotNull
     private final List<SQLQueryTableConstraintSpec> constraints;
 
-    @Nullable
-    private SQLQueryDataContext dataContext = null;
-
     public SQLQueryTableCreateModel(
         @NotNull STMTreeNode syntaxNode,
-        @Nullable SQLQueryQualifiedName tableName,
+        @Nullable SQLQueryComplexName tableName,
         @NotNull List<SQLQueryColumnSpec> columns,
         @NotNull List<SQLQueryTableConstraintSpec> constraints
     ) {
@@ -60,7 +58,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
     }
 
     @Nullable
-    public SQLQueryQualifiedName getTableName() {
+    public SQLQueryComplexName getTableName() {
         return this.tableName;
     }
 
@@ -75,20 +73,23 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
     }
 
     @Override
-    protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext statistics) {
-        this.dataContext = dataContext;
-
+    public void resolveObjectAndRowsReferences(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
         if (this.tableName != null && this.tableName.isNotClassified()) {
-            List<String> nameStrings = this.tableName.toListOfStrings();
-            DBSEntity realTable = dataContext.findRealTable(statistics.getMonitor(), nameStrings);
+            List<DBSEntity> realTables = context.getConnectionInfo().findRealTables(statistics.getMonitor(), this.tableName.stringParts);
+            DBSEntity realTable = realTables.size() == 1 ? realTables.getFirst() : null;
 
+            SQLQuerySymbolOrigin nameOrigin = new SQLQuerySymbolOrigin.DbObjectRef(context, RelationalObjectType.TYPE_TABLE);
             if (realTable != null) {
-                this.tableName.setDefinition(
-                    realTable,
-                    new SQLQuerySymbolOrigin.DbObjectFromContext(dataContext, RelationalObjectType.TYPE_TABLE)
-                );
+                SQLQuerySemanticUtils.setNamePartsDefinition(this.tableName, realTable, nameOrigin);
             } else {
-                this.tableName.setSymbolClass(SQLQuerySymbolClass.TABLE);
+                SQLQuerySemanticUtils.performPartialResolution(
+                    context,
+                    statistics,
+                    this.tableName,
+                    nameOrigin,
+                    Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                    SQLQuerySymbolClass.TABLE
+                );
             }
 
             SQLQueryRowsTableValueModel virtualTableRows = new SQLQueryRowsTableValueModel(this.getSyntaxNode(), Collections.emptyList(), false);
@@ -112,16 +113,21 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
                     columnSpec.getDeclaredColumnType()
                 ));
             }
-            SQLQueryDataContext tableContext = dataContext.overrideResultTuple(null, columns, Collections.emptyList());
+            SQLQueryRowsDataContext tableContext = context.makeTuple(null, columns, Collections.emptyList());
 
             for (SQLQueryColumnSpec columnSpec : this.columns) {
-                columnSpec.propagateContext(dataContext, tableContext, statistics);
+                columnSpec.resolveRelations(context, tableContext, statistics);
             }
 
             for (SQLQueryTableConstraintSpec constraintSpec : this.constraints) {
-                constraintSpec.propagateContext(dataContext, tableContext, statistics);
+                constraintSpec.resolveRelations(context, tableContext, statistics);
             }
         }
+
+    }
+
+    @Override
+    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
     }
 
     @Override
@@ -129,20 +135,8 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
         return visitor.visitCreateTable(this, arg);
     }
 
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return this.dataContext;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return this.dataContext;
-    }
-
     public static SQLQueryTableCreateModel recognize(SQLQueryModelRecognizer recognizer, STMTreeNode node) {
-        SQLQueryQualifiedName tableName = recognizer.collectTableName(node);
+        SQLQueryComplexName tableName = recognizer.collectTableName(node);
 
         LinkedList<SQLQueryColumnSpec> columns = new LinkedList<>();
         LinkedList<SQLQueryTableConstraintSpec> constraints = new LinkedList<>();

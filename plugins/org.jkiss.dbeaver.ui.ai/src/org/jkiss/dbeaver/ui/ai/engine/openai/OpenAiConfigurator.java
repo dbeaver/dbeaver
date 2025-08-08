@@ -16,37 +16,52 @@
  */
 package org.jkiss.dbeaver.ui.ai.engine.openai;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
+import org.jkiss.dbeaver.model.ai.engine.AIModel;
+import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModel;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.function.ThrowableFunction;
 
+import java.util.List;
 import java.util.Locale;
 
-public class OpenAiConfigurator implements IObjectPropertyConfigurator<AIEngine, LegacyAISettings<OpenAIProperties>> {
+public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends OpenAIProperties>
+    implements IObjectPropertyConfigurator<ENGINE, LegacyAISettings<PROPERTIES>> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
-    protected String token = "";
-    protected String model = "";
+    protected volatile String token = "";
     private String temperature = "0.0";
     private boolean logQuery = false;
 
     @Nullable
     protected Text tokenText;
     private Text temperatureText;
-    private Combo modelCombo;
+    private ModelSelectorField modelSelectorField;
+    private ContextWindowSizeField contextWindowSizeField;
     private Button logQueryCheck;
+
+    protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchOpenAiModels);
 
     @Override
     public void createControl(
@@ -54,7 +69,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<AIEngine,
         AIEngine object,
         @NotNull Runnable propertyChangeListener
     ) {
-        Composite composite = UIUtils.createComposite(parent, 2);
+        Composite composite = UIUtils.createComposite(parent, 3);
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createConnectionParameters(composite);
 
@@ -65,32 +80,39 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<AIEngine,
     }
 
     @Override
-    public void loadSettings(@NotNull LegacyAISettings<OpenAIProperties> configuration) {
+    public void loadSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
         token = CommonUtils.toString(configuration.getProperties().getToken());
-        model = readModel(configuration).getName();
+        modelSelectorField.setSelectedModel(
+            CommonUtils.toString(configuration.getProperties().getModel(), OpenAIModels.DEFAULT_MODEL)
+        );
         temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
         logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
         applySettings();
+
+        contextWindowSizeField.setValue(configuration.getProperties().getContextWindowSize());
+
+        modelSelectorField.refreshModelListSilently(false);
     }
 
     @Override
-    public void saveSettings(@NotNull LegacyAISettings<OpenAIProperties> configuration) {
+    public void saveSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
         configuration.getProperties().setToken(token);
-        configuration.getProperties().setModel(model);
+        configuration.getProperties().setModel(modelSelectorField.getSelectedModel());
+        configuration.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
         configuration.getProperties().setTemperature(Double.parseDouble(temperature));
         configuration.getProperties().setLoggingEnabled(logQuery);
     }
 
     @Override
-    public void resetSettings(@NotNull LegacyAISettings<OpenAIProperties> openAIPropertiesLegacyAISettings) {
+    public void resetSettings(@NotNull LegacyAISettings<PROPERTIES> openAIPropertiesLegacyAISettings) {
 
     }
 
     protected void createAdditionalSettings(@NotNull Composite parent) {
         logQueryCheck = UIUtils.createCheckbox(
             parent,
-            "Write GPT queries to debug log",
-            "Write GPT queries with metadata info in debug logs",
+            "Write AI queries to debug log",
+            "Write AI queries with metadata info in debug logs",
             false,
             2
         );
@@ -103,30 +125,45 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<AIEngine,
     }
 
     protected void createModelParameters(@NotNull Composite parent) {
-        if (isUsesModel()) {
-            modelCombo = UIUtils.createLabelCombo(parent, AIUIMessages.gpt_preference_page_combo_engine, SWT.READ_ONLY);
-            for (OpenAIModel model : getSupportedGPTModels()) {
-                if (model.getDeprecationReplacementModel() == null) {
-                    modelCombo.add(model.getName());
-                }
-            }
-            modelCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    model = modelCombo.getText();
-                }
-            });
-        }
+        modelSelectorField = ModelSelectorField.builder()
+            .withParent(parent)
+            .withGridData(new GridData(GridData.FILL_HORIZONTAL))
+            .withModelListSupplier(
+                (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
+                    .filter(it -> it.features().contains(AIModelFeature.CHAT))
+                    .map(AIModel::name)
+                    .toList()
+            )
+            .withSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                contextWindowSizeField.setValue(OpenAIModels.getContextWindowSize(modelSelectorField.getSelectedModel()));
+            }))
+            .build();
+
+        contextWindowSizeField = ContextWindowSizeField.builder()
+            .withParent(parent)
+            .withGridData(GridDataFactory.fillDefaults().span(2, 1).create())
+            .build();
+
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
-        UIUtils.createInfoLabel(parent, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 2);
+        temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
+
+        UIUtils.createInfoLabel(parent, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 3);
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
 
-    @NotNull
-    protected OpenAIModel[] getSupportedGPTModels() {
-        return OpenAIModel.values();
+    private List<AIModel> fetchOpenAiModels(DBRProgressMonitor monitor) throws DBException {
+        if (token == null || token.isEmpty()) {
+            throw new DBException("Token is not set");
+        }
+
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setToken(token);
+
+        try (OpenAICompletionEngine<OpenAIProperties> engine = new OpenAICompletionEngine<>(properties)) {
+            return engine.getModels(monitor);
+        }
     }
 
     protected void createConnectionParameters(@NotNull Composite parent) {
@@ -136,7 +173,9 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<AIEngine,
             "",
             SWT.BORDER | SWT.PASSWORD
         );
-        tokenText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 150;
+        tokenText.setLayoutData(gd);
         tokenText.addModifyListener((e -> token = tokenText.getText()));
         tokenText.setMessage("API access token");
         createURLInfoLink(parent);
@@ -154,7 +193,7 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<AIEngine,
             }
         );
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
+        gd.horizontalSpan = 3;
         link.setLayoutData(gd);
     }
 
@@ -162,31 +201,40 @@ public class OpenAiConfigurator implements IObjectPropertyConfigurator<AIEngine,
         return API_KEY_URL;
     }
 
-    private OpenAIModel readModel(@NotNull LegacyAISettings<OpenAIProperties> configuration) {
-        return OpenAIModel.getByName(CommonUtils.toString(configuration.getProperties().getModel(), getDefaultModel()));
-    }
-
-    protected String getDefaultModel() {
-        return OpenAIModel.GPT_TURBO.getName();
-    }
-
     protected void applySettings() {
         if (tokenText != null) {
             tokenText.setText(token);
         }
-        if (isUsesModel()) {
-            modelCombo.setText(model);
-        }
+
         temperatureText.setText(temperature);
         logQueryCheck.setSelection(logQuery);
     }
 
-    protected boolean isUsesModel() {
-        return true;
-    }
-
     @Override
     public boolean isComplete() {
-        return tokenText == null || !tokenText.getText().isEmpty();
+        return tokenText != null
+            && !tokenText.getText().isEmpty()
+            && contextWindowSizeField.isComplete();
+    }
+
+    protected static class CachedValue<T> {
+        private volatile T value;
+
+        private final ThrowableFunction<DBRProgressMonitor, T, DBException> supplier;
+
+        protected CachedValue(ThrowableFunction<DBRProgressMonitor, T, DBException> supplier) {
+            this.supplier = supplier;
+        }
+
+        public T get(DBRProgressMonitor monitor, boolean refresh) throws DBException {
+            if (value == null || refresh) {
+                synchronized (this) {
+                    if (value == null || refresh) {
+                        value = supplier.apply(monitor);
+                    }
+                }
+            }
+            return value;
+        }
     }
 }

@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
 import org.jkiss.dbeaver.ext.cubrid.ui.internal.CubridMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -116,7 +117,7 @@ public class CubridInfoPanel implements IResultSetPanel
 
     private void showStatistic(JDBCStatement stm, String queryInfo) throws SQLException {
         table.removeAll();
-        stm.execute(this.presentation.getController().getContainer().toString());
+        stm.execute(wrapShardQuery(this.presentation.getController().getContainer().toString()));
         try (JDBCResultSet resultSet = stm.executeQuery(queryInfo)) {
             while (resultSet.next()) {
                 TableItem item = new TableItem(table, SWT.LEFT);
@@ -138,13 +139,13 @@ public class CubridInfoPanel implements IResultSetPanel
                         () -> {
                             try (JDBCSession session = DBUtils.openMetaSession(monitor, presentation.getController().getDataContainer().getDataSource(), "Read Statistic")) {
                                 try (JDBCStatement stm = session.createStatement()) {
-                                    String statisticQuery = getStatisticQuery();
+                                    String statisticQuery = wrapShardQuery(getStatisticQuery());
                                     if (CommonUtils.isNotEmpty(statisticQuery)) {
                                         showStatistic(stm, statisticQuery);
                                     }
                                     if (store.getBoolean(CubridConstants.STATISTIC_TRACE)) {
-                                        stm.execute(presentation.getController().getContainer().toString());
-                                        try (JDBCResultSet resultSet = stm.executeQuery("show trace;")) {
+                                        stm.execute(wrapShardQuery(presentation.getController().getContainer().toString()));
+                                        try (JDBCResultSet resultSet = stm.executeQuery(wrapShardQuery("show trace"))) {
                                             if (resultSet.next()) {
                                                 String st = resultSet.getString("trace");
                                                 plainText.setText(st);
@@ -161,4 +162,8 @@ public class CubridInfoPanel implements IResultSetPanel
         }.schedule();
     }
 
+    public String wrapShardQuery(String sql) {
+        CubridDataSource dataSource = (CubridDataSource) presentation.getController().getDataContainer().getDataSource();
+        return dataSource.wrapShardQuery(sql);
+    }
 }

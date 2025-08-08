@@ -19,13 +19,12 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.Collections;
@@ -37,41 +36,22 @@ import java.util.List;
  */
 public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
     @NotNull
-    private final List<SQLQueryValueExpression> values;
+    private final List<List<SQLQueryValueExpression>> rows;
     private final boolean isIncomplete;
     
     public SQLQueryRowsTableValueModel(
         @NotNull STMTreeNode syntaxNode,
-        @NotNull List<SQLQueryValueExpression> values,
-        boolean isIncomplete) {
+        @NotNull List<List<SQLQueryValueExpression>> rows,
+        boolean isIncomplete
+    ) {
         super(syntaxNode);
-        this.values = values;
+        this.rows = rows;
         this.isIncomplete = isIncomplete;
     }
 
     @NotNull
     public List<SQLQueryValueExpression> getValues() {
-        return values;
-    }
-
-    @NotNull
-    @Override
-    protected SQLQueryDataContext propagateContextImpl(
-        @NotNull SQLQueryDataContext context,
-        @NotNull SQLQueryRecognitionContext statistics
-    ) {
-        LinkedList<SQLQueryResultColumn> resultColumns = new LinkedList<>();
-        for (SQLQueryValueExpression value : this.values) {
-            value.propagateContext(context, statistics);
-            resultColumns.addLast(new SQLQueryResultColumn(resultColumns.size(), new SQLQuerySymbol("?"), this, null, null, SQLQueryExprType.UNKNOWN));
-        }
-        context = context.hideSources().overrideResultTuple(this, List.copyOf(resultColumns), Collections.emptyList());
-
-        if (this.isIncomplete) {
-            context = context.markHasUnresolvedSource();
-        }
-
-        return context;
+        return this.rows.isEmpty() ? Collections.emptyList() : this.rows.getFirst();
     }
 
     @Override
@@ -79,7 +59,7 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
         @NotNull SQLQueryRowsSourceContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        return context.reset();
+        return this.isIncomplete ? context.resetAsUnresolved() : context.reset();
     }
 
     @Override
@@ -89,20 +69,27 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
     ) {
         LinkedList<SQLQueryResultColumn> resultColumns = new LinkedList<>();
         SQLQueryRowsDataContext emptyTuple = this.getRowsSources().makeEmptyTuple();
-        for (SQLQueryValueExpression value : this.values) {
-            value.resolveRowSources(this.getRowsSources(), statistics);
-            value.resolveValueRelations(emptyTuple, statistics);
-            resultColumns.addLast(
-                new SQLQueryResultColumn(
-                    resultColumns.size(),
-                    new SQLQuerySymbol("?"),
-                    this,
-                    null,
-                    null,
-                    SQLQueryExprType.UNKNOWN
-                )
-            );
+        int rowIndex = 0;
+        for (List<SQLQueryValueExpression> row : this.rows) {
+            for (SQLQueryValueExpression value : row) {
+                value.resolveRowSources(this.getRowsSources(), statistics);
+                value.resolveValueRelations(emptyTuple, statistics);
+                if (rowIndex == 0) {
+                    resultColumns.addLast(
+                        new SQLQueryResultColumn(
+                            resultColumns.size(),
+                            new SQLQuerySymbol("?"),
+                            this,
+                            null,
+                            null,
+                            SQLQueryExprType.UNKNOWN
+                        )
+                    );
+                }
+            }
+            rowIndex++;
         }
+
 
         return this.getRowsSources().makeTuple(this, List.copyOf(resultColumns), Collections.emptyList());
     }

@@ -87,7 +87,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         PostgrePrivilegeType.CONNECT,
         PostgrePrivilegeType.TEMPORARY,
         PostgrePrivilegeType.EXECUTE,
-        PostgrePrivilegeType.USAGE
+        PostgrePrivilegeType.USAGE,
+        PostgrePrivilegeType.MAINTAIN
     };
 
     private DatabaseCache databaseCache;
@@ -875,8 +876,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 return ErrorType.CONNECTION_LOST;
             } else if (PostgreConstants.ERROR_TRANSACTION_ABORTED.equals(sqlState)) {
                 return ErrorType.TRANSACTION_ABORTED;
-            } else if (PostgreConstants.AUTHORIZATION_ERRORS.contains(sqlState)) {
-                return ErrorType.AUTHENTICATION_FAILED;
             }
         }
         if (getServerType() instanceof DBPErrorAssistant) {

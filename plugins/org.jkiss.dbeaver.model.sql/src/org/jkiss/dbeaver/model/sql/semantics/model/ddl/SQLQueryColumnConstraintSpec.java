@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColumnReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
     @Nullable
-    private final SQLQueryQualifiedName constraintName;
+    private final SQLQueryComplexName constraintName;
     @NotNull
     private final SQLQueryColumnConstraintKind kind;
 
@@ -49,7 +49,7 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
 
     public SQLQueryColumnConstraintSpec(
         @NotNull STMTreeNode syntaxNode,
-        @Nullable SQLQueryQualifiedName constraintName,
+        @Nullable SQLQueryComplexName constraintName,
         @NotNull SQLQueryColumnConstraintKind kind,
         @Nullable SQLQueryRowsTableDataModel referencedTable,
         @Nullable List<SQLQuerySymbolEntry> referencedColumns,
@@ -64,7 +64,7 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
     }
 
     @Nullable
-    public SQLQueryQualifiedName getConstraintName() {
+    public SQLQueryComplexName getConstraintName() {
         return this.constraintName;
     }
 
@@ -78,29 +78,17 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
         return visitor.visitColumnConstraintSpec(this, arg);
     }
 
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return null;
-    }
-
     /**
      * Propagate semantics context and establish relations through the query model
      */
-    public void propagateContext(
-        @NotNull SQLQueryDataContext dataContext,
-        @Nullable SQLQueryDataContext tableContext,
+    public void resolveRelations(
+        @NotNull SQLQueryRowsSourceContext rowsContext,
+        @Nullable SQLQueryRowsDataContext tableDataContext,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
 
         if (this.referencedTable != null) {
-            SQLQueryDataContext referencedContext = propagateForReferencedEntity(this.referencedTable, this.referencedColumns, dataContext, statistics);
+            SQLQueryRowsDataContext referencedContext = propagateForReferencedEntity(this.referencedTable, this.referencedColumns, rowsContext, statistics);
             if (referencedContext != null) {
                 if (referencedContext.getColumnsList().size() != 1) {
                     statistics.appendWarning(this.getSyntaxNode(), "Inconsistent foreign key tuple size");
@@ -108,27 +96,31 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
             }
         }
 
-        if (this.checkExpression != null && tableContext != null) {
-            this.checkExpression.propagateContext(tableContext, statistics);
+        if (this.checkExpression != null && tableDataContext != null) {
+            this.checkExpression.resolveRowSources(tableDataContext.getRowsSources(), statistics);
+            this.checkExpression.resolveValueRelations(tableDataContext, statistics);
         }
     }
 
     /**
      * Propagate semantics context for referenced entity
      */
-    public static @Nullable SQLQueryDataContext propagateForReferencedEntity(
+    @Nullable
+    public static SQLQueryRowsDataContext propagateForReferencedEntity(
         @NotNull SQLQueryRowsTableDataModel referencedTable,
         @Nullable List<SQLQuerySymbolEntry> referencedColumns,
-        @NotNull SQLQueryDataContext dataContext,
+        @NotNull SQLQueryRowsSourceContext rowsContext,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         statistics.setTreatErrorAsWarnings(true);
-        SQLQueryDataContext referencedContext = referencedTable.propagateContext(dataContext, statistics);
+        referencedTable.resolveObjectAndRowsReferences(rowsContext, statistics);
+        referencedTable.resolveValueRelations(rowsContext.makeEmptyTuple(), statistics);
+        SQLQueryRowsDataContext referencedContext = referencedTable.getRowsDataContext();
         statistics.setTreatErrorAsWarnings(false);
         DBSEntity realTable = referencedTable.getTable();
-        SQLQueryDataContext resultContext;
+        SQLQueryRowsDataContext resultContext;
 
-        SQLQuerySymbolOrigin referencedColumnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromContext(referencedContext);
+        SQLQuerySymbolOrigin referencedColumnNameOrigin = new SQLQuerySymbolOrigin.ColumnNameFromRowsData(referencedContext);
         if (referencedColumns != null && !referencedColumns.isEmpty()) {
             List<SQLQueryResultColumn> resultColumns = new ArrayList<>(referencedColumns.size());
             if (realTable != null) {
@@ -136,7 +128,7 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
                     SQLQueryResultColumn rc = referencedContext.resolveColumn(statistics.getMonitor(), columnRef.getName());
                     if (rc != null) {
                         if (columnRef.isNotClassified()) {
-                            SQLQueryValueColumnReferenceExpression.propagateColumnDefinition(columnRef, rc, statistics, referencedColumnNameOrigin);
+                            SQLQuerySemanticUtils.propagateColumnDefinition(columnRef, rc, statistics, referencedColumnNameOrigin);
                         }
                         resultColumns.add(rc.withNewIndex(resultColumns.size()));
                     } else {
@@ -154,9 +146,9 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
             } else {
                 // table reference resolution failed, so cannot resolve its columns as well
                 statistics.appendWarning(
-                    referencedTable.getName().entityName,
+                    referencedTable.getName().syntaxNode,
                     "Failed to validate " + (referencedColumns.size() > 1 ? "compound " : "") +
-                    "foreign key columns of table " + referencedTable.getName().toIdentifierString()
+                    "foreign key columns of table " + referencedTable.getName().getNameString()
                 );
                 for (SQLQuerySymbolEntry columnRef : referencedColumns) {
                     if (columnRef.isNotClassified()) {
@@ -169,7 +161,7 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
                     ));
                 }
             }
-            resultContext = referencedContext.overrideResultTuple(null, resultColumns, Collections.emptyList());
+            resultContext = referencedContext.getRowsSources().makeTuple(null, resultColumns, Collections.emptyList());
         } else {
             if (realTable != null) {
                 try {
@@ -183,24 +175,26 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
                             .map(DBSEntityAttributeRef::getAttribute).collect(Collectors.toList());
                         if (pkAttrs.isEmpty()) {
                             statistics.appendWarning(
-                                referencedTable.getName().entityName,
-                                "Failed to obtain primary key attribute of the referenced table " + referencedTable.getName().toIdentifierString());
+                                referencedTable.getName().syntaxNode,
+                                "Failed to obtain primary key attribute of the referenced table " + referencedTable.getName().getNameString()
+                            );
                             resultContext = null;
                         } else {
-                            resultContext = referencedContext.overrideResultTuple(null, SQLQueryRowsTableDataModel.prepareResultColumnsList(
-                                referencedTable.getName().entityName, referencedTable, realTable, referencedContext, statistics, pkAttrs
+                            resultContext = referencedContext.getRowsSources().makeTuple(null, SQLQuerySemanticUtils.prepareResultColumnsList(
+                                referencedTable.getName().syntaxNode, referencedTable, realTable, referencedContext.getConnection().dialect, statistics, pkAttrs
                             ));
                         }
                     } else {
                         statistics.appendWarning(
-                            referencedTable.getName().entityName,
-                            "Failed to obtain primary key of the referenced table " + referencedTable.getName().toIdentifierString());
+                            referencedTable.getName().syntaxNode,
+                            "Failed to obtain primary key of the referenced table " + referencedTable.getName().getNameString()
+                        );
                         resultContext = null;
                     }
                 } catch (DBException e) {
                     statistics.appendError(
-                        referencedTable.getName().entityName,
-                        "Failed to resolve primary key of the referenced table " + referencedTable.getName().toIdentifierString(),
+                        referencedTable.getName().syntaxNode,
+                        "Failed to resolve primary key of the referenced table " + referencedTable.getName().getNameString(),
                         e
                     );
                     resultContext = null;

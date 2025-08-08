@@ -20,13 +20,20 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineSettings;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * AI global settings.
+ * Keeps global parameters and configuration of all AI engines
+ */
 public class AISettings implements IAdaptable {
     private boolean aiDisabled;
     private String activeEngine;
@@ -46,12 +53,26 @@ public class AISettings implements IAdaptable {
     }
 
     public void setActiveEngine(String activeEngine) {
+        AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(activeEngine);
+        if (engineDescriptor != null) {
+            // Replacement?
+            activeEngine = engineDescriptor.getId();
+        }
         this.activeEngine = activeEngine;
     }
 
     @NotNull
     public synchronized <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) throws DBException {
         AIEngineSettings<?> aiEngineSettings = engineConfigurations.get(engineId);
+        if (aiEngineSettings == null) {
+            AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
+            if (engineDescriptor == null) {
+                throw new DBException("AI engine " + engineId + " not found");
+            }
+            if (!CommonUtils.isEmpty(engineDescriptor.getReplaces())) {
+                aiEngineSettings = engineConfigurations.get(engineDescriptor.getReplaces());
+            }
+        }
 
         if (!AISettingsRegistry.saveSecretsAsPlainText()) {
             if (!resolvedSecrets.contains(engineId)) {
@@ -72,8 +93,13 @@ public class AISettings implements IAdaptable {
     }
 
     public void saveSecrets() throws DBException {
-        for (AIEngineSettings<?> engineConfiguration : engineConfigurations.values()) {
-            engineConfiguration.saveSecrets();
+        for (Map.Entry<String, AIEngineSettings<?>> entry : engineConfigurations.entrySet()) {
+            String engineId = entry.getKey();
+            AIEngineSettings<?> engineConfiguration = entry.getValue();
+
+            if (resolvedSecrets.contains(engineId)) {
+                engineConfiguration.saveSecrets();
+            }
         }
     }
 
