@@ -88,6 +88,12 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
         return compositeField.memberInfo.name();
     }
 
+    @Nullable
+    @Override
+    public String visitSpecialCompositeField(@NotNull SQLSpecialCompositeFieldCompletionItem compositeField) {
+        return compositeField.memberInfo.name();
+    }
+
     @NotNull
     @Override
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {

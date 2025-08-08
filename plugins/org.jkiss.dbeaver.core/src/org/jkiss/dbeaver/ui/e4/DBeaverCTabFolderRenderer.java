@@ -28,7 +28,10 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -46,6 +49,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     private static final Log log = Log.getLog(DBeaverCTabFolderRenderer.class);
 
     private static final Rectangle EMPTY_CLOSE_RECT = new Rectangle(0, 0, 0, 0);
+    private static final String PART_SKIP_KEY = DBeaverCTabFolderRenderer.class.getName() + ".skipPart";
 
     private static final FieldReflection<CTabRendering, Color> selectedTabHighlightColorField;
     private static final FieldReflection<CTabRendering, Color> hotUnselectedTabsColorBackgroundField;
@@ -143,6 +147,9 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
     @Nullable
     private static Color getConnectionColor(@NotNull MPart part) {
+        if (part.getTransientData().containsKey(PART_SKIP_KEY)) {
+            return null;
+        }
         if (isInColor) {
             // FIXME: this is a dirty workaround for UI freeze (dbeaver/pro#6519)
             // Freeze happens because we may trigger master password dialog in ref.getEditorInput()
@@ -164,7 +171,11 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
                 try {
                     return getConnectionColor(ref.getEditorInput());
-                } catch (PartInitException e) {
+                } catch (Exception e) {
+                    // If for whatever reason we failed to retrieve the editor input with an exception,
+                    // it's likely to happen again. To avoid such scenarios, we set this key so it will
+                    // cause all future calls for this part to return early.
+                    part.getTransientData().put(PART_SKIP_KEY, Boolean.TRUE);
                     log.debug("Cannot get editor input for part: " + part.getElementId(), e);
                 }
             }
