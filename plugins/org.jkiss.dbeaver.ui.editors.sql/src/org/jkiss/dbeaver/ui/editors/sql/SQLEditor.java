@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
@@ -47,15 +48,14 @@ import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.services.IEvaluationReference;
 import org.eclipse.ui.services.IEvaluationService;
-import org.eclipse.ui.texteditor.DefaultRangeIndicator;
-import org.eclipse.ui.texteditor.IStatusField;
-import org.eclipse.ui.texteditor.ITextEditorActionConstants;
+import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
@@ -151,8 +151,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -325,7 +325,8 @@ public class SQLEditor extends SQLEditorBase implements
             TEXT_EDITOR_CONTEXT,
             SQLEditorContributions.SQL_EDITOR_CONTEXT,
             SQLEditorContributions.SQL_EDITOR_SCRIPT_CONTEXT,
-            IResultSetController.RESULTS_CONTEXT_ID
+            IResultSetController.RESULTS_CONTEXT_ID,
+            SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT
         };
     }
 
@@ -772,6 +773,14 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
+        public boolean belongsTo(Object family) {
+            if (family == this || family == dataSourceContainer) {
+                return true;
+            }
+            return super.belongsTo(family);
+        }
+
+        @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             monitor.beginTask("Open SQLEditor isolated connection", 1);
             try {
@@ -987,14 +996,18 @@ public class SQLEditor extends SQLEditorBase implements
                 UIServiceConnections serviceConnections = DBWorkbench.getService(UIServiceConnections.class);
                 if (serviceConnections != null) {
                     // Start connect visualizer
-                    ConnectVisualizer connectVisualizer = new ConnectVisualizer();
-                    serviceConnections.connectDataSource(dataSourceContainer, status -> {
-                        // We must reload syntax to refresh context
-                        UIUtils.syncExec(this::reloadSyntaxRules);
-                        if (onFinish != null) {
-                            onFinish.onTaskFinished(status);
-                        }
-                        connectVisualizer.stop();
+                    UIUtils.asyncExec(() -> {
+                        ConnectVisualizer connectVisualizer = new ConnectVisualizer();
+                        serviceConnections.connectDataSource(
+                            dataSourceContainer, status -> {
+                                // We must reload syntax to refresh context
+                                UIUtils.asyncExec(this::reloadSyntaxRules);
+                                if (onFinish != null) {
+                                    onFinish.onTaskFinished(status);
+                                }
+                                connectVisualizer.stop();
+                            }
+                        );
                     });
                 }
             }
@@ -1010,7 +1023,7 @@ public class SQLEditor extends SQLEditorBase implements
         resultsSash = UIUtils.createPartDivider(
             this,
             parent,
-            resultSetOrientation.getSashOrientation() | SWT.SMOOTH
+            UIUtils.checkSashStyle(resultSetOrientation.getSashOrientation() | SWT.SMOOTH)
         );
         resultsSash.setShowBorders(true);
         CSSUtils.setCSSClass(resultsSash, DBStyles.COLORED_BY_CONNECTION_TYPE);
@@ -1161,6 +1174,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         this.isPartControlInitialized = true;
+
+        // Context listener
+        EditorUtils.trackControlContext(getSite(), textWidget, SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
     }
 
     protected boolean isHideQueryText() {
@@ -1345,7 +1361,7 @@ public class SQLEditor extends SQLEditorBase implements
             public void setBackground(Color color) {
                 DBPDataSourceContainer dsContainer = getDataSourceContainer();
                 Color bgColor = dsContainer != null ? UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration()) : null;
-                if (bgColor != null && !bgColor.equals(color)) {
+                if (resultTabs != null && !resultTabs.isDisposed() && bgColor != null && !bgColor.equals(color)) {
                     UIUtils.asyncExec(() -> CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE));
                 } else {
                     super.setBackground(color);
@@ -2225,9 +2241,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void run() {
-            if (!isHideQueryText() && resultsSash.getMaximizedControl() != null) {
-                resultsSash.setMaximizedControl(null);
-            }
             setChecked(!isChecked());
             SQLEditorPresentationPanel panelInstance = extraPresentationManager.panels.get(panel);
             if (panelInstance != null && !isChecked()) {
@@ -2273,6 +2286,9 @@ public class SQLEditor extends SQLEditorBase implements
                         break;
                     }
                 }
+            }
+            if (!isHideQueryText() && resultsSash.getMaximizedControl() != null) {
+                UIUtils.asyncExec(() -> resultsSash.setMaximizedControl(null));
             }
         }
     }
@@ -3590,7 +3606,10 @@ public class SQLEditor extends SQLEditorBase implements
 
         updateDirtyFlag();
 
-        if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE)) {
+        IFile fileFromInput = EditorUtils.getFileFromInput(this.getEditorInput());
+        if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE)
+            && (fileFromInput == null || fileFromInput.isSynchronized(0))
+        ) {
             return ISaveablePart2.YES;
         }
 
@@ -3599,6 +3618,44 @@ public class SQLEditor extends SQLEditorBase implements
             return ISaveablePart2.DEFAULT;
         }
         return ISaveablePart2.YES;
+    }
+
+    @Override
+    protected void handleExceptionOnSave(CoreException exception, IProgressMonitor progressMonitor) {
+        IDocumentProvider provider= getDocumentProvider();
+        if (provider instanceof IDocumentProviderExtension5 providerExt
+            && providerExt.isNotSynchronizedException(getEditorInput(), exception)
+        ){
+            String[] buttons = new String[]{
+                SQLEditorMessages.update_conflict_message_overwrite,
+                SQLEditorMessages.update_conflict_message_revert,
+                WorkbenchMessages.SaveableHelper_Cancel
+            };
+            MessageDialog dialog = new MessageDialog(
+                UIUtils.getActiveShell(),
+                WorkbenchMessages.Save_Resource,
+                null,
+                NLS.bind(SQLEditorMessages.update_conflict_message, this.getEditorInput().getName()),
+                MessageDialog.NONE,
+                0,
+                buttons
+            ) {
+                @Override
+                protected int getShellStyle() {
+                    return SWT.CLOSE | SWT.TITLE | SWT.BORDER | SWT.APPLICATION_MODAL | SWT.SHEET | getDefaultOrientation();
+                }
+            };
+            int response = dialog.open();
+            if (response == 0) { // overwrite
+                performSave(true, progressMonitor);
+            } else if (response == 1) { // revert
+                doRevertToSaved();
+            } else if (progressMonitor != null) { //cancel
+                progressMonitor.setCanceled(true);
+            }
+        } else {
+            super.handleExceptionOnSave(exception, progressMonitor);
+        }
     }
 
     protected void afterSaveToFile(File saveFile) {

@@ -22,10 +22,9 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.List;
@@ -59,27 +58,6 @@ public class SQLQueryRowsCteSubqueryModel extends SQLQueryRowsSourceModel {
         if (sourceTailScope != null) {
             this.registerLexicalScope(sourceTailScope);
         }
-    }
-
-    /**
-     * Associate CTE subquery alias symbol with its definition
-     */
-    public void prepareAliasDefinition() {
-        if (this.subqueryName != null) {
-            this.subqueryName.getSymbol().setDefinition(this.subqueryName);
-            if (this.subqueryName.isNotClassified()) {
-                this.subqueryName.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
-            }
-        }
-    }
-
-    @NotNull
-    @Override
-    protected SQLQueryDataContext propagateContextImpl(
-        @NotNull SQLQueryDataContext context,
-        @NotNull SQLQueryRecognitionContext statistics
-    ) {
-        return context; // just apply given context
     }
 
     @Override

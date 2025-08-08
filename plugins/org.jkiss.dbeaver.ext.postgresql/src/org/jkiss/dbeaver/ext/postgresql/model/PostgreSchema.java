@@ -1140,12 +1140,12 @@ public class PostgreSchema implements
             JDBCSession session,
             PostgreTableBase parent, PostgreIndex object, JDBCResultSet dbResult)
             throws SQLException, DBException {
-            long[] keyNumbers = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "keys"));
+            long[] keyNumbers = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "keys"), getDataSource());
             if (keyNumbers == null) {
                 return null;
             }
-            long[] indColClasses = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "indclass"));
-            int[] keyOptions = PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, "indoption"));
+            long[] indColClasses = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "indclass"), getDataSource());
+            int[] keyOptions = PostgreUtils.getIntVector(JDBCUtils.safeGetObject(dbResult, "indoption"), getDataSource());
             String expr = JDBCUtils.safeGetString(dbResult, "expr");
             Collection<? extends PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
             assert attributes != null;
@@ -1204,6 +1204,7 @@ public class PostgreSchema implements
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @Nullable PostgreProcedure object, @Nullable String objectName) throws SQLException {
             PostgreServerExtension serverType = owner.getDataSource().getServerType();
             String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
+            String nameColumn = "proname";
             boolean versionAtLeast7 = session.getDataSource().isServerVersionAtLeast(7, 2);
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT p." + oidColumn + " as poid,p.*," +
@@ -1214,11 +1215,15 @@ public class PostgreSchema implements
                     (versionAtLeast7 ? " AND d.objsubid = 0" : "") + // no links to columns
                     "\nWHERE p.pronamespace=?" +
                     (object == null ? "" : " AND p." + oidColumn + "=?") +
+                    (object != null || objectName == null ? "" : " AND p." + nameColumn + "=?") +
                     "\nORDER BY p.proname"
             );
             dbStat.setLong(1, owner.getObjectId());
             if (object != null) {
                 dbStat.setLong(2, object.getObjectId());
+            }
+            if (object == null && objectName != null) {
+                dbStat.setString(2, objectName);
             }
             return dbStat;
         }

@@ -142,6 +142,7 @@ public class OracleConstants {
 
     public static final String PROP_OBJECT_DEFINITION = "objectDefinitionText";
     public static final String PROP_OBJECT_BODY_DEFINITION = "extendedDefinitionText";
+    public static final String JOB_ACTION_DEFINITION = "jobAction";
 
     public static final String COL_OWNER = "OWNER";
     public static final String COL_TABLE_NAME = "TABLE_NAME";
@@ -198,6 +199,7 @@ public class OracleConstants {
     /**
      * Oracle error codes
      */
+    public static final int EC_INVALID_USERNAME_PASSWORD = 1017;
     public static final int EC_FEATURE_NOT_SUPPORTED = 17023;
     public static final int EC_NO_RESULTSET_AVAILABLE = 17283;
     public static final int EC_PASSWORD_EXPIRED = 28001;

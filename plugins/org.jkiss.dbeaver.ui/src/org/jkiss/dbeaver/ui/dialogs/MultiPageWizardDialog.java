@@ -30,7 +30,6 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -40,6 +39,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -60,7 +60,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         /** If a page is complete, a green check will be shown next to it */
         COMPLETE,
         /** If a page is incomplete, a red cross will be shown next to it */
-        ERROR
+        ERROR,
+        CURRENT
     }
 
     private IWizard wizard;
@@ -478,14 +479,19 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             if (page instanceof IWizardPageNavigable pageNavigable && !pageNavigable.isPageNavigable()) {
                 continue;
             }
+            DBPImage itemImage;
             if (page == currentPage) {
                 // Don't show any completion marks for current page
-                item.setImage((Image) null);
+                itemImage = shownCompletionMarks.contains(PageCompletionMark.CURRENT) ? UIIcon.RS_FORWARD : null;
             } else if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
-                item.setImage(shownCompletionMarks.contains(PageCompletionMark.ERROR) ? DBeaverIcons.getImage(DBIcon.SMALL_ERROR) : null);
+                itemImage = shownCompletionMarks.contains(PageCompletionMark.ERROR) ? DBIcon.SMALL_ERROR : null;
             } else {
-                item.setImage(shownCompletionMarks.contains(PageCompletionMark.COMPLETE) ? DBeaverIcons.getImage(UIIcon.OK_MARK) : null);
+                itemImage = shownCompletionMarks.contains(PageCompletionMark.COMPLETE) ? UIIcon.OK_MARK : null;
             }
+            if (itemImage == null && shownCompletionMarks.contains(PageCompletionMark.CURRENT)) {
+                itemImage = UIIcon.DOTS_BUTTON;
+            }
+            item.setImage(itemImage == null ? null : DBeaverIcons.getImage(itemImage));
             updatePageCompleteMark(item);
         }
     }
@@ -503,7 +509,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_DARK_SHADOW;
             item.setForeground(getShell().getDisplay().getSystemColor(nnColor));
         }
-
         item.setData(page);
 
         // Ad sub pages

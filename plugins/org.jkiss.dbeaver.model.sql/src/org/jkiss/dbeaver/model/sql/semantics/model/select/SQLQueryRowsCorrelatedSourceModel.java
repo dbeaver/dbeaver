@@ -17,15 +17,12 @@
 package org.jkiss.dbeaver.model.sql.semantics.model.select;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
@@ -54,6 +51,12 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
         this.correlationColumNames = correlationColumNames;
     }
 
+    @Nullable
+    @Override
+    public SQLQuerySymbolClass getAssociatedSymbolClass() {
+        return SQLQuerySemanticUtils.getIdentifierSymbolClass(this.alias);
+    }
+
     @NotNull
     public SQLQueryRowsSourceModel getSource() {
         return this.source;
@@ -69,54 +72,6 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
         return this.correlationColumNames;
     }
 
-    @NotNull
-    @Override
-    protected SQLQueryDataContext propagateContextImpl(
-        @NotNull SQLQueryDataContext context,
-        @NotNull SQLQueryRecognitionContext statistics
-    ) {
-        context = this.source.propagateContext(context, statistics);
-        
-        if (this.alias.isNotClassified()) {
-            context = context.extendWithTableAlias(this.alias.getSymbol(), this);
-            
-            this.alias.getSymbol().setDefinition(this.alias);
-            if (this.alias.isNotClassified()) {
-                this.alias.getSymbol().setSymbolClass(SQLQuerySymbolClass.TABLE_ALIAS);
-            }
-
-            context = prepareColumnsCorrelation(context, this.correlationColumNames, this);
-        }
-        return context;
-    }
-
-    /**
-     * Associate correlated source column names symbols with its definition
-     */
-    @NotNull
-    public static SQLQueryDataContext prepareColumnsCorrelation(
-        @NotNull SQLQueryDataContext context,
-        @NotNull List<SQLQuerySymbolEntry> correlationColumNames,
-        @NotNull SQLQueryRowsSourceModel columnsSource
-    ) {
-        if (correlationColumNames.size() > 0) {
-            List<SQLQueryResultColumn> columns = new ArrayList<>(context.getColumnsList());
-            for (int i = 0; i < columns.size() && i < correlationColumNames.size(); i++) {
-                SQLQuerySymbolEntry correlatedNameDef = correlationColumNames.get(i);
-                if (correlatedNameDef.isNotClassified()) {
-                    SQLQueryResultColumn oldColumn = columns.get(i);
-                    SQLQuerySymbol correlatedName = correlatedNameDef.getSymbol();
-                    correlatedName.setDefinition(correlatedNameDef);
-                    correlatedName.setSymbolClass(SQLQuerySymbolClass.COLUMN_DERIVED);
-                    correlatedNameDef.setDefinition(oldColumn.symbol.getDefinition());
-                    columns.set(i, new SQLQueryResultColumn(i, correlatedName, columnsSource, null, null, oldColumn.type));
-                }
-            }
-            context = context.overrideResultTuple(columnsSource, columns, context.getPseudoColumnsList());
-        }
-        return context;
-    }
-
     /**
      * Associate correlated source column names symbols with its definition
      */
@@ -126,8 +81,13 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
         @NotNull List<SQLQuerySymbolEntry> correlationColumNames,
         @NotNull SQLQueryRowsSourceModel columnsSource
     ) {
-        if (!correlationColumNames.isEmpty()) {
-            List<SQLQueryResultColumn> columns = new ArrayList<>(context.getColumnsList());
+        List<SQLQueryResultColumn> columns = new ArrayList<>(context.getColumnsList());
+        if (correlationColumNames.isEmpty()) {
+            for (int i = 0; i < columns.size(); i++) {
+                SQLQueryResultColumn oldColumn = columns.get(i);
+                columns.set(i, oldColumn.withNewSource(columnsSource));
+            }
+        } else {
             for (int i = 0; i < columns.size() && i < correlationColumNames.size(); i++) {
                 SQLQuerySymbolEntry correlatedNameDef = correlationColumNames.get(i);
                 if (correlatedNameDef.isNotClassified()) {
@@ -139,11 +99,8 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
                     columns.set(i, new SQLQueryResultColumn(i, correlatedName, columnsSource, null, null, oldColumn.type));
                 }
             }
-            // TODO consider referencing pseudo-columns through alias
-            return columnsSource.getRowsSources().makeTuple(columnsSource, columns, context.getPseudoColumnsList());
-        } else {
-            return columnsSource.getRowsSources().makeTuple(columnsSource, context.getColumnsList(), context.getPseudoColumnsList());
         }
+        return columnsSource.getRowsSources().makeTuple(columnsSource, columns, context.getPseudoColumnsList());
     }
 
     @Override
@@ -158,7 +115,7 @@ public class SQLQueryRowsCorrelatedSourceModel extends SQLQueryRowsSourceModel {
             }
         }
 
-        return this.source.resolveRowSources(context, statistics).appendAlias(this.source, this.alias.getSymbol());
+        return this.source.resolveRowSources(context, statistics).replaceWithAlias(this.source, this, this.alias);
     }
 
     @Override

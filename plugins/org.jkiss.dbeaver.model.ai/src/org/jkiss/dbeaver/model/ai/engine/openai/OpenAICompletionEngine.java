@@ -16,27 +16,25 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
-import com.theokanning.openai.completion.chat.ChatCompletionChunk;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatCompletionResult;
-import com.theokanning.openai.completion.chat.ChatMessage;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionResult;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatMessage;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 import java.util.concurrent.Flow;
 
-public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
-    private static final Log log = Log.getLog(OpenAICompletionEngine.class);
-    public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
+public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
+    extends BaseCompletionEngine {
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
@@ -46,18 +44,27 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         }
 
         @Override
-        protected void onDispose(OpenAIClient disposedValue) {
+        protected void onDispose(@NotNull OpenAIClient disposedValue) {
             disposedValue.close();
         }
     };
 
-    public OpenAICompletionEngine(AISettingsRegistry registry) {
-        super(registry);
+    protected final PROPS properties;
+
+    public OpenAICompletionEngine(PROPS properties) {
+        this.properties = properties;
     }
 
+    @NotNull
     @Override
-    public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return OpenAIModel.getByName(getProperties().getModel()).getMaxTokens();
+    public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return openAiService.getInstance().getModels(monitor)
+            .stream()
+            .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
+                model.id(),
+                new AIModel(model.id(), null, OpenAIModels.getModelFeatures(model.id()))
+            ))
+            .toList();
     }
 
     @NotNull
@@ -80,18 +87,16 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        Flow.Publisher<ChatCompletionChunk> publisher = openAiService.getInstance()
-            .createChatCompletionStream(monitor, ChatCompletionRequest.builder()
-                .messages(fromMessages(request.messages()))
-                .temperature(temperature())
-                .frequencyPenalty(0.0)
-                .presencePenalty(0.0)
-                .maxTokens(AIConstants.MAX_RESPONSE_TOKENS)
-                .n(1)
-                .model(model())
-                .stream(true)
-                .build()
-            );
+        ChatCompletionRequest ccr = new ChatCompletionRequest();
+        ccr.setMessages(fromMessages(request.messages()));
+        ccr.setTemperature(temperature());
+        ccr.setFrequencyPenalty(0.0);
+        ccr.setPresencePenalty(0.0);
+        ccr.setMaxTokens(AIConstants.MAX_RESPONSE_TOKENS);
+        ccr.setN(1);
+        ccr.setModel(model());
+        ccr.setStream(true);
+        Flow.Publisher<ChatCompletionChunk> publisher = openAiService.getInstance().createChatCompletionStream(monitor, ccr);
 
         return subscriber -> publisher.subscribe(new Flow.Subscriber<>() {
             @Override
@@ -123,12 +128,18 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
     }
 
     @Override
-    public void onSettingsUpdate(@NotNull AISettingsRegistry registry) {
-        try {
-            openAiService.dispose();
-        } catch (DBException e) {
-            log.error("Error disposing OpenAI service", e);
+    public int getContextWindowSize(DBRProgressMonitor monitor) throws DBException {
+        Integer contextWindowSize = properties.getContextWindowSize();
+        if (contextWindowSize != null) {
+            return contextWindowSize;
         }
+
+        throw new DBException("Context window size is not set for the model: " + model());
+    }
+
+    @Override
+    public void close() throws DBException {
+        openAiService.dispose();
     }
 
     @NotNull
@@ -136,15 +147,14 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         @NotNull DBRProgressMonitor monitor,
         @NotNull List<AIMessage> messages
     ) throws DBException {
-        ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()
-            .messages(fromMessages(messages))
-            .temperature(temperature())
-            .frequencyPenalty(0.0)
-            .presencePenalty(0.0)
-            .maxTokens(AIConstants.MAX_RESPONSE_TOKENS)
-            .n(1)
-            .model(model())
-            .build();
+        ChatCompletionRequest completionRequest = new ChatCompletionRequest();
+        completionRequest.setMessages(fromMessages(messages));
+        completionRequest.setTemperature(temperature());
+        completionRequest.setFrequencyPenalty(0.0);
+        completionRequest.setPresencePenalty(0.0);
+        completionRequest.setMaxTokens(AIConstants.MAX_RESPONSE_TOKENS);
+        completionRequest.setN(1);
+        completionRequest.setModel(model());
 
         return openAiService.getInstance().createChatCompletion(monitor, completionRequest);
     }
@@ -165,24 +175,22 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         };
     }
 
+    @NotNull
     protected OpenAIClient createClient() throws DBException {
-        return new OpenAIClient(
-            OPENAI_ENDPOINT,
-            List.of(new OpenAIRequestFilter(getProperties().getToken()))
-        );
+        String token = properties.getToken();
+        if (token == null || token.isEmpty()) {
+            throw new DBException("OpenAI API token is not set");
+        }
+
+        return OpenAIClient.createClient(token);
     }
 
+    @Nullable
     protected String model() throws DBException {
-        return OpenAIModel.getByName(getProperties().getModel()).getName();
+        return properties.getModel();
     }
 
     protected double temperature() throws DBException {
-        return getProperties().getTemperature();
-    }
-
-    @Override
-    protected PROPS getProperties() throws DBException {
-        return registry.getSettings().<LegacyAISettings<PROPS>> getEngineConfiguration(OpenAIConstants.OPENAI_ENGINE)
-            .getProperties();
+        return properties.getTemperature();
     }
 }
