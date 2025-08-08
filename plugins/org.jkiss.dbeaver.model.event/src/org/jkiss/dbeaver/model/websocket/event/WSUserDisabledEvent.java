@@ -14,18 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.websocket.event;
 
-package org.jkiss.dbeaver.ui.navigator;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+public class WSUserDisabledEvent extends WSAbstractEvent {
+    public static final String ID = "cb_user_disabled";
 
-/**
- * INavigatorNodeContainer
- */
-public interface INavigatorNodeContainer {
-
-    @Nullable
-    DBNNode getRootNode();
-
+    @NotNull
+    public WSUserDisabledEvent(@NotNull String userId) {
+        super(ID, WSConstants.TOPIC_USER, null, userId);
+    }
 }

@@ -64,7 +64,7 @@ public class EFSNIOFileSystem extends FileSystem {
     }
 
     @NotNull
-    private static EFSNIOFileStore getFileStoreFromUri(@NotNull DBRProgressMonitor monitor, @NotNull URI uri) {
+    private static IFileStore getFileStoreFromUri(@NotNull DBRProgressMonitor monitor, @NotNull URI uri) {
         Path path = null;
 
         String projectName = CommonUtils.toString(uri.getHost(), uri.getAuthority());
@@ -112,8 +112,9 @@ public class EFSNIOFileSystem extends FileSystem {
         }
 
         if (path == null) {
-            throw new IllegalArgumentException("Invalid " + DBVFS_FS_ID + " URI: " + uri);
-            //return EFS.getNullFileSystem().getStore(uri);
+            // throw new IllegalArgumentException("Invalid " + DBVFS_FS_ID + " URI: " + uri);
+            log.debug("Invalid " + DBVFS_FS_ID + " URI: " + uri);
+            return EFS.getNullFileSystem().getStore(uri);
         }
         return new EFSNIOFileStore(uri, path);
     }
