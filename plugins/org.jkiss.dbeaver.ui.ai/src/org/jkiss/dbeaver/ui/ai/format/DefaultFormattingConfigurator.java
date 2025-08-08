@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
-import org.jkiss.dbeaver.utils.NLS;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -83,6 +82,7 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
             UIMessages.controls_locale_selector_label_language,
             SWT.DROP_DOWN
         );
+        ((GridData)languageText.getLayoutData()).widthHint = 100;
         languageText.setToolTipText(
             """
                 Language AI engine should use in chat by default.
@@ -100,12 +100,10 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
             GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
             SWT.DEFAULT
         );
-        UIUtils.createControlLabel(completionGroup, AIUIMessages.gpt_preference_page_advanced_appearance_group, 2);
         Composite appearanceSettings = UIUtils.createComposite(completionGroup, 2);
         appearanceSettings.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
 
         createAppearanceSettings(appearanceSettings, propertyChangeListener);
-        UIUtils.createControlLabel(completionGroup, AIUIMessages.gpt_preference_page_completion_group, 2);
 
         Composite completionComposite = UIUtils.createComposite(completionGroup, 2);
         completionComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -122,32 +120,32 @@ public class DefaultFormattingConfigurator implements IObjectPropertyConfigurato
     }
 
     protected void createQueryExecutionSettings(@NotNull Composite chatSettingsGroup) {
-        confirmSQLCombo = createConfirmQueryCombo(chatSettingsGroup, "SQL");
+        confirmSQLCombo = createConfirmQueryCombo(chatSettingsGroup, "Select", "Confirm regular SQL select queries");
         confirmSQLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_execute);
         confirmSQLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_confirm);
         confirmSQLCombo.select(0);
 
-        confirmDMLCombo = createConfirmQueryCombo(chatSettingsGroup, "DML");
+        confirmDMLCombo = createConfirmQueryCombo(chatSettingsGroup, "Modify", "Confirm INSERT/DELETE/UPDATE queries");
         confirmDMLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_execute);
         confirmDMLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_confirm);
         confirmDMLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_disable_autocommit);
         confirmDMLCombo.select(1);
 
-        confirmDDLCombo = createConfirmQueryCombo(chatSettingsGroup, "DDL");
+        confirmDDLCombo = createConfirmQueryCombo(chatSettingsGroup, "Schema", "Confirm schema modification queries (CREATE, DROP, ALTER, etc)");
         confirmDDLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_execute);
         confirmDDLCombo.add(AIUIMessages.gpt_preference_page_ai_query_confirm_rule_confirm);
         confirmDDLCombo.select(1);
     }
 
     @NotNull
-    private Combo createConfirmQueryCombo(@NotNull Composite group, @NotNull String queryType) {
+    private Combo createConfirmQueryCombo(@NotNull Composite group, @NotNull String queryType, String hint) {
         Combo combo =  UIUtils.createLabelCombo(
             group,
-            NLS.bind(AIUIMessages.gpt_preference_page_ai_query_confirm_label, queryType),
-            NLS.bind(AIUIMessages.gpt_preference_page_ai_query_confirm_tip, queryType),
+            queryType,
+            hint,
             SWT.READ_ONLY | SWT.DROP_DOWN
         );
-        combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         return combo;
     }
 
