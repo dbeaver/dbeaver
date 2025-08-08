@@ -118,8 +118,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -213,6 +213,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     // INavigatorModelView implementation
     // We need it to support a set of standard commands like copy/paste/rename/etc
 
+    @Nullable
     @Override
     public DBNNode getRootNode() {
         IEditorInput editorInput = this.getEditorInput();
