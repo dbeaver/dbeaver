@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
@@ -215,7 +216,9 @@ public final class AIUtils {
         boolean isCommand
     ) {
         Set<SQLQueryCategory> queryCategories = SQLQueryCategory.categorizeScript(scriptElements);
-        if (queryCategories.contains(SQLQueryCategory.DDL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
+        boolean isDdlOrUnknown = queryCategories.contains(SQLQueryCategory.DDL) ||
+            queryCategories.contains(SQLQueryCategory.UNKNOWN);
+        if (isDdlOrUnknown && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_ddl_message :
                 AIMessages.ai_execute_query_confirm_ddl_message;
             return confirmExecute(AIMessages.ai_execute_query_title, message);
@@ -225,9 +228,7 @@ public final class AIUtils {
                 AIMessages.ai_execute_query_confirm_dml_message;
             return confirmExecute(AIMessages.ai_execute_query_title, message);
         }
-        boolean isSqlOrUnknown = queryCategories.contains(SQLQueryCategory.SQL) ||
-            queryCategories.contains(SQLQueryCategory.UNKNOWN);
-        if (isSqlOrUnknown && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
+        if (queryCategories.contains(SQLQueryCategory.SQL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_sql_message :
                 AIMessages.ai_execute_query_confirm_sql_message;
             return confirmExecute(AIMessages.ai_execute_query_title, message);
@@ -275,7 +276,7 @@ public final class AIUtils {
         return CommonUtils.valueOf(
             AIQueryConfirmationRule.class,
             DBWorkbench.getPlatform().getPreferenceStore().getString(actionName),
-            AIQueryConfirmationRule.EXECUTE
+            AIQueryConfirmationRule.CONFIRM
         ) == AIQueryConfirmationRule.CONFIRM;
     }
 
