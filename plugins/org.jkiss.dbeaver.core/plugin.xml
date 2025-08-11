@@ -997,21 +997,21 @@
                 label="%colorDefinition.org.jkiss.dbeaver.txn.color.committed.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.qm"
                 id="org.jkiss.dbeaver.txn.color.committed.background"
-                value="189, 254, 191">
+                value="192,229,217">
             <description>%colorDefinition.org.jkiss.dbeaver.txn.color.committed.background.description</description>
         </colorDefinition>
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.txn.color.reverted.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.qm"
                 id="org.jkiss.dbeaver.txn.color.reverted.background"
-                value="255, 99, 71">
+                value="239,211,202">
             <description>%colorDefinition.org.jkiss.dbeaver.txn.color.reverted.background.description</description>
         </colorDefinition>
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.txn.color.transaction.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.qm"
                 id="org.jkiss.dbeaver.txn.color.transaction.background"
-                value="255, 228, 181">
+                value="239,239,202">
             <description>%colorDefinition.org.jkiss.dbeaver.txn.color.transaction.background.description</description>
         </colorDefinition>
         <colorDefinition
@@ -1031,14 +1031,14 @@
             label="Test"
             categoryId="org.jkiss.dbeaver.ui.presentation.colors.connectionTypes"
             id="org.jkiss.dbeaver.color.connectionType.qa.background"
-            value="196,255,181">
+            value="225,250,242">
             <description>QA/Test/Stage server</description>
         </colorDefinition>
         <colorDefinition
             label="Production"
             categoryId="org.jkiss.dbeaver.ui.presentation.colors.connectionTypes"
             id="org.jkiss.dbeaver.color.connectionType.prod.background"
-            value="247,159,129">
+            value="255,238,233">
             <description>Production server</description>
         </colorDefinition>
 
