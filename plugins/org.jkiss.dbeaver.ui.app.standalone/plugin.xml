@@ -3,7 +3,6 @@
 
 <plugin>
 
-    <extension-point id="org.jkiss.dbeaver.commandLine" name="Command line extension" schema="schema/org.jkiss.dbeaver.commandLine.exsd"/>
 
     <extension point="org.eclipse.core.runtime.applications" id="standalone" name="%extension.standalone.name">
         <application visible="true">
@@ -38,7 +37,6 @@
             <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
-            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ui.app.standalone/tips.xml"/>
         </product>
     </extension>
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -301,6 +301,8 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
             String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
             connectionNameText = UIUtils.createLabelText(miscGroup, CoreMessages.dialog_connection_wizard_final_label_connection_name, CommonUtils.toString(connectionName));
+            UIUtils.setDefaultTextControlWidthHint(connectionNameText);
+
             connectionNameText.addModifyListener(e -> {
                 if (dataSourceDescriptor == null || !connectionNameText.getText().equals(connectionName)) {
                     connectionNameChanged = true;
@@ -315,6 +317,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             UIUtils.setContentProposalToolTip(connectionNameText, "Connection name patterns",
                 ConnectionNameResolver.getConnectionVariables());
             descriptionText = UIUtils.createLabelText(miscGroup, CoreMessages.dialog_connection_wizard_description, null);
+            UIUtils.setDefaultTextControlWidthHint(descriptionText);
             {
                 connectionTypeCombo = createConnectionTypeCombo(miscGroup);
                 connectionTypeCombo.addSelectionListener(new SelectionAdapter() {

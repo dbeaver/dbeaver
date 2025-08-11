@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.launcher;
 
 import org.eclipse.equinox.launcher.JNIBridge;
 
+import java.awt.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -34,6 +35,7 @@ import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
@@ -44,6 +46,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import javax.swing.*;
 
 
 /**
@@ -130,6 +133,7 @@ public class DBeaverLauncher {
     private boolean initialize = false;
     private boolean newInstance = false;
     protected boolean splashDown = false;
+    protected boolean cliMode = false;
 
     public final class SplashHandler extends Thread {
         @Override
@@ -310,6 +314,13 @@ public class DBeaverLauncher {
     private static final String DBEAVER_CONFIG_FOLDER = "settings";
     private static final String DBEAVER_CONFIG_FILE = "global-settings.ini";
     private static final String DBEAVER_PROP_LANGUAGE = "nl";
+
+    // List of incompatible Windows versions for those which we want to show a warning dialog
+    private static final Set<String> INCOMPATIBLE_WINDOWS_VERSIONS = Set.of(
+        "Windows 7",
+        "Windows 8",
+        "Windows Server 2012"
+    );
 
     /**
      * A structured form for a version identifier.
@@ -586,6 +597,8 @@ public class DBeaverLauncher {
      * @throws Exception thrown if a problem occurs during the launch
      */
     protected void basicRun(String[] args) throws Exception {
+        checkCompatibleWindowsVersion();
+
         System.setProperty("eclipse.startTime", Long.toString(System.currentTimeMillis())); //$NON-NLS-1$
         commands = args;
         String[] passThruArgs = processCommandLine(args);
@@ -648,18 +661,52 @@ public class DBeaverLauncher {
         invokeFramework(passThruArgs, bootPath);
     }
 
+    private void checkCompatibleWindowsVersion() {
+        if (GraphicsEnvironment.isHeadless() || isCompatibleWindowsVersion()) {
+            return;
+        }
+
+        try {
+            SwingUtilities.invokeAndWait(() -> JOptionPane.showMessageDialog(
+                null,
+                """
+                    You are using an incompatible operating system version: minimal supported
+                    version is Windows 10 (1607) or Windows Server 2016.
+                    
+                    You might experience issues and unexpected behavior when running DBeaver.
+                    
+                    Consider using an older version of DBeaver that supports your operating
+                    system, or upgrade your operating system to a newer version.
+                    """,
+                "Incompatible OS",
+                JOptionPane.ERROR_MESSAGE
+            ));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static boolean isCompatibleWindowsVersion() {
+        String name = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+        for (String other : INCOMPATIBLE_WINDOWS_VERSIONS) {
+            if (name.startsWith(other.toLowerCase(Locale.ROOT))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private boolean processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
         if (args == null || args.length == 0 || newInstance) {
-            return false;
+            return cliMode;
         }
         Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
         if (Files.notExists(workspacePath)) {
-            return false;
+            return cliMode;
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
         if (serverPort == null) {
-            return false;
+            return cliMode;
         }
         //TODO auto-closable after full 21 java migration
         ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
@@ -685,7 +732,7 @@ public class DBeaverLauncher {
             String responseData = response.body();
             if (!responseData.startsWith("{") || !responseData.endsWith("}")) {
                 System.out.println("Response is not expected json: " + responseData);
-                return false;
+                return cliMode;
             }
             // remove json '{' '}' braces
             //            responseData = responseData.substring(1, responseData.length() - 1);
@@ -721,7 +768,7 @@ public class DBeaverLauncher {
         } finally {
             httpExecutor.shutdown();
         }
-        return shutdownApplication;
+        return shutdownApplication || cliMode;
     }
 
     /**
@@ -1699,6 +1746,11 @@ public class DBeaverLauncher {
             // look for the new instance arg
             if (args[i].equalsIgnoreCase(NEW_INSTANCE)) {
                 newInstance = true;
+                found = true;
+            }
+
+            if (args[i].equalsIgnoreCase(Constants.ARG_FORCE_CLI_MODE)) {
+                cliMode = true;
                 found = true;
             }
 

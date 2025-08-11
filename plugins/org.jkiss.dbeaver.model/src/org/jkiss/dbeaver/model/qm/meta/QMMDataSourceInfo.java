@@ -24,6 +24,9 @@ import org.jkiss.code.Nullable;
  */
 public interface QMMDataSourceInfo {
 
+    @NotNull
+    String getProjectId();
+
     /**
      * Returns id of data source container.
      */

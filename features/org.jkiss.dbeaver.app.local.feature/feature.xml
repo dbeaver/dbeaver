@@ -3,7 +3,7 @@
 <feature
         id="org.jkiss.dbeaver.app.local.feature"
         label="DBeaver Local Standalone Application"
-        version="25.1.4.qualifier"
+        version="25.1.5.qualifier"
         provider-name="DBeaver Corp">
 
     <copyright>DBeaver Corp and others</copyright>

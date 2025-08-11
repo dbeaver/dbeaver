@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,11 @@ public class DBeaverPerspective implements IPerspectiveFactory
     public static final String FOLDER_RIGHT_MIDDLE = "rightMiddle"; //$NON-NLS-1$
     public static final String BOTTOM_BOTTOM_LEFT = "bottomLeft"; //$NON-NLS-1$
     public static final String FOLDER_BOTTOM_RIGHT = "bottomRight"; //$NON-NLS-1$
+
+    // Every time the perspective changes, the version must be bumped.
+    // This also includes perspective extensions that contribute views.
+    // The version is not incremental.
+    public static final String PERSPECTIVE_VERSION = "25.1.2"; //$NON-NLS-1$
 
     @Override
     public void createInitialLayout(IPageLayout layout)
@@ -81,8 +86,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
 
         // Search views
         bottomRight.addPlaceholder("org.eclipse.search.ui.views.SearchView"); //$NON-NLS-1$
-        bottomRight.addPlaceholder("org.jkiss.dbeaver.ui.search.DatabaseSearchView"); //$NON-NLS-1$
-        bottomRight.addPlaceholder("org.jkiss.dbeaver.core.shellProcess"); //$NON-NLS-1$
+        bottomRight.addPlaceholder(ShellProcessView.VIEW_ID); //$NON-NLS-1$
 
         // Add view shortcuts
         layout.addShowViewShortcut(DatabaseNavigatorView.VIEW_ID);
@@ -104,13 +108,14 @@ public class DBeaverPerspective implements IPerspectiveFactory
             FOLDER_RIGHT);
         rightTop.addPlaceholder(IPageLayout.ID_PROP_SHEET);
         rightTop.addPlaceholder(IActionConstants.HELP_VIEW_ID);
+        rightTop.addPlaceholder(IPageLayout.ID_OUTLINE);
 
         IPlaceholderFolderLayout rightMiddle = layout.createPlaceholderFolder(
             FOLDER_RIGHT_TOP,
             IPageLayout.BOTTOM,
             0.5f,
             FOLDER_RIGHT);
-        rightMiddle.addPlaceholder(IPageLayout.ID_OUTLINE);
+        //rightMiddle.addPlaceholder(IPageLayout.ID_OUTLINE);
 
     }
 

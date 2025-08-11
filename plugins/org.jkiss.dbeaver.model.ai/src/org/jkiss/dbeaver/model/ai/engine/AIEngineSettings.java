@@ -49,4 +49,8 @@ public interface AIEngineSettings<S extends AIEngineSettings<S>> {
      */
     @NotNull
     S merge(@NotNull Map<String, Object> map);
+
+    boolean isValid();
+
+    boolean isLoggingEnabled();
 }

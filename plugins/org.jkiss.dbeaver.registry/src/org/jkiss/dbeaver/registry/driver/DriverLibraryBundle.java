@@ -113,6 +113,9 @@ public class DriverLibraryBundle extends DriverLibraryAbstract {
                         return compiledClassesDir;
                     } else if (Files.exists(libraryDir)) {
                         return libraryDir;
+                    } else {
+                        // Extracted bundle?
+                        return localFilePath;
                     }
                 }
 
