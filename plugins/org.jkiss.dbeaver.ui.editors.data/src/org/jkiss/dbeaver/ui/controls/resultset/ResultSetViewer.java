@@ -63,7 +63,6 @@ import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -74,6 +73,7 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.data.hints.ValueHintProviderDescriptor;
@@ -1874,7 +1874,7 @@ public class ResultSetViewer extends Viewer
 
         {
             ToolBarManager addToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+            if (!ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
                 menuService.populateContributionManager(addToolBarManager, TOOLBAR_EXPORT_CONTRIBUTION_ID);
             }
 
@@ -2990,7 +2990,7 @@ public class ResultSetViewer extends Viewer
 
         // Fill general menu
         if (dataContainer != null) {
-            if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+            if (!ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
                 manager.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_EXPORT));
             }
             MenuManager openWithMenu = new MenuManager(ActionUtils.findCommandName(ResultSetHandlerOpenWith.CMD_OPEN_WITH));

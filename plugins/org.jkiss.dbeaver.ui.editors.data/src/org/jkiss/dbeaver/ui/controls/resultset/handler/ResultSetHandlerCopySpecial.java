@@ -34,8 +34,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.rm.RMConstants;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -64,7 +63,7 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_COPY)) {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_COPY)) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 UIMessages.dialog_policy_data_copy_title,
                 UIMessages.dialog_policy_data_copy_msg,

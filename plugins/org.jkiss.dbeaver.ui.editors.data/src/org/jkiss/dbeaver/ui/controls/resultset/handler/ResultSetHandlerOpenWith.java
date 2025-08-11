@@ -40,9 +40,9 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
@@ -82,7 +82,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
                 UIMessages.dialog_policy_data_export_title,
                 UIMessages.dialog_policy_data_export_msg,
@@ -317,7 +317,7 @@ public class ResultSetHandlerOpenWith extends AbstractHandler implements IElemen
             }
             ContributionManager menu = new MenuManager();
             // Def processor is null
-            if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.GLOBAL_PERMISSION_DATA_EDITOR_EXPORT)) {
+            if (!ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_EXPORT)) {
                 menu.add(new Action(ActionUtils.findCommandDescription(
                     ResultSetHandlerMain.CMD_EXPORT, rsv.getSite(), false),
                     Action.AS_RADIO_BUTTON) {

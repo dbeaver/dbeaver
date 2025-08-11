@@ -35,6 +35,9 @@ public class ApplicationPolicyProvider implements DBPPolicyProvider {
 
     private static final String DBEAVER_REGISTRY_POLICY_NODE = "Software\\DBeaver Corp\\DBeaver\\policy"; //$NON-NLS-1$
 
+    public static final String POLICY_DATA_EXPORT = "policy.data.export.disabled"; //$NON-NLS-1$
+    public static final String POLICY_DATA_COPY = "policy.data.copy.disabled"; //$NON-NLS-1$
+
     private static ApplicationPolicyProvider instance = new ApplicationPolicyProvider();
 
     @NotNull
@@ -44,6 +47,10 @@ public class ApplicationPolicyProvider implements DBPPolicyProvider {
 
     protected ApplicationPolicyProvider() {
         // private constructor
+    }
+
+    public static void setInstance(@NotNull ApplicationPolicyProvider instance) {
+        ApplicationPolicyProvider.instance = instance;
     }
 
     @Override
