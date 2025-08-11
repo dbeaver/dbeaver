@@ -52,9 +52,7 @@ public class IoTDBCommandGrantPrivilege extends DBECommandAbstract<IoTDBRelation
      * grant [1]
      * grant with option [2]
      * revoke [3]
-     * @param monitor
-     * @param executionContext
-     * @param options
+     *
      * @return
      */
     @NotNull
@@ -69,13 +67,11 @@ public class IoTDBCommandGrantPrivilege extends DBECommandAbstract<IoTDBRelation
         if (database.isEmpty() || table.isEmpty()) {
             grantScript = "GRANT " + privilegeName + " TO USER " + getObject().getName();
             revokeScript = "REVOKE " + privilegeName + " FROM USER " + getObject().getName();
-        }
-        else {
+        } else {
             int scopeType = 0;
             if (database.equals("(ALL)")) {
                 scopeType = 2;
-            }
-            else if (table.equals("(ALL)")) {
+            } else if (table.equals("(ALL)")) {
                 scopeType = 1;
             }
 

@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBGrant;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser;
-import org.jkiss.dbeaver.ext.iotdb.ui.internal.IoTDBUIMessages;
+import org.jkiss.dbeaver.ext.iotdb.ui.internal.IoTDBUiMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
@@ -41,7 +41,8 @@ public abstract class IoTDBUserEditorAbstract extends AbstractDatabaseObjectEdit
      */
     void loadGrants() {
         LoadingJob.createService(
-            new DatabaseLoadService<List<IoTDBGrant>>(IoTDBUIMessages.editors_user_editor_abstract_load_grants, getDatabaseObject().getDataSource()) {
+            new DatabaseLoadService<List<IoTDBGrant>>(IoTDBUiMessages.editors_user_editor_abstract_load_grants,
+                    getDatabaseObject().getDataSource()) {
                 @Override
                 public List<IoTDBGrant> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {

@@ -32,11 +32,11 @@ import org.jkiss.dbeaver.ext.iotdb.model.IoTDBPrivilege;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser;
 import org.jkiss.dbeaver.ext.iotdb.ui.config.IoTDBCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.iotdb.ui.controls.PrivilegeTableControl;
-import org.jkiss.dbeaver.ext.iotdb.ui.internal.IoTDBUIMessages;
+import org.jkiss.dbeaver.ext.iotdb.ui.internal.IoTDBUiMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -125,7 +125,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
                 public void widgetSelected(SelectionEvent e) {
                     int selIndex = tablesTable.getSelectionIndex();
                     if (selIndex < 0) {
-                        selectedTable= null;
+                        selectedTable = null;
                     } else {
                         selectedTable = tablesTable.getItem(selIndex).getText();
                     }
@@ -184,7 +184,8 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
 
     private void showDatabaseTables() {
         LoadingJob.createService(
-            new DatabaseLoadService<List<String>>(IoTDBUIMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
+            new DatabaseLoadService<List<String>>(
+                    IoTDBUiMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
                 @Override
                 public List<String> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     if (selectedDatabase == null) {
@@ -236,7 +237,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
         isLoaded = true;
         LoadingJob.createService(
             new DatabaseLoadService<>(
-                IoTDBUIMessages.editors_user_editor_privileges_service_load_privileges,
+                IoTDBUiMessages.editors_user_editor_privileges_service_load_privileges,
                 executionContext
             ) {
                 @Override

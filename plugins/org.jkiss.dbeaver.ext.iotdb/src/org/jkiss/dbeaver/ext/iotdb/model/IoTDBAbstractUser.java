@@ -102,7 +102,9 @@ public class IoTDBAbstractUser implements DBAUser, DBARole, DBPRefreshableObject
 
     /**
      * Load grants from the database
+     *
      * @param monitor progress monitor
+     *
      * @throws DBException if an error occurs
      */
     public void loadGrants(DBRProgressMonitor monitor) throws DBException {

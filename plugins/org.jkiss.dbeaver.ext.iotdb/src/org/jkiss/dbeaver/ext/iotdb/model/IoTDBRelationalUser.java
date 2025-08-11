@@ -60,6 +60,7 @@ public class IoTDBRelationalUser extends IoTDBAbstractUser {
 
     /**
      * Get the list of databases
+     *
      * @return List of IoTDBDatabase
      */
     public List<IoTDBDatabase> getDatabases() {
@@ -68,6 +69,7 @@ public class IoTDBRelationalUser extends IoTDBAbstractUser {
 
     /**
      * Load databases and tables
+     *
      * @throws DBException if an error occurs
      */
     public void loadDatabases(DBRProgressMonitor monitor) throws DBException {
@@ -82,7 +84,7 @@ public class IoTDBRelationalUser extends IoTDBAbstractUser {
                 String currentDatabase = rs.getString("Database");
                 List<String> currentTables = new ArrayList<>();
 
-                sql = isTree ? ("show devices " + currentDatabase + ".**") : ("show tables in " + currentDatabase); // use this instead of select * from information_schema to prevent permission issues
+                sql = isTree ? ("show devices " + currentDatabase + ".**") : ("show tables in " + currentDatabase);
                 JDBCStatement stmt2 = session.createStatement();
                 JDBCResultSet rs2 = stmt2.executeQuery(sql);
                 if (isTree) {

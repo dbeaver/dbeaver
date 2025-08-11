@@ -19,11 +19,11 @@ package org.jkiss.dbeaver.ext.iotdb.ui.internal;
 
 import org.jkiss.dbeaver.utils.NLS;
 
-public class IoTDBUIMessages extends NLS {
+public class IoTDBUiMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.iotdb.ui.internal.IoTDBUIMessages"; //$NON-NLS-1$
 
     static {
-        NLS.initializeMessages(BUNDLE_NAME, IoTDBUIMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, IoTDBUiMessages.class);
     }
 
     public static String controls_privilege_table_column_privilege_grant;
@@ -42,6 +42,6 @@ public class IoTDBUIMessages extends NLS {
     public static String editors_user_editor_privileges_service_load_privileges;
     public static String editors_user_editor_privileges_service_load_tables;
 
-    private IoTDBUIMessages() {
+    private IoTDBUiMessages() {
     }
 }

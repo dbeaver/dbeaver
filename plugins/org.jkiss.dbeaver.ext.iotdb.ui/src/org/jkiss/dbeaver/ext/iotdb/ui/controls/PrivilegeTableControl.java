@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Table;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBGrant;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBPrivilege;
-import org.jkiss.dbeaver.ext.iotdb.ui.internal.IoTDBUIMessages;
+import org.jkiss.dbeaver.ext.iotdb.ui.internal.IoTDBUiMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -88,7 +88,10 @@ public class PrivilegeTableControl extends Composite {
     }
 
     private void addPrivilegeNameColumn() {
-        columnsController.addColumn(IoTDBUIMessages.controls_privilege_table_column_privilege_name, IoTDBUIMessages.controls_privilege_table_column_privilege_name_tip, SWT.LEFT, true, true, new CellLabelProvider() {
+        columnsController.addColumn(
+                IoTDBUiMessages.controls_privilege_table_column_privilege_name,
+                IoTDBUiMessages.controls_privilege_table_column_privilege_name_tip,
+                SWT.LEFT, true, true, new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 Object element = cell.getElement();
@@ -100,7 +103,10 @@ public class PrivilegeTableControl extends Composite {
     }
 
     private void addPrivilegeEnabledColumn() {
-        columnsController.addBooleanColumn(IoTDBUIMessages.controls_privilege_table_column_privilege_status, IoTDBUIMessages.controls_privilege_table_column_privilege_status_tip, SWT.CENTER, true, true, item -> {
+        columnsController.addBooleanColumn(
+                IoTDBUiMessages.controls_privilege_table_column_privilege_status,
+                IoTDBUiMessages.controls_privilege_table_column_privilege_status_tip,
+                SWT.CENTER, true, true, item -> {
             if (item instanceof IoTDBObjectPrivilege) {
                 return ((IoTDBObjectPrivilege) item).enabled;
             }
@@ -144,7 +150,10 @@ public class PrivilegeTableControl extends Composite {
     }
 
     private void addPrivilegeGrantColumn() {
-        columnsController.addBooleanColumn(IoTDBUIMessages.controls_privilege_table_column_privilege_grant, IoTDBUIMessages.controls_privilege_table_column_privilege_grant_tip, SWT.CENTER, true, true, item -> {
+        columnsController.addBooleanColumn(
+                IoTDBUiMessages.controls_privilege_table_column_privilege_grant,
+                IoTDBUiMessages.controls_privilege_table_column_privilege_grant_tip,
+                SWT.CENTER, true, true, item -> {
             if (item instanceof IoTDBObjectPrivilege) {
                 return ((IoTDBObjectPrivilege) item).withGrantOption;
             }
@@ -176,7 +185,7 @@ public class PrivilegeTableControl extends Composite {
                 if (element instanceof IoTDBObjectPrivilege) {
                     IoTDBObjectPrivilege elementPriv = (IoTDBObjectPrivilege) element;
                     boolean prevC = elementPriv.enabled;
-                    if (elementPriv.withGrantOption != Boolean.TRUE.equals(value)) { // handle double click on the box cell
+                    if (elementPriv.withGrantOption != Boolean.TRUE.equals(value)) {
                         elementPriv.withGrantOption = Boolean.TRUE.equals(value);
                     }
                     boolean newG = elementPriv.withGrantOption;
@@ -187,7 +196,8 @@ public class PrivilegeTableControl extends Composite {
     }
 
     private void createCheckAllButton(Composite buttonsPanel) {
-        UIUtils.createPushButton(buttonsPanel, IoTDBUIMessages.controls_privilege_table_push_button_check_all, null, new SelectionAdapter() {
+        UIUtils.createPushButton(buttonsPanel,
+                IoTDBUiMessages.controls_privilege_table_push_button_check_all, null, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 for (IoTDBObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
@@ -201,7 +211,8 @@ public class PrivilegeTableControl extends Composite {
     }
 
     private void createClearAllButton(Composite buttonsPanel) {
-        UIUtils.createPushButton(buttonsPanel, IoTDBUIMessages.controls_privilege_table_push_button_clear_all, null, new SelectionAdapter() {
+        UIUtils.createPushButton(buttonsPanel,
+                IoTDBUiMessages.controls_privilege_table_push_button_clear_all, null, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 for (IoTDBObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
@@ -226,6 +237,7 @@ public class PrivilegeTableControl extends Composite {
      * 0 0 --> 1 0 grant [1]
      * 0 0 --> 1 1, 1 0 --> 1 1 grant with option [2]
      * 1 0 --> 0 0, 1 1 --> 0 0 revoke [3]
+     *
      * @param privilege IoTDBPrivilege
      * @param checked boolean
      * @param withGrantOption boolean
@@ -233,10 +245,13 @@ public class PrivilegeTableControl extends Composite {
     private void notifyPrivilegeCheck(IoTDBPrivilege privilege, boolean prevC, boolean checked, boolean withGrantOption) {
         Event event = new Event();
 
-        if (checked && withGrantOption) event.detail = 2;
-        else if (!checked && !withGrantOption) event.detail = 3;
-        else if (prevC) event.detail = 0;
-        else event.detail = 1;
+        if (checked && withGrantOption) {
+            event.detail = 2;
+        } else if (!checked && !withGrantOption) {
+            event.detail = 3;
+        } else if (prevC) {
+            event.detail = 0;
+        } else event.detail = 1;
 
         event.widget = this;
         event.data = privilege;
@@ -245,6 +260,7 @@ public class PrivilegeTableControl extends Composite {
 
     /**
      * Fill privileges to class variable
+     *
      * @param tempPrivileges List of IoTDBPrivilege
      */
     public void fillPrivileges(@NotNull List<IoTDBPrivilege> tempPrivileges) {
@@ -258,6 +274,7 @@ public class PrivilegeTableControl extends Composite {
 
     /**
      * Fill grants to Privileges Tables
+     *
      * @param grants List of IoTDBGrant
      */
     public void fillGrants(List<IoTDBGrant> grants) {

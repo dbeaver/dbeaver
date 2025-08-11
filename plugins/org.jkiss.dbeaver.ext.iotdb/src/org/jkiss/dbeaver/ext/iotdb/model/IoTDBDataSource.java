@@ -54,8 +54,11 @@ public class IoTDBDataSource extends GenericDataSource {
 
     /**
      * Get the list of users
+     *
      * @param monitor progress monitor
+     *
      * @return List of IoTDBUser
+     *
      * @throws DBException if an error occurs
      */
     public List<IoTDBAbstractUser> getUsers(DBRProgressMonitor monitor) throws DBException {
@@ -67,8 +70,11 @@ public class IoTDBDataSource extends GenericDataSource {
 
     /**
      * Load users from the database
+     *
      * @param monitor progress monitor
+     *
      * @return List of IoTDBUser
+     *
      * @throws DBException if an error occurs
      */
     private List<IoTDBAbstractUser> loadUsers(DBRProgressMonitor monitor) throws DBException {
@@ -83,7 +89,8 @@ public class IoTDBDataSource extends GenericDataSource {
             JDBCResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 currentUserName = rs.getString("CurrentUser");
-                IoTDBAbstractUser user = isTree? new IoTDBUser(this, currentUserName) : new IoTDBRelationalUser(this, currentUserName, monitor);
+                IoTDBAbstractUser user = isTree ? new IoTDBUser(this, currentUserName) :
+                        new IoTDBRelationalUser(this, currentUserName, monitor);
                 userList.add(user);
             }
 
@@ -114,7 +121,8 @@ public class IoTDBDataSource extends GenericDataSource {
                 if (tmpUserName.equals(currentUserName)) {
                     continue;
                 }
-                IoTDBAbstractUser user = isTree? new IoTDBUser(this, tmpUserName) : new IoTDBRelationalUser(this, tmpUserName, monitor);
+                IoTDBAbstractUser user = isTree ? new IoTDBUser(this, tmpUserName) :
+                        new IoTDBRelationalUser(this, tmpUserName, monitor);
                 userList.add(user);
             }
             return userList;
@@ -133,6 +141,7 @@ public class IoTDBDataSource extends GenericDataSource {
 
     /**
      * Get the list of privileges
+     *
      * @return List of IoTDBPrivilege according to tree or table model
      */
     public List<IoTDBPrivilege> getAllPrivileges() {
@@ -144,12 +153,15 @@ public class IoTDBDataSource extends GenericDataSource {
 
     /**
      * Get the list of privileges by kind
+     *
      * @param isGlobal true if global, false if schema
+     *
      * @return List of IoTDBPrivilege
      */
     public List<IoTDBPrivilege> getPrivilegesByKind(boolean isGlobal) {
         List<IoTDBPrivilege> privs = new ArrayList<>();
-        IoTDBPrivilegeInfo.Kind k = isGlobal ? IoTDBPrivilegeInfo.Kind.GLOBAL : (isTree ? IoTDBPrivilegeInfo.Kind.SERIES : IoTDBPrivilegeInfo.Kind.DATABASE);
+        IoTDBPrivilegeInfo.Kind k = isGlobal ? IoTDBPrivilegeInfo.Kind.GLOBAL :
+                (isTree ? IoTDBPrivilegeInfo.Kind.SERIES : IoTDBPrivilegeInfo.Kind.DATABASE);
         for (IoTDBPrivilege priv : getAllPrivileges()) {
             if (priv.getKind() == k) {
                 privs.add(priv);
@@ -180,9 +192,12 @@ public class IoTDBDataSource extends GenericDataSource {
 
     /**
      * Get the privilege by name
+     *
      * @param monitor progress monitor
      * @param name name of the privilege
+     *
      * @return IoTDBPrivilege
+     *
      * @throws DBException if an error occurs
      */
     public IoTDBPrivilege getPrivilege(DBRProgressMonitor monitor,

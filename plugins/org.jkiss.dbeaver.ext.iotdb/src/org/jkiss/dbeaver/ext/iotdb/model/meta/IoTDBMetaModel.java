@@ -37,9 +37,12 @@ public class IoTDBMetaModel extends GenericMetaModel {
     private static final Log log = Log.getLog(IoTDBMetaModel.class);
 
     /**
+     * Get DDL for table.
+     *
      * @param monitor to create session or to read metadata
      * @param sourceObject source object with required name and parents info
      * @param options for generated DDL
+     *
      * @return "test" for temporary
      */
     @Override
@@ -94,8 +97,7 @@ public class IoTDBMetaModel extends GenericMetaModel {
                 }
                 ddl.setLength(ddl.length() - 2);
                 ddl.append(");\n");
-            }
-            else {
+            } else {
                 while (rs.next()) {
                     ddl.append("create timeseries ").append(rs.getString("Timeseries"));
                     ddl.append(" with datatype=").append(rs.getString("DataType"));
@@ -110,6 +112,8 @@ public class IoTDBMetaModel extends GenericMetaModel {
     }
 
     /**
+     * Check if object names should be trimmed.
+     *
      * @return true to trim extra spaces around columns, tables, objects names
      */
     @Override

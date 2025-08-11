@@ -31,7 +31,8 @@ import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 
 import java.util.Map;
 
-public class IoTDBUserManager extends AbstractObjectManager<IoTDBRelationalUser> implements DBEObjectMaker<IoTDBRelationalUser, IoTDBDataSource> {
+public class IoTDBUserManager extends AbstractObjectManager<IoTDBRelationalUser>
+        implements DBEObjectMaker<IoTDBRelationalUser, IoTDBDataSource> {
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {

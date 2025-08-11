@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.iotdb.model.IoTDBPrivilege;
 import org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser;
 import org.jkiss.dbeaver.ext.iotdb.ui.config.IoTDBCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.iotdb.ui.controls.PrivilegeTableControl;
-import org.jkiss.dbeaver.ext.iotdb.ui.internal.IoTDBUIMessages;
+import org.jkiss.dbeaver.ext.iotdb.ui.internal.IoTDBUiMessages;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
@@ -54,14 +54,16 @@ public class IoTDBUserEditorGeneral extends IoTDBUserEditorAbstract {
 
         // Login -> User Name
         {
-            Composite loginGroup = UIUtils.createControlGroup(container, IoTDBUIMessages.editors_user_editor_general_group_login, 2, GridData.FILL_HORIZONTAL, 0);
-            Text userNameText = UIUtils.createLabelText(loginGroup, IoTDBUIMessages.editors_user_editor_general_label_user_name, getDatabaseObject().getName());
+            Composite loginGroup = UIUtils.createControlGroup(container,
+                    IoTDBUiMessages.editors_user_editor_general_group_login, 2, GridData.FILL_HORIZONTAL, 0);
+            Text userNameText = UIUtils.createLabelText(loginGroup,
+                    IoTDBUiMessages.editors_user_editor_general_label_user_name, getDatabaseObject().getName());
             userNameText.setEditable(false);
         }
 
         // DBA Privileges
         {
-            privilegesTable = new PrivilegeTableControl(container, IoTDBUIMessages.editors_user_editor_general_control_dba_privileges);
+            privilegesTable = new PrivilegeTableControl(container, IoTDBUiMessages.editors_user_editor_general_control_dba_privileges);
             gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
             privilegesTable.setLayoutData(gd);
@@ -99,7 +101,7 @@ public class IoTDBUserEditorGeneral extends IoTDBUserEditorAbstract {
         isLoaded = true;
         LoadingJob.createService(
             new DatabaseLoadService<>(
-                IoTDBUIMessages.editors_user_editor_general_service_load_catalog_privileges,
+                IoTDBUiMessages.editors_user_editor_general_service_load_catalog_privileges,
                 executionContext
             ) {
                 @Override

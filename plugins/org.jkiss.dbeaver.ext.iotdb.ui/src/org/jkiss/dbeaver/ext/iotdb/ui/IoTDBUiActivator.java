@@ -21,13 +21,13 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-public class IoTDBUIActivator extends AbstractUIPlugin {
+public class IoTDBUiActivator extends AbstractUIPlugin {
 
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.iotdb.ui";
 
-    private static IoTDBUIActivator plugin;
+    private static IoTDBUiActivator plugin;
 
-    public IoTDBUIActivator() {
+    public IoTDBUiActivator() {
     }
 
     @Override
@@ -42,7 +42,7 @@ public class IoTDBUIActivator extends AbstractUIPlugin {
         super.stop(context);
     }
 
-    public static IoTDBUIActivator getDefault() {
+    public static IoTDBUiActivator getDefault() {
         return plugin;
     }
 

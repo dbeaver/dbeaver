@@ -169,7 +169,8 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
                                                   String insertTableName,
                                                   String ttl) throws SQLException {
         StringBuilder toAppend = new StringBuilder(200);
-        String sql = String.format("select * from information_schema.columns where database like '%s' and table_name like '%s'", databaseName, insertTableName);
+        String sql = String.format(
+                "select * from information_schema.columns where database like '%s' and table_name like '%s'", databaseName, insertTableName);
         JDBCStatement stmt = session.createStatement();
         JDBCResultSet rs = stmt.executeQuery(sql);
         toAppend.append("CREATE TABLE ").append(insertTableName).append(" (\n");
@@ -188,8 +189,7 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
         if (tableComment != null && !tableComment.isEmpty()) {
             toAppend.append("\n) COMMENT '").append(tableComment).append("' ");
             toAppend.append("WITH (TTL=").append(ttl).append(");");
-        }
-        else {
+        } else {
             toAppend.append("\n) WITH (TTL=").append(ttl).append(");");
         }
 
@@ -221,8 +221,7 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
         if (tableComment != null && !tableComment.isEmpty()) {
             toAppend.append("\n) COMMENT '").append(tableComment).append("' ");
             toAppend.append("WITH (TTL=").append(ttl).append(");");
-        }
-        else {
+        } else {
             toAppend.append("\n) WITH (TTL=").append(ttl).append(");");
         }
 
@@ -230,9 +229,12 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
     }
 
     /**
+     * Get DDL for IoTDB table.
+     *
      * @param monitor to create session or to read metadata
      * @param sourceObject source object with required name and parents info
      * @param options for generated DDL
+     *
      * @return "test" for temporary
      */
     @Override
@@ -264,6 +266,8 @@ public class IoTDBTableMetaModel extends GenericMetaModel {
     }
 
     /**
+     * Check if object names should be trimmed.
+     *
      * @return true to trim extra spaces around columns, tables, objects names
      */
     @Override
