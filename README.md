@@ -42,7 +42,7 @@ You can change default JDK version by replacing directory `jre` in dbeaver insta
 - Basic frameworks:
   - [OSGI](https://en.wikipedia.org/wiki/OSGi) platform for plugins and dependency management. Community version consists of 130+ plugins.
   - [Eclipse RCP](https://github.com/eclipse-platform/eclipse.platform.ui/blob/master/docs/Rich_Client_Platform.md) platform for rich user interface build.
-  - [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity) for basic databases connectivity API.
+  - [JDBC](https://en.wikipedia.org/wiki/Java_Database_Connectivity) for basic database connectivity API.
   - [JSQLParser](https://github.com/JSQLParser/JSqlParser) and [Antlr4](https://github.com/antlr/antlr4) for SQL grammar and semantic parser.
 - For networking and additional functionality we use wide range of open source libraries such as SSHJ, JSch, Okhttp, OpenAI SDK, Apache POI, JFreeChart, JTS/GIS, etc.
 - We separate model plugins from desktop UI plugins. This allows us to use the same set of "back-end" plugins in both DBeaver and CloudBeaver.
@@ -67,7 +67,6 @@ You can find the list of all databases supported in commercial versions <a href=
 - For bug reports and feature requests - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
 - To promote <a href="https://github.com/dbeaver/dbeaver/issues?q=is%3Aissue+is%3Aopen+sort%3Areactions-%2B1-desc+label%3A%22wait+for+votes%22">a ticket</a> to a higher priority - please vote for it with 👍 under the ticket description.
 - If you have any questions, ideas, etc - please <a href="https://github.com/dbeaver/dbeaver/discussions">start a discussion</a>.
-- For bug reports and feature requests - please <a href="https://github.com/dbeaver/dbeaver/issues">create a ticket</a>.
 - Pull requests are welcome. See our <a href="https://github.com/dbeaver/dbeaver/wiki/Contribute-your-code">guide for contributors</a>.
 - Visit https://dbeaver.com for more information.
 - Follow us on [X](https://x.com/dbeaver_news/) and watch educational video on [YouTube](https://www.youtube.com/@DBeaver_video)

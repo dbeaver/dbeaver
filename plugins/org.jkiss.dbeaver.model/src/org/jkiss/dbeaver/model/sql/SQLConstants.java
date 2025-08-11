@@ -164,8 +164,6 @@ public class SQLConstants {
         "CASCADED",
         KEYWORD_CASE,
         "CAST",
-        "CEIL",
-        "CEILING",
         "CHARACTER",
         "CHECK",
         "CLOSE",

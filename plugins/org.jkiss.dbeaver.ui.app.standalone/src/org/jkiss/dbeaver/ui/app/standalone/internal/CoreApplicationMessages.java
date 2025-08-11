@@ -57,8 +57,8 @@ public class CoreApplicationMessages extends NLS {
     public static String locale_change_info_title;
     public static String locale_change_info_message;
 
-    public static String notification_workbench_reset_title;
-    public static String notification_workbench_reset_message;
+    public static String notification_perspective_reset_title;
+    public static String notification_perspective_reset_message;
 
     static {
         // initialize resource bundle

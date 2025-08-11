@@ -70,7 +70,7 @@ public class AITextUtils {
             return code;
         }
 
-        return "";
+        return markdown;
     }
 
 
