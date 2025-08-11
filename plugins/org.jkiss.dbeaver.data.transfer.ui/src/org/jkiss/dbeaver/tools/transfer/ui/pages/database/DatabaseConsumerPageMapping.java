@@ -75,6 +75,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
 
     private static final String TARGET_NAME_BROWSE = "[browse]";
+    private volatile boolean processingButtonClick = false;
     private final List<DatabaseMappingContainer> model = new ArrayList<>();
     protected TreeViewer mappingViewer;
     protected Composite buttonsPanel;
@@ -743,9 +744,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             mappingTypes.toArray(new String[0]),
             SWT.DROP_DOWN | SWT.READ_ONLY);
     }
-
-    private volatile boolean processingButtonClick = false;
-
 
     private CellEditor createTargetEditor(Object element) throws DBException {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
