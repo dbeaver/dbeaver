@@ -33,9 +33,8 @@ import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 /**
  * Control command handler
@@ -85,18 +84,20 @@ public class SQLCommandAI implements SQLControlCommandHandler {
             }
         }
         AIDatabaseScope scope = completionSettings.getScope();
-        AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(lDataSource)
-            .setScope(scope);
+        AIDatabaseContext.Builder contextBuilder = new AIDatabaseContext.Builder(lDataSource);
+        if (scope != null) {
+            contextBuilder.setScope(scope);
+        }
         DBCExecutionContext executionContext = scriptContext.getExecutionContext();
         if (executionContext != null) {
             contextBuilder.setExecutionContext(executionContext);
         }
-        if (scope == AIDatabaseScope.CUSTOM) {
+        if (scope == AIDatabaseScope.CUSTOM && completionSettings.getCustomObjectIds() != null) {
             contextBuilder.setCustomEntities(
                 AITextUtils.loadCustomEntities(
                     monitor,
                     dataSource,
-                    Arrays.stream(completionSettings.getCustomObjectIds()).collect(Collectors.toSet()))
+                    Set.of(completionSettings.getCustomObjectIds()))
             );
         }
         final AIDatabaseContext aiContext = contextBuilder.build();
@@ -129,6 +130,11 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         );
 
         scriptContext.getOutputWriter().println(AI_OUTPUT_SEVERITY, prompt + " ==> " + script + "\n");
-        return SQLControlResult.transform(new SQLQuery(dataSource, script));
+
+        if (scriptElements.size() == 1) {
+            return SQLControlResult.transform(new SQLQuery(dataSource, script));
+        } else {
+            return SQLControlResult.transform(new SQLScript(dataSource, script, scriptElements));
+        }
     }
 }

@@ -622,9 +622,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             }
         }
 
+        @NotNull
         @Override
-        public boolean isIndexable() {
-            return !isItemType;
+        public Kind getKind() {
+            return !isItemType ? Kind.INDEXABLE : Kind.UNKNOWN;
         }
 
         @NotNull

@@ -151,8 +151,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -4048,35 +4048,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
 
                 if (export) {
-                    List<IDataTransferProducer<?>> producers = new ArrayList<>();
-                    for (SQLScriptElement element : queries) {
-                        if (element instanceof SQLControlCommand controlCommand) {
-                            try {
-                                SQLControlResult controlResult = scriptContext.executeControlCommand(
-                                    new LoggingProgressMonitor(log),
-                                    controlCommand
-                                );
-                                if (controlResult.getTransformed() != null) {
-                                    element = controlResult.getTransformed();
-                                }
-                            } catch (DBException e) {
-                                DBWorkbench.getPlatformUI().showError("Command error", "Error processing control command", e);
-                            }
-                        }
-                        if (element instanceof SQLQuery query) {
-                            scriptContext.fillQueryParameters(query, () -> null, false);
-
-                            SQLQueryDataContainer dataContainer = new SQLQueryDataContainer(SQLEditor.this, query, scriptContext, log);
-                            producers.add(new DatabaseTransferProducer(dataContainer, null));
-                        }
-                    }
-
-                    DataTransferWizard.openWizard(
-                        getSite().getWorkbenchWindow(),
-                        producers,
-                        null,
-                        new StructuredSelection(this)
-                    );
+                    processDataExport(scriptContext, queries);
                 } else {
                     boolean disableFetchCurrentResultSets;
                     if (queries.size() > QUERIES_COUNT_FOR_NO_FETCH_RESULT_SET_CONFIRMATION) {
@@ -4128,6 +4100,43 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
             return true;
+        }
+
+        private void processDataExport(SQLScriptContext scriptContext, List<SQLScriptElement> queries) {
+            List<IDataTransferProducer<?>> producers = new ArrayList<>();
+            for (SQLScriptElement element : queries) {
+                if (element instanceof SQLControlCommand controlCommand) {
+                    try {
+                        SQLControlResult controlResult = scriptContext.executeControlCommand(
+                            new LoggingProgressMonitor(log),
+                            controlCommand
+                        );
+                        if (controlResult.getTransformed() != null) {
+                            element = controlResult.getTransformed();
+                        }
+                    } catch (DBException e) {
+                        DBWorkbench.getPlatformUI().showError("Command error", "Error processing control command", e);
+                        return;
+                    }
+                }
+                if (element instanceof SQLScript) {
+                    DBWorkbench.getPlatformUI().showError("Embedded scripts are not allowed", "Query contains script element: " + element.getText());
+                    return;
+                }
+                if (element instanceof SQLQuery query) {
+                    scriptContext.fillQueryParameters(query, () -> null, false);
+
+                    SQLQueryDataContainer dataContainer = new SQLQueryDataContainer(SQLEditor.this, query, scriptContext, log);
+                    producers.add(new DatabaseTransferProducer(dataContainer, null));
+                }
+            }
+
+            DataTransferWizard.openWizard(
+                getSite().getWorkbenchWindow(),
+                producers,
+                null,
+                new StructuredSelection(this)
+            );
         }
 
         public boolean isDirty() {
