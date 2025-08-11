@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -34,10 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSVisibilityScopeProvider;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -66,6 +64,7 @@ public class OracleSchema extends OracleGlobalObject implements
     // Synonyms read is very expensive. Exclude them from children by default
     // Children are used in auto-completion which must be fast
     private boolean synonymsAsChildren = false;
+    private boolean sequencesAsChildren = false;
 
     final public TableCache tableCache = new TableCache();
     final public ConstraintCache constraintCache = new ConstraintCache();
@@ -96,8 +95,9 @@ public class OracleSchema extends OracleGlobalObject implements
         super(dataSource, id > 0);
         this.id = id;
         this.name = name;
-        synonymsAsChildren = CommonUtils.getBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
+        this.loadMetadataOptions();
     }
+
 
     public OracleSchema(@NotNull OracleDataSource dataSource, @NotNull ResultSet dbResult) {
         super(dataSource, true);
@@ -108,7 +108,13 @@ public class OracleSchema extends OracleGlobalObject implements
             this.name = "? " + super.hashCode();
         }
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
-        synonymsAsChildren = CommonUtils.getBoolean(dataSource.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
+        this.loadMetadataOptions();
+    }
+
+    private void loadMetadataOptions() {
+        DBPConnectionConfiguration cfg = this.getDataSource().getContainer().getConnectionConfiguration();
+        synonymsAsChildren = CommonUtils.getBoolean(cfg.getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
+        sequencesAsChildren = CommonUtils.getBoolean(cfg.getProviderProperty(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES));
     }
 
     public boolean isPublic()
@@ -379,6 +385,9 @@ public class OracleSchema extends OracleGlobalObject implements
         if (synonymsAsChildren) {
             children.addAll(synonymCache.getAllObjects(monitor, this));
         }
+        if (sequencesAsChildren) {
+            children.addAll(sequenceCache.getAllObjects(monitor, this));
+        }
         children.addAll(packageCache.getAllObjects(monitor, this));
         return children;
     }
@@ -395,6 +404,12 @@ public class OracleSchema extends OracleGlobalObject implements
             OracleSynonym synonym = synonymCache.getObject(monitor, this, childName);
             if (synonym != null) {
                 return synonym;
+            }
+        }
+        if (sequencesAsChildren) {
+            OracleSequence sequence = sequenceCache.getObject(monitor, this, childName);
+            if (sequence != null) {
+                return sequence;
             }
         }
         return packageCache.getObject(monitor, this, childName);

@@ -99,12 +99,14 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         String sql = "select a.*,a.class_name as TABLE_NAME, case when class_type = 'CLASS' then 'TABLE'\r\n"
                 + " when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE,\r\n"
                 + " a.comment as REMARKS, b.current_val from db_class a LEFT JOIN\r\n"
-                + " db_serial b on a.class_name = b.class_name\r\n"
+                + " (select class_name, current_val from db_serial where owner.name = ?\r\n"
+                + " group by class_name) b on a.class_name = b.class_name\r\n"
                 + " left join db_partition p on a.class_name = p.partition_class_name\r\n"
                 + " where a.owner_name = ? and p.partition_class_name is null";
         sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, owner.getName());
+        dbStat.setString(2, owner.getName());
         return dbStat;
     }
 

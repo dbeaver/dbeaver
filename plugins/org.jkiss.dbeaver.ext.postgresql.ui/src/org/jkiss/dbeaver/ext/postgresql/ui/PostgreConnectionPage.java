@@ -127,6 +127,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         hostText.setLayoutData(gd);
+        UIUtils.setDefaultTextControlWidthHint(hostText);
         hostText.addModifyListener(textListener);
         addControlToGroup(GROUP_CONNECTION, hostLabel, hostText);
 
@@ -148,6 +149,7 @@ public class PostgreConnectionPage extends ConnectionPageWithAuth implements IDi
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         dbText.setLayoutData(gd);
+        UIUtils.setDefaultTextControlWidthHint(dbText);
         dbText.addModifyListener(textListener);
         dbText.setMessage(PostgreMessages.dialog_database_name_hint);
         addControlToGroup(GROUP_CONNECTION, dbLabel, dbText);
