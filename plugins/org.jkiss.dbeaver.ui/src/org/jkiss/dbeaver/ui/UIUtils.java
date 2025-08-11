@@ -686,7 +686,7 @@ public class UIUtils {
             label.setText(text);
             control = label;
         } else {
-            control = createInfoLink(parent, "<a href=\"#\">" + text + "</a>", callback).getParent();
+            control = createInfoLink(parent, createHrefText(text), callback).getParent();
         }
 
         if (gridStyle != SWT.NONE || hSpan > 1) {
@@ -696,6 +696,11 @@ public class UIUtils {
         }
 
         return control;
+    }
+
+    @NotNull
+    private static String createHrefText(@NotNull String text) {
+        return "<a href=\"#\">" + text + "</a>";
     }
 
     @NotNull
@@ -730,6 +735,14 @@ public class UIUtils {
         return link;
     }
 
+    public static void setInfoLinkText(@NotNull Control infoLink, @NotNull String text) {
+        if (infoLink instanceof Composite comp) {
+            Link link = UIUtils.getChildOfType(comp, Link.class);
+            if (link != null) {
+                link.setText(createHrefText(text));
+            }
+        }
+    }
     public static Text createLabelText(Composite parent, String label, String value) {
         return createLabelText(parent, label, value, SWT.BORDER);
     }
@@ -2249,12 +2262,21 @@ public class UIUtils {
         return BaseThemeSettings.instance.monospaceFont;
     }
 
-    public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
+    public static <T extends Control> T getParentOfType(@NotNull Control control, @NotNull Class<T> parentType) {
         while (control != null) {
             if (parentType.isInstance(control)) {
                 return parentType.cast(control);
             }
             control = control.getParent();
+        }
+        return null;
+    }
+
+    public static <T extends Control> T getChildOfType(@NotNull Composite parent, @NotNull Class<T> childType) {
+        for (Control child : parent.getChildren()) {
+            if (childType.isInstance(child)) {
+                return childType.cast(child);
+            }
         }
         return null;
     }
