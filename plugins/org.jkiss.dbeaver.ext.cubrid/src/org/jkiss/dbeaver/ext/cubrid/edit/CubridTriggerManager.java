@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTriggerManager;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -39,28 +41,31 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> {
 
     @Override
     public boolean canCreateObject(@NotNull Object container) {
-        return container instanceof GenericTableBase;
+        CubridTable table = (CubridTable) container;
+        boolean isShard = table.getDataSource().isShard();
+        return isShard ? false : container instanceof GenericTableBase;
     }
 
     @Override
     protected CubridTrigger createDatabaseObject(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBECommandContext context,
-            Object container,
-            Object copyFrom,
-            @NotNull Map<String, Object> options) throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        Object container,
+        Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         return new CubridTrigger((GenericTableBase) container, BASE_TRIGGER_NAME, monitor);
     }
 
     public void createTrigger(CubridTrigger trigger, StringBuilder sb) {
-        sb.append("\n" + trigger.getActionTime() + " ");
+        sb.append("\n").append(trigger.getActionTime()).append(" ");
         if (trigger.getEvent().equals("COMMIT") || trigger.getEvent().equals("ROLLBACK")) {
             sb.append(trigger.getEvent());
         } else {
             sb.append(trigger.getEvent());
             sb.append(" ON ").append(trigger.getTable().getUniqueName());
             if (trigger.getEvent().contains("UPDATE") && trigger.getTargetColumn() != null) {
-                sb.append("(" + trigger.getTargetColumn() + ")");
+                sb.append("(").append(trigger.getTargetColumn()).append(")");
             }
             if (trigger.getCondition() != null) {
                 sb.append("\nIF ").append(trigger.getCondition());
@@ -70,7 +75,7 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> {
         if (trigger.getActionType().equals("REJECT") || trigger.getActionType().equals("INVALIDATE TRANSACTION")) {
             sb.append(trigger.getActionType());
         } else if (trigger.getActionType().equals("PRINT")) {
-            sb.append(trigger.getActionType() + " ");
+            sb.append(trigger.getActionType()).append(" ");
             sb.append(trigger.getActionDefinition() == null ? "" : SQLUtils.quoteString(trigger, trigger.getActionDefinition()));
         } else {
             sb.append(trigger.getActionDefinition() == null ? "" : trigger.getActionDefinition());
@@ -79,15 +84,16 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> {
 
     @Override
     protected void addObjectCreateActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectCreateCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectCreateCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridTrigger trigger = command.getObject();
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TRIGGER ").append(trigger.getFullyQualifiedName(DBPEvaluationContext.DDL));
-        sb.append(trigger.getActive() ? "\nSTATUS ACTIVE": "\nSTATUS INACTIVE");
+        sb.append(trigger.getActive() ? "\nSTATUS ACTIVE" : "\nSTATUS INACTIVE");
         sb.append("\nPRIORITY ").append(trigger.getPriority());
         createTrigger(trigger, sb);
         if (trigger.getDescription() != null) {
@@ -98,28 +104,38 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> {
 
     @Override
     protected void addObjectModifyActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actionList,
-            @NotNull ObjectChangeCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridTrigger trigger = command.getObject();
         String triggerName = trigger.getFullyQualifiedName(DBPEvaluationContext.DDL);
 
         if (command.hasProperty("active")) {
             actionList.add(new SQLDatabasePersistAction(
-                    "ALTER TRIGGER " + triggerName + " STATUS "
+                "ALTER TRIGGER " + triggerName + " STATUS "
                     + (trigger.getActive() ? "ACTIVE" : "INACTIVE")));
         }
         if (command.hasProperty("priority")) {
             actionList.add(new SQLDatabasePersistAction(
-                    "ALTER TRIGGER " + triggerName + " PRIORITY " + trigger.getPriority()));
+                "ALTER TRIGGER " + triggerName + " PRIORITY " + trigger.getPriority()));
         }
         if (command.hasProperty("description")) {
             actionList.add(new SQLDatabasePersistAction(
-                    "ALTER TRIGGER " + triggerName + " COMMENT "
+                "ALTER TRIGGER " + triggerName + " COMMENT "
                     + SQLUtils.quoteString(trigger, CommonUtils.notEmpty(trigger.getDescription()))));
         }
     }
 
+    @Override
+    public boolean canEditObject(CubridTrigger object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
+
+    @Override
+    public boolean canDeleteObject(CubridTrigger object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
 }

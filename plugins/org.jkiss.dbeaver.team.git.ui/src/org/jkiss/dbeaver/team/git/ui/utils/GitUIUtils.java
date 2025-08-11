@@ -29,6 +29,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.*;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -71,7 +73,8 @@ public class GitUIUtils {
         }
     }
 
-    public static IProject extractProject(IEditorPart activeEditor) {
+    @Nullable
+    public static IProject extractProject(@NotNull IEditorPart activeEditor) {
         IEditorInput editorInput = activeEditor.getEditorInput();
         if (editorInput instanceof IDatabaseEditorInput dei) {
             DBNDatabaseNode node = dei.getNavigatorNode();

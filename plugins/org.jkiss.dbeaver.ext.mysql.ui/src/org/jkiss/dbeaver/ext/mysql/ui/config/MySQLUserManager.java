@@ -140,12 +140,22 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
 
         @Override
         public void validateCommand(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
-            if (CommonUtils.isEmpty(getObject().getUserName())) {
+            final String username = getObject().getUserName();
+            if (CommonUtils.isEmpty(username)) {
                 throw new DBException("Can't create user with empty name");
             }
-            if (CommonUtils.isEmpty(getObject().getHost())) {
+
+            final String host = getObject().getHost();
+            if (CommonUtils.isEmpty(host)) {
                 throw new DBException("Can't create user with empty host name");
             }
+
+            if (getObject().getDataSource().getUsers(monitor)
+                .stream()
+                .anyMatch(u -> username.equals(u.getUserName()) && host.equals(u.getHost()))) {
+                throw new DBException("Cannot create user: user '%s'@'%s' already exists".formatted(username, host));
+            }
+
             super.validateCommand(monitor, options);
         }
     }
