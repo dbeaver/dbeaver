@@ -46,6 +46,7 @@
         <module>org.jkiss.dbeaver.ext.db2.zos</module>
         <module>org.jkiss.dbeaver.ext.db2.i</module>
         <module>org.jkiss.dbeaver.ext.derby</module>
+        <module>org.jkiss.dbeaver.ext.dsql</module>
         <module>org.jkiss.dbeaver.ext.dameng</module>
         <module>org.jkiss.dbeaver.ext.duckdb</module>
         <module>org.jkiss.dbeaver.ext.exasol</module>
@@ -132,6 +133,7 @@
                 <module>org.jkiss.dbeaver.ext.vertica.ui</module>
                 <module>org.jkiss.dbeaver.ext.tidb.ui</module>
                 <module>org.jkiss.dbeaver.ext.altibase.ui</module>
+                <module>org.jkiss.dbeaver.ext.dsql.ui</module>
 
                 <module>org.jkiss.dbeaver.ext.wmi</module>
 

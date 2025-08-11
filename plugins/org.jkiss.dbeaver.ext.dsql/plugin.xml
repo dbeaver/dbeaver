@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+    <extension point="org.jkiss.dbeaver.postgresql.serverType">
+        <serverType id="dsql" name="Aurora DSQL" class="org.jkiss.dbeaver.ext.dsql.model.PostgreServerDSQL" logo="icons/dsql_logo.png" customURL="true"/>
+    </extension>
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.dsql.DSQLDataSourceProvider"
+                description="%datasource.dsql.description"
+                id="dsql"
+                parent="generic"
+                label="Dsql"
+                icon="icons/dsql_icon.png"
+                dialect="postgresql"
+        >
+            <drivers manageable="true">
+                <driver
+                    id="dsql"
+                    label="Aurora DSQL"
+                    icon="icons/dsql_icon.png"
+                    iconBig="icons/dsql_icon_big.png"
+                    logoImage="icons/dsql_logo.png"
+                    class="org.postgresql.Driver"
+                    sampleURL="jdbc:postgresql://[{host}]:5432/postgres"
+                    useURL="true"
+                    defaultHost="{clusterId}.dsql.{region}.on.aws"
+                    defaultPort="5432"
+                    defaultUser="admin"
+                    webURL="https://jdbc.postgresql.org/"
+                    propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                    databaseDocumentationSuffixURL="Database-driver-PostgreSQL"
+                    description="%driver.dsql.description"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    categories="sql,aws">
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.dsql"/>
+                    <file type="jar" path="drivers/dsql" bundle="drivers.dsql"/>
+                    <parameter name="serverType" value="dsql"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+                id="iam_auth"
+                label="DSQL IAM Auth"
+                description="Use IAM auth to generate tokens"
+                class="org.jkiss.dbeaver.ext.dsql.model.AuthModelIAM"
+                default="true"
+                requiresLocalConfiguration="true">
+            <replace model="native"/>
+            <datasource id="dsql"/>
+        </authModel>
+    </extension>
+</plugin>

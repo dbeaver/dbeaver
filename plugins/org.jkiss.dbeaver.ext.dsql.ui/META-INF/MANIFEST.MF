@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver AWS Aurora DSQL UI
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.dsql.ui;singleton:=true
+Bundle-Version: 1.0.151.qualifier
+Bundle-Release-Date: 20250721
+Bundle-Activator: org.jkiss.dbeaver.ext.dsql.ui.DSQLActivator
+Require-Bundle: org.jkiss.dbeaver.ext.dsql,
+ org.jkiss.dbeaver.registry,
+ org.jkiss.dbeaver.ui.editors.connection,
+ org.jkiss.dbeaver.ui.navigator,
+ org.jkiss.dbeaver.ext.postgresql.ui
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-Vendor: DBeaver Corp
+Bundle-Localization: OSGI-INF/l10n/bundle
+Export-Package: org.jkiss.dbeaver.ext.dsql,
+ org.jkiss.dbeaver.ext.dsql.ui,
+ org.jkiss.dbeaver.ext.dsql.ui.views
+Automatic-Module-Name: org.jkiss.dbeaver.ext.dsql.ui
