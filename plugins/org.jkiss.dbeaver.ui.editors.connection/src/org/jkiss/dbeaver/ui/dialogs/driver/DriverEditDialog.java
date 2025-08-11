@@ -33,6 +33,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBFileController;
@@ -434,11 +435,11 @@ public class DriverEditDialog extends HelpEnabledDialog {
                         Path localFile = dl.getLocalFile();
                         return localFile == null ? "N/A" : localFile.toAbsolutePath().toString();
                     } else if (element instanceof DriverFileInfo dfi) {
-                        Path localFile = dfi.getFile();
-                        return localFile == null ? "N/A" : localFile.toString();
+                        return getPathFromDriverFileInfo(dfi);
                     }
                     return super.getToolTipText(element);
                 }
+
             });
             ColumnViewerToolTipSupport.enableFor(libTable);
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -615,7 +616,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             if (!selection.isEmpty()) {
                 Object element = selection.getFirstElement();
                 if (element instanceof DriverFileInfo dfi) {
-                    DriverEditHelpers.showFileInExplorer(dfi.getFile());
+                    DriverEditHelpers.showFileInExplorer(Path.of(getPathFromDriverFileInfo(dfi)));
                 }
             }
         }
@@ -1080,5 +1081,19 @@ public class DriverEditDialog extends HelpEnabledDialog {
             return element instanceof DBPDriverLibrary &&
                 !CommonUtils.isEmpty(driver.getDefaultDriverLoader().getLibraryFiles((DBPDriverLibrary) element));
         }
+    }
+
+    private static @NotNull String getPathFromDriverFileInfo(@NotNull DriverFileInfo dfi) {
+        String tooltip = "N/A";
+        Path localFile = dfi.getFile();
+
+        if (localFile != null) {
+            if (DBWorkbench.isDistributed() && !localFile.isAbsolute()) {
+                localFile = DriverDescriptor.getExternalDriversStorageFolder().resolve(localFile);
+            }
+            tooltip = localFile.toString();
+        }
+
+        return tooltip;
     }
 }
