@@ -161,23 +161,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
         {
             tree.addListener(SWT.PaintItem, event -> onPaintItem(tree, event));
-            tree.getHorizontalBar().addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> tree.redraw()));
-            if (false) {
-                // See comments for StatisticsNavigatorNodeRenderer.PAINT_ACTION_HOVER
-                Listener mouseListener = e -> {
-                    TreeItem item = tree.getItem(new Point(e.x, e.y));
-                    if (item != null) {
-                        Rectangle itemBounds = item.getBounds();
-                        Point treeSize = tree.getSize();
-                        tree.redraw(itemBounds.x, itemBounds.y, treeSize.x, treeSize.y, false);
-                    }
-                };
-
-                tree.addListener(SWT.MouseMove, mouseListener);
-                //tree.addListener(SWT.MouseHover, mouseListener);
-                tree.addListener(SWT.MouseEnter, mouseListener);
-                tree.addListener(SWT.MouseExit, mouseListener);
-            }
+            // FIXME: this is a weird workaround of paint problems
+            // FIXME: whenever we click on already selected item in the tree paint breaks
+            // FIXME: (only the item is paintedm the rest is whitespace)
+            tree.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> UIUtils.asyncExec(tree::redraw)));
             {
                 Listener mouseListener = e -> {
                     TreeItem item = tree.getItem(new Point(e.x, e.y));
@@ -260,7 +247,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         if (itemRenderer != null) {
             Object element = event.item.getData();
             if (element instanceof DBNNode node) {
-                itemRenderer.paintNodeDetails(node, tree, event.gc, event);
+                try {
+                    itemRenderer.paintNodeDetails(node, tree, event.gc, event);
+                } catch (Exception e) {
+                    log.debug("Error in node '" + node + "' paint", e);
+                }
             }
         }
     }

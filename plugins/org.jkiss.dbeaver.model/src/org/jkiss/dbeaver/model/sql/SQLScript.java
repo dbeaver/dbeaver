@@ -15,18 +15,34 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors;
+package org.jkiss.dbeaver.model.sql;
 
-import org.eclipse.ui.IEditorInput;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.DBPDataSource;
+
+import java.util.List;
 
 /**
- * INavigatorEditorInput
+ * SQL script - a query which actually is a set of queries separated with delimiter.
  */
-public interface INavigatorEditorInput extends IEditorInput {
+public class SQLScript extends SQLQuery {
 
-    @Nullable
-    DBNNode getNavigatorNode();
+    private final List<SQLScriptElement> scriptElements;
 
+    public SQLScript(
+        @Nullable DBPDataSource dataSource,
+        @NotNull String text,
+        @NotNull List<SQLScriptElement> scriptElements
+    ) {
+        super(dataSource, text);
+
+        this.scriptElements = scriptElements;
+    }
+
+    @Override
+    @NotNull
+    public List<SQLScriptElement> getScriptElements() {
+        return scriptElements;
+    }
 }

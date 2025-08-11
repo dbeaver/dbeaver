@@ -119,7 +119,7 @@ public class SQLQueryValueTupleReferenceExpression extends SQLQueryValueExpressi
                     statistics,
                     this.tableName,
                     tableNameOrigin,
-                    Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                    SQLQuerySymbolOrigin.DbObjectFilterMode.VALUE,
                     SQLQuerySymbolClass.ERROR
                 );
                 statistics.appendError(this.getSyntaxNode(), "Invalid tuple reference");

@@ -40,6 +40,7 @@ public class OraclePreferencesInitializer extends AbstractPreferenceInitializer 
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS, false);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY, true);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS, false);
+        PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES, false);
         PrefUtils.setDefaultPreferenceValue(store, OracleConstants.PROP_SHOW_DATE_AS_DATE, false);
     }
 }
