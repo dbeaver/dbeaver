@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,16 @@
 package org.jkiss.dbeaver.ui.app.standalone.cli;
 
 import org.apache.commons.cli.CommandLine;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.cli.CommandLineContext;
+import org.jkiss.dbeaver.model.cli.ICommandLineParameterHandler;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.translate.SQLQueryTranslator;
-import org.jkiss.dbeaver.ui.app.standalone.ICommandLineParameterHandler;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -35,7 +37,7 @@ public class SQLTranslatorHandler implements ICommandLineParameterHandler {
     private static final Log log = Log.getLog(SQLTranslatorHandler.class);
 
     @Override
-    public void handleParameter(CommandLine commandLine, String name, String value) {
+    public void handleParameter(@NotNull CommandLine commandLine, @NotNull String name, String value, @NotNull CommandLineContext context) {
         String[] args = value.split(",");
         if (args.length != 2) {
             throw new IllegalStateException("Input parameter format: dialect,<input-file-path>");

@@ -117,6 +117,7 @@ public class KingbaseConnectionPage extends ConnectionPageWithAuth implements ID
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         hostText.setLayoutData(gd);
+        UIUtils.setDefaultTextControlWidthHint(hostText);
         hostText.addModifyListener(textListener);
         addControlToGroup(GROUP_CONNECTION, hostText);
 
@@ -141,6 +142,7 @@ public class KingbaseConnectionPage extends ConnectionPageWithAuth implements ID
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
+        UIUtils.setDefaultTextControlWidthHint(dbText);
         dbText.addModifyListener(textListener);
         dbText.setMessage(PostgreMessages.dialog_database_name_hint);
         addControlToGroup(GROUP_CONNECTION, dbText);

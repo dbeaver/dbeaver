@@ -172,6 +172,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         return executionContext;
     }
 
+    @Nullable
     @Override
     public NODE getNavigatorNode()
     {
