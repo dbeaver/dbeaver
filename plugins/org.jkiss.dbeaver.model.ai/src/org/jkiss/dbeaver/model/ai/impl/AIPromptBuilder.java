@@ -42,8 +42,6 @@ public class AIPromptBuilder {
     private final List<String> instructions = new ArrayList<>();
     private final List<String> examples = new ArrayList<>();
     private final List<String> contexts = new ArrayList<>();
-    @Nullable
-    private String databaseSnapshot;
     private final List<String> outputFormats = new ArrayList<>();
 
     private AIPromptBuilder() {
@@ -74,11 +72,6 @@ public class AIPromptBuilder {
         return this;
     }
 
-    public AIPromptBuilder addDatabaseSnapshot(@NotNull String databaseSnapshot) {
-        this.databaseSnapshot = databaseSnapshot.trim();
-        return this;
-    }
-
     public AIPromptBuilder addOutputFormats(@NotNull String... outputFormats) {
         this.outputFormats.addAll(Arrays.asList(outputFormats));
         return this;
@@ -101,11 +94,6 @@ public class AIPromptBuilder {
 
         prompt.append("\nContext:\n");
         contexts.forEach(context -> prompt.append("- ").append(context).append("\n"));
-
-        if (databaseSnapshot != null && !databaseSnapshot.isBlank()) {
-            prompt.append("\nDatabase Snapshot:\n");
-            prompt.append(databaseSnapshot).append("\n");
-        }
 
         if (!outputFormats.isEmpty()) {
             prompt.append("\nOutput Format:\n");
