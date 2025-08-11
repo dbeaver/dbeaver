@@ -75,7 +75,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
 
     private static final String TARGET_NAME_BROWSE = "[browse]";
-    private volatile boolean processingButtonClick = false;
     private final List<DatabaseMappingContainer> model = new ArrayList<>();
     protected TreeViewer mappingViewer;
     protected Composite buttonsPanel;
@@ -840,52 +839,19 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     }
                 });
 
-                combo.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        if (!processingButtonClick) {
-                            e.display.asyncExec(() -> {
-                                if (combo != null && !combo.isDisposed() && !processingButtonClick) {
-                                    markDirty();
-                                    fireApplyEditorValue();
-                                }
-                            });
-                        }
-                    }
-                });
-
-
                 combo.addTraverseListener(e -> {
-                    if (e.detail == SWT.TRAVERSE_RETURN) {
-                        markDirty();
-                        doSetValue(combo.getText());
-                        fireApplyEditorValue();
-                        e.doit = false;
-                    }
+                    fireApplyEditorValue();
+                    e.doit = false;
                 });
 
                 if (isContainer) {
-                    browseButton.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseDown(MouseEvent e) {
-                            if (e.button == 1) {
-                                processingButtonClick = true;
-                            }
-                        }
-                    });
-
                     browseButton.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
-                            processingButtonClick = true;
-                            try {
-                                Object newVal = openDialogBox(composite);
-                                doSetValue(newVal);
-                                markDirty();
-                                fireApplyEditorValue();
-                            } finally {
-                                processingButtonClick = false;
-                            }
+                            Object newVal = openDialogBox(composite);
+                            doSetValue(newVal);
+                            markDirty();
+                            fireApplyEditorValue();
                         }
                     });
                 }
