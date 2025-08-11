@@ -145,7 +145,9 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
     public void refreshConfiguration(@Nullable DBWNetworkProfile profile) {
         loadConfiguration(profile);
 
-        configurator.loadSettings(handlerConfiguration);
+        if (handlerConfiguration != null) {
+            configurator.loadSettings(handlerConfiguration);
+        }
         configuratorPlaceholder.setRedraw(false);
 
         if (configuratorEnableState != null) {
