@@ -744,6 +744,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             SWT.DROP_DOWN | SWT.READ_ONLY);
     }
 
+    private volatile boolean processingButtonClick = false;
+
+
     private CellEditor createTargetEditor(Object element) throws DBException {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         boolean allowsCreate = true;
@@ -838,13 +841,21 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         }
                     }
                 });
+
                 combo.addFocusListener(new FocusAdapter() {
                     @Override
                     public void focusLost(FocusEvent e) {
-                        markDirty();
-                        fireApplyEditorValue();
+                        if (!processingButtonClick) {
+                            e.display.asyncExec(() -> {
+                                if (combo != null && !combo.isDisposed() && !processingButtonClick) {
+                                    markDirty();
+                                    fireApplyEditorValue();
+                                }
+                            });
+                        }
                     }
                 });
+
 
                 combo.addTraverseListener(e -> {
                     if (e.detail == SWT.TRAVERSE_RETURN) {
@@ -856,13 +867,27 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 });
 
                 if (isContainer) {
+                    browseButton.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseDown(MouseEvent e) {
+                            if (e.button == 1) {
+                                processingButtonClick = true;
+                            }
+                        }
+                    });
+
                     browseButton.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
-                            Object newVal = openDialogBox(composite);
-                            doSetValue(newVal);
-                            markDirty();
-                            fireApplyEditorValue();
+                            processingButtonClick = true;
+                            try {
+                                Object newVal = openDialogBox(composite);
+                                doSetValue(newVal);
+                                markDirty();
+                                fireApplyEditorValue();
+                            } finally {
+                                processingButtonClick = false;
+                            }
                         }
                     });
                 }
