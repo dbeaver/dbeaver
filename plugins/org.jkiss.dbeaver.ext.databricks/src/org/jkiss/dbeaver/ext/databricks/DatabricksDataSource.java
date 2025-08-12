@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -79,18 +80,27 @@ public class DatabricksDataSource extends GenericDataSource {
     }
 
     @Override
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-                                          @Nullable JDBCExecutionContext initFrom) throws DBException {
-        DatabricksExecutionContext executionContext = (DatabricksExecutionContext) context;
-        if (initFrom == null) {
-            executionContext.refreshDefaults(monitor, true);
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
+        DBCExecutionContextDefaults contextDefaults = context.getContextDefaults();
+        if (contextDefaults == null) {
             return;
         }
 
-        DatabricksExecutionContext executionMetaContext = (DatabricksExecutionContext) initFrom;
-        GenericCatalog defaultCatalog = executionMetaContext.getDefaultCatalog();
-        if (defaultCatalog != null) {
-            executionContext.setDefaultCatalog(monitor, defaultCatalog, null);
+        if (initFrom == null) {
+            contextDefaults.refreshDefaults(monitor, true);
+            return;
+        }
+
+        DBCExecutionContextDefaults initFromDefaults = initFrom.getContextDefaults();
+        if (initFromDefaults != null) {
+            GenericCatalog defaultCatalog = (GenericCatalog) initFromDefaults.getDefaultCatalog();
+            if (defaultCatalog != null && contextDefaults.supportsCatalogChange()) {
+                contextDefaults.setDefaultCatalog(monitor, defaultCatalog, null);
+            }
         }
     }
 

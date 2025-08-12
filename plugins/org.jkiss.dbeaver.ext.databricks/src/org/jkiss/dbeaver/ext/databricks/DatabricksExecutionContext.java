@@ -96,10 +96,8 @@ public class DatabricksExecutionContext extends GenericExecutionContext {
                     }
                 }
             } catch (SQLException e) {
-                log.debug("Failed to get current catalog using CURRENT_CATALOG() query", e);
+                log.debug("Failed to get current catalog", e);
             }
-        } catch (Exception e) {
-            log.warn("Error refreshing catalog defaults for Databricks", e);
         }
 
         return isRefreshed;
