@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.concurrent.Flow;
@@ -92,7 +93,8 @@ public class AIAssistantImpl implements AIAssistant {
 
         AIMessage userMessage = new AIMessage(AIMessageType.USER, request.text());
 
-        String prompt = createPromptBuilder()
+        AIPromptBuilder promptBuilder = createPromptBuilder();
+        promptBuilder
             .addContexts(AIPromptBuilder.describeContext(request.context().getDataSource()))
             .addInstructions(AIPromptBuilder.createInstructionList(request.context().getDataSource()))
             .addGoals(
@@ -102,7 +104,9 @@ public class AIAssistantImpl implements AIAssistant {
                 "Place any explanation or comments before the SQL code block.",
                 "Provide the SQL query in a fenced Markdown code block."
             )
-            .build();
+            .addDatabaseSnapshot(metadataPromptService.createDbSnapshot(monitor, request.context(), buildOptions(monitor, engine)));
+        addSqlCompletionInstructions(promptBuilder);
+        String prompt = promptBuilder.build();
 
         AIEngineRequest completionRequest = requestFactory.build(
             monitor,
@@ -145,7 +149,8 @@ public class AIAssistantImpl implements AIAssistant {
             request.engine() :
             getActiveEngine();
 
-        String prompt = createPromptBuilder()
+        AIPromptBuilder promptBuilder = createPromptBuilder();
+        promptBuilder
             .addContexts(AIPromptBuilder.describeContext(request.context().getDataSource()))
             .addInstructions(AIPromptBuilder.createInstructionList(request.context().getDataSource()))
             .addGoals(
@@ -155,7 +160,9 @@ public class AIAssistantImpl implements AIAssistant {
                 "Place any explanation or comments before the SQL code block.",
                 "Provide the SQL query in a fenced Markdown code block."
             )
-            .build();
+            .addDatabaseSnapshot(metadataPromptService.createDbSnapshot(monitor, request.context(), buildOptions(monitor, engine)));
+        addSqlCompletionInstructions(promptBuilder);
+        String prompt = promptBuilder.build();
 
         AIEngineRequest completionRequest = requestFactory.build(
             monitor,
@@ -261,13 +268,13 @@ public class AIAssistantImpl implements AIAssistant {
         try {
             boolean loggingEnabled = isLoggingEnabled();
             if (loggingEnabled) {
-                log.debug("Requesting completion [request=" + request + "]");
+                log.debug("AI request:\n" + CommonUtils.addTextIndent(request.toString(), "\t"));
             }
 
             AIEngineResponse completionResponse = callWithRetry(() -> engine.requestCompletion(monitor, request));
 
             if (loggingEnabled) {
-                log.debug("Received completion [response=" + completionResponse + "]");
+                log.debug("AI response:\n" + CommonUtils.addTextIndent(completionResponse.toString(), "\t"));
             }
 
             return completionResponse;
@@ -310,6 +317,13 @@ public class AIAssistantImpl implements AIAssistant {
 
     protected AIPromptBuilder createPromptBuilder() throws DBException {
         return AIPromptBuilder.create();
+    }
+
+    /**
+     * Adds any extra instruction for SQL completion
+     */
+    protected void addSqlCompletionInstructions(AIPromptBuilder promptBuilder) {
+
     }
 
     private boolean isLoggingEnabled() throws DBException {
