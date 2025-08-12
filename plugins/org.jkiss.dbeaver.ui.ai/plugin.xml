@@ -32,7 +32,7 @@
         <page id="org.jkiss.dbeaver.preferences.ai" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageMain" name="%pref.page.ai.engines.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
         </page>
-        <page id="org.jkiss.dbeaver.preferences.ai.config" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageConfiguration" name="%pref.page.ai.config.name">
+        <page id="org.jkiss.dbeaver.preferences.ai.config" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageConfiguration" name="%prop.page.ai.config.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
         </page>
     </extension>
