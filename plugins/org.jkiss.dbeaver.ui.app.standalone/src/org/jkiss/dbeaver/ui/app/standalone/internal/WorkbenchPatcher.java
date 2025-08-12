@@ -244,7 +244,7 @@ public final class WorkbenchPatcher {
 
     private static boolean isContributedByDBeaver(@NotNull IExtension extension) {
         String contributor = extension.getContributor().getName();
-        return contributor.startsWith("org.jkiss") || contributor.startsWith("com.dbeaver");
+        return contributor.startsWith("org.jkiss.dbeaver") || contributor.startsWith("com.dbeaver");
     }
 
     private record PartDescriptor(@NotNull IConfigurationElement element, @NotNull String id, @NotNull String icon) {
