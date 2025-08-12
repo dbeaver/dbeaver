@@ -199,6 +199,7 @@ public class DTUIMessages extends NLS {
     public static String database_consumer_page_mapping_error_no_schema_changes_info;
     public static String database_consumer_page_mapping_error_schema_save_title;
     public static String database_consumer_page_mapping_error_schema_save_info;
+    public static String database_consumer_page_mapping_browse_button_tooltip;
     public static String database_consumer_page_mapping_create_target_object_confirmation_title;
     public static String database_consumer_page_mapping_create_target_object_confirmation_question;
     public static String sql_script_task_page_settings_error_message_you_must_select_script_execute;
