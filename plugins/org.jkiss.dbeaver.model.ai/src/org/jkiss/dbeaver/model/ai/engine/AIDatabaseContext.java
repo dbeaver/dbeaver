@@ -98,7 +98,7 @@ public class AIDatabaseContext {
             return this;
         }
 
-        @Nullable
+        @NotNull
         public AIDatabaseContext build() throws DBException {
             if (scope == null) {
                 throw new DBException("Scope must be specified");
@@ -107,7 +107,7 @@ public class AIDatabaseContext {
                 throw new DBException("Custom entities must be specified when using custom scope");
             }
             if (executionContext == null) {
-                return null;
+                throw new DBException("Execution context must be specified");
             }
             DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
             if (dataSource.getCurrentCatalog() == null && contextDefaults != null) {

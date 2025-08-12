@@ -11,8 +11,8 @@
             'org.jkiss.dbeaver.xml.editor.color.text=255,255,255'
             'org.jkiss.dbeaver.xml.editor.color.comment=255,0,0'
 
-            'org.jkiss.dbeaver.color.connectionType.qa.background=0,115,0'
-            'org.jkiss.dbeaver.color.connectionType.prod.background=140,0,0'
+            'org.jkiss.dbeaver.color.connectionType.qa.background=64,89,66'
+            'org.jkiss.dbeaver.color.connectionType.prod.background=97,61,63'
 
             'org.jkiss.dbeaver.ui.navigator.node.transient.foreground=71,180,65'
             'org.jkiss.dbeaver.ui.navigator.node.new.background=41,66,0'
