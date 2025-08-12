@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.app.standalone.internal;
 
 import org.eclipse.core.runtime.*;
 import org.eclipse.e4.ui.model.application.MApplicationElement;
+import org.eclipse.e4.ui.model.application.ui.advanced.MPlaceholder;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
@@ -72,13 +74,19 @@ public final class WorkbenchPatcher {
      * @return {@code true} if the perspective must be reset, {@code false} otherwise
      */
     public static boolean needsPerspectiveReset(@NotNull Workbench workbench) {
-        // Collect a set of descriptors from the application model
-        Set<String> descriptors = workbench.getApplication().getDescriptors().stream()
+        EModelService modelService = workbench.getService(EModelService.class);
+        if (modelService == null) {
+            return false;
+        }
+
+        // Collect all view placeholders the model knows about
+        Set<String> placeholders = modelService.findElements(workbench.getApplication(), null, MPlaceholder.class).stream()
             .map(MApplicationElement::getElementId)
             .collect(Collectors.toSet());
 
-        // Collect a set of registered views via perspective extensions
+        // Collect a set of registered views via perspective extensions contributed by DBeaver
         Set<String> views = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_PERSPECTIVE_EXTENSIONS)
+            .filter(WorkbenchPatcher::isContributedByDBeaver)
             // extension.forEach(perspectiveExtension)
             .map(IExtension::getConfigurationElements).flatMap(Stream::of)
             .filter(e -> e.getName().equals(IWorkbenchRegistryConstants.TAG_PERSPECTIVE_EXTENSION))
@@ -89,7 +97,7 @@ public final class WorkbenchPatcher {
             .map(x -> x.getAttribute(IWorkbenchRegistryConstants.ATT_ID))
             .collect(Collectors.toSet());
 
-        return !descriptors.containsAll(views);
+        return !placeholders.containsAll(views);
     }
 
     /**
@@ -232,6 +240,11 @@ public final class WorkbenchPatcher {
         IExtensionRegistry registry = Platform.getExtensionRegistry();
         IExtensionPoint point = registry.getExtensionPoint(namespace, extensionPointName);
         return Arrays.stream(point.getExtensions());
+    }
+
+    private static boolean isContributedByDBeaver(@NotNull IExtension extension) {
+        String contributor = extension.getContributor().getName();
+        return contributor.startsWith("org.jkiss") || contributor.startsWith("com.dbeaver");
     }
 
     private record PartDescriptor(@NotNull IConfigurationElement element, @NotNull String id, @NotNull String icon) {
