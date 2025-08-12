@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCCachedContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -152,19 +149,6 @@ class SnowflakeExecutionContext extends GenericExecutionContext {
             } catch (SQLException e) {
                 log.debug("Exception caught when refreshing defaults for Snowflake execution context", e);
                 throw new DBException("Unable to refresh defaults for Snowflake execution context", e);
-            }
-
-            if (useBootstrapSettings) {
-                DBPConnectionBootstrap bootstrap = getBootstrapSettings();
-                DBPConnectionConfiguration connectionConfiguration = getDataSource().getContainer().getConnectionConfiguration();
-                if (!CommonUtils.isEmpty(bootstrap.getDefaultCatalogName()) && CommonUtils.isEmpty(connectionConfiguration.getProviderProperty(SnowflakeConstants.PROP_SCHEMA))) {
-                    setActiveDatabase(monitor, bootstrap.getDefaultCatalogName());
-                    currentDatabase = bootstrap.getDefaultCatalogName();
-                }
-                if (!CommonUtils.isEmpty(bootstrap.getDefaultSchemaName()) && CommonUtils.isEmpty(connectionConfiguration.getDatabaseName())) {
-                    setActiveSchema(monitor, bootstrap.getDefaultSchemaName());
-                    currentSchema = bootstrap.getDefaultSchemaName();
-                }
             }
         }
 

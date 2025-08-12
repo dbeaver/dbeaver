@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -79,18 +78,10 @@ public class DatabricksExecutionContext extends GenericExecutionContext {
                 try (JDBCResultSet dbResult = dbStat.executeQuery("SELECT CURRENT_CATALOG()")) {
                     if (dbResult != null && dbResult.next()) {
                         String currentCatalog = dbResult.getString(1);
-
                         if (CommonUtils.isNotEmpty(currentCatalog)) {
                             if (!CommonUtils.equalObjects(currentCatalog, activeCatalogName)) {
                                 activeCatalogName = currentCatalog;
                                 isRefreshed = true;
-                            }
-                            if (useBootstrapSettings) {
-                                DBPConnectionBootstrap bootstrap = getBootstrapSettings();
-                                if (CommonUtils.isEmpty(bootstrap.getDefaultCatalogName())) {
-                                    bootstrap.setDefaultCatalogName(currentCatalog);
-                                    isRefreshed = true;
-                                }
                             }
                         }
                     }
