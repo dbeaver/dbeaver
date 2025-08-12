@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.navigator.database;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
@@ -27,10 +29,13 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.progress.WorkbenchJob;
 import org.jkiss.code.NotNull;
@@ -51,6 +56,7 @@ import org.jkiss.dbeaver.registry.RuntimeProjectPropertiesConstant;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPainter;
+import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorItemRenderer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
@@ -69,6 +75,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private static final Log log = Log.getLog(DatabaseNavigatorTree.class);
 
     static final String TREE_DATA_STAT_MAX_SIZE = "nav.stat.maxSize";
+    private static final String FILTER_TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.navigator.filter.toolbar"; //$NON-NLS-1$
     private static final String DATA_TREE_CONTROL = DatabaseNavigatorTree.class.getSimpleName();
     private static final boolean INLINE_RENAME_ENABLED = false;
 
@@ -970,6 +977,30 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             UIUtils.addDefaultEditActionsSupport(UIUtils.getActiveWorkbenchWindow(), getFilterControl());
 
             treeFilter = (TreeFilter) super.getPatternFilter();
+        }
+
+        @Override
+        protected Composite createFilterControls(Composite parent) {
+            super.createFilterControls(parent);
+
+            if (navigatorFilter instanceof DatabaseNavigatorTreeFilter) {
+                ((GridLayout) parent.getLayout()).numColumns++;
+
+                IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+
+                ToolBarManager filterManager = new ToolBarManager();
+                filterManager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+                final IMenuService menuService = workbenchWindow.getService(IMenuService.class);
+                if (menuService != null) {
+                    menuService.populateContributionManager(filterManager, FILTER_TOOLBAR_CONTRIBUTION_ID);
+                }
+
+                filterManager.createControl(parent);
+
+                parent.addDisposeListener(e -> filterManager.dispose());
+            }
+
+            return parent;
         }
 
         @Override
