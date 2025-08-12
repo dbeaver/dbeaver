@@ -27,6 +27,10 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class OpenAIProperties implements OpenAIBaseProperties {
     @Nullable
+    @SerializedName("gpt.base_url")
+    private String baseUrl;
+
+    @Nullable
     @SecureProperty
     @SerializedName("gpt.token")
     private String token;
@@ -46,6 +50,11 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     private Boolean loggingEnabled;
 
     @Nullable
+    @Override
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
     @Override
     public String getToken() {
         return token;
@@ -95,6 +104,10 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         if (token != null) {
             DBSSecretController.getGlobalSecretController().setPrivateSecretValue(OpenAIConstants.GPT_API_TOKEN, token);
         }
+    }
+
+    public void setBaseUrl(@Nullable String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 
     public void setToken(@Nullable String token) {
