@@ -800,6 +800,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
                 browseButton = new Button(composite, SWT.PUSH);
                 browseButton.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
+                browseButton.setToolTipText(DTUIMessages.database_consumer_page_mapping_browse_button_tooltip);
                 FormData btnFd = new FormData();
                 btnFd.top = new FormAttachment(0, 0);
                 btnFd.bottom = new FormAttachment(100, 0);
@@ -837,11 +838,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         }
                     }
                 });
-                combo.addFocusListener(new FocusAdapter() {
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        markDirty();
-                    }
+
+                combo.addTraverseListener(e -> {
+                    fireApplyEditorValue();
+                    e.doit = false;
                 });
 
                 if (isContainer) {

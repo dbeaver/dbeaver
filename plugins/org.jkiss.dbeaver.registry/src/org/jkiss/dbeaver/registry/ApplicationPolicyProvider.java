@@ -53,7 +53,6 @@ public class ApplicationPolicyProvider implements DBPPolicyProvider {
         ApplicationPolicyProvider.instance = instance;
     }
 
-
     @Override
     public boolean isPolicyEnabled(@NotNull String propertyName) {
         return convertToBooleanValue(getPolicyProperty(propertyName));
