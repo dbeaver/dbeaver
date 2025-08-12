@@ -56,8 +56,6 @@ public final class ChatTruncator {
             return List.of();
         }
 
-        int budget = maxTokens - reserveForSystem - reserveForReply - reserveForOverhead;
-
         // 1) Extract and merge SYSTEM messages
         List<AIMessage> systems = new ArrayList<>();
         ArrayList<AIMessage> rest = new ArrayList<>(messages.size());
@@ -69,8 +67,12 @@ public final class ChatTruncator {
             }
         }
 
-
         AIMessage mergedSystem = systems.isEmpty() ? null : mergeSystems(systems);
+
+        int systemTokens = mergedSystem != null ? counter.count(mergedSystem.getContent()) : 0;
+        int systemCap = Math.min(systemTokens, reserveForSystem);
+        int headroom = maxTokens - reserveForReply - reserveForOverhead;
+        int budget = Math.max(0, headroom - systemCap);
 
         // 2) Walk from newest to oldest
         ArrayList<AIMessage> pickedReverse = new ArrayList<>(rest.size());
@@ -104,7 +106,7 @@ public final class ChatTruncator {
         // 4) Place SYSTEM in front
         ArrayList<AIMessage> result = new ArrayList<>(pickedReverse.size() + 1);
         if (mergedSystem != null) {
-            int remainingForSystem = Math.max(budget - used, reserveForSystem);
+            int remainingForSystem = Math.max(0, headroom - used);
             result.add(truncateToTokens(mergedSystem, remainingForSystem));
         }
 
