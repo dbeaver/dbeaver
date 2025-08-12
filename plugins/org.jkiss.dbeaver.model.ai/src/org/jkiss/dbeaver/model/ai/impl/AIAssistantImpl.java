@@ -103,8 +103,7 @@ public class AIAssistantImpl implements AIAssistant {
             .addOutputFormats(
                 "Place any explanation or comments before the SQL code block.",
                 "Provide the SQL query in a fenced Markdown code block."
-            )
-            .addDatabaseSnapshot(metadataPromptService.createDbSnapshot(monitor, request.context(), buildOptions(monitor, engine)));
+            );
         addSqlCompletionInstructions(promptBuilder);
         String prompt = promptBuilder.build();
 
@@ -159,8 +158,7 @@ public class AIAssistantImpl implements AIAssistant {
             .addOutputFormats(
                 "Place any explanation or comments before the SQL code block.",
                 "Provide the SQL query in a fenced Markdown code block."
-            )
-            .addDatabaseSnapshot(metadataPromptService.createDbSnapshot(monitor, request.context(), buildOptions(monitor, engine)));
+            );
         addSqlCompletionInstructions(promptBuilder);
         String prompt = promptBuilder.build();
 
