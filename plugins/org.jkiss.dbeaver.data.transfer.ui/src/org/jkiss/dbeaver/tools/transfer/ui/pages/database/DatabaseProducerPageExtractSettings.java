@@ -56,6 +56,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     private Combo rowsExtractType;
     private Label segmentSizeLabel;
     private Text segmentSizeText;
+    private Button logExtractQueriesCheck;
 
     public DatabaseProducerPageExtractSettings() {
         super(DTUIMessages.database_producer_page_extract_settings_name_and_title);
@@ -245,7 +246,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                 ((GridData) segmentSizeText.getLayoutData()).widthHint = UIUtils.getFontHeight(segmentSizeText) * 10;
             }
 
-            Button logExtractQueriesCheck = UIUtils.createCheckbox(
+            logExtractQueriesCheck = UIUtils.createCheckbox(
                 generalSettings,
                 DTMessages.data_transfer_wizard_output_log_select_queries_check,
                 DTMessages.data_transfer_wizard_output_log_select_queries_check_tip,
@@ -287,6 +288,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         threadsNumText.setText(String.valueOf(getWizard().getSettings().getMaxJobCount()));
         newConnectionCheckbox.setSelection(settings.isOpenNewConnections());
         rowCountCheckbox.setSelection(settings.isQueryRowCount());
+        logExtractQueriesCheck.setSelection(settings.isEnableQmLogging());
 
         if (segmentSizeText != null) {
             segmentSizeText.setText(String.valueOf(settings.getSegmentSize()));

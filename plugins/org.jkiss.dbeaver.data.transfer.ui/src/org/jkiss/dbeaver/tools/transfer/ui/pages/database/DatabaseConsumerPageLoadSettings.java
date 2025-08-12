@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
     private Button useBatchCheck;
     private Button ignoreDuplicateRows;
     private Button useBulkLoadCheck;
+    private Button logInsertQueriesCheck;
     private List<SQLDialectInsertReplaceMethod> availableInsertMethodsDescriptors;
     private final Map<String, EventProcessorComposite<?>> processors = new HashMap<>();
 
@@ -167,7 +168,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
             });
             urlLabel.setLayoutData(new GridData(GridData.FILL, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 2, 1));
 
-            Button logInsertQueriesCheck = UIUtils.createCheckbox(
+            logInsertQueriesCheck = UIUtils.createCheckbox(
                 loadSettings,
                 DTUIMessages.database_consumer_wizard_log_insert_queries_check,
                 DTUIMessages.database_consumer_wizard_log_insert_queries_check_tip,
@@ -466,6 +467,7 @@ public class DatabaseConsumerPageLoadSettings extends DataTransferPageNodeSettin
         loadInsertMethods();
 
         onDuplicateKeyInsertMethods.setEnabled(!useBulkLoadCheck.getSelection());
+        logInsertQueriesCheck.setSelection(settings.isEnableQmLogging());
     }
 
     private boolean confirmDataTruncate() {
