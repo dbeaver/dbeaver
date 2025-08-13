@@ -41,7 +41,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class CubridUserManager
     extends SQLObjectEditor<CubridPrivilage, GenericStructContainer> /*implements DBEObjectRenamer<OracleSchema>*/ {
@@ -71,7 +70,6 @@ public class CubridUserManager
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
-
         String newName = this.getNewName((CubridDataSource) container, "NEW_USER");
         return new CubridPrivilage((CubridDataSource) container, newName, null);
     }
@@ -101,8 +99,7 @@ public class CubridUserManager
         @NotNull ObjectDeleteCommand command,
         @NotNull Map<String, Object> options
     ) {
-        String builder = "DROP USER "
-            + DBUtils.getQuotedIdentifier(command.getObject());
+        String builder = "DROP USER " + DBUtils.getQuotedIdentifier(command.getObject());
         actions.add(new DeletePersistAction(command.getObject(), builder));
     }
 
@@ -141,7 +138,6 @@ public class CubridUserManager
 
     private static class DeletePersistAction extends SQLDatabasePersistActionAtomic {
         CubridPrivilage database;
-
         public DeletePersistAction(CubridPrivilage privilage, String script) {
             super("drop user", script);
             this.database = privilage;

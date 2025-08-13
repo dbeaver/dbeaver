@@ -179,9 +179,10 @@ public class CubridServerManager extends SQLObjectEditor<CubridServer, GenericSt
     ) {
         CubridServer server = command.getObject();
         actions.add(new SQLDatabasePersistAction("Rename Server",
-        "RENAME SERVER " + DBUtils.getQuotedIdentifier(server.getOwner()) + "."
-        + DBUtils.getQuotedIdentifier(server.getDataSource(), command.getOldName()) + " TO "
-        + DBUtils.getQuotedIdentifier(server.getDataSource(), command.getNewName())));
+            "RENAME SERVER " + DBUtils.getQuotedIdentifier(server.getOwner()) + "."
+            + DBUtils.getQuotedIdentifier(server.getDataSource(), command.getOldName()) + " TO "
+            + DBUtils.getQuotedIdentifier(server.getDataSource(), command.getNewName())
+        ));
     }
 
     @Override

@@ -126,42 +126,47 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> i
         if (command.hasProperty("active")) {
             actionList.add(new SQLDatabasePersistAction(
                 "ALTER TRIGGER " + triggerName + " STATUS "
-                    + (trigger.getActive() ? "ACTIVE" : "INACTIVE")));
+                + (trigger.getActive() ? "ACTIVE" : "INACTIVE")
+            ));
         }
         if (command.hasProperty("priority")) {
             actionList.add(new SQLDatabasePersistAction(
-                "ALTER TRIGGER " + triggerName + " PRIORITY " + trigger.getPriority()));
+                "ALTER TRIGGER " + triggerName + " PRIORITY " + trigger.getPriority()
+            ));
         }
         if (command.hasProperty("description")) {
             actionList.add(new SQLDatabasePersistAction(
                 "ALTER TRIGGER " + triggerName + " COMMENT "
-                    + SQLUtils.quoteString(trigger, CommonUtils.notEmpty(trigger.getDescription()))));
+                + SQLUtils.quoteString(trigger, CommonUtils.notEmpty(trigger.getDescription()))
+            ));
         }
     }
 
     @Override
     protected void addObjectRenameActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectRenameCommand command,
-            @NotNull Map<String, Object> options
-        ) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         CubridTrigger trigger = (CubridTrigger) command.getObject();
-
         boolean isSupportMultiSchema = ((CubridDataSource) trigger.getDataSource()).getSupportMultiSchema();
         String schemaName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(trigger.getOwner()) + "." : "";
-        actions.add(new SQLDatabasePersistAction("Rename Trigger",
-                "RENAME TRIGGER " + schemaName + DBUtils.getQuotedIdentifier(trigger.getDataSource(), command.getOldName())
-                + " AS " + schemaName + DBUtils.getQuotedIdentifier(trigger.getDataSource(), command.getNewName())));
+        actions.add(new SQLDatabasePersistAction(
+            "Rename Trigger",
+            "RENAME TRIGGER " + schemaName + DBUtils.getQuotedIdentifier(trigger.getDataSource(), command.getOldName())
+            + " AS " + schemaName + DBUtils.getQuotedIdentifier(trigger.getDataSource(), command.getNewName())
+        ));
     }
 
     @Override
     public void renameObject(
-            @NotNull DBECommandContext commandContext,
-            @NotNull CubridTrigger object,
-            @NotNull Map<String, Object> options,
-            @NotNull String newName) throws DBException {
+        @NotNull DBECommandContext commandContext,
+        @NotNull CubridTrigger object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    ) throws DBException {
         processObjectRename(commandContext, object, options, newName);
     }
 

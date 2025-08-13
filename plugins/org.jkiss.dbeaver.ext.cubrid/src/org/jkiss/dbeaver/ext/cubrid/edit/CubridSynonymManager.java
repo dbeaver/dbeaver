@@ -119,8 +119,10 @@ public class CubridSynonymManager extends SQLObjectEditor<GenericSynonym, Generi
         @NotNull Map<String, Object> options
     ) {
         CubridSynonym synonym = (CubridSynonym) command.getObject();
-        actions.add(new SQLDatabasePersistAction("Drop Synonym",
-        "DROP SYNONYM " + synonym.getFullyQualifiedName(DBPEvaluationContext.DDL)));
+        actions.add(new SQLDatabasePersistAction(
+            "Drop Synonym",
+            "DROP SYNONYM " + synonym.getFullyQualifiedName(DBPEvaluationContext.DDL)
+        ));
     }
 
     @Override
@@ -133,9 +135,11 @@ public class CubridSynonymManager extends SQLObjectEditor<GenericSynonym, Generi
     ) {
         CubridSynonym synonym = (CubridSynonym) command.getObject();
         String schemaName = DBUtils.getQuotedIdentifier(synonym.getOwner()) + ".";
-        actions.add(new SQLDatabasePersistAction("Rename Synonym",
-        "RENAME SYNONYM " + schemaName + DBUtils.getQuotedIdentifier(synonym.getDataSource(), command.getOldName())
-        + " TO " + schemaName + DBUtils.getQuotedIdentifier(synonym.getDataSource(), command.getNewName())));
+        actions.add(new SQLDatabasePersistAction(
+            "Rename Synonym",
+            "RENAME SYNONYM " + schemaName + DBUtils.getQuotedIdentifier(synonym.getDataSource(), command.getOldName())
+            + " TO " + schemaName + DBUtils.getQuotedIdentifier(synonym.getDataSource(), command.getNewName())
+        ));
     }
 
     @Override

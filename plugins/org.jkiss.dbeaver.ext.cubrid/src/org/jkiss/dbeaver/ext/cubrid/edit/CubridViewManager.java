@@ -121,8 +121,8 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
             if (hasComment || view.getDescription() != null) {
                 boolean isSupportMultiSchema = view.getDataSource().getSupportMultiSchema();
                 String viewName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(view.getContainer()) + "."
-                        + DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName())
-                        : DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName());
+                    + DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName())
+                    : DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName());
                 query.append("ALTER VIEW " + viewName + " COMMENT = " + SQLUtils.quoteString(view, CommonUtils.notEmpty(view.getDescription())));
             }
         }
@@ -141,9 +141,10 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
         boolean isSupportMultiSchema = view.getDataSource().getSupportMultiSchema();
         String schemaName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(view.getContainer()) + "." : "";
         actions.add(new SQLDatabasePersistAction(
-                "Rename view",
-                "RENAME VIEW " + schemaName + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName())
-                + " TO " + schemaName + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getNewName())));
+            "Rename view",
+            "RENAME VIEW " + schemaName + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getOldName())
+            + " TO " + schemaName + DBUtils.getQuotedIdentifier(view.getDataSource(), command.getNewName())
+        ));
     }
 
     @Override
@@ -152,8 +153,7 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
         @NotNull GenericTableBase object,
         @NotNull Map<String, Object> options,
         @NotNull String newName
-    )
-    throws DBException {
+    ) throws DBException {
         if (!((CubridDataSource) object.getDataSource()).isShard()) {
             processObjectRename(commandContext, object, options, newName);
         }
@@ -182,10 +182,11 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
             }
         }
         actions.add(new SQLDatabasePersistAction(
-                "Change Owner",
-                "ALTER VIEW " + (isSupportMultiSchema ? DBUtils.getQuotedIdentifier(view.getContainer()) + "." : "")
-                + DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName()) + " OWNER TO "
-                + DBUtils.getQuotedIdentifier(view.getSchema())));
+            "Change Owner",
+            "ALTER VIEW " + (isSupportMultiSchema ? DBUtils.getQuotedIdentifier(view.getContainer()) + "." : "")
+            + DBUtils.getQuotedIdentifier(view.getDataSource(), view.getName()) + " OWNER TO "
+            + DBUtils.getQuotedIdentifier(view.getSchema())
+        ));
     }
 
     @Override

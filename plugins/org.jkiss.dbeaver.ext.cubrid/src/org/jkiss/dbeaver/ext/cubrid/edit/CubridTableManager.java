@@ -126,8 +126,8 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
             CubridTable table = (CubridTable) command.getObject();
             boolean isSupportMultiSchema = table.getDataSource().getSupportMultiSchema();
             String tableName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(table.getContainer()) + "."
-                    + DBUtils.getQuotedIdentifier(table.getDataSource(), table.getName())
-                    : DBUtils.getQuotedIdentifier(table.getDataSource(), table.getName());
+                + DBUtils.getQuotedIdentifier(table.getDataSource(), table.getName())
+                : DBUtils.getQuotedIdentifier(table.getDataSource(), table.getName());
             StringBuilder query = new StringBuilder("ALTER TABLE ");
             query.append(tableName);
             appendTableModifiers(monitor, table, command, query, true, options);
@@ -197,10 +197,11 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
             }
         }
         actions.add(new SQLDatabasePersistAction(
-                "Change Owner",
-                "ALTER TABLE " + (isSupportMultiSchema ? DBUtils.getQuotedIdentifier(table.getContainer()) + "." : "")
-                + DBUtils.getQuotedIdentifier(table.getDataSource(), table.getName()) + " OWNER TO "
-                + DBUtils.getQuotedIdentifier(table.getSchema())));
+            "Change Owner",
+            "ALTER TABLE " + (isSupportMultiSchema ? DBUtils.getQuotedIdentifier(table.getContainer()) + "." : "")
+            + DBUtils.getQuotedIdentifier(table.getDataSource(), table.getName()) + " OWNER TO "
+            + DBUtils.getQuotedIdentifier(table.getSchema())
+        ));
     }
 
     @Override
@@ -215,9 +216,10 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         boolean isSupportMultiSchema = table.getDataSource().getSupportMultiSchema();
         String schemaName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(table.getContainer()) + "." : "";
         actions.add(new SQLDatabasePersistAction(
-                "Rename table",
-                "RENAME TABLE " + schemaName + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getOldName())
-                + " TO " + schemaName + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getNewName())));
+            "Rename table",
+            "RENAME TABLE " + schemaName + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getOldName())
+            + " TO " + schemaName + DBUtils.getQuotedIdentifier(table.getDataSource(), command.getNewName())
+        ));
     }
 
     @Override
