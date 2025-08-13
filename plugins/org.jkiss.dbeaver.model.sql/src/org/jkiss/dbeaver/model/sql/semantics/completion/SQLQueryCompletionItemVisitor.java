@@ -29,6 +29,9 @@ public interface SQLQueryCompletionItemVisitor<R> {
     R visitCompositeField(@NotNull SQLCompositeFieldCompletionItem compositeField);
 
     @Nullable
+    R visitSpecialCompositeField(@NotNull SQLSpecialCompositeFieldCompletionItem compositeField);
+
+    @Nullable
     R visitColumnName(@NotNull SQLColumnNameCompletionItem columnName);
 
     @Nullable

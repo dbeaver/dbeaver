@@ -436,13 +436,31 @@ public class SQLQueryJob extends DataSourceJob
             log.error("Unsupported SQL element type: " + element);
             return false;
         }
+
+        // Query may be a nested script
+        List<SQLScriptElement> nestedElements = sqlQuery.getScriptElements();
+
+        for (SQLScriptElement nestedElement : nestedElements) {
+            if (!(nestedElement instanceof SQLQuery nestedQuery)) {
+                log.error("Unsupported SQL element type: " + element);
+                return false;
+            }
+
+            if (!executeSingleElement(session, fireEvents, nestedQuery)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean executeSingleElement(@NotNull DBCSession session, boolean fireEvents, SQLQuery sqlQuery) {
         lastError = null;
 
         if (!skipConfirmation && getDataSourceContainer().getConnectionConfiguration().getConnectionType().isConfirmExecute()) {
             // Validate all transactional queries
-            if (!SQLSemanticProcessor.isSelectQuery(session.getDataSource().getSQLDialect(), element.getText())) {
+            if (!SQLSemanticProcessor.isSelectQuery(session.getDataSource().getSQLDialect(), sqlQuery.getText())) {
 
-                int confirmResult = confirmQueryExecution((SQLQuery)element, queries.size() > 1);
+                int confirmResult = confirmQueryExecution(sqlQuery, queries.size() > 1);
                 switch (confirmResult) {
                     case IDialogConstants.NO_ID:
                         return true;

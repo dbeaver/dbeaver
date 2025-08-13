@@ -159,18 +159,17 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             @NotNull List<DBEPersistAction> actions,
             @NotNull ObjectRenameCommand command,
             @NotNull Map<String, Object> options
-        ) {
+    ) {
         CubridTableColumn column = (CubridTableColumn) command.getObject();
-
-        boolean isView = column.getTable().isView();
         CubridDataSource dataSource = (CubridDataSource) column.getDataSource();
+        boolean isView = column.getTable().isView();
         String table = column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
         actions.add(
-                new SQLDatabasePersistAction(
-                        "Rename column",
-                        (isView ? "ALTER VIEW " : "ALTER TABLE ") + table + " RENAME COLUMN "
-                        + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + " AS "
-                        + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())));
+            new SQLDatabasePersistAction(
+                "Rename column",
+                (isView ? "ALTER VIEW " : "ALTER TABLE ") + table + " RENAME COLUMN "
+                + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + " AS "
+                + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())));
     }
 
     @Override
