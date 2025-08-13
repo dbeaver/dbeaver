@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.preferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -43,8 +44,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * PrefPageSQLExecute
  */
-public class PrefPageSQLExecute extends TargetPrefPage
-{
+public class PrefPageSQLExecute extends TargetPrefPage {
     private static final Log log = Log.getLog(PrefPageSQLExecute.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqlexecute"; //$NON-NLS-1$
@@ -56,10 +56,10 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Button clearOutputBeforeExecute;
 
     private Combo commitTypeCombo;
+    private Control commitNQueryLabel;
+    private Spinner commitNQueryText;
     private Combo errorHandlingCombo;
-    private Spinner commitLinesText;
     private Button fetchResultSetsCheck;
-    private Button resetCursorCheck;
     private Button maxEditorCheck;
     private Combo showStatisticsCombo;
     private Button setSelectionToStatisticsTabCheck;
@@ -78,47 +78,43 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Button enableParametersInEmbeddedCode;
     private Button enableVariables;
 
-    public PrefPageSQLExecute()
-    {
+    public PrefPageSQLExecute() {
         super();
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor)
-    {
+    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor) {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE) ||
-            store.contains(SQLPreferenceConstants.STATEMENT_TIMEOUT) ||
+                store.contains(SQLPreferenceConstants.STATEMENT_TIMEOUT) ||
 
-            store.contains(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE) ||
-            store.contains(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING) ||
-            store.contains(SQLPreferenceConstants.SCRIPT_COMMIT_LINES) ||
-            store.contains(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS) ||
+                store.contains(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE) ||
+                store.contains(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING) ||
+                store.contains(SQLPreferenceConstants.SCRIPT_COMMIT_LINES) ||
+                store.contains(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS) ||
 
-            store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER) ||
-            store.contains(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
-            store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK) ||
-            store.contains(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER) ||
+                store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER) ||
+                store.contains(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
+                store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK) ||
+                store.contains(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER) ||
 
-            store.contains(ModelPreferences.SQL_PARAMETERS_ENABLED) ||
-            store.contains(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED) ||
-            store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
-            store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
-            store.contains(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX) ||
-            store.contains(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX) ||
-            store.contains(ModelPreferences.SQL_VARIABLES_ENABLED) ||
+                store.contains(ModelPreferences.SQL_PARAMETERS_ENABLED) ||
+                store.contains(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED) ||
+                store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
+                store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
+                store.contains(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX) ||
+                store.contains(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX) ||
+                store.contains(ModelPreferences.SQL_VARIABLES_ENABLED) ||
 
-            store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
-            store.contains(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE) ||
-            store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE) ||
-            store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
-        ;
+                store.contains(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE) ||
+                store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE) ||
+                store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
+            ;
     }
 
     @Override
-    protected boolean supportsDataSourceSpecificOptions()
-    {
+    protected boolean supportsDataSourceSpecificOptions() {
         return true;
     }
 
@@ -184,39 +180,75 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
         // Scripts
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(rightPane, SQLEditorMessages.pref_page_sql_editor_group_scripts, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite scriptsGroup = UIUtils.createControlGroup(
+                rightPane,
+                SQLEditorMessages.pref_page_sql_editor_group_scripts,
+                2,
+                GridData.FILL_HORIZONTAL,
+                0
+            );
             {
-                UIUtils.createControlLabel(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_label_commit_type);
-
-                commitTypeCombo = new Combo(scriptsGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+                commitTypeCombo = UIUtils.createLabelCombo(
+                    scriptsGroup,
+                    SQLEditorMessages.pref_page_sql_editor_label_commit_type,
+                    "When to perform commit during script execution",
+                    SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY
+                );
+                commitTypeCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                 commitTypeCombo.add(SQLEditorMessages.pref_page_sql_editor_combo_item_script_end, SQLScriptCommitType.AT_END.ordinal());
-                commitTypeCombo.add(SQLEditorMessages.pref_page_sql_editor_combo_item_each_line_autocommit, SQLScriptCommitType.AUTOCOMMIT.ordinal());
+                commitTypeCombo.add(
+                    SQLEditorMessages.pref_page_sql_editor_combo_item_each_line_autocommit,
+                    SQLScriptCommitType.AUTOCOMMIT.ordinal()
+                );
                 commitTypeCombo.add(SQLEditorMessages.pref_page_sql_editor_combo_item_each_spec_line, SQLScriptCommitType.NLINES.ordinal());
                 commitTypeCombo.add(SQLEditorMessages.pref_page_sql_editor_combo_item_no_commit, SQLScriptCommitType.NO_COMMIT.ordinal());
-            }
+                commitTypeCombo.select(0);
+                commitTypeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> toggleCommitControls()));
 
-            {
-                UIUtils.createControlLabel(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_label_commit_after_line);
-                commitLinesText = new Spinner(scriptsGroup, SWT.BORDER);
-                commitLinesText.setSelection(0);
-                commitLinesText.setDigits(0);
-                commitLinesText.setIncrement(1);
-                commitLinesText.setMinimum(1);
-                commitLinesText.setMaximum(1024 * 1024);
+                commitNQueryLabel = new Label(scriptsGroup, SWT.NONE);
+                commitNQueryLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                commitNQueryText = new Spinner(scriptsGroup, SWT.BORDER);
+                commitNQueryText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                commitNQueryText.setToolTipText(SQLEditorMessages.pref_page_sql_editor_label_commit_after_line);
+                commitNQueryText.setSelection(0);
+                commitNQueryText.setDigits(0);
+                commitNQueryText.setIncrement(1);
+                commitNQueryText.setMinimum(1);
+                commitNQueryText.setMaximum(1024 * 1024);
+
+                UIUtils.setControlVisible(commitNQueryLabel, false);
+                UIUtils.setControlVisible(commitNQueryText, false);
             }
 
             {
                 UIUtils.createControlLabel(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_label_error_handling);
 
                 errorHandlingCombo = new Combo(scriptsGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-                errorHandlingCombo.add(SQLEditorMessages.pref_page_sql_editor_combo_item_stop_rollback, SQLScriptErrorHandling.STOP_ROLLBACK.ordinal());
-                errorHandlingCombo.add(SQLEditorMessages.pref_page_sql_editor_combo_item_stop_commit, SQLScriptErrorHandling.STOP_COMMIT.ordinal());
+                errorHandlingCombo.add(
+                    SQLEditorMessages.pref_page_sql_editor_combo_item_stop_rollback,
+                    SQLScriptErrorHandling.STOP_ROLLBACK.ordinal()
+                );
+                errorHandlingCombo.add(
+                    SQLEditorMessages.pref_page_sql_editor_combo_item_stop_commit,
+                    SQLScriptErrorHandling.STOP_COMMIT.ordinal()
+                );
                 errorHandlingCombo.add(SQLEditorMessages.pref_page_sql_editor_combo_item_ignore, SQLScriptErrorHandling.IGNORE.ordinal());
             }
 
-            fetchResultSetsCheck = UIUtils.createCheckbox(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_fetch_resultsets, null, false, 2);
-            resetCursorCheck = UIUtils.createCheckbox(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_reset_cursor, null, false, 2);
-            maxEditorCheck = UIUtils.createCheckbox(scriptsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_max_editor_on_script_exec, null, false, 2);
+            fetchResultSetsCheck = UIUtils.createCheckbox(
+                scriptsGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_fetch_resultsets,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_fetch_resultsets_tip,
+                false,
+                2
+            );
+            maxEditorCheck = UIUtils.createCheckbox(
+                scriptsGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_max_editor_on_script_exec,
+                null,
+                false,
+                2
+            );
             showStatisticsCombo = UIUtils.createLabelCombo(
                 scriptsGroup,
                 SQLEditorMessages.pref_page_sql_editor_checkbox_show_statistics_for_queries_with_results,
@@ -227,11 +259,11 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 showStatisticsCombo.add(statisticsTabOnExecution.getTitle());
             }
             setSelectionToStatisticsTabCheck = UIUtils.createCheckbox(
-                    scriptsGroup,
-                    SQLEditorMessages.pref_page_sql_editor_checkbox_select_statistics_tab,
-                    SQLEditorMessages.pref_page_sql_editor_checkbox_select_statistics_tab_tip,
-                    true,
-                    2
+                scriptsGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_select_statistics_tab,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_select_statistics_tab_tip,
+                true,
+                2
             );
             closeIncludedScriptAfterExecutionCheck = UIUtils.createCheckbox(
                 scriptsGroup,
@@ -243,16 +275,64 @@ public class PrefPageSQLExecute extends TargetPrefPage
         }
         // Parameters
         {
-            Composite paramsGroup = UIUtils.createControlGroup(leftPane, SQLEditorMessages.pref_page_sql_editor_group_parameters, 2, GridData.VERTICAL_ALIGN_FILL, 0);
-            enableSQLParameters = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_enable_sql_parameters, null, false, 2);
-            enableSQLAnonymousParameters = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters, null, false, 2);
-            anonymousParameterMarkText = UIUtils.createLabelText(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_anonymous_parameter_mark, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
+            Composite paramsGroup = UIUtils.createControlGroup(
+                leftPane,
+                SQLEditorMessages.pref_page_sql_editor_group_parameters,
+                2,
+                GridData.VERTICAL_ALIGN_FILL,
+                0
+            );
+            enableSQLParameters = UIUtils.createCheckbox(
+                paramsGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_enable_sql_parameters,
+                null,
+                false,
+                2
+            );
+            enableSQLAnonymousParameters = UIUtils.createCheckbox(
+                paramsGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters,
+                null,
+                false,
+                2
+            );
+            anonymousParameterMarkText = UIUtils.createLabelText(
+                paramsGroup,
+                SQLEditorMessages.pref_page_sql_editor_text_anonymous_parameter_mark,
+                "",
+                SWT.BORDER,
+                new GridData(32, SWT.DEFAULT)
+            );
             anonymousParameterMarkText.setTextLimit(1);
-            namedParameterPrefixText = UIUtils.createLabelText(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_named_parameter_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
+            namedParameterPrefixText = UIUtils.createLabelText(
+                paramsGroup,
+                SQLEditorMessages.pref_page_sql_editor_text_named_parameter_prefix,
+                "",
+                SWT.BORDER,
+                new GridData(32, SWT.DEFAULT)
+            );
             namedParameterPrefixText.setTextLimit(1);
-            controlCommandPrefixText = UIUtils.createLabelText(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_control_command_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
-            enableParametersInEmbeddedCode = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl, SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl_tip, false, 2);
-            enableVariables = UIUtils.createCheckbox(paramsGroup, SQLEditorMessages.pref_page_sql_editor_enable_variables, SQLEditorMessages.pref_page_sql_editor_enable_variables_tip, false, 2);
+            controlCommandPrefixText = UIUtils.createLabelText(
+                paramsGroup,
+                SQLEditorMessages.pref_page_sql_editor_text_control_command_prefix,
+                "",
+                SWT.BORDER,
+                new GridData(32, SWT.DEFAULT)
+            );
+            enableParametersInEmbeddedCode = UIUtils.createCheckbox(
+                paramsGroup,
+                SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl,
+                SQLEditorMessages.pref_page_sql_editor_enable_parameters_in_ddl_tip,
+                false,
+                2
+            );
+            enableVariables = UIUtils.createCheckbox(
+                paramsGroup,
+                SQLEditorMessages.pref_page_sql_editor_enable_variables,
+                SQLEditorMessages.pref_page_sql_editor_enable_variables_tip,
+                false,
+                2
+            );
 
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
@@ -277,20 +357,56 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
         // Delimiters
         {
-            Composite delimGroup = UIUtils.createControlGroup(rightPane, SQLEditorMessages.pref_page_sql_editor_group_delimiters, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            statementDelimiterText = UIUtils.createLabelText(delimGroup, SQLEditorMessages.pref_page_sql_editor_text_statement_delimiter, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
+            Composite delimGroup = UIUtils.createControlGroup(
+                rightPane,
+                SQLEditorMessages.pref_page_sql_editor_group_delimiters,
+                2,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING,
+                0
+            );
+            statementDelimiterText = UIUtils.createLabelText(
+                delimGroup,
+                SQLEditorMessages.pref_page_sql_editor_text_statement_delimiter,
+                "",
+                SWT.BORDER,
+                new GridData(32, SWT.DEFAULT)
+            );
             //statementDelimiterText.setTextLimit(1);
-            ignoreNativeDelimiter = UIUtils.createCheckbox(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, SQLEditorMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter_tip, false, 2);
-            
-            blankLineDelimiterCombo = UIUtils.createLabelCombo(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_blank_line_delimiter, SWT.READ_ONLY | SWT.DROP_DOWN);
+            ignoreNativeDelimiter = UIUtils.createCheckbox(
+                delimGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter_tip,
+                false,
+                2
+            );
+
+            blankLineDelimiterCombo = UIUtils.createLabelCombo(
+                delimGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_blank_line_delimiter,
+                SWT.READ_ONLY | SWT.DROP_DOWN
+            );
             for (SQLScriptStatementDelimiterMode mode : SQLScriptStatementDelimiterMode.values()) {
                 blankLineDelimiterCombo.add(mode.title);
             }
-            
-            removeTrailingDelimiter = UIUtils.createCheckbox(delimGroup, SQLEditorMessages.pref_page_sql_editor_checkbox_remove_trailing_delimiter, SQLEditorMessages.pref_page_sql_editor_checkbox_remove_trailing_delimiter_tip, false, 2);
+
+            removeTrailingDelimiter = UIUtils.createCheckbox(
+                delimGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_remove_trailing_delimiter,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_remove_trailing_delimiter_tip,
+                false,
+                2
+            );
         }
 
         return composite;
+    }
+
+    private void toggleCommitControls() {
+        SQLScriptCommitType commitType = getSelectedScriptCommitType();
+        boolean showNQueryText = commitType == SQLScriptCommitType.NLINES;
+        UIUtils.setControlVisible(commitNQueryLabel, showNQueryText);
+        UIUtils.setControlVisible(commitNQueryText, showNQueryText);
+        getShell().layout(true, true);
     }
 
     @Override
@@ -311,19 +427,21 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, updateDefaultAfterExecute.getSelection());
             store.setValue(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, clearOutputBeforeExecute.getSelection());
 
-            store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE, CommonUtils.fromOrdinal(SQLScriptCommitType.class, commitTypeCombo.getSelectionIndex()).name());
-            store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
-            store.setValue(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING, CommonUtils.fromOrdinal(SQLScriptErrorHandling.class, errorHandlingCombo.getSelectionIndex()).name());
+            store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE, getSelectedScriptCommitType().name());
+            store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_LINES, commitNQueryText.getSelection());
+            store.setValue(
+                SQLPreferenceConstants.SCRIPT_ERROR_HANDLING,
+                CommonUtils.fromOrdinal(SQLScriptErrorHandling.class, errorHandlingCombo.getSelectionIndex()).name()
+            );
             store.setValue(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
-            store.setValue(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, resetCursorCheck.getSelection());
             store.setValue(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE, maxEditorCheck.getSelection());
             store.setValue(
                 SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION,
                 StatisticsTabOnExecutionBehavior.getByTitle(showStatisticsCombo.getText()).name()
             );
             store.setValue(
-                    SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB,
-                    setSelectionToStatisticsTabCheck.getSelection()
+                SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB,
+                setSelectionToStatisticsTabCheck.getSelection()
             );
             store.setValue(
                 SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION,
@@ -351,6 +469,11 @@ public class PrefPageSQLExecute extends TargetPrefPage
         PrefUtils.savePreferenceStore(store);
     }
 
+    @NotNull
+    private SQLScriptCommitType getSelectedScriptCommitType() {
+        return CommonUtils.fromOrdinal(SQLScriptCommitType.class, commitTypeCombo.getSelectionIndex());
+    }
+
     @Override
     protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE);
@@ -361,7 +484,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.SCRIPT_COMMIT_LINES);
         store.setToDefault(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS);
 
-        store.setToDefault(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE);
         store.setToDefault(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE);
 
         store.setToDefault(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
@@ -394,146 +516,139 @@ public class PrefPageSQLExecute extends TargetPrefPage
     }
 
     private void loadPreferences(DBPPreferenceStore store, boolean useDefaults) {
-        try {
-            invalidateBeforeExecuteCheck.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)
-                    : store.getBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)
-            );
-            executeTimeoutText.setSelection(
-                useDefaults
-                    ? store.getDefaultInt(SQLPreferenceConstants.STATEMENT_TIMEOUT)
-                    : store.getInt(SQLPreferenceConstants.STATEMENT_TIMEOUT)
-            );
-            soundOnQueryEnd.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END)
-                    : store.getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END)
-            );
-            updateDefaultAfterExecute.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
-                    : store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
-            );
-            clearOutputBeforeExecute.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
-                    : store.getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
-            );
+        invalidateBeforeExecuteCheck.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)
+                : store.getBoolean(SQLPreferenceConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)
+        );
+        executeTimeoutText.setSelection(
+            useDefaults
+                ? store.getDefaultInt(SQLPreferenceConstants.STATEMENT_TIMEOUT)
+                : store.getInt(SQLPreferenceConstants.STATEMENT_TIMEOUT)
+        );
+        soundOnQueryEnd.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END)
+                : store.getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END)
+        );
+        updateDefaultAfterExecute.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
+                : store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
+        );
+        clearOutputBeforeExecute.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
+                : store.getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
+        );
 
-            SQLScriptCommitType commitType = CommonUtils.valueOf(
-                SQLScriptCommitType.class,
-                useDefaults ? null : store.getString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE),
-                SQLScriptCommitType.valueOf(store.getDefaultString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE))
-            );
-            commitTypeCombo.select(commitType.ordinal());
+        SQLScriptCommitType commitType = CommonUtils.valueOf(
+            SQLScriptCommitType.class,
+            useDefaults ? null : store.getString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE),
+            SQLScriptCommitType.valueOf(store.getDefaultString(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE))
+        );
+        commitTypeCombo.select(commitType.ordinal());
 
-            SQLScriptErrorHandling errorHandling = CommonUtils.valueOf(
-                SQLScriptErrorHandling.class,
-                useDefaults ? null : store.getString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING),
-                SQLScriptErrorHandling.valueOf(store.getDefaultString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING))
-            );
-            errorHandlingCombo.select(errorHandling.ordinal());
+        SQLScriptErrorHandling errorHandling = CommonUtils.valueOf(
+            SQLScriptErrorHandling.class,
+            useDefaults ? null : store.getString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING),
+            SQLScriptErrorHandling.valueOf(store.getDefaultString(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING))
+        );
+        errorHandlingCombo.select(errorHandling.ordinal());
 
-            commitLinesText.setSelection(
+        commitNQueryText.setSelection(
+            useDefaults
+                ? store.getDefaultInt(SQLPreferenceConstants.SCRIPT_COMMIT_LINES)
+                : store.getInt(SQLPreferenceConstants.SCRIPT_COMMIT_LINES)
+        );
+        fetchResultSetsCheck.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS)
+                : store.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS)
+        );
+        maxEditorCheck.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)
+                : store.getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)
+        );
+        UIUtils.setComboSelection(
+            showStatisticsCombo,
+            StatisticsTabOnExecutionBehavior.getByName(
                 useDefaults
-                    ? store.getDefaultInt(SQLPreferenceConstants.SCRIPT_COMMIT_LINES)
-                    : store.getInt(SQLPreferenceConstants.SCRIPT_COMMIT_LINES)
-            );
-            fetchResultSetsCheck.setSelection(
+                    ? store.getDefaultString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION)
+                    : store.getString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION)
+            ).getTitle()
+        );
+        setSelectionToStatisticsTabCheck.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB)
+                : store.getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB)
+        );
+        closeIncludedScriptAfterExecutionCheck.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)
+                : store.getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)
+        );
+        statementDelimiterText.setText(
+            useDefaults
+                ? store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER)
+                : store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER)
+        );
+        ignoreNativeDelimiter.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)
+                : store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)
+        );
+        UIUtils.setComboSelection(
+            blankLineDelimiterCombo,
+            SQLScriptStatementDelimiterMode.valueByName(
                 useDefaults
-                    ? store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS)
-                    : store.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS)
-            );
-            resetCursorCheck.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)
-                    : store.getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)
-            );
-            maxEditorCheck.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)
-                    : store.getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)
-            );
-            UIUtils.setComboSelection(
-                showStatisticsCombo,
-                StatisticsTabOnExecutionBehavior.getByName(
-                    useDefaults
-                        ? store.getDefaultString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION)
-                        : store.getString(SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION)
-                ).getTitle()
-            );
-            setSelectionToStatisticsTabCheck.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB)
-                    : store.getBoolean(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB)
-            );
-            closeIncludedScriptAfterExecutionCheck.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)
-                    : store.getBoolean(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION)
-            );
-            statementDelimiterText.setText(
-                useDefaults
-                    ? store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER)
-                    : store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER)
-            );
-            ignoreNativeDelimiter.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)
-                    : store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)
-            );
-            UIUtils.setComboSelection(
-                blankLineDelimiterCombo,
-                SQLScriptStatementDelimiterMode.valueByName(
-                    useDefaults
-                        ? store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK)
-                        : store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK)
-                ).getTitle()
-            );
-            removeTrailingDelimiter.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER)
-                    : store.getBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER)
-            );
-            enableSQLParameters.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)
-                    : store.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)
-            );
-            enableSQLAnonymousParameters.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED)
-                    : store.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED)
-            );
-            anonymousParameterMarkText.setText(
-                useDefaults
-                    ? store.getDefaultString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK)
-                    : store.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK)
-            );
-            namedParameterPrefixText.setText(
-                useDefaults
-                    ? store.getDefaultString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)
-                    : store.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)
-            );
-            controlCommandPrefixText.setText(
-                useDefaults
-                    ? store.getDefaultString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX)
-                    : store.getString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX)
-            );
-            enableParametersInEmbeddedCode.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED)
-                    : store.getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED)
-            );
-            enableVariables.setSelection(
-                useDefaults
-                    ? store.getDefaultBoolean(ModelPreferences.SQL_VARIABLES_ENABLED)
-                    : store.getBoolean(ModelPreferences.SQL_VARIABLES_ENABLED)
-            );
-        } catch (Exception e) {
-            log.warn(e);
-        }
+                    ? store.getDefaultString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK)
+                    : store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK)
+            ).getTitle()
+        );
+        removeTrailingDelimiter.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER)
+                : store.getBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER)
+        );
+        enableSQLParameters.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)
+                : store.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)
+        );
+        enableSQLAnonymousParameters.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED)
+                : store.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED)
+        );
+        anonymousParameterMarkText.setText(
+            useDefaults
+                ? store.getDefaultString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK)
+                : store.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK)
+        );
+        namedParameterPrefixText.setText(
+            useDefaults
+                ? store.getDefaultString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)
+                : store.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)
+        );
+        controlCommandPrefixText.setText(
+            useDefaults
+                ? store.getDefaultString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX)
+                : store.getString(ModelPreferences.SQL_CONTROL_COMMAND_PREFIX)
+        );
+        enableParametersInEmbeddedCode.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED)
+                : store.getBoolean(ModelPreferences.SQL_PARAMETERS_IN_EMBEDDED_CODE_ENABLED)
+        );
+        enableVariables.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(ModelPreferences.SQL_VARIABLES_ENABLED)
+                : store.getBoolean(ModelPreferences.SQL_VARIABLES_ENABLED)
+        );
+
+        UIUtils.asyncExec(this::toggleCommitControls);
     }
 
 }
