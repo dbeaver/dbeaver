@@ -46,6 +46,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
     private boolean selectedColumnsOnly = false;
     private ExtractType extractType = ExtractType.SINGLE_QUERY;
     private int fetchSize = DEFAULT_FETCH_SIZE;
+    private boolean enableQmLogging = false;
 
     public DatabaseProducerSettings() {
     }
@@ -108,6 +109,14 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         this.extractType = extractType;
     }
 
+    public boolean isEnableQmLogging() {
+        return enableQmLogging;
+    }
+
+    public void setEnableQmLogging(boolean enableQmLogging) {
+        this.enableQmLogging = enableQmLogging;
+    }
+
     @Override
     public void loadSettings(DBRRunnableContext runnableContext, DataTransferSettings dataTransferSettings, Map<String, Object> settings) {
         extractType = CommonUtils.valueOf(ExtractType.class, (String) settings.get("extractType"), extractType);
@@ -117,6 +126,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         queryRowCount = CommonUtils.toBoolean(settings.get("queryRowCount"));
         selectedColumnsOnly = CommonUtils.toBoolean(settings.get("selectedColumnsOnly"));
         selectedRowsOnly = CommonUtils.toBoolean(settings.get("selectedRowsOnly"));
+        enableQmLogging = CommonUtils.toBoolean(settings.get("enableQmLogging"));
     }
 
     @Override
@@ -128,6 +138,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         settings.put("queryRowCount", queryRowCount);
         settings.put("selectedColumnsOnly", selectedColumnsOnly);
         settings.put("selectedRowsOnly", selectedRowsOnly);
+        settings.put("enableQmLogging", enableQmLogging);
     }
 
     @Override
@@ -139,6 +150,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_select_row_count, queryRowCount);
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_selected_rows_only, selectedRowsOnly);
         DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_selected_columns_only, selectedColumnsOnly);
+        DTUtils.addSummary(summary, DTMessages.data_transfer_wizard_output_checkbox_enable_qm_logging, enableQmLogging);
 
         return summary.toString();
     }
