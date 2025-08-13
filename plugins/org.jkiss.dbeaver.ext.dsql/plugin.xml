@@ -26,6 +26,7 @@
                     sampleURL="jdbc:postgresql://[{host}]:5432/postgres"
                     useURL="true"
                     defaultHost="{clusterId}.dsql.{region}.on.aws"
+                    defaultDatabase="postgres"
                     defaultPort="5432"
                     defaultUser="admin"
                     webURL="https://jdbc.postgresql.org/"
