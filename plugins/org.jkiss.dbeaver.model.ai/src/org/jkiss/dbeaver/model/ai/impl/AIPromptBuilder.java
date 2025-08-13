@@ -157,6 +157,14 @@ public class AIPromptBuilder {
         instructions.add("Rely only on the schema information provided below.");
         instructions.add("Stick strictly to " + dialect.getDialectName() + " syntax.");
         instructions.add("Do not invent columns, tables, or data that aren’t explicitly defined.");
+
+        String useLanguage = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_RESPONSE_LANGUAGE);
+        if (!CommonUtils.isEmpty(useLanguage)) {
+            instructions.add("Use " + useLanguage + " language in your responses.");
+        } else {
+            instructions.add("Use the same language as the user.");
+        }
+
         String quoteRule = identifiersQuoteRule(dialect);
         if (quoteRule != null) {
             instructions.add(quoteRule);
@@ -164,12 +172,6 @@ public class AIPromptBuilder {
         String stringsQuoteRule = stringsQuoteRule(dialect);
         if (stringsQuoteRule != null) {
             instructions.add(stringsQuoteRule);
-        }
-        String useLanguage = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_RESPONSE_LANGUAGE);
-        if (!CommonUtils.isEmpty(useLanguage)) {
-            instructions.add("Use " + useLanguage + " language in your responses.");
-        } else {
-            instructions.add("Use the same language as the user.");
         }
 
         return instructions.toArray(new String[0]);

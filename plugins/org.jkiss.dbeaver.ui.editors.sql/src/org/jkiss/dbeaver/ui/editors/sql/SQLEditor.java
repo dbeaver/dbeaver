@@ -5264,8 +5264,6 @@ public class SQLEditor extends SQLEditorBase implements
                         setLastQueryErrorPosition(errorQueryOffset);
                     }
                 }
-            } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
-                selectionProvider.setSelection(originalSelection);
             }
             notifyOnQueryResultListeners(curResultsContainer, result);
             // Get results window (it is possible that it was closed till that moment
