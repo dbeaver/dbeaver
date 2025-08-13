@@ -188,9 +188,13 @@ public class CubridTableManager extends GenericTableManager implements DBEObject
         String currentUser = table.getDataSource().getCurrentUser();
         String schemaName = table.getSchema().getName();
         if (table.isPersisted()) {
-            if (table.getContainer() == table.getSchema()) return;
+            if (table.getContainer() == table.getSchema()) {
+                return;
+            }
         } else {
-            if (!isDBAGroup || isSupportMultiSchema || currentUser.equalsIgnoreCase(schemaName)) return;
+            if (!isDBAGroup || isSupportMultiSchema || currentUser.equalsIgnoreCase(schemaName)) {
+                return;
+            }
         }
         actions.add(new SQLDatabasePersistAction(
                 "Change Owner",

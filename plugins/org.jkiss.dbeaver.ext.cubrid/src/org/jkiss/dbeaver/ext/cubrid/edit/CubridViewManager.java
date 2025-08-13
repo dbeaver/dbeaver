@@ -173,9 +173,13 @@ public class CubridViewManager extends GenericViewManager implements DBEObjectRe
         String currentUser = view.getDataSource().getCurrentUser();
         String schemaName = view.getSchema().getName();
         if (view.isPersisted()) {
-            if (view.getContainer() == view.getSchema()) return;
+            if (view.getContainer() == view.getSchema()) {
+                return;
+            }
         } else {
-            if (!isDBAGroup || isSupportMultiSchema || currentUser.equalsIgnoreCase(schemaName)) return;
+            if (!isDBAGroup || isSupportMultiSchema || currentUser.equalsIgnoreCase(schemaName)) {
+                return;
+            }
         }
         actions.add(new SQLDatabasePersistAction(
                 "Change Owner",
