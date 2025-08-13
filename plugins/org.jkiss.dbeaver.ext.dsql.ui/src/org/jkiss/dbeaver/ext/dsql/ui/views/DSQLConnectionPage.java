@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.ext.dsql.ui.internal.DSQLMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -104,7 +105,7 @@ public class DSQLConnectionPage extends ConnectionPageWithAuth implements IDialo
 
         Label hostLabel = UIUtils.createControlLabel(
             addrGroup,
-            "Endpoint"
+            DSQLMessages.label_dsql_endpoint
         );
         hostText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);

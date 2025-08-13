@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.dsql.constants.DSQLConstants;
+import org.jkiss.dbeaver.ext.dsql.ui.internal.DSQLMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -96,7 +97,7 @@ public class DSQLAuthIAMConfigurator implements IObjectPropertyConfigurator<Obje
             }
         };
 
-        usernameLabel = UIUtils.createControlLabel(parent, "Username");
+        usernameLabel = UIUtils.createControlLabel(parent, DSQLMessages.label_username);
         usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         usernameText = new Text(parent, SWT.BORDER);
         GridData usernameGd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -104,35 +105,35 @@ public class DSQLAuthIAMConfigurator implements IObjectPropertyConfigurator<Obje
         usernameText.setLayoutData(usernameGd);
         usernameText.addModifyListener(e -> propertyChangeListener.run());
 
-        Label credentialType = UIUtils.createControlLabel(parent, "Use");
+        Label credentialType = UIUtils.createControlLabel(parent, DSQLMessages.label_use_credentials);
         credentialType.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         Composite credentialTypeGroup = UIUtils.createComposite(parent, 3);
-        typeProfileRadio = UIUtils.createRadioButton(credentialTypeGroup, "AWS Profile", true, credentialTypeSwitcher);
-        typeCredentialsRadio = UIUtils.createRadioButton(credentialTypeGroup, "AWS Credentials", false, credentialTypeSwitcher);
-        typeTokenRadio = UIUtils.createRadioButton(credentialTypeGroup, "Password", false, credentialTypeSwitcher);
+        typeProfileRadio = UIUtils.createRadioButton(credentialTypeGroup, DSQLMessages.radio_aws_profile, true, credentialTypeSwitcher);
+        typeCredentialsRadio = UIUtils.createRadioButton(credentialTypeGroup, DSQLMessages.radio_aws_credentials, false, credentialTypeSwitcher);
+        typeTokenRadio = UIUtils.createRadioButton(credentialTypeGroup, DSQLMessages.radio_password, false, credentialTypeSwitcher);
 
-        accessKeyLabel = UIUtils.createControlLabel(parent, "AWS Access Key");
+        accessKeyLabel = UIUtils.createControlLabel(parent, DSQLMessages.label_aws_access_key);
         accessKeyText = new Text(parent, SWT.BORDER);
         setupLabeledText(parent, propertyChangeListener, accessKeyLabel, accessKeyText);
-        secretKeyLabel = UIUtils.createControlLabel(parent, "AWS Secret Key");
+        secretKeyLabel = UIUtils.createControlLabel(parent, DSQLMessages.label_aws_secret_key);
         secretKeyText = new Text(parent, SWT.BORDER);
         setupLabeledText(parent, propertyChangeListener, secretKeyLabel, secretKeyText);
-        sessionTokenLabel = UIUtils.createControlLabel(parent, "AWS Session Token");
+        sessionTokenLabel = UIUtils.createControlLabel(parent, DSQLMessages.label_aws_session_token);
         sessionTokenText = new Text(parent, SWT.BORDER);
         setupLabeledText(parent, propertyChangeListener, sessionTokenLabel, sessionTokenText);
         sessionCredentialWidgets = List.of(accessKeyLabel, accessKeyText, secretKeyLabel, secretKeyText, sessionTokenLabel, sessionTokenText);
 
-        profileLabel = UIUtils.createControlLabel(parent, "AWS Profile");
+        profileLabel = UIUtils.createControlLabel(parent, DSQLMessages.label_aws_profile);
         profileText = new Text(parent, SWT.BORDER);
         setupLabeledText(parent, propertyChangeListener, profileLabel, profileText);
         profileCredentialWidgets = List.of(profileLabel, profileText);
 
-        tokenLabel = UIUtils.createControlLabel(parent, "Token");
+        tokenLabel = UIUtils.createControlLabel(parent, DSQLMessages.label_dsql_token);
         tokenText = new Text(parent, SWT.BORDER);
         setupLabeledText(parent, propertyChangeListener, tokenLabel, tokenText);
         tokenCredentialWidgets = List.of(tokenLabel, tokenText);
 
-        regionLabel = UIUtils.createControlLabel(parent, "AWS Region");
+        regionLabel = UIUtils.createControlLabel(parent, DSQLMessages.label_aws_region);
         regionLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         regionCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         GridData regionGd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
