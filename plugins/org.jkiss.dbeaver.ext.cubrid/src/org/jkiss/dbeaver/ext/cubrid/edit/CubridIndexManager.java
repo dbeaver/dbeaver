@@ -58,6 +58,7 @@ public class CubridIndexManager extends GenericIndexManager {
         GenericTableIndex index = command.getObject();
         actions.add(new SQLDatabasePersistAction("Drop Index",
         "DROP INDEX " + DBUtils.getQuotedIdentifier(index.getDataSource(), index.getName()) + " ON "
-        + ((CubridTable) index.getTable()).getFullyQualifiedName(DBPEvaluationContext.DDL)));
+        + index.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)));
+
     }
 }
