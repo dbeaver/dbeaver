@@ -87,7 +87,7 @@ public class ItemListControl extends NodeListControl
         super(parent, style, workbenchSite, node, metaNode);
 
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS,
             s -> super.getItemsViewer().refresh(),
             this);
 

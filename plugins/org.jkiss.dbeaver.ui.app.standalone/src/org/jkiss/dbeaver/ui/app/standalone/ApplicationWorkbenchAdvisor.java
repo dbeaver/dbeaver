@@ -158,32 +158,32 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 
     private static final Set<String> fontPrefIdsToHide = Set.of(
-        ApplicationWorkbenchWindowAdvisor.TEXT_EDITOR_BLOCK_SELECTION_FONT,
-        ApplicationWorkbenchWindowAdvisor.TEXT_FONT,
-        ApplicationWorkbenchWindowAdvisor.CONSOLE_FONT,
-        ApplicationWorkbenchWindowAdvisor.DETAIL_PANE_TEXT_FONT,
-        ApplicationWorkbenchWindowAdvisor.MEMORY_VIEW_TABLE_FONT,
-        ApplicationWorkbenchWindowAdvisor.COMPARE_TEXT_FONT,
-        ApplicationWorkbenchWindowAdvisor.DIALOG_FONT,
-        ApplicationWorkbenchWindowAdvisor.VARIABLE_TEXT_FONT,
-        ApplicationWorkbenchWindowAdvisor.PART_TITLE_FONT,
-        ApplicationWorkbenchWindowAdvisor.TREE_AND_TABLE_FONT_FOR_VIEWS
+        UIFonts.TEXT_EDITOR_BLOCK_SELECTION_FONT,
+        UIFonts.TEXT_FONT,
+        UIFonts.CONSOLE_FONT,
+        UIFonts.DETAIL_PANE_TEXT_FONT,
+        UIFonts.MEMORY_VIEW_TABLE_FONT,
+        UIFonts.COMPARE_TEXT_FONT,
+        UIFonts.DIALOG_FONT,
+        UIFonts.VARIABLE_TEXT_FONT,
+        UIFonts.PART_TITLE_FONT,
+        UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS
     );
     
     private static final Map<String, List<String>> fontOverrides = Map.of(
-        UIFonts.DBEAVER_FONTS_MONOSPACE, List.of(
-            ApplicationWorkbenchWindowAdvisor.TEXT_EDITOR_BLOCK_SELECTION_FONT,
-            ApplicationWorkbenchWindowAdvisor.TEXT_FONT,
-            ApplicationWorkbenchWindowAdvisor.CONSOLE_FONT,
-            ApplicationWorkbenchWindowAdvisor.DETAIL_PANE_TEXT_FONT,
-            ApplicationWorkbenchWindowAdvisor.MEMORY_VIEW_TABLE_FONT,
-            ApplicationWorkbenchWindowAdvisor.COMPARE_TEXT_FONT
+        ApplicationWorkbenchWindowAdvisor.DBEAVER_FONTS_MONOSPACE, List.of(
+            UIFonts.TEXT_EDITOR_BLOCK_SELECTION_FONT,
+            UIFonts.TEXT_FONT,
+            UIFonts.CONSOLE_FONT,
+            UIFonts.DETAIL_PANE_TEXT_FONT,
+            UIFonts.MEMORY_VIEW_TABLE_FONT,
+            UIFonts.COMPARE_TEXT_FONT
         ),
-        UIFonts.DBEAVER_FONTS_MAIN_FONT, List.of(
-            ApplicationWorkbenchWindowAdvisor.DIALOG_FONT,
-            ApplicationWorkbenchWindowAdvisor.VARIABLE_TEXT_FONT,
-            ApplicationWorkbenchWindowAdvisor.PART_TITLE_FONT,
-            ApplicationWorkbenchWindowAdvisor.TREE_AND_TABLE_FONT_FOR_VIEWS
+        ApplicationWorkbenchWindowAdvisor.DBEAVER_FONTS_MAIN_FONT, List.of(
+            UIFonts.DIALOG_FONT,
+            UIFonts.VARIABLE_TEXT_FONT,
+            UIFonts.PART_TITLE_FONT,
+            UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS
         )
     );
     private static boolean isForcedRestart = false;

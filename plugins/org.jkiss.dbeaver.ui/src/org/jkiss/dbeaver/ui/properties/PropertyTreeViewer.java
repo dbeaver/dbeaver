@@ -190,7 +190,7 @@ public class PropertyTreeViewer extends TreeViewer {
         };
 
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS,
             s -> {
                 getControl().setFont(BaseThemeSettings.instance.baseFont);
                 refresh();

@@ -133,7 +133,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
         container.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
 
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.TEXT_FONT,
             s -> container.setFont(BaseThemeSettings.instance.baseFont),
             container
         );

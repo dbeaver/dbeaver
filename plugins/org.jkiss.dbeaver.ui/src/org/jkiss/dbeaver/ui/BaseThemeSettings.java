@@ -24,13 +24,13 @@ import org.eclipse.swt.graphics.Font;
  */
 public class BaseThemeSettings extends ThemeListener {
 
-    @ThemeFont(value = UIFonts.DBEAVER_FONTS_MAIN_FONT)
+    @ThemeFont(value = UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS)
     public volatile Font baseFont;
-    @ThemeFont(value = UIFonts.DBEAVER_FONTS_MAIN_FONT, bold = true)
+    @ThemeFont(value = UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS, bold = true)
     public volatile Font baseFontBold;
-    @ThemeFont(value = UIFonts.DBEAVER_FONTS_MAIN_FONT, italic = true)
+    @ThemeFont(value = UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS, italic = true)
     public volatile Font baseFontItalic;
-    @ThemeFont(value = UIFonts.DBEAVER_FONTS_MONOSPACE)
+    @ThemeFont(value = UIFonts.TEXT_FONT)
     public volatile Font monospaceFont;
 
     @ThemeColor(BaseEditorColors.COLOR_SUCCESS)

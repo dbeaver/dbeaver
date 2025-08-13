@@ -1158,7 +1158,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         };
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS,
             fontUpdater,
             parent
         );
@@ -1419,7 +1419,7 @@ public class SQLEditor extends SQLEditorBase implements
             });
         }
         resultTabs.setSimple(true);
-        resultTabs.setFont(JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
+        resultTabs.setFont(JFaceResources.getFont(UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS));
 
         resultTabs.addMouseListener(new MouseAdapter() {
             @Override

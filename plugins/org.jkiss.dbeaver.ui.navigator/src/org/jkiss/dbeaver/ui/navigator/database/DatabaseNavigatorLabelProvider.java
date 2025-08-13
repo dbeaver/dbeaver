@@ -62,7 +62,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
 
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.TREE_AND_TABLE_FONT_FOR_VIEWS,
             s -> setNavigatorFont(tree),
             tree);
 
