@@ -882,6 +882,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
         }
 
         if (DBWorkbench.isDistributed()) {
+            if (!UIUtils.confirmAction(
+                getShell(),
+                "Driver libraries upload",
+                "DBeaver will upload driver files back to the server. Do you confirm?")) {
+                return;
+            }
             try {
                 syncDriverLibraries();
             } catch (DBException e) {
