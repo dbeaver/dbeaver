@@ -89,6 +89,8 @@ public class DSQLAuthIAMConfigurator implements IObjectPropertyConfigurator<Obje
                 hideWidgets(profileCredentialWidgets, typeProfileRadio.getSelection());
                 hideWidgets(tokenCredentialWidgets, typeTokenRadio.getSelection());
 
+                regionCombo.setEnabled(!typeTokenRadio.getSelection());
+
                 // refresh the entire auth box
                 parent.getParent().getParent().layout(true, true);
             }
@@ -107,7 +109,7 @@ public class DSQLAuthIAMConfigurator implements IObjectPropertyConfigurator<Obje
         Composite credentialTypeGroup = UIUtils.createComposite(parent, 3);
         typeProfileRadio = UIUtils.createRadioButton(credentialTypeGroup, "AWS Profile", true, credentialTypeSwitcher);
         typeCredentialsRadio = UIUtils.createRadioButton(credentialTypeGroup, "AWS Credentials", false, credentialTypeSwitcher);
-        typeTokenRadio = UIUtils.createRadioButton(credentialTypeGroup, "DSQL Token", false, credentialTypeSwitcher);
+        typeTokenRadio = UIUtils.createRadioButton(credentialTypeGroup, "Password", false, credentialTypeSwitcher);
 
         accessKeyLabel = UIUtils.createControlLabel(parent, "AWS Access Key");
         accessKeyText = new Text(parent, SWT.BORDER);

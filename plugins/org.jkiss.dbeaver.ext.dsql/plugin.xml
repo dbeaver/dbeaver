@@ -11,8 +11,8 @@
                 description="%datasource.dsql.description"
                 id="dsql"
                 parent="generic"
-                label="Dsql"
-                icon="icons/dsql_icon.png"
+                label="PostgreSQL"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon.png"
                 dialect="postgresql"
         >
             <drivers manageable="true">
@@ -47,7 +47,7 @@
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
                 id="iam_auth"
-                label="DSQL IAM Auth"
+                label="DSQL Auth"
                 description="Use IAM auth to generate tokens"
                 class="org.jkiss.dbeaver.ext.dsql.model.AuthModelIAM"
                 default="true"
