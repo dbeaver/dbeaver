@@ -158,8 +158,10 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             @NotNull DBCExecutionContext executionContext,
             @NotNull List<DBEPersistAction> actions,
             @NotNull ObjectRenameCommand command,
-            @NotNull Map<String, Object> options) {
+            @NotNull Map<String, Object> options
+        ) {
         CubridTableColumn column = (CubridTableColumn) command.getObject();
+
         boolean isView = column.getTable().isView();
         CubridDataSource dataSource = (CubridDataSource) column.getDataSource();
         String table = column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
