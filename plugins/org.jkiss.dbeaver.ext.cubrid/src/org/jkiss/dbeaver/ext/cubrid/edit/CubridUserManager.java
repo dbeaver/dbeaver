@@ -119,7 +119,7 @@ public class CubridUserManager
             List<String> groups = (List<String>) properties.get("GROUPS");
             List<String> quotedGroups = groups.stream()
                 .map(quoteGroup -> DBUtils.getQuotedIdentifier(user.getDataSource(), quoteGroup))
-                .collect(Collectors.toList());
+                .toList();
             builder.append(String.join(", ", quotedGroups));
         }
 
