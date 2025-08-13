@@ -145,8 +145,10 @@ public class CubridTriggerManager extends GenericTriggerManager<CubridTrigger> i
             @NotNull DBCExecutionContext executionContext,
             @NotNull List<DBEPersistAction> actions,
             @NotNull ObjectRenameCommand command,
-            @NotNull Map<String, Object> options) {
+            @NotNull Map<String, Object> options
+        ) {
         CubridTrigger trigger = (CubridTrigger) command.getObject();
+
         boolean isSupportMultiSchema = ((CubridDataSource) trigger.getDataSource()).getSupportMultiSchema();
         String schemaName = isSupportMultiSchema ? DBUtils.getQuotedIdentifier(trigger.getOwner()) + "." : "";
         actions.add(new SQLDatabasePersistAction("Rename Trigger",
