@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.appstore.feature"
         label="DBeaver AppStore"
-        version="25.1.5.qualifier"
+        version="25.2.0.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.ui.app.standalone">
 

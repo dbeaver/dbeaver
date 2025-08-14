@@ -24,10 +24,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -35,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -54,6 +52,7 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
     private Text hostText;
     private Text portText;
     private Text dbText;
+    private Button showAllDatabases;
     private boolean activated = false;
 
     private final Image LOGO_MYSQL;
@@ -160,11 +159,17 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         dbText = new Text(serverGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 3;
         dbText.setLayoutData(gd);
         UIUtils.setDefaultTextControlWidthHint(dbText);
         dbText.addModifyListener(textListener);
         addControlToGroup(GROUP_CONNECTION, dbLabel, dbText);
+        showAllDatabases = UIUtils.createCheckbox(
+            serverGroup,
+            MySQLUIMessages.dialog_connection_show_all_databases,
+            MySQLUIMessages.dialog_connection_show_all_databases_tip,
+            false,
+            2
+        );
 
         createAuthPanel(addrGroup, 1);
 
@@ -222,6 +227,12 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
                 CommonUtils.notEmpty(site.getDriver().getDefaultDatabase())
             ));
         }
+        if (showAllDatabases != null) {
+            showAllDatabases.setSelection(CommonUtils.getBoolean(
+                connectionInfo.getProviderProperty(MySQLConstants.PROP_SHOW_ALL_DBS),
+                MySQLConstants.PROP_SHOW_ALL_DBS_DEFAULT
+            ));
+        }
         final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
         if (useURL) {
             urlText.setText(connectionInfo.getUrl());
@@ -247,6 +258,12 @@ public class MySQLConnectionPage extends ConnectionPageWithAuth implements IDial
         }
         if (dbText != null) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
+        }
+        if (showAllDatabases != null) {
+            connectionInfo.setProviderProperty(
+                MySQLConstants.PROP_SHOW_ALL_DBS,
+                String.valueOf(showAllDatabases.getSelection())
+            );
         }
         if (typeURLRadio != null && typeURLRadio.getSelection()) {
             connectionInfo.setUrl(urlText.getText());
