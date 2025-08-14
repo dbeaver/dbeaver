@@ -318,6 +318,13 @@ public class AISettingsRegistry {
                 engineConfigurationMap.put(serDe.getId(), engineSettings);
             }
 
+            // Add default engine configurations if not present
+            for (AIEngineSettingsSerDe<?> serDe : engineSerDe) {
+                if (!engineConfigurationMap.containsKey(serDe.getId())) {
+                    engineConfigurationMap.put(serDe.getId(), serDe.deserialize(null, readPropsGson));
+                }
+            }
+
             aiSettings.setEngineConfigurations(engineConfigurationMap);
 
             return aiSettings;
