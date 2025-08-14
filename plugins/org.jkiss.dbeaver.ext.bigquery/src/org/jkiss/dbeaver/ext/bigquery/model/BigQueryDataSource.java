@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -72,6 +72,7 @@ public class BigQueryDataSource extends GenericDataSource {
         } else {
             props.put(BigQueryConstants.DRIVER_PROP_ACCOUNT, "");
         }
+        props.put("EnableSession", "1");
         String additionalProjects = connectionInfo.getProviderProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS);
         if (CommonUtils.isNotEmpty(additionalProjects)) {
             props.put(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, additionalProjects);
@@ -97,5 +98,10 @@ public class BigQueryDataSource extends GenericDataSource {
         }
     }
 
+    @Override
+    @NotNull
+    public JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+        return new BigQueryExecutionContext(instance, type);
+    }
 
 }

@@ -82,4 +82,8 @@ public class BigQueryMetaModel extends GenericMetaModel implements DBCQueryTrans
         return null;
     }
 
+    @Override
+    protected boolean supportsCatalogChange() {
+        return true;
+    }
 }

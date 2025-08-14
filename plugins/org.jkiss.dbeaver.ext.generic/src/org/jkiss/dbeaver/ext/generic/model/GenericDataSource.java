@@ -755,7 +755,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return selectedEntityType;
     }
 
-    void setSelectedEntityType(String selectedEntityType) {
+    public void setSelectedEntityType(String selectedEntityType) {
         this.selectedEntityType = selectedEntityType;
     }
 
