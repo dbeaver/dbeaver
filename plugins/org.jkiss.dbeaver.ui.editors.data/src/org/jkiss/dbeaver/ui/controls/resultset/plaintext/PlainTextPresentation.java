@@ -251,7 +251,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
     @NotNull
     @Override
     public String getFontId() {
-        return UIFonts.Eclipse.TEXT_FONT;
+        return UIFonts.DBeaver.MONOSPACE_FONT;
     }
 
     @Override

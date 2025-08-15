@@ -41,7 +41,7 @@ public class BaseThemeSettings extends ThemeListener {
     @ThemeFont(value = UIFonts.Eclipse.PART_TITLE_FONT, bold = true)
     public volatile Font partTitleBoldFont;
 
-    @ThemeFont(UIFonts.Eclipse.TEXT_FONT)
+    @ThemeFont(UIFonts.DBeaver.MONOSPACE_FONT)
     public volatile Font monospaceFont;
 
     @ThemeColor(BaseEditorColors.COLOR_SUCCESS)
