@@ -267,10 +267,10 @@ public class ClientHomesPanel extends Composite {
         homeItem.setImage(DBeaverIcons.getImage(UIIcon.HOME));
         homeItem.setData(homeInfo);
         if (!homeInfo.isProvided) {
-            homeItem.setFont(BaseThemeSettings.instance.baseFontItalic);
+            homeItem.setFont(BaseThemeSettings.instance.treeAndTableFontItalic);
         } else {
             if (homeInfo.isDefault) {
-                homeItem.setFont(BaseThemeSettings.instance.baseFontBold);
+                homeItem.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
             }
         }
         return homeItem;

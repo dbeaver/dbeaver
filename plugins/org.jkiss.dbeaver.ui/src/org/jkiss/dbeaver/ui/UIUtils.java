@@ -2364,7 +2364,7 @@ public class UIUtils {
 
     public static void installAndUpdateMainFont(@NotNull Control control) {
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.DBeaver.MAIN_FONT,
             s -> applyMainFont(control),
             control
         );
@@ -2395,7 +2395,7 @@ public class UIUtils {
     }
 
     private static boolean mainFontIsDefault() {
-        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBeaver.MAIN_FONT);
         final FontData[] defaultFontData = JFaceResources.getFontRegistry().getFontData(JFaceResources.DEFAULT_FONT);
         return Arrays.equals(mainFontData, defaultFontData);
     }

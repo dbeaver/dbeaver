@@ -133,8 +133,8 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
         container.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
 
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
-            s -> container.setFont(BaseThemeSettings.instance.baseFont),
+            UIFonts.Eclipse.PART_TITLE_FONT,
+            s -> container.setFont(BaseThemeSettings.instance.partTitleFont),
             container
         );
         return container;
@@ -143,7 +143,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
     protected void setContainerStyles() {
         Composite pageContainer = getContainer();
         if (pageContainer instanceof CTabFolder tabFolder && !pageContainer.isDisposed()) {
-            tabFolder.setFont(BaseThemeSettings.instance.baseFont);
+            tabFolder.setFont(BaseThemeSettings.instance.partTitleFont);
             tabFolder.setSimple(true);
             tabFolder.setMRUVisible(true);
             tabFolder.setTabPosition(SWT.TOP);
