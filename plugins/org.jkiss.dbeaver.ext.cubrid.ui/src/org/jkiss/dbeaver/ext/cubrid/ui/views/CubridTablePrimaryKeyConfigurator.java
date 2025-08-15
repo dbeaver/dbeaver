@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.ui.views;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 
 import org.jkiss.code.NotNull;
@@ -47,9 +48,8 @@ public class CubridTablePrimaryKeyConfigurator implements DBEObjectConfigurator<
                     "Create unique constraint",
                     primaryKey);
 
-            	// Inject custom name generator for CUBRID to lower case
             	try {
-                    java.lang.reflect.Field nameGenField = EditConstraintPage.class.getDeclaredField("nameGenerator");
+                    Field nameGenField = EditConstraintPage.class.getDeclaredField("nameGenerator");
                     nameGenField.setAccessible(true);
                     nameGenField.set(editPage, new CubridConstraintNameGenerator(
                         primaryKey.getParentObject(),
