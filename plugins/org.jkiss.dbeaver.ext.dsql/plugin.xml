@@ -10,7 +10,7 @@
                 class="org.jkiss.dbeaver.ext.dsql.DSQLDataSourceProvider"
                 description="%datasource.dsql.description"
                 id="dsql"
-                parent="generic"
+                parent="postgresql"
                 label="PostgreSQL"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/icons/postgresql_icon.png"
                 dialect="postgresql"
@@ -40,6 +40,7 @@
                     <parameter name="serverType" value="dsql"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
+                    <property name="commitAfterRows" value="3000"/>
                 </driver>
             </drivers>
         </datasource>

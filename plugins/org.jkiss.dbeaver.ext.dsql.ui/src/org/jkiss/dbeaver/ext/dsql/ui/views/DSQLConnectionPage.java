@@ -49,6 +49,8 @@ public class DSQLConnectionPage extends ConnectionPageWithAuth implements IDialo
 
     private Text urlText;
     private Text hostText;
+    private String port;
+    private String db;
     private boolean activated = false;
 
     @Override
@@ -149,6 +151,29 @@ public class DSQLConnectionPage extends ConnectionPageWithAuth implements IDialo
             }
         }
 
+        // Load values into a String. These fields are not required for DSQL.
+        // Default port is 5432, Default databaseName is postgres.
+        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+            port = connectionInfo.getHostPort();
+        } else if (getSite().isNew()) {
+            port = CommonUtils.notEmpty(driver.getDefaultPort());
+        } else {
+            port = "5432";
+        }
+
+        String databaseName = connectionInfo.getDatabaseName();
+        if (CommonUtils.isEmpty(databaseName)) {
+            if (getSite().isNew()) {
+                databaseName = driver.getDefaultDatabase();
+                if (CommonUtils.isEmpty(databaseName)) {
+                    databaseName = PostgreConstants.DEFAULT_DATABASE;
+                }
+            } else {
+                databaseName = "postgres";
+            }
+        }
+        db = databaseName;
+
         final boolean useURL = connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL;
         if (useURL) {
             urlText.setText(connectionInfo.getUrl());
@@ -169,6 +194,14 @@ public class DSQLConnectionPage extends ConnectionPageWithAuth implements IDialo
 
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
+        }
+
+        if (port != null) {
+            connectionInfo.setHostPort(port);
+        }
+
+        if (db != null) {
+            connectionInfo.setDatabaseName(db);
         }
 
         if (typeURLRadio != null && typeURLRadio.getSelection()) {
