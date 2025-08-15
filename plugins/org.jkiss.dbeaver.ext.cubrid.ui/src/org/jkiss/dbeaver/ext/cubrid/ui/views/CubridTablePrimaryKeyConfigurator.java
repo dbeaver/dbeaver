@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.ConstraintNameGenerator;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
 public class CubridTablePrimaryKeyConfigurator implements DBEObjectConfigurator<CubridUniqueKey> {
+    private static final Log log = Log.getLog(CubridTablePrimaryKeyConfigurator.class);
 
     @Override
     public CubridUniqueKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull CubridUniqueKey primaryKey, @NotNull Map<String, Object> options) {
@@ -55,7 +57,7 @@ public class CubridTablePrimaryKeyConfigurator implements DBEObjectConfigurator<
                         primaryKey.getConstraintType()
                     ));
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error(e);
                 }
 
                 if (!editPage.edit()) {
