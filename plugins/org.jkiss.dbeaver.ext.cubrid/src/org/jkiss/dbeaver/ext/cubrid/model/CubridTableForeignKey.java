@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.cubrid.model;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -38,7 +37,6 @@ public class CubridTableForeignKey extends GenericTableForeignKey {
         super(table, name, remarks, referencedKey, deleteRule, updateRule, deferability, persisted);
     }
 
-    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 1)
     public String getName() {
