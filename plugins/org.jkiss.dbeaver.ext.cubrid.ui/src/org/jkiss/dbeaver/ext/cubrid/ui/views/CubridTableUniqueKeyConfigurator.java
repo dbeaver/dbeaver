@@ -36,8 +36,8 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.ConstraintNameGenerator;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 
-public class CubridTablePrimaryKeyConfigurator implements DBEObjectConfigurator<CubridUniqueKey> {
-    private static final Log log = Log.getLog(CubridTablePrimaryKeyConfigurator.class);
+public class CubridTableUniqueKeyConfigurator implements DBEObjectConfigurator<CubridUniqueKey> {
+    private static final Log log = Log.getLog(CubridTableUniqueKeyConfigurator.class);
 
     @Override
     public CubridUniqueKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull CubridUniqueKey primaryKey, @NotNull Map<String, Object> options) {

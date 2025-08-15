@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
-public class CubridPrimaryKeyManager extends GenericPrimaryKeyManager {
+public class CubridUniqueKeyManager extends GenericPrimaryKeyManager {
   
     @Override
     protected CubridUniqueKey createDatabaseObject(
