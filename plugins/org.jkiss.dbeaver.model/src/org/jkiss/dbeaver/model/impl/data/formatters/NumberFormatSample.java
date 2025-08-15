@@ -52,7 +52,7 @@ public class NumberFormatSample implements DBDDataFormatterSample {
         props.put(PROP_MIN_FRACT_DIGITS, tmp.getMinimumFractionDigits());
         props.put(PROP_USE_TYPE_SCALE, false);
         props.put(PROP_SCIENTIFIC_EXP_SEP, "E");
-        props.put(PROP_SCIENTIFIC_PATTERN, "0.###E0"); // Use default locale-specific pattern
+        props.put(PROP_SCIENTIFIC_PATTERN, tmp.toPattern()); // Use default locale-specific pattern
         // Use UNNECESSARY by default [#6493]
         // FIX: Use default. The problem in rounding was caused by float->double conversions.
         //props.put(PROP_ROUNDING_MODE, RoundingMode.UNNECESSARY.name());
