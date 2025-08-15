@@ -21,12 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,7 +30,6 @@ public final class OpenAIModels {
     private OpenAIModels() {
     }
 
-    private static final Pattern CHAT_MODEL_PATTERN = Pattern.compile("^(gpt(-\\w+)?|o\\d+)(-mini|-pro|-turbo)?$");
     public static final String DEFAULT_MODEL = "gpt-4o";
 
     public static final Map<String, AIModel> KNOWN_MODELS = Stream.of(
@@ -45,6 +40,9 @@ public final class OpenAIModels {
         new AIModel("o1-pro", 200_000, Set.of(AIModelFeature.CHAT)),
         new AIModel("o1", 200_000, Set.of(AIModelFeature.CHAT)),
         new AIModel("o1-mini", 128_000, Set.of(AIModelFeature.CHAT)),
+        new AIModel("gpt-5", 400_000, Set.of(AIModelFeature.CHAT)),
+        new AIModel("gpt-5-mini", 400_000, Set.of(AIModelFeature.CHAT)),
+        new AIModel("gpt-5-nano", 400_000, Set.of(AIModelFeature.CHAT)),
         new AIModel("gpt-4.1", 1_048_576, Set.of(AIModelFeature.CHAT)),
         new AIModel("gpt-4o", 128_000, Set.of(AIModelFeature.CHAT)),
         new AIModel("gpt-4o-mini", 128_000, Set.of(AIModelFeature.CHAT)),
@@ -115,10 +113,31 @@ public final class OpenAIModels {
         // If the model is not known, return an empty set
         Set<AIModelFeature> features = new HashSet<>();
 
-        if (CHAT_MODEL_PATTERN.matcher(modelName).matches()) {
+        if (isChatModel(modelName)) {
             features.add(AIModelFeature.CHAT);
         }
 
-        return Set.of();
+        return features;
+    }
+
+    private static final List<String> CHAT_EXCLUDED_KEYWORDS = List.of(
+        "search",
+        "research",
+        "moderation",
+        "realtime",
+        "audio",
+        "image"
+    );
+
+    private static boolean isChatModel(@NotNull String modelName) {
+        if (!(modelName.startsWith("gpt-") || modelName.startsWith("o"))) {
+            return false;
+        }
+        for (String keyword : CHAT_EXCLUDED_KEYWORDS) {
+            if (modelName.contains(keyword)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
