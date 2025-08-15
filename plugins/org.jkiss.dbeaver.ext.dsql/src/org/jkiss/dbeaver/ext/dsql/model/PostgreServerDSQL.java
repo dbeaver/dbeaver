@@ -30,4 +30,57 @@ public class PostgreServerDSQL extends PostgreServerPostgreSQL {
     public String getServerTypeName() {
         return "Aurora DSQL PostgreSQL";
     }
+
+    // https://docs.aws.amazon.com/aurora-dsql/latest/userguide/working-with-postgresql-compatibility-unsupported-features.html
+
+    @Override
+    public boolean supportsTriggers() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsTablespaces() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsSequences() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsPartitions() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsForeignKeys() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsMaterializedViews() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsTableStatistics() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsIndexes() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsForeignServers() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsAggregates() {
+        return false;
+    }
+
 }
