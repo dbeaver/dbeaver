@@ -76,7 +76,7 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
 
     public static void setShowOnStartup(boolean showOnStartup) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.setValue(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, showOnStartup);
+        store.setValue(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, String.valueOf(showOnStartup));
     }
 
     @Override
