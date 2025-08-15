@@ -129,7 +129,7 @@ public class DSQLAuthIAMConfigurator implements IObjectPropertyConfigurator<Obje
         profileCredentialWidgets = List.of(profileLabel, profileText);
 
         tokenLabel = UIUtils.createControlLabel(parent, DSQLMessages.label_dsql_token);
-        tokenText = new Text(parent, SWT.BORDER);
+        tokenText = new Text(parent, SWT.BORDER|SWT.PASSWORD);
         setupLabeledText(parent, propertyChangeListener, tokenLabel, tokenText);
         tokenCredentialWidgets = List.of(tokenLabel, tokenText);
 
@@ -150,8 +150,8 @@ public class DSQLAuthIAMConfigurator implements IObjectPropertyConfigurator<Obje
         loadText(usernameText, configuration.getUserName());
 
         if (this.regionCombo != null && !this.regionCombo.isDisposed()) {
-            this.regionCombo.setItems(DSQLConstants.SUPPORTED_REGIONS);
-            this.regionCombo.select(0);
+            this.regionCombo.setItems(DSQLConstants.AWS_REGIONS);
+            this.regionCombo.setText(DSQLConstants.DEFAULT_REGION);
         }
 
         loadText(accessKeyText, configuration.getProperty(DSQLConstants.AWS_ACCESS_KEY));

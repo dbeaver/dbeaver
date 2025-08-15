@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.dsql.constants;
 
+import software.amazon.awssdk.regions.Region;
+
 public class DSQLConstants {
 
     // Configuration Constants
@@ -32,12 +34,8 @@ public class DSQLConstants {
     public static String DSQL_TOKEN = "dsql_token";
     public static String AWS_REGION = "aws_region";
 
-    // DSQL Supported AWS Regions
-    public static String[] SUPPORTED_REGIONS = new String[] {
-        "us-east-1", "us-east-2", "us-west-2",
-        "eu-west-1", "eu-west-2", "eu-west-3",
-        "ap-northeast-1", "ap-northeast-2", "ap-northeast-3"
-    };
+    public static String[] AWS_REGIONS = Region.regions().stream().map(Region::toString).sorted().toArray(String[]::new);
+    public static String DEFAULT_REGION = "us-east-1";
 
     public static String ADMIN_USERNAME = "admin";
     public static String DEFAULT_PROFILE = "default";
