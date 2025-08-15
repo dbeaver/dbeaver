@@ -10,6 +10,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.jkiss.dbeaver.ext.cubrid.ui.internal.CubridMessages;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.BeanUtils;
@@ -65,8 +66,8 @@ public class CubridOIDSearch {
             }
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showMessageBox(
-                "Error",
-                "OID value possibly contains invalid OID fields. Please check their validity.",
+                CubridMessages.cubrid_oid_search_error_title,
+                CubridMessages.cubrid_oid_search_error_message,
                 true
             );
         }

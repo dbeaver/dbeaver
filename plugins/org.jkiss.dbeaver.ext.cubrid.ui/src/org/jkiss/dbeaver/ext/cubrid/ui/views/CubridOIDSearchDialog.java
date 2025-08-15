@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
+import org.jkiss.dbeaver.ext.cubrid.ui.internal.CubridMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -29,7 +30,7 @@ public class CubridOIDSearchDialog extends BaseDialog {
     private CubridOIDSearch oidSearch;
 
     public CubridOIDSearchDialog(Shell parentShell, JDBCSession session) {
-        super(parentShell, "OID Navigator", cubridIcon);
+        super(parentShell, CubridMessages.cubrid_oid_search_navigator_title, cubridIcon);
         this.oidSearch = new CubridOIDSearch(session);
     }
 
@@ -50,7 +51,7 @@ public class CubridOIDSearchDialog extends BaseDialog {
         Composite container = (Composite) super.createDialogArea(parent);
 
         Label title = new Label(container, SWT.NONE);
-        title.setText("OID Navigator");
+        title.setText(CubridMessages.cubrid_oid_search_navigator_title);
         FontData[] fD = title.getFont().getFontData();
         for (FontData fd : fD) {
             fd.setHeight(10);
@@ -60,7 +61,7 @@ public class CubridOIDSearchDialog extends BaseDialog {
         title.setFont(boldFont);
 
         Label desc = new Label(container, SWT.NONE);
-        desc.setText("Navigator data by OID");
+        desc.setText(CubridMessages.cubrid_oid_search_navigator_desc);
 
         Label separator = new Label(container, SWT.SEPARATOR | SWT.HORIZONTAL);
         GridData sepLayout = new GridData(GridData.FILL_HORIZONTAL);
@@ -71,13 +72,13 @@ public class CubridOIDSearchDialog extends BaseDialog {
         inputArea.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Label oidLabel = new Label(inputArea, SWT.NONE);
-        oidLabel.setText("OID value:");
+        oidLabel.setText(CubridMessages.cubrid_oid_search_value_label + ":");
 
         oidValueText = new Text(inputArea, SWT.LEFT | SWT.BORDER);
         oidValueText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         findButton = new Button(inputArea, SWT.PUSH);
-        findButton.setText("Find");
+        findButton.setText(CubridMessages.cubrid_oid_search_find);
         findButton.setEnabled(false);
         GridData buttonLayout = new GridData(SWT.FILL, SWT.CENTER, false, false);
         buttonLayout.widthHint = 80;
