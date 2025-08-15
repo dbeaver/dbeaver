@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> implements AIEngine {
 
@@ -33,6 +36,39 @@ public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> imp
         this.properties = properties;
     }
 
+    @Override
+    public void requestCompletionStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIEngineRequest request,
+        @NotNull AIEngineResponseConsumer listener
+    ) throws DBException {
+        if (useStreamMode()) {
+            doRequestCompletionStream(monitor, request, listener);
+        } else {
+            AIEngineResponse response = requestCompletion(monitor, request);
+            if (response.getFunctionCall() != null) {
+                listener.nextChunk(new AIEngineResponseChunk(response.getFunctionCall()));
+            } else if (response.getVariants() != null) {
+                listener.nextChunk(new AIEngineResponseChunk(response.getVariants()));
+            } else {
+                listener.error(new DBException("Empty response"));
+                return;
+            }
+
+            listener.close();
+        }
+    }
+
+    protected abstract void doRequestCompletionStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIEngineRequest request,
+        @NotNull AIEngineResponseConsumer listener
+    ) throws DBException;
+
     @NotNull
     protected abstract String getEngineId();
+
+    private static boolean useStreamMode() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_USE_STREAM_MODE);
+    }
 }

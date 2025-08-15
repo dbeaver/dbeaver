@@ -98,7 +98,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     }
 
     @Override
-    public void requestCompletionStream(
+    public void doRequestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request,
         @NotNull AIEngineResponseConsumer listener
