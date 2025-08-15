@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ext.cubrid.ui.views;
+package org.jkiss.dbeaver.ext.cubrid.ui.config;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -7,6 +7,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
+import org.jkiss.dbeaver.ext.cubrid.ui.views.CubridOIDSearchDialog;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
