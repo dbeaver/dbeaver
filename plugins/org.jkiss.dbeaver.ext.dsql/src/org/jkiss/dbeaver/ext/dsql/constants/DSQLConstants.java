@@ -40,4 +40,5 @@ public class DSQLConstants {
     };
 
     public static String ADMIN_USERNAME = "admin";
+    public static String DEFAULT_PROFILE = "default";
 }

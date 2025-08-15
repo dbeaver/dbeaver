@@ -157,7 +157,8 @@ public class DSQLAuthIAMConfigurator implements IObjectPropertyConfigurator<Obje
         loadText(accessKeyText, configuration.getProperty(DSQLConstants.AWS_ACCESS_KEY));
         loadText(secretKeyText, configuration.getProperty(DSQLConstants.AWS_SECRET_KEY));
         loadText(sessionTokenText, configuration.getProperty(DSQLConstants.AWS_SESSION_TOKEN));
-        loadText(profileText, configuration.getProperty(DSQLConstants.AWS_PROFILE));
+        String savedProfile = configuration.getProperty(DSQLConstants.AWS_PROFILE);
+        loadText(profileText, savedProfile == null || savedProfile.isEmpty() ? DSQLConstants.DEFAULT_PROFILE : savedProfile);
         loadText(tokenText, configuration.getProperty(DSQLConstants.DSQL_TOKEN));
 
         setSelectedAuthType(configuration.getProperty(DSQLConstants.AUTH_TYPE));
