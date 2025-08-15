@@ -33,22 +33,22 @@ public final class OpenAIModels {
     public static final String DEFAULT_MODEL = "gpt-4o";
 
     public static final Map<String, AIModel> KNOWN_MODELS = Stream.of(
-        new AIModel("o4-mini", 200_000, Set.of(AIModelFeature.CHAT)),
+        new AIModel("o4-mini", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
         new AIModel("o3-pro", 200_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("o3", 200_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("o3-mini", 200_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("o1-pro", 200_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("o1", 200_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("o1-mini", 128_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("gpt-5", 400_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("gpt-5-mini", 400_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("gpt-5-nano", 400_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("gpt-4.1", 1_048_576, Set.of(AIModelFeature.CHAT)),
-        new AIModel("gpt-4o", 128_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("gpt-4o-mini", 128_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("gpt-4-turbo", 128_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("gpt-3.5-turbo", 16_384, Set.of(AIModelFeature.CHAT)),
-        new AIModel("gpt-4", 8_192, Set.of(AIModelFeature.CHAT)),
+        new AIModel("o3", 200_000, Set.of(AIModelFeature.CHAT), 1),
+        new AIModel("o3-mini", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING), 1),
+        new AIModel("o1-pro", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
+        new AIModel("o1", 200_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
+        new AIModel("o1-mini", 128_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
+        new AIModel("gpt-5", 400_000, Set.of(AIModelFeature.CHAT), 1),
+        new AIModel("gpt-5-mini", 400_000, Set.of(AIModelFeature.CHAT), 1),
+        new AIModel("gpt-5-nano", 400_000, Set.of(AIModelFeature.CHAT), 1),
+        new AIModel("gpt-4.1", 1_048_576, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
+        new AIModel("gpt-4o", 128_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
+        new AIModel("gpt-4o-mini", 128_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
+        new AIModel("gpt-4-turbo", 128_000, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
+        new AIModel("gpt-3.5-turbo", 16_384, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
+        new AIModel("gpt-4", 8_192, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)),
 
         new AIModel("gpt-4o-transcribe", 128_000, Set.of(AIModelFeature.SPEECH_TO_TEXT)),
         new AIModel("gpt-4o-mini-transcribe", 128_000, Set.of(AIModelFeature.SPEECH_TO_TEXT)),
@@ -90,21 +90,16 @@ public final class OpenAIModels {
         return lowerCaseModelName;
     }
 
-    @Nullable
-    public static Integer getContextWindowSize(@Nullable String modelName) {
-        if (modelName == null) {
-            return null;
+    @NotNull
+    public static Optional<AIModel> getModelByName(@Nullable String modelName) {
+        if (modelName == null || modelName.isEmpty()) {
+            return Optional.empty();
         }
 
-        AIModel knownModel = KNOWN_MODELS.get(modelName.toLowerCase(Locale.ROOT));
-        if (knownModel != null) {
-            return knownModel.contextWindowSize();
-        }
-
-        return null;
+        return Optional.ofNullable(KNOWN_MODELS.get(modelName.toLowerCase(Locale.ROOT)));
     }
 
-    public static Set<AIModelFeature> getModelFeatures(@NotNull String modelName) {
+    public static Set<AIModelFeature> detectModelFeatures(@NotNull String modelName) {
         AIModel knownModel = KNOWN_MODELS.get(modelName.toLowerCase(Locale.ROOT));
         if (knownModel != null) {
             return knownModel.features();
@@ -115,6 +110,7 @@ public final class OpenAIModels {
 
         if (isChatModel(modelName)) {
             features.add(AIModelFeature.CHAT);
+            features.add(AIModelFeature.STREAMING);
         }
 
         return features;

@@ -60,6 +60,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
     private ModelSelectorField modelSelectorField;
     private ContextWindowSizeField contextWindowSizeField;
     private Button logQueryCheck;
+    private Button streamingCheck;
 
     protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchOpenAiModels);
 
@@ -89,6 +90,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
         applySettings();
 
+        streamingCheck.setSelection(configuration.getProperties().isStreamingEnabled());
         contextWindowSizeField.setValue(configuration.getProperties().getContextWindowSize());
 
         modelSelectorField.refreshModelListSilently(false);
@@ -101,6 +103,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         configuration.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
         configuration.getProperties().setTemperature(Double.parseDouble(temperature));
         configuration.getProperties().setLoggingEnabled(logQuery);
+        configuration.getProperties().setStreaming(streamingCheck.getSelection());
     }
 
     @Override
@@ -135,7 +138,18 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
                     .toList()
             )
             .withSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                contextWindowSizeField.setValue(OpenAIModels.getContextWindowSize(modelSelectorField.getSelectedModel()));
+                OpenAIModels.getModelByName(modelSelectorField.getSelectedModel())
+                    .ifPresentOrElse(
+                        model -> {
+                            contextWindowSizeField.setValue(model.contextWindowSize());
+                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                            streamingCheck.setSelection(model.features().contains(AIModelFeature.STREAMING));
+                        }, () -> {
+                            contextWindowSizeField.setValue(null);
+                            temperatureText.setText("0.0");
+                            streamingCheck.setSelection(true);
+                        }
+                    );
             }))
             .build();
 
@@ -151,6 +165,14 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         temperatureText.setToolTipText("Lower temperatures give more precise results");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
+
+        streamingCheck = UIUtils.createCheckbox(
+            parent,
+            "Enables streaming",
+            "Enables streaming of AI responses",
+            true,
+            3
+        );
     }
 
     private List<AIModel> fetchOpenAiModels(DBRProgressMonitor monitor) throws DBException {
