@@ -38,6 +38,14 @@ public class CSSUtils {
         widget.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, value);
     }
 
+    public static boolean isExcludeFromStyling(Widget widget){
+        return (widget.getData(DBStyles.EXCLUDED_FROM_STYLING) == Boolean.TRUE);
+    }
+
+    public static void setExcludeFromStyling(Widget widget) {
+        widget.setData(DBStyles.EXCLUDED_FROM_STYLING, Boolean.TRUE);
+    }
+
     public static Color getCurrentEditorConnectionColor(Widget widget) {
         if (!(widget instanceof Control control)) {
             return null;

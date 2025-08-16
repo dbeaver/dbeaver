@@ -66,7 +66,7 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
     }
 
     private static boolean isExcludedFromStyling(Control ctrl) {
-        if (ArrayUtils.contains(EXCLUDE_CLASSES, ctrl.getClass())) {
+        if (ArrayUtils.contains(EXCLUDE_CLASSES, ctrl.getClass()) || CSSUtils.isExcludeFromStyling(ctrl)) {
             return true;
         }
         if (ctrl instanceof Text || ctrl instanceof StyledText) {

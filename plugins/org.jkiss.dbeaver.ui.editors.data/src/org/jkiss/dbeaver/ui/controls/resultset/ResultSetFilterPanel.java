@@ -154,11 +154,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 this.activeObjectPanel = null;
             }
             this.filterExpandPanel = new FilterExpandPanel(filterComposite);
+            //CSSUtils.setExcludeFromStyling(this.filterExpandPanel);
 
             this.filtersTextViewer = new TextViewer(filterComposite, SWT.MULTI);
             this.filtersTextViewer.setDocument(new Document());
             this.filtersText = this.filtersTextViewer.getTextWidget();
-            this.filtersText.setForeground(UIStyles.getDefaultTextForeground());
+            CSSUtils.setExcludeFromStyling(this.filtersText);
             this.filtersText.setFont(BaseThemeSettings.instance.baseFont);
             TextViewerUndoManager undoManager = new TextViewerUndoManager(200);
             undoManager.connect(filtersTextViewer);
@@ -171,6 +172,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             StyledTextUtils.enableDND(this.filtersText);
 
             this.executePanel = new ExecutePanel(filterComposite);
+            //CSSUtils.setExcludeFromStyling(this.executePanel);
             //this.refreshPanel = new RefreshPanel(filterComposite);
             this.historyPanel = new HistoryPanel(filterComposite);
 
