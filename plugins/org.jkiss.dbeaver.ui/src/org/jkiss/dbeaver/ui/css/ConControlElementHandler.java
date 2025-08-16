@@ -19,12 +19,16 @@ package org.jkiss.dbeaver.ui.css;
 import org.eclipse.e4.ui.css.core.engine.CSSEngine;
 import org.eclipse.e4.ui.css.swt.helpers.SWTElementHelpers;
 import org.eclipse.e4.ui.css.swt.properties.css2.CSSPropertyBackgroundSWTHandler;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ConComposite;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 import org.w3c.dom.css.CSSValue;
 
 public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
@@ -38,19 +42,36 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
         String pseudo,
         CSSEngine engine
     ) throws Exception {
+        super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
+
         Widget widget = SWTElementHelpers.getWidget(element);
+
+        if (widget instanceof ToolBar toolBar) {
+            // FIXME: it is a hack to set toolbar foreground explicitly.
+            // FIXME: For some reason it remains default for dark theme (black on black)
+            toolBar.setForeground(UIStyles.getDefaultTextForeground());
+        }
+
         if (widget instanceof Control ctrl &&
             !UIUtils.isInDialog(ctrl) &&
-            !ArrayUtils.contains(EXCLUDE_CLASSES, ctrl.getClass()) &&
+            !isExcludedFromStyling(ctrl) &&
             isOverridesBackground(ctrl)
         ) {
             Color newColor = CSSUtils.getCurrentEditorConnectionColor(widget);
             if (newColor != null) {
                 ctrl.setBackground(newColor);
-                return;
             }
         }
-        super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
+    }
+
+    private static boolean isExcludedFromStyling(Control ctrl) {
+        if (ArrayUtils.contains(EXCLUDE_CLASSES, ctrl.getClass())) {
+            return true;
+        }
+        if (ctrl instanceof Text || ctrl instanceof StyledText) {
+            return CommonUtils.isBitSet(ctrl.getStyle(), SWT.BORDER);
+        }
+        return false;
     }
 
     private boolean isOverridesBackground(@NotNull Control control) {
