@@ -81,6 +81,8 @@ public class TabbedFolderList extends ConComposite {
     private Color bottomNavigationElementShadowStroke2;
 
     private final Map<Image, Image> grayedImages = new IdentityHashMap<>();
+    private RGB white;
+    private RGB black;
 
     /**
      * One of the tabs in the tabbed property list.
@@ -309,7 +311,7 @@ public class TabbedFolderList extends ConComposite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
-            Color bgColor = getWidgetBackgrund();
+            Color bgColor = getWidgetBackgrund(false);
             e.gc.setForeground(widgetForeground);
             Rectangle bounds = getBounds();
 
@@ -390,7 +392,7 @@ public class TabbedFolderList extends ConComposite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
-            Color bgColor = getWidgetBackgrund();
+            Color bgColor = getWidgetBackgrund(true);
 
             e.gc.setForeground(widgetForeground);
             Rectangle bounds = getBounds();
@@ -438,9 +440,23 @@ public class TabbedFolderList extends ConComposite {
         }
     }
 
-    private Color getWidgetBackgrund() {
+    private Color getWidgetBackgrund(boolean adapt) {
         Color connectionColor = CSSUtils.getCurrentEditorConnectionColor(this);
-        return connectionColor != null ? connectionColor : listBackground;
+        if (connectionColor != null) {
+            if (adapt) {
+                SharedTextColors sharedColors = UIUtils.getSharedTextColors();
+                if (listBackground.hashCode() < connectionColor.hashCode()) {
+                    // Foreground darker than background - make element background darker
+                    connectionColor = sharedColors.getColor(UIUtils.blend(black, connectionColor.getRGB(), 25));
+                } else {
+                    // Make element background lighter
+                    connectionColor = sharedColors.getColor(UIUtils.blend(white, connectionColor.getRGB(), 25));
+                }
+            }
+
+            return connectionColor;
+        }
+        return listBackground;
     }
 
     public TabbedFolderList(Composite parent, boolean section) {
@@ -730,8 +746,8 @@ public class TabbedFolderList extends ConComposite {
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
-        RGB white = display.getSystemColor(SWT.COLOR_WHITE).getRGB();
-        RGB black = display.getSystemColor(SWT.COLOR_BLACK).getRGB();
+        white = display.getSystemColor(SWT.COLOR_WHITE).getRGB();
+        black = display.getSystemColor(SWT.COLOR_BLACK).getRGB();
 
 		/*
 		 * gradient in the default tab: start colour WIDGET_NORMAL_SHADOW 100% +
