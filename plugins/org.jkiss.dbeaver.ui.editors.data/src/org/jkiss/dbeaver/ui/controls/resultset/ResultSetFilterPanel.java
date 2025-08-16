@@ -288,13 +288,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             historyForwardButton.addSelectionListener(new HistoryMenuListener(historyForwardButton, false));
         }
 
-        CSSUtils.setMimicControl(this, filtersText);
-        CSSUtils.setMimicControl(this.filterComposite, filtersText);
-        if (filterExpandPanel != null) CSSUtils.setMimicControl(filterExpandPanel, filtersText);
-        if (executePanel != null) CSSUtils.setMimicControl(executePanel, filtersText);
-        if (historyPanel != null) CSSUtils.setMimicControl(historyPanel, filtersText);
-        if (filterToolbar != null) CSSUtils.setMimicControl(filterToolbar, filtersText);
-
         this.addControlListener(new ControlListener() {
             @Override
             public void controlMoved(ControlEvent e) {

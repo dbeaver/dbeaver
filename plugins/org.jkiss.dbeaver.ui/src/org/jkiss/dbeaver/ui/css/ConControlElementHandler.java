@@ -17,25 +17,19 @@
 package org.jkiss.dbeaver.ui.css;
 
 import org.eclipse.e4.ui.css.core.engine.CSSEngine;
-import org.eclipse.e4.ui.css.swt.dom.CompositeElement;
+import org.eclipse.e4.ui.css.swt.dom.ControlElement;
 import org.eclipse.e4.ui.css.swt.helpers.SWTElementHelpers;
 import org.eclipse.e4.ui.css.swt.properties.css2.CSSPropertyBackgroundSWTHandler;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Widget;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.ConComposite;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.w3c.dom.css.CSSValue;
 
+public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
 
-/**
- * Needed to override theme styles.
- * For now it's used only for coloring widgets regarding the connection type color.
- */
-public class CustomCompositeElementHandler extends CSSPropertyBackgroundSWTHandler {
-
-    private static final boolean APPLY_CON_TYPE_HIERARCHICALLY = false;
+    private static final Class<?>[] EXCLUDE_CLASSES = { Tree.class, Table.class, Button.class };
 
     @Override
     public void applyCSSPropertyBackgroundColor(
@@ -45,15 +39,9 @@ public class CustomCompositeElementHandler extends CSSPropertyBackgroundSWTHandl
         CSSEngine engine
     ) throws Exception {
         Widget widget = SWTElementHelpers.getWidget(element);
-        if (widget == null || (widget instanceof Control && UIUtils.isInDialog((Control) widget))) {
-            super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
-            return;
-        }
-
-        if (widget instanceof Control ctrl && !(ctrl instanceof StyledText)) {
-            boolean colorByConnectionType = isBackgroundByConnectionType(ctrl, widget);
-
-            if (colorByConnectionType) {
+        if (widget instanceof Control ctrl && !ArrayUtils.contains(EXCLUDE_CLASSES, ctrl.getClass())) {
+            ConComposite conComposite = UIUtils.getParentOfType(ctrl, ConComposite.class);
+            if (conComposite != null && CSSUtils.isCustomComposite(ctrl, conComposite)) {
                 Color newColor = CSSUtils.getCurrentEditorConnectionColor(widget);
                 if (newColor != null) {
                     applyCustomBackground(element, newColor);
@@ -64,14 +52,10 @@ public class CustomCompositeElementHandler extends CSSPropertyBackgroundSWTHandl
         super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
     }
 
-    protected boolean isBackgroundByConnectionType(Control ctrl, Widget widget) {
-        return CSSUtils.isCustomComposite(ctrl, widget);
-    }
-
     protected void applyCustomBackground(Object element, Color newColor) {
-        Composite nativeWidget = (Composite) ((CompositeElement) element).getNativeWidget();
-        nativeWidget.setBackground(newColor);
+        Control nativeWidget = (Control) ((ControlElement) element).getNativeWidget();
+        if (nativeWidget != null) {
+            nativeWidget.setBackground(newColor);
+        }
     }
-
-
 }

@@ -122,8 +122,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -164,7 +164,7 @@ public class ResultSetViewer extends Viewer
     private IResultSetFilterManager filterManager;
     @NotNull
     private final IWorkbenchPartSite site;
-    private final Composite mainPanel;
+    private final ConComposite mainPanel;
     private final Composite viewerPanel;
     private final IResultSetDecorator decorator;
     @Nullable
@@ -274,8 +274,8 @@ public class ResultSetViewer extends Viewer
 
         boolean supportsPanels = (decoratorFeatures & IResultSetDecorator.FEATURE_PANELS) != 0;
 
-        this.mainPanel = UIUtils.createPlaceholder(parent, supportsPanels ? 3 : 2);
-        CSSUtils.setCSSClass(this.mainPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        this.mainPanel = new ConComposite(parent);
+        this.mainPanel.setGridLayout(supportsPanels ? 3 : 2);
 
         this.autoRefreshControl = new AutoRefreshControl(
             this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
@@ -360,10 +360,9 @@ public class ResultSetViewer extends Viewer
                 });
 
                 this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
-                Composite trControl = new Composite(panelFolder, SWT.NONE);
+                Composite trControl = new ConComposite(panelFolder, SWT.NONE);
                 trControl.setLayout(new FillLayout());
                 ToolBar panelToolbarControl = this.panelToolBar.createControl(trControl);
-                trControl.setBackgroundMode(SWT.INHERIT_FORCE);
                 this.panelFolder.setTopRight(trControl, SWT.RIGHT | SWT.WRAP);
                 this.panelFolder.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -1808,20 +1807,15 @@ public class ResultSetViewer extends Viewer
     private void createStatusBar() {
         ActionUtils.addPropertyEvaluationRequestListener(propertyEvaluationRequestListener);
 
-        Composite statusComposite = new Composite(mainPanel, SWT.NONE);
-        GridLayout gl = new GridLayout(3, false);
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        statusComposite.setLayout(gl);
+        ConComposite statusComposite = new ConComposite(mainPanel);
+        statusComposite.setGridLayout(3);
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = ((GridLayout)mainPanel.getLayout()).numColumns;
         statusComposite.setLayoutData(gd);
 
-        statusBar = new Composite(statusComposite, SWT.NONE);
-        statusBar.setBackgroundMode(SWT.INHERIT_FORCE);
+        statusBar = new ConComposite(statusComposite, SWT.NONE);
         statusBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        CSSUtils.setCSSClass(statusBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
         RowLayout toolbarsLayout = new RowLayout(SWT.HORIZONTAL);
         //toolbarsLayout.marginTop = 0;
         //toolbarsLayout.marginBottom = 0;
@@ -1904,7 +1898,6 @@ public class ResultSetViewer extends Viewer
 
             resultSetSize = new Text(statusBar, SWT.BORDER);
             resultSetSize.setLayoutData(new RowData(5 * fontHeight, SWT.DEFAULT));
-            resultSetSize.setBackground(UIStyles.getDefaultTextBackground());
             resultSetSize.setToolTipText(DataEditorsMessages.resultset_segment_size);
             resultSetSize.addFocusListener(new FocusAdapter() {
                 @Override
@@ -1958,7 +1951,9 @@ public class ResultSetViewer extends Viewer
             CSSUtils.setCSSClass(rowCountLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
             rowCountLabel.setMessage("Row Count");
             rowCountLabel.setToolTipText("Calculates total row count in the current dataset");
-            UIUtils.createToolBarSeparator(statusBar, SWT.VERTICAL);
+            Label separator = new Label(statusBar, SWT.NONE);
+            separator.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
+            CSSUtils.setCSSClass(separator, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             selectionStatLabel = new Text(statusBar, SWT.READ_ONLY);
             selectionStatLabel.setToolTipText(ResultSetMessages.result_set_viewer_selection_stat_tooltip);
