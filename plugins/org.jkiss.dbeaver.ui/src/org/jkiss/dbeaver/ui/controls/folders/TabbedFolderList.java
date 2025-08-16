@@ -27,10 +27,9 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ui.BaseThemeSettings;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIStyles;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -42,7 +41,7 @@ import java.util.Map;
  * @author Anthony Hunter
  * @author Serge Rider
  */
-public class TabbedFolderList extends Composite {
+public class TabbedFolderList extends ConComposite {
 
     private static final ListElement[] ELEMENTS_EMPTY = new ListElement[0];
 
@@ -100,7 +99,7 @@ public class TabbedFolderList extends Composite {
          * @param tab    the tab item for the element.
          * @param index  the index in the list.
          */
-        public ListElement(Composite parent, final TabbedFolderInfo tab, int index) {
+        public ListElement(@NotNull Composite parent, @NotNull TabbedFolderInfo tab, int index) {
             super(parent, SWT.NO_FOCUS);
             this.tab = tab;
             hover = false;
@@ -160,19 +159,20 @@ public class TabbedFolderList extends Composite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
-			/*
+            Color bgColor = listBackground;//getWidgetBackgrund();
+            /*
 			 * draw the top two lines of the tab, same for selected, hover and
 			 * default
 			 */
             Rectangle bounds = getBounds();
             e.gc.setForeground(widgetNormalShadow);
             e.gc.drawLine(0, 0, bounds.width - 1, 0);
-            e.gc.setForeground(listBackground);
+            e.gc.setForeground(bgColor);
             e.gc.drawLine(0, 1, bounds.width - 1, 1);
 
 			/* draw the fill in the tab */
             if (selected) {
-                e.gc.setBackground(listBackground);
+                e.gc.setBackground(bgColor);
                 e.gc.fillRectangle(0, 2, bounds.width, bounds.height - 1);
             } else if (hover && tab.isIndented()) {
                 e.gc.setBackground(indentedHoverBackground);
@@ -242,7 +242,7 @@ public class TabbedFolderList extends Composite {
 
 			/* draw the bottom line on the tab for selected and default */
             if (!hover) {
-                e.gc.setForeground(listBackground);
+                e.gc.setForeground(bgColor);
                 e.gc.drawLine(0, bounds.height - 1, bounds.width - 2, bounds.height - 1);
             }
         }
@@ -309,16 +309,18 @@ public class TabbedFolderList extends Composite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
+            Color bgColor = getWidgetBackgrund();
             e.gc.setForeground(widgetForeground);
             Rectangle bounds = getBounds();
 
             if (elements.length != 0) {
+                e.gc.setBackground(bgColor);
                 e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
                 e.gc.setForeground(widgetNormalShadow);
                 e.gc.drawLine(bounds.width - 1, 0, bounds.width - 1,
                     bounds.height - 1);
             } else {
-                e.gc.setBackground(listBackground);
+                e.gc.setBackground(bgColor);
                 e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
                 int textIndent = INDENT_LEFT;
                 FontMetrics fm = e.gc.getFontMetrics();
@@ -388,10 +390,13 @@ public class TabbedFolderList extends Composite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
+            Color bgColor = getWidgetBackgrund();
+
             e.gc.setForeground(widgetForeground);
             Rectangle bounds = getBounds();
 
             if (elements.length != 0) {
+                e.gc.setBackground(bgColor);
                 e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
                 e.gc.setForeground(widgetNormalShadow);
                 if (!section || isDownScrollRequired()) {
@@ -407,7 +412,7 @@ public class TabbedFolderList extends Composite {
                 e.gc.setForeground(bottomNavigationElementShadowStroke2);
                 e.gc.drawLine(0, 2, bounds.width - 2, 2);
             } else {
-                e.gc.setBackground(listBackground);
+                e.gc.setBackground(bgColor);
                 e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
             }
 
@@ -431,6 +436,11 @@ public class TabbedFolderList extends Composite {
                 e.gc.drawLine(0, bottom - 6, bounds.width - 2, bottom - 6);
             }
         }
+    }
+
+    private Color getWidgetBackgrund() {
+        Color connectionColor = CSSUtils.getCurrentEditorConnectionColor(this);
+        return connectionColor != null ? connectionColor : listBackground;
     }
 
     public TabbedFolderList(Composite parent, boolean section) {
@@ -702,7 +712,7 @@ public class TabbedFolderList extends Composite {
      * Initialize the colours used in the list.
      */
     private void initColours() {
-        Display display = Display.getCurrent();
+        Display display = getDisplay();
         ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
 
         listBackground = UIStyles.getDefaultTextBackground();
@@ -757,22 +767,6 @@ public class TabbedFolderList extends Composite {
 
         indentedDefaultBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 10));
         indentedHoverBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 75));
-    }
-
-    @Override
-    public void setBackground(Color color) {
-        super.setBackground(color);
-        UIUtils.asyncExec(() -> {
-            if (isDisposed()) {
-                return;
-            }
-            initColours();
-            for (ListElement e : elements) {
-                e.redraw();
-            }
-            topNavigationElement.redraw();
-            bottomNavigationElement.redraw();
-        });
     }
 
     @Override
