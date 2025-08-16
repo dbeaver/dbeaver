@@ -77,6 +77,9 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
 
     private boolean isOverridesBackground(@NotNull Control control) {
         while (control != null) {
+            if (CSSUtils.isExcludeFromStyling(control)) {
+                return false;
+            }
             if (control instanceof ConComposite || CSSUtils.isDatabaseColored(control)) {
                 return true;
             }
