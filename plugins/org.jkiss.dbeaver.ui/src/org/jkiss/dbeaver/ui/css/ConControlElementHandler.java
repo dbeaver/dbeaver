@@ -17,11 +17,11 @@
 package org.jkiss.dbeaver.ui.css;
 
 import org.eclipse.e4.ui.css.core.engine.CSSEngine;
-import org.eclipse.e4.ui.css.swt.dom.ControlElement;
 import org.eclipse.e4.ui.css.swt.helpers.SWTElementHelpers;
 import org.eclipse.e4.ui.css.swt.properties.css2.CSSPropertyBackgroundSWTHandler;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ConComposite;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -39,23 +39,28 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
         CSSEngine engine
     ) throws Exception {
         Widget widget = SWTElementHelpers.getWidget(element);
-        if (widget instanceof Control ctrl && !ArrayUtils.contains(EXCLUDE_CLASSES, ctrl.getClass())) {
-            ConComposite conComposite = UIUtils.getParentOfType(ctrl, ConComposite.class);
-            if (conComposite != null && CSSUtils.isCustomComposite(ctrl, conComposite)) {
-                Color newColor = CSSUtils.getCurrentEditorConnectionColor(widget);
-                if (newColor != null) {
-                    applyCustomBackground(element, newColor);
-                    return;
-                }
+        if (widget instanceof Control ctrl &&
+            !UIUtils.isInDialog(ctrl) &&
+            !ArrayUtils.contains(EXCLUDE_CLASSES, ctrl.getClass()) &&
+            isOverridesBackground(ctrl)
+        ) {
+            Color newColor = CSSUtils.getCurrentEditorConnectionColor(widget);
+            if (newColor != null) {
+                ctrl.setBackground(newColor);
+                return;
             }
         }
         super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
     }
 
-    protected void applyCustomBackground(Object element, Color newColor) {
-        Control nativeWidget = (Control) ((ControlElement) element).getNativeWidget();
-        if (nativeWidget != null) {
-            nativeWidget.setBackground(newColor);
+    private boolean isOverridesBackground(@NotNull Control control) {
+        while (control != null) {
+            if (control instanceof ConComposite || CSSUtils.isDatabaseColored(control)) {
+                return true;
+            }
+            control = control.getParent();
         }
+        return false;
     }
+
 }

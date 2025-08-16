@@ -19,20 +19,12 @@ package org.jkiss.dbeaver.ui.css;
 import org.eclipse.e4.ui.css.core.engine.CSSEngine;
 import org.eclipse.e4.ui.css.swt.dom.CompositeElement;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 
 public class ConCompositeElement extends CompositeElement {
 
-    public ConCompositeElement(Composite mc, CSSEngine engine) {
+    public ConCompositeElement(@NotNull Composite mc, @NotNull CSSEngine engine) {
         super(mc, engine);
     }
 
-    @Override
-    public void reset() {
-        super.reset();
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-    }
 }

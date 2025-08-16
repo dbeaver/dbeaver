@@ -45,9 +45,8 @@ public class CSSUtils {
         try {
             for (Control c = control; c != null; c = c.getParent()) {
                 Object data = c.getData(DBStyles.DATABASE_EDITOR_COMPOSITE_DATASOURCE);
-                if (data instanceof DBPDataSourceContainer) {
-                    return UIUtils.getConnectionColor(
-                        ((DBPDataSourceContainer) data).getConnectionConfiguration());
+                if (data instanceof DBPDataSourceContainer dsc) {
+                    return UIUtils.getConnectionColor(dsc.getConnectionConfiguration());
                 }
             }
         } catch (Exception e) {
@@ -56,7 +55,7 @@ public class CSSUtils {
         return null;
     }
 
-    public static boolean isCustomComposite(Control ctrl, Widget widget) {
+    public static boolean isDatabaseColored(Widget widget) {
         boolean colorByConnectionType = DBStyles.COLORED_BY_CONNECTION_TYPE.equals(getCSSClass(widget));
         // sometimes eclipse overrides css class of the controls, so let's check for the toolbar's css class too
         if (!colorByConnectionType && widget instanceof Composite c && c.getParent() instanceof ToolBar tb) {
