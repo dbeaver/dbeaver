@@ -49,7 +49,8 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
         if (widget instanceof ToolBar toolBar) {
             // FIXME: it is a hack to set toolbar foreground explicitly.
             // FIXME: For some reason it remains default for dark theme (black on black)
-            toolBar.setForeground(UIStyles.getDefaultTextForeground());
+            Color defForeground = UIStyles.getDefaultTextForeground();
+            toolBar.setForeground(defForeground);
         }
 
         if (widget instanceof Control ctrl &&
