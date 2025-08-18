@@ -137,6 +137,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         {
             this.filterComposite = new Composite(this, SWT.NONE);
+            CSSUtils.setExcludeFromStyling(this.filterComposite);
 
             gl = new GridLayout(5, false);
             gl.marginHeight = 2;
@@ -145,7 +146,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             gl.verticalSpacing = 0;
             this.filterComposite.setLayout(gl);
             this.filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            // CSSUtils.setCSSClass(this.filterComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+
             new CompositeBorderPainter(this.filterComposite);
 
             if (!compactMode) {
@@ -154,12 +155,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 this.activeObjectPanel = null;
             }
             this.filterExpandPanel = new FilterExpandPanel(filterComposite);
-            //CSSUtils.setExcludeFromStyling(this.filterExpandPanel);
 
             this.filtersTextViewer = new TextViewer(filterComposite, SWT.MULTI);
             this.filtersTextViewer.setDocument(new Document());
             this.filtersText = this.filtersTextViewer.getTextWidget();
-            CSSUtils.setExcludeFromStyling(this.filtersText);
+
             this.filtersText.setFont(BaseThemeSettings.instance.baseFont);
             TextViewerUndoManager undoManager = new TextViewerUndoManager(200);
             undoManager.connect(filtersTextViewer);
