@@ -61,6 +61,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchMessages;
@@ -173,11 +174,6 @@ public class UIUtils {
             }
             e.doit = newText.compareTo(MAX_LONG_STRING) <= 0;
         };
-    }
-
-    public static void createToolBarSeparator(Composite toolBar, int style) {
-        Label label = new Label(toolBar, SWT.NONE);
-        label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
     }
 
     public static void createLabelSeparator(Composite toolBar, int style) {
@@ -685,7 +681,7 @@ public class UIUtils {
             label.setText(text);
             control = label;
         } else {
-            control = createInfoLink(parent, "<a href=\"#\">" + text + "</a>", callback).getParent();
+            control = createInfoLink(parent, createHrefText(text), callback).getParent();
         }
 
         if (gridStyle != SWT.NONE || hSpan > 1) {
@@ -695,6 +691,11 @@ public class UIUtils {
         }
 
         return control;
+    }
+
+    @NotNull
+    private static String createHrefText(@NotNull String text) {
+        return "<a href=\"#\">" + text + "</a>";
     }
 
     @NotNull
@@ -729,6 +730,14 @@ public class UIUtils {
         return link;
     }
 
+    public static void setInfoLinkText(@NotNull Control infoLink, @NotNull String text) {
+        if (infoLink instanceof Composite comp) {
+            Link link = UIUtils.getChildOfType(comp, Link.class);
+            if (link != null) {
+                link.setText(createHrefText(text));
+            }
+        }
+    }
     public static Text createLabelText(Composite parent, String label, String value) {
         return createLabelText(parent, label, value, SWT.BORDER);
     }
@@ -2248,12 +2257,21 @@ public class UIUtils {
         return BaseThemeSettings.instance.monospaceFont;
     }
 
-    public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
+    public static <T extends Control> T getParentOfType(@NotNull Control control, @NotNull Class<T> parentType) {
         while (control != null) {
             if (parentType.isInstance(control)) {
                 return parentType.cast(control);
             }
             control = control.getParent();
+        }
+        return null;
+    }
+
+    public static <T extends Control> T getChildOfType(@NotNull Composite parent, @NotNull Class<T> childType) {
+        for (Control child : parent.getChildren()) {
+            if (childType.isInstance(child)) {
+                return childType.cast(child);
+            }
         }
         return null;
     }
@@ -2506,5 +2524,69 @@ public class UIUtils {
         return Arrays.stream(display.getShells())
             .map(Widget::getData)
             .anyMatch(data -> data != null && clazz.isAssignableFrom(data.getClass()));
+    }
+
+    /**
+     * Creates an {@link ExpandableComposite} that paints a separator on top.
+     *
+     * @param parent         the parent
+     * @param style          the control style (as expected by SWT subclass)
+     * @param expansionStyle the style of the expansion widget (see {@link ExpandableComposite})
+     */
+    @NotNull
+    public static ExpandableComposite createExpandableCompositeWithSeparator(
+        @NotNull Composite parent,
+        int style,
+        int expansionStyle
+    ) {
+        // We have to use an anonymous class because "textLabel" has protected access
+        return new ExpandableComposite(parent, style, expansionStyle) {{
+            addPaintListener(e -> {
+                Rectangle bounds = getBounds();
+                Rectangle label = textLabel.getBounds();
+
+                e.gc.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                e.gc.drawLine(
+                    label.x + label.width + 6,
+                    label.y + label.height / 2,
+                    bounds.width,
+                    label.y + label.height / 2
+                );
+            });
+        }};
+    }
+
+    /**
+     * Sets width hint for a control with GridData.
+     * Creates new GridData with FILL_HORIZONTAL if not exists.
+     *
+     * @param widget Control to set width hint for
+     * @param widthHint Desired width in pixels
+     */
+    public static void setWidgetWidthHint(@NotNull Control widget, int widthHint) {
+        if (widget.isDisposed()) {
+            return;
+        }
+
+        Composite parent = widget.getParent();
+        if (parent == null || !(parent.getLayout() instanceof GridLayout)) {
+            return;
+        }
+
+        Object layoutData = widget.getLayoutData();
+        GridData gd;
+
+        if (layoutData instanceof GridData gridData) {
+            gd = gridData;
+        } else {
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            widget.setLayoutData(gd);
+        }
+
+        gd.widthHint = widthHint;
+    }
+
+    public static void setDefaultTextControlWidthHint(@NotNull Control widget) {
+        setWidgetWidthHint(widget, 150);
     }
 }

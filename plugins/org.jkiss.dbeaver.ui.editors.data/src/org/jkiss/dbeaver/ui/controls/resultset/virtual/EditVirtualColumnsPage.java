@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,11 +32,14 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
+import org.jkiss.dbeaver.ui.ConComposite;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIdProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -67,7 +70,8 @@ public class EditVirtualColumnsPage extends BaseObjectEditPage implements IHelpC
 
     @Override
     protected Composite createPageContents(Composite parent) {
-        Composite panel = UIUtils.createComposite(parent, 1);
+        ConComposite panel = new ConComposite(parent);
+        panel.setGridLayout(1);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         attrTable = new Table(panel, SWT.FULL_SELECTION | SWT.BORDER);
@@ -82,6 +86,7 @@ public class EditVirtualColumnsPage extends BaseObjectEditPage implements IHelpC
         {
             Composite buttonsPanel = UIUtils.createComposite(panel, 3);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            CSSUtils.setCSSClass(buttonsPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
             Button btnAdd = UIUtils.createDialogButton(buttonsPanel, ResultSetMessages.virtual_edit_columns_page_dialog_button_add, new SelectionAdapter() {
                 @Override

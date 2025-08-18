@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.ai;
 
 public record AIDdlGenerationOptions(
-    int maxRequestTokens,
+    int maxDbSnapshotTokens,
     boolean sendObjectComment,
     boolean sendColumnTypes,
     boolean sendConstraints,
@@ -31,7 +31,7 @@ public record AIDdlGenerationOptions(
 
     public Builder toBuilder() {
         return new Builder()
-            .withMaxRequestTokens(maxRequestTokens)
+            .withMaxDbSnapshotTokens(maxDbSnapshotTokens)
             .withSendObjectComment(sendObjectComment)
             .withSendColumnTypes(sendColumnTypes)
             .withSendConstraints(sendConstraints)
@@ -40,7 +40,7 @@ public record AIDdlGenerationOptions(
     }
 
     public static final class Builder {
-        private int maxRequestTokens;
+        private int maxDbSnapshotTokens;
         private boolean sendObjectComment;
         private boolean sendColumnTypes;
         private boolean sendConstraints;
@@ -50,8 +50,8 @@ public record AIDdlGenerationOptions(
         private Builder() {
         }
 
-        public Builder withMaxRequestTokens(int maxRequestTokens) {
-            this.maxRequestTokens = maxRequestTokens;
+        public Builder withMaxDbSnapshotTokens(int maxDbSnapshotTokens) {
+            this.maxDbSnapshotTokens = maxDbSnapshotTokens;
             return this;
         }
 
@@ -82,7 +82,7 @@ public record AIDdlGenerationOptions(
 
         public AIDdlGenerationOptions build() {
             return new AIDdlGenerationOptions(
-                maxRequestTokens,
+                maxDbSnapshotTokens,
                 sendObjectComment,
                 sendColumnTypes,
                 sendConstraints,

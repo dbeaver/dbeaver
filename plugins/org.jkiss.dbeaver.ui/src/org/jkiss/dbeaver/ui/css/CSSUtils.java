@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.ui.css;
 
 import org.eclipse.e4.ui.css.swt.CSSSWTConstants;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -31,36 +33,42 @@ public class CSSUtils {
 
     /**
      * Set value to a widget as a CSSSWTConstants.CSS_CLASS_NAME_KEY value.
-     * @param widget
-     * @param value
      */
     public static void setCSSClass(Widget widget, String value){
         widget.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, value);
     }
 
-    public static Widget getMimicControl(Widget widget){
-        return (Widget) widget.getData(DBStyles.ATTR_MIMIC_CONTROL);
+    public static boolean isExcludeFromStyling(Widget widget){
+        return (widget.getData(DBStyles.EXCLUDED_FROM_STYLING) == Boolean.TRUE);
     }
 
-    public static void setMimicControl(Widget widget, Widget mimicControl){
-        widget.setData(DBStyles.ATTR_MIMIC_CONTROL, mimicControl);
+    public static void setExcludeFromStyling(Widget widget) {
+        widget.setData(DBStyles.EXCLUDED_FROM_STYLING, Boolean.TRUE);
     }
 
     public static Color getCurrentEditorConnectionColor(Widget widget) {
-        if (!(widget instanceof Control)) {
+        if (!(widget instanceof Control control)) {
             return null;
         }
         try {
-            for (Control c = (Control)widget; c != null; c = c.getParent()) {
+            for (Control c = control; c != null; c = c.getParent()) {
                 Object data = c.getData(DBStyles.DATABASE_EDITOR_COMPOSITE_DATASOURCE);
-                if (data instanceof DBPDataSourceContainer) {
-                    return UIUtils.getConnectionColor(
-                        ((DBPDataSourceContainer) data).getConnectionConfiguration());
+                if (data instanceof DBPDataSourceContainer dsc) {
+                    return UIUtils.getConnectionColor(dsc.getConnectionConfiguration());
                 }
             }
         } catch (Exception e) {
             // Some UI issues. Probably workbench window or page wasn't yet created
         }
         return null;
+    }
+
+    public static boolean isDatabaseColored(Widget widget) {
+        boolean colorByConnectionType = DBStyles.COLORED_BY_CONNECTION_TYPE.equals(getCSSClass(widget));
+        // sometimes eclipse overrides css class of the controls, so let's check for the toolbar's css class too
+        if (!colorByConnectionType && widget instanceof Composite c && c.getParent() instanceof ToolBar tb) {
+            colorByConnectionType = DBStyles.COLORED_BY_CONNECTION_TYPE.equals(getCSSClass(tb));
+        }
+        return colorByConnectionType;
     }
 }

@@ -56,6 +56,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button useSimpleConstraints;
     private Button useAlternativeTableMetadataQuery;
     private Button searchInSynonyms;
+    private Button searchInSequences;
     private Button showDateAsDate;
 
     public OracleConnectionExtraPage()
@@ -127,6 +128,13 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 false
             );
             searchInSynonyms.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_synonyms_tooltip);
+
+            searchInSequences = UIUtils.createCheckbox(
+                performanceGroup,
+                OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_sequences,
+                false
+            );
+            searchInSequences.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_sequences_tooltip);
         }
 
         {
@@ -238,6 +246,10 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.get(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS),
             globalPreferences.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS)
         ));
+        searchInSequences.setSelection(CommonUtils.getBoolean(
+            providerProperties.get(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES),
+            globalPreferences.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES)
+        ));
 
         showDateAsDate.setSelection(CommonUtils.getBoolean(
             providerProperties.get(OracleConstants.PROP_SHOW_DATE_AS_DATE),
@@ -298,6 +310,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                     OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY,
                     String.valueOf(useAlternativeTableMetadataQuery.getSelection()));
             providerProperties.put(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS, String.valueOf(searchInSynonyms.getSelection()));
+            providerProperties.put(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES, String.valueOf(searchInSequences.getSelection()));
 
             providerProperties.put(OracleConstants.PROP_SHOW_DATE_AS_DATE, String.valueOf(showDateAsDate.getSelection()));
         }

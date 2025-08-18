@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,14 @@ import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 
 /**
  * An OverlayIcon consists of a main icon and several adornments.
  */
 public class OverlayImageDescriptor extends CompositeImageDescriptor {
+
+    private static final Log log = Log.getLog(OverlayImageDescriptor.class);
 
     private final ImageDescriptor baseImage;
     private CachedImageDataProvider baseImageDataProvider = null;
@@ -66,18 +69,22 @@ public class OverlayImageDescriptor extends CompositeImageDescriptor {
 	@Override
     protected void drawCompositeImage(int width, int height) {
         drawImage(getBaseImageData(), 0, 0);
-        
-        if (topRight != null)
-            drawTopRight(topRight);
 
-        if (bottomRight != null)
-            drawBottomRight(bottomRight);
+        try {
+            if (topRight != null)
+                drawTopRight(topRight);
 
-        if (bottomLeft != null)
-            drawBottomLeft(bottomLeft);
+            if (bottomRight != null)
+                drawBottomRight(bottomRight);
 
-        if (topLeft != null)
-            drawTopLeft(topLeft);
+            if (bottomLeft != null)
+                drawBottomLeft(bottomLeft);
+
+            if (topLeft != null)
+                drawTopLeft(topLeft);
+        } catch (Exception e) {
+            log.debug("Error rendering overlay", e);
+        }
     }
 
     @NotNull

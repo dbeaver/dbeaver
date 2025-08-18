@@ -125,7 +125,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         CSSUtils.setCSSClass(pageControl, DBStyles.COLORED_BY_CONNECTION_TYPE);
         pageControl.setShowDivider(true);
 
-        mainComposite = new Composite(pageControl, SWT.NONE);
+        mainComposite = new ConComposite(pageControl, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.verticalSpacing = 5;
         gl.horizontalSpacing = 0;
@@ -186,13 +186,14 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private void createPropertiesPanel(Composite container) {
         // Main panel
-        propsPlaceholder = new Composite(container, SWT.NONE);
+        propsPlaceholder = new ConComposite(container);
         propsPlaceholder.setLayout(new FillLayout());
     }
 
     private Composite createFoldersPanel(Composite parent, TabbedFolderInfo[] folders) {
         // Properties
-        Composite foldersPlaceholder = UIUtils.createPlaceholder(parent, 1, 0);
+        ConComposite foldersPlaceholder = new ConComposite(parent);
+        foldersPlaceholder.setGridLayout(1);
         foldersPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         boolean single = folders.length < 4;
@@ -628,7 +629,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             if (!extraCategories.isEmpty()) {
                 tabList.add(new TabbedFolderInfo(
                     PropertiesContributor.TAB_PROPERTIES,
-                    extraCategories.get(0) + (extraCategories.size() == 1 ? "" :" / ... "),
+                    extraCategories.getFirst() + (extraCategories.size() == 1 ? "" :" / ... "),
                     DBIcon.TREE_INFO,
                     String.join(", ", extraCategories),
                     false,
@@ -657,7 +658,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     {
         monitor.beginTask("Collect tabs", 1);
         // Add all nested folders as tabs
-        if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
+        if (node instanceof DBNDataSource ds && !ds.getDataSourceContainer().isConnected()) {
             // Do not add children tabs
         } else if (node != null) {
             try {
