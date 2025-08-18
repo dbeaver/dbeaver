@@ -306,4 +306,9 @@ public class ClickhouseDataSource extends GenericDataSource {
             return null;
         }
     }
+
+    @Override
+    protected boolean isConnectionReadOnlyBroken() {
+        return true;
+    }
 }
