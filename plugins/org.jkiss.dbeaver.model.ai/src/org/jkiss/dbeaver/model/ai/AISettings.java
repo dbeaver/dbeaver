@@ -61,6 +61,10 @@ public class AISettings implements IAdaptable {
         this.activeEngine = activeEngine;
     }
 
+    public boolean hasConfiguration(String engineId) {
+        return engineConfigurations.containsKey(engineId);
+    }
+
     @NotNull
     public synchronized <T extends AIEngineSettings<?>> T getEngineConfiguration(String engineId) throws DBException {
         AIEngineSettings<?> aiEngineSettings = engineConfigurations.get(engineId);
@@ -74,10 +78,12 @@ public class AISettings implements IAdaptable {
             }
         }
 
-        if (!AISettingsRegistry.saveSecretsAsPlainText()) {
-            if (!resolvedSecrets.contains(engineId)) {
-                aiEngineSettings.resolveSecrets();
-                resolvedSecrets.add(engineId);
+        if (aiEngineSettings != null) {
+            if (!AISettingsRegistry.saveSecretsAsPlainText()) {
+                if (!resolvedSecrets.contains(engineId)) {
+                    aiEngineSettings.resolveSecrets();
+                    resolvedSecrets.add(engineId);
+                }
             }
         }
 
