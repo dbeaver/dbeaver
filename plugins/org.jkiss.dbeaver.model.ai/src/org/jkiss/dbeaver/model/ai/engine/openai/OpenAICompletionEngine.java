@@ -31,10 +31,18 @@ import org.jkiss.dbeaver.model.ai.utils.IterablePublisher;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Flow;
 
 public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
     extends BaseCompletionEngine {
+
+    private final ExecutorService iterablePublisher = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "IterablePublisher");
+        t.setDaemon(true);
+        return t;
+    });
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
@@ -91,7 +99,8 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
             return new IterablePublisher<>(
                 List.of(
                     new AIEngineResponseChunk(requestCompletion(monitor, request).variants())
-                )
+                ),
+                iterablePublisher
             );
         }
 
@@ -148,6 +157,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
     @Override
     public void close() throws DBException {
         openAiService.dispose();
+        iterablePublisher.shutdown();
     }
 
     @NotNull

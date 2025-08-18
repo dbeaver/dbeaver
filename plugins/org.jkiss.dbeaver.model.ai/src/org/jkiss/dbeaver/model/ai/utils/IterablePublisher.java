@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.Log;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,22 +28,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public final class IterablePublisher<T> implements Flow.Publisher<T> {
     private static final Log log = Log.getLog(IterablePublisher.class);
-
-    private final Iterable<T> source;
     private final Executor executor;
 
-    /**
-     * Publish all items from the given iterable using a single-thread executor.
-     */
-    public IterablePublisher(Iterable<T> source) {
-        this(
-            source, Executors.newSingleThreadExecutor(r -> {
-                Thread t = new Thread(r, "IterablePublisher");
-                t.setDaemon(true);
-                return t;
-            })
-        );
-    }
+    private final Iterable<T> source;
+
 
     /**
      * Publish all items from the given iterable using the provided executor.
