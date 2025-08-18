@@ -50,6 +50,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry {
@@ -83,6 +84,9 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private final Map<String, DataSourceOriginProviderDescriptor> dataSourceOrigins = new LinkedHashMap<>();
     private final Map<String, DBPDriverSubstitutionDescriptor> driverSubstitutions = new HashMap<>();
 
+    private final List<Runnable> afterReloadListeners = new CopyOnWriteArrayList<>();
+
+
     private DataSourceProviderRegistry() {
         globalDataSourcePreferenceStore = new SimplePreferenceStore() {
             @Override
@@ -100,13 +104,25 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 // do nothing
             }
         };
-        WorkspaceConfigEventManager.addConfigChangedListener(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME, o -> {
-            // Delete custom drivers because they are removed from drivers.xml
-            for (DataSourceProviderDescriptor dataSourceProvider : dataSourceProviders) {
-                dataSourceProvider.removeCustomAndDisabledDrivers();
+        WorkspaceConfigEventManager.addConfigChangedListener(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME,
+            o -> onDriversConfigChanged()
+        );
+    }
+
+    private void onDriversConfigChanged() {
+        // Delete custom drivers because they are removed from drivers.xml
+        for (DataSourceProviderDescriptor dsp : dataSourceProviders) {
+            dsp.removeCustomAndDisabledDrivers();
+        }
+        readDriversConfig();
+
+        for (Runnable l : afterReloadListeners) {
+            try {
+                l.run();
+            } catch (Exception e) {
+                log.warn("After Drivers Reload listener failed", e);
             }
-            readDriversConfig();
-        });
+        }
     }
 
     private void loadExtensions(IExtensionRegistry registry) {
@@ -761,5 +777,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
+    public void addAfterReloadListener(@NotNull Runnable listener) {
+        afterReloadListeners.add(Objects.requireNonNull(listener));
+    }
+
+    public void removeAfterReloadListener(@NotNull Runnable listener) {
+        afterReloadListeners.remove(listener);
+    }
 
 }
