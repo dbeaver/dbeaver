@@ -85,7 +85,6 @@ import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.DisabledLabelAction;
 import org.jkiss.dbeaver.ui.controls.TabFolderReorder;
-import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
@@ -1892,7 +1891,6 @@ public class ResultSetViewer extends Viewer
         {
             // Config toolbar
             ToolBarManager configToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            configToolBarManager.add(new ToolbarSeparatorContribution(true));
             configToolBarManager.add(new ConfigAction());
             configToolBarManager.update(true);
             ToolBar configToolBar = configToolBarManager.createControl(statusBar);

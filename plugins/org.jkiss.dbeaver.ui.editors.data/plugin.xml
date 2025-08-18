@@ -1347,14 +1347,7 @@
     <extension point="org.eclipse.ui.menus">
     
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.editCmds" >
-            <dynamic class="org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution$Vertical" id="resultsetViewer.bottom.editCmds.separator">
-                <visibleWhen checkEnabled="false">
-                    <or>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.applyChanges"/>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.rejectChanges"/>
-                    </or>
-                </visibleWhen>
-            </dynamic>
+            <separator visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.resultset.applyChanges" id="org.jkiss.dbeaver.resultset.save.pulldown" mode="FORCE_TEXT" style="pulldown" label="%command.org.jkiss.dbeaver.core.resultset.applyChanges.toolbarLabel">
                 <visibleWhen>
                     <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.applyChanges"/>
@@ -1365,16 +1358,7 @@
                     <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.rejectChanges"/>
                 </visibleWhen>
             </command>
-            <dynamic class="org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution$Vertical" id="resultsetViewer.bottom.rowCmds.separator">
-                <visibleWhen checkEnabled="false">
-                    <or>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.edit"/>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.add"/>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.copy"/>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.delete"/>
-                    </or>
-                </visibleWhen>
-            </dynamic>
+            <separator visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.resultset.row.edit">
                 <visibleWhen>
                     <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.edit"/>
@@ -1398,18 +1382,7 @@
         </menuContribution>
         
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.navCmds" >
-            <dynamic class="org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution$Vertical" id="resultsetViewer.bottom.navCmds.separator">
-                <visibleWhen checkEnabled="false">
-                    <or>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.first"/>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.previous"/>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.next"/>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.last"/>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.fetch.page"/>
-                        <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.fetch.all"/>
-                    </or>
-                </visibleWhen>
-            </dynamic>
+            <separator visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.resultset.row.first">
                 <visibleWhen>
                     <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.row.first"/>
@@ -1443,11 +1416,7 @@
         </menuContribution>
         
         <menuContribution  allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status.exportCmd">
-            <dynamic class="org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution$Vertical" id="resultsetViewer.bottom.exportCmds.separator">
-                <visibleWhen checkEnabled="false">
-                    <test property="org.jkiss.dbeaver.ui.toolbar.configuration.visible" args="resultsetViewer.bottom,org.jkiss.dbeaver.core.resultset.export"/>
-                </visibleWhen>
-            </dynamic>
+            <separator visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.resultset.export" style="pulldown" mode="FORCE_TEXT" id="org.jkiss.dbeaver.resultset.export.pulldown">
                 <parameter name="exportWithParameter" value="true" />
                 <visibleWhen>

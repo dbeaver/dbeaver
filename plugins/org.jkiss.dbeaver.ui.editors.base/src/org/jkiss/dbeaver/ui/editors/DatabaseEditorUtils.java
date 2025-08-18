@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
@@ -30,7 +31,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
@@ -86,7 +86,7 @@ public class DatabaseEditorUtils {
             UIIcon.REFRESH,
             EditorsMessages.database_editor_command_refresh_tip,
             true));
-        contributionManager.add(new ToolbarSeparatorContribution(true));
+        contributionManager.add(new Separator());
         contributionManager.add(ActionUtils.makeCommandContribution(
             workbenchSite,
             IWorkbenchCommandConstants.FILE_SAVE,
@@ -101,7 +101,7 @@ public class DatabaseEditorUtils {
             UIIcon.RESET,
             EditorsMessages.database_editor_command_revert_tip,
             true));
-        contributionManager.add(new ToolbarSeparatorContribution(true));
+        contributionManager.add(new Separator());
     }
 
 }
