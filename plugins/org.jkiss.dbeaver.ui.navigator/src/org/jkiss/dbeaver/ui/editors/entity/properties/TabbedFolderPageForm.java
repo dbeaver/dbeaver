@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,9 +106,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 //        ScrolledComposite scrolled = new ScrolledComposite(parent, SWT.V_SCROLL);
 //        scrolled.setLayout(new GridLayout(1, false));
 
-        propertiesGroup = new Composite(parent, SWT.NONE);
-
-        CSSUtils.setCSSClass(propertiesGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        propertiesGroup = new ConComposite(parent, SWT.NONE);
 
         curPropertySource = input.getPropertySource();
 
@@ -244,8 +242,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 parent = parent.getParent();
             }
 
-            Composite primaryGroup = new Composite(propertiesGroup, SWT.NONE);
-            //CSSUtils.setCSSClass(primaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            Composite primaryGroup = new ConComposite(propertiesGroup, SWT.NONE);
             GridLayout primaryLayout = new GridLayout(2, false);
             primaryGroup.setLayout(primaryLayout);
 
@@ -266,9 +263,8 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
             Composite secondaryGroup = null;
             if (hasSecondaryProps) {
-                secondaryGroup = new Composite(propertiesGroup, SWT.NONE);
+                secondaryGroup = new ConComposite(propertiesGroup, SWT.NONE);
                 secondaryGroup.setLayout(new GridLayout(2, false));
-                //CSSUtils.setCSSClass(secondaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
                 gd = new GridData(GridData.FILL_BOTH);
                 gd.widthHint = maxGroupWidth;
                 secondaryGroup.setLayoutData(gd);
@@ -276,9 +272,8 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
             Composite specificGroup = null;
             if (hasSpecificProps) {
-                specificGroup = new Composite(propertiesGroup, SWT.NONE);
+                specificGroup = new ConComposite(propertiesGroup, SWT.NONE);
                 specificGroup.setLayout(new GridLayout(2, false));
-                //CSSUtils.setCSSClass(secondaryGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
                 gd = new GridData(GridData.FILL_BOTH);
                 gd.widthHint = maxGroupWidth;
                 specificGroup.setLayoutData(gd);

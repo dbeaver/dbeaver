@@ -26,7 +26,6 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -58,7 +57,7 @@ import java.util.ArrayList;
 /**
  * ProgressPageControl
  */
-public class ProgressPageControl extends Composite implements ISearchContextProvider, ICustomActionsProvider
+public class ProgressPageControl extends ConComposite implements ISearchContextProvider, ICustomActionsProvider
 {
     private static final Log log = Log.getLog(ProgressPageControl.class);
 
@@ -67,7 +66,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     private boolean showDivider;
 
-    private CLabel listInfoLabel;
+    private Label listInfoLabel;
 
     private ProgressBar progressBar;
     private Text searchText;
@@ -75,7 +74,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     private int loadCount = 0;
     private ProgressPageControl ownerPageControl = null;
     private ProgressPageControl childPageControl = null;
-    private Composite searchControlsComposite;
+    private ConComposite searchControlsComposite;
 
     private String curInfo;
     private String curSearchText;
@@ -190,7 +189,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     public Composite createContentContainer()
     {
-        Composite container = new Composite(this, (getStyle() & SWT.SHEET) == SWT.SHEET ? SWT.NONE :  SWT.BORDER);
+        Composite container = new ConComposite(this, (getStyle() & SWT.SHEET) == SWT.SHEET ? SWT.NONE :  SWT.BORDER);
         container.setLayout(new FillLayout());
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalIndent = 0;
@@ -216,7 +215,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             });
         }
 
-        Composite infoGroup = new Composite(container, SWT.NONE);
+        Composite infoGroup = new ConComposite(container, SWT.NONE);
         CSSUtils.setCSSClass(infoGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
         infoGroup.setBackgroundMode(SWT.INHERIT_FORCE);
 
@@ -226,7 +225,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         gl.marginWidth = 0;
         infoGroup.setLayout(gl);
 
-        customControlsComposite = new Composite(infoGroup, SWT.NONE);
+        customControlsComposite = new ConComposite(infoGroup, SWT.NONE);
         customControlsComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         CSSUtils.setCSSClass(customControlsComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
         customControlsComposite.setBackgroundMode(SWT.INHERIT_FORCE);
@@ -236,17 +235,19 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         gl.marginWidth = 0;
         customControlsComposite.setLayout(gl);
 
-        listInfoLabel = new CLabel(infoGroup, SWT.NONE);
+        listInfoLabel = new Label(infoGroup, SWT.NONE);
         listInfoLabel.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
         listInfoLabel.setLayoutData(GridDataFactory.swtDefaults().minSize(100, SWT.DEFAULT).create());
+        CSSUtils.setCSSClass(listInfoLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
-        searchControlsComposite = UIUtils.createPlaceholder(infoGroup, 1);
+        searchControlsComposite = new ConComposite(infoGroup);
+        searchControlsComposite.setGridLayout(1);
         searchControlsComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        CSSUtils.setCSSClass(searchControlsComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
         searchControlsComposite.setBackgroundMode(SWT.INHERIT_FORCE);
 
         // Placeholder toolbar (need to set initial height of search composite)
-        new ToolBar(searchControlsComposite, SWT.NONE);
+        ToolBar phToolBar = new ToolBar(searchControlsComposite, SWT.NONE);
+        CSSUtils.setCSSClass(phToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
         defaultToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
         customToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
@@ -294,11 +295,12 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 if (isSearchPossible() && isSearchEnabled()) {
                     addSearchAction(defaultToolbarManager);
                 }
-                Label phLabel = new Label(searchControlsComposite, SWT.NONE);
-                phLabel.setText(""); //$NON-NLS-1$
+                Control phLabel = new Label(searchControlsComposite, SWT.NONE);
                 phLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                CSSUtils.setCSSClass(phLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
                 ToolBar defaultToolbar = defaultToolbarManager.createControl(searchControlsComposite);
                 defaultToolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+                CSSUtils.setCSSClass(defaultToolbar, DBStyles.COLORED_BY_CONNECTION_TYPE);
 
                 // Recreate custom controls
                 UIUtils.disposeChildControls(customControlsComposite);
