@@ -14,19 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine;
+package org.jkiss.dbeaver.model.ai.impl;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-
-import java.util.List;
-
-public record AIEngineRequest(
-    @NotNull List<AIMessage> messages
-) {
+public class DummyTokenCounter implements TokenCounter {
+    public static final int TOKEN_TO_CHAR_RATIO = 2;
 
     @Override
-    public String toString() {
-        return "AI request " + messages;
+    public int count(String message) {
+        if (message.isEmpty()) {
+            return 0;
+        }
+
+        return message.length() / TOKEN_TO_CHAR_RATIO;
     }
 }
