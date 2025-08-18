@@ -15,6 +15,7 @@
    <plugin id="org.jkiss.dbeaver.ext.db2.ui" version="0.0.0"/>
    <plugin id="org.jkiss.dbeaver.ext.exasol.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.hana.ui" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.iotdb.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.mssql.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.oracle.ui" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.oceanbase.ui" version="0.0.0" />

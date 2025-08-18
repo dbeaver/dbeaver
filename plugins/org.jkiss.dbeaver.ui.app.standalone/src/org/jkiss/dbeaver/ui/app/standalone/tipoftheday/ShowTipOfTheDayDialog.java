@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
+import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
 import java.util.List;
@@ -61,7 +62,7 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
     private ScrolledFormText scrolledFormText;
     private int tipIndex;
 
-    public ShowTipOfTheDayDialog(@NotNull Shell parentShell, List<String> tips) {
+    public ShowTipOfTheDayDialog(@NotNull Shell parentShell, @NotNull List<String> tips) {
         super(parentShell, "Tip of the day");
         this.tips = List.copyOf(tips);
         setModeless(true);
@@ -70,12 +71,12 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
 
     public static boolean isShowOnStartup() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        return store.getBoolean(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP);
+        return CommonUtils.toBoolean(store.getString(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP), true);
     }
 
     public static void setShowOnStartup(boolean showOnStartup) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.setValue(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, showOnStartup);
+        store.setValue(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, String.valueOf(showOnStartup));
     }
 
     @Override

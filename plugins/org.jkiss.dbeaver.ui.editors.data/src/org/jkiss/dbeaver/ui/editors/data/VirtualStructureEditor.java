@@ -26,10 +26,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -43,10 +40,13 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ConComposite;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.virtual.EditVirtualColumnsPage;
 import org.jkiss.dbeaver.ui.controls.resultset.virtual.EditVirtualEntityDialog;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
+import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
@@ -169,11 +169,15 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     private void createEditorUI() {
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout(1, true));
+        ConComposite composite = new ConComposite(parent, SWT.NONE);
+        composite.setGridLayout(1);
 
-        Composite keysComposite = UIUtils.createComposite(composite, 2);
-        ((GridLayout)keysComposite.getLayout()).makeColumnsEqualWidth = true;
+        ConComposite keysComposite = new ConComposite(composite);
+        keysComposite.setGridLayout(2);
+        GridLayout gl = (GridLayout) keysComposite.getLayout();
+        gl.makeColumnsEqualWidth = true;
+        gl.marginHeight = 1;
+        gl.marginWidth = 5;
         keysComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
         createColumnsPage(keysComposite);
         createUniqueKeysPage(keysComposite);
@@ -183,7 +187,13 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 //        Composite attrsComposite = UIUtils.createComposite(composite, 1);
 //        attrsComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createInfoLabel(composite, DataEditorsMessages.virtual_structure_editor_info_label_entity_structure, GridData.FILL_HORIZONTAL, 1);
+        Control infoLabel = UIUtils.createInfoLabel(
+            composite,
+            DataEditorsMessages.virtual_structure_editor_info_label_entity_structure,
+            GridData.FILL_HORIZONTAL,
+            1
+        );
+        CSSUtils.setCSSClass(infoLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
         parent.layout(true, true);
 
         DBSEntity dbObject = getDatabaseObject();
@@ -207,7 +217,8 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     private void createColumnsPage(Composite parent) {
-        Composite group = UIUtils.createComposite(parent, 1);
+        ConComposite group = new ConComposite(parent);
+        group.setGridLayout(1);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         UIUtils.createControlLabel(group, DataEditorsMessages.virtual_structure_editor_columns_group_virtual);
 
@@ -220,7 +231,8 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
         if (uniqueConstraint == null) {
             return;
         }
-        Composite group = UIUtils.createComposite(parent, 1);
+        ConComposite group = new ConComposite(parent);
+        group.setGridLayout(1);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         UIUtils.createControlLabel(group, DataEditorsMessages.virtual_structure_editor_columns_group_unique_keys);
 
@@ -233,6 +245,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
         {
             Composite buttonsPanel = UIUtils.createComposite(group, 3);
+            CSSUtils.setCSSClass(buttonsPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             Button btnAdd = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_add, new SelectionAdapter() {
                     @Override
@@ -327,7 +340,8 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     private void createForeignKeysPage(Composite parent) {
-        Composite group = UIUtils.createComposite(parent, 1);
+        ConComposite group = new ConComposite(parent);
+        group.setGridLayout(1);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         UIUtils.createControlLabel(group, DataEditorsMessages.virtual_structure_editor_control_group_label_foreign_key);
 
@@ -341,6 +355,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
         {
             Composite buttonsPanel = UIUtils.createComposite(group, 2);
+            CSSUtils.setCSSClass(buttonsPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_add, new SelectionAdapter() {
@@ -381,7 +396,8 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
     }
 
     private void createReferencesPage(Composite parent) {
-        Composite group = UIUtils.createComposite(parent, 1);
+        ConComposite group = new ConComposite(parent);
+        group.setGridLayout(1);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         UIUtils.createControlLabel(group, DataEditorsMessages.virtual_structure_editor_control_group_references);
 
@@ -395,6 +411,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
         {
             Composite buttonsPanel = UIUtils.createComposite(group, 2);
+            CSSUtils.setCSSClass(buttonsPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_refresh, new SelectionAdapter() {

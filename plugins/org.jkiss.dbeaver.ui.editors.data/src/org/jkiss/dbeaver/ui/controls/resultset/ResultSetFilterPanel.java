@@ -137,6 +137,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         {
             this.filterComposite = new Composite(this, SWT.NONE);
+            CSSUtils.setExcludeFromStyling(this.filterComposite);
 
             gl = new GridLayout(5, false);
             gl.marginHeight = 2;
@@ -145,7 +146,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             gl.verticalSpacing = 0;
             this.filterComposite.setLayout(gl);
             this.filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            // CSSUtils.setCSSClass(this.filterComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+
             new CompositeBorderPainter(this.filterComposite);
 
             if (!compactMode) {
@@ -158,7 +159,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             this.filtersTextViewer = new TextViewer(filterComposite, SWT.MULTI);
             this.filtersTextViewer.setDocument(new Document());
             this.filtersText = this.filtersTextViewer.getTextWidget();
-            this.filtersText.setForeground(UIStyles.getDefaultTextForeground());
+
             this.filtersText.setFont(BaseThemeSettings.instance.baseFont);
             TextViewerUndoManager undoManager = new TextViewerUndoManager(200);
             undoManager.connect(filtersTextViewer);
@@ -171,6 +172,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             StyledTextUtils.enableDND(this.filtersText);
 
             this.executePanel = new ExecutePanel(filterComposite);
+            //CSSUtils.setExcludeFromStyling(this.executePanel);
             //this.refreshPanel = new RefreshPanel(filterComposite);
             this.historyPanel = new HistoryPanel(filterComposite);
 
@@ -287,13 +289,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             historyForwardButton.setEnabled(false);
             historyForwardButton.addSelectionListener(new HistoryMenuListener(historyForwardButton, false));
         }
-
-        CSSUtils.setMimicControl(this, filtersText);
-        CSSUtils.setMimicControl(this.filterComposite, filtersText);
-        if (filterExpandPanel != null) CSSUtils.setMimicControl(filterExpandPanel, filtersText);
-        if (executePanel != null) CSSUtils.setMimicControl(executePanel, filtersText);
-        if (historyPanel != null) CSSUtils.setMimicControl(historyPanel, filtersText);
-        if (filterToolbar != null) CSSUtils.setMimicControl(filterToolbar, filtersText);
 
         this.addControlListener(new ControlListener() {
             @Override
