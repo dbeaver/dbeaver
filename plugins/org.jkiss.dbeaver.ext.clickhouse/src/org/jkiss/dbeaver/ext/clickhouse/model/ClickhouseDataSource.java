@@ -309,6 +309,6 @@ public class ClickhouseDataSource extends GenericDataSource {
 
     @Override
     protected boolean isConnectionReadOnlyBroken() {
-        return true;
+        return isDriverVersionAtLeast(0, 8);
     }
 }
