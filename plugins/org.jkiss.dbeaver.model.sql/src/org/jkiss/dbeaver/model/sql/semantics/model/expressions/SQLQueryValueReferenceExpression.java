@@ -226,6 +226,7 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
             if (forcedClass != null) {
                 this.name.parts.getFirst().getSymbol().setSymbolClass(forcedClass);
                 type = forcedClass == SQLQuerySymbolClass.STRING ? SQLQueryExprType.STRING : SQLQueryExprType.UNKNOWN;
+                restParts = this.name.parts.subList(1, restParts.size());
             } else if (dbObject != null) {
                 // TODO consider bringing DB objects like sequences to the autocompletion proposals
                 SQLQuerySymbolClass objClass;
