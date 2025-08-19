@@ -10,6 +10,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.cubrid.ui.internal.CubridMessages;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -23,7 +24,7 @@ public class CubridOIDSearch {
         this.session = session;
     }
 
-    public void searchOID(String oidString, Tree resultTree) {
+    public void searchOID(@Nullable String oidString, @Nullable Tree resultTree) {
         try {
             Connection conn = session.getOriginal();
             ClassLoader loader = conn.getClass().getClassLoader();
