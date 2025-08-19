@@ -25,11 +25,10 @@ import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.registry.*;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.concurrent.Flow;
@@ -39,14 +38,36 @@ public class AIAssistantImpl implements AIAssistant {
 
     private static final int MANY_REQUESTS_RETRIES = 3;
     private static final int MANY_REQUESTS_TIMEOUT = 500;
+    public static final String LOG_INDENT = "\t";
 
-    protected final AISettingsRegistry settingsRegistry = AISettingsRegistry.getInstance();
-    protected final AIEngineRegistry engineRegistry = AIEngineRegistry.getInstance();
-    protected final AISqlFormatterRegistry formatterRegistry = AISqlFormatterRegistry.getInstance();
-    protected final AISchemaGeneratorRegistry generatorRegistry = AISchemaGeneratorRegistry.getInstance();
-    protected final AIDatabaseSnapshotService metadataPromptService = new AIDatabaseSnapshotService(
-        generatorRegistry
-    );
+    protected final AISettingsRegistry settingsRegistry;
+    protected final AIEngineRegistry engineRegistry;
+    protected final AISqlFormatterRegistry formatterRegistry;
+    protected final AIEngineRequestFactory requestFactory;
+
+    public AIAssistantImpl() {
+        this(
+            AISettingsRegistry.getInstance(),
+            AIEngineRegistry.getInstance(),
+            AISqlFormatterRegistry.getInstance(),
+            new AIEngineRequestFactory(
+                new AIDatabaseSnapshotService(AISchemaGeneratorRegistry.getInstance()),
+                new DummyTokenCounter()
+            )
+        );
+    }
+
+    public AIAssistantImpl(
+        AISettingsRegistry settingsRegistry,
+        AIEngineRegistry engineRegistry,
+        AISqlFormatterRegistry formatterRegistry,
+        AIEngineRequestFactory requestFactory
+    ) {
+        this.settingsRegistry = settingsRegistry;
+        this.engineRegistry = engineRegistry;
+        this.formatterRegistry = formatterRegistry;
+        this.requestFactory = requestFactory;
+    }
 
     @Override
     public void initialize(@NotNull DBPWorkspace workspace) {
@@ -73,7 +94,8 @@ public class AIAssistantImpl implements AIAssistant {
 
         AIMessage userMessage = new AIMessage(AIMessageType.USER, request.text());
 
-        String prompt = createPromptBuilder()
+        AIPromptBuilder promptBuilder = createPromptBuilder();
+        promptBuilder
             .addContexts(AIPromptBuilder.describeContext(request.context().getDataSource()))
             .addInstructions(AIPromptBuilder.createInstructionList(request.context().getDataSource()))
             .addGoals(
@@ -82,16 +104,17 @@ public class AIAssistantImpl implements AIAssistant {
             .addOutputFormats(
                 "Place any explanation or comments before the SQL code block.",
                 "Provide the SQL query in a fenced Markdown code block."
-            )
-            .addDatabaseSnapshot(metadataPromptService.createDbSnapshot(monitor, request.context(), buildOptions(monitor, engine)))
-            .build();
+            );
+        addSqlCompletionInstructions(promptBuilder);
+        String prompt = promptBuilder.build();
 
-        List<AIMessage> chatMessages = List.of(
-            AIMessage.systemMessage(prompt),
-            userMessage
+        AIEngineRequest completionRequest = requestFactory.build(
+            monitor,
+            prompt,
+            request.context(),
+            List.of(userMessage),
+            engine.getContextWindowSize(monitor)
         );
-
-        AIEngineRequest completionRequest = AIEngineRequest.of(monitor, engine, chatMessages);
 
         AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
 
@@ -126,7 +149,8 @@ public class AIAssistantImpl implements AIAssistant {
             request.engine() :
             getActiveEngine();
 
-        String prompt = createPromptBuilder()
+        AIPromptBuilder promptBuilder = createPromptBuilder();
+        promptBuilder
             .addContexts(AIPromptBuilder.describeContext(request.context().getDataSource()))
             .addInstructions(AIPromptBuilder.createInstructionList(request.context().getDataSource()))
             .addGoals(
@@ -135,16 +159,22 @@ public class AIAssistantImpl implements AIAssistant {
             .addOutputFormats(
                 "Place any explanation or comments before the SQL code block.",
                 "Provide the SQL query in a fenced Markdown code block."
-            )
-            .addDatabaseSnapshot(metadataPromptService.createDbSnapshot(monitor, request.context(), buildOptions(monitor, engine)))
-            .build();
+            );
+        addSqlCompletionInstructions(promptBuilder);
+        String prompt = promptBuilder.build();
+
+        AIEngineRequest completionRequest = requestFactory.build(
+            monitor,
+            prompt,
+            request.context(),
+            List.of(AIMessage.userMessage(request.text())),
+            engine.getContextWindowSize(monitor)
+        );
 
         List<AIMessage> chatMessages = List.of(
             AIMessage.systemMessage(prompt),
             AIMessage.userMessage(request.text())
         );
-
-        AIEngineRequest completionRequest = AIEngineRequest.of(monitor, engine, chatMessages);
 
         AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
 
@@ -237,13 +267,13 @@ public class AIAssistantImpl implements AIAssistant {
         try {
             boolean loggingEnabled = isLoggingEnabled();
             if (loggingEnabled) {
-                log.debug("Requesting completion [request=" + request + "]");
+                log.debug("AI request:\n" + CommonUtils.addTextIndent(request.toString(), LOG_INDENT));
             }
 
             AIEngineResponse completionResponse = callWithRetry(() -> engine.requestCompletion(monitor, request));
 
             if (loggingEnabled) {
-                log.debug("Received completion [response=" + completionResponse + "]");
+                log.debug("AI response:\n" + CommonUtils.addTextIndent(completionResponse.toString(), LOG_INDENT));
             }
 
             return completionResponse;
@@ -267,7 +297,7 @@ public class AIAssistantImpl implements AIAssistant {
 
             return subscriber -> {
                 if (loggingEnabled) {
-                    log.debug("Requesting completion stream [request=" + request + "]");
+                    log.debug("AI stream request:\n" + CommonUtils.addTextIndent(request.toString(), LOG_INDENT));
                     publisher.subscribe(new LogSubscriber(log, subscriber));
                 } else {
                     publisher.subscribe(subscriber);
@@ -288,17 +318,11 @@ public class AIAssistantImpl implements AIAssistant {
         return AIPromptBuilder.create();
     }
 
-    protected AIDdlGenerationOptions buildOptions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull AIEngine engine
-    ) throws DBException {
-        DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+    /**
+     * Adds any extra instruction for SQL completion
+     */
+    protected void addSqlCompletionInstructions(AIPromptBuilder promptBuilder) {
 
-        return AIDdlGenerationOptions.builder()
-            .withMaxRequestTokens(engine.getContextWindowSize(monitor))
-            .withSendObjectComment(preferenceStore.getBoolean(AIConstants.AI_SEND_DESCRIPTION))
-            .withSendColumnTypes(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_SEND_TYPE_INFO))
-            .build();
     }
 
     private boolean isLoggingEnabled() throws DBException {

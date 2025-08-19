@@ -34,6 +34,8 @@ public final class MySQLUIMessages extends NLS {
     public static String dialog_connection_server_timezone;
     public static String dialog_connection_auto_detect;
     public static String dialog_connection_local_client;
+    public static String dialog_connection_show_all_databases;
+    public static String dialog_connection_show_all_databases_tip;
     public static String edit_catalog_manager_dialog_schema_name;
     public static String edit_command_change_user_action_create_new_user;
     public static String edit_command_change_user_action_update_user_record;

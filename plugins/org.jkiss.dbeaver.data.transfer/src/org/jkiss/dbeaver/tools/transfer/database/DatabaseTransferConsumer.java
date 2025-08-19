@@ -550,7 +550,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             throw new DBCException("Error opening new connection", e);
         }
         targetSession = targetContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Data load");
-        targetSession.enableLogging(false);
+        targetSession.enableLogging(settings.isEnableQmLogging());
 
         if (!isPreview) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
