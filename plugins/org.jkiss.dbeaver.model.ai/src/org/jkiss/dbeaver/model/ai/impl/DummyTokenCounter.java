@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.css;
+package org.jkiss.dbeaver.model.ai.impl;
 
-public class DBStyles {
+public class DummyTokenCounter implements TokenCounter {
+    public static final int TOKEN_TO_CHAR_RATIO = 2;
 
-    public static final String COLORED_BY_CONNECTION_TYPE = "coloredByConnectionType";
-    public static final String ATTR_MIMIC_CONTROL = "mimicControl";
+    @Override
+    public int count(String message) {
+        if (message.isEmpty()) {
+            return 0;
+        }
 
-    public static final String DATABASE_EDITOR_COMPOSITE_DATASOURCE = "databaseEditorCompositeBackground";
-
-    private DBStyles() {
+        return message.length() / TOKEN_TO_CHAR_RATIO;
     }
-
-
 }

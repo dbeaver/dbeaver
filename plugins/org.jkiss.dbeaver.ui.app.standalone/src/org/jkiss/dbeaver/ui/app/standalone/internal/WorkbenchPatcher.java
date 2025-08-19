@@ -16,10 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.internal;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtension;
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.*;
+import org.eclipse.e4.ui.model.application.MApplicationElement;
+import org.eclipse.e4.ui.model.application.ui.advanced.MPlaceholder;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.osgi.service.datalocation.Location;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityEditor;
 import org.eclipse.ui.internal.menus.MenuHelper;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
@@ -39,12 +43,12 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -54,6 +58,46 @@ public final class WorkbenchPatcher {
     private static final Log log = Log.getLog(WorkbenchPatcher.class);
 
     private WorkbenchPatcher() {
+    }
+
+    /**
+     * Checks whether the workbench model is missing any view
+     * references available via the extension registry.
+     * <p>
+     * A missing view reference may cause the view to appear in a wrong
+     * location in the workbench, as the workbench doesn't know where
+     * it should be placed.
+     * <p>
+     * If this method returns {@code true}, it's advised to call {@link IWorkbenchPage#resetPerspective()}.
+     *
+     * @param workbench the workbench
+     * @return {@code true} if the perspective must be reset, {@code false} otherwise
+     */
+    public static boolean needsPerspectiveReset(@NotNull Workbench workbench) {
+        EModelService modelService = workbench.getService(EModelService.class);
+        if (modelService == null) {
+            return false;
+        }
+
+        // Collect all view placeholders the model knows about
+        Set<String> placeholders = modelService.findElements(workbench.getApplication(), null, MPlaceholder.class).stream()
+            .map(MApplicationElement::getElementId)
+            .collect(Collectors.toSet());
+
+        // Collect a set of registered views via perspective extensions contributed by DBeaver
+        Set<String> views = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_PERSPECTIVE_EXTENSIONS)
+            .filter(WorkbenchPatcher::isContributedByDBeaver)
+            // extension.forEach(perspectiveExtension)
+            .map(IExtension::getConfigurationElements).flatMap(Stream::of)
+            .filter(e -> e.getName().equals(IWorkbenchRegistryConstants.TAG_PERSPECTIVE_EXTENSION))
+            // perspectiveExtension.forEach(view)
+            .map(IConfigurationElement::getChildren).flatMap(Stream::of)
+            .filter(e -> e.getName().equals(IWorkbenchRegistryConstants.TAG_VIEW))
+            // view.id
+            .map(x -> x.getAttribute(IWorkbenchRegistryConstants.ATT_ID))
+            .collect(Collectors.toSet());
+
+        return !placeholders.containsAll(views);
     }
 
     /**
@@ -79,14 +123,8 @@ public final class WorkbenchPatcher {
     }
 
     private static void patchWorkbenchXmi(@NotNull Path workbenchXmi) throws Exception {
-        var documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-
-        var documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        var document = documentBuilder.parse(workbenchXmi.toFile());
-
-        var parts = collectContributedParts();
-        var transformed = patchPartIconsRecursively(document, parts);
+        var document = XMLUtils.parseDocument(workbenchXmi);
+        var transformed = patchPartIconsRecursively(document, collectContributedParts());
 
         if (transformed) {
             var transformerFactory = TransformerFactory.newInstance();
@@ -166,15 +204,13 @@ public final class WorkbenchPatcher {
 
     @NotNull
     private static Map<String, PartDescriptor> collectContributedParts() {
-        var registry = Platform.getExtensionRegistry();
-
-        var views = Stream.of(registry.getExtensionPoint("org.eclipse.ui.views").getExtensions())
+        var views = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_VIEWS)
             .map(IExtension::getConfigurationElements).flatMap(Stream::of)
             .filter(e -> e.getName().equals("view") && e.getAttribute("icon") != null)
             .map(PartDescriptor::of)
             .toList();
 
-        var editors = Stream.of(registry.getExtensionPoint("org.eclipse.ui.editors").getExtensions())
+        var editors = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_EDITOR)
             .map(IExtension::getConfigurationElements).flatMap(Stream::of)
             .filter(e -> e.getName().equals("editor") && e.getAttribute("icon") != null)
             .map(PartDescriptor::of)
@@ -197,6 +233,18 @@ public final class WorkbenchPatcher {
             log.error("Unable to resolve workbench save location: " + instance.getURL(), e);
             return null;
         }
+    }
+
+    @NotNull
+    private static Stream<IExtension> getExtensions(@NotNull String namespace, @NotNull String extensionPointName) {
+        IExtensionRegistry registry = Platform.getExtensionRegistry();
+        IExtensionPoint point = registry.getExtensionPoint(namespace, extensionPointName);
+        return Arrays.stream(point.getExtensions());
+    }
+
+    private static boolean isContributedByDBeaver(@NotNull IExtension extension) {
+        String contributor = extension.getContributor().getName();
+        return contributor.startsWith("org.jkiss.dbeaver") || contributor.startsWith("com.dbeaver");
     }
 
     private record PartDescriptor(@NotNull IConfigurationElement element, @NotNull String id, @NotNull String icon) {

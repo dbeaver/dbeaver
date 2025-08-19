@@ -119,6 +119,9 @@ public class ModelSelectorField {
         }
 
         UIUtils.syncExec(() -> {
+            if (combo.isDisposed()) {
+                return;
+            }
             String selectedItem = combo.getText();
             models.add(selectedItem);
 

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.registry;
 
 import com.google.gson.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
@@ -37,6 +38,7 @@ import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AISettingsRegistry {
     private static final Log log = Log.getLog(AISettingsRegistry.class);
@@ -205,7 +207,7 @@ public class AISettingsRegistry {
             settings = prepareDefaultSettings();
         }
 
-        if (settings.activeEngine() == null) {
+        if (settings.activeEngine() == null || !settings.hasConfiguration(settings.activeEngine())) {
             settings.setActiveEngine(OpenAIConstants.OPENAI_ENGINE);
         }
 
@@ -304,19 +306,34 @@ public class AISettingsRegistry {
             Map<String, String> replacements = AIEngineSettingsRegistry.getInstance().getReplacements();
             for (Map.Entry<String, JsonElement> entry : ecRoot.entrySet()) {
                 String engineId = entry.getKey();
-                JsonElement engineConfigJson = entry.getValue();
                 String engineIdReplaced = replacements.get(engineId);
-                AIEngineSettingsSerDe<?> serDe = engineSerDe.stream()
-                    .filter(s -> s.getId().equals(engineId) || s.getId().equals(engineIdReplaced))
-                    .findFirst()
+                String fallbackEngineId = Optional.ofNullable(
+                        entry.getValue()
+                            .getAsJsonObject()
+                            .get(AIEngineSettings.FALLBACK_ENGINE_ID)
+                    )
+                    .map(JsonElement::getAsString)
                     .orElse(null);
-                if (serDe == null) {
-                    log.warn("No AI engine settings serializer found for ID: " + engineId);
-                    continue;
-                }
-                AIEngineSettings<?> engineSettings = serDe.deserialize(engineConfigJson.getAsJsonObject(), readPropsGson);
-                engineConfigurationMap.put(serDe.getId(), engineSettings);
+
+                Stream.of(engineId, engineIdReplaced, fallbackEngineId)
+                    .filter(Objects::nonNull)
+                    .map(id ->
+                        deserializeEngineSettings(id, entry.getValue())
+                            .map(settings -> Map.entry(id, settings))
+                            .orElse(null)
+                    )
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .ifPresent(e -> engineConfigurationMap.put(e.getKey(), e.getValue()));
             }
+
+            // Set default engine configurations for engines that are not specified in the config
+            engineSerDe.forEach(serDe -> {
+                engineConfigurationMap.computeIfAbsent(
+                    serDe.getId(),
+                    id -> serDe.deserialize(null, readPropsGson)
+                );
+            });
 
             aiSettings.setEngineConfigurations(engineConfigurationMap);
 
@@ -340,6 +357,22 @@ public class AISettingsRegistry {
             json.add(ENGINE_CONFIGURATIONS_KEY, engineConfigurations);
 
             return json;
+        }
+
+        private Optional<AIEngineSettings<?>> deserializeEngineSettings(
+            @Nullable String engineId,
+            @NotNull JsonElement engineConfigJson
+        ) {
+            if (engineId == null) {
+                return Optional.empty();
+            }
+
+            return engineSerDe.stream()
+                .filter(s -> s.getId().equals(engineId))
+                .findFirst()
+                .map(serDe ->
+                    serDe.deserialize(engineConfigJson.getAsJsonObject(), readPropsGson)
+                );
         }
     }
 
