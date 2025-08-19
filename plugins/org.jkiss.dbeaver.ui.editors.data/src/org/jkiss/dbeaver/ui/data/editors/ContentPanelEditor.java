@@ -57,7 +57,6 @@ import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.*;
 
@@ -70,7 +69,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
 
     private static final String PROP_VALUE_MANAGER = "valueManager";
 
-    private static Map<String, String> valueToManagerMap = new HashMap<>();
+    private static final Map<String, String> valueToManagerMap = new HashMap<>();
 
     private Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers;
     private volatile StreamValueManagerDescriptor curStreamManager;
@@ -291,15 +290,6 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
     }
 
-    private void runSreamManagerDetector(final DBDContent content, Composite editPlaceholder) {
-        StreamManagerDetectService loadingService = new StreamManagerDetectService(content);
-
-        LoadingJob.createService(
-            loadingService,
-            new StreamManagerDetectVisualizer(loadingService, editPlaceholder))
-            .schedule();
-    }
-
     @Nullable
     public StreamValueManagerDescriptor getCurrentStreamManager() {
         return curStreamManager;
@@ -339,8 +329,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         if (valueType instanceof DBDAttributeBinding) {
             valueType = ((DBDAttributeBinding) valueType).getAttribute();
         }
-        if (valueType instanceof DBSObject) {
-            DBSObject object = (DBSObject) valueType;
+        if (valueType instanceof DBSObject object) {
             valueId = DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
             if (object.getParentObject() != null) {
                 valueId = DBUtils.getObjectFullName(object.getParentObject(), DBPEvaluationContext.DDL) + ":" + valueId;
@@ -414,8 +403,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         @Override
         public void runWithEvent(Event event)
         {
-            if (event.widget instanceof ToolItem) {
-                ToolItem toolItem = (ToolItem) event.widget;
+            if (event.widget instanceof ToolItem toolItem) {
                 Menu menu = createMenu(toolItem);
                 Rectangle bounds = toolItem.getBounds();
                 Point point = toolItem.getParent().toDisplay(bounds.x, bounds.y + bounds.height);
@@ -470,8 +458,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             for (MenuItem item : menu.getItems()) {
                 if (item.getSelection()) {
                     Object itemData = item.getData();
-                    if (itemData instanceof StreamValueManagerDescriptor) {
-                        StreamValueManagerDescriptor newManager = (StreamValueManagerDescriptor) itemData;
+                    if (itemData instanceof StreamValueManagerDescriptor newManager) {
                         if (newManager != curStreamManager) {
                             setCurrentStreamManager(newManager);
                         }
@@ -522,7 +509,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         @Override
-        public DBDContent evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        public DBDContent evaluate(DBRProgressMonitor monitor) {
             monitor.beginTask("Detect appropriate editor", 1);
             try {
                 monitor.subTask("Load LOB value");
@@ -537,30 +524,6 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
 
     }
 
-
-    private class StreamManagerDetectVisualizer extends ContentLoadVisualizer {
-        public StreamManagerDetectVisualizer(StreamManagerDetectService loadingService, Composite parent) {
-            super(loadingService, parent);
-        }
-
-        @Override
-        public void completeLoading(DBDContent result) {
-            super.completeLoading(result);
-            // Clear placeholder
-            UIUtils.disposeChildControls(editPlaceholder);
-            // Create and layout new editor
-            Control editorControl = createStreamManagerControl(this.editPlaceholder);
-            this.editPlaceholder.layout(true);
-            setControl(editorControl);
-            try {
-                primeEditorValue(result, false);
-            } catch (Exception e) {
-                valueController.showMessage(CommonUtils.notEmpty(e.getMessage()), DBPMessageType.ERROR);
-            }
-        }
-    }
-
-
     private class StreamValueLoadService extends ContentLoaderService {
 
         public StreamValueLoadService(DBDContent content) {
@@ -568,7 +531,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         @Override
-        public DBDContent evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        public DBDContent evaluate(DBRProgressMonitor monitor) {
             monitor.beginTask("Detect appropriate editor", 1);
             try {
                 monitor.subTask("Prime LOB value");
