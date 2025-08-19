@@ -82,6 +82,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -118,8 +119,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -284,6 +285,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         editModeComposite = new EditModeComposite(contentContainer);
         contentContainer = editModeComposite.getPlaceholder();
+        CSSUtils.setExcludeFromStyling(contentContainer);
 
         super.createPartControl(contentContainer);
 
