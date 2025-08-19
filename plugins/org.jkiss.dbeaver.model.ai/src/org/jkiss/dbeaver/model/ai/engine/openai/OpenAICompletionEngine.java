@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionResult;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatMessage;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
-import org.jkiss.dbeaver.model.ai.utils.IterablePublisher;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -95,16 +94,6 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        if (!properties.isStreamingEnabled()) {
-            return new IterablePublisher<>(
-                List.of(
-                    new AIEngineResponseChunk(requestCompletion(monitor, request).variants())
-                ),
-                iterablePublisher
-            );
-        }
-
-
         ChatCompletionRequest ccr = new ChatCompletionRequest();
         ccr.setMessages(fromMessages(request.messages()));
         ccr.setTemperature(temperature());

@@ -46,9 +46,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @SerializedName("gpt.log.query")
     private Boolean loggingEnabled;
 
-    @SerializedName("gpt.streaming")
-    private boolean streaming = true;
-
     @Nullable
     @Override
     public String getToken() {
@@ -87,11 +84,6 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         return DBWorkbench.getPlatform()
             .getPreferenceStore()
             .getBoolean(AIConstants.AI_LOG_QUERY);
-    }
-
-    @Override
-    public boolean isStreamingEnabled() {
-        return streaming;
     }
 
     @Override
@@ -135,13 +127,5 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     public void setLoggingEnabled(boolean loggingEnabled) {
         this.loggingEnabled = loggingEnabled;
-    }
-
-    public Boolean getStreaming() {
-        return streaming;
-    }
-
-    public void setStreaming(Boolean streaming) {
-        this.streaming = streaming;
     }
 }
