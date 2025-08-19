@@ -47,7 +47,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     private Boolean loggingEnabled;
 
     @SerializedName("gpt.streaming")
-    private Boolean streaming;
+    private boolean streaming = true;
 
     @Nullable
     @Override
@@ -91,11 +91,7 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Override
     public boolean isStreamingEnabled() {
-        if (streaming != null) {
-            return streaming;
-        }
-
-        return true;
+        return streaming;
     }
 
     @Override

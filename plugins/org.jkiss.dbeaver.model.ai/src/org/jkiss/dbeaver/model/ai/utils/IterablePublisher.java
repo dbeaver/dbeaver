@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.model.ai.utils;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,14 +36,13 @@ public final class IterablePublisher<T> implements Flow.Publisher<T> {
     /**
      * Publish all items from the given iterable using the provided executor.
      */
-    public IterablePublisher(Iterable<T> source, Executor executor) {
-        this.source = Objects.requireNonNull(source, "source");
-        this.executor = Objects.requireNonNull(executor, "executor");
+    public IterablePublisher(@NotNull Iterable<T> source, @NotNull Executor executor) {
+        this.source = source;
+        this.executor = executor;
     }
 
     @Override
-    public void subscribe(Flow.Subscriber<? super T> subscriber) {
-        Objects.requireNonNull(subscriber, "subscriber");
+    public void subscribe(@NotNull Flow.Subscriber<? super T> subscriber) {
         // One subscriber per publisher instance is fine; create a fresh Subscription per subscribe().
         IterableSubscription<T> s = new IterableSubscription<>(subscriber, source.iterator(), executor);
         subscriber.onSubscribe(s);
@@ -60,9 +59,9 @@ public final class IterablePublisher<T> implements Flow.Publisher<T> {
         private final AtomicInteger wip = new AtomicInteger(0); // drain reentry guard
 
         IterableSubscription(
-            Flow.Subscriber<? super T> downstream,
-            Iterator<T> it,
-            Executor executor
+            @NotNull Flow.Subscriber<? super T> downstream,
+            @NotNull Iterator<T> it,
+            @NotNull Executor executor
         ) {
             this.downstream = downstream;
             this.it = it;
