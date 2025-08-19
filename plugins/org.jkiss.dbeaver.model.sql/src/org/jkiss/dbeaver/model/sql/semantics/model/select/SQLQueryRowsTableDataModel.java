@@ -121,7 +121,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
                 statistics,
                 this.name,
                 rowsetRefOrigin,
-                Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET,
                 SQLQuerySymbolClass.ERROR
             );
             statistics.appendError(this.getSyntaxNode(), "Invalid table reference");
@@ -157,7 +157,9 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
         this.table = obj instanceof DBSEntity e && (obj instanceof DBSTable || obj instanceof DBSView) ? e : null;
 
         if (this.table != null) {
-            SQLQuerySemanticUtils.setNamePartsDefinition(this.name, refTarget, SQLQuerySymbolClass.TABLE, rowsetRefOrigin);
+            SQLQuerySemanticUtils.setNamePartsDefinition(
+                context, this.name, refTarget, SQLQuerySymbolClass.TABLE, rowsetRefOrigin, SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET
+            );
             context = context.reset().appendSource(this, name, this.table);
         } else {
             SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
@@ -168,11 +170,11 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
                 statistics,
                 this.name,
                 rowsetRefOrigin,
-                Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET,
                 tableSymbolClass
             );
             context = context.resetAsUnresolved();
-            if (candidates.isEmpty() || (candidates.size() == 1 && table != null)) {
+            if (candidates.isEmpty() || candidates.size() == 1) {
                 statistics.appendError(this.name.syntaxNode, "Table " + this.name.getNameString() + " not found");
             }
         }
