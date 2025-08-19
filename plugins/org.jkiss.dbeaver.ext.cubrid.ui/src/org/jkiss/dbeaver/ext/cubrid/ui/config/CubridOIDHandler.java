@@ -40,8 +40,7 @@ public class CubridOIDHandler extends AbstractHandler {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         final DBNNode node = NavigatorUtils.getSelectedNode(selection);
-        if (node instanceof DBNDataSource) {
-            DBNDataSource dataSourceNode = (DBNDataSource) node;
+        if (node instanceof DBNDataSource dataSourceNode) {
             DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSourceNode.getDataSourceContainer();
             DBPDataSource dataSource = descriptor.getDataSource();
             CubridDataSource cubrid = (CubridDataSource) dataSource;
