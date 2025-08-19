@@ -176,6 +176,10 @@
                 <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="%tree.dataTypes.node.tip">
                     <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
                 </folder>
+                <folder type="org.jkiss.dbeaver.ext.cubrid.model.CubridShard" label="Shard Hint" icon="#folder" description="Shard DB"
+                        visibleIf="object.isShard() &amp;&amp; !object.isEOLVersion()">
+                    <items label="Shard Hint" path="cubridShard" property="cubridShards" icon="#button"/>
+                </folder>
             </tree>
 
             <drivers managable="true">
@@ -229,6 +233,7 @@
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridTriggerManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridTrigger"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridServerManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridServer"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridSequenceManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridSequence"/>
+        <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridShardManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridShard"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridSynonymManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridSynonym"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridViewManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridView"/>
         <manager class="org.jkiss.dbeaver.ext.cubrid.edit.CubridUserManager" objectType="org.jkiss.dbeaver.ext.cubrid.model.CubridPrivilage"/>

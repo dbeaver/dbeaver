@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,19 +37,19 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
     static final String ENTITY_PREFIX = ":";
     static final String CONFIG_PREFIX = "@";
 
+    @Nullable
     private final DBVContainer parent;
     private String name;
-    private String type = "container";
     private String description;
     private final Map<String, DBVContainer> containers = new LinkedHashMap<>();
     private final Map<String, DBVEntity> entities = new LinkedHashMap<>();
 
-    public DBVContainer(DBVContainer parent, String name) {
+    public DBVContainer(@Nullable DBVContainer parent, @NotNull String name) {
         this.parent = parent;
         this.name = name;
     }
 
-    DBVContainer(DBVContainer parent, String name, Map<String, Object> map) {
+    DBVContainer(@Nullable DBVContainer parent, String name, Map<String, Object> map) {
         this.parent = parent;
         this.name = name;
         for (Map.Entry<String, Object> element : map.entrySet()) {
@@ -62,8 +62,8 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
                 if (configMap.equals("properties")) {
                     loadPropertiesFrom(map, id);
                 }
-            } else if (element.getValue() instanceof Map) {
-                DBVContainer child = new DBVContainer(this, id, (Map<String, Object>) element.getValue());
+            } else if (element.getValue() instanceof Map<?, ?> valMap) {
+                DBVContainer child = new DBVContainer(this, id, (Map<String, Object>) valMap);
                 containers.put(child.getName(), child);
             }
         }
@@ -83,6 +83,9 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
     @Nullable
     public DBSObjectContainer getRealContainer(DBRProgressMonitor monitor) throws DBException {
+        if (parent == null) {
+            return null;
+        }
         DBSObjectContainer realParent = parent.getRealContainer(monitor);
         if (realParent == null) {
             return null;
@@ -95,6 +98,8 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         return null;
     }
 
+
+    @Nullable
     @Override
     public DBVContainer getParentObject() {
         return parent;
@@ -103,6 +108,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
     @Nullable
     @Override
     public DBPDataSource getDataSource() {
+        assert parent != null;
         return parent.getDataSource();
     }
 
@@ -113,7 +119,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
     }
 
     public String getType() {
-        return type;
+        return "container";
     }
 
     @Nullable
@@ -124,11 +130,6 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return true;
     }
 
     @NotNull

@@ -276,7 +276,11 @@ public abstract class AbstractSessionController<T extends AbstractSession> imple
             if (jumpPortForward != null) {
                 origin.removePortForward(jumpPortForward);
             }
-            origin.disconnect(monitor, configuration, timeout);
+            try {
+                origin.disconnect(monitor, configuration, timeout);
+            } catch (Exception e) {
+                log.debug("Error during SSH session close", e);
+            }
 
             registered = false;
             jumpDestination = null;

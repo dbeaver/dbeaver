@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import java.sql.Types;
 import java.util.Collections;
 import java.util.List;
 
@@ -97,7 +98,15 @@ public class OracleAlterTableColumnTest extends DBeaverUnitTest {
     public void generateAlterTableAddColumnStatement() throws Exception {
         TestCommandContext commandContext = new TestCommandContext(executionContext, false);
 
-        objectMaker.createNewObject(monitor, commandContext, oracleTableBase, null, Collections.emptyMap());
+        OracleTableColumn newColumn = objectMaker.createNewObject(
+            monitor,
+            commandContext,
+            oracleTableBase,
+            null,
+            Collections.emptyMap()
+        );
+        newColumn.setTypeName("INTEGER");
+        newColumn.setValueType(Types.INTEGER);
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, commandContext, executionContext, Collections.emptyMap(), null);
         String script = SQLUtils.generateScript(testDataSource, actions.toArray(new DBEPersistAction[0]), false);
 

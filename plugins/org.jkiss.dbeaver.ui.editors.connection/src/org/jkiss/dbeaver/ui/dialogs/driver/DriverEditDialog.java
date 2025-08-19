@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.JFaceColors;
@@ -55,6 +56,7 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -880,6 +882,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
         }
 
         if (DBWorkbench.isDistributed()) {
+            if (!UIUtils.confirmAction(
+                getShell(),
+                "Driver libraries upload",
+                "DBeaver will upload driver files back to the server. Do you confirm?")) {
+                return;
+            }
             try {
                 syncDriverLibraries();
             } catch (DBException e) {
@@ -892,7 +900,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
         if (provider.getDriver(driver.getId()) == null) {
             provider.addDriver(driver);
         }
-        provider.getRegistry().saveDrivers();
+        try {
+            provider.getRegistry().saveDrivers();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError("Drivers save error", "Error saving drivers", e);
+            return;
+        }
 
         super.okPressed();
     }
@@ -940,7 +953,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             }
         }
         for (DBPDriverLibrary newLib : libraries) {
-            if (newLib instanceof DriverLibraryMavenArtifact) {
+            if (newLib instanceof DriverLibraryMavenArtifact || newLib instanceof DriverLibraryBundle) {
                 continue;
             }
             if (!(newLib instanceof DriverLibraryLocal)) {
@@ -953,15 +966,35 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 log.error("Driver library doesn't exist: " + localFilePath + ".");
                 continue;
             }
+
+            if (isAppInstallationFile(localFilePath)) {
+                // Skip files which are part of app installation (e.g. licenses)
+                continue;
+            }
             String shortFileName = localFilePath.getFileName().toString();
 
             driver.getDefaultDriverLoader().removeLibraryFiles(newLib);
             if (Files.isDirectory(localFilePath)) {
                 synAddDriverLibDirectory(newLib, localFilePath, shortFileName);
-            } else {
+            } else if (IOUtils.isLocalFile(localFilePath.toString())) {
                 syncAddDriverLibFile(newLib, localFilePath, shortFileName);
+            } else {
+                log.debug("Skip remote file '" + localFilePath + "'");
             }
         }
+    }
+
+    private boolean isAppInstallationFile(Path localFilePath) {
+        try {
+            Path appInstallPath = RuntimeUtils.getLocalPathFromURL(Platform.getInstallLocation().getURL());
+            if (localFilePath.startsWith(appInstallPath)) {
+                // Skip files which are part of app installation (e.g. licenses)
+                return true;
+            }
+        } catch (IOException e) {
+            log.error("Error detecting app path", e);
+        }
+        return false;
     }
 
     private void syncRemoveDriverLibFile(DBPDriverLibrary library) throws DBException {
@@ -998,15 +1031,14 @@ public class DriverEditDialog extends HelpEnabledDialog {
         DBFileController fileController = DBWorkbench.getPlatform().getFileController();
 
         String driverFilePath;
-        boolean isNewLib = Path.of(library.getPath()).isAbsolute();
-        if (isNewLib) {
-            driverFilePath = driver.getId() + "/" + shortFileName;
+        Path storageFolder = DriverDescriptor.getExternalDriversStorageFolder();
+        if (localFilePath.startsWith(storageFolder)) {
+            driverFilePath = storageFolder.relativize(localFilePath).toString();
         } else {
-            driverFilePath = DriverDescriptor.getExternalDriversStorageFolder().relativize(localFilePath).toString();
-        }
-
-        if (library instanceof DriverLibraryLocal libraryLocal && isNewLib) {
-            libraryLocal.setPath(driverFilePath);
+            driverFilePath = driver.getId() + "/" + shortFileName;
+            if (library instanceof DriverLibraryLocal libraryLocal) {
+                libraryLocal.setPath(driverFilePath);
+            }
         }
 
         try {

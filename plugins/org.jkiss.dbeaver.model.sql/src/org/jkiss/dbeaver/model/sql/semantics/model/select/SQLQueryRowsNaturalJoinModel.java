@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpr
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Describes natural join clause
@@ -48,6 +49,9 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel
     private final SQLQueryLexicalScope conditionScope;
 
     private final boolean isLateral;
+
+    @NotNull
+    private Supplier<SQLQueryRowsDataContext> relatedRightContextProvider = this::getRowsDataContext;
 
     public SQLQueryRowsNaturalJoinModel(
         @NotNull Interval range,
@@ -115,11 +119,16 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel
         @NotNull SQLQueryRowsSourceContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        SQLQueryRowsSourceContext left = this.left.resolveRowSources(context, statistics);
-        SQLQueryRowsSourceContext right = this.right != null
-            ? this.right.resolveRowSources(this.isLateral ? left : context, statistics)
+        SQLQueryRowsSourceContext leftResult = this.left.resolveRowSources(context, statistics);
+
+        SQLQueryRowsSourceContext rightContext = (
+            this.isLateral ? leftResult : context
+        ).setRelatedContextProvider(this.relatedRightContextProvider);
+
+        SQLQueryRowsSourceContext rightResult = this.right != null
+            ? this.right.resolveRowSources(rightContext, statistics)
             : context.resetAsUnresolved();
-        SQLQueryRowsSourceContext result = left.combine(right);
+        SQLQueryRowsSourceContext result = leftResult.combine(rightResult);
 
         if (this.condition != null) {
             this.condition.resolveRowSources(result, statistics);
@@ -156,7 +165,9 @@ public class SQLQueryRowsNaturalJoinModel extends SQLQueryRowsSetOperationModel
             statistics.appendError(this.getSyntaxNode(), "Table to join is not specified");
         }
 
-        var rightSourceOrigin = new SQLQuerySymbolOrigin.RowsSourceRef(this.getRowsSources());
+        var rightSourceOrigin = new SQLQuerySymbolOrigin.RowsSourceRef(
+            this.getRowsSources().setRelatedContextProvider(this.relatedRightContextProvider)
+        );
         if (this.rightSourceScope != null) {
             this.rightSourceScope.setSymbolsOrigin(rightSourceOrigin);
             this.setTailOrigin(rightSourceOrigin);

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 
 public class CubridView extends GenericView
 {
@@ -47,6 +48,13 @@ public class CubridView extends GenericView
         this.owner = (CubridUser) container;
     }
 
+    @NotNull
+    @Property(viewable = true, editable = true, order = 1)
+    @Override
+    public String getName() {
+        return super.getName();
+    }
+
     @Override
     public void setName(String name) {
         super.setName(name != null ? name.toLowerCase() : null);
@@ -54,6 +62,12 @@ public class CubridView extends GenericView
 
     public void setSchema(@NotNull CubridUser owner) {
         this.owner = owner;
+    }
+
+    @Override
+    @Property(viewable = true, order = 2)
+    public String getTableType() {
+        return super.getTableType();
     }
 
     @NotNull
@@ -76,6 +90,12 @@ public class CubridView extends GenericView
     @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 2)
     public GenericSchema getSchema() {
         return owner;
+    }
+
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
+    public String getDescription() {
+        return super.getDescription();
     }
 
     @NotNull
