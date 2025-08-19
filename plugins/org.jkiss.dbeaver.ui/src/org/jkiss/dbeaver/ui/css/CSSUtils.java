@@ -27,6 +27,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 public class CSSUtils {
 
+    public static final String COLORED_BY_CONNECTION_TYPE = "coloredByConnectionType";
+    public static final String EXCLUDED_FROM_STYLING = "excludedFromStyling";
+    public static final String DATABASE_EDITOR_COMPOSITE_DATASOURCE = "databaseEditorCompositeBackground";
+
     public static String getCSSClass(Widget widget){
         return (String) widget.getData(CSSSWTConstants.CSS_CLASS_NAME_KEY);
     }
@@ -39,11 +43,15 @@ public class CSSUtils {
     }
 
     public static boolean isExcludeFromStyling(Widget widget){
-        return (widget.getData(DBStyles.EXCLUDED_FROM_STYLING) == Boolean.TRUE);
+        return (widget.getData(EXCLUDED_FROM_STYLING) == Boolean.TRUE);
     }
 
     public static void setExcludeFromStyling(Widget widget) {
-        widget.setData(DBStyles.EXCLUDED_FROM_STYLING, Boolean.TRUE);
+        widget.setData(EXCLUDED_FROM_STYLING, Boolean.TRUE);
+    }
+
+    public static void markConnectionTypeColor(Widget widget){
+        widget.setData(CSSSWTConstants.CSS_CLASS_NAME_KEY, COLORED_BY_CONNECTION_TYPE);
     }
 
     public static Color getCurrentEditorConnectionColor(Widget widget) {
@@ -52,7 +60,7 @@ public class CSSUtils {
         }
         try {
             for (Control c = control; c != null; c = c.getParent()) {
-                Object data = c.getData(DBStyles.DATABASE_EDITOR_COMPOSITE_DATASOURCE);
+                Object data = c.getData(DATABASE_EDITOR_COMPOSITE_DATASOURCE);
                 if (data instanceof DBPDataSourceContainer dsc) {
                     return UIUtils.getConnectionColor(dsc.getConnectionConfiguration());
                 }
@@ -64,10 +72,10 @@ public class CSSUtils {
     }
 
     public static boolean isDatabaseColored(Widget widget) {
-        boolean colorByConnectionType = DBStyles.COLORED_BY_CONNECTION_TYPE.equals(getCSSClass(widget));
+        boolean colorByConnectionType = COLORED_BY_CONNECTION_TYPE.equals(getCSSClass(widget));
         // sometimes eclipse overrides css class of the controls, so let's check for the toolbar's css class too
         if (!colorByConnectionType && widget instanceof Composite c && c.getParent() instanceof ToolBar tb) {
-            colorByConnectionType = DBStyles.COLORED_BY_CONNECTION_TYPE.equals(getCSSClass(tb));
+            colorByConnectionType = COLORED_BY_CONNECTION_TYPE.equals(getCSSClass(tb));
         }
         return colorByConnectionType;
     }

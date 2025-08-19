@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -78,7 +77,7 @@ class StatusLabel extends ConComposite {
         });
 
         statusText = new Label(this, SWT.NONE);
-        CSSUtils.setCSSClass(statusText, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(statusText);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         statusText.setLayoutData(gd);
         statusText.addMouseListener(new MouseAdapter() {
