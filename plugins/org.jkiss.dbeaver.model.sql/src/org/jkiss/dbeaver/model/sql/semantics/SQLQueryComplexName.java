@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMUtils;
@@ -125,7 +126,7 @@ public class SQLQueryComplexName {
         if (!(o instanceof SQLQueryComplexName name)) {
             return false;
         }
-        return Objects.equals(this.stringParts, name.stringParts);
+        return Objects.deepEquals(this.stringParts, name.stringParts);
     }
 
     @Override
@@ -135,6 +136,6 @@ public class SQLQueryComplexName {
 
     @Override
     public String toString() {
-        return "SQLQueryComplexName[" + this.getNameString() + "]";
+        return "SQLQueryComplexName[" + String.join(Character.toString(SQLConstants.STRUCT_SEPARATOR), this.stringParts) + "]";
     }
 }

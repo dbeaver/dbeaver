@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 
 import java.util.Map;
 import java.util.Objects;
@@ -49,6 +50,7 @@ public abstract class AIContextSettings {
         public String[] objects;
     }
 
+    @Nullable
     public abstract DBPDataSourceContainer getDataSourceContainer();
 
     public abstract void saveSettings() throws DBException;
@@ -84,11 +86,11 @@ public abstract class AIContextSettings {
     }
 
     public void loadSettingsFromString(String dsConfig) {
-        loadSettingsFromMap(GSON.fromJson(dsConfig, Map.class));
+        loadSettingsFromMap(GSON.fromJson(dsConfig, JSONUtils.MAP_TYPE_TOKEN));
     }
 
     public Map<String, Object> saveSettingsToMap() {
-        return GSON.fromJson(GSON.toJson(settings), Map.class);
+        return GSON.fromJson(GSON.toJson(settings), JSONUtils.MAP_TYPE_TOKEN);
     }
 
     public String saveSettingsToString() {

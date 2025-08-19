@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AIDdlGenerationOptions;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AISchemaGeneratorRegistry;
-import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -68,7 +67,7 @@ public class AIDatabaseSnapshotService {
         Objects.requireNonNull(aiDatabaseContext.getScopeObject(), "Scope object is null");
         Objects.requireNonNull(aiDatabaseContext.getExecutionContext(), "Execution context is null");
 
-        var prompt = new TokenBoundedStringBuilder(options.maxRequestTokens());
+        var prompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens());
 
         if (appendContext(monitor, aiDatabaseContext, options, prompt, true)) {
             return prompt.toString();
@@ -82,7 +81,7 @@ public class AIDatabaseSnapshotService {
 
         LOG.warn("Context description is too long, generating partial description");
 
-        var partialPrompt = new TokenBoundedStringBuilder(options.maxRequestTokens());
+        var partialPrompt = new TokenBoundedStringBuilder(options.maxDbSnapshotTokens());
         appendContext(monitor, aiDatabaseContext, fallback, partialPrompt, false);
         return partialPrompt.toString();
     }
@@ -140,6 +139,9 @@ public class AIDatabaseSnapshotService {
         boolean useFqn,
         boolean refreshCache
     ) throws DBException {
+        if (monitor.isCanceled()) {
+            throw new DBException("Snapshot generation was canceled");
+        }
 
         if (shouldSkipObject(monitor, obj)) {          // ignore system or hidden objects
             return true;
@@ -278,7 +280,7 @@ public class AIDatabaseSnapshotService {
         private final int maxChars;
 
         TokenBoundedStringBuilder(int maxTokens) {
-            this.maxChars = (maxTokens - SAFE_MARGIN_TOKENS) * AIUtils.TOKEN_TO_CHAR_RATIO;
+            this.maxChars = (maxTokens - SAFE_MARGIN_TOKENS) * DummyTokenCounter.TOKEN_TO_CHAR_RATIO;
         }
 
         boolean append(@NotNull CharSequence chunk) {
