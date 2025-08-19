@@ -263,7 +263,7 @@ public class ClickhouseDataSource extends GenericDataSource {
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
         if (typeName.startsWith("Array")) {
             return DBPDataKind.ARRAY;
-        } else if (ClickhouseTypeParser.isComplexType(typeName)) {
+        } else if (typeName.startsWith("Tuple")) {
             return DBPDataKind.STRUCT;
         }
         return super.resolveDataKind(typeName, valueType);
