@@ -469,16 +469,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    public void saveDrivers() {
+    public void saveDrivers() throws DBException {
         saveDrivers(DBWorkbench.getPlatform().getConfigurationController());
     }
 
-    public void saveDrivers(DBConfigurationController configurationController) {
-        try {
-            saveDriversConfigFile(configurationController);
-        } catch (Exception ex) {
-            log.error("Error saving drivers", ex);
-        }
+    public void saveDrivers(DBConfigurationController configurationController) throws DBException {
+        saveDriversConfigFile(configurationController);
     }
 
     public void saveDriversConfigFile(DBConfigurationController configurationController) throws DBException {
@@ -497,7 +493,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     /**
      * Resolve all jar files in all enabled drivers.
      */
-    public void linkDriverFiles(Path targetFileLocation) {
+    public void linkDriverFiles(Path targetFileLocation) throws DBException {
         boolean didResolve = false;
         for (DataSourceProviderDescriptor dspd : this.dataSourceProviders) {
             for (DriverDescriptor driver : dspd.getDrivers()) {

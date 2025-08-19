@@ -225,7 +225,7 @@ public class SQLQueryModelRecognizer {
                             this.recognitionContext,
                             entityName,
                             objectNameOrigin,
-                            Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                            SQLQuerySymbolOrigin.DbObjectFilterMode.DEFAULT,
                             SQLQuerySymbolClass.OBJECT
                         );
                     }

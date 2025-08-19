@@ -52,6 +52,13 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
         return typeName == null ? " - Composite attribute" : (" : " + typeName);
     }
 
+    @Nullable
+    @Override
+    public String visitSpecialCompositeField(@NotNull SQLSpecialCompositeFieldCompletionItem compositeField) {
+        String typeName = this.prepareTypeNameString(compositeField.memberInfo.type());
+        return typeName == null ? " - Pseudo composite attribute" : (" : " + typeName);
+    }
+
     @NotNull
     @Override
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
