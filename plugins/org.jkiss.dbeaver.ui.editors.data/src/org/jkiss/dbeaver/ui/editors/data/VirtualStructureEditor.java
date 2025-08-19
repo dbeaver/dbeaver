@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.virtual.EditVirtualColumnsPage;
 import org.jkiss.dbeaver.ui.controls.resultset.virtual.EditVirtualEntityDialog;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
@@ -193,7 +192,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
             GridData.FILL_HORIZONTAL,
             1
         );
-        CSSUtils.setCSSClass(infoLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(infoLabel);
         parent.layout(true, true);
 
         DBSEntity dbObject = getDatabaseObject();
@@ -245,7 +244,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
         {
             Composite buttonsPanel = UIUtils.createComposite(group, 3);
-            CSSUtils.setCSSClass(buttonsPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(buttonsPanel);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             Button btnAdd = UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_add, new SelectionAdapter() {
                     @Override
@@ -355,7 +354,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
         {
             Composite buttonsPanel = UIUtils.createComposite(group, 2);
-            CSSUtils.setCSSClass(buttonsPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(buttonsPanel);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_add, new SelectionAdapter() {
@@ -411,7 +410,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
         {
             Composite buttonsPanel = UIUtils.createComposite(group, 2);
-            CSSUtils.setCSSClass(buttonsPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(buttonsPanel);
             buttonsPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             UIUtils.createDialogButton(buttonsPanel, DataEditorsMessages.virtual_structure_editor_dialog_button_refresh, new SelectionAdapter() {
