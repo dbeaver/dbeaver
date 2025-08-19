@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,17 @@ package org.jkiss.dbeaver.ui.css;
 
 import org.eclipse.e4.ui.css.core.dom.IElementProvider;
 import org.eclipse.e4.ui.css.core.engine.CSSEngine;
-import org.jkiss.dbeaver.ui.controls.VerticalFolder;
+import org.jkiss.dbeaver.ui.ConComposite;
 import org.w3c.dom.Element;
 
-/**
- * CSS DOM element provider
- */
-public class DOMElementProvider implements IElementProvider {
+public class ConElementProvider implements IElementProvider {
 
-	public static final IElementProvider INSTANCE = new DOMElementProvider();
+    @Override
+    public Element getElement(Object element, CSSEngine engine) {
+        if (element instanceof ConComposite mc) {
+            return new ConCompositeElement(mc, engine);
+        }
 
-	@Override
-	public Element getElement(Object element, CSSEngine engine) {
-		if (element instanceof VerticalFolder) {
-			return new VerticalFolderElement((VerticalFolder) element, engine);
-		}
-		return null;
-	}
+        return null;
+    }
 }
