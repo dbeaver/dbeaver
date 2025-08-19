@@ -50,8 +50,8 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * PrefPageDataFormat
@@ -414,6 +414,20 @@ public class PrefPageDataFormat extends TargetPrefPage
         boolean isNumericSc = store.getDefaultBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
         numericScientificFormatCheck.setSelection(isNumericSc);
         numericScientificFormatCheck.setEnabled(isNumericSc);
+
+        profileLocale = Locale.getDefault();
+        localeSelector.setLocale(profileLocale);
+
+        profileProperties.clear();
+
+        for (DataFormatterDescriptor dfd : formatterDescriptors) {
+            Map<String, Object> defaultProps = dfd.getSample().getDefaultProperties(profileLocale);
+            if (defaultProps != null && !defaultProps.isEmpty()) {
+                profileProperties.put(dfd.getId(), new HashMap<>(defaultProps));
+            }
+        }
+
+        reloadFormatter();
         reloadSample();
         super.performDefaults();
     }
