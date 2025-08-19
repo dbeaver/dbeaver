@@ -104,7 +104,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.view.ErrorPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.virtual.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
@@ -309,7 +308,7 @@ public class ResultSetViewer extends Viewer
         if ((decoratorFeatures & IResultSetDecorator.FEATURE_PRESENTATIONS) != 0) {
             this.presentationSwitchFolder = new VerticalFolder(mainPanel, SWT.LEFT);
             this.presentationSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-            CSSUtils.setCSSClass(this.presentationSwitchFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(this.presentationSwitchFolder);
         } else {
             this.presentationSwitchFolder = null;
         }
@@ -324,7 +323,7 @@ public class ResultSetViewer extends Viewer
         if (supportsPanels) {
             this.panelSwitchFolder = new VerticalFolder(mainPanel, SWT.RIGHT);
             this.panelSwitchFolder.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-            CSSUtils.setCSSClass(this.panelSwitchFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(this.panelSwitchFolder);
         } else {
             panelSwitchFolder = null;
         }
@@ -335,14 +334,14 @@ public class ResultSetViewer extends Viewer
             this.viewerSash = new SashForm(this.viewerPanel, UIUtils.checkSashStyle(SWT.HORIZONTAL | SWT.SMOOTH));
             this.viewerSash.setSashWidth(5);
             this.viewerSash.setLayoutData(new GridData(GridData.FILL_BOTH));
-            CSSUtils.setCSSClass(this.viewerSash, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(this.viewerSash);
 
             this.presentationPanel = UIUtils.createPlaceholder(this.viewerSash, 1);
             this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             if (supportsPanels) {
                 this.panelFolder = new CTabFolder(this.viewerSash, SWT.FLAT | SWT.TOP);
-                CSSUtils.setCSSClass(panelFolder, DBStyles.COLORED_BY_CONNECTION_TYPE);
+                CSSUtils.markConnectionTypeColor(panelFolder);
                 new TabFolderReorder(panelFolder);
                 this.panelFolder.marginWidth = 0;
                 this.panelFolder.marginHeight = 0;
@@ -1849,20 +1848,20 @@ public class ResultSetViewer extends Viewer
             ToolBarManager editToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             menuService.populateContributionManager(editToolBarManager, TOOLBAR_EDIT_CONTRIBUTION_ID);
             ToolBar editorToolBar = editToolBarManager.createControl(statusBar);
-            CSSUtils.setCSSClass(editorToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(editorToolBar);
             toolbarList.add(editToolBarManager);
         }
         {
             ToolBarManager navToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             menuService.populateContributionManager(navToolBarManager, TOOLBAR_NAVIGATION_CONTRIBUTION_ID);
             ToolBar navToolBar = navToolBarManager.createControl(statusBar);
-            CSSUtils.setCSSClass(navToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(navToolBar);
             toolbarList.add(navToolBarManager);
         }
         {
             ToolBarManager configToolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
             ToolBar configToolBar = configToolBarManager.createControl(statusBar);
-            CSSUtils.setCSSClass(configToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(configToolBar);
             toolbarList.add(configToolBarManager);
         }
 
@@ -1879,7 +1878,7 @@ public class ResultSetViewer extends Viewer
                 menuService.populateContributionManager(addToolBarManager, TOOLBAR_CONTRIBUTION_ID);
             }
             ToolBar addToolBar = addToolBarManager.createControl(statusBar);
-            CSSUtils.setCSSClass(addToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(addToolBar);
             toolbarList.add(addToolBarManager);
         }
 
@@ -1890,7 +1889,7 @@ public class ResultSetViewer extends Viewer
             configToolBarManager.add(new ConfigAction());
             configToolBarManager.update(true);
             ToolBar configToolBar = configToolBarManager.createControl(statusBar);
-            CSSUtils.setCSSClass(configToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(configToolBar);
             toolbarList.add(configToolBarManager);
         }
         {
@@ -1948,16 +1947,16 @@ public class ResultSetViewer extends Viewer
                 }
             };
             //rowCountLabel.setLayoutData();
-            CSSUtils.setCSSClass(rowCountLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(rowCountLabel);
             rowCountLabel.setMessage("Row Count");
             rowCountLabel.setToolTipText("Calculates total row count in the current dataset");
             Label separator = new Label(statusBar, SWT.NONE);
             separator.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
-            CSSUtils.setCSSClass(separator, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(separator);
 
             selectionStatLabel = new Text(statusBar, SWT.READ_ONLY);
             selectionStatLabel.setToolTipText(ResultSetMessages.result_set_viewer_selection_stat_tooltip);
-            CSSUtils.setCSSClass(selectionStatLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(selectionStatLabel);
             selectionStatLabel.setText(" ");
 
 //            Label filler = new Label(statusComposite, SWT.NONE);
@@ -1970,7 +1969,7 @@ public class ResultSetViewer extends Viewer
                 RowData rd = new RowData();
                 rd.width = 50 * fontHeight;
                 statusLabel.setLayoutData(rd);
-                CSSUtils.setCSSClass(statusLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+                CSSUtils.markConnectionTypeColor(statusLabel);
             }
         }
 

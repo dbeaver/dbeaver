@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.ui.controls.CustomFormEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
@@ -336,7 +335,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             }
         }
         for (Control x : propertiesGroup.getChildren()) {
-            CSSUtils.setCSSClass(x, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(x);
         }
 
         UIUtils.installAndUpdateMainFont(propertiesGroup);

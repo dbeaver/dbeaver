@@ -48,7 +48,6 @@ import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -216,7 +215,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         }
 
         Composite infoGroup = new ConComposite(container, SWT.NONE);
-        CSSUtils.setCSSClass(infoGroup, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(infoGroup);
         infoGroup.setBackgroundMode(SWT.INHERIT_FORCE);
 
         infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -227,7 +226,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
 
         customControlsComposite = new ConComposite(infoGroup, SWT.NONE);
         customControlsComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        CSSUtils.setCSSClass(customControlsComposite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(customControlsComposite);
         customControlsComposite.setBackgroundMode(SWT.INHERIT_FORCE);
 
         gl = new GridLayout(1, false);
@@ -238,7 +237,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         listInfoLabel = new Label(infoGroup, SWT.NONE);
         listInfoLabel.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
         listInfoLabel.setLayoutData(GridDataFactory.swtDefaults().minSize(100, SWT.DEFAULT).create());
-        CSSUtils.setCSSClass(listInfoLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(listInfoLabel);
 
         searchControlsComposite = new ConComposite(infoGroup);
         searchControlsComposite.setGridLayout(1);
@@ -247,7 +246,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
 
         // Placeholder toolbar (need to set initial height of search composite)
         ToolBar phToolBar = new ToolBar(searchControlsComposite, SWT.NONE);
-        CSSUtils.setCSSClass(phToolBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(phToolBar);
 
         defaultToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
         customToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
@@ -297,10 +296,10 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                 }
                 Control phLabel = new Label(searchControlsComposite, SWT.NONE);
                 phLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                CSSUtils.setCSSClass(phLabel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+                CSSUtils.markConnectionTypeColor(phLabel);
                 ToolBar defaultToolbar = defaultToolbarManager.createControl(searchControlsComposite);
                 defaultToolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-                CSSUtils.setCSSClass(defaultToolbar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+                CSSUtils.markConnectionTypeColor(defaultToolbar);
 
                 // Recreate custom controls
                 UIUtils.disposeChildControls(customControlsComposite);
@@ -309,7 +308,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                 fillCustomActions(customToolbarManager);
                 if (!customToolbarManager.isEmpty()) {
                     ToolBar toolbar = customToolbarManager.createControl(customControlsComposite);
-                    CSSUtils.setCSSClass(toolbar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+                    CSSUtils.markConnectionTypeColor(toolbar);
                     toolbar.setFont(BaseThemeSettings.instance.baseFont);
                     toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
                     populateCustomActions(customToolbarManager);
