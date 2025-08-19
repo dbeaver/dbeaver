@@ -14,25 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.css;
 
-import org.eclipse.e4.ui.css.core.dom.IElementProvider;
-import org.eclipse.e4.ui.css.core.engine.CSSEngine;
-import org.jkiss.dbeaver.ui.controls.VerticalFolder;
-import org.w3c.dom.Element;
+package org.jkiss.dbeaver.ext.iotdb.model;
 
-/**
- * CSS DOM element provider
- */
-public class DOMElementProvider implements IElementProvider {
+import org.jkiss.dbeaver.DBException;
 
-	public static final IElementProvider INSTANCE = new DOMElementProvider();
+public class IoTDBUser extends IoTDBAbstractUser {
 
-	@Override
-	public Element getElement(Object element, CSSEngine engine) {
-		if (element instanceof VerticalFolder) {
-			return new VerticalFolderElement((VerticalFolder) element, engine);
-		}
-		return null;
-	}
+    public IoTDBUser(IoTDBDataSource dataSource,
+                     String userName) throws DBException {
+        super(dataSource, userName);
+    }
 }
