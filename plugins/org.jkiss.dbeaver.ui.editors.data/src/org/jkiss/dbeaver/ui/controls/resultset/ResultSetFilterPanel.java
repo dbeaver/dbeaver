@@ -445,8 +445,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private String getActiveSourceQuery() {
         String displayName;
         DBSDataContainer dataContainer = viewer.getDataContainer();
-        if (dataContainer instanceof DBSEntity) {
-            displayName = ResultSetMessages.sql_editor_resultset_filter_panel_show_sql_label;
+        if (dataContainer != null) {
+            displayName = dataContainer.getName();
         } else {
             displayName = viewer.getActiveQueryText();
         }
