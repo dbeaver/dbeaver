@@ -33,7 +33,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.ConComposite;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +44,6 @@ import java.util.Map;
 
 /**
  * Folders composite.
- * DBStyles:
  * SWT.LEFT, SWT.RIGHT - tabs orientation
  */
 public class TabbedFolderComposite extends ConComposite implements ITabbedFolderContainer {
@@ -76,7 +74,7 @@ public class TabbedFolderComposite extends ConComposite implements ITabbedFolder
 
         public FolderPane(Composite parent, boolean last) {
             this.folderList = new TabbedFolderList(parent, !last);
-            CSSUtils.setCSSClass(this.folderList, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(this.folderList);
 
             GridData gd = new GridData(GridData.FILL_VERTICAL);
             if (!last) {
