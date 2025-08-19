@@ -117,7 +117,6 @@ public class SQLEditorPreferencesInitializer extends AbstractPreferenceInitializ
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY, true);
         }
 
-        PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, false);
         PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE, true);
         PrefUtils.setDefaultPreferenceValue(
             store,
