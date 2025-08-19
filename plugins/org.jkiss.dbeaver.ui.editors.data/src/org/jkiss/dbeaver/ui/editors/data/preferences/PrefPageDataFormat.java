@@ -405,9 +405,20 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     @Override
     protected void performDefaults() {
+        int currentProfileIndex = 0;
+        if (!isDataSourcePreferencePage() && profilesCombo != null) {
+            currentProfileIndex = profilesCombo.getSelectionIndex();
+        }
+
         formatterProfile = null;
         refreshProfileList();
         setCurrentProfile(getDefaultProfile());
+
+        if (!isDataSourcePreferencePage() && profilesCombo != null && currentProfileIndex > 0) {
+            profilesCombo.select(currentProfileIndex);
+            changeProfile();
+        }
+
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         datetimeNativeFormatCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT));
         numericNativeFormatCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT));
@@ -420,10 +431,12 @@ public class PrefPageDataFormat extends TargetPrefPage
 
         profileProperties.clear();
 
-        for (DataFormatterDescriptor dfd : formatterDescriptors) {
-            Map<String, Object> defaultProps = dfd.getSample().getDefaultProperties(profileLocale);
-            if (defaultProps != null && !defaultProps.isEmpty()) {
-                profileProperties.put(dfd.getId(), new HashMap<>(defaultProps));
+        if (formatterDescriptors != null) {
+            for (DataFormatterDescriptor descriptor : formatterDescriptors) {
+                Map<String, Object> defaultProps = descriptor.getSample().getDefaultProperties(profileLocale);
+                if (defaultProps != null && !defaultProps.isEmpty()) {
+                    profileProperties.put(descriptor.getId(), new HashMap<>(defaultProps));
+                }
             }
         }
 
