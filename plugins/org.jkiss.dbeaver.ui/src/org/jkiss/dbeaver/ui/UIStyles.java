@@ -277,4 +277,13 @@ public class UIStyles {
         }
         return p;
     }
+
+    public static Color getAppropriateTextColor() {
+        Display defaultDisplay = Display.getDefault();
+        if (UIStyles.isDarkTheme()) {
+            return defaultDisplay.getSystemColor(SWT.COLOR_WHITE);
+        } else {
+            return defaultDisplay.getSystemColor(SWT.COLOR_BLACK);
+        }
+    }
 }

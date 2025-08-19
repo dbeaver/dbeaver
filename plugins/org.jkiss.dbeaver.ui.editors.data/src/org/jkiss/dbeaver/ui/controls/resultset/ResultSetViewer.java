@@ -121,8 +121,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -1625,15 +1625,30 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    public void updateEditControls()
-    {
+    public void updateEditControls() {
         fireResultSetChange();
         updateToolbar();
         if (presentationSwitchFolder != null) {
             // Enable presentations
             for (VerticalButton pb : presentationSwitchFolder.getItems()) {
-                if (pb.getData() instanceof ResultSetPresentationDescriptor) {
-                    pb.setVisible(!recordMode || ((ResultSetPresentationDescriptor) pb.getData()).supportsRecordMode());
+                if (pb.getData() instanceof ResultSetPresentationDescriptor descriptor) {
+                    pb.setVisible(!recordMode || descriptor.supportsRecordMode());
+                }
+            }
+        }
+        UIUtils.asyncExec(this::applyButtonTextColors);
+    }
+
+    private void applyButtonTextColors() {
+        Color textColor = UIStyles.getAppropriateTextColor();
+
+        // Save/Cancel buttons when have any changes in result set
+        for (ToolBarManager toolbarManager : toolbarList) {
+            ToolBar toolbar = toolbarManager.getControl();
+            if (toolbar != null && !toolbar.isDisposed()) {
+                toolbar.setForeground(textColor);
+                for (ToolItem item : toolbar.getItems()) {
+                    item.setForeground(textColor);
                 }
             }
         }
