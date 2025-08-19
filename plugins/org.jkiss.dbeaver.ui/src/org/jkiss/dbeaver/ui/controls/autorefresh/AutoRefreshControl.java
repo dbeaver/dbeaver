@@ -149,10 +149,10 @@ public class AutoRefreshControl {
             autoRefreshButton.setText(itemText);
         }
 
-        toolbar.setForeground(UIStyles.getAppropriateTextColor());
 
         autoRefreshButton.addSelectionListener(new AutoRefreshMenuListener(autoRefreshButton, defAction));
         updateAutoRefreshToolbar();
+        autoRefreshButton.setForeground(UIStyles.getDefaultTextForeground());
 
         return autoRefreshButton;
     }

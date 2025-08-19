@@ -1640,7 +1640,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void applyButtonTextColors() {
-        Color textColor = UIStyles.getAppropriateTextColor();
+        Color textColor = UIStyles.getDefaultTextForeground();
 
         // Save/Cancel buttons when have any changes in result set
         for (ToolBarManager toolbarManager : toolbarList) {
