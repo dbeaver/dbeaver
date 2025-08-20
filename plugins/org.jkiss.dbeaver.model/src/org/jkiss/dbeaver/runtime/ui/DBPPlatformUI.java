@@ -131,6 +131,7 @@ public interface DBPPlatformUI {
     /**
      * Asks for password change. Returns null if user canceled this action.
      */
+    @Nullable
     DBAPasswordChangeInfo promptUserPasswordChange(String prompt, @Nullable String userName, @Nullable String oldPassword, boolean userEditable, boolean oldPasswordVisible);
 
     /**
