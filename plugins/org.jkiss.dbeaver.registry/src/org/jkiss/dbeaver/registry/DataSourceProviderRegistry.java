@@ -50,7 +50,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry {
@@ -690,30 +690,30 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    void fireRegistryChange(DataSourceRegistry registry, boolean load) {
-        List<DBPRegistryListener> lCopy;
-        synchronized (registryListeners) {
-            lCopy = new ArrayList<>(registryListeners);
-        }
-        for (DBPRegistryListener listener : lCopy) {
+    void fireRegistryChange(DataSourceRegistry<?> registry, boolean load) {
+
+        forEachRegistryListener(l -> {
             if (load) {
-                listener.handleRegistryLoad(registry);
+                l.handleRegistryLoad(registry);
             } else {
-                listener.handleRegistryUnload(registry);
+                l.handleRegistryUnload(registry);
             }
-        }
+        });
     }
 
     void fireRegistryReload() {
+        forEachRegistryListener(DBPRegistryListener::handleRegistryReload);
+    }
+
+    private void forEachRegistryListener(Consumer<DBPRegistryListener> consumer) {
         List<DBPRegistryListener> lCopy;
         synchronized (registryListeners) {
             lCopy = new ArrayList<>(registryListeners);
         }
         for (DBPRegistryListener listener : lCopy) {
-            listener.handleRegistryReload();
+            consumer.accept(listener);
         }
     }
-
 
     class ConnectionTypeParser implements SAXListener {
         @Override
