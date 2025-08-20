@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,8 +55,8 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private final String id;
     private String label;
     private String description;
-    private Date createTime;
-    private Date updateTime;
+    private final ZonedDateTime createTime;
+    private ZonedDateTime updateTime;
     private DBTTaskType type;
     private Map<String, Object> properties;
     private volatile List<DBTTaskRun> runs;
@@ -68,8 +69,8 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         @NotNull String id,
         @NotNull String label,
         @Nullable String description,
-        @NotNull Date createTime,
-        @Nullable Date updateTime,
+        @NotNull ZonedDateTime createTime,
+        @Nullable ZonedDateTime updateTime,
         @Nullable DBTTaskFolder folder
     ) {
         this.project = project;
@@ -126,17 +127,17 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
 
     @NotNull
     @Override
-    public Date getCreateTime() {
+    public ZonedDateTime getCreateTime() {
         return createTime;
     }
 
     @NotNull
     @Override
-    public Date getUpdateTime() {
+    public ZonedDateTime getUpdateTime() {
         return updateTime;
     }
 
-    public void setUpdateTime(Date updateTime) {
+    public void setUpdateTime(ZonedDateTime updateTime) {
         this.updateTime = updateTime;
     }
 

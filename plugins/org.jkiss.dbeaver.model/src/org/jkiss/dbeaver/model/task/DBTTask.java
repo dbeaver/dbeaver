@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 /**
@@ -40,10 +40,10 @@ public interface DBTTask extends DBPNamedObject, DBPObjectWithDescription {
     DBPProject getProject();
 
     @NotNull
-    Date getCreateTime();
+    ZonedDateTime getCreateTime();
 
     @NotNull
-    Date getUpdateTime();
+    ZonedDateTime getUpdateTime();
 
     @NotNull
     DBTTaskType getType();

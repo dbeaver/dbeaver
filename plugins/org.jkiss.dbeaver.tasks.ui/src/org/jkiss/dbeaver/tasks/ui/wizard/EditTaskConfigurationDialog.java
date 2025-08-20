@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -186,7 +186,7 @@ public class EditTaskConfigurationDialog extends BaseDialog
             }
             task.setName(taskLabelCombo.getText());
             task.setDescription(taskDescriptionText.getText());
-            task.setUpdateTime(new Date());
+            task.setUpdateTime(ZonedDateTime.now());
             task.setProperties(state);
             taskManager.updateTaskConfiguration(task);
         } catch (DBException e) {
