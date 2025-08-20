@@ -58,7 +58,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     private static DataSourceProviderRegistry instance = null;
 
-    public synchronized static DataSourceProviderRegistry getInstance() {
+    public static synchronized DataSourceProviderRegistry getInstance() {
         if (instance == null) {
             instance = new DataSourceProviderRegistry();
             instance.loadExtensions(Platform.getExtensionRegistry());
@@ -83,8 +83,6 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     private final Map<String, DataSourceOriginProviderDescriptor> dataSourceOrigins = new LinkedHashMap<>();
     private final Map<String, DBPDriverSubstitutionDescriptor> driverSubstitutions = new HashMap<>();
-
-    private final List<Runnable> afterReloadListeners = new CopyOnWriteArrayList<>();
 
 
     private DataSourceProviderRegistry() {
@@ -116,13 +114,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
         readDriversConfig();
 
-        for (Runnable l : afterReloadListeners) {
-            try {
-                l.run();
-            } catch (Exception e) {
-                log.warn("After Drivers Reload listener failed", e);
-            }
-        }
+        fireRegistryReload();
     }
 
     private void loadExtensions(IExtensionRegistry registry) {
@@ -716,6 +708,17 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
+    void fireRegistryReload() {
+        List<DBPRegistryListener> lCopy;
+        synchronized (registryListeners) {
+            lCopy = new ArrayList<>(registryListeners);
+        }
+        for (DBPRegistryListener listener : lCopy) {
+            listener.handleRegistryReload();
+        }
+    }
+
+
     class ConnectionTypeParser implements SAXListener {
         @Override
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
@@ -775,14 +778,6 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         @Override
         public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
         }
-    }
-
-    public void addAfterReloadListener(@NotNull Runnable listener) {
-        afterReloadListeners.add(Objects.requireNonNull(listener));
-    }
-
-    public void removeAfterReloadListener(@NotNull Runnable listener) {
-        afterReloadListeners.remove(listener);
     }
 
 }
