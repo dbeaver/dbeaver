@@ -121,17 +121,17 @@ public final class AIUtils {
         if (isDdlOrUnknown && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_ddl_message :
                 AIMessages.ai_execute_query_confirm_ddl_message;
-            return confirmExecute(AIMessages.ai_execute_query_title, message);
+            return confirmExecute(AIMessages.ai_execute_query_title, message, scriptElements);
         }
         if (queryCategories.contains(SQLQueryCategory.DML) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DML)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_dml_message :
                 AIMessages.ai_execute_query_confirm_dml_message;
-            return confirmExecute(AIMessages.ai_execute_query_title, message);
+            return confirmExecute(AIMessages.ai_execute_query_title, message, scriptElements);
         }
         if (queryCategories.contains(SQLQueryCategory.SQL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_sql_message :
                 AIMessages.ai_execute_query_confirm_sql_message;
-            return confirmExecute(AIMessages.ai_execute_query_title, message);
+            return confirmExecute(AIMessages.ai_execute_query_title, message, scriptElements);
         }
         return true;
     }
@@ -174,7 +174,11 @@ public final class AIUtils {
         ) == AIQueryConfirmationRule.CONFIRM;
     }
 
-    private static boolean confirmExecute(String title, String message) {
-        return DBWorkbench.getPlatformUI().confirmAction(title, message, true);
+    private static boolean confirmExecute(
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull List<SQLScriptElement> scriptElements
+    ) {
+        return DBWorkbench.getPlatformUI().confirmScriptAction(title, message, scriptElements, true);
     }
 }

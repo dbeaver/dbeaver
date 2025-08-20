@@ -24,13 +24,18 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.ModalContext;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
@@ -46,14 +51,19 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
+import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.model.sql.SQLControlCommand;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
@@ -62,6 +72,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditHelpers;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
@@ -76,6 +87,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * DBeaver UI core
@@ -85,6 +97,7 @@ public class DesktopUI extends ConsoleUserInterface {
     private static final Log log = Log.getLog(DesktopUI.class);
 
     private WorkbenchContextListener contextListener;
+    private UIServiceSQL serviceSQL;
 
     public static DesktopUI getInstance() {
         return (DesktopUI) DBWorkbench.getPlatformUI();
@@ -285,6 +298,83 @@ public class DesktopUI extends ConsoleUserInterface {
         });
 
         return decision[0] == confirm;
+    }
+
+    @Override
+    public boolean confirmScriptAction(
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull List<SQLScriptElement> script,
+        boolean isWarning
+    ) {
+        if (isHeadlessMode()) {
+            return super.confirmScriptAction(title, message, script, isWarning);
+        }
+        if (serviceSQL == null) {
+            serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+        }
+
+        final Reply[] reply = {null};
+        final boolean[] isExpanded = {false};
+
+        UIUtils.syncExec(() -> reply[0] = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
+            .setTitle(title)
+            .setMessage(message)
+            .setReplies(Reply.YES, Reply.NO)
+            .setDefaultReply(Reply.NO)
+            .setPrimaryImage(isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION)
+            .setCustomButton((dialog, buttonBar) -> {
+                buttonBar.setLayout(new GridLayout(3, false));
+                Button scriptButton = UIUtils.createPushButton(
+                    buttonBar,
+                    UIMessages.dialog_confirm_action_show_query + " >>>",
+                    null
+                );
+
+                GridData detailsGridData = new GridData(GridData.FILL_BOTH);
+                detailsGridData.horizontalSpan = 2;
+                detailsGridData.exclude = true;
+                Composite scriptComposite = UIUtils.createComposite(dialog, 0);
+                scriptComposite.setLayoutData(detailsGridData);
+                scriptComposite.setLayout(new FillLayout());
+                scriptComposite.setVisible(false);
+
+                String scriptText = script.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining("\n"));
+                try {
+                    TextViewer sqlPanel = (TextViewer) serviceSQL.createSQLPanel(
+                        UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
+                        scriptComposite,
+                        getContextProvider(script),
+                        UIMessages.dialog_confirm_action_query,
+                        false,
+                        scriptText
+                    );
+                    detailsGridData.heightHint = calculateHeightHint(sqlPanel, scriptText);
+                } catch (DBException e) {
+                    log.error(e);
+                    scriptButton.dispose();
+                    scriptComposite.dispose();
+                    return;
+                }
+
+                scriptButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                    isExpanded[0] = !isExpanded[0];
+                    String buttonText = isExpanded[0] ?
+                        UIMessages.dialog_confirm_action_hide_query + " <<<" :
+                        UIMessages.dialog_confirm_action_show_query + " >>>";
+                    scriptButton.setText(buttonText);
+                    scriptComposite.setVisible(isExpanded[0]);
+                    ((GridData) scriptComposite.getLayoutData()).exclude = !isExpanded[0];
+                    dialog.layout(true);
+                    dialog.getShell().pack(true);
+                }));
+            })
+            .showMessageBox()
+        );
+
+        return reply[0] == Reply.YES;
     }
 
     @NotNull
@@ -731,4 +821,22 @@ public class DesktopUI extends ConsoleUserInterface {
         }
     }
 
+    @NotNull
+    private static DataSourceContextProvider getContextProvider(@NotNull List<SQLScriptElement> script) {
+        SQLScriptElement scriptElement = script.stream().findFirst().orElse(null);
+        DBPDataSource dataSource = null;
+        if (scriptElement instanceof SQLQuery query) {
+            dataSource = query.getDataSource();
+        } else if (scriptElement instanceof SQLControlCommand command) {
+            dataSource = command.getDataSource();
+        }
+        return new DataSourceContextProvider(dataSource);
+    }
+
+    private static int calculateHeightHint(TextViewer sqlPanel, String scriptText) {
+        int lineHeight = UIUtils.getTextHeight(sqlPanel.getTextWidget());
+        int lineCount = scriptText.split("\n").length;
+        int totalHeight = lineCount * lineHeight + 10;
+        return Math.min(totalHeight, 300);
+    }
 }

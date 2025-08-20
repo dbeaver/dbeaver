@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.lang.reflect.InvocationTargetException;
@@ -56,7 +57,7 @@ public interface DBPPlatformUI {
         STOP,
         RETRY,
     }
-    
+
     class UserChoiceResponse {
         /**
          * index of the user's choice or out of range value (-1) on dialog failure
@@ -81,6 +82,13 @@ public interface DBPPlatformUI {
     boolean confirmAction(String title, String message);
     boolean confirmAction(String title, String message, boolean isWarning);
     boolean confirmAction(@NotNull String title, @NotNull String message, @NotNull String buttonLabel, boolean isWarning);
+
+    boolean confirmScriptAction(
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull List<SQLScriptElement> script,
+        boolean isWarning
+    );
 
     /**
      * Show user-choice dialog for a user to mandatory select one of the options described with the labels

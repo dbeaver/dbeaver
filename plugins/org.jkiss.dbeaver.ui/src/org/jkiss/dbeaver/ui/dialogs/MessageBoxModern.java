@@ -34,6 +34,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 final class MessageBoxModern extends BaseDialog {
@@ -46,6 +47,8 @@ final class MessageBoxModern extends BaseDialog {
     private DBPImage primaryImage;
     @Nullable
     private Consumer<? super Composite> customArea;
+    @Nullable
+    private BiConsumer<? super Composite, ? super Composite> customButton;
 
     @Nullable
     private List<Button> buttons;
@@ -72,6 +75,10 @@ final class MessageBoxModern extends BaseDialog {
     
     void setCustomArea(Consumer<? super Composite> customArea) {
         this.customArea = customArea;
+    }
+
+    void setCustomButton(@NotNull BiConsumer<? super Composite, ? super Composite> customButton) {
+        this.customButton = customButton;
     }
 
     // ----- jface.Dialog methods
@@ -167,6 +174,9 @@ final class MessageBoxModern extends BaseDialog {
         gd.horizontalAlignment = SWT.END;
         composite.setLayoutData(gd);
         composite.setFont(parent.getFont());
+        if (customButton != null) {
+            customButton.accept(parent, composite);
+        }
         createButtonsForButtonBar(composite);
         return composite;
     }

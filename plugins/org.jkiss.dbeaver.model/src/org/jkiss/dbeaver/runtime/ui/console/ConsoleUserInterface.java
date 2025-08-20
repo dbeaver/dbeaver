@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
@@ -102,6 +103,16 @@ public class ConsoleUserInterface implements DBPPlatformUI {
 
     @Override
     public boolean confirmAction(@NotNull String title, @NotNull String message, @NotNull String buttonLabel, boolean isWarning) {
+        return false;
+    }
+
+    @Override
+    public boolean confirmScriptAction(
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull List<SQLScriptElement> scriptElements,
+        boolean isWarning
+    ) {
         return false;
     }
 
