@@ -105,7 +105,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         this.version = CommonUtils.trim(version);
         this.snapshotVersion = snapshotVersion;
         loadPOM(monitor, resolveOptionalDependencies);
-        this.version = evaluateString(this.version);
+        this.version = verifyVersionString(evaluateString(this.version));
     }
 
     private MavenArtifactVersion(
@@ -470,7 +470,8 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         @NotNull DBRProgressMonitor monitor,
         @NotNull Element element,
         boolean depManagement,
-        boolean resolveOptionalDependencies) {
+        boolean resolveOptionalDependencies
+    ) {
         List<MavenArtifactDependency> result = new ArrayList<>();
         Element dependenciesElement = XMLUtils.getChildElement(element, "dependencies");
         if (dependenciesElement != null) {
@@ -610,6 +611,14 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             return null;
         }
         return GeneralUtils.replaceVariables(value, propertyResolver);
+    }
+
+
+    private static String verifyVersionString(@Nullable String version) throws IOException {
+        if (version != null && (version.contains("/") || version.contains("\\"))) {
+            throw new IOException("Invalid Maven version string: " + version);
+        }
+        return version;
     }
 
     @NotNull

@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -419,7 +421,14 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             UIConnectionMessages.dialog_driver_manager_message_delete_driver_title,
             UIConnectionMessages.dialog_driver_manager_message_delete_driver_text + selectedDriver.getName() + "'?")) {
             selectedDriver.getProviderDescriptor().removeDriver(selectedDriver.getId());
-            selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
+
+            try {
+                selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Save error", "Error saving drivers", e);
+                return;
+            }
+
             treeControl.refresh();
         }
     }
@@ -458,9 +467,14 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             }
         };
         if (dialog.open() == IDialogConstants.OK_ID) {
-            for (DriverDescriptor dd : drivers) {
-                dd.setDisabled(false);
-                dd.getProviderDescriptor().getRegistry().saveDrivers();
+            try {
+                for (DriverDescriptor dd : drivers) {
+                    dd.setDisabled(false);
+                    dd.getProviderDescriptor().getRegistry().saveDrivers();
+                }
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Save error", "Error saving drivers", e);
+                return false;
             }
             return true;
         }

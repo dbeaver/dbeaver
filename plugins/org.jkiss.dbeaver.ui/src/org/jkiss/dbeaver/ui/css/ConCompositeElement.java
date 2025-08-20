@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.css;
 
-public class DBStyles {
+import org.eclipse.e4.ui.css.core.engine.CSSEngine;
+import org.eclipse.e4.ui.css.swt.dom.CompositeElement;
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 
-    public static final String COLORED_BY_CONNECTION_TYPE = "coloredByConnectionType";
-    public static final String ATTR_MIMIC_CONTROL = "mimicControl";
+public class ConCompositeElement extends CompositeElement {
 
-    public static final String DATABASE_EDITOR_COMPOSITE_DATASOURCE = "databaseEditorCompositeBackground";
-
-    private DBStyles() {
+    public ConCompositeElement(@NotNull Composite mc, @NotNull CSSEngine engine) {
+        super(mc, engine);
     }
-
 
 }

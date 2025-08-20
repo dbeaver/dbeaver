@@ -172,7 +172,7 @@ public class AIPromptBuilder {
             return null;
         }
 
-        return "Use (" + identifierQuoteStrings[0][0] + identifierQuoteStrings[0][1] + ") to quote identifiers if needed.";
+        return "Use " + identifierQuoteStrings[0][0] + identifierQuoteStrings[0][1] + " to quote identifiers if needed.";
     }
 
     private static String stringsQuoteRule(SQLDialect dialect) {
@@ -181,6 +181,6 @@ public class AIPromptBuilder {
             return null;
         }
 
-        return "Use (" + stringQuoteStrings[0][0] + stringQuoteStrings[0][1] + ") to quote strings.";
+        return "Use " + stringQuoteStrings[0][0] + stringQuoteStrings[0][1] + " to quote strings.";
     }
 }

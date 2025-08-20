@@ -96,7 +96,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         copilotSettings.getProperties().setToken(accessToken);
         copilotSettings.getProperties().setModel(modelSelectorField.getSelectedModel());
         copilotSettings.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
-        copilotSettings.getProperties().setTemperature(Double.parseDouble(temperature));
+        copilotSettings.getProperties().setTemperature(CommonUtils.toDouble(temperature));
         copilotSettings.getProperties().setLoggingEnabled(logQuery);
     }
 

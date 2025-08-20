@@ -38,6 +38,7 @@ public class AIAssistantImpl implements AIAssistant {
 
     private static final int MANY_REQUESTS_RETRIES = 3;
     private static final int MANY_REQUESTS_TIMEOUT = 500;
+    public static final String LOG_INDENT = "\t";
 
     protected final AISettingsRegistry settingsRegistry;
     protected final AIEngineRegistry engineRegistry;
@@ -266,13 +267,13 @@ public class AIAssistantImpl implements AIAssistant {
         try {
             boolean loggingEnabled = isLoggingEnabled();
             if (loggingEnabled) {
-                log.debug("AI request:\n" + CommonUtils.addTextIndent(request.toString(), "\t"));
+                log.debug("AI request:\n" + CommonUtils.addTextIndent(request.toString(), LOG_INDENT));
             }
 
             AIEngineResponse completionResponse = callWithRetry(() -> engine.requestCompletion(monitor, request));
 
             if (loggingEnabled) {
-                log.debug("AI response:\n" + CommonUtils.addTextIndent(completionResponse.toString(), "\t"));
+                log.debug("AI response:\n" + CommonUtils.addTextIndent(completionResponse.toString(), LOG_INDENT));
             }
 
             return completionResponse;
@@ -296,7 +297,7 @@ public class AIAssistantImpl implements AIAssistant {
 
             return subscriber -> {
                 if (loggingEnabled) {
-                    log.debug("Requesting completion stream [request=" + request + "]");
+                    log.debug("AI stream request:\n" + CommonUtils.addTextIndent(request.toString(), LOG_INDENT));
                     publisher.subscribe(new LogSubscriber(log, subscriber));
                 } else {
                     publisher.subscribe(subscriber);
