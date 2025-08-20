@@ -12,7 +12,7 @@
             description="General user settings"
             icon="#user">
         </editor>
-        <configurator class="org.jkiss.dbeaver.ext.cubrid.ui.views.CubridTablePrimaryKeyConfigurator">
+        <configurator class="org.jkiss.dbeaver.ext.cubrid.ui.config.CubridTableUniqueKeyConfigurator">
             <objectType name="org.jkiss.dbeaver.ext.cubrid.model.CubridUniqueKey"/>
         </configurator>
     </extension>

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.cubrid.ui.views;
+package org.jkiss.dbeaver.ext.cubrid.ui.config;
 
 import java.lang.reflect.Field;
 import java.util.Map;
