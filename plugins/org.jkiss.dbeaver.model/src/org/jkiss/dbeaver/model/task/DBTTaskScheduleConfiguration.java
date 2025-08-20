@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class DBTTaskScheduleConfiguration {
 
     public Frequency frequency;
 
-    public Date startTime;
+    public ZonedDateTime startTime;
 
     // Refines the schedule type to allow finer control over schedule recurrence
     public int recurrence;
