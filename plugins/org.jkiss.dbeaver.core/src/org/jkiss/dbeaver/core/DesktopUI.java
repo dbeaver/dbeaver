@@ -427,6 +427,7 @@ public class DesktopUI extends ConsoleUserInterface {
         }.execute();
     }
 
+    @Nullable
     @Override
     public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword, boolean userEditable, boolean oldPasswordVisible) {
         // Ask user

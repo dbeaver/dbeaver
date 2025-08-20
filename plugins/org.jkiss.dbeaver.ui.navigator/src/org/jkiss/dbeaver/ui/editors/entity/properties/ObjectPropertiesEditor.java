@@ -61,7 +61,6 @@ import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -122,7 +121,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 createPropertyRefreshAction(contributionManager);
             }
         };
-        CSSUtils.setCSSClass(pageControl, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(pageControl);
         pageControl.setShowDivider(true);
 
         mainComposite = new ConComposite(pageControl, SWT.NONE);

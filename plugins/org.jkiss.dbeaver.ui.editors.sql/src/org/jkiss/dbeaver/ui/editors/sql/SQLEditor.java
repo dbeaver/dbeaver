@@ -111,7 +111,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.*;
@@ -1026,14 +1025,14 @@ public class SQLEditor extends SQLEditorBase implements
             UIUtils.checkSashStyle(resultSetOrientation.getSashOrientation() | SWT.SMOOTH)
         );
         resultsSash.setShowBorders(true);
-        CSSUtils.setCSSClass(resultsSash, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(resultsSash);
         resultsSash.setSashWidth(8);
 
         UIUtils.setHelp(resultsSash, IHelpContextIds.CTX_SQL_EDITOR);
 
         Composite editorContainer;
         sqlEditorPanel = UIUtils.createPlaceholder(resultsSash, 3, 0);
-        CSSUtils.setCSSClass(sqlEditorPanel, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(sqlEditorPanel);
 
         // Create left vertical toolbar
         createControlsBar(sqlEditorPanel);
@@ -1218,7 +1217,7 @@ public class SQLEditor extends SQLEditorBase implements
             menuService.populateContributionManager(topBarMan, SIDE_TOP_TOOLBAR_CONTRIBUTION_ID);
         }
         topBar.setLayoutData(new GridData(SWT.CENTER, SWT.TOP, true, false));
-        CSSUtils.setCSSClass(topBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(topBar);
         topBarMan.update(true);
         topBar.pack();
 
@@ -1232,7 +1231,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         ToolBar bottomBar = bottomBarMan.createControl(leftToolPanel);
         bottomBar.setLayoutData(new GridData(SWT.CENTER, SWT.BOTTOM, true, false));
-        CSSUtils.setCSSClass(bottomBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(bottomBar);
 
         bottomBar.pack();
         bottomBarMan.update(true);
@@ -1362,13 +1361,13 @@ public class SQLEditor extends SQLEditorBase implements
                 DBPDataSourceContainer dsContainer = getDataSourceContainer();
                 Color bgColor = dsContainer != null ? UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration()) : null;
                 if (resultTabs != null && !resultTabs.isDisposed() && bgColor != null && !bgColor.equals(color)) {
-                    UIUtils.asyncExec(() -> CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE));
+                    UIUtils.asyncExec(() -> CSSUtils.markConnectionTypeColor(resultTabs));
                 } else {
                     super.setBackground(color);
                 }
             }
         };
-        CSSUtils.setCSSClass(resultTabs, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(resultTabs);
         resultTabsReorder = new TabFolderReorder(resultTabs);
         resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
         resultTabs.addSelectionListener(new SelectionAdapter() {
@@ -4320,7 +4319,7 @@ public class SQLEditor extends SQLEditorBase implements
             resultsTab.setShowClose(true);
             int queryIndex = queryProcessors.indexOf(this);
             resultsTab.setText(getResultsTabName(0, queryIndex, null));
-            CSSUtils.setCSSClass(resultsTab, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(resultsTab);
 
             resultsTab.setControl(tabContentScroller);
             resultsTab.addDisposeListener(resultTabDisposeListener);
@@ -4818,7 +4817,7 @@ public class SQLEditor extends SQLEditorBase implements
             resultsTab.setData(this);
             resultsTab.setShowClose(true);
             resultsTab.setText(getResultsTabName(resultSetNumber, getQueryIndex(), null));
-            CSSUtils.setCSSClass(resultsTab, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(resultsTab);
 
             resultsTab.setControl(viewer.getControl());
             resultsTab.addDisposeListener(resultTabDisposeListener);
