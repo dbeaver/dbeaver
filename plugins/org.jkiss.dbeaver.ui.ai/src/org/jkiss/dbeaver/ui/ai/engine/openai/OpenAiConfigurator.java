@@ -99,7 +99,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         configuration.getProperties().setToken(token);
         configuration.getProperties().setModel(modelSelectorField.getSelectedModel());
         configuration.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
-        configuration.getProperties().setTemperature(Double.parseDouble(temperature));
+        configuration.getProperties().setTemperature(CommonUtils.toDouble(temperature));
         configuration.getProperties().setLoggingEnabled(logQuery);
     }
 

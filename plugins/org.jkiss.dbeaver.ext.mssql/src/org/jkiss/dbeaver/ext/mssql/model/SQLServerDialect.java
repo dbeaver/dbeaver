@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -326,6 +326,11 @@ public class SQLServerDialect extends JDBCSQLDialect implements TPRuleProvider, 
     @Override
     protected String quoteIdentifier(@NotNull String str, @NotNull String[][] quoteStrings) {
         return '[' + str.replace("]", "]]") + ']';
+    }
+
+    @Override
+    public String getUnquotedIdentifier(String identifier) {
+        return super.getUnquotedIdentifier(identifier).replace("]]", "]");
     }
 
     @Override
