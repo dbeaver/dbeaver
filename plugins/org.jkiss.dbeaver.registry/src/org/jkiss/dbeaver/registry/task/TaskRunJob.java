@@ -41,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
@@ -87,7 +88,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
         String taskId = dateFormat.format(startTime) + "_" + taskNumber.incrementAndGet();
         TaskRunImpl taskRun = new TaskRunImpl(
             taskId,
-            new Date(),
+            ZonedDateTime.now(),
             System.getProperty(StandardConstants.ENV_USER_NAME),
             GeneralUtils.getProductTitle(),
             null, null);

@@ -166,7 +166,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         taskRunColumnController.addColumn(TaskUIViewMessages.db_tasks_view_column_controller_add_name_time, TaskUIViewMessages.db_tasks_view_column_controller_add_descr_start_time, SWT.LEFT, true, true, new TaskRunLabelProvider() {
             @Override
             protected void update(ViewerCell cell, DBTTaskRun taskRun) {
-                cell.setText(tasksTree.getDateFormat().format(taskRun.getStartTime()));
+                cell.setText(tasksTree.getDateTimeFormatter().format(taskRun.getStartTime()));
             }
         });
         taskRunColumnController.addColumn(TaskUIViewMessages.db_tasks_view_column_controller_add_name_duration, TaskUIViewMessages.db_tasks_view_column_controller_add_descr_task_duration, SWT.LEFT, true, false, true, null, new TaskRunLabelProviderEx() {
@@ -624,7 +624,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
             if (task != null && taskRun != null &&
                 UIUtils.confirmAction(
                     TaskUIViewMessages.db_tasks_view_run_log_confirm_remove,
-                    NLS.bind(TaskUIViewMessages.db_tasks_view_run_log_confirm_delete_task, task.getName(), tasksTree.getDateFormat().format(taskRun.getStartTime()))))
+                    NLS.bind(TaskUIViewMessages.db_tasks_view_run_log_confirm_delete_task, task.getName(), tasksTree.getDateTimeFormatter().format(taskRun.getStartTime()))))
             {
                 task.removeRun(taskRun);
             }

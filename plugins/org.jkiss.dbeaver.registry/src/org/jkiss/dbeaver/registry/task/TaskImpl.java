@@ -27,12 +27,14 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.GsonUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,6 +51,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
     private static final Gson gson = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
         .setDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN)
+        .registerTypeAdapter(ZonedDateTime.class, new GsonUtils.ZonedDateTimeAdapter(TaskUtils.DATE_TIME_FORMATTER, ZoneId.systemDefault()))
         .create();
 
     private final DBPProject project;

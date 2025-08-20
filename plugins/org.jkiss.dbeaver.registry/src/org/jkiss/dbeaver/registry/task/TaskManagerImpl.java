@@ -78,7 +78,7 @@ public class TaskManagerImpl implements DBTTaskManager {
     public TaskManagerImpl(BaseProjectImpl projectMetadata, Path statisticsFolder) {
         this.projectMetadata = projectMetadata;
         this.statisticsFolder = statisticsFolder;
-        this.systemDateFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmm[Z]", Locale.ENGLISH);
+        this.systemDateFormat = TaskUtils.DATE_TIME_FORMATTER;
         loadConfiguration();
     }
 
