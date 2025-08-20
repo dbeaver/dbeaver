@@ -376,7 +376,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
             parent.getShell().setMinimumSize(this.computeSizeConstraints(60, 6));
 
             this.infoView = new AnnotationsInformationView(this, editor);
-            this.infoView.createControl(parent).setLayoutData(new BorderData(SWT.TOP));
+            this.infoView.createControl(parent).setLayoutData(new BorderData(SWT.BOTTOM));
         }
 
         @Override
