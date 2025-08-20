@@ -34,4 +34,7 @@ public class CubridMessages extends NLS {
     public static String statistic_all_info;
     public static String statistic_group_editor_title;
     public static String statistic_instruction_message;
+    public static String pref_page_cubrid_group_dbms_output;
+    public static String pref_page_cubrid_checkbox_enable_dbms_output;
+    public static String pref_page_cubrid_label_buffer_size;
 }

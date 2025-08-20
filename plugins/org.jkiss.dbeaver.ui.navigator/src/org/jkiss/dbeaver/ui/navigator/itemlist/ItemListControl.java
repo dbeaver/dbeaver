@@ -176,6 +176,7 @@ public class ItemListControl extends NodeListControl
                 NavigatorCommands.CMD_OBJECT_DELETE));
         }
 
+
         // Reorder
 
         if (rootNode instanceof DBNDatabaseNode && rootNode.isPersisted()) {
@@ -249,7 +250,8 @@ public class ItemListControl extends NodeListControl
     {
         return LoadingJob.createService(
             new ItemLoadService(getNodeMeta()),
-            new ObjectsLoadVisualizer(forUpdate));
+            new ObjectsLoadVisualizer(forUpdate)
+        );
     }
 
     @Override

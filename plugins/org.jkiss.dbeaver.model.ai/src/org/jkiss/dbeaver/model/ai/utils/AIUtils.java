@@ -22,140 +22,45 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatMessage;
-import org.jkiss.dbeaver.model.ai.completion.DAIChatRole;
-import org.jkiss.dbeaver.model.ai.completion.DAICompletionEngine;
-import org.jkiss.dbeaver.model.ai.format.IAIFormatter;
+import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class AIUtils {
-
     private static final Log log = Log.getLog(AIUtils.class);
 
     /**
-     * Counts tokens in the given list of messages.
-     *
-     * @param messages list of messages
-     * @return number of tokens
+     * Retrieves a secret value from the global secret controller.
+     * If the secret value is empty, it returns the provided default value.
      */
-    public static int countTokens(@NotNull List<DAIChatMessage> messages) {
-        int count = 0;
-        for (DAIChatMessage message : messages) {
-            count += countContentTokens(message.content());
-        }
-        return count;
-    }
-
-    /**
-     * Truncates messages to fit into the given number of tokens.
-     *
-     * @param chatMode  true if chat mode is enabled
-     * @param messages  list of messages
-     * @param maxTokens maximum number of tokens
-     * @return list of truncated messages
-     */
-    @NotNull
-    public static List<DAIChatMessage> truncateMessages(
-        boolean chatMode,
-        @NotNull List<DAIChatMessage> messages,
-        int maxTokens
-    ) {
-        final List<DAIChatMessage> pending = new ArrayList<>(messages);
-        final List<DAIChatMessage> truncated = new ArrayList<>();
-        int remainingTokens = maxTokens - 20; // Just to be sure
-
-        if (!pending.isEmpty()) {
-            if (pending.get(0).role() == DAIChatRole.SYSTEM) {
-                // Always append main system message and leave space for the next one
-                DAIChatMessage msg = pending.remove(0);
-                DAIChatMessage truncatedMessage = truncateMessage(msg, remainingTokens - 50);
-                remainingTokens -= countContentTokens(truncatedMessage.content());
-                truncated.add(msg);
-            }
+    public static String getSecretValueOrDefault(
+        @NotNull String secretId,
+        @Nullable String defaultValue
+    ) throws DBException {
+        String secretValue = DBSSecretController.getGlobalSecretController().getPrivateSecretValue(secretId);
+        if (CommonUtils.isEmpty(secretValue)) {
+            return defaultValue;
         }
 
-        for (DAIChatMessage message : pending) {
-            final int messageTokens = message.content().length();
-
-            if (remainingTokens < 0 || messageTokens > remainingTokens) {
-                // Exclude old messages that don't fit into given number of tokens
-                if (chatMode) {
-                    break;
-                } else {
-                    // Truncate message itself
-                }
-            }
-
-            DAIChatMessage truncatedMessage = truncateMessage(message, remainingTokens);
-            remainingTokens -= countContentTokens(truncatedMessage.content());
-            truncated.add(truncatedMessage);
-        }
-
-        return truncated;
-    }
-
-    /**
-     * 1 token = 2 bytes
-     * It is sooooo approximately
-     * We should use https://github.com/knuddelsgmbh/jtokkit/ or something similar
-     */
-    private static DAIChatMessage truncateMessage(DAIChatMessage message, int remainingTokens) {
-        String content = message.content();
-        int contentTokens = countContentTokens(content);
-        if (remainingTokens > contentTokens) {
-            return message;
-        }
-
-        String truncatedContent = removeContentTokens(content, contentTokens - remainingTokens);
-        return new DAIChatMessage(message.role(), truncatedContent);
-    }
-
-    private static String removeContentTokens(String content, int tokensToRemove) {
-        int charsToRemove = tokensToRemove * 2;
-        if (charsToRemove >= content.length()) {
-            return "";
-        }
-        return content.substring(0, content.length() - charsToRemove) + "..";
-    }
-
-    private static int countContentTokens(String content) {
-        return content.length() / 2;
-    }
-
-    /**
-     * Processes completion text.
-     */
-    @NotNull
-    public static String processCompletion(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull DBSObjectContainer mainObject,
-        @NotNull String completionText,
-        @NotNull IAIFormatter formatter,
-        boolean isChatAPI
-    ) {
-        if (CommonUtils.isEmpty(completionText)) {
-            return "";
-        }
-
-        if (!isChatAPI) {
-            completionText = "SELECT " + completionText.trim() + ";";
-        }
-
-        return formatter.postProcessGeneratedQuery(monitor, mainObject, executionContext, completionText).trim();
+        return secretValue;
     }
 
     /**
@@ -177,19 +82,9 @@ public final class AIUtils {
     }
 
     /**
-     * Computes the maximum number of tokens available for a request based on the engine's context size.
-     *
-     * @param engine the completion engine
-     * @param monitor the progress monitor
-     */
-    public static int getMaxRequestTokens(@NotNull DAICompletionEngine engine, @NotNull DBRProgressMonitor monitor) {
-        return engine.getMaxContextSize(monitor) - AIConstants.MAX_RESPONSE_TOKENS;
-    }
-
-    /**
      * Retrieves the DDL for the given DBSObject if applicable.
      *
-     * @param object the DBSObject from which to retrieve the DDL
+     * @param object  the DBSObject from which to retrieve the DDL
      * @param monitor the progress monitor
      */
     public static String getObjectDDL(@Nullable DBSObject object, @NotNull DBRProgressMonitor monitor) {
@@ -200,7 +95,14 @@ public final class AIUtils {
         ) {
             if (object instanceof DBPScriptObject scriptObject) {
                 try {
-                    return scriptObject.getObjectDefinitionText(monitor, Map.of());
+                    return scriptObject.getObjectDefinitionText(
+                        monitor, Map.of(
+                            DBPScriptObject.OPTION_INCLUDE_COMMENTS, false,
+                            DBPScriptObject.OPTION_INCLUDE_NESTED_OBJECTS, false,
+                            DBPScriptObject.OPTION_SKIP_INDEXES, true, // Exclude indexes
+                            DBPScriptObject.OPTION_SKIP_DROPS, true // Exclude --DROP
+                        )
+                    );
                 } catch (DBException e) {
                     log.debug(e);
                 }
@@ -209,4 +111,70 @@ public final class AIUtils {
         return null;
     }
 
+    public static boolean confirmExecutionIfNeeded(
+        @NotNull List<SQLScriptElement> scriptElements,
+        boolean isCommand
+    ) {
+        Set<SQLQueryCategory> queryCategories = SQLQueryCategory.categorizeScript(scriptElements);
+        boolean isDdlOrUnknown = queryCategories.contains(SQLQueryCategory.DDL) ||
+            queryCategories.contains(SQLQueryCategory.UNKNOWN);
+        if (isDdlOrUnknown && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
+            String message = isCommand ? AIMessages.ai_execute_command_confirm_ddl_message :
+                AIMessages.ai_execute_query_confirm_ddl_message;
+            return confirmExecute(AIMessages.ai_execute_query_title, message);
+        }
+        if (queryCategories.contains(SQLQueryCategory.DML) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DML)) {
+            String message = isCommand ? AIMessages.ai_execute_command_confirm_dml_message :
+                AIMessages.ai_execute_query_confirm_dml_message;
+            return confirmExecute(AIMessages.ai_execute_query_title, message);
+        }
+        if (queryCategories.contains(SQLQueryCategory.SQL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
+            String message = isCommand ? AIMessages.ai_execute_command_confirm_sql_message :
+                AIMessages.ai_execute_query_confirm_sql_message;
+            return confirmExecute(AIMessages.ai_execute_query_title, message);
+        }
+        return true;
+    }
+
+    public static void disableAutoCommitIfNeeded(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<SQLScriptElement> scriptElements,
+        @Nullable DBCExecutionContext context
+    ) throws DBException {
+        if (!SQLQueryCategory.categorizeScript(scriptElements).contains(SQLQueryCategory.DML)) {
+            return;
+        }
+
+        AIQueryConfirmationRule dmlRule = CommonUtils.valueOf(
+            AIQueryConfirmationRule.class,
+            DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_CONFIRM_DML),
+            AIQueryConfirmationRule.CONFIRM
+        );
+        if (dmlRule == AIQueryConfirmationRule.DISABLE_AUTOCOMMIT) {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+            if (txnManager != null && txnManager.isAutoCommit()) {
+                txnManager.setAutoCommit(monitor, false);
+                showAutoCommitDisabledNotification();
+            }
+        }
+    }
+
+    private static void showAutoCommitDisabledNotification() {
+        DBWorkbench.getPlatformUI().showWarningNotification(
+            AIMessages.ai_execute_query_auto_commit_disabled_title,
+            AIMessages.ai_execute_query_auto_commit_disabled_message
+        );
+    }
+
+    private static boolean isConfirmationNeeded(@NotNull String actionName) {
+        return CommonUtils.valueOf(
+            AIQueryConfirmationRule.class,
+            DBWorkbench.getPlatform().getPreferenceStore().getString(actionName),
+            AIQueryConfirmationRule.CONFIRM
+        ) == AIQueryConfirmationRule.CONFIRM;
+    }
+
+    private static boolean confirmExecute(String title, String message) {
+        return DBWorkbench.getPlatformUI().confirmAction(title, message, true);
+    }
 }

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.screenreaders.ScreenReader;
 import org.jkiss.dbeaver.ui.screenreaders.ScreenReaderPreferences;
 import org.jkiss.utils.CommonUtils;
@@ -154,6 +155,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart {
             }
             tabFolder.setTabHeight(tabHeight);
         }
+        CSSUtils.markConnectionTypeColor(pageContainer);
     }
 
     private static int getDefaultTabHeight(@NotNull CTabFolder tabFolder) {

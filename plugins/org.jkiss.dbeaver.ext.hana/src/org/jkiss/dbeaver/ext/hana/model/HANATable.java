@@ -138,6 +138,7 @@ public class HANATable extends GenericTable implements DBPObjectStatistics {
 
     private static class PartitionCache extends JDBCObjectCache<HANATable, HANAPartition> {
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull HANATable table) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT tp.*, "

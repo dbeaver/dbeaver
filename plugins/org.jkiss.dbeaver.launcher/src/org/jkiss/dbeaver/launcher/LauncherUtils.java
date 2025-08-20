@@ -23,8 +23,21 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.Map;
 
 class LauncherUtils {
+
+    private static final Map<Character, String> CHARS_TO_ESCAPE =
+        Map.of(
+            '\b', "\\b",
+            '\n', "\\n",
+            '\t', "\\t",
+            '\f', "\\f",
+            '\r', "\\r",
+            '\"', "\\\"",
+            '\\', "\\\\",
+            '/', "\\/"
+        );
 
     static File toFileURL(String spec) {
         try {
@@ -64,5 +77,19 @@ class LauncherUtils {
                 fileTest.delete();
         }
         return true;
+    }
+
+
+    public static String escape(String original) {
+        StringBuilder escaped = new StringBuilder();
+        for (int i = 0; i < original.length(); i++) {
+            char c = original.charAt(i);
+            if (CHARS_TO_ESCAPE.containsKey(c)) {
+                escaped.append(CHARS_TO_ESCAPE.get(c));
+            } else {
+                escaped.append(c);
+            }
+        }
+        return escaped.toString();
     }
 }

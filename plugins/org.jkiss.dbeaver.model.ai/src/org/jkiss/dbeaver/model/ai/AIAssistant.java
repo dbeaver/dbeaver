@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.completion.*;
+import org.jkiss.dbeaver.model.ai.engine.AIEngine;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.concurrent.Flow;
 
 /**
  * AI Assistant interface. Provides methods for AI-based operations.
@@ -29,13 +30,9 @@ import java.util.concurrent.Flow;
 public interface AIAssistant {
 
     /**
-     * Generates the next message in a chat conversation.
+     * Initializes assistant
      */
-    @NotNull
-    Flow.Publisher<DAICompletionChunk> chat(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DAIChatRequest chatCompletionRequest
-    ) throws DBException;
+    void initialize(@NotNull DBPWorkspace workspace);
 
     /**
      * Translates text to SQL.
@@ -43,20 +40,26 @@ public interface AIAssistant {
     @NotNull
     String translateTextToSql(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAITranslateRequest request
+        @NotNull AITranslateRequest request
     ) throws DBException;
 
     /**
      * Translates a user command to SQL. The active completion engine is used.
      */
     @NotNull
-    CommandResult command(
+    AICommandResult command(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DAICommandRequest request
+        @NotNull AICommandRequest request
     ) throws DBException;
 
     /**
      * Returns whether the AI assistant has a valid configuration.
      */
     boolean hasValidConfiguration() throws DBException;
+
+    @NotNull
+    AIEngine getActiveEngine() throws DBException;
+
+    @Nullable
+    AIEngineDescriptor getActiveEngineDescriptor();
 }

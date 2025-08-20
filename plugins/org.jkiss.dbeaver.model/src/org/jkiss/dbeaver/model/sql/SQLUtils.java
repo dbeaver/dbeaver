@@ -89,6 +89,26 @@ public final class SQLUtils {
             dialect.getSingleLineComments());
     }
 
+    @NotNull
+    public static String[] extractComments(@NotNull SQLDialect dialect, @NotNull String query) {
+        if (query.isEmpty()) {
+            return new String[0];
+        }
+
+        SQLCommentScanner scanner = new SQLCommentScanner(
+            dialect.getMultiLineComments(),
+            dialect.getSingleLineComments(),
+            query
+        );
+
+        List<String> comments = new ArrayList<>();
+        while (scanner.hasNext()) {
+            comments.add(scanner.next());
+        }
+        return comments.toArray(new String[0]);
+    }
+
+
     /**
      * Removes both multi-line and single-line comments from an SQL query
      */
@@ -194,12 +214,19 @@ public final class SQLUtils {
 
         for (int i = 0; i < like.length(); i++) {
             char c = like.charAt(i);
-            if (c == '*') result.append(".*");
-            else if (c == '?' || c == '_') result.append(".");
-            else if (c == '%') result.append(".*");
-            else if (Character.isLetterOrDigit(c)) result.append(c);
-            else if (c == '(' || c == ')' || c == '[' || c == ']') result.append('\\').append(c);
-            else if (c == '\\') {
+            if (c == '*') {
+                result.append(".*");
+            } else if (c == '?' || c == '_') {
+                result.append(".");
+            } else if (c == '%') {
+                result.append(".*");
+            } else if (Character.isLetterOrDigit(c)) {
+                result.append(c);
+            } else if (c == '(' || c == ')' || c == '[' || c == ']') {
+                result.append('\\').append(c);
+            } else if (c == '+' || c == '^' || c == '$' || c == '.' || c == '|' || c == '{' || c == '}') {
+                result.append('\\').append(c);
+            } else if (c == '\\') {
                 if (i < like.length() - 1) {
                     char nc = like.charAt(i + 1);
                     if (nc == '_' || nc == '*' || nc == '?' || nc == '.' || nc == '%') {
@@ -209,8 +236,7 @@ public final class SQLUtils {
                         result.append("\\");
                     }
                 }
-            }
-            else {
+            } else {
                 result.append(c);
             }
         }
@@ -675,7 +701,7 @@ public final class SQLUtils {
         return dataSource.getSQLDialect().getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
-    public static String getScriptDescripion(@NotNull String sql) {
+    public static String getScriptDescription(@NotNull String sql) {
         sql = stripComments(BasicSQLDialect.INSTANCE, sql);
         Matcher matcher = CREATE_PREFIX_PATTERN.matcher(sql);
         if (matcher.find() && matcher.start(0) == 0) {
@@ -694,15 +720,17 @@ public final class SQLUtils {
             return name;
         }
 
+        SQLDialect dialect = entity.getParentObject().getDataSource().getSQLDialect();
         StringBuilder buf = new StringBuilder();
         boolean prevNonLetter = true;
         char prevChar = 0;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
+            boolean isValidChar = (buf.isEmpty() && dialect.validIdentifierStart(c)) || (!buf.isEmpty() && dialect.validIdentifierPart(c, false));
             if (!Character.isLetter(c)) {
                 prevNonLetter = true;
             } else {
-                if (prevNonLetter || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c))) {
+                if (isValidChar && (prevNonLetter || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c)))) {
                     buf.append(c);
                 }
                 prevNonLetter = false;
@@ -710,10 +738,9 @@ public final class SQLUtils {
             prevChar = c;
         }
         String alias;
-        if(!CommonUtils.isEmpty(buf)) {
+        if (!CommonUtils.isEmpty(buf)) {
             alias = buf.toString().toLowerCase(Locale.ENGLISH);
-        }
-        else{
+        } else {
             alias = "t";
         }
 
@@ -1008,9 +1035,7 @@ public final class SQLUtils {
 
         // In reverse order
         sql = generateTableJoinByColumns(monitor, rightTable, rightAlias, leftTable, leftAlias);
-        if (sql != null) return sql;
-
-        return null;
+        return sql;
     }
 
     private static String generateTableJoinByColumns(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
@@ -1054,11 +1079,10 @@ public final class SQLUtils {
         boolean hasCriteria = false;
         StringBuilder joinSQL = new StringBuilder();
         for (DBSEntityAttributeRef ar : fk.getAttributeReferences(monitor)) {
-            if (ar instanceof DBSTableForeignKeyColumn) {
+            if (ar instanceof DBSTableForeignKeyColumn fkc) {
                 if (hasCriteria) {
                     joinSQL.append(" AND ");
                 }
-                DBSTableForeignKeyColumn fkc = (DBSTableForeignKeyColumn)ar;
                 joinSQL
                     .append(leftAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc)).append(" = ")
                     .append(rightAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc.getReferencedColumn()));

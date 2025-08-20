@@ -267,7 +267,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
 
                     db2Schema = dataSource.getSchema(session.getProgressMonitor(), schemaName);
                     if (db2Schema == null) {
-                        LOG.debug("Schema '" + schemaName + "' not found. Probably was filtered");
+                        LOG.trace("Schema '" + schemaName + "' not found. Probably was filtered");
                         continue;
                     }
                     if (DB2ObjectType.SCHEMA.toString().equals(typeObjectFromResultSet)) {
@@ -334,7 +334,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
 
                     db2Schema = dataSource.getSchema(session.getProgressMonitor(), schemaName);
                     if (db2Schema == null) {
-                        LOG.debug("Schema '" + schemaName + "' not found. Probably was filtered");
+                        LOG.trace("Schema '" + schemaName + "' not found. Probably was filtered");
                         continue;
                     }
 
@@ -386,7 +386,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant<DB2Execution
 
                     db2Schema = dataSource.getSchema(session.getProgressMonitor(), tableSchemaName);
                     if (db2Schema == null) {
-                        LOG.debug("Schema '" + tableSchemaName + "' not found. Probably was filtered");
+                        LOG.trace("Schema '" + tableSchemaName + "' not found. Probably was filtered");
                         continue;
                     }
                     // Try with table, then view

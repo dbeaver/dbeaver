@@ -19,8 +19,11 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -40,13 +43,10 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.ConComposite;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
-import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -163,7 +163,7 @@ public class CustomFormEditor {
                         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING);
                         editControl.setLayoutData(gd);
                     }
-                    if (editControl instanceof Text || editControl instanceof Combo) {
+                    if (editControl instanceof Text || editControl instanceof StyledText || editControl instanceof Combo) {
                         gd.widthHint = Math.max(
                             UIUtils.getFontHeight(group) * 15,
                             editControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).x);
@@ -190,7 +190,9 @@ public class CustomFormEditor {
                         });
                     }
                 } else if (editControl instanceof Text text) {
-                    text.addModifyListener(e -> updatePropertyValue(prop, ((Text) editControl).getText()));
+                    text.addModifyListener(e -> updatePropertyValue(prop, text.getText()));
+                } else if (editControl instanceof StyledText text) {
+                    text.addModifyListener(e -> updatePropertyValue(prop, text.getText()));
                 } else if (editControl instanceof Button button) {
                     button.addSelectionListener(new SelectionAdapter() {
                         @Override
@@ -308,62 +310,33 @@ public class CustomFormEditor {
             if (property instanceof ObjectPropertyDescriptor && property.getLength() == PropertyLength.MULTILINE) {
                 Label label = UIUtils.createControlLabel(parent, propertyDisplayName);
                 label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-                Composite composite = UIUtils.createComposite(parent, 2);
-                Text editor = new Text(composite, SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.V_SCROLL
-                    | (readOnly ? SWT.READ_ONLY : SWT.NONE));
-                editor.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+                var editorHost = new ResizeableComposite(parent, SWT.VERTICAL);
+                editorHost.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+                editorHost.addControlListener(ControlListener.controlResizedAdapter(e -> parent.layout(true, true)));
+
+                var editor = new Text(editorHost, SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.V_SCROLL | (readOnly ? SWT.READ_ONLY : SWT.NONE));
                 editor.setText(objectValueToString(value));
 
-                int textHeight = UIUtils.getTextHeight(editor) * 3;
-                GridData gdEditor = new GridData(SWT.FILL, SWT.TOP, true, false);
-                gdEditor.heightHint = textHeight;
-                composite.setLayoutData(gdEditor);
+                int editorHeight = UIUtils.getTextHeight(editor);
+                editorHost.setMinSize(new Point(0, editorHeight));
+                editorHost.setPrefSize(new Point(0, editorHeight * 4));
+                editorHost.setContent(editor);
 
-                Button editButton = new Button(composite, SWT.FLAT | SWT.PUSH);
-                editButton.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON));
-                GridData gd = new GridData(SWT.END, SWT.NONE, false, true);
-                editButton.setLayoutData(gd);
-                editButton.setToolTipText(UIMessages.text_with_open_dialog_edit_text);
-                editButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        if (readOnly) {
-                            EditTextDialog.showText(
-                                editor.getShell(),
-                                UIMessages.edit_text_dialog_title_edit_value,
-                                editor.getText()
-                            );
-                        } else {
-                            String newValue = EditTextDialog.editText(
-                                editor.getShell(),
-                                UIMessages.edit_text_dialog_title_edit_value,
-                                editor.getText()
-                            );
-                            if (newValue != null) {
-                                editor.setText(newValue);
-                            }
-                        }
-                    }
-                });
-                GridData gdComposite = new GridData(SWT.FILL, SWT.TOP, true, false);
-                gdComposite.heightHint = textHeight + 6;
-                composite.setLayoutData(gdComposite);
                 return editor;
             } else {
-                Text text = UIUtils.createLabelText(
-                    parent,
-                    propertyDisplayName,
-                    objectValueToString(value),
-                    SWT.BORDER |
-                        (readOnly ? SWT.READ_ONLY : SWT.NONE) |
-                        (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isPassword() ? SWT.PASSWORD : SWT.NONE));
+                UIUtils.createControlLabel(parent, propertyDisplayName);
+                Text text = new Text(parent, SWT.BORDER |
+                    (readOnly ? SWT.READ_ONLY : SWT.NONE) |
+                    (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isPassword() ? SWT.PASSWORD : SWT.NONE));
+                text.setText(objectValueToString(value));
                 text.setLayoutData(new GridData((BeanUtils.isNumericType(propType) ? GridData.HORIZONTAL_ALIGN_BEGINNING : GridData.FILL_HORIZONTAL) | GridData.VERTICAL_ALIGN_BEGINNING));
                 return text;
             }
         } else if (BeanUtils.isBooleanType(propType)) {
             if (curButtonsContainer == null) {
                 UIUtils.createEmptyLabel(parent, 1, 1);
-                curButtonsContainer = new Composite(parent, SWT.NONE);
+                curButtonsContainer = new ConComposite(parent, SWT.NONE);
                 RowLayout layout = new RowLayout(SWT.HORIZONTAL);
                 curButtonsContainer.setLayout(layout);
                 GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -455,6 +428,10 @@ public class CustomFormEditor {
             }
         } else {
             if (editorControl instanceof Text text) {
+                if (!CommonUtils.equalObjects(text.getText(), stringValue)) {
+                    text.setText(stringValue);
+                }
+            } else if (editorControl instanceof StyledText text) {
                 if (!CommonUtils.equalObjects(text.getText(), stringValue)) {
                     text.setText(stringValue);
                 }

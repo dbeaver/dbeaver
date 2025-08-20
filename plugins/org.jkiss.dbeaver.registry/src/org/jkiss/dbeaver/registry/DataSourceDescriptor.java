@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
-import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.rm.RMProjectType;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.secret.*;
@@ -149,7 +148,7 @@ public class DataSourceDescriptor
     @NotNull
     private final Map<String, String> tags;
     @NotNull
-    private final Map<String, String> extensions;
+    private final Map<String, Object> extensions;
     @Nullable
     private DBPDataSource dataSource;
     @Nullable
@@ -172,15 +171,16 @@ public class DataSourceDescriptor
     private volatile boolean disposed = false;
     private volatile boolean connecting = false;
 
+    private transient DBWNetworkHandler proxyHandler;
+    private transient DBWTunnel tunnelHandler;
+
     // secrets resolved from secret controller
     private volatile boolean secretsResolved = false;
     // secrets resolved from secret controller and contains db creds (we may not have db creds in the case when we store only ssh)
     private volatile boolean secretsContainsDatabaseCreds = false;
 
-    private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
-    private transient DBWNetworkHandler proxyHandler;
-    private transient DBWTunnel tunnelHandler;
-    private final List<DBPDataSourceTask> users = new ArrayList<>();
+    private transient final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
+    private transient final List<DBPDataSourceTask> users = new ArrayList<>();
     private transient String clientApplicationName;
     // DPI controller
     private transient DPIProcessController dpiController;
@@ -1324,14 +1324,8 @@ public class DataSourceDescriptor
         }
     }
 
-    private void handleConnectError(@NotNull Throwable e) {
-        if (!DBWorkbench.getPlatform().getApplication().isMultiuser() && !DBWorkbench.isDistributed()) {
-            // save connect error only for web or distributed product
-            return;
-        }
-        if (e instanceof DBCException connectException && connectException.getDataSource() != null) {
-            QMUtils.getDefaultHandler().handleConnectError(connectException.getDataSource(), e);
-        }
+    protected void handleConnectError(@NotNull Throwable e) {
+
     }
 
 
@@ -1712,12 +1706,12 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
-    public String getExtension(@NotNull String name) {
-        return extensions.get(name);
+    public <T> T getExtension(@NotNull String name) {
+        return (T) extensions.get(name);
     }
 
     @Override
-    public void setExtension(@NotNull String name, @Nullable String value) {
+    public void setExtension(@NotNull String name, @Nullable Object value) {
         if (value == null) {
             this.extensions.remove(name);
         } else {
@@ -1726,11 +1720,11 @@ public class DataSourceDescriptor
     }
 
     @NotNull
-    public Map<String, String> getExtensions() {
+    public Map<String, Object> getExtensions() {
         return extensions;
     }
 
-    public void setExtensions(Map<String, String> extensions) {
+    public void setExtensions(Map<String, Object> extensions) {
         this.extensions.clear();
         this.extensions.putAll(extensions);
     }

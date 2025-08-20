@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@ import org.eclipse.jface.util.SafeRunnable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -39,6 +39,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -59,7 +60,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         /** If a page is complete, a green check will be shown next to it */
         COMPLETE,
         /** If a page is incomplete, a red cross will be shown next to it */
-        ERROR
+        ERROR,
+        CURRENT
     }
 
     private IWizard wizard;
@@ -72,7 +74,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private volatile int runningOperations = 0;
 
     private String finishButtonLabel = IDialogConstants.OK_LABEL;
-    private String cancelButtonLabel = IDialogConstants.CANCEL_LABEL;
+    private final String closeButtonLabel = IDialogConstants.CLOSE_LABEL;
 
     private final ListenerList<IPageChangedListener> pageChangedListeners = new ListenerList<>();
     private Composite leftBottomPanel;
@@ -312,6 +314,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 page.setVisible(true);
             }
 
+            GridLayout pageLayout = (GridLayout) pageArea.getLayout();
+            if (isFullscreenPage(page)) {
+                pageLayout.marginWidth = 0;
+                pageLayout.marginHeight = 0;
+            } else {
+                pageLayout.marginWidth = 5; // default
+                pageLayout.marginHeight = 5; // default
+            }
+
             setTitle(page.getTitle());
             setMessage(page.getDescription());
 
@@ -450,6 +461,16 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
     }
 
+    /**
+     * Checks if the page should occupy the whole dialog area without margins.
+     *
+     * @param page the page to check
+     * @return {@code true} if the page is a fullscreen page and should not have margins, {@code false} otherwise
+     */
+    protected boolean isFullscreenPage(@NotNull IDialogPage page) {
+        return page.getControl() instanceof CTabFolder;
+    }
+
     private void updatePageCompleteMark(TreeItem parent) {
         final EnumSet<PageCompletionMark> shownCompletionMarks = getShownCompletionMarks();
         final IWizardPage currentPage = getCurrentPage();
@@ -458,14 +479,19 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             if (page instanceof IWizardPageNavigable pageNavigable && !pageNavigable.isPageNavigable()) {
                 continue;
             }
+            DBPImage itemImage;
             if (page == currentPage) {
                 // Don't show any completion marks for current page
-                item.setImage((Image) null);
+                itemImage = shownCompletionMarks.contains(PageCompletionMark.CURRENT) ? UIIcon.RS_FORWARD : null;
             } else if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
-                item.setImage(shownCompletionMarks.contains(PageCompletionMark.ERROR) ? DBeaverIcons.getImage(DBIcon.SMALL_ERROR) : null);
+                itemImage = shownCompletionMarks.contains(PageCompletionMark.ERROR) ? DBIcon.SMALL_ERROR : null;
             } else {
-                item.setImage(shownCompletionMarks.contains(PageCompletionMark.COMPLETE) ? DBeaverIcons.getImage(UIIcon.OK_MARK) : null);
+                itemImage = shownCompletionMarks.contains(PageCompletionMark.COMPLETE) ? UIIcon.OK_MARK : null;
             }
+            if (itemImage == null && shownCompletionMarks.contains(PageCompletionMark.CURRENT)) {
+                itemImage = UIIcon.DOTS_BUTTON;
+            }
+            item.setImage(itemImage == null ? null : DBeaverIcons.getImage(itemImage));
             updatePageCompleteMark(item);
         }
     }
@@ -483,7 +509,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_DARK_SHADOW;
             item.setForeground(getShell().getDisplay().getSystemColor(nnColor));
         }
-
         item.setData(page);
 
         // Ad sub pages
@@ -623,15 +648,11 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, finishButtonLabel,
             getShell().getDefaultButton() == null);
-        createButton(parent, IDialogConstants.CANCEL_ID, cancelButtonLabel, false);
+        createButton(parent, IDialogConstants.CANCEL_ID, closeButtonLabel, false);
     }
 
     protected void setFinishButtonLabel(String finishButtonLabel) {
         this.finishButtonLabel = finishButtonLabel;
-    }
-
-    protected void setCancelButtonLabel(String cancelButtonLabel) {
-        this.cancelButtonLabel = cancelButtonLabel;
     }
 
     @Override

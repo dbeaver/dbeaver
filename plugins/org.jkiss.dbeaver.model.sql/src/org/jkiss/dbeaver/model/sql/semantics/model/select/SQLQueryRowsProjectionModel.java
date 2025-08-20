@@ -23,9 +23,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect.ProjectionAliasVisibilityScope;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
@@ -150,52 +151,81 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
         return this.filterExprs.orderByClause;
     }
 
-    @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(
-        @NotNull SQLQueryDataContext context,
+    protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
         if (this.fromScope != null) {
-            this.fromScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsetRefFromContext(context));
+            this.fromScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsSourceRef(context));
         }
 
-        SQLQueryDataContext unresolvedResult = this.fromSource.propagateContext(context, statistics);
-        this.selectListScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.ValueRefFromContext(unresolvedResult));
-        EnumSet<ProjectionAliasVisibilityScope> aliasVisibilities = context.getDialect().getProjectionAliasVisibilityScope();
+        SQLQueryRowsSourceContext resolvedContext = this.fromSource.resolveRowSources(context, statistics).setCteSourcesFrom(context);
+
+        if (this.filterExprs.whereClause != null) {
+            this.filterExprs.whereClause.resolveRowSources(resolvedContext, statistics);
+        }
+        if (this.filterExprs.havingClause != null) {
+            this.filterExprs.havingClause.resolveRowSources(resolvedContext, statistics);
+        }
+        if (this.filterExprs.groupByClause != null) {
+            this.filterExprs.groupByClause.resolveRowSources(resolvedContext, statistics);
+        }
+        if (this.filterExprs.orderByClause != null) {
+            this.filterExprs.orderByClause.resolveRowSources(resolvedContext, statistics);
+        }
+        return resolvedContext.reset();
+    }
+
+    @Override
+    protected SQLQueryRowsDataContext resolveRowDataImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        SQLQueryRowsDataContext unresolvedResult = context.combine(this.fromSource.getRowsDataContext());
+        this.selectListScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(unresolvedResult));
+        EnumSet<ProjectionAliasVisibilityScope> aliasVisibilities = this.getRowsSources().getDialect().getProjectionAliasVisibilityScope();
 
         List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);
         List<SQLQueryResultPseudoColumn> resultPseudoColumns = unresolvedResult.getPseudoColumnsList().stream()
             .filter(s -> s.propagationPolicy.projected).toList();
-        SQLQueryDataContext resolvedResult = unresolvedResult.overrideResultTuple(this, resultColumns, resultPseudoColumns);
+        SQLQueryRowsDataContext resolvedResult = this.getRowsSources().makeTuple(this, resultColumns, resultPseudoColumns);
 
-        SQLQueryDataContext filtersContext = unresolvedResult.combine(resolvedResult);
+        SQLQueryRowsDataContext filtersContext = unresolvedResult.combine(resolvedResult);
         if (this.filterExprs.whereClause != null) {
-            SQLQueryDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.WHERE) ? filtersContext : unresolvedResult;
-            this.filterExprs.whereClause.propagateContext(clauseCtx, statistics);
-            this.filterScopes.whereClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.ValueRefFromContext(clauseCtx));
+            SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.WHERE)
+                ? filtersContext
+                : unresolvedResult;
+            this.filterExprs.whereClause.resolveValueRelations(clauseCtx, statistics);
+            this.filterScopes.whereClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
         }
         if (this.filterExprs.havingClause != null) {
-            SQLQueryDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.HAVING) ? filtersContext : unresolvedResult;
-            this.filterExprs.havingClause.propagateContext(clauseCtx, statistics);
-            this.filterScopes.havingClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.ValueRefFromContext(clauseCtx));
+            SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.HAVING)
+                ? filtersContext
+                : unresolvedResult;
+            this.filterExprs.havingClause.resolveValueRelations(clauseCtx, statistics);
+            this.filterScopes.havingClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
         }
         if (this.filterExprs.groupByClause != null) { // TODO consider dropping certain pseudocolumns
-            SQLQueryDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.GROUP_BY) ? filtersContext : unresolvedResult;
-            this.filterExprs.groupByClause.propagateContext(clauseCtx, statistics);
-            this.filterScopes.groupByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.ValueRefFromContext(clauseCtx));
+            SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.GROUP_BY)
+                ? filtersContext
+                : unresolvedResult;
+            this.filterExprs.groupByClause.resolveValueRelations(clauseCtx, statistics);
+            this.filterScopes.groupByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
         }
         if (this.filterExprs.orderByClause != null) {
-            SQLQueryDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.ORDER_BY) ? filtersContext : unresolvedResult;
-            this.filterExprs.orderByClause.propagateContext(clauseCtx, statistics);
-            this.filterScopes.orderByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.ValueRefFromContext(clauseCtx));
+            SQLQueryRowsDataContext clauseCtx = aliasVisibilities.contains(ProjectionAliasVisibilityScope.ORDER_BY)
+                ? filtersContext
+                : unresolvedResult;
+            this.filterExprs.orderByClause.resolveValueRelations(clauseCtx, statistics);
+            this.filterScopes.orderByClause.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(clauseCtx));
         }
 
         if (this.tailScope != null) {
-            this.setTailOrigin(this.tailScope.getSymbolsOrigin());
+            this.setTailOrigin(this.tailScope == this.fromScope ? this.fromSource.getTailOrigin() : this.tailScope.getSymbolsOrigin());
         }
 
-        return resolvedResult.hideSources();
+        return resolvedResult;
     }
 
     @Override
@@ -258,7 +288,9 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                         case SQLStandardParser.RULE_derivedColumn -> {
                             // derivedColumn: valueExpression (asClause)?; asClause: (AS)? columnName;
                             STMTreeNode exprNode = sublistNode.findFirstChildOfName(STMKnownRuleNames.valueExpression);
-                            SQLQueryValueExpression expr = exprNode == null ? null : recognizer.collectValueExpression(exprNode);
+                            SQLQueryValueExpression expr = exprNode == null
+                                ? null
+                                : recognizer.collectValueExpression(exprNode, selectListScope);
                             if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
                                 if (tupleRef.getTupleRefEntry() != null) {
                                     recognizer.registerScopeItem(tupleRef.getTupleRefEntry());
@@ -326,7 +358,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
                     int scopeIndex = i + 1;
                     if (filterNode != null) {
                         try (SQLQueryModelRecognizer.LexicalScopeHolder exprScope = recognizer.openScope()) {
-                            filterExprs[i] = recognizer.collectValueExpression(filterNode);
+                            filterExprs[i] = recognizer.collectValueExpression(filterNode, exprScope.lexicalScope);
                             nextScopeNodes[prevScopeIndex] = filterNode;
                             scopes[scopeIndex] = exprScope.lexicalScope;
                             prevScopes[scopeIndex] = scopes[prevScopeIndex];

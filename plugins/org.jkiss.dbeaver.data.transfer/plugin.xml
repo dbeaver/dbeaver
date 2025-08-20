@@ -8,7 +8,7 @@
         <node type="producer"
               id="database_producer"
               class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer"
-              icon="icons/formats/table.png"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/table.svg"
               label="%dataTransfer.producer.database.name"
               description="%dataTransfer.producer.database.description"
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings"
@@ -20,7 +20,7 @@
         <node type="consumer"
             id="database_consumer"
             class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
-            icon="icons/formats/table.png"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/table.svg"
             label="%dataTransfer.consumer.database.name"
             description="%dataTransfer.consumer.database.description"
             settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings"
@@ -31,7 +31,7 @@
         <node type="producer"
             id="stream_producer"
             class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer"
-            icon="icons/formats/file.png"
+            icon="icons/formats/file.svg"
             label="%dataTransfer.producer.stream.name"
             description="%dataTransfer.producer.stream.description"
             settings="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings">
@@ -67,7 +67,7 @@
         <node type="consumer"
               id="stream_consumer"
               class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer"
-              icon="icons/formats/file.png"
+              icon="icons/formats/file.svg"
               label="%dataTransfer.consumer.stream.name"
               description="%dataTransfer.consumer.stream.description"
               settings="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings">
@@ -150,7 +150,7 @@
                     <property id="headerCase" label="%dataTransfer.processor.csv.property.headerCase.name" type="string" description="%dataTransfer.processor.csv.property.headerCase.description" defaultValue="as is" required="true" validValues="as is,upper,lower" allowCustomValues="false"/>
                     <property id="escape" label="%dataTransfer.processor.csv.property.escape.name" type="string" description="%dataTransfer.processor.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape" allowCustomValues="false"/>
                     <property id="quoteChar" label="%dataTransfer.processor.csv.property.quoteChar.name" type="string" description="%dataTransfer.processor.csv.property.quoteChar.description" defaultValue="&quot;" required="false"/>
-                    <property id="quoteAlways" label="%dataTransfer.processor.csv.property.quoteAlways.name" type="string" description="%dataTransfer.processor.csv.property.quoteAlways.description" defaultValue="disabled" required="false" validValues="disabled,all,strings,all but numbers,all but nulls" allowCustomValues="false"/>
+                    <property id="quoteAlways" label="%dataTransfer.processor.csv.property.quoteAlways.name" type="string" description="%dataTransfer.processor.csv.property.quoteAlways.description" defaultValue="disabled" required="false" validValues="disabled,all,strings,all but numbers,all including nulls" allowCustomValues="false"/>
                     <property id="quoteNever" label="%dataTransfer.processor.csv.property.quoteNever.name" type="boolean" description="%dataTransfer.processor.csv.property.quoteNever.description" defaultValue="false" required="false"/>
                     <property id="nullString" label="%dataTransfer.processor.csv.property.nullString.name" type="string" description="%dataTransfer.processor.csv.property.nullString.description" defaultValue="" required="false"/>
                     <property id="formatNumbers" label="%dataTransfer.processor.csv.property.formatNumbers.name" type="boolean" description="%dataTransfer.processor.csv.property.formatNumbers.description" defaultValue="false" required="false"/>
@@ -177,7 +177,7 @@
                     id="stream.sql"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSQL"
                     description="%dataTransfer.processor.sql.description"
-                    icon="icons/formats/sql.png"
+                    icon="icons/formats/sql.svg"
                     label="%dataTransfer.processor.sql.name"
                 contentType="text/sql">
                 <propertyGroup label="%dataTransfer.processor.sql.propertyGroup.general.label">
@@ -280,19 +280,33 @@
 
     <extension point="org.jkiss.dbeaver.task">
         <category id="common" name="%task.category.name.common" description="%task.category.description.common"
-                  icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.png"/>
+                  icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/task.svg"/>
 
-        <task id="dataExport" name="%task.name.export" description="%task.description.export" icon="icons/export.png" type="common"
-              handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport" supportsVariables="true">
+        <task id="dataExport"
+              name="%task.name.export"
+              description="%task.description.export"
+              icon="icons/export.svg"
+              type="common"
+              handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerExport"
+              supportsVariables="true">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </task>
-        <task id="dataImport" name="%task.name.import" description="%task.description.import" icon="icons/import.png" type="common"
+        <task id="dataImport"
+              name="%task.name.import"
+              description="%task.description.import"
+              icon="icons/import.svg"
+              type="common"
               handler="org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerImport">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </task>
 
-        <task id="scriptExecute" name="%task.name.sql.script" description="%task.description.sql.script" icon="icons/task_script.png"
-              type="common" handler="org.jkiss.dbeaver.tools.sql.task.SQLScriptExecuteHandler" supportsVariables="true">
+        <task id="scriptExecute"
+              name="%task.name.sql.script"
+              description="%task.description.sql.script"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
+              type="common"
+              handler="org.jkiss.dbeaver.tools.sql.task.SQLScriptExecuteHandler"
+              supportsVariables="true">
             <objectType name="org.eclipse.core.resources.IFile"/>
         </task>
     </extension>

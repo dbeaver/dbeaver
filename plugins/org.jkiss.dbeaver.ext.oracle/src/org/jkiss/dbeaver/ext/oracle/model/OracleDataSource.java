@@ -308,7 +308,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
             try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Set connection parameters")) {
                 try {
-                    readDatabaseServerVersion(session.getMetaData());
+                    readDatabaseServerVersion(session, session.getMetaData());
                 } catch (SQLException e) {
                     log.debug("Error reading metadata", e);
                 }
@@ -412,18 +412,20 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
-        return new OracleDataSourceInfo(this, metaData);
+        return new OracleDataSourceInfo(metaData);
     }
 
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
         Throwable rootCause = CommonUtils.getRootCause(error);
-        if (rootCause instanceof SQLException) {
-            switch (((SQLException) rootCause).getErrorCode()) {
+        if (rootCause instanceof SQLException sqlException) {
+            switch (sqlException.getErrorCode()) {
                 case OracleConstants.EC_NO_RESULTSET_AVAILABLE:
                     return ErrorType.RESULT_SET_MISSING;
                 case OracleConstants.EC_FEATURE_NOT_SUPPORTED:
                     return ErrorType.FEATURE_UNSUPPORTED;
+                case OracleConstants.EC_INVALID_USERNAME_PASSWORD:
+                    return ErrorType.AUTHENTICATION_FAILED;
             }
         }
         return super.discoverErrorType(error);
@@ -1171,6 +1173,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     }
 
     public boolean supportsUserEdit() {
+        return false;
+    }
+
+    public boolean supportsSchedulerJobEdit() {
         return false;
     }
 }

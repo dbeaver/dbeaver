@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.configurator.DBPConnectionEditIntention;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIServiceConnectionEditor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -58,6 +59,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
             }
         }, () -> getSite().updateButtons(), true, this.getIntention());
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.setDefaultTextControlWidthHint(authModelSelector);
         ((GridData)authModelSelector.getLayoutData()).horizontalSpan = hSpan;
 
         if (site.getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
@@ -104,7 +106,9 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
             }
         }
 
-        authModelSelector.loadSettings(dataSource, selectedAuthModel, getDefaultAuthModelId(dataSource));
+        if (authModelSelector != null) {
+            authModelSelector.loadSettings(dataSource, selectedAuthModel, getDefaultAuthModelId(dataSource));
+        }
 
         if (serviceConnectionEditor != null) {
             serviceConnectionEditor.loadSettings(dataSource);

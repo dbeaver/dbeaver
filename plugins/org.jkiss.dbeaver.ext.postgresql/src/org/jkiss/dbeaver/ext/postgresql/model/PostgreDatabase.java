@@ -183,7 +183,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
     }
 
     private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
-        try (JDBCSession session = getMetaContext().openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+        PostgreExecutionContext context = getMetaContext();
+        try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+            ((PostgreDataSource) dataSource).readDatabaseServerVersion(session);
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.* FROM pg_catalog.pg_database db WHERE datname=?")) {
                 dbStat.setString(1, name);
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -191,9 +193,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
                         loadInfo(dbResult);
                     }
                 }
-            } catch (SQLException e) {
-                throw new DBCException(e, session.getExecutionContext());
             }
+        } catch (SQLException e) {
+            throw new DBCException(e, context);
         }
     }
 
@@ -1092,7 +1094,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             // #271, #501: in some databases (AWS?) pg_authid is not accessible
             // FIXME: maybe some better workaround?
             return handlePermissionDeniedError(error);
@@ -1233,7 +1235,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             log.debug("Error reading tablespaces", error);
             return true;
         }
@@ -1282,7 +1284,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             if (PostgreConstants.EC_PERMISSION_DENIED.equals(SQLState.getStateFromException(error))) {
                 log.warn(error);
                 setCache(Collections.emptyList());
@@ -1411,7 +1413,7 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
 
         @Override
-        protected boolean handleCacheReadError(Exception error) {
+        protected boolean handleCacheReadError(@NotNull Exception error) {
             DBWorkbench.getPlatformUI().showError("Error accessing pgAgent jobs", "Can't access pgAgent jobs.\n\nThis database may not have the extension installed or you don't have sufficient permissions to access them.\n\nIf you believe that this is DBeaver's fault, please report it.", error);
             setCache(Collections.emptyList());
             return true;

@@ -145,6 +145,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         for (int arrowEvent : arrowEvents) {
             this.arrow.addListener(arrowEvent, this.listener);
         }
+
+        UIUtils.asyncExec(() -> layout(true, true));
     }
 
     public void setTableFilter(TableFilter<ITEM_TYPE> tableFilter) {

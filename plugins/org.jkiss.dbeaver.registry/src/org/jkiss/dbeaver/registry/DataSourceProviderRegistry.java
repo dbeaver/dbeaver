@@ -208,11 +208,6 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             });
         }
 
-        {
-            // Try to load initial drivers config
-            readDriversConfig();
-        }
-
         // Load connection types
         {
             for (DBPConnectionType ct : DBPConnectionType.SYSTEM_TYPES) {
@@ -244,7 +239,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
         }
 
-        // Load external resources information
+        // Load auth models
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataSourceAuthModelDescriptor.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
@@ -261,9 +256,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 dataSourceConfigurationStorageDescriptors.add(descriptor);
             }
         }
+
+        // Load initial drivers config
+        readDriversConfig();
     }
 
-    private void readDriversConfig() {
+    public void readDriversConfig() {
         String providedDriversConfig = System.getProperty("dbeaver.drivers.configuration-file");
         if (!CommonUtils.isEmpty(providedDriversConfig)) {
             Path configFile = Path.of(providedDriversConfig);
@@ -471,16 +469,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    public void saveDrivers() {
+    public void saveDrivers() throws DBException {
         saveDrivers(DBWorkbench.getPlatform().getConfigurationController());
     }
 
-    public void saveDrivers(DBConfigurationController configurationController) {
-        try {
-            saveDriversConfigFile(configurationController);
-        } catch (Exception ex) {
-            log.error("Error saving drivers", ex);
-        }
+    public void saveDrivers(DBConfigurationController configurationController) throws DBException {
+        saveDriversConfigFile(configurationController);
     }
 
     public void saveDriversConfigFile(DBConfigurationController configurationController) throws DBException {
@@ -499,7 +493,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     /**
      * Resolve all jar files in all enabled drivers.
      */
-    public void linkDriverFiles(Path targetFileLocation) {
+    public void linkDriverFiles(Path targetFileLocation) throws DBException {
         boolean didResolve = false;
         for (DataSourceProviderDescriptor dspd : this.dataSourceProviders) {
             for (DriverDescriptor driver : dspd.getDrivers()) {

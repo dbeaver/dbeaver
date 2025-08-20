@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.awt.injector.ProxyInjector;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -28,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.browser.BrowsePeerMethods;
+import org.jkiss.dbeaver.ui.preferences.UIPreferences;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
@@ -72,17 +72,17 @@ public class DBeaverActivator extends AbstractUIPlugin {
         } catch (MissingResourceException x) {
             coreResourceBundle = null;
         }
-        if (getPreferenceStore().getBoolean(DBeaverPreferences.UI_USE_EMBEDDED_AUTH)) {
+        if (getPreferenceStore().getBoolean(UIPreferences.UI_USE_EMBEDDED_AUTH)) {
             try {
                 if (AWTUtils.isDesktopSupported()) {
                     injectProxyPeer();
                 } else {
                     getLog().warn("Desktop interface not available");
-                    getPreferenceStore().setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, false);
+                    getPreferenceStore().setValue(UIPreferences.UI_USE_EMBEDDED_AUTH, false);
                 }
             } catch (Throwable e) {
                 getLog().warn(e.getMessage());
-                getPreferenceStore().setValue(DBeaverPreferences.UI_USE_EMBEDDED_AUTH, false);
+                getPreferenceStore().setValue(UIPreferences.UI_USE_EMBEDDED_AUTH, false);
             }
         }
     }

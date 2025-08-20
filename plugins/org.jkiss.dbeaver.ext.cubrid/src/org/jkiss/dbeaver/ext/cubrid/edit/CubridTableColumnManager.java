@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.cubrid.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridDataSource;
+import org.jkiss.dbeaver.ext.cubrid.model.CubridPartition;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTable;
 import org.jkiss.dbeaver.ext.cubrid.model.CubridTableColumn;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager;
@@ -43,9 +45,8 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.Map;
 
-public class CubridTableColumnManager extends GenericTableColumnManager implements DBEObjectRenamer<GenericTableColumn>
-{
-   public ColumnModifier<GenericTableColumn> CubridDataTypeModifier = (monitor, column, sql, command) -> {
+public class CubridTableColumnManager extends GenericTableColumnManager implements DBEObjectRenamer<GenericTableColumn> {
+    public ColumnModifier<GenericTableColumn> CubridDataTypeModifier = (monitor, column, sql, command) -> {
         final String typeName = column.getTypeName();
         DBPDataKind dataKind = column.getDataKind();
         sql.append(' ').append(typeName);
@@ -57,20 +58,29 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         }
     };
 
+    @Override
+    public boolean canCreateObject(@NotNull Object container) {
+        if (container instanceof CubridPartition) {
+            return false;
+        }
+        return super.canCreateObject(container);
+    }
+
     @NotNull
     @Override
     protected CubridTableColumn createDatabaseObject(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBECommandContext context,
-            @Nullable Object container,
-            @Nullable Object copyFrom,
-            @NotNull Map<String, Object> options)
-            throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @Nullable Object container,
+        @Nullable Object copyFrom,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
         CubridTable table = (CubridTable) container;
         DBSDataType columnType = findBestDataType(table, DBConstants.DEFAULT_DATATYPE_NAMES);
         int columnSize = columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0;
 
         CubridTableColumn column = new CubridTableColumn(table, null, null, false, false, null);
+        column.setOrdinalPosition(table.getCachedAttributes().size() + 1);
         column.setName(getNewColumnName(monitor, context, table));
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
         column.setMaxLength(columnSize);
@@ -82,13 +92,14 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         return column;
     }
 
-	@NotNull
+    @NotNull
     @Override
     public StringBuilder getNestedDeclaration(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull GenericTableBase owner,
-            @NotNull DBECommandAbstract<GenericTableColumn> command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableBase owner,
+        @NotNull DBECommandAbstract<GenericTableColumn> command,
+        @NotNull Map<String, Object> options
+    ) {
         StringBuilder decl = new StringBuilder(40);
         CubridTableColumn column = (CubridTableColumn) command.getObject();
         String columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName());
@@ -97,16 +108,19 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), ((ObjectRenameCommand) command).getNewName());
         }
         decl.append(columnName);
-        for (ColumnModifier<GenericTableColumn> modifier : new ColumnModifier[]{CubridDataTypeModifier, NullNotNullModifierConditional}) {
+        for (ColumnModifier<GenericTableColumn> modifier : new ColumnModifier[] {CubridDataTypeModifier, NotNullModifier}) {
             modifier.appendModifier(monitor, column, decl, command);
         }
-        if (column.getDefaultValue() != null || ((DBECommandComposite) command).hasProperty("defaultValue")) {
+        if (((DBECommandComposite) command).hasProperty("required")) {
+            decl.append(column.isRequired() ? "" : " NULL");
+        }
+        if (!CommonUtils.isEmpty(column.getDefaultValue()) || ((DBECommandComposite) command).hasProperty("defaultValue")) {
             decl.append(" DEFAULT ").append(SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDefaultValue())));
         }
         if (column.isAutoIncrement() && (column.getTypeName().equals("INTEGER") || column.getTypeName().equals("BIGINT"))) {
             decl.append(" AUTO_INCREMENT");
         }
-        if (column.getDescription() != null || ((DBECommandComposite) command).hasProperty("description")) {
+        if (!CommonUtils.isEmpty(column.getDescription()) || ((DBECommandComposite) command).hasProperty("description")) {
             decl.append(" COMMENT ").append(SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription())));
         }
         return decl;
@@ -114,18 +128,19 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
 
     @Override
     protected void addObjectModifyActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actionList,
-            @NotNull ObjectChangeCommand command,
-            @NotNull Map<String, Object> options)
-            throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actionList,
+        @NotNull ObjectChangeCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         final CubridTableColumn column = (CubridTableColumn) command.getObject();
         String table = column.getTable().getSchema().getName() + "." + column.getTable().getName();
+        boolean isView = column.getTable().isView();
         String query;
-        if (column.isForeignKey()) {
+        if (column.isForeignKey() || isView) {
             if (command.hasProperty("description")) {
-                query = "ALTER TABLE " + table + " COMMENT ON COLUMN " + column.getName() + " = "
+                query = (isView ? "ALTER VIEW " : "ALTER TABLE ") + table + " COMMENT ON COLUMN " + column.getName() + " = "
                        + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()));
                 actionList.add(new SQLDatabasePersistAction("Modify column", query));
             }
@@ -137,34 +152,39 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
 
     @Override
     protected void addObjectRenameActions(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBCExecutionContext executionContext,
-            @NotNull List<DBEPersistAction> actions,
-            @NotNull ObjectRenameCommand command,
-            @NotNull Map<String, Object> options) {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull ObjectRenameCommand command,
+        @NotNull Map<String, Object> options
+    ) {
         final CubridTableColumn column = (CubridTableColumn) command.getObject();
         String table = column.getTable().getSchema().getName() + "." + column.getTable().getName();
+        boolean isView = column.getTable().isView();
         actions.add(
                 new SQLDatabasePersistAction(
                         "Rename column",
-                        "ALTER TABLE " + table + " RENAME COLUMN " + command.getOldName() + " AS " + command.getNewName()));
+                        (isView ? "ALTER VIEW " : "ALTER TABLE ") + table + " RENAME COLUMN " + command.getOldName() + " AS " + command.getNewName()));
     }
 
     @Override
     public void renameObject(
-            @NotNull DBECommandContext commandContext,
-            @NotNull GenericTableColumn object,
-            @NotNull Map<String, Object> options,
-            @NotNull String newName)
-            throws DBException {
-        processObjectRename(commandContext, object, options, newName);
+        @NotNull DBECommandContext commandContext,
+        @NotNull GenericTableColumn object,
+        @NotNull Map<String, Object> options,
+        @NotNull String newName
+    ) throws DBException {
+        if (!((CubridDataSource) object.getDataSource()).isShard()) {
+            processObjectRename(commandContext, object, options, newName);
+        }
     }
 
     @NotNull
     protected String getNewColumnName(
-            @NotNull DBRProgressMonitor monitor,
-            @NotNull DBECommandContext context,
-            @NotNull CubridTable parent) throws DBException {
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBECommandContext context,
+        @NotNull CubridTable parent
+    ) throws DBException {
         int suffix = 1;
         while (true) {
             String name = "column" + suffix++;
@@ -174,4 +194,8 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         }
     }
 
+    @Override
+    public boolean canRenameObject(GenericTableColumn object) {
+        return !((CubridDataSource) object.getDataSource()).isShard();
+    }
 }

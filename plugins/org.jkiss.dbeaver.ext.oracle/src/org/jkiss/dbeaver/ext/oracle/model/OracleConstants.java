@@ -89,6 +89,7 @@ public class OracleConstants {
     public static final String PROP_METADATA_USE_SIMPLE_CONSTRAINTS = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-simple-constraints@";
     public static final String PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-alternative-table-query@";
     public static final String PROP_SEARCH_METADATA_IN_SYNONYMS = "oracle.meta-search-in-synonyms"; //$NON-NLS-1$
+    public static final String PROP_SEARCH_METADATA_IN_SEQUENCES = "oracle.meta-search-in-sequences"; //$NON-NLS-1$
     public static final String PROP_SHOW_DATE_AS_DATE = "oracle.show-date-as-date"; //$NON-NLS-1$
     public static final String PROP_ID_LOCKED = "locked";
     public static final String PROP_ID_PASSWORD = "password";
@@ -129,6 +130,8 @@ public class OracleConstants {
     public static final String TYPE_UUID = "VARCHAR2(36)";
     public static final String TYPE_BOOLEAN = "VARCHAR(1)";
     public static final String OPERATION_MODIFY = "MODIFY";
+    public static final String SEQ_CURRVAL = "CURRVAL";
+    public static final String SEQ_NEXTVAL = "NEXTVAL";
 
 
     public static final int TIMESTAMP_TYPE_LENGTH = 13;
@@ -142,6 +145,7 @@ public class OracleConstants {
 
     public static final String PROP_OBJECT_DEFINITION = "objectDefinitionText";
     public static final String PROP_OBJECT_BODY_DEFINITION = "extendedDefinitionText";
+    public static final String JOB_ACTION_DEFINITION = "jobAction";
 
     public static final String COL_OWNER = "OWNER";
     public static final String COL_TABLE_NAME = "TABLE_NAME";
@@ -198,6 +202,7 @@ public class OracleConstants {
     /**
      * Oracle error codes
      */
+    public static final int EC_INVALID_USERNAME_PASSWORD = 1017;
     public static final int EC_FEATURE_NOT_SUPPORTED = 17023;
     public static final int EC_NO_RESULTSET_AVAILABLE = 17283;
     public static final int EC_PASSWORD_EXPIRED = 28001;

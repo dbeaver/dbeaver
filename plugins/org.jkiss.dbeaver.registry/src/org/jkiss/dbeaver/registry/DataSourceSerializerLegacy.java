@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,10 +68,10 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
 
     @Override
     public void saveDataSources(
-        DBRProgressMonitor monitor,
-        DataSourceConfigurationManager configurationManager,
-        DBPDataSourceConfigurationStorage configurationStorage,
-        List<T> localDataSources
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DataSourceConfigurationManager configurationManager,
+        @NotNull DBPDataSourceConfigurationStorage configurationStorage,
+        @NotNull List<T> localDataSources
     ) throws IOException {
         throw new IOException("Legacy serializer is deprecated, save not possible");
     }
@@ -80,7 +80,7 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
     public boolean parseDataSources(
         @NotNull DBPDataSourceConfigurationStorage configurationStorage,
         @NotNull DataSourceConfigurationManager configurationManager,
-        @NotNull DataSourceRegistry.ParseResults parseResults,
+        @NotNull DataSourceParseResults parseResults,
         Collection<String> dataSourceIds
     ) throws DBException {
         try (InputStream is = configurationManager.readConfiguration(configurationStorage.getStorageName(), dataSourceIds)) {
@@ -117,10 +117,10 @@ class DataSourceSerializerLegacy<T extends DataSourceDescriptor> implements Data
         private DBWHandlerConfiguration curNetworkHandler;
         private DBSObjectFilter curFilter;
         private StringBuilder curQuery;
-        private final DataSourceRegistry.ParseResults parseResults;
+        private final DataSourceParseResults parseResults;
         private boolean passwordReadCanceled = false;
 
-        private DataSourcesParser(DataSourceRegistry registry, DBPDataSourceConfigurationStorage storage, DataSourceRegistry.ParseResults parseResults) {
+        private DataSourcesParser(DataSourceRegistry registry, DBPDataSourceConfigurationStorage storage, DataSourceParseResults parseResults) {
             this.registry = registry;
             this.storage = storage;
             this.parseResults = parseResults;

@@ -115,7 +115,8 @@ public class OracleSQLDialect extends JDBCSQLDialect
         "SUBPARTITION",
         "TEMPFILE",
         "DATAFILE",
-        "TABLESPACE"
+        "TABLESPACE",
+        "LATERAL"
     };
 
     private static final GlobalVariableInfo[] GLOBAL_VARIABLES = {
@@ -697,6 +698,16 @@ public class OracleSQLDialect extends JDBCSQLDialect
                 SQLParserActionKind.BEGIN_BLOCK,
                 tt.sequence(),
                 tt.sequence(tt.not("END"), "IF", tt.not("EXISTS"))
+            ),
+            new TokenPredicatesCondition(
+                SQLParserActionKind.BLOCK_HEADER,
+                tt.sequence(
+                        "CREATE",
+                        tt.optional("OR", "REPLACE"),
+                        tt.optional(tt.alternative("EDITIONABLE", "NONEDITIONABLE")),
+                        tt.alternative("FUNCTION", "PROCEDURE")
+                ),
+                tt.alternative("AS", "IS")
             )
         );
 

@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.stm.STMTreeTermErrorNode;
@@ -50,7 +51,9 @@ import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -83,10 +86,10 @@ public abstract class SQLQueryCompletionContext {
     public static SQLQueryCompletionContext prepareEmpty(int scriptItemOffset, int requestOffset) {
         return new SQLQueryCompletionContext(0, requestOffset) {
 
-            @Nullable
+            @NotNull
             @Override
-            public SQLQueryDataContext getDataContext() {
-                return null;
+            public SQLQueryDataContextInfo getDataContext() {
+                return SQLQueryDataContextInfo.empty();
             }
 
             @NotNull
@@ -115,10 +118,10 @@ public abstract class SQLQueryCompletionContext {
             private static final LSMInspections.SyntaxInspectionResult syntaxInspectionResult = LSMInspections.prepareOffquerySyntaxInspection();
             private static final Pattern KEYWORD_FILTER_PATTERN = Pattern.compile("([a-zA-Z0-9]+)");
 
-            @Nullable
+            @NotNull
             @Override
-            public SQLQueryDataContext getDataContext() {
-                return null;
+            public SQLQueryDataContextInfo getDataContext() {
+                return SQLQueryDataContextInfo.empty();
             }
 
             @NotNull
@@ -188,8 +191,8 @@ public abstract class SQLQueryCompletionContext {
         return this.requestOffset;
     }
 
-    @Nullable
-    public abstract SQLQueryDataContext getDataContext();
+    @NotNull
+    public abstract SQLQueryDataContextInfo getDataContext();
 
     @NotNull
     public abstract LSMInspections.SyntaxInspectionResult getInspectionResult();
@@ -241,20 +244,42 @@ public abstract class SQLQueryCompletionContext {
     ) {
         return new SQLQueryCompletionContext(scriptItem.offset, requestOffset) {
             private final Set<DBSObjectContainer> exposedContexts = SQLQueryCompletionContext.obtainExposedContexts(dbcExecutionContext);
-            private final Map<String, Boolean> columnNameConflicts = (
-                // use data context from symbols origin if presented (correctly derived from tail lexical scope when provided by the model)
-                // otherwise, try context provided by the deepest model node (legacy and may be incorrect sometimes)
-                context.symbolsOrigin() instanceof SQLQuerySymbolOrigin.DataContextSymbolOrigin o && !o.isChained()
-                    ? o.getDataContext()
-                    : context.deepestContext()
-            ).getColumnsList().stream()
-                .collect(Collectors.groupingBy(c -> c.symbol.getName())).entrySet().stream()
-                .collect(Collectors.toMap(kv -> kv.getKey(), kv -> kv.getValue().size() > 1));
+            private Map<String, Boolean> columnNameConflicts = null;
+
+            private SQLQueryDataContextInfo nearestContext = SQLQueryDataContextInfo.empty();
+            private SQLQueryDataContextInfo deepestContext = SQLQueryDataContextInfo.empty();
+
+            private AssociationsResolutionContext associationsResolutionContext = null;
+
+            private void setContextInfo(SQLQueryDataContextInfo contextInfo) {
+                this.nearestContext = contextInfo;
+                this.deepestContext = contextInfo;
+            }
+
+            private void tryApplyOriginContext() {
+                if (context.symbolsOrigin() instanceof SQLQuerySymbolOrigin.RowsSourceRef rowsSourceOrigin) {
+                    this.setContextInfo(SQLQueryDataContextInfo.makeFor(rowsSourceOrigin.getRowsSourceContext()));
+                } else if (context.symbolsOrigin() instanceof SQLQuerySymbolOrigin.RowsDataRef rowsDataOrigin) {
+                    this.setContextInfo(SQLQueryDataContextInfo.makeFor(rowsDataOrigin.getRowsDataContext()));
+                }
+            }
+
+            @NotNull
+            private AssociationsResolutionContext getAssociationsContext(
+                @NotNull SQLQueryDataContextInfo context,
+                @Nullable SQLQueryWordEntry filterOrNull
+            ) {
+                return this.associationsResolutionContext != null
+                    && this.associationsResolutionContext.context == context
+                    && this.associationsResolutionContext.filterOrNull == filterOrNull ? this.associationsResolutionContext : (
+                        this.associationsResolutionContext = new AssociationsResolutionContext(context, filterOrNull)
+                    );
+            }
 
             @NotNull
             @Override
-            public SQLQueryDataContext getDataContext() {
-                return context.deepestContext();
+            public SQLQueryDataContextInfo getDataContext() {
+                return this.deepestContext;
             }
 
             @NotNull
@@ -266,7 +291,7 @@ public abstract class SQLQueryCompletionContext {
             @NotNull
             @Override
             public Set<String> getAliasesInUse() {
-                return context.nearestResultContext().getKnownSources().getAliasesInUse();
+                return this.nearestContext.getKnownSources().getAliasesInUse();
             }
 
             @NotNull
@@ -293,12 +318,15 @@ public abstract class SQLQueryCompletionContext {
                 if (lexicalItem != null) {
                     this.prepareLexicalItemCompletions(monitor, request, lexicalItem, position, parts, completionSets);
                 }  else if (this.nameNodesAreUseful(parts)) {
+                    this.tryApplyOriginContext();
                     this.prepareInspectedIdentifierCompletions(monitor, request, parts, completionSets);
                 } else if (context.symbolsOrigin() != null) {
                     this.accomplishFromKnownOrigin(monitor, request, context.symbolsOrigin(), null, completionSets);
                 } else if (syntaxInspectionResult.expectingIdentifier()) {
+                    this.tryApplyOriginContext();
                     this.prepareInspectedIdentifierCompletions(monitor, request, parts, completionSets);
                 } else {
+                    this.tryApplyOriginContext();
                     this.prepareInspectedFreeCompletions(monitor, request, completionSets);
                 }
 
@@ -320,10 +348,10 @@ public abstract class SQLQueryCompletionContext {
                 if ((syntaxInspectionResult.expectingColumnName() || syntaxInspectionResult.expectingColumnReference())
                     && nameNodes.length == 0
                 ) {
-                    this.prepareNonPrefixedColumnCompletions(monitor, request, context.deepestContext(), null, completionSets);
+                    this.prepareNonPrefixedColumnCompletions(monitor, request, this.deepestContext, null, completionSets);
                 }
                 if (syntaxInspectionResult.expectingTableReference() && nameNodes.length == 0) {
-                    this.prepareTableCompletions(monitor, request, context.deepestContext(), null, completionSets);
+                    this.prepareTableCompletions(monitor, request, this.deepestContext.getKnownSources(), null, completionSets);
                 }
             }
 
@@ -365,7 +393,7 @@ public abstract class SQLQueryCompletionContext {
                 }
 
                 // using inferred context when semantics didn't provide the origin
-                SQLQueryDataContext defaultContext = context.deepestContext();
+                SQLQueryDataContextInfo defaultContext = this.deepestContext;
 
                 if (syntaxInspectionResult.expectingColumnReference() || syntaxInspectionResult.expectingColumnName()) {
                     this.accomplishColumnReference(monitor, request, defaultContext, prefix, tail, results);
@@ -379,7 +407,7 @@ public abstract class SQLQueryCompletionContext {
             private void accomplishTableReference(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQueryDataContextInfo context,
                 @NotNull List<SQLQueryWordEntry> prefix,
                 @Nullable SQLQueryWordEntry tail,
                 @NotNull List<SQLQueryCompletionSet> results
@@ -387,7 +415,7 @@ public abstract class SQLQueryCompletionContext {
                 if (dbcExecutionContext == null || dbcExecutionContext.getDataSource() == null || !DBStructUtils.isConnectedContainer(dbcExecutionContext.getDataSource())) {
                     // do nothing
                 } else if (prefix.isEmpty()) {
-                    this.prepareTableCompletions(monitor, request, context, tail, results);
+                    this.prepareTableCompletions(monitor, request, context.getKnownSources(), tail, results);
                 } else {
                     List<String> contextName = prefix.stream().map(e -> e.string).collect(Collectors.toList());
                     DBSObject prefixObject = SQLSearchUtils.findObjectByFQN(
@@ -404,7 +432,7 @@ public abstract class SQLQueryCompletionContext {
                         List<SQLQueryCompletionItem> items = this.accomplishTableReferences(
                             monitor,
                             request,
-                            context,
+                            context.getKnownSources(),
                             prefixObject,
                             prefixInfo,
                             tail
@@ -419,7 +447,7 @@ public abstract class SQLQueryCompletionContext {
             private List<SQLQueryCompletionItem> accomplishTableReferences(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
                 @NotNull DBSObject prefixContext,
                 @Nullable SQLQueryCompletionItem.ContextObjectInfo prefixInfo,
                 @Nullable SQLQueryWordEntry filterOrNull
@@ -431,6 +459,7 @@ public abstract class SQLQueryCompletionContext {
                     expectedTypes.add(DBSCatalog.class);
                     expectedTypes.add(DBSTable.class);
                     expectedTypes.add(DBSView.class);
+                    expectedTypes.add(DBSAlias.class);
                     if (request.getContext().isSearchProcedures()) {
                         expectedTypes.add(DBSProcedure.class);
                         expectedTypes.add(DBSPackage.class);
@@ -438,7 +467,7 @@ public abstract class SQLQueryCompletionContext {
                     try {
                         this.collectImmediateChildren(
                             monitor,
-                            context,
+                            knownSources,
                             List.of(container),
                             o -> expectedTypes.stream().anyMatch(c -> c.isAssignableFrom(o.getClass())),
                             prefixInfo,
@@ -454,13 +483,14 @@ public abstract class SQLQueryCompletionContext {
 
             private void collectImmediateChildren(
                 @NotNull DBRProgressMonitor monitor,
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
                 @NotNull Collection<DBSObjectContainer> containers,
                 @Nullable Predicate<DBSObject> filter,
                 @Nullable SQLQueryCompletionItem.ContextObjectInfo contextObjext,
                 @Nullable SQLQueryWordEntry filterOrNull,
                 @NotNull LinkedList<SQLQueryCompletionItem> accumulator
             ) throws DBException {
+                AssociationsResolutionContext associations = this.getAssociationsContext(this.deepestContext, filterOrNull);
                 for (DBSObjectContainer container : containers) {
                     Collection<? extends DBSObject> children = container.getChildren(monitor);
                     for (DBSObject child : children) {
@@ -469,8 +499,10 @@ public abstract class SQLQueryCompletionContext {
                             int score = childName.matches(filterOrNull, this.searchInsideWords);
                             if (score > 0) {
                                 if (child instanceof DBSEntity o && (child instanceof DBSTable || child instanceof DBSView)) {
-                                    accumulator.addLast(SQLQueryCompletionItem.forRealTable(score, childName, contextObjext, o,
-                                        context.getKnownSources().getReferencedTables().contains(o)
+                                    accumulator.addLast(SQLQueryCompletionItem.forRealTable(
+                                        score, childName, contextObjext, o,
+                                        knownSources.getReferencedTables().contains(o),
+                                        associations.hasRelatedAssociationsWithTable(monitor, o)
                                     ));
                                 } else {
                                     accumulator.addLast(this.makeDbObjectCompletionItem(score, childName, contextObjext, child));
@@ -504,7 +536,7 @@ public abstract class SQLQueryCompletionContext {
             private void accomplishColumnReference(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQueryDataContextInfo context,
                 @NotNull List<SQLQueryWordEntry> prefix,
                 @Nullable SQLQueryWordEntry tail,
                 @NotNull List<SQLQueryCompletionSet> results
@@ -517,7 +549,7 @@ public abstract class SQLQueryCompletionContext {
             }
 
             private void preparePrefixedColumnCompletions(
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQueryDataContextInfo context,
                 @NotNull List<SQLQueryWordEntry> prefix,
                 @Nullable SQLQueryWordEntry tail,
                 @NotNull List<SQLQueryCompletionSet> results
@@ -550,7 +582,7 @@ public abstract class SQLQueryCompletionContext {
                     }
 
                     if (sourceAliasMatch || sourceFullnameMatch) {
-                        for (SQLQueryResultColumn c : rr.source.getResultDataContext().getColumnsList()) {
+                        for (SQLQueryResultColumn c : rr.source.getRowsDataContext().getColumnsList()) {
                             SQLQueryWordEntry key = makeFilterInfo(tail, c.symbol.getName());
                             int nameScore = key.matches(tail, this.searchInsideWords);
                             if (nameScore > 0) {
@@ -571,6 +603,81 @@ public abstract class SQLQueryCompletionContext {
                 if (byFullNameItems.size() > 0) {
                     this.makeFilteredCompletionSet(prefix.get(0), byFullNameItems, results);
                 }
+            }
+
+            /**
+             * Prepare list of completion items intended to accomplish complex name
+             * referencing relevant entity for the value expression context
+             * based on existing prefix resolved for a certain database object:
+             * <pre>
+             *     dbName.schemaName.|
+             *                ^     ^
+             *                |     |
+             *    [prefixContext] [objFromObj origin of the member access entry]
+             *
+             *     dbName.schemaName.something|
+             *                          ^
+             *                          |
+             *                       [filter word]
+             * </pre>
+             */
+            private List<SQLQueryCompletionItem> accomplishQualifiedValueReferences(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
+                @NotNull DBSObject prefixContext,
+                @Nullable SQLQueryCompletionItem.ContextObjectInfo prefixInfo,
+                @Nullable SQLQueryWordEntry filterOrNull
+            ) {
+                Map<DBSObject, SourceResolutionResult> knownTables = knownSources.getResolutionResults()
+                    .values().stream()
+                    .filter(rr -> rr.referenceName != null && rr.tableOrNull != null)
+                    .collect(Collectors.toMap(rr -> rr.tableOrNull, Function.identity()));
+                LinkedList<SQLQueryCompletionItem> items = new LinkedList<>();
+                SourceResolutionResult currentTableSource = knownTables.get(prefixContext);
+                if (currentTableSource != null) {
+                    for (SQLQueryResultColumn c : currentTableSource.source.getRowsDataContext().getColumnsList()) {
+                        SQLQueryWordEntry key = makeFilterInfo(filterOrNull, c.symbol.getName());
+                        int nameScore = key.matches(filterOrNull, this.searchInsideWords);
+                        if (nameScore > 0) {
+                            items.addLast(SQLQueryCompletionItem.forSubsetColumn(nameScore, key, c, currentTableSource, false));
+                        }
+                    }
+                } else if (prefixContext instanceof DBSObjectContainer container) {
+                    Set<Class<?>> expectedTypes = new HashSet<>();
+                    expectedTypes.add(DBSSchema.class);
+                    expectedTypes.add(DBSCatalog.class);
+                    expectedTypes.add(DBSTable.class);
+                    expectedTypes.add(DBSView.class);
+                    if (request.getContext().isSearchProcedures()) {
+                        expectedTypes.add(DBSProcedure.class);
+                        expectedTypes.add(DBSPackage.class);
+                    }
+                    expectedTypes.add(DBSSequence.class);
+                    try {
+                        this.collectImmediateChildren(
+                            monitor,
+                            knownSources,
+                            List.of(container),
+                            makeObjectForValueRefFilterPredicate(expectedTypes, knownTables),
+                            prefixInfo,
+                            filterOrNull,
+                            items
+                        );
+                    } catch (DBException e) {
+                        log.error(e);
+                    }
+                }
+                return items;
+            }
+
+            @NotNull
+            private static Predicate<DBSObject> makeObjectForValueRefFilterPredicate(
+                Set<Class<?>> expectedTypes,
+                Map<DBSObject, SourceResolutionResult> knownTables
+            ) {
+                return object -> expectedTypes.stream().anyMatch(expectedTypeClass -> expectedTypeClass.isAssignableFrom(object.getClass()))
+                    && (!(object instanceof DBSView || object instanceof DBSTable) || knownTables.containsKey(object));
             }
 
             private void prepareObjectComponentCompletions(
@@ -647,80 +754,7 @@ public abstract class SQLQueryCompletionContext {
                 List<SQLQueryWordEntry> parts,
                 @NotNull List<SQLQueryCompletionSet> results
             ) {
-                if (lexicalItem instanceof SQLQueryQualifiedName qname) {
-                    Interval pos = Interval.of(position - 1, position - 1);
-                    Interval nameRange;
-                    Interval schemaRange;
-                    Interval catalogRange;
-                    // TODO consider deeper hierarchy
-                    SQLQuerySymbolEntry schemaName = qname.scopeName.size() <= 0 ? null : qname.scopeName.get(qname.scopeName.size() - 1);
-                    SQLQuerySymbolEntry catalogName = qname.scopeName.size() <= 1 ? null : qname.scopeName.get(qname.scopeName.size() - 2);
-
-                    if ((nameRange = qname.entityName.getSyntaxNode().getRealInterval()).properlyContains(pos)) {
-                        SQLQueryWordEntry part = new SQLQueryWordEntry(
-                            qname.entityName.getInterval().a,
-                            qname.entityName.getRawName().substring(0, position - nameRange.a)
-                        );
-                        if (schemaName != null) {
-                            SQLQuerySymbolDefinition scopeDef = this.unrollSymbolDefinition(schemaName.getDefinition());
-                            if (scopeDef instanceof SQLQuerySymbolByDbObjectDefinition byObjDef) {
-                                this.prepareObjectComponentCompletions(
-                                    monitor,
-                                    byObjDef.getDbObject(),
-                                    part,
-                                    List.of(DBSEntity.class),
-                                    results
-                                );
-                            } else {
-                                // schema was not resolved, so cannot accomplish its subitems
-                            }
-                        } else {
-                            this.prepareInspectedIdentifierCompletions(monitor, request, List.of(part), results);
-                        }
-                    } else if (schemaName != null && (schemaRange = schemaName.getSyntaxNode().getRealInterval()).properlyContains(pos)) {
-                        SQLQueryWordEntry part = new SQLQueryWordEntry(
-                            schemaName.getInterval().a,
-                            schemaName.getRawName().substring(0, position - schemaRange.a)
-                        );
-                        if (catalogName != null) {
-                            SQLQuerySymbolDefinition scopeDef = this.unrollSymbolDefinition(schemaName.getDefinition());
-                            if (scopeDef instanceof SQLQuerySymbolByDbObjectDefinition byObjDef) {
-                                this.prepareObjectComponentCompletions(
-                                    monitor,
-                                    byObjDef.getDbObject(),
-                                    part,
-                                    List.of(DBSSchema.class),
-                                    results
-                                );
-                            } else {
-                                // catalog was not resolved, so cannot accomplish schema
-                            }
-                        } else {
-                            this.prepareObjectComponentCompletions(
-                                monitor,
-                                dbcExecutionContext.getDataSource(),
-                                part,
-                                List.of(DBSSchema.class),
-                                results
-                            );
-                        }
-                    } else if (dbcExecutionContext != null && catalogName != null && (catalogRange = catalogName.getSyntaxNode()
-                        .getRealInterval()).properlyContains(pos)) {
-                        SQLQueryWordEntry part = new SQLQueryWordEntry(
-                            catalogName.getInterval().a,
-                            catalogName.getRawName().substring(0, position - catalogRange.a)
-                        );
-                        this.prepareObjectComponentCompletions(
-                            monitor,
-                            dbcExecutionContext.getDataSource(),
-                            part,
-                            List.of(DBSCatalog.class),
-                            results
-                        );
-                    } else {
-                        throw new UnsupportedOperationException("Illegal SQLQueryQualifiedName");
-                    }
-                } else if (lexicalItem instanceof SQLQueryTupleRefEntry tupleRef) {
+                if (lexicalItem instanceof SQLQueryTupleRefEntry tupleRef) {
                     this.accomplishFromKnownOriginOrFallback(monitor, request, tupleRef.getOrigin(), null, parts, results);
                 } else if (lexicalItem instanceof SQLQueryMemberAccessEntry entry) {
                     this.accomplishFromKnownOriginOrFallback(monitor, request, entry.getOrigin(), null, parts, results);
@@ -750,6 +784,9 @@ public abstract class SQLQueryCompletionContext {
                 }
             }
 
+            /**
+             * Provide completion sets to the results list based on the current query symbols origin
+             */
             private void accomplishFromKnownOrigin(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
@@ -766,27 +803,90 @@ public abstract class SQLQueryCompletionContext {
                             origin.getObject(),
                             true
                         );
-                        if (origin.getMemberTypes().size() == 1 && origin.getMemberTypes().contains(RelationalObjectType.TYPE_UNKNOWN)) {
+                        SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getRowsContext());
+                        setContextInfo(contextInfo);
+                        switch (origin.getFilterMode()) {
+                            case DEFAULT -> this.prepareDefaultObjectCompletion(prefix, origin.getMemberTypes());
+                            case ROWSET -> {
+                                makeFilteredCompletionSet(
+                                    filterOrNull,
+                                    accomplishTableReferences(
+                                        monitor,
+                                        request,
+                                        deepestContext.getKnownSources(),
+                                        prefix.object(),
+                                        prefix,
+                                        filterOrNull
+                                    ),
+                                    results
+                                );
+                                if (origin.getObject() instanceof DBSObjectContainer c) {
+                                    prepareProceduresCompletions(monitor, request, contextInfo.getKnownSources(), List.of(c), filterOrNull);
+                                }
+                            }
+                            case VALUE, FUNCTION -> {
+                                makeFilteredCompletionSet(
+                                    filterOrNull,
+                                    accomplishQualifiedValueReferences(
+                                        monitor,
+                                        request,
+                                        deepestContext.getKnownSources(),
+                                        prefix.object(),
+                                        prefix,
+                                        filterOrNull
+                                    ),
+                                    results
+                                );
+                                if (origin.getObject() instanceof DBSObjectContainer c) {
+                                    prepareProceduresCompletions(monitor, request, contextInfo.getKnownSources(), List.of(c), filterOrNull);
+                                }
+                            }
+                            case OBJECT -> {
+                                if (origin.getObject() instanceof DBSObjectContainer objectContainer) {
+                                    prepareObjectCompletions(
+                                        monitor,
+                                        request,
+                                        deepestContext.getKnownSources(),
+                                        List.of(objectContainer),
+                                        prefix,
+                                        Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                                        filterOrNull,
+                                        results
+                                    );
+                                }
+                            }
+                            default -> throw new UnsupportedOperationException("Unexpected filter mode: " + origin.getFilterMode());
+                        };
+                    }
+
+                    /**
+                     * Default completion proposals preparation behavior for object-from-object symbols origin
+                     */
+                    private void prepareDefaultObjectCompletion(
+                        @NotNull SQLQueryCompletionItem.ContextObjectInfo prefix,
+                        @NotNull Set<DBSObjectType> memberTypes
+                    ) {
+                        if (memberTypes.size() == 1 && (memberTypes.contains(RelationalObjectType.TYPE_UNKNOWN) || memberTypes.isEmpty())) {
                             makeFilteredCompletionSet(
                                 filterOrNull,
                                 accomplishTableReferences(
                                     monitor,
                                     request,
-                                    context.deepestContext(),
-                                    origin.getObject(),
+                                    deepestContext.getKnownSources(),
+                                    prefix.object(),
                                     prefix,
                                     filterOrNull
                                 ),
                                 results
                             );
-                        } else if (origin.getObject() instanceof DBSObjectContainer container) {
+                        } else if (prefix.object() instanceof DBSObjectContainer container) {
                             prepareObjectCompletions(
                                 monitor,
                                 request,
-                                context.deepestContext(),
+                                deepestContext.getKnownSources(),
                                 List.of(container),
                                 prefix,
-                                origin.getMemberTypes(),
+                                memberTypes,
                                 filterOrNull,
                                 results
                             );
@@ -794,16 +894,19 @@ public abstract class SQLQueryCompletionContext {
                     }
 
                     @Override
-                    public void visitDbObjectFromContext(SQLQuerySymbolOrigin.DbObjectFromContext origin) {
+                    public void visitDbObjectRef(SQLQuerySymbolOrigin.DbObjectRef origin) {
+                        SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getRowsSourceContext());
+                        setContextInfo(contextInfo);
+
                         if (origin.isIncludingRowsets()) {
-                            prepareTableCompletions(monitor, request, origin.getDataContext(), filterOrNull, results);
+                            prepareTableCompletions(monitor, request, contextInfo.getKnownSources(), filterOrNull, results);
                         } else {
                             Collection<DBSObjectContainer> container = obtainDefaultContext(monitor, request);
                             if (container != null) {
                                 prepareObjectCompletions(
                                     monitor,
                                     request,
-                                    origin.getDataContext(),
+                                    contextInfo.getKnownSources(),
                                     container,
                                     null,
                                     origin.getObjectTypes(),
@@ -816,24 +919,12 @@ public abstract class SQLQueryCompletionContext {
                     }
 
                     @Override
-                    public void visitRowsetRefFromContext(SQLQuerySymbolOrigin.RowsetRefFromContext origin) {
-                        prepareTableCompletions(monitor, request, origin.getDataContext(), filterOrNull, results);
-                    }
-
-                    @Override
-                    public void visitValueRefFromContext(SQLQuerySymbolOrigin.ValueRefFromContext origin) {
-                        prepareNonPrefixedColumnCompletions(monitor, request, origin.getDataContext(), filterOrNull, results);
-                    }
-
-                    @Override
                     public void visitColumnRefFromReferencedContext(SQLQuerySymbolOrigin.ColumnRefFromReferencedContext origin) {
-                        SQLQueryDataContext referencedContext = origin.getRowsSource().source.getResultDataContext();
-                        makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(referencedContext, filterOrNull, false), results);
-                    }
-
-                    @Override
-                    public void visitColumnNameFromContext(SQLQuerySymbolOrigin.ColumnNameFromContext origin) {
-                        makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(origin.getDataContext(), filterOrNull, false), results);
+                        makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(
+                            SQLQueryDataContextInfo.makeFor(origin.getRowsSource().source.getRowsDataContext()),
+                            filterOrNull,
+                            false
+                        ), results);
                     }
 
                     @Override
@@ -842,45 +933,79 @@ public abstract class SQLQueryCompletionContext {
                     }
 
                     @Override
-                    public void visitDataContextSymbol(SQLQuerySymbolOrigin.DataContextSymbolOrigin origin) {
-                        prepareInspectedFreeCompletions(monitor, request, results);
+                    public void visitRowsSourceRef(@NotNull SQLQuerySymbolOrigin.RowsSourceRef rowsSourceRef) {
+                        SQLQuerySourcesInfoCollection knownSources = rowsSourceRef.getRowsSourceContext().getKnownSources(false);
+                        setContextInfo(SQLQueryDataContextInfo.makeFor(rowsSourceRef.getRowsSourceContext()));
+                        prepareTableCompletions(monitor, request, knownSources, filterOrNull, results);
                     }
 
                     @Override
-                    public void visitExpandableTupleRef(SQLQuerySymbolOrigin.ExpandableTupleRef origin) {
-                        SQLQueryDataContext tupleSource = origin.getRowsSource() != null
-                              ? origin.getRowsSource().source.getResultDataContext()
-                              : origin.getDataContext();
-
-                        STMTreeNode placeholder = origin.getPlaceholder();
-                        Interval placeholderInterval = placeholder.getRealInterval();
-                        if (getRequestOffset() - getOffset() == placeholderInterval.b + 1) {
-                            SQLQueryWordEntry placeholderEntry = new SQLQueryWordEntry(
-                                placeholderInterval.a,
-                                placeholder.getTextContent()
-                            );
-                            String columnPrefix = placeholderEntry.string.endsWith("*")
-                                ? placeholderEntry.string.substring(0, placeholderEntry.string.length() - 1)
-                                : "";
-
-                            SQLQueryCompletionTextProvider formatter = new SQLQueryCompletionTextProvider(
-                                request,
-                                completionContext,
-                                monitor
-                            );
-                            String columnListString = prepareTupleColumns(tupleSource, null, false).stream()
-                                .map(c -> columnPrefix + c.apply(formatter))
-                                .collect(Collectors.joining(", "));
-                            request.setWordPart(SQLConstants.ASTERISK);
-
-                            makeFilteredCompletionSet(placeholderEntry, List.of(
-                                SQLQueryCompletionItem.forSpecialText(
-                                    1, makeFilterInfo(placeholderEntry, ""), columnListString, "Tuple columns expansion"
-                                )
-                            ), results);
-                        }
+                    public void visitRowsDataRef(@NotNull SQLQuerySymbolOrigin.RowsDataRef rowsDataRef) {
+                        SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(rowsDataRef.getRowsDataContext());
+                        setContextInfo(contextInfo);
+                        prepareNonPrefixedColumnCompletions(monitor, request, contextInfo, filterOrNull, results);
                     }
+
+                    @Override
+                    public void visitExpandableRowsTupleRef(SQLQuerySymbolOrigin.ExpandableRowsTupleRef origin) {
+                        SQLQueryRowsDataContext tupleSource = origin.getReferencedSource() != null
+                            ? origin.getReferencedSource().source.getRowsDataContext()
+                            : origin.getRowsDataContext();
+
+                        SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(tupleSource);
+                        setContextInfo(contextInfo);
+                        prepareTupleRefExpansionCompletiom(origin.getPlaceholder(), contextInfo, request, completionContext, monitor, results);
+                    }
+
+                    @Override
+                    public void visitColumnNameFromRowsData(SQLQuerySymbolOrigin.ColumnNameFromRowsData origin) {
+                        SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getRowsDataContext());
+                        setContextInfo(contextInfo);
+                        makeFilteredCompletionSet(filterOrNull, prepareTupleColumns(contextInfo, filterOrNull, false), results);
+                    }
+
+                    @Override
+                    public void visitSyntaxBasedFromRowsData(SQLQuerySymbolOrigin.SyntaxBasedFromRowsData origin) {
+                        SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getRowsDataContext());
+                        setContextInfo(contextInfo);
+                        prepareInspectedFreeCompletions(monitor, request, results);
+                    }
+
                 });
+            }
+
+            private void prepareTupleRefExpansionCompletiom(
+                STMTreeNode placeholder,
+                SQLQueryDataContextInfo contextInfo,
+                @NotNull SQLCompletionRequest request,
+                SQLQueryCompletionContext completionContext,
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull List<SQLQueryCompletionSet> results
+            ) {
+                Interval placeholderInterval = placeholder.getRealInterval();
+                if (getRequestOffset() - getOffset() == placeholderInterval.b + 1) {
+                    SQLQueryWordEntry placeholderEntry = new SQLQueryWordEntry(
+                        placeholderInterval.a,
+                        placeholder.getTextContent()
+                    );
+
+                    SQLQueryCompletionTextProvider formatter = new SQLQueryCompletionTextProvider(
+                        request,
+                        completionContext,
+                        monitor
+                    );
+                    String columnListString = prepareTupleColumns(contextInfo, null, true)
+                        .stream()
+                        .map(c -> c.apply(formatter))
+                        .collect(Collectors.joining(", "));
+                    request.setWordPart(SQLConstants.ASTERISK);
+
+                    makeFilteredCompletionSet(placeholderEntry, List.of(
+                        SQLQueryCompletionItem.forSpecialText(
+                            1, makeFilterInfo(placeholderEntry, ""), columnListString, "Tuple columns expansion"
+                        )
+                    ), results);
+                }
             }
 
             private void accomplishMemberReference(
@@ -902,7 +1027,7 @@ public abstract class SQLQueryCompletionContext {
                             } else if (member.attribute() != null) {
                                 item = SQLQueryCompletionItem.forCompositeField(score, itemKey, member.attribute(), member);
                             } else {
-                                throw new UnsupportedOperationException("Unexpected named member kind to complete.");
+                                item = SQLQueryCompletionItem.forSpecialCompositeField(score, itemKey, member);
                             }
                             items.addLast(item);
                         }
@@ -915,94 +1040,39 @@ public abstract class SQLQueryCompletionContext {
 
             private List<SQLQueryCompletionItem> prepareJoinConditionCompletions(
                 @NotNull DBRProgressMonitor monitor,
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQueryDataContextInfo context,
                 @Nullable SQLQueryWordEntry filterOrNull
             ) {
-                class AssociationsResolutionContext {
-                    public final Map<DBSEntityAttribute, List<SQLQueryCompletionItem.SQLColumnNameCompletionItem>> realColumnRefsByEntityAttribute = context.getColumnsList().stream()
-                        .filter(rc -> rc.realAttr != null && rc.realAttr.getParentObject() == rc.realSource)
-                        .collect(Collectors.groupingBy(rc -> rc.realAttr)).entrySet().stream()
-                        .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, g -> g.getValue().stream().map(rc -> {
-                            SQLQueryWordEntry word = makeFilterInfo(null, rc.symbol.getName());
-                            int score = word.matches(filterOrNull, searchInsideWords);
-                            return SQLQueryCompletionItem.forSubsetColumn(
-                                score, word, rc, context.getKnownSources().getResolutionResults().get(rc.source), true
-                            );
-                        }).toList()));
-
-                    private final Map<DBSEntity, Map<DBSEntityAttribute, List<DBSEntityAttribute>>> associatedAttrsByEntity = new HashMap<>();
-
-                    public List<DBSEntityAttribute> findAssociations(DBSEntityAttribute key) {
-                        return Optional.ofNullable(this.associatedAttrsByEntity.computeIfAbsent(key.getParentObject(), this::prepareAllAssociations).get(key)).orElse(Collections.emptyList());
-                    }
-
-                    private Map<DBSEntityAttribute, List<DBSEntityAttribute>> prepareAllAssociations(DBSEntity entity) {
-                        try {
-                            return Stream.concat(
-                                Optional.ofNullable(entity.getAssociations(monitor)).stream().flatMap(Collection::stream)
-                                    .filter(a -> context.getKnownSources().getReferencedTables().contains(a.getAssociatedEntity())),
-                                Optional.ofNullable(entity.getReferences(monitor)).stream().flatMap(Collection::stream)
-                                    .filter(r -> context.getKnownSources().getReferencedTables().contains(r.getParentObject()))
-                            ).filter(c -> c instanceof DBSTableForeignKey)
-                             .map(c -> {
-                                 try {
-                                     return ((DBSTableForeignKey) c).getAttributeReferences(new VoidProgressMonitor());
-                                 } catch (DBException e) {
-                                     return null;
-                                 }
-                             })
-                             .filter(aa -> aa != null && aa.size() == 1 && aa.get(0) instanceof DBSTableForeignKeyColumn)
-                             // TODO consider compound keys and filtered by the common path to the context of origin
-                             .map(aa -> (DBSTableForeignKeyColumn) aa.get(0))
-                             .map(attrRef -> {
-                                 DBSEntityAttribute sourceAttr = attrRef.getAttribute();
-                                 DBSEntityAttribute targetAttr = attrRef.getReferencedColumn();
-                                 if (targetAttr != null && sourceAttr != null) {
-                                     if (sourceAttr.getParentObject() == entity) {
-                                         return Pair.of(sourceAttr, targetAttr);
-                                     } else {
-                                         return Pair.of(targetAttr, sourceAttr);
-                                     }
-                                 } else {
-                                     return null;
-                                 }
-                             })
-                             .filter(Objects::nonNull)
-                             .collect(Collectors.groupingBy(Pair::getFirst, Collectors.mapping(Pair::getSecond, Collectors.toList())));
-                        } catch (DBException e) {
-                            return Collections.emptyMap();
-                        }
-                    }
-                }
-
                 LinkedList<SQLQueryCompletionItem> result = new LinkedList<>();
 
-                if (context.getKnownSources().getReferencedTables().size() > 1 && context.getKnownSources().getResolutionResults().size() > 1
-                    && context instanceof SQLQueryCombinedContext joinContext && joinContext.isJoin()) {
-
-                    AssociationsResolutionContext associations = new AssociationsResolutionContext();
-
-                    for (SQLQueryResultColumn joinedColumn : joinContext.getRightParent().getColumnsList()) {
-                        if (joinedColumn.realAttr != null) {
-                            for (DBSEntityAttribute otherColumnAttribute : associations.findAssociations(joinedColumn.realAttr)) {
-                                List<SQLQueryCompletionItem.SQLColumnNameCompletionItem> otherColumnRefs = associations.realColumnRefsByEntityAttribute.get(otherColumnAttribute);
-                                if (otherColumnRefs != null) {
-                                    for (SQLQueryCompletionItem.SQLColumnNameCompletionItem thisColumnRef : associations.realColumnRefsByEntityAttribute.get(joinedColumn.realAttr)) {
-                                        if (thisColumnRef.columnInfo == joinedColumn) {
-                                            for (SQLQueryCompletionItem.SQLColumnNameCompletionItem otherColumnRef : otherColumnRefs) {
-                                                int thisScore = thisColumnRef.getScore();
-                                                int otherScore = otherColumnRef.getScore();
-                                                if (thisScore > 0 || otherScore > 0) {
-                                                    int score = thisScore >= otherScore ? thisScore : otherScore;
-                                                    SQLQueryWordEntry word = (thisScore >= otherScore ? thisColumnRef : otherColumnRef).getFilterInfo();
-
-                                                    result.addLast(SQLQueryCompletionItem.forJoinCondition(
-                                                        score, word,
-                                                        thisColumnRef,
-                                                        otherColumnRef
-                                                    ));
-                                                }
-                                            }
+                Map<SQLQueryRowsSourceModel, SourceResolutionResult> resolutionResults = context.getKnownSources().getResolutionResults();
+                if (resolutionResults.size() > 1 && context.isJoin()) {
+                    AssociationsResolutionContext associations = this.getAssociationsContext(context, filterOrNull);
+                    for (SQLQueryResultColumn leftColumn : context.getLeftParentColumnsList()) {
+                        if (leftColumn.realAttr != null) {
+                            var leftRels = associations.findAssociatedAttributes(monitor, leftColumn.realAttr);
+                            for (SQLQueryResultColumn rightColumn : context.getRightParentColumnsList()) {
+                                if (rightColumn.realAttr != null) {
+                                    var rightRels = associations.findAssociatedAttributes(monitor, rightColumn.realAttr);
+                                    if (leftRels.contains(rightColumn.realAttr) || rightRels.contains(leftColumn.realAttr)) {
+                                        SQLQueryWordEntry leftWord = makeFilterInfo(null, leftColumn.symbol.getName());
+                                        int leftScore = leftWord.matches(filterOrNull, searchInsideWords);
+                                        SQLQueryWordEntry rightWord = makeFilterInfo(null, rightColumn.symbol.getName());
+                                        int rightScore = rightWord.matches(filterOrNull, searchInsideWords);
+                                        if (leftScore > 0 || rightScore > 0) {
+                                            var leftColumnRef = SQLQueryCompletionItem.forSubsetColumn(
+                                                leftScore, leftWord, leftColumn, resolutionResults.get(leftColumn.source), true
+                                            );
+                                            var rightColumnRef = SQLQueryCompletionItem.forSubsetColumn(
+                                                rightScore, rightWord, rightColumn, resolutionResults.get(rightColumn.source), true
+                                            );
+                                            int score = Math.max(leftScore, rightScore);
+                                            SQLQueryWordEntry matchedWord = (
+                                                leftScore >= rightScore ? leftColumnRef : rightColumnRef
+                                            ).getFilterInfo();
+                                            result.addLast(
+                                                SQLQueryCompletionItem.forJoinCondition(score, matchedWord, leftColumnRef, rightColumnRef)
+                                            );
                                         }
                                     }
                                 }
@@ -1016,55 +1086,64 @@ public abstract class SQLQueryCompletionContext {
             private void prepareNonPrefixedColumnCompletions(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQueryDataContextInfo context,
                 @Nullable SQLQueryWordEntry filterOrNull,
                 @NotNull List<SQLQueryCompletionSet> results
             ) {
                 // directly available column
                 List<? extends SQLQueryCompletionItem> subsetColumns = this.prepareTupleColumns(context, filterOrNull, true);
-                // already referenced tables
-                LinkedList<SQLQueryCompletionItem> tableRefs = new LinkedList<>();
+
+                List<? extends SQLQueryCompletionItem> resultItems;
                 if (syntaxInspectionResult.expectingColumnReference()) {
+                    // already referenced tables
+                    LinkedList<SQLQueryCompletionItem> tableRefs = new LinkedList<>();
                     for (SourceResolutionResult rr : context.getKnownSources().getResolutionResults().values()) {
                         if (rr.aliasOrNull != null && !rr.isCteSubquery) {
                             SQLQueryWordEntry sourceAlias = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
                             int score = sourceAlias.matches(filterOrNull, this.searchInsideWords);
                             if (score > 0) {
-                                tableRefs.add(SQLQueryCompletionItem.forRowsSourceAlias(score, sourceAlias, rr.aliasOrNull, rr));
+                                tableRefs.add(SQLQueryCompletionItem.forRowsSourceAlias(score, sourceAlias, rr.aliasOrNull, rr, false));
                             }
                         } else if (rr.tableOrNull != null) {
                             SQLQueryWordEntry tableName = makeFilterInfo(filterOrNull, rr.tableOrNull.getName());
                             int score = tableName.matches(filterOrNull, this.searchInsideWords);
                             if (score > 0) {
-                                tableRefs.add(SQLQueryCompletionItem.forRealTable(score, tableName, null, rr.tableOrNull, true));
+                                tableRefs.add(SQLQueryCompletionItem.forRealTable(score, tableName, null, rr.tableOrNull, true, false));
                             }
                         }
                     }
+
+                    List<SQLQueryCompletionItem> joinConditions = syntaxInspectionResult.expectingJoinCondition()
+                        ? this.prepareJoinConditionCompletions(monitor, context, filterOrNull)
+                        : Collections.emptyList();
+
+                    LinkedList<SQLQueryCompletionItem> procedureItems = this.prepareProceduresCompletions(
+                        monitor,
+                        request,
+                        context.getKnownSources(),
+                        null,
+                        filterOrNull
+                    );
+                    LinkedList<SQLQueryCompletionItem> sequenceItems = this.prepareSequencesCompletions(
+                        monitor,
+                        request,
+                        context.getKnownSources(),
+                        null,
+                        filterOrNull
+                    );
+                    resultItems = Stream.of(joinConditions, subsetColumns, tableRefs, procedureItems, sequenceItems).flatMap(Collection::stream).toList();
+                } else {
+                    resultItems = subsetColumns;
                 }
 
-                List<SQLQueryCompletionItem> joinConditions = syntaxInspectionResult.expectingJoinCondition()
-                    ? this.prepareJoinConditionCompletions(monitor, context, filterOrNull)
-                    : Collections.emptyList();
-
-                LinkedList<SQLQueryCompletionItem> procedureItems = this.prepareProceduresCompletions(
-                    monitor,
-                    request,
-                    context,
-                    null,
-                    filterOrNull
-                );
-                this.makeFilteredCompletionSet(
-                    filterOrNull,
-                    Stream.of(joinConditions, subsetColumns, tableRefs, procedureItems).flatMap(Collection::stream).toList(),
-                    results
-                );
+                this.makeFilteredCompletionSet(filterOrNull, resultItems, results);
             }
 
             @NotNull
             private LinkedList<SQLQueryCompletionItem> prepareProceduresCompletions(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
                 @Nullable List<DBSObjectContainer> container,
                 @Nullable SQLQueryWordEntry filterOrNull
             ) {
@@ -1075,34 +1154,64 @@ public abstract class SQLQueryCompletionContext {
                 LinkedList<SQLQueryCompletionItem> proceduresItems = new LinkedList<>();
                 try {
                     this.collectProcedures(monitor, request, objectContainers, null, filterOrNull, proceduresItems);
-                    this.collectPackages(monitor, request, context, this.exposedContexts, null, filterOrNull, proceduresItems);
+                    this.collectPackages(monitor, request, knownSources, this.exposedContexts, null, filterOrNull, proceduresItems);
                 } catch (DBException ex) {
                     log.error(ex);
                 }
                 return proceduresItems;
             }
 
+            /**
+            * Prepare list of completion items intended to accomplish sequence object name
+            */
+            @NotNull
+            private LinkedList<SQLQueryCompletionItem> prepareSequencesCompletions(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
+                @Nullable List<DBSObjectContainer> container,
+                @Nullable SQLQueryWordEntry filterOrNull
+            ) {
+                Collection<DBSObjectContainer> objectContainers = container;
+                if (objectContainers == null) {
+                    objectContainers = this.obtainDefaultContext(monitor, request);
+                }
+                LinkedList<SQLQueryCompletionItem> sequenceItems = new LinkedList<>();
+                try {
+                    this.collectImmediateChildren(
+                        monitor, knownSources, objectContainers,
+                        o -> o instanceof DBSSequence,
+                        null, filterOrNull, sequenceItems
+                    );
+                } catch (DBException ex) {
+                    log.error(ex);
+                }
+                return sequenceItems;
+            }
+
             @Override
             public boolean isColumnNameConflicting(String name) {
+                if (this.columnNameConflicts == null) {
+                    this.columnNameConflicts = this.getDataContext().getColumnsList().stream()
+                        .collect(Collectors.groupingBy(c -> c.symbol.getName())).entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, kv -> kv.getValue().size() > 1));
+                }
                 return this.columnNameConflicts.get(name);
             }
 
             @NotNull
             private List<? extends SQLQueryCompletionItem> prepareTupleColumns(
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQueryDataContextInfo dataContext,
                 @Nullable SQLQueryWordEntry filterOrNull,
-                boolean absolute
+                boolean useAbsoluteName
             ) {
-                boolean useAbsoluteName = absolute & (
-                    context.getKnownSources().getResolutionResults().size() > 1 ||
-                    context.getKnownSources().getAliasesInUse().size() > 0
-                );
-                Stream<? extends SQLQueryCompletionItem> subsetColumns = context.getColumnsList().stream()
+                SQLQuerySourcesInfoCollection knownSources = dataContext.getKnownSources();
+                Stream<? extends SQLQueryCompletionItem> subsetColumns = dataContext.getColumnsList().stream()
                     .map(rc -> {
                         SQLQueryWordEntry filterKey = makeFilterInfo(filterOrNull, rc.symbol.getName());
                         int score = filterKey.matches(filterOrNull, this.searchInsideWords);
                         return score <= 0 ? null : SQLQueryCompletionItem.forSubsetColumn(
-                            score, filterKey, rc, context.getKnownSources().getResolutionResults().get(rc.source), useAbsoluteName
+                            score, filterKey, rc, knownSources.getResolutionResults().get(rc.source), useAbsoluteName
                         );
                     }).filter(Objects::nonNull);
 
@@ -1112,17 +1221,22 @@ public abstract class SQLQueryCompletionContext {
             private void prepareTableCompletions(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
                 @Nullable SQLQueryWordEntry filterOrNull,
                 @NotNull List<SQLQueryCompletionSet> results
             ) {
                 LinkedList<SQLQueryCompletionItem> completions = new LinkedList<>();
-                for (SourceResolutionResult rr : context.getKnownSources().getResolutionResults().values()) {
+
+                AssociationsResolutionContext associations = this.getAssociationsContext(this.deepestContext, filterOrNull);
+                for (SourceResolutionResult rr : knownSources.getResolutionResults().values()) {
                     if (rr.aliasOrNull != null && rr.isCteSubquery) {
                         SQLQueryWordEntry aliasName = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
                         int score = aliasName.matches(filterOrNull, this.searchInsideWords);
                         if (score > 0) {
-                            completions.add(SQLQueryCompletionItem.forRowsSourceAlias(score, aliasName, rr.aliasOrNull, rr));
+                            completions.add(SQLQueryCompletionItem.forRowsSourceAlias(
+                                score, aliasName, rr.aliasOrNull, rr,
+                                associations.hasRelatedAssociationsWithTable(monitor, rr.source)
+                            ));
                         }
                     }
                 }
@@ -1130,10 +1244,10 @@ public abstract class SQLQueryCompletionContext {
                 if (dbcExecutionContext != null) {
                     try {
                         Collection<DBSObjectContainer> containers = this.obtainDefaultContext(monitor, request);
-                        this.collectTables(monitor, context, containers, null, filterOrNull, completions);
+                        this.collectTables(monitor, knownSources, containers, null, filterOrNull, completions);
                         // usually we don't want procedures in FROM
                         //this.collectProcedures(monitor, request, containers, null, filterOrNull, completions);
-                        this.collectPackages(monitor, request, context, this.exposedContexts,  null, filterOrNull, completions);
+                        this.collectPackages(monitor, request, knownSources, this.exposedContexts,  null, filterOrNull, completions);
                     } catch (DBException e) {
                         log.error(e);
                     }
@@ -1146,7 +1260,7 @@ public abstract class SQLQueryCompletionContext {
             private void prepareObjectCompletions(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
                 @NotNull Collection<DBSObjectContainer> contexts,
                 @Nullable SQLQueryCompletionItem.ContextObjectInfo contextObjext,
                 @NotNull Set<DBSObjectType> objectTypes,
@@ -1158,7 +1272,7 @@ public abstract class SQLQueryCompletionContext {
                 try {
                     this.collectImmediateChildren(
                         monitor,
-                        context,
+                        knownSources,
                         contexts,
                         o -> objectTypes.stream().anyMatch(t -> t.getTypeClass().isAssignableFrom(o.getClass())) && objs.add(o),
                         contextObjext,
@@ -1256,7 +1370,7 @@ public abstract class SQLQueryCompletionContext {
             private void collectPackages(
                 @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
                 @NotNull Collection<DBSObjectContainer> contexts,
                 @Nullable SQLQueryCompletionItem.ContextObjectInfo contextObjext,
                 @Nullable SQLQueryWordEntry filterOrNull,
@@ -1265,7 +1379,7 @@ public abstract class SQLQueryCompletionContext {
                 if (request.getContext().isSearchProcedures()) {
                     this.collectImmediateChildren(
                         monitor,
-                        context,
+                        knownSources,
                         contexts,
                         o -> o instanceof DBSProcedureContainer,
                         contextObjext,
@@ -1312,14 +1426,14 @@ public abstract class SQLQueryCompletionContext {
 
             private void collectTables(
                 @NotNull DBRProgressMonitor monitor,
-                @NotNull SQLQueryDataContext context,
+                @NotNull SQLQuerySourcesInfoCollection knownSources,
                 @NotNull Collection<DBSObjectContainer> containers,
                 @Nullable SQLQueryCompletionItem.ContextObjectInfo contextObjext,
                 @Nullable SQLQueryWordEntry filterOrNull,
                 @NotNull LinkedList<SQLQueryCompletionItem> accumulator
             ) throws DBException {
                 this.collectImmediateChildren(
-                    monitor, context, containers,
+                    monitor, knownSources, containers,
                     o -> o instanceof DBSTable || o instanceof DBSView,
                     contextObjext, filterOrNull, accumulator
                 );
@@ -1409,7 +1523,10 @@ public abstract class SQLQueryCompletionContext {
                 return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
             } else {
                 STMTreeNode syntaxNode = model.getSyntaxNode();
-                if (scriptItem.item.getOriginalText().length() <= SQLQueryCompletionContext.getMaxKeywordLength()
+                Interval parsedInterval = syntaxNode.getRealInterval();
+                if (parsedInterval.a < 0 || parsedInterval.b < 0) {
+                    return SQLQueryCompletionContext.prepareEmpty(scriptItem.offset, offset);
+                } else if (scriptItem.item.getOriginalText().length() <= SQLQueryCompletionContext.getMaxKeywordLength()
                     && LSMInspections.matchesAnyWord(scriptItem.item.getOriginalText())
                     && position <= scriptItem.item.getOriginalText().length()
                 ) {
@@ -1418,12 +1535,13 @@ public abstract class SQLQueryCompletionContext {
 
                 LSMInspections inspections = new LSMInspections(dialect, syntaxNode);
                 LSMInspections.SyntaxInspectionResult syntaxInspectionResult = inspections.prepareAbstractSyntaxInspection(position);
+                if (syntaxInspectionResult == null) {
+                    return SQLQueryCompletionContext.prepareOffquery(scriptItem.offset, offset);
+                }
+
                 SQLQueryModel.LexicalContextResolutionResult context = model.findLexicalContext(
                     Math.min(position, model.getSyntaxNode().getRealInterval().b + 1)
                 );
-                if (context.deepestContext() == null) {
-                    return SQLQueryCompletionContext.prepareEmpty(0, offset);
-                }
 
                 LSMInspections.NameInspectionResult nameInspectionResult = inspections.collectNameNodes(position);
                 if (nameInspectionResult.positionToInspect() != position) {
@@ -1460,6 +1578,397 @@ public abstract class SQLQueryCompletionContext {
             }
         } else {
             return SQLQueryCompletionContext.prepareEmpty(0, offset);
+        }
+    }
+
+    public interface SQLQueryDataContextInfo {
+
+        @NotNull
+        SQLQuerySourcesInfoCollection getKnownSources();
+
+        @NotNull
+        List<SQLQueryResultColumn> getColumnsList();
+
+        @Nullable
+        SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> s);
+
+        boolean isJoin();
+
+        @NotNull
+        List<? extends SQLQueryResultColumn> getRightParentColumnsList();
+
+        @NotNull
+        List<? extends SQLQueryResultColumn> getLeftParentColumnsList();
+
+        @Nullable
+        SQLQueryDataContextInfo getRelatedContext();
+
+        static SQLQueryDataContextInfo empty() {
+            return EMPTY_DATA_CONTEXT_INFO;
+        }
+
+        static SQLQueryDataContextInfo makeFor(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
+            return new SQLQueryRowsSourceContextInfo(rowsSourceContext);
+        }
+
+        static SQLQueryDataContextInfo makeFor(@NotNull SQLQueryRowsDataContext rowsDataContext) {
+            return new SQLQueryRowsDataContextInfo(rowsDataContext);
+        }
+    }
+
+    private static class SQLQueryRowsSourceContextInfo implements SQLQueryDataContextInfo {
+        @NotNull
+        private final SQLQueryRowsSourceContext rowsSourceContext;
+        @NotNull
+        private final SQLQuerySourcesInfoCollection subquerySources;
+        @Nullable
+        private Supplier<SQLQueryDataContextInfo> relatedContextInfoProvider = null;
+
+        public SQLQueryRowsSourceContextInfo(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
+            this.rowsSourceContext = rowsSourceContext;
+            this.subquerySources = rowsSourceContext.getKnownSources(true);
+        }
+
+        @NotNull
+        @Override
+        public SQLQuerySourcesInfoCollection getKnownSources() {
+            return this.subquerySources;
+        }
+
+        @NotNull
+        @Override
+        public List<SQLQueryResultColumn> getColumnsList() {
+            return Collections.emptyList();
+        }
+
+        @Nullable
+        @Override
+        public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> tableName) {
+            List<DBSEntity> tables = rowsSourceContext.getConnectionInfo().findRealTables(monitor, tableName);
+            return this.subquerySources.getResolutionResults().values()
+                .stream().filter(r -> tables.contains(r.tableOrNull)).findFirst().orElse(null);
+        }
+
+        @Override
+        public boolean isJoin() {
+            return false;
+        }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
+            return Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getLeftParentColumnsList() {
+            return Collections.emptyList();
+        }
+
+        @Nullable
+        @Override
+        public final SQLQueryDataContextInfo getRelatedContext() {
+            if (this.relatedContextInfoProvider == null) {
+                this.relatedContextInfoProvider = this.prepareRelatedContextInfoProvider();
+            }
+            return this.relatedContextInfoProvider.get();
+        }
+
+        @NotNull
+        protected Supplier<SQLQueryDataContextInfo> prepareRelatedContextInfoProvider() {
+            SQLQueryDataContextInfo relatedContextInfo = this.rowsSourceContext.getRelatedContextProvider() == null
+                ? null
+                : SQLQueryDataContextInfo.makeFor(this.rowsSourceContext.getRelatedContextProvider().get());
+            return () -> relatedContextInfo;
+        }
+    }
+
+    private static class SQLQueryRowsDataContextInfo extends SQLQueryRowsSourceContextInfo {
+        @NotNull
+        private final SQLQueryRowsDataContext rowsDataContext;
+
+        public SQLQueryRowsDataContextInfo(@NotNull SQLQueryRowsDataContext rowsDataContext) {
+            super(rowsDataContext.getRowsSources());
+            this.rowsDataContext = rowsDataContext;
+        }
+
+        @NotNull
+        @Override
+        public List<SQLQueryResultColumn> getColumnsList() {
+            return this.rowsDataContext.getColumnsList();
+        }
+
+        @Override
+        public boolean isJoin() {
+            return this.rowsDataContext.getJoinInfo() != null;
+        }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
+            return this.isJoin() ? this.rowsDataContext.getJoinInfo().right().getColumnsList() : Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getLeftParentColumnsList() {
+            return this.isJoin() ? this.rowsDataContext.getJoinInfo().left().getColumnsList() : Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        protected Supplier<SQLQueryDataContextInfo> prepareRelatedContextInfoProvider() {
+            return () -> this;
+        }
+    }
+
+    private static final SQLQueryDataContextInfo EMPTY_DATA_CONTEXT_INFO = new SQLQueryDataContextInfo() {
+        static final SQLQuerySourcesInfoCollection EMPTY_SOURCES_COLLECTION = new SQLQuerySourcesInfoCollection() {
+            @NotNull
+            @Override
+            public Map<SQLQueryRowsSourceModel, SourceResolutionResult> getResolutionResults() {
+                return Collections.emptyMap();
+            }
+
+            @NotNull
+            @Override
+            public Set<DBSEntity> getReferencedTables() {
+                return Collections.emptySet();
+            }
+
+            @NotNull
+            @Override
+            public Set<String> getAliasesInUse() {
+                return Collections.emptySet();
+            }
+        };
+
+        @NotNull
+        @Override
+        public SQLQuerySourcesInfoCollection getKnownSources() {
+            return EMPTY_SOURCES_COLLECTION;
+        }
+
+        @NotNull
+        @Override
+        public List<SQLQueryResultColumn> getColumnsList() {
+            return Collections.emptyList();
+        }
+
+        @Nullable
+        @Override
+        public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> s) {
+            return null;
+        }
+
+        @Override
+        public boolean isJoin() {
+            return false;
+        }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getRightParentColumnsList() {
+            return Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        public List<? extends SQLQueryResultColumn> getLeftParentColumnsList() {
+            return Collections.emptyList();
+        }
+
+        @Nullable
+        @Override
+        public SQLQueryDataContextInfo getRelatedContext() {
+            return null;
+        }
+    };
+
+    private record EntityAssociationTargetsInfo(
+        @NotNull Set<DBSEntityAttribute> attributes,
+        @NotNull Set<DBSEntity> entities
+    ) {
+    }
+
+    private record EntityAssociationsInfo(
+        @NotNull DBSEntity entity,
+        @NotNull Map<DBSEntityAttribute, EntityAssociationTargetsInfo> associationsByAttribute,
+        @NotNull Set<DBSEntity> allAssociatedEntities,
+        @NotNull Set<DBSEntityAttribute> allAssociatedAttributes
+    ) {
+    }
+
+    private class AssociationsResolutionContext {
+        @NotNull
+        private final SQLQueryDataContextInfo context;
+        @NotNull
+        private final SQLQueryDataContextInfo relatedContext;
+        @Nullable
+        private final SQLQueryWordEntry filterOrNull;
+        @Nullable
+        private Map<DBSEntityAttribute, List<SQLQueryCompletionItem.SQLColumnNameCompletionItem>> realColumnRefsByEntityAttribute = null;
+        @NotNull
+        private final Map<DBSEntity, EntityAssociationsInfo> associatedAttrsByEntity = new HashMap<>();
+        @Nullable
+        private Set<DBSEntity> allAssociatedEntitiesOfColumnsList = null;
+
+        public AssociationsResolutionContext(@NotNull SQLQueryDataContextInfo context, @Nullable SQLQueryWordEntry filterOrNull) {
+            this.context = context;
+            this.relatedContext = this.context.getRelatedContext() == null ? this.context : this.context.getRelatedContext();
+            this.filterOrNull = filterOrNull;
+        }
+
+        private Set<DBSEntity> getAssociatedEntitiesOfColumnsList(@NotNull DBRProgressMonitor monitor) {
+            if (this.allAssociatedEntitiesOfColumnsList == null) {
+                this.allAssociatedEntitiesOfColumnsList = this.relatedContext.getColumnsList().stream()
+                    .filter(a -> a.realAttr != null)
+                    .flatMap(a -> this.findAssociatedEntities(monitor, a.realAttr).stream())
+                    .collect(Collectors.toUnmodifiableSet());
+            }
+            return this.allAssociatedEntitiesOfColumnsList;
+        }
+
+        private Set<DBSEntityAttribute> extractRealAttributes(@NotNull List<SQLQueryResultColumn> columnsList) {
+            return columnsList.stream()
+                .filter(c -> c.realAttr != null)
+                .map(c -> c.realAttr)
+                .collect(Collectors.toSet());
+        }
+
+        public boolean hasRelatedAssociationsWithTable(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table) {
+            EntityAssociationsInfo tableAssociations = this.findAssociationsInfo(monitor, table);
+            return this.getAssociatedEntitiesOfColumnsList(monitor).contains(table)
+                || this.extractRealAttributes(this.relatedContext.getColumnsList()).stream()
+                       .anyMatch(tableAssociations.allAssociatedAttributes::contains);
+        }
+
+        public boolean hasRelatedAssociationsWithTable(@NotNull DBRProgressMonitor monitor, @NotNull SQLQueryRowsSourceModel source) {
+            Set<DBSEntityAttribute> tupleAttributes = this.extractRealAttributes(this.relatedContext.getColumnsList());
+            Set<DBSEntityAttribute> sourceAttributes = this.extractRealAttributes(source.getRowsDataContext().getColumnsList());
+
+            Set<DBSEntityAttribute> tupleAssociations = tupleAttributes.stream()
+                .flatMap(a -> this.findAssociatedAttributes(monitor, a).stream())
+                .collect(Collectors.toSet());
+
+            if (sourceAttributes.stream().anyMatch(tupleAssociations::contains)) {
+                return true;
+            }
+
+            Set<DBSEntityAttribute> sourceAssociations = sourceAttributes.stream()
+                .flatMap(a -> this.findAssociatedAttributes(monitor, a).stream())
+                .collect(Collectors.toSet());
+
+            if (tupleAttributes.stream().anyMatch(sourceAssociations::contains)) {
+                return true;
+            }
+
+            return false;
+        }
+
+        @NotNull
+        private Map<DBSEntityAttribute, List<SQLQueryCompletionItem.SQLColumnNameCompletionItem>> getRealColumnNameCompletionItems() {
+            return this.realColumnRefsByEntityAttribute != null
+                ? this.realColumnRefsByEntityAttribute
+                : (
+                    this.realColumnRefsByEntityAttribute = this.context.getColumnsList().stream()
+                        .filter(rc -> rc.realAttr != null && rc.realAttr.getParentObject() == rc.realSource)
+                        .collect(Collectors.groupingBy(rc -> rc.realAttr)).entrySet().stream()
+                        .collect(Collectors.toUnmodifiableMap(
+                            Map.Entry::getKey, g -> g.getValue().stream().map(rc -> {
+                                SQLQueryWordEntry word = makeFilterInfo(null, rc.symbol.getName());
+                                int score = word.matches(filterOrNull, searchInsideWords);
+                                return SQLQueryCompletionItem.forSubsetColumn(
+                                    score, word, rc, context.getKnownSources().getResolutionResults().get(rc.source), true
+                                );
+                            }).toList()
+                        ))
+                );
+        }
+
+        @NotNull
+        public List<SQLQueryCompletionItem.SQLColumnNameCompletionItem> getRealColumnRefsByEntityAttribute(
+            @NotNull DBSEntityAttribute attr
+        ) {
+            return Optional.ofNullable(this.getRealColumnNameCompletionItems().get(attr)).orElse(Collections.emptyList());
+        }
+
+        @NotNull
+        public EntityAssociationsInfo findAssociationsInfo(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table) {
+            return this.associatedAttrsByEntity.computeIfAbsent(table, e -> this.prepareAllAssociations(monitor, e));
+        }
+
+        @NotNull
+        public Set<DBSEntityAttribute> findAssociatedAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute key) {
+            return Optional.ofNullable(this.findAssociationsInfo(monitor, key.getParentObject()).associationsByAttribute.get(key))
+                .map(t -> t.attributes)
+                .orElse(Collections.emptySet());
+        }
+
+        @NotNull
+        public Set<DBSEntity> findAssociatedEntities(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute key) {
+            return Optional.ofNullable(this.findAssociationsInfo(monitor, key.getParentObject()).associationsByAttribute.get(key))
+                .map(t -> t.entities)
+                .orElse(Collections.emptySet());
+        }
+
+        @NotNull
+        private EntityAssociationsInfo prepareAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) {
+            try {
+                Map<DBSEntityAttribute, EntityAssociationTargetsInfo> associatedAttributes = Stream.concat(
+                        Optional.ofNullable(entity.getAssociations(monitor)).stream().flatMap(Collection::stream),
+                        Optional.ofNullable(entity.getReferences(monitor)).stream().flatMap(Collection::stream)
+                    ).filter(c -> c instanceof DBSTableForeignKey)
+                    .map(c -> {
+                        try {
+                            return ((DBSTableForeignKey) c).getAttributeReferences(monitor);
+                        } catch (DBException e) {
+                            return null;
+                        }
+                    })
+                    .filter(aa -> aa != null && aa.size() == 1 && aa.getFirst() instanceof DBSTableForeignKeyColumn)
+                    // TODO consider compound keys and filtered by the common path to the context of origin
+                    .map(aa -> (DBSTableForeignKeyColumn) aa.getFirst())
+                    .map(attrRef -> {
+                        DBSEntityAttribute sourceAttr = attrRef.getAttribute();
+                        DBSEntityAttribute targetAttr = attrRef.getReferencedColumn();
+                        if (targetAttr != null && sourceAttr != null) {
+                            if (sourceAttr.getParentObject() == entity) {
+                                return Pair.of(sourceAttr, targetAttr);
+                            } else {
+                                return Pair.of(targetAttr, sourceAttr);
+                            }
+                        } else {
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.groupingBy(
+                        Pair::getFirst, // relation source attr is a key
+                        Collectors.mapping(
+                            Pair::getSecond,
+                            Collectors.collectingAndThen(
+                                Collectors.toSet(),
+                                (Set<DBSEntityAttribute> targetAttrs) -> new EntityAssociationTargetsInfo(
+                                    targetAttrs,
+                                    targetAttrs.stream()
+                                        .map(DBSEntityElement::getParentObject)
+                                        .collect(Collectors.toUnmodifiableSet())
+                                )
+                            )
+                        )
+                    ));
+                Set<DBSEntity> allAssociationTargets = associatedAttributes.values().stream()
+                    .flatMap(t -> t.entities.stream())
+                    .collect(Collectors.toUnmodifiableSet());
+                Set<DBSEntityAttribute> allAssociatedAttributes = associatedAttributes.values().stream()
+                    .flatMap(t -> t.attributes.stream())
+                    .collect(Collectors.toUnmodifiableSet());
+                return new EntityAssociationsInfo(entity, associatedAttributes, allAssociationTargets, allAssociatedAttributes);
+            } catch (DBException e) {
+                return new EntityAssociationsInfo(entity, Collections.emptyMap(), Collections.emptySet(), Collections.emptySet());
+            }
         }
     }
 }

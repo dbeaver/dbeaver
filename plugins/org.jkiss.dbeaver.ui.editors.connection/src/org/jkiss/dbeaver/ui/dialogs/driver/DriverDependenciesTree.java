@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.DBExceptionWithHistory;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.ProgressMonitorWithExceptionContext;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
+import org.jkiss.dbeaver.registry.driver.DriverLibraryMavenArtifact;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
@@ -42,10 +43,10 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.NLS;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -53,6 +54,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.net.ssl.SSLHandshakeException;
 
 class DriverDependenciesTree {
     private static final Log log = Log.getLog(DriverDependenciesTree.class);
@@ -160,6 +162,7 @@ class DriverDependenciesTree {
             item.setText(2, CommonUtils.notEmpty(library.getDescription()));
             if (editable) {
                 item.setFont(1, BaseThemeSettings.instance.baseFontBold);
+                item.setText(1, NLS.bind(UIConnectionMessages.dialog_driver_download_version_change_label, item.getText(1)));
             }
             totalItems++;
             if (addDependencies(item, node)) {
@@ -304,40 +307,38 @@ class DriverDependenciesTree {
         } catch (InterruptedException e) {
             return;
         }
-        final String currentVersion = dependencyNode.library.getVersion();
-        if (currentVersion != null && !allVersions.contains(currentVersion)) {
+
+        final String currentVersion = CommonUtils.notEmpty(dependencyNode.library.getVersion());
+        if (!allVersions.contains(currentVersion)) {
             allVersions.add(currentVersion);
         }
 
         final CCombo editor = new CCombo(filesTree, SWT.DROP_DOWN | SWT.READ_ONLY);
         editor.setVisibleItemCount(15);
-        int versionIndex = -1;
-        for (int i = 0; i < allVersions.size(); i++) {
-            String version = allVersions.get(i);
-            editor.add(version);
-            if (version.equals(currentVersion)) {
-                versionIndex = i;
-            }
-        }
-        if (versionIndex >= 0) {
-            editor.select(versionIndex);
-            editor.setText(currentVersion);
-        }
         editor.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                String newVersion = editor.getItem(editor.getSelectionIndex());
+                String newVersion = allVersions.get(editor.getSelectionIndex());
                 disposeOldEditor();
-                setLibraryVersion(dependencyNode.library, newVersion);
+                if (dependencyNode.library instanceof DriverLibraryMavenArtifact mavenLib) {
+                    setLibraryVersion(mavenLib, newVersion);
+                }
             }
         });
+        for (String version : allVersions) {
+            editor.add(version);
+        }
+
+        int currentVersionIndex = allVersions.indexOf(currentVersion);
+        editor.setItem(currentVersionIndex, NLS.bind(UIConnectionMessages.dialog_driver_download_current_version_label, currentVersion));
+        editor.select(currentVersionIndex);
 
         treeEditor.setEditor(editor, item, 1);
         editor.setListVisible(true);
     }
 
     // This may be overridden
-    protected void setLibraryVersion(DBPDriverLibrary library, String version) {
+    protected void setLibraryVersion(DriverLibraryMavenArtifact library, String version) {
 
     }
 
