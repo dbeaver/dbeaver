@@ -46,6 +46,14 @@
         </wizard>
         <wizard
             category="org.jkiss.dbeaver.config.migration.third-party"
+            class="org.jkiss.dbeaver.ui.config.migration.wizards.datagrip.ConfigImportWizardDataGrip"
+            id="org.jkiss.dbeaver.config.migration.datagrip"
+            name="DataGrip"
+            icon="icons/datagrip.png">
+            <description>DataGrip (JetBrains)</description>
+        </wizard>
+        <wizard
+            category="org.jkiss.dbeaver.config.migration.third-party"
             class="org.jkiss.dbeaver.ui.config.migration.wizards.custom.ConfigImportWizardCustom"
             id="org.jkiss.dbeaver.config.migration.custom"
             name="Custom"
