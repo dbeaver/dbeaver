@@ -356,7 +356,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         filterComposite.setBackground(filtersText.getBackground());
 
         {
-            String displayName = getActiveSourceQueryNormalized();
+            String displayName = getActiveSourceQueryNormalized(true);
             if (prevQuery == null || !prevQuery.equals(displayName)) {
                 prevQuery = displayName;
             }
@@ -446,11 +446,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     @NotNull
-    private String getActiveSourceQuery() {
+    private String getActiveSourceQuery(boolean forUI) {
         String displayName;
         DBSDataContainer dataContainer = viewer.getDataContainer();
-        if (dataContainer instanceof DBSEntity && !viewer.getDataFilter().hasFilters()) {
+        if (forUI && dataContainer instanceof DBSEntity && !viewer.getDataFilter().hasFilters()) {
             displayName = ResultSetMessages.sql_editor_resultset_filter_panel_show_sql_label;
+        } else if (!forUI && dataContainer != null) {
+            displayName = dataContainer.getName();
         } else {
             displayName = viewer.getActiveQueryText();
         }
@@ -458,8 +460,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     }
 
     @NotNull
-    private String getActiveSourceQueryNormalized() {
-        String displayName = getActiveSourceQuery();
+    private String getActiveSourceQueryNormalized(boolean forUI) {
+        String displayName = getActiveSourceQuery(forUI);
         Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
         Matcher m = mlCommentsPattern.matcher(displayName);
         if (m.find()) {
@@ -530,7 +532,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             try {
                 DBCExecutionContext context = viewer.getExecutionContext();
                 if (context != null) {
-                    viewer.getFilterManager().saveQueryFilterValue(context, getActiveSourceQueryNormalized(), whereCondition);
+                    viewer.getFilterManager().saveQueryFilterValue(context, getActiveSourceQueryNormalized(false), whereCondition);
                 }
             } catch (Throwable e) {
                 log.debug("Error saving filter", e);
@@ -947,7 +949,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             new TableColumn(historyTable, SWT.NONE);
 
             if (filtersHistory.isEmpty()) {
-                loadFiltersHistory(activeDisplayName);
+                loadFiltersHistory(getActiveSourceQueryNormalized(false));
             }
 
             if (filtersHistory.isEmpty()) {
@@ -997,7 +999,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                                     if (context != null) {
                                         viewer.getFilterManager().deleteQueryFilterValue(
                                             context,
-                                            getActiveSourceQueryNormalized(),
+                                            getActiveSourceQueryNormalized(true),
                                             filterValue
                                         );
                                     }
