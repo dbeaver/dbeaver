@@ -447,10 +447,10 @@ public class TabbedFolderList extends ConComposite {
                 SharedTextColors sharedColors = UIUtils.getSharedTextColors();
                 if (listBackground.hashCode() < connectionColor.hashCode()) {
                     // Foreground darker than background - make element background darker
-                    connectionColor = sharedColors.getColor(UIUtils.blend(black, connectionColor.getRGB(), 25));
+                    connectionColor = sharedColors.getColor(UIUtils.blend(black, connectionColor.getRGB(), 15));
                 } else {
                     // Make element background lighter
-                    connectionColor = sharedColors.getColor(UIUtils.blend(white, connectionColor.getRGB(), 25));
+                    connectionColor = sharedColors.getColor(UIUtils.blend(white, connectionColor.getRGB(), 15));
                 }
             }
 
