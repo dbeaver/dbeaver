@@ -264,13 +264,12 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     public IContentFormatter getContentFormatter(ISourceViewer sourceViewer) {
         SQLContentFormatter formatter = new SQLContentFormatter(editor);
         formatter.setDocumentPartitioning(SQLParserPartitions.SQL_PARTITIONING);
+        formatter.enablePartitionAwareFormatting(true);
 
         IFormattingStrategy formattingStrategy = new SQLFormattingStrategy(sourceViewer, this, editor.getSyntaxManager());
         for (String ct : SQLParserPartitions.SQL_CONTENT_TYPES) {
             formatter.setFormattingStrategy(formattingStrategy, ct);
         }
-
-        formatter.enablePartitionAwareFormatting(false);
 
         return formatter;
     }

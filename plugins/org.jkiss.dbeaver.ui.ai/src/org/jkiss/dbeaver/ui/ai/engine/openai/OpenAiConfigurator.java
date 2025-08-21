@@ -110,7 +110,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         configuration.getProperties().setToken(token);
         configuration.getProperties().setModel(modelSelectorField.getSelectedModel());
         configuration.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
-        configuration.getProperties().setTemperature(Double.parseDouble(temperature));
+        configuration.getProperties().setTemperature(CommonUtils.toDouble(temperature));
         configuration.getProperties().setLoggingEnabled(logQuery);
     }
 
@@ -146,7 +146,16 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
                     .toList()
             )
             .withSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                contextWindowSizeField.setValue(OpenAIModels.getContextWindowSize(modelSelectorField.getSelectedModel()));
+                OpenAIModels.getModelByName(modelSelectorField.getSelectedModel())
+                    .ifPresentOrElse(
+                        model -> {
+                            contextWindowSizeField.setValue(model.contextWindowSize());
+                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                        }, () -> {
+                            contextWindowSizeField.setValue(null);
+                            temperatureText.setText("0.0");
+                        }
+                    );
             }))
             .build();
 
