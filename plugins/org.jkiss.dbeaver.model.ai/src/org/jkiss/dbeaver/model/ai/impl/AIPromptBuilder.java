@@ -42,8 +42,6 @@ public class AIPromptBuilder {
     private final List<String> instructions = new ArrayList<>();
     private final List<String> examples = new ArrayList<>();
     private final List<String> contexts = new ArrayList<>();
-    @Nullable
-    private String databaseSnapshot;
     private final List<String> outputFormats = new ArrayList<>();
 
     private AIPromptBuilder() {
@@ -74,11 +72,6 @@ public class AIPromptBuilder {
         return this;
     }
 
-    public AIPromptBuilder addDatabaseSnapshot(@NotNull String databaseSnapshot) {
-        this.databaseSnapshot = databaseSnapshot.trim();
-        return this;
-    }
-
     public AIPromptBuilder addOutputFormats(@NotNull String... outputFormats) {
         this.outputFormats.addAll(Arrays.asList(outputFormats));
         return this;
@@ -101,11 +94,6 @@ public class AIPromptBuilder {
 
         prompt.append("\nContext:\n");
         contexts.forEach(context -> prompt.append("- ").append(context).append("\n"));
-
-        if (databaseSnapshot != null && !databaseSnapshot.isBlank()) {
-            prompt.append("\nDatabase Snapshot:\n");
-            prompt.append(databaseSnapshot).append("\n");
-        }
 
         if (!outputFormats.isEmpty()) {
             prompt.append("\nOutput Format:\n");
@@ -157,6 +145,14 @@ public class AIPromptBuilder {
         instructions.add("Rely only on the schema information provided below.");
         instructions.add("Stick strictly to " + dialect.getDialectName() + " syntax.");
         instructions.add("Do not invent columns, tables, or data that aren’t explicitly defined.");
+
+        String useLanguage = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_RESPONSE_LANGUAGE);
+        if (!CommonUtils.isEmpty(useLanguage)) {
+            instructions.add("Use " + useLanguage + " language in your responses.");
+        } else {
+            instructions.add("Use the same language as the user.");
+        }
+
         String quoteRule = identifiersQuoteRule(dialect);
         if (quoteRule != null) {
             instructions.add(quoteRule);
@@ -164,12 +160,6 @@ public class AIPromptBuilder {
         String stringsQuoteRule = stringsQuoteRule(dialect);
         if (stringsQuoteRule != null) {
             instructions.add(stringsQuoteRule);
-        }
-        String useLanguage = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_RESPONSE_LANGUAGE);
-        if (!CommonUtils.isEmpty(useLanguage)) {
-            instructions.add("Use " + useLanguage + " language in your responses.");
-        } else {
-            instructions.add("Use the same language as the user.");
         }
 
         return instructions.toArray(new String[0]);
@@ -182,7 +172,7 @@ public class AIPromptBuilder {
             return null;
         }
 
-        return "Use (" + identifierQuoteStrings[0][0] + identifierQuoteStrings[0][1] + ") to quote identifiers if needed.";
+        return "Use " + identifierQuoteStrings[0][0] + identifierQuoteStrings[0][1] + " to quote identifiers if needed.";
     }
 
     private static String stringsQuoteRule(SQLDialect dialect) {
@@ -191,6 +181,6 @@ public class AIPromptBuilder {
             return null;
         }
 
-        return "Use (" + stringQuoteStrings[0][0] + stringQuoteStrings[0][1] + ") to quote strings.";
+        return "Use " + stringQuoteStrings[0][0] + stringQuoteStrings[0][1] + " to quote strings.";
     }
 }

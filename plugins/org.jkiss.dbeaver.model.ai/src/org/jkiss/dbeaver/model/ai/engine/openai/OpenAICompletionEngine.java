@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.engine.*;
@@ -31,10 +30,18 @@ import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Flow;
 
 public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
     extends BaseCompletionEngine {
+
+    private final ExecutorService iterablePublisher = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "IterablePublisher");
+        t.setDaemon(true);
+        return t;
+    });
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
@@ -62,7 +69,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
             .stream()
             .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
                 model.id(),
-                new AIModel(model.id(), null, OpenAIModels.getModelFeatures(model.id()))
+                new AIModel(model.id(), null, OpenAIModels.detectModelFeatures(model.id()))
             ))
             .toList();
     }
@@ -92,7 +99,6 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
         ccr.setTemperature(temperature());
         ccr.setFrequencyPenalty(0.0);
         ccr.setPresencePenalty(0.0);
-        ccr.setMaxTokens(AIConstants.MAX_RESPONSE_TOKENS);
         ccr.setN(1);
         ccr.setModel(model());
         ccr.setStream(true);
@@ -140,6 +146,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
     @Override
     public void close() throws DBException {
         openAiService.dispose();
+        iterablePublisher.shutdown();
     }
 
     @NotNull
@@ -152,7 +159,6 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
         completionRequest.setTemperature(temperature());
         completionRequest.setFrequencyPenalty(0.0);
         completionRequest.setPresencePenalty(0.0);
-        completionRequest.setMaxTokens(AIConstants.MAX_RESPONSE_TOKENS);
         completionRequest.setN(1);
         completionRequest.setModel(model());
 

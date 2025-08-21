@@ -176,11 +176,6 @@ public class UIUtils {
         };
     }
 
-    public static void createToolBarSeparator(Composite toolBar, int style) {
-        Label label = new Label(toolBar, SWT.NONE);
-        label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
-    }
-
     public static void createLabelSeparator(Composite toolBar, int style) {
         Label label = new Label(toolBar, SWT.SEPARATOR | style);
         label.setLayoutData(new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL));

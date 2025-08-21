@@ -116,8 +116,8 @@ public class UIIcon {
     public static final DBIcon FILTER_SAVE = new DBIcon("misc/filter_save.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_CONFIG = new DBIcon("misc/filter_config.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_CONNECTIONS = new DBIcon("misc/filter_connections.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon FILTER_CONTAINERS = new DBIcon("misc/filter_containers.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon FILTER_OBJECTS = new DBIcon("misc/filter_objects.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_CONTAINERS = new DBIcon("misc/filter_containers.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_OBJECTS = new DBIcon("misc/filter_objects.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_CONNECTED = new DBIcon("misc/filter_connected.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_ALL = new DBIcon("misc/filter_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
