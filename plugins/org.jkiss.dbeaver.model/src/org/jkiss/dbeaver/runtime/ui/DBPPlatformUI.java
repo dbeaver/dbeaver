@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
+import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
@@ -83,10 +84,11 @@ public interface DBPPlatformUI {
     boolean confirmAction(String title, String message, boolean isWarning);
     boolean confirmAction(@NotNull String title, @NotNull String message, @NotNull String buttonLabel, boolean isWarning);
 
-    boolean confirmScriptAction(
+    boolean confirmActionWithDetails(
         @NotNull String title,
         @NotNull String message,
-        @NotNull List<SQLScriptElement> script,
+        @NotNull String detailsText,
+        @NotNull DataSourceContextProvider contextProvider,
         boolean isWarning
     );
 

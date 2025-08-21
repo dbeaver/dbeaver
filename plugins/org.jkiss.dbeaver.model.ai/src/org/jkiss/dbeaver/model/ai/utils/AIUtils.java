@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -28,8 +29,11 @@ import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.sql.SQLControlCommand;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -43,6 +47,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
@@ -179,6 +184,28 @@ public final class AIUtils {
         @NotNull String message,
         @NotNull List<SQLScriptElement> scriptElements
     ) {
-        return DBWorkbench.getPlatformUI().confirmScriptAction(title, message, scriptElements, true);
+        String scriptText = scriptElements.stream()
+            .map(Object::toString)
+            .collect(Collectors.joining("\n"));
+        return DBWorkbench.getPlatformUI()
+            .confirmActionWithDetails(
+                title,
+                message,
+                scriptText,
+                getContextProvider(scriptElements),
+                true
+            );
+    }
+
+    @NotNull
+    private static DataSourceContextProvider getContextProvider(@NotNull List<SQLScriptElement> script) {
+        SQLScriptElement scriptElement = script.stream().findFirst().orElse(null);
+        DBPDataSource dataSource = null;
+        if (scriptElement instanceof SQLQuery query) {
+            dataSource = query.getDataSource();
+        } else if (scriptElement instanceof SQLControlCommand command) {
+            dataSource = command.getDataSource();
+        }
+        return new DataSourceContextProvider(dataSource);
     }
 }

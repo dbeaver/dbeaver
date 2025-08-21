@@ -134,9 +134,9 @@ public class UIMessages extends NLS {
     public static String dialog_auth_code_code_label;
     public static String dialog_auth_code_copy_and_open_label;
 
-    public static String dialog_confirm_action_query;
-    public static String dialog_confirm_action_show_query;
-    public static String dialog_confirm_action_hide_query;
+    public static String dialog_confirm_action_details;
+    public static String dialog_confirm_action_show_details;
+    public static String dialog_confirm_action_hide_details;
 
     static {
         // initialize resource bundle

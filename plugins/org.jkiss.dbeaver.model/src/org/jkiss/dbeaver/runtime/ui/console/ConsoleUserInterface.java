@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
+import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
@@ -107,10 +108,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public boolean confirmScriptAction(
+    public boolean confirmActionWithDetails(
         @NotNull String title,
         @NotNull String message,
-        @NotNull List<SQLScriptElement> scriptElements,
+        @NotNull String detailsText,
+        @NotNull DataSourceContextProvider contextProvider,
         boolean isWarning
     ) {
         return false;

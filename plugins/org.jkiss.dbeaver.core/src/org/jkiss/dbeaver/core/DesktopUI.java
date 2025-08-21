@@ -57,9 +57,6 @@ import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
@@ -87,7 +84,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 /**
  * DBeaver UI core
@@ -301,14 +297,15 @@ public class DesktopUI extends ConsoleUserInterface {
     }
 
     @Override
-    public boolean confirmScriptAction(
+    public boolean confirmActionWithDetails(
         @NotNull String title,
         @NotNull String message,
-        @NotNull List<SQLScriptElement> script,
+        @NotNull String detailsText,
+        @NotNull DataSourceContextProvider contextProvider,
         boolean isWarning
     ) {
         if (isHeadlessMode()) {
-            return super.confirmScriptAction(title, message, script, isWarning);
+            return super.confirmActionWithDetails(title, message, detailsText, contextProvider, isWarning);
         }
         if (serviceSQL == null) {
             serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
@@ -325,48 +322,45 @@ public class DesktopUI extends ConsoleUserInterface {
             .setPrimaryImage(isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION)
             .setCustomButton((dialog, buttonBar) -> {
                 buttonBar.setLayout(new GridLayout(3, false));
-                Button scriptButton = UIUtils.createPushButton(
+                Button detailsButton = UIUtils.createPushButton(
                     buttonBar,
-                    UIMessages.dialog_confirm_action_show_query + " >>>",
+                    UIMessages.dialog_confirm_action_show_details + " >>>",
                     null
                 );
 
                 GridData detailsGridData = new GridData(GridData.FILL_BOTH);
                 detailsGridData.horizontalSpan = 2;
                 detailsGridData.exclude = true;
-                Composite scriptComposite = UIUtils.createComposite(dialog, 0);
-                scriptComposite.setLayoutData(detailsGridData);
-                scriptComposite.setLayout(new FillLayout());
-                scriptComposite.setVisible(false);
+                Composite detailsComposite = UIUtils.createComposite(dialog, 0);
+                detailsComposite.setLayoutData(detailsGridData);
+                detailsComposite.setLayout(new FillLayout());
+                detailsComposite.setVisible(false);
 
-                String scriptText = script.stream()
-                    .map(Object::toString)
-                    .collect(Collectors.joining("\n"));
                 try {
                     TextViewer sqlPanel = (TextViewer) serviceSQL.createSQLPanel(
                         UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
-                        scriptComposite,
-                        getContextProvider(script),
-                        UIMessages.dialog_confirm_action_query,
+                        detailsComposite,
+                        contextProvider,
+                        UIMessages.dialog_confirm_action_details,
                         false,
-                        scriptText
+                        detailsText
                     );
-                    detailsGridData.heightHint = calculateHeightHint(sqlPanel, scriptText);
+                    detailsGridData.heightHint = calculateHeightHint(sqlPanel, detailsText);
                 } catch (DBException e) {
                     log.error(e);
-                    scriptButton.dispose();
-                    scriptComposite.dispose();
+                    detailsButton.dispose();
+                    detailsComposite.dispose();
                     return;
                 }
 
-                scriptButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                detailsButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     isExpanded[0] = !isExpanded[0];
                     String buttonText = isExpanded[0] ?
-                        UIMessages.dialog_confirm_action_hide_query + " <<<" :
-                        UIMessages.dialog_confirm_action_show_query + " >>>";
-                    scriptButton.setText(buttonText);
-                    scriptComposite.setVisible(isExpanded[0]);
-                    ((GridData) scriptComposite.getLayoutData()).exclude = !isExpanded[0];
+                        UIMessages.dialog_confirm_action_hide_details + " <<<" :
+                        UIMessages.dialog_confirm_action_show_details + " >>>";
+                    detailsButton.setText(buttonText);
+                    detailsComposite.setVisible(isExpanded[0]);
+                    ((GridData) detailsComposite.getLayoutData()).exclude = !isExpanded[0];
                     dialog.layout(true);
                     dialog.getShell().pack(true);
                 }));
@@ -819,18 +813,6 @@ public class DesktopUI extends ConsoleUserInterface {
         } catch (Exception ex) { // when workbench is not initialized yet during startup
             return 800; // see org.eclipse.ui.internal.progress.ProgressManager.getLongOperationTime()
         }
-    }
-
-    @NotNull
-    private static DataSourceContextProvider getContextProvider(@NotNull List<SQLScriptElement> script) {
-        SQLScriptElement scriptElement = script.stream().findFirst().orElse(null);
-        DBPDataSource dataSource = null;
-        if (scriptElement instanceof SQLQuery query) {
-            dataSource = query.getDataSource();
-        } else if (scriptElement instanceof SQLControlCommand command) {
-            dataSource = command.getDataSource();
-        }
-        return new DataSourceContextProvider(dataSource);
     }
 
     private static int calculateHeightHint(TextViewer sqlPanel, String scriptText) {
