@@ -58,14 +58,14 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<>();
     private DBPResourceHandler defaultHandler;
 
-    public DesktopWorkspaceImpl(DBPPlatform platform, IWorkspace eclipseWorkspace) {
+    public DesktopWorkspaceImpl(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace) {
         super(platform, eclipseWorkspace);
 
         loadExtensions(Platform.getExtensionRegistry());
         loadExternalFileProperties();
     }
 
-    private void loadExtensions(IExtensionRegistry registry) {
+    private void loadExtensions(@NotNull IExtensionRegistry registry) {
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ResourceHandlerDescriptor.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
@@ -100,7 +100,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     }
 
     @Override
-    public DBPResourceHandler getResourceHandler(IResource resource) {
+    public DBPResourceHandler getResourceHandler(@Nullable IResource resource) {
         if (DBWorkbench.getPlatform().getApplication().isExclusiveMode()) {
             // Resource handlers are disabled in exclusive mode
             return null;
@@ -159,6 +159,7 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     }
 
 
+    @Nullable
     @Override
     public DBPImage getResourceIcon(DBPAdaptable resourceAdapter) {
         IResource resource = resourceAdapter.getAdapter(IResource.class);

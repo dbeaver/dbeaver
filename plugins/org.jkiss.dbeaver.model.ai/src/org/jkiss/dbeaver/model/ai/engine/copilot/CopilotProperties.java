@@ -20,6 +20,7 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -69,11 +70,9 @@ public class CopilotProperties implements AIEngineProperties {
             return contextWindowSize;
         }
 
-        if (model == null || model.isBlank()) {
-            return null;
-        }
-
-        return CopilotModels.getContextWindowSize(model);
+        return CopilotModels.getModelByName(model)
+            .map(AIModel::contextWindowSize)
+            .orElse(null);
     }
 
     public void setContextWindowSize(@Nullable Integer contextWindowSize) {
