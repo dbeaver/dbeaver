@@ -414,7 +414,11 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             resolvedFiles.put(node.library, info);
             collectLibraryFiles(node, info);
         }
-        driver.getProviderDescriptor().getRegistry().saveDrivers();
+        try {
+            driver.getProviderDescriptor().getRegistry().saveDrivers();
+        } catch (DBException e) {
+            log.error("Error saving drivers config", e);
+        }
         return true;
     }
 
@@ -498,7 +502,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
 
     private Path getDriverFilePath(@NotNull DriverFileInfo file) {
         if (DBWorkbench.isDistributed()) {
-            return DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(file.getFile());
+            return DriverDescriptor.getExternalDriversStorageFolder().resolve(file.getFile());
         }
         return file.getFile();
     }

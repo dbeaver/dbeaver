@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
-import org.jkiss.dbeaver.ui.css.DBStyles;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
 /**
@@ -39,8 +39,8 @@ import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
  */
 public class DatabaseEditorUtils {
 
-    public static void setPartBackground(IEditorPart editor, Composite composite)
-    {
+    // FIXME: should we just drop it?
+    public static void setPartBackground(IEditorPart editor, Composite composite) {
         if (composite == null || composite.isDisposed()) {
             return;
         }
@@ -72,20 +72,20 @@ public class DatabaseEditorUtils {
         } else {
             Color bgColor = UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration());
 
-            rootComposite.setData(DBStyles.DATABASE_EDITOR_COMPOSITE_DATASOURCE, dsContainer);
+            rootComposite.setData(CSSUtils.DATABASE_EDITOR_COMPOSITE_DATASOURCE, dsContainer);
             rootComposite.setBackground(bgColor);
         }
     }
 
-    public static void contributeStandardEditorActions(IWorkbenchSite workbenchSite, IContributionManager contributionManager)
-    {
+    public static void contributeStandardEditorActions(IWorkbenchSite workbenchSite, IContributionManager contributionManager) {
         contributionManager.add(ActionUtils.makeCommandContribution(
             workbenchSite,
             IWorkbenchCommandConstants.FILE_REFRESH,
             EditorsMessages.database_editor_command_refresh_name,
             UIIcon.REFRESH,
             EditorsMessages.database_editor_command_refresh_tip,
-            true));
+            true
+        ));
         contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(ActionUtils.makeCommandContribution(
             workbenchSite,
@@ -93,14 +93,16 @@ public class DatabaseEditorUtils {
             EditorsMessages.database_editor_command_save_name,
             UIIcon.SAVE,
             EditorsMessages.database_editor_command_save_tip,
-            true));
+            true
+        ));
         contributionManager.add(ActionUtils.makeCommandContribution(
             workbenchSite,
             IWorkbenchCommandConstants.FILE_REVERT,
             EditorsMessages.database_editor_command_revert_name,
             UIIcon.RESET,
             EditorsMessages.database_editor_command_revert_tip,
-            true));
+            true
+        ));
         contributionManager.add(new ToolbarSeparatorContribution(true));
     }
 
