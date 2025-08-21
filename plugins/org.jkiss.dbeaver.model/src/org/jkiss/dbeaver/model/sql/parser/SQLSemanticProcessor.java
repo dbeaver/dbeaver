@@ -427,4 +427,27 @@ public class SQLSemanticProcessor {
         }
     }
 
+    @NotNull
+    public static String getSimpleTableName(@NotNull PlainSelect select, @NotNull SQLDialect dialect) throws DBException {
+        if (!(select.getFromItem() instanceof Table table)) {
+            throw new DBException("Cannot determine table name: FROM is " +
+                select.getFromItem().getClass().getSimpleName());
+        }
+        final String name   = table.getName();
+        final String schema = table.getSchemaName();
+
+        if (schema == null || schema.isEmpty()) {
+            return name;
+        }
+
+        final String merged = DBUtils.getUnQuotedIdentifier(schema, "\"")
+            + '.'
+            + DBUtils.getUnQuotedIdentifier(name, "\"");
+
+        return (dialect.isQuotedIdentifier(name)
+            && dialect.isQuotedIdentifier(schema))
+            ? dialect.getQuotedIdentifier(merged, true, true) : merged;
+    }
+
+
 }
