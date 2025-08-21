@@ -409,6 +409,8 @@ public class PrefPageDataFormat extends TargetPrefPage
         refreshProfileList();
         setCurrentProfile(getDefaultProfile());
 
+        changeProfile();
+
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         datetimeNativeFormatCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT));
         numericNativeFormatCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT));
