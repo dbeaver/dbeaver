@@ -895,6 +895,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 DBWorkbench.getPlatformUI().showError("Error saving driver", "Driver libraries sync failed", e);
                 return;
             }
+        } else {
+            // We have to reset the driver instance here to clear the old classloader with old libraries
+            // For distributed mode it is done in syncDriverLibraries method
+            if (oldDriver != null) {
+                driver.resetDriverInstance();
+            }
         }
 
         // Finish
