@@ -83,6 +83,8 @@ public class AnnotationsInformationView {
 
     private Composite linksContainer;
     private int tooltipAnchorLine = -1;
+    private IRegion tooltipAnchorRegion = null;
+    private boolean forceAnnotationIcon = false;
 
     private final AbstractInformationControl container;
     private final SQLEditorBase editor;
@@ -97,15 +99,20 @@ public class AnnotationsInformationView {
         return this.linksContainer;
     }
 
+    public void setForceAnnotationIcon(boolean value) {
+        this.forceAnnotationIcon = value;
+    }
+
     public void setLinksInformation(@NotNull AnnotationsHoverInfo hoverInfo) {
         this.tooltipAnchorLine = hoverInfo.tooltipAnchorLine;
+        this.tooltipAnchorRegion = hoverInfo.hoverRegion;
         if (hoverInfo.annotationsGroups().isEmpty()) {
             this.linksContainer.setLayout(GridLayoutFactory.swtDefaults().spacing(0, 0).margins(0, 0).create());
         } else {
             this.linksContainer.setLayout(GridLayoutFactory.swtDefaults().create());
             for (AnnotationsGroupInfo annotationGroup : hoverInfo.annotationsGroups()) {
                 Composite linksGroupContainer;
-                if (hoverInfo.annotationsGroups().size() > 1) {
+                if (hoverInfo.annotationsGroups().size() > 1 || forceAnnotationIcon) {
                     linksGroupContainer = UIUtils.createComposite(linksContainer, 2);
                     DBIcon icon = annotationGroup.getIcon();
                     if (icon != null) {
@@ -146,9 +153,12 @@ public class AnnotationsInformationView {
     }
 
     public void show() {
-        if (this.tooltipAnchorLine >= 0 && editor.getDocument() != null && editor.getTextViewer() != null) {
+        if ((this.tooltipAnchorLine >= 0 || this.tooltipAnchorRegion != null) && editor.getDocument() != null
+            && editor.getTextViewer() != null
+        ) {
             try {
-                IRegion modelLineRange = editor.getDocument().getLineInformation(this.tooltipAnchorLine);
+                IRegion modelLineRange = this.tooltipAnchorRegion != null ? this.tooltipAnchorRegion
+                                                                          : editor.getDocument().getLineInformation(this.tooltipAnchorLine);
                 IRegion visualLineRange = editor.getTextViewer().modelRange2WidgetRange(modelLineRange);
                 StyledText widget = editor.getTextViewer().getTextWidget();
                 int offset = visualLineRange.getOffset();
@@ -165,8 +175,8 @@ public class AnnotationsInformationView {
                 boolean hasTooltipRanAway = !globalWidgetBounds.intersects(shell.getBounds());
 
                 Rectangle adjustedBounds = new Rectangle(globalLineBounds.x, y, globalLineBounds.width, globalLineBounds.height);
-                if (shell.getBounds().intersects(adjustedBounds) || hasTooltipRanAway) {
-                    int x = hasTooltipRanAway
+                if (shell.getBounds().intersects(adjustedBounds) || hasTooltipRanAway || this.tooltipAnchorRegion != null) {
+                    int x = hasTooltipRanAway || this.tooltipAnchorRegion != null
                         ? Math.min(widget.getDisplay().getCursorLocation().x, globalLineBounds.x)
                         : shell.getBounds().x;
                     shell.setLocation(new Point(x, y));
@@ -287,6 +297,10 @@ public class AnnotationsInformationView {
         }
     }
 
-    public record AnnotationsHoverInfo(@NotNull List<AnnotationsGroupInfo> annotationsGroups, int tooltipAnchorLine) {
+    public record AnnotationsHoverInfo(
+        @NotNull List<AnnotationsGroupInfo> annotationsGroups,
+        @Nullable IRegion hoverRegion,
+        int tooltipAnchorLine
+    ) {
     }
 }

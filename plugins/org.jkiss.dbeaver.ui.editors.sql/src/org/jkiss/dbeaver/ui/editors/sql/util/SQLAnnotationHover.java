@@ -84,18 +84,19 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
 
     @Nullable
     @Override
-    public AnnotationsInformationView.AnnotationsHoverInfo getHoverInfo2(
+    public Object getHoverInfo2(
         @NotNull ITextViewer textViewer,
         @NotNull IRegion hoverRegion
     ) {
-        return this.getHoverInfoImpl(textViewer, hoverRegion, null);
+        return this.getAnnotationsHoverInfo(textViewer, hoverRegion, null, false);
     }
 
     @Nullable
-    private AnnotationsInformationView.AnnotationsHoverInfo getHoverInfoImpl(
+    public AnnotationsInformationView.AnnotationsHoverInfo getAnnotationsHoverInfo(
         @NotNull ITextViewer textViewer,
         @NotNull IRegion hoverRegion,
-        @Nullable Integer anchorLine
+        @Nullable Integer anchorLine,
+        boolean adjustPosition
     ) {
         if (!(textViewer instanceof ISourceViewer)) {
             return null;
@@ -138,7 +139,8 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
                     }
                 }
             }
-            return new AnnotationsInformationView.AnnotationsHoverInfo(annotationsGroups, anchorLine);
+
+            return new AnnotationsInformationView.AnnotationsHoverInfo(annotationsGroups, adjustPosition ? hoverRegion : null, anchorLine);
         }
     }
 
@@ -173,7 +175,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
         try {
             Integer anchorLine = lineRange.getNumberOfLines() == 1 ? lineRange.getStartLine() : null;
             IRegion lineRegion = sourceViewer.getDocument().getLineInformation(lineRange.getStartLine());
-            return this.getHoverInfoImpl(sourceViewer, lineRegion, anchorLine);
+            return this.getAnnotationsHoverInfo(sourceViewer, lineRegion, anchorLine, false);
         } catch (BadLocationException e) {
             log.debug(e);
             return null;

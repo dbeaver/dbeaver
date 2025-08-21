@@ -33,6 +33,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionHelper;
@@ -46,7 +48,9 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.AbstractPartListener;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.dialogs.SuggestionInformationControl;
 import org.jkiss.dbeaver.ui.editors.sql.util.AnnotationsInformationView;
+import org.jkiss.dbeaver.ui.editors.sql.util.ObjectInformationView;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -163,22 +167,15 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
             return null;
         }
 
-        int anchorLine;
-        try {
-            anchorLine = editor.getDocument().getLineOfOffset(subject.getOffset());
-        } catch (BadLocationException ex) {
-            log.debug("Error obtaining anchor line of hover region offset " + subject.getOffset(), ex);
-            anchorLine = -1;
-        }
-
         AnnotationsInformationView.AnnotationsHoverInfo annotationsInfo;
+        String message;
+        Object info;
         if (subject instanceof SubjectRegion subjectRegion) {
             annotationsInfo = subjectRegion.hoverRegion != null &&
                 (subjectRegion.selectionRegion == null || equalRegions(subjectRegion.hoverRegion, subjectRegion.selectionRegion))
-                ? this.annotationHover.getHoverInfo2(textViewer, subjectRegion.hoverRegion)
+                ? this.annotationHover.getAnnotationsHoverInfo(textViewer, subjectRegion.hoverRegion, null, true)
                 : null;
 
-            Object info;
             if (subjectRegion.symbolEntry != null
                 && (subjectRegion.selectionRegion == null || equalRegions(subjectRegion.symbolRegion, subjectRegion.selectionRegion))
             ) {
@@ -191,19 +188,16 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                 switch (symbolEntry.getDefinition()) {
                     case SQLQueryObjectDataModel byObjDataRefDef -> {
                         dbObject = byObjDataRefDef.getObject();
-                        info = null;
                     }
                     case SQLQuerySymbolByDbObjectDefinition byObjDef -> {
                         dbObject = byObjDef.getDbObject();
-                        info = null;
                     }
                     case SQLQueryRowsTableDataModel byTableRefDef -> {
                         dbObject = byTableRefDef.getImmediateTargetObject();
-                        info = null;
                     }
                     case SQLQueryResultPseudoColumn pseudoColumn -> {
                         dbObject = null;
-                        info = pseudoColumn.description + "\n"
+                        message = pseudoColumn.description + "\n"
                             + "Pseudo-column" + (
                                 pseudoColumn.source == null ? "" : (" derived from the " + (
                                     pseudoColumn.realSource == null
@@ -215,55 +209,54 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                     }
                     case SQLQuerySymbolEntry defSymbolEntry -> {
                         dbObject = null;
-                        info = ignoredSymbolClassDescription.contains(defSymbolEntry.getSymbolClass())
-                            ? null
-                            : defSymbolEntry.getSymbolClass().getDescription();
                     }
                     case null -> {
                         dbObject = null;
-                        info = null;
                     }
                     default -> throw new IllegalStateException("Not implemented");
                 };
 
-                if (info == null) {
-                    info = SQLCompletionHelper.readAdditionalProposalInfo(
+                if (dbObject != null) {
+                    info = dbObject;
+                    DBNModel navModel = dbObject.getDataSource().getContainer().getProject().getNavigatorModel();
+                    if (navModel != null) {
+                        navModel.getNodeByObject(new VoidProgressMonitor(), dbObject, true);
+                    }
+                    message = null;
+                } else {
+                    info = null;
+                    message = SQLCompletionHelper.readAdditionalProposalInfo(
                         null,
                         editor.getCompletionContext(),
                         dbObject,
                         contextInformer.getKeywords(),
                         contextInformer.getKeywordType()
                     );
-                    if (info == null || info.equals(symbolEntry.getRawName())
-                        || (contextInformer.getKeywords().length > 0 && info.equals(contextInformer.getKeywords()[0]))
-                    ) {
-                        info = ignoredSymbolClassDescription.contains(symbolEntry.getSymbolClass())
-                            ? null
-                            : symbolEntry.getSymbolClass().getDescription();
-                    }
+                }
+                if (message == null  || message.equals(symbolEntry.getRawName())
+                    || (contextInformer.getKeywords().length > 0 && message.equals(contextInformer.getKeywords()[0]))) {
+                    message = ignoredSymbolClassDescription.contains(symbolEntry.getSymbolClass())
+                        ? null
+                        : symbolEntry.getSymbolClass().getDescription();
                 }
             } else {
-                annotationsInfo = null;
                 info = this.prepareInformerAdditionalInfo();
+                message = null;
             }
-            if (annotationsInfo == null) {
-                annotationsInfo = new AnnotationsInformationView.AnnotationsHoverInfo(Collections.emptyList(), anchorLine);
-            }
-            return new SubjectInformation(annotationsInfo, info);
+        } else {
+            annotationsInfo = this.annotationHover.getAnnotationsHoverInfo(textViewer, subject, null, true);
+            contextInformer.searchInformation(subject);
+            info = this.prepareInformerAdditionalInfo();
+            message = null;
         }
-
-        if (this.annotationHover != null) {
-            Object s = this.annotationHover.getHoverInfo2(textViewer, subject);
-            if (s != null) {
-                return s;
-            }
+        if (info instanceof String text) {
+            message = text;
+            info = null;
         }
-
-        contextInformer.searchInformation(subject);
-        return new SubjectInformation(
-            new AnnotationsInformationView.AnnotationsHoverInfo(Collections.emptyList(), anchorLine),
-            this.prepareInformerAdditionalInfo()
-        );
+        if (annotationsInfo == null) {
+            annotationsInfo = new AnnotationsInformationView.AnnotationsHoverInfo(Collections.emptyList(), subject, -1);
+        }
+        return new SubjectInformation(annotationsInfo, message, info);
     }
 
     @Nullable
@@ -283,6 +276,13 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         } else if (ArrayUtils.isEmpty(contextInformer.getKeywords())) {
             return null;
         }
+        if (object != null) {
+            DBNModel navModel = object.getDataSource().getContainer().getProject().getNavigatorModel();
+            if (navModel != null) {
+                navModel.getNodeByObject(new VoidProgressMonitor(), object, true);
+            }
+            return object;
+        }
         Object info = SQLCompletionHelper.readAdditionalProposalInfo(
             null,
             editor.getCompletionContext(),
@@ -291,11 +291,16 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
             contextInformer.getKeywordType()
         );
         if ((info == null || (contextInformer.getKeywords().length > 0 && info.equals(contextInformer.getKeywords()[0])))) {
-            info = switch (contextInformer.getKeywordType()) {
-                case KEYWORD -> "Keyword";
-                case FUNCTION -> "Function";
-                default -> null;
-            };
+            DBPKeywordType keywordType = contextInformer.getKeywordType();
+            if (keywordType != null) {
+                info = switch (keywordType) {
+                    case KEYWORD -> "Keyword";
+                    case FUNCTION -> "Function";
+                    default -> null;
+                };
+            } else {
+                info = null;
+            }
         }
         return info;
     }
@@ -311,6 +316,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
 
     private record SubjectInformation(
         @NotNull AnnotationsInformationView.AnnotationsHoverInfo annotationsInfo,
+        @Nullable String message,
         @Nullable Object info
     ) {
     }
@@ -337,8 +343,8 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                 this.selectionRegion == null ? Integer.MIN_VALUE : (this.selectionRegion.getOffset() + this.selectionRegion.getLength()),
                 this.hoverRegion == null ? Integer.MIN_VALUE : (this.hoverRegion.getOffset() + this.hoverRegion.getLength()),
                 this.symbolRegion == null ? Integer.MIN_VALUE : (this.symbolRegion.getOffset() + this.symbolRegion.getLength()),
-                this.wordRegion == null ? Integer.MIN_VALUE : (this.wordRegion.identStart + this.wordRegion.identEnd)
-            ).min().orElse(Integer.MIN_VALUE) - this.getOffset();
+                this.wordRegion == null ? Integer.MIN_VALUE : (this.wordRegion.identEnd)
+            ).max().orElse(Integer.MIN_VALUE) - this.getOffset();
         }
 
         @Override
@@ -358,7 +364,11 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
 
     private class SQLSymbolInformationControl extends DefaultInformationControl implements IInformationControlExtension2 {
 
-        private AnnotationsInformationView infoView;
+        private Composite contentParent;
+
+        private AnnotationsInformationView annotationsInfoView;
+        private ObjectInformationView objectInformationView;
+
         private Boolean hasContents = null;
 
         public SQLSymbolInformationControl(@NotNull Shell shell) {
@@ -367,16 +377,20 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
 
         @Override
         protected void createContent(@NotNull Composite parent) {
+            this.contentParent = parent;
             super.createContent(parent);
 
-            parent.setLayout(new BorderLayout());
+            BorderLayout layout = new BorderLayout();
+//            layout.type = SWT.VERTICAL;
+            parent.setLayout(layout);
             for (Control c : parent.getChildren()) {
                 c.setLayoutData(new BorderData(SWT.CENTER));
             }
             parent.getShell().setMinimumSize(this.computeSizeConstraints(60, 6));
 
-            this.infoView = new AnnotationsInformationView(this, editor);
-            this.infoView.createControl(parent).setLayoutData(new BorderData(SWT.BOTTOM));
+            this.annotationsInfoView = new AnnotationsInformationView(this, editor);
+            this.annotationsInfoView.setForceAnnotationIcon(true);
+            this.annotationsInfoView.createControl(parent).setLayoutData(new BorderData(SWT.TOP));
         }
 
         @Override
@@ -387,22 +401,39 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         @Override
         public void setInput(@NotNull Object input) {
             if (input instanceof SubjectInformation info) {
-                this.infoView.setLinksInformation(info.annotationsInfo);
 
-                String infoString = CommonUtils.toString(info.info);
-                this.setInformation(infoString);
-                this.hasContents = !info.annotationsInfo.annotationsGroups().isEmpty() || CommonUtils.isNotEmpty(infoString);
+                this.annotationsInfoView.setLinksInformation(info.annotationsInfo);
+                this.hasContents = !info.annotationsInfo.annotationsGroups().isEmpty();
+
+                if (info.info instanceof DBPNamedObject object) {
+                    this.objectInformationView = new ObjectInformationView();
+                    this.objectInformationView.createContent(this.contentParent).setLayoutData(new BorderData(SWT.CENTER));
+                    this.objectInformationView.setInput(object);
+                    this.hasContents = true;
+                    this.setInformation(null);
+                }
+
+                this.setInformation(info.message);
+                this.hasContents |= CommonUtils.isNotEmpty(info.message);
             } else {
-                this.setInformation(CommonUtils.toString(input));
+                super.setInformation(CommonUtils.toString(input));
             }
         }
 
         @Override
         public void setVisible(boolean visible) {
             if (visible) {
-                this.infoView.show();
+                this.annotationsInfoView.show();
             }
             super.setVisible(visible);
+        }
+
+        @Override
+        public void dispose() {
+            if (this.objectInformationView != null) {
+                this.objectInformationView.dispose();
+            }
+            super.dispose();
         }
     }
 }
