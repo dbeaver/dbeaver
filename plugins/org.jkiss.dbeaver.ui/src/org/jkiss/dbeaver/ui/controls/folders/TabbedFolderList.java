@@ -493,6 +493,7 @@ public class TabbedFolderList extends ConComposite {
 
             public void controlResized(ControlEvent e) {
                 computeTopAndBottomTab();
+                UIUtils.asyncExec(() -> redraw());
             }
         });
         this.addTraverseListener(this::handleTraverse);
