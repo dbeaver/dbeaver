@@ -71,6 +71,7 @@ import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
+import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -80,7 +81,6 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionsGeneral;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseUserInterface;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.awt.*;
 import java.awt.desktop.SystemEventListener;
@@ -103,8 +103,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     protected static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
     private static final String EDITORS_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Editors";
 
-    /** @see DBeaverPerspective#PERSPECTIVE_VERSION */
+    @Deprecated(since = "25.1.5")
     private static final String PROP_PERSPECTIVE_VERSION = "dbeaver.perspectiveVersion"; //$NON-NLS-1$
+    @Deprecated(since = "25.1.5")
     private static final String PROP_WORKBENCH_VERSION = "dbeaver.workbenchVersion"; //$NON-NLS-1$
 
     private static final String[] EXCLUDE_PREF_PAGES = {
@@ -519,20 +520,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     }
 
     private void resetPerspectiveIfNeeded() {
-        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-
-        String actualVersion = DBeaverPerspective.PERSPECTIVE_VERSION;
-        String savedVersion = store.getString(PROP_PERSPECTIVE_VERSION);
-      
-        if (CommonUtils.isEmpty(savedVersion)) {
-            // Backward compatibility
-            savedVersion = store.getString(PROP_WORKBENCH_VERSION);
-        }
-        
-        if (!CommonUtils.isEmpty(savedVersion) && savedVersion.equals(actualVersion)) {
-            return;
-        }
-
         IWorkbenchWindow window = Workbench.getInstance().getActiveWorkbenchWindow();
         if (window == null) {
             return;
@@ -548,11 +535,12 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             return;
         }
 
-        log.debug("Resetting perspective due to the version change (" + savedVersion + " -> " + actualVersion + ")");
-        UIExecutionQueue.queueExec(page::resetPerspective);
+        if (!WorkbenchPatcher.needsPerspectiveReset(Workbench.getInstance())) {
+            return;
+        }
 
-        store.setValue(PROP_PERSPECTIVE_VERSION, actualVersion);
-        store.setValue(PROP_WORKBENCH_VERSION, ""); // removes the property
+        log.debug("Resetting perspective due to missing view definitions in the workbench file");
+        UIExecutionQueue.queueExec(page::resetPerspective);
 
         DBeaverNotifications.showNotification(
             DBeaverNotifications.NT_PERSPECTIVE_RESET,
@@ -561,6 +549,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             null,
             null
         );
+
+        // Remove legacy properties
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        store.setToDefault(PROP_PERSPECTIVE_VERSION);
+        store.setToDefault(PROP_WORKBENCH_VERSION);
     }
 
     public static boolean isIsForcedRestart() {
