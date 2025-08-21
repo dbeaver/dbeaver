@@ -502,7 +502,7 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
 
     private Path getDriverFilePath(@NotNull DriverFileInfo file) {
         if (DBWorkbench.isDistributed()) {
-            return DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(file.getFile());
+            return DriverDescriptor.getExternalDriversStorageFolder().resolve(file.getFile());
         }
         return file.getFile();
     }

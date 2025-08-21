@@ -261,9 +261,9 @@ public class ClickhouseDataSource extends GenericDataSource {
     @NotNull
     @Override
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
-        if (typeName.startsWith("Array")) {
+        if (typeName.startsWith(ClickhouseConstants.DATA_TYPE_ARRAY)) {
             return DBPDataKind.ARRAY;
-        } else if (ClickhouseTypeParser.isComplexType(typeName)) {
+        } else if (typeName.startsWith(ClickhouseConstants.DATA_TYPE_TUPLE)) {
             return DBPDataKind.STRUCT;
         }
         return super.resolveDataKind(typeName, valueType);
