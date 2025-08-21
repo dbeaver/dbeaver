@@ -423,12 +423,10 @@ public class PrefPageDataFormat extends TargetPrefPage
 
         profileProperties.clear();
 
-        if (formatterDescriptors != null) {
-            for (DataFormatterDescriptor descriptor : formatterDescriptors) {
-                Map<String, Object> defaultProps = descriptor.getSample().getDefaultProperties(profileLocale);
-                if (defaultProps != null && !defaultProps.isEmpty()) {
-                    profileProperties.put(descriptor.getId(), new HashMap<>(defaultProps));
-                }
+        for (DataFormatterDescriptor descriptor : formatterDescriptors) {
+            Map<String, Object> defaultProps = descriptor.getSample().getDefaultProperties(profileLocale);
+            if (defaultProps != null && !defaultProps.isEmpty()) {
+                profileProperties.put(descriptor.getId(), new HashMap<>(defaultProps));
             }
         }
 
