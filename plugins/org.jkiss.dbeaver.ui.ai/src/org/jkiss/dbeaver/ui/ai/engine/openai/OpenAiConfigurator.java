@@ -135,7 +135,16 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
                     .toList()
             )
             .withSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                contextWindowSizeField.setValue(OpenAIModels.getContextWindowSize(modelSelectorField.getSelectedModel()));
+                OpenAIModels.getModelByName(modelSelectorField.getSelectedModel())
+                    .ifPresentOrElse(
+                        model -> {
+                            contextWindowSizeField.setValue(model.contextWindowSize());
+                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                        }, () -> {
+                            contextWindowSizeField.setValue(null);
+                            temperatureText.setText("0.0");
+                        }
+                    );
             }))
             .build();
 
