@@ -758,13 +758,13 @@ public class DBeaverLauncher {
             }
 
             if (output != null && !output.isEmpty()) {
-                output = output
-                    .replace("\\\\\\\"", "\"")
+                // since we don't have gson and don't deserialize the response, remove escaping for cleaner output
+                output = output.replace("\\\\\\\"", "\"")
+                    .replace("\\\"", "\"")
                     .replace("\\\"{", "{")
                     .replace("}\\\"", "}")
                     .replace("\\\\n", "\n")
-                    .replace("\\n", "\n")
-                ;
+                    .replace("\\n", "\n");
                 System.out.println(output);
             }
         } catch (Exception e) {
