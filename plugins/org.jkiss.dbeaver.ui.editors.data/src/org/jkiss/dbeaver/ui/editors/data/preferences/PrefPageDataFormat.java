@@ -405,19 +405,9 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     @Override
     protected void performDefaults() {
-        int currentProfileIndex = 0;
-        if (!isDataSourcePreferencePage() && profilesCombo != null) {
-            currentProfileIndex = profilesCombo.getSelectionIndex();
-        }
-
         formatterProfile = null;
         refreshProfileList();
         setCurrentProfile(getDefaultProfile());
-
-        if (!isDataSourcePreferencePage() && profilesCombo != null && currentProfileIndex > 0) {
-            profilesCombo.select(currentProfileIndex);
-            changeProfile();
-        }
 
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         datetimeNativeFormatCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT));
