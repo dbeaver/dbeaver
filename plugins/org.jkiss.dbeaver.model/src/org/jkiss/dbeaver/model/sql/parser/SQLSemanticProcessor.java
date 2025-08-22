@@ -427,6 +427,24 @@ public class SQLSemanticProcessor {
         }
     }
 
+
+    /**
+     * Returns a simple table name in the form of schema.table with proper quoting rules.
+     *
+     * Examples of transformations:
+     * <ul>
+     *   <li>{@code a.b    -> a.b}</li>
+     *   <li>{@code "a.b" -> "a.b"}</li>
+     *   <li>{@code "a".b -> "a".b}</li>
+     *   <li>{@code a."b" -> a."b"}</li>
+     *   <li>{@code "a"."b" -> "a.b"}</li>
+     * </ul>
+     *
+     * @param select  SQL SELECT statement
+     * @param dialect SQL dialect used to check and quote identifiers
+     * @return string representation of the table name
+     * @throws DBException if the table cannot be determined from the SELECT
+     */
     @NotNull
     public static String getSimpleTableName(@NotNull PlainSelect select, @NotNull SQLDialect dialect) throws DBException {
         if (!(select.getFromItem() instanceof Table table)) {
@@ -440,14 +458,17 @@ public class SQLSemanticProcessor {
             return name;
         }
 
-        final String merged = DBUtils.getUnQuotedIdentifier(schema, "\"")
-            + '.'
-            + DBUtils.getUnQuotedIdentifier(name, "\"");
+        final boolean schemaQuoted = dialect.isQuotedIdentifier(schema);
+        final boolean nameQuoted   = dialect.isQuotedIdentifier(name);
 
-        return (dialect.isQuotedIdentifier(name)
-            && dialect.isQuotedIdentifier(schema))
-            ? dialect.getQuotedIdentifier(merged, true, true) : merged;
+        if (schemaQuoted && nameQuoted) {
+            final String merged = DBUtils.getUnQuotedIdentifier(schema, "\"")
+                + '.'
+                + DBUtils.getUnQuotedIdentifier(name, "\"");
+            return dialect.getQuotedIdentifier(merged, true, true);
+        }
+
+        return schema + '.' + name;
     }
-
 
 }
