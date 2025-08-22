@@ -450,11 +450,11 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
                         String schemaPrefix = DBUtils.getQuotedIdentifier(object) + ".";
                         for (String tableName : objectNames) {
                             if (tableName.startsWith(schemaPrefix)) {
-                                return BaseThemeSettings.instance.baseFontBold;
+                                return BaseThemeSettings.instance.treeAndTableFontBold;
                             }
                         }
                     } else if (getObjectPermissions(object) != null) {
-                        return BaseThemeSettings.instance.baseFontBold;
+                        return BaseThemeSettings.instance.treeAndTableFontBold;
                     }
                 }
                 return null;

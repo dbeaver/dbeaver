@@ -231,9 +231,9 @@ public class TabbedFolderList extends ConComposite {
             e.gc.setForeground(widgetForeground);
             if (selected) {
 				/* selected tab is bold font */
-                e.gc.setFont(BaseThemeSettings.instance.baseFontBold);
+                e.gc.setFont(BaseThemeSettings.instance.partTitleBoldFont);
             } else {
-                e.gc.setFont(BaseThemeSettings.instance.baseFont);
+                e.gc.setFont(BaseThemeSettings.instance.partTitleFont);
             }
             e.gc.drawText(tab.getText(), textIndent, textMiddle, true);
             if (((TabbedFolderList) getParent()).focus && selected) {
@@ -718,7 +718,7 @@ public class TabbedFolderList extends ConComposite {
      */
     private Point getTextDimension(String text) {
         GC gc = new GC(this);
-        gc.setFont(BaseThemeSettings.instance.baseFontBold);
+        gc.setFont(BaseThemeSettings.instance.partTitleBoldFont);
         Point point = gc.textExtent(text);
         point.x++;
         gc.dispose();
