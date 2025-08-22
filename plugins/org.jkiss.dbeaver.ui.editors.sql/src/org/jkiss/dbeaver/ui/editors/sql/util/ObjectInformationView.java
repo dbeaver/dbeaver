@@ -284,7 +284,6 @@ public class ObjectInformationView {
     }
 
     public void dispose() {
-        System.out.println("            DISPOSE");
         boldFont.dispose();
     }
 }
