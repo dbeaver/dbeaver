@@ -98,12 +98,21 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
             globalLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         }
         blockControl = UIUtils.createPlaceholder(composite, 1);
-        blockControl.setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData blockControlGd = new GridData(GridData.FILL_BOTH);
+        blockControlGd.heightHint = 350;
+        blockControl.setLayoutData(blockControlGd);
 
-        includeTable = StringEditorTable.createEditableList(blockControl, UINavigatorMessages.dialog_filter_list_include, filter.getInclude(), null, null);
-        excludeTable = StringEditorTable.createEditableList(blockControl, UINavigatorMessages.dialog_filter_list_exclude, filter.getExclude(), null, null);
+        includeTable = StringEditorTable.createEditableList(
+            blockControl, UINavigatorMessages.dialog_filter_list_include,
+            filter.getInclude(), null, null
+        );
+        excludeTable = StringEditorTable.createEditableList(
+            blockControl, UINavigatorMessages.dialog_filter_list_exclude,
+            filter.getExclude(), null, null
+        );
 
         UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_hint_text);
+        UIUtils.createInfoLabel(blockControl, UINavigatorMessages.dialog_filter_objects_scope_hint_text);
 
         {
             Group sfGroup = UIUtils.createControlGroup(composite, UINavigatorMessages.dialog_filter_save_label, 4, GridData.FILL_HORIZONTAL, 0);

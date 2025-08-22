@@ -39,7 +39,6 @@ import org.jkiss.utils.Pair;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,6 +55,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
     private final SQLQueryComplexName name;
     @Nullable
     private DBSEntity table = null;
+    @Nullable
+    private DBSObject immediateTargetObject = null;
 
     private final boolean forDdl;
 
@@ -82,6 +83,11 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
     @Nullable
     public DBSEntity getTable() {
         return this.table;
+    }
+
+    @Nullable
+    public DBSObject getImmediateTargetObject() {
+        return this.immediateTargetObject;
     }
 
     @Nullable
@@ -157,6 +163,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
         this.table = obj instanceof DBSEntity e && (obj instanceof DBSTable || obj instanceof DBSView) ? e : null;
 
         if (this.table != null) {
+            this.immediateTargetObject = refTarget;
             SQLQuerySemanticUtils.setNamePartsDefinition(
                 context, this.name, refTarget, SQLQuerySymbolClass.TABLE, rowsetRefOrigin, SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET
             );
