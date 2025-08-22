@@ -26,28 +26,36 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
-import java.io.File;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * DataGrip import settings page.
  * 
- * This page allows the user to select the DataGrip settings folder or dataSources.xml file
- * to import connections from.
+ * This page allows the user to select the DataGrip exported ZIP file to import connections from.
  */
 public class ConfigImportWizardPageDataGripSettings extends WizardPage {
+
+    private static final Log log = Log.getLog(ConfigImportWizardPageDataGripSettings.class);
 
     private Text filePathText;
     private Button browseButton;
     private File inputFile;
+    private File extractedTempDir; // For ZIP extraction
 
     protected ConfigImportWizardPageDataGripSettings() {
         super("DataGrip Settings");
         setTitle("DataGrip Settings");
-        setDescription("Select DataGrip exported settings folder or dataSources.xml file");
+        setDescription("Select DataGrip exported settings ZIP file");
     }
 
     @Override
@@ -62,8 +70,7 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
             "1. In DataGrip: File → Export Settings...\n" +
             "2. Select 'Database' or 'All Settings'\n" +
             "3. Export to a ZIP file\n" +
-            "4. Extract the ZIP file\n" +
-            "5. Select the extracted folder below, or directly select the dataSources.xml file\n\n" +
+            "4. Select the ZIP file below\n\n" +
             "Note: Passwords are not included in DataGrip exports for security reasons."
         );
         GridData instructionsData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
@@ -77,7 +84,7 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
         // File selection
         Group fileGroup = UIUtils.createControlGroup(composite, "DataGrip Settings Location", 2, GridData.FILL_HORIZONTAL, 0);
 
-        UIUtils.createControlLabel(fileGroup, "Settings folder or dataSources.xml file:");
+        UIUtils.createControlLabel(fileGroup, "DataGrip exported ZIP file");
         
         Composite fileSelectionComposite = new Composite(fileGroup, SWT.NONE);
         GridLayout fileSelectionLayout = new GridLayout(2, false);
@@ -107,9 +114,8 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
         // File format info
         Label formatLabel = new Label(composite, SWT.WRAP);
         formatLabel.setText(
-            "Expected file structure:\n" +
-            "• Extracted settings folder containing: settings/options/dataSources.xml\n" +
-            "• Or direct path to dataSources.xml file"
+            "Supported file format:\n" +
+            "• DataGrip exported ZIP file (settings-YYYYMMDD-HHMMSS.zip)"
         );
         GridData formatData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         formatData.widthHint = 500;
@@ -120,47 +126,137 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
     }
 
     private void browseForFile() {
-        // First try to browse for a folder
-        DirectoryDialog directoryDialog = new DirectoryDialog(getShell());
-        directoryDialog.setText("Select DataGrip Settings Folder");
-        directoryDialog.setMessage("Select the extracted DataGrip settings folder");
-        
-        String selectedDir = directoryDialog.open();
-        if (selectedDir != null) {
-            File selectedFile = new File(selectedDir);
-            
-            // Check if this folder contains the expected structure
-            File dataSourcesFile = new File(selectedFile, "settings/options/dataSources.xml");
-            if (dataSourcesFile.exists()) {
-                setInputFile(selectedFile);
-                return;
-            }
-            
-            // Check if the folder itself is the settings folder
-            dataSourcesFile = new File(selectedFile, "options/dataSources.xml");
-            if (dataSourcesFile.exists()) {
-                setInputFile(selectedFile);
-                return;
-            }
-            
-            // Check if this is the options folder
-            dataSourcesFile = new File(selectedFile, "dataSources.xml");
-            if (dataSourcesFile.exists()) {
-                setInputFile(dataSourcesFile);
-                return;
-            }
-        }
-        
-        // If folder browsing didn't work, try file browsing
         FileDialog fileDialog = new FileDialog(getShell(), SWT.OPEN);
-        fileDialog.setText("Select DataGrip dataSources.xml File");
-        fileDialog.setFilterNames(new String[]{"DataGrip Data Sources (*.xml)", "All Files (*.*)"});
-        fileDialog.setFilterExtensions(new String[]{"*.xml", "*.*"});
+        fileDialog.setText("Select DataGrip Export ZIP File");
+        fileDialog.setFilterNames(new String[]{"DataGrip Export ZIP (*.zip)"});
+        fileDialog.setFilterExtensions(new String[]{"*.zip"});
         
         String selectedFile = fileDialog.open();
         if (selectedFile != null) {
-            setInputFile(new File(selectedFile));
+            File file = new File(selectedFile);
+            if (file.getName().toLowerCase().endsWith(".zip")) {
+                // Handle ZIP file
+                try {
+                    handleZipFile(file);
+                } catch (Exception e) {
+                    log.error("Failed to extract ZIP file", e);
+                    setErrorMessage("Failed to extract ZIP file: " + e.getMessage());
+                }
+            } else {
+                setErrorMessage("Please select a ZIP file exported from DataGrip");
+            }
         }
+    }
+
+    /**
+     * Extracts a DataGrip ZIP export file to a temporary directory
+     */
+    private void handleZipFile(File zipFile) throws IOException {
+        // Clean up any previous extraction
+        cleanupTempDirectory();
+        
+        // Create temporary directory
+        extractedTempDir = Files.createTempDirectory("dbeaver-datagrip-import").toFile();
+        
+        // Extract ZIP file
+        try (ZipFile zip = new ZipFile(zipFile)) {
+            java.util.Enumeration<? extends ZipEntry> entries = zip.entries();
+            
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                File entryFile = new File(extractedTempDir, entry.getName());
+                
+                if (entry.isDirectory()) {
+                    entryFile.mkdirs();
+                } else {
+                    // Ensure parent directories exist
+                    entryFile.getParentFile().mkdirs();
+                    
+                    // Extract file
+                    try (InputStream in = zip.getInputStream(entry);
+                         FileOutputStream out = new FileOutputStream(entryFile)) {
+                        IOUtils.copyStream(in, out);
+                    }
+                }
+            }
+        }
+        
+        // Find the dataSources.xml file in the extracted content
+        File dataSourcesFile = findDataSourcesFile(extractedTempDir);
+        if (dataSourcesFile != null) {
+            setInputFile(dataSourcesFile);
+        } else {
+            throw new IOException("No dataSources.xml file found in the ZIP archive");
+        }
+    }
+
+    /**
+     * Recursively searches for dataSources.xml file in the extracted directory
+     */
+    private File findDataSourcesFile(File dir) {
+        // Check common paths first
+        File dataSourcesFile = new File(dir, "settings/options/dataSources.xml");
+        if (dataSourcesFile.exists()) {
+            return dataSourcesFile;
+        }
+        
+        dataSourcesFile = new File(dir, "options/dataSources.xml");
+        if (dataSourcesFile.exists()) {
+            return dataSourcesFile;
+        }
+        
+        dataSourcesFile = new File(dir, "dataSources.xml");
+        if (dataSourcesFile.exists()) {
+            return dataSourcesFile;
+        }
+        
+        // Recursive search
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    File found = findDataSourcesFile(file);
+                    if (found != null) {
+                        return found;
+                    }
+                } else if ("dataSources.xml".equals(file.getName())) {
+                    return file;
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Cleans up temporary extraction directory
+     */
+    private void cleanupTempDirectory() {
+        if (extractedTempDir != null && extractedTempDir.exists()) {
+            try {
+                deleteDirectory(extractedTempDir);
+            } catch (Exception e) {
+                log.warn("Failed to cleanup temp directory: " + extractedTempDir.getAbsolutePath(), e);
+            }
+            extractedTempDir = null;
+        }
+    }
+
+    /**
+     * Recursively deletes a directory and all its contents
+     */
+    private void deleteDirectory(File dir) {
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteDirectory(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        dir.delete();
     }
 
     private void setInputFile(File file) {
@@ -174,34 +270,15 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
         String errorMessage = null;
 
         if (inputFile == null || CommonUtils.isEmpty(filePathText.getText())) {
-            errorMessage = "Please select DataGrip settings folder or dataSources.xml file";
+            errorMessage = "Please select a DataGrip exported ZIP file";
         } else if (!inputFile.exists()) {
-            errorMessage = "Selected file or folder does not exist";
-        } else if (inputFile.isFile()) {
-            // Check if it's a dataSources.xml file
-            if (!"dataSources.xml".equals(inputFile.getName())) {
-                errorMessage = "Selected file must be named 'dataSources.xml'";
-            } else {
-                isComplete = true;
-            }
-        } else if (inputFile.isDirectory()) {
-            // Check if the directory contains the expected structure
-            File dataSourcesFile = new File(inputFile, "settings/options/dataSources.xml");
-            if (!dataSourcesFile.exists()) {
-                dataSourcesFile = new File(inputFile, "options/dataSources.xml");
-                if (!dataSourcesFile.exists()) {
-                    dataSourcesFile = new File(inputFile, "dataSources.xml");
-                    if (!dataSourcesFile.exists()) {
-                        errorMessage = "Selected folder does not contain dataSources.xml file in expected location";
-                    } else {
-                        isComplete = true;
-                    }
-                } else {
-                    isComplete = true;
-                }
-            } else {
-                isComplete = true;
-            }
+            errorMessage = "Selected file does not exist";
+        } else if (!inputFile.isFile()) {
+            errorMessage = "Please select a file, not a directory";
+        } else if (!inputFile.getName().toLowerCase().endsWith(".zip")) {
+            errorMessage = "Please select a ZIP file exported from DataGrip";
+        } else {
+            isComplete = true;
         }
 
         setErrorMessage(errorMessage);
@@ -220,5 +297,12 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
     @Override
     public boolean isPageComplete() {
         return inputFile != null && inputFile.exists();
+    }
+
+    @Override
+    public void dispose() {
+        // Clean up temporary directory when wizard is closed
+        cleanupTempDirectory();
+        super.dispose();
     }
 }

@@ -28,9 +28,8 @@ import java.io.File;
  * 
  * How to use:
  * 1. In DataGrip: File → Export Settings... → Select "Database" or "All Settings" → Export to ZIP
- * 2. Extract the ZIP file 
- * 3. In DBeaver: File → Import → Third-party → DataGrip
- * 4. Select the extracted folder or directly select the dataSources.xml file
+ * 2. In DBeaver: File → Import → Third-party → DataGrip
+ * 3. Select the exported ZIP file (will be automatically extracted)
  * 
  * The wizard will parse the dataSources.xml file from the settings/options/ folder
  * and convert DataGrip connection definitions to DBeaver format.
@@ -40,6 +39,7 @@ import java.io.File;
  * - Connection names and descriptions
  * - Host, port, and database information
  * - Read-only connection settings
+ * - Direct ZIP file import (automatically extracts to temp directory)
  * 
  * Limitations:
  * - Passwords are not included in DataGrip exports for security reasons
