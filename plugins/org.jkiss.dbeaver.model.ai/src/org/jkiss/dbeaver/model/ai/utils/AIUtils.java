@@ -20,10 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
@@ -32,8 +29,6 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -195,7 +190,7 @@ public final class AIUtils {
     }
 
     @NotNull
-    private static DataSourceContextProvider getContextProvider(@NotNull List<SQLScriptElement> script) {
+    private static DBPContextProvider getContextProvider(@NotNull List<SQLScriptElement> script) {
         DBPDataSource dataSource = script.stream().findFirst()
             .map(SQLScriptElement::getDataSource)
             .orElse(null);
