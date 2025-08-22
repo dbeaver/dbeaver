@@ -113,11 +113,11 @@ public abstract class ObjectACLEditor<PRIVILEGE extends DBAPrivilege, PRIVILEGE_
                         String schemaPrefix = DBUtils.getQuotedIdentifier(object) + ".";
                         for (String tableName : privilegeMap.keySet()) {
                             if (tableName.startsWith(schemaPrefix)) {
-                                return BaseThemeSettings.instance.baseFontBold;
+                                return BaseThemeSettings.instance.treeAndTableFontBold;
                             }
                         }
                     } else if (getObjectPermissions(object) != null) {
-                        return BaseThemeSettings.instance.baseFont;
+                        return BaseThemeSettings.instance.treeAndTableFont;
                     }
                 }
                 return null;
