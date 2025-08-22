@@ -251,7 +251,7 @@ public class DriverUtils {
     @NotNull
     public static String getDistributedLibraryPath(@NotNull Path path) {
         if (DBWorkbench.isDistributed() && path.isAbsolute()) {
-            return DriverDescriptor.getWorkspaceDriversStorageFolder().relativize(path).toString();
+            return DriverDescriptor.getExternalDriversStorageFolder().relativize(path).toString();
         }
         return path.toString();
     }

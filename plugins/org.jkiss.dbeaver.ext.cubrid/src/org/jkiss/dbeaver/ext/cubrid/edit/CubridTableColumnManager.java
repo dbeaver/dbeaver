@@ -117,7 +117,7 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         if (!CommonUtils.isEmpty(column.getDefaultValue()) || ((DBECommandComposite) command).hasProperty("defaultValue")) {
             decl.append(" DEFAULT ").append(SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDefaultValue())));
         }
-        if (column.isAutoIncrement() && (column.getTypeName().equals("INTEGER") || column.getTypeName().equals("BIGINT"))) {
+        if (column.isAutoIncrement()) {
             decl.append(" AUTO_INCREMENT");
         }
         if (!CommonUtils.isEmpty(column.getDescription()) || ((DBECommandComposite) command).hasProperty("description")) {
