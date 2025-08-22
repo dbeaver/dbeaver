@@ -196,13 +196,9 @@ public final class AIUtils {
 
     @NotNull
     private static DataSourceContextProvider getContextProvider(@NotNull List<SQLScriptElement> script) {
-        SQLScriptElement scriptElement = script.stream().findFirst().orElse(null);
-        DBPDataSource dataSource = null;
-        if (scriptElement instanceof SQLQuery query) {
-            dataSource = query.getDataSource();
-        } else if (scriptElement instanceof SQLControlCommand command) {
-            dataSource = command.getDataSource();
-        }
+        DBPDataSource dataSource = script.stream().findFirst()
+            .map(SQLScriptElement::getDataSource)
+            .orElse(null);
         return new DataSourceContextProvider(dataSource);
     }
 }

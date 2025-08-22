@@ -99,7 +99,7 @@ public interface UIServiceSQL {
         @NotNull String title,
         @NotNull String message,
         @NotNull String queryText,
-        @NotNull DataSourceContextProvider contextProvider,
+        @NotNull DBPContextProvider contextProvider,
         boolean isWarning
     );
 }
