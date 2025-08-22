@@ -318,7 +318,7 @@ public class ClickhouseDataSource extends GenericDataSource {
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
         Connection connection = super.openConnection(monitor, context, purpose);
 
-        if (getContainer().isConnectionReadOnly() && !isConnectionReadOnlyBroken()) {
+        if (getContainer().isConnectionReadOnly() && isConnectionReadOnlyBroken()) {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("SET readonly=1");
             } catch (SQLException e) {
