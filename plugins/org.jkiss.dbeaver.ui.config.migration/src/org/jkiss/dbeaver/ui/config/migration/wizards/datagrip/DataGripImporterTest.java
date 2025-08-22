@@ -154,8 +154,8 @@ public class DataGripImporterTest {
                     importData.addDriver(driverInfo);
                 }
                 
-                org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo connectionInfo = 
-                    new org.jkiss.dbeaver.ui.config.migration.wizards.ImportConnectionInfo(
+                ImportConnectionInfo connectionInfo = 
+                    new ImportConnectionInfo(
                         driverInfo, null, name, jdbcUrl, null, null, null, null, null);
                 
                 importData.addConnection(connectionInfo);

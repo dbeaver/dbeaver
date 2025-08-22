@@ -48,7 +48,6 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
     private static final Log log = Log.getLog(ConfigImportWizardPageDataGripSettings.class);
 
     private Text filePathText;
-    private Button browseButton;
     private File inputFile;
     private File extractedTempDir; // For ZIP extraction
 
@@ -102,7 +101,7 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
             }
         });
 
-        browseButton = new Button(fileSelectionComposite, SWT.PUSH);
+        Button browseButton = new Button(fileSelectionComposite, SWT.PUSH);
         browseButton.setText("Browse...");
         browseButton.addSelectionListener(new SelectionAdapter() {
             @Override

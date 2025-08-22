@@ -195,7 +195,6 @@ public class ConfigImportWizardPageDataGrip extends ConfigImportWizardPage {
     private ImportConnectionInfo parseDataSource(Element dataSourceElement, ImportData importData, Map<String, ImportDriverInfo> addedDrivers) {
         String name = dataSourceElement.getAttribute("name");
         String uuid = dataSourceElement.getAttribute("uuid");
-        String source = dataSourceElement.getAttribute("source");
         String readOnly = dataSourceElement.getAttribute("read-only");
         
         if (CommonUtils.isEmpty(name)) {
@@ -254,22 +253,20 @@ public class ConfigImportWizardPageDataGrip extends ConfigImportWizardPage {
     }
 
     private ImportDriverInfo mapDriver(String driverRef, String jdbcDriver, String jdbcUrl, ImportData importData, Map<String, ImportDriverInfo> addedDrivers) {
-        if (CommonUtils.isEmpty(driverRef)) {
+        String resolvedDriverRef = driverRef;
+        if (CommonUtils.isEmpty(resolvedDriverRef)) {
             // Try to guess from JDBC URL
-            driverRef = guessDriverFromUrl(jdbcUrl);
+            resolvedDriverRef = guessDriverFromUrl(jdbcUrl);
         }
-        
-        String dbeaverDriverId = DRIVER_MAPPING.get(driverRef);
+        String dbeaverDriverId = DRIVER_MAPPING.get(resolvedDriverRef);
         ImportDriverInfo driverInfo;
-        
         if (dbeaverDriverId == null) {
             // Create a generic driver info if we can't map it
-            driverInfo = createGenericDriverInfo(driverRef, jdbcDriver, jdbcUrl);
+            driverInfo = createGenericDriverInfo(resolvedDriverRef, jdbcDriver, jdbcUrl);
         } else {
             // Create driver info based on mapping
-            driverInfo = createDriverInfo(dbeaverDriverId, driverRef, jdbcUrl, jdbcDriver);
+            driverInfo = createDriverInfo(dbeaverDriverId, resolvedDriverRef, jdbcUrl, jdbcDriver);
         }
-        
         // Add driver to ImportData if not already added
         String driverKey = driverInfo.getId() != null ? driverInfo.getId() : driverInfo.getName();
         if (!addedDrivers.containsKey(driverKey)) {
@@ -279,24 +276,33 @@ public class ConfigImportWizardPageDataGrip extends ConfigImportWizardPage {
             // Return the already added driver to maintain reference consistency
             driverInfo = addedDrivers.get(driverKey);
         }
-        
         return driverInfo;
+    }
+
+    private static final Map<String, String> DRIVER_PREFIX_MAP = createDriverPrefixMap();
+
+    private static Map<String, String> createDriverPrefixMap() {
+        Map<String, String> map = new HashMap<>();
+        map.put("jdbc:postgresql:", "postgresql");
+        map.put("jdbc:mysql:", "mysql");
+        map.put("jdbc:mariadb:", "mariadb");
+        map.put("jdbc:oracle:", "oracle");
+        map.put("jdbc:sqlserver:", "sqlserver");
+        map.put("jdbc:sqlite:", "sqlite");
+        map.put("jdbc:h2:", "h2");
+        map.put("jdbc:derby:", "derby");
+        map.put("jdbc:hsqldb:", "hsqldb");
+        return map;
     }
 
     private String guessDriverFromUrl(String jdbcUrl) {
         if (jdbcUrl == null) return null;
-        
         String lowerUrl = jdbcUrl.toLowerCase();
-        if (lowerUrl.startsWith("jdbc:postgresql:")) return "postgresql";
-        if (lowerUrl.startsWith("jdbc:mysql:")) return "mysql";
-        if (lowerUrl.startsWith("jdbc:mariadb:")) return "mariadb";
-        if (lowerUrl.startsWith("jdbc:oracle:")) return "oracle";
-        if (lowerUrl.startsWith("jdbc:sqlserver:")) return "sqlserver";
-        if (lowerUrl.startsWith("jdbc:sqlite:")) return "sqlite";
-        if (lowerUrl.startsWith("jdbc:h2:")) return "h2";
-        if (lowerUrl.startsWith("jdbc:derby:")) return "derby";
-        if (lowerUrl.startsWith("jdbc:hsqldb:")) return "hsqldb";
-        
+        for (Map.Entry<String, String> entry : DRIVER_PREFIX_MAP.entrySet()) {
+            if (lowerUrl.startsWith(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
         return null;
     }
 
@@ -367,18 +373,13 @@ public class ConfigImportWizardPageDataGrip extends ConfigImportWizardPage {
         if (CommonUtils.isEmpty(path) || "/".equals(path)) {
             return null;
         }
-        
-        // Remove leading slash
-        if (path.startsWith("/")) {
-            path = path.substring(1);
-        }
-        
+        // Remove leading slash without reassigning parameter
+        String normalizedPath = path.startsWith("/") ? path.substring(1) : path;
         // For SQL Server, database might be in parameters
         if ("sqlserver".equals(scheme)) {
             return null; // Database name is usually in connection parameters
         }
-        
-        return path;
+        return normalizedPath;
     }
 
     private void parseSpecialUrls(String jdbcUrl, ConnectionDetails details) {
