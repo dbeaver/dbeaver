@@ -96,7 +96,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         copilotSettings.getProperties().setToken(accessToken);
         copilotSettings.getProperties().setModel(modelSelectorField.getSelectedModel());
         copilotSettings.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
-        copilotSettings.getProperties().setTemperature(Double.parseDouble(temperature));
+        copilotSettings.getProperties().setTemperature(CommonUtils.toDouble(temperature));
         copilotSettings.getProperties().setLoggingEnabled(logQuery);
     }
 
@@ -131,7 +131,16 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
             .withSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
-                contextWindowSizeField.setValue(CopilotModels.getContextWindowSize(modelSelectorField.getSelectedModel()));
+                CopilotModels.getModelByName(modelSelectorField.getSelectedModel())
+                    .ifPresentOrElse(
+                        model -> {
+                            contextWindowSizeField.setValue(model.contextWindowSize());
+                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                        }, () -> {
+                            contextWindowSizeField.setValue(null);
+                            temperatureText.setText("0.0");
+                        }
+                    );
             }))
             .withModelListSupplier(modelListProvider)
             .build();
@@ -146,7 +155,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.setLayoutData(gridData);
-        UIUtils.createInfoLabel(parent, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 3);
+        temperatureText.setToolTipText("Lower temperatures give more precise results");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }

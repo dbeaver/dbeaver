@@ -1097,18 +1097,20 @@ public abstract class SQLQueryCompletionContext {
                 if (syntaxInspectionResult.expectingColumnReference()) {
                     // already referenced tables
                     LinkedList<SQLQueryCompletionItem> tableRefs = new LinkedList<>();
-                    for (SourceResolutionResult rr : context.getKnownSources().getResolutionResults().values()) {
-                        if (rr.aliasOrNull != null && !rr.isCteSubquery) {
-                            SQLQueryWordEntry sourceAlias = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
-                            int score = sourceAlias.matches(filterOrNull, this.searchInsideWords);
-                            if (score > 0) {
-                                tableRefs.add(SQLQueryCompletionItem.forRowsSourceAlias(score, sourceAlias, rr.aliasOrNull, rr, false));
-                            }
-                        } else if (rr.tableOrNull != null) {
-                            SQLQueryWordEntry tableName = makeFilterInfo(filterOrNull, rr.tableOrNull.getName());
-                            int score = tableName.matches(filterOrNull, this.searchInsideWords);
-                            if (score > 0) {
-                                tableRefs.add(SQLQueryCompletionItem.forRealTable(score, tableName, null, rr.tableOrNull, true, false));
+                    if (request.getContext().getDataSource().getSQLDialect().supportsQualifiedColumnNames()) {
+                        for (SourceResolutionResult rr : context.getKnownSources().getResolutionResults().values()) {
+                            if (rr.aliasOrNull != null && !rr.isCteSubquery) {
+                                SQLQueryWordEntry sourceAlias = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
+                                int score = sourceAlias.matches(filterOrNull, this.searchInsideWords);
+                                if (score > 0) {
+                                    tableRefs.add(SQLQueryCompletionItem.forRowsSourceAlias(score, sourceAlias, rr.aliasOrNull, rr, false));
+                                }
+                            } else if (rr.tableOrNull != null) {
+                                SQLQueryWordEntry tableName = makeFilterInfo(filterOrNull, rr.tableOrNull.getName());
+                                int score = tableName.matches(filterOrNull, this.searchInsideWords);
+                                if (score > 0) {
+                                    tableRefs.add(SQLQueryCompletionItem.forRealTable(score, tableName, null, rr.tableOrNull, true, false));
+                                }
                             }
                         }
                     }

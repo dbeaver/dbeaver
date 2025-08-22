@@ -931,7 +931,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.menus">
-        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.databaseNavigator?endof=additions">
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.navigator.filter.toolbar?after=additions">
             <separator name="filters" visible="true"/>
             <command commandId="org.jkiss.dbeaver.navigator.filter.connected"/>
             <command commandId="org.jkiss.dbeaver.navigator.filter.object.type" id="org.jkiss.dbeaver.navigator.connectionFilterMenu" style="pulldown"/>

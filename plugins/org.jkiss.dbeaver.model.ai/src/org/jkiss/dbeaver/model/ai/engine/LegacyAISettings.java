@@ -20,8 +20,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import com.google.gson.ToNumberPolicy;
+import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 import java.lang.reflect.Type;
@@ -36,6 +38,10 @@ public class LegacyAISettings<P extends AIEngineProperties> implements AIEngineS
 
     @NotNull
     private final P properties;
+
+    @Nullable
+    @SerializedName(FALLBACK_ENGINE_ID)
+    private String fallbackEngineId;
 
     public LegacyAISettings(@NotNull P properties) {
         this.properties = properties;
@@ -83,5 +89,15 @@ public class LegacyAISettings<P extends AIEngineProperties> implements AIEngineS
     @Override
     public boolean isLoggingEnabled() {
         return properties.isLoggingEnabled();
+    }
+
+    @Nullable
+    @Override
+    public String fallbackEngineId() {
+        return fallbackEngineId;
+    }
+
+    public void setFallbackEngineId(@Nullable String fallbackEngineId) {
+        this.fallbackEngineId = fallbackEngineId;
     }
 }
