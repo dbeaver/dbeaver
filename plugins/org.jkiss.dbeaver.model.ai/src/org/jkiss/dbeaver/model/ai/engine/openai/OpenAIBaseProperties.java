@@ -23,6 +23,9 @@ import org.jkiss.utils.CommonUtils;
 public interface OpenAIBaseProperties extends AIEngineProperties {
 
     @Nullable
+    String getBaseUrl();
+
+    @Nullable
     String getToken();
 
     @Nullable
