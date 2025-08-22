@@ -31,11 +31,8 @@ import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
@@ -294,81 +291,6 @@ public class DesktopUI extends ConsoleUserInterface {
         });
 
         return decision[0] == confirm;
-    }
-
-    @Override
-    public boolean confirmActionWithDetails(
-        @NotNull String title,
-        @NotNull String message,
-        @NotNull String detailsText,
-        @NotNull DataSourceContextProvider contextProvider,
-        boolean isWarning
-    ) {
-        if (isHeadlessMode()) {
-            return super.confirmActionWithDetails(title, message, detailsText, contextProvider, isWarning);
-        }
-        if (serviceSQL == null) {
-            serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-        }
-
-        final Reply[] reply = {null};
-        final boolean[] isExpanded = {false};
-
-        UIUtils.syncExec(() -> reply[0] = MessageBoxBuilder.builder(UIUtils.getActiveWorkbenchShell())
-            .setTitle(title)
-            .setMessage(message)
-            .setReplies(Reply.YES, Reply.NO)
-            .setDefaultReply(Reply.NO)
-            .setPrimaryImage(isWarning ? DBIcon.STATUS_WARNING : DBIcon.STATUS_QUESTION)
-            .setCustomButton((dialog, buttonBar) -> {
-                buttonBar.setLayout(new GridLayout(3, false));
-                Button detailsButton = UIUtils.createPushButton(
-                    buttonBar,
-                    UIMessages.dialog_confirm_action_show_details + " >>>",
-                    null
-                );
-
-                GridData detailsGridData = new GridData(GridData.FILL_BOTH);
-                detailsGridData.horizontalSpan = 2;
-                detailsGridData.exclude = true;
-                Composite detailsComposite = UIUtils.createComposite(dialog, 0);
-                detailsComposite.setLayoutData(detailsGridData);
-                detailsComposite.setLayout(new FillLayout());
-                detailsComposite.setVisible(false);
-
-                try {
-                    TextViewer sqlPanel = (TextViewer) serviceSQL.createSQLPanel(
-                        UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
-                        detailsComposite,
-                        contextProvider,
-                        UIMessages.dialog_confirm_action_details,
-                        false,
-                        detailsText
-                    );
-                    detailsGridData.heightHint = calculateHeightHint(sqlPanel, detailsText);
-                } catch (DBException e) {
-                    log.error(e);
-                    detailsButton.dispose();
-                    detailsComposite.dispose();
-                    return;
-                }
-
-                detailsButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                    isExpanded[0] = !isExpanded[0];
-                    String buttonText = isExpanded[0] ?
-                        UIMessages.dialog_confirm_action_hide_details + " <<<" :
-                        UIMessages.dialog_confirm_action_show_details + " >>>";
-                    detailsButton.setText(buttonText);
-                    detailsComposite.setVisible(isExpanded[0]);
-                    ((GridData) detailsComposite.getLayoutData()).exclude = !isExpanded[0];
-                    dialog.layout(true);
-                    dialog.getShell().pack(true);
-                }));
-            })
-            .showMessageBox()
-        );
-
-        return reply[0] == Reply.YES;
     }
 
     @NotNull

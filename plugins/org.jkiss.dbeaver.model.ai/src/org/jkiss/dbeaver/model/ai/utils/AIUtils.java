@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -187,14 +188,10 @@ public final class AIUtils {
         String scriptText = scriptElements.stream()
             .map(Object::toString)
             .collect(Collectors.joining("\n"));
-        return DBWorkbench.getPlatformUI()
-            .confirmActionWithDetails(
-                title,
-                message,
-                scriptText,
-                getContextProvider(scriptElements),
-                true
-            );
+        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+        return serviceSQL != null ?
+            serviceSQL.confirmScriptExecution(title, message, scriptText, getContextProvider(scriptElements), true) :
+            DBWorkbench.getPlatformUI().confirmAction(title, message, true);
     }
 
     @NotNull

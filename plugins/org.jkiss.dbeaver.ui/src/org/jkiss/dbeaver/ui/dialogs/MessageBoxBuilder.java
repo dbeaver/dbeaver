@@ -27,7 +27,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class MessageBoxBuilder {
@@ -101,7 +100,7 @@ public final class MessageBoxBuilder {
     }
 
     @NotNull
-    public MessageBoxBuilder setCustomButton(@NotNull BiConsumer<? super Composite, ? super Composite> customButton) {
+    public MessageBoxBuilder setCustomButton(@NotNull Consumer<? super Composite> customButton) {
         dialog.setCustomButton(customButton);
         return this;
     }

@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
-import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
@@ -34,7 +33,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithReturn;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
-import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.lang.reflect.InvocationTargetException;
@@ -83,14 +81,6 @@ public interface DBPPlatformUI {
     boolean confirmAction(String title, String message);
     boolean confirmAction(String title, String message, boolean isWarning);
     boolean confirmAction(@NotNull String title, @NotNull String message, @NotNull String buttonLabel, boolean isWarning);
-
-    boolean confirmActionWithDetails(
-        @NotNull String title,
-        @NotNull String message,
-        @NotNull String detailsText,
-        @NotNull DataSourceContextProvider contextProvider,
-        boolean isWarning
-    );
 
     /**
      * Show user-choice dialog for a user to mandatory select one of the options described with the labels

@@ -34,7 +34,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 final class MessageBoxModern extends BaseDialog {
@@ -48,7 +47,7 @@ final class MessageBoxModern extends BaseDialog {
     @Nullable
     private Consumer<? super Composite> customArea;
     @Nullable
-    private BiConsumer<? super Composite, ? super Composite> customButton;
+    private Consumer<? super Composite> customButton;
 
     @Nullable
     private List<Button> buttons;
@@ -77,7 +76,7 @@ final class MessageBoxModern extends BaseDialog {
         this.customArea = customArea;
     }
 
-    void setCustomButton(@NotNull BiConsumer<? super Composite, ? super Composite> customButton) {
+    void setCustomButton(@NotNull Consumer<? super Composite> customButton) {
         this.customButton = customButton;
     }
 
@@ -175,7 +174,7 @@ final class MessageBoxModern extends BaseDialog {
         composite.setLayoutData(gd);
         composite.setFont(parent.getFont());
         if (customButton != null) {
-            customButton.accept(parent, composite);
+            customButton.accept(composite);
         }
         createButtonsForButtonBar(composite);
         return composite;
