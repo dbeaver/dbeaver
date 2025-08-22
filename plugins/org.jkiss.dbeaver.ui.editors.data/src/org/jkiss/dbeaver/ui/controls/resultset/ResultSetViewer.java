@@ -474,7 +474,7 @@ public class ResultSetViewer extends Viewer
 
     private void applyCurrentPresentationThemeSettings() {
         if (panelFolder != null) {
-            panelFolder.setFont(JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
+            panelFolder.setFont(JFaceResources.getFont(UIFonts.Eclipse.PART_TITLE_FONT));
         }
 
         if (statusBar != null) {
