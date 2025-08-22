@@ -33,7 +33,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
 
-    private static final Class<?>[] EXCLUDE_CLASSES = { Tree.class, Table.class, Button.class };
+    private static final Class<?>[] EXCLUDE_CLASSES = { Tree.class, Table.class };
 
     @Override
     public void applyCSSPropertyBackgroundColor(
@@ -59,9 +59,9 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
             isOverridesBackground(ctrl)
         ) {
             Color newColor = CSSUtils.getCurrentEditorConnectionColor(widget);
-            if (newColor != null) {
+            //if (newColor != null) {
                 ctrl.setBackground(newColor);
-            }
+            //}
         }
     }
 
@@ -72,6 +72,10 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
         if (ctrl instanceof Text || ctrl instanceof StyledText) {
             return CommonUtils.isBitSet(ctrl.getStyle(), SWT.BORDER);
         }
+        if (ctrl instanceof Button) {
+            return !CommonUtils.isBitSet(ctrl.getStyle(), SWT.CHECK) && !CommonUtils.isBitSet(ctrl.getStyle(), SWT.RADIO);
+        }
+
         return false;
     }
 
@@ -80,6 +84,14 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
             if (CSSUtils.isExcludeFromStyling(control)) {
                 return false;
             }
+            if (control.getClass().getName().contains("FindReplaceOverlay")) {
+                // FIXME: dirty hack to exclude Find/Replace floating panel
+                return false;
+            }
+            // Should we use def Eclipse approach? Generally it is all canvases and composites
+//            if (CompositeElement.hasBackgroundOverriddenByCSS(control)) {
+//                return false;
+//            }
             if (control instanceof ConComposite || CSSUtils.isDatabaseColored(control)) {
                 return true;
             }
