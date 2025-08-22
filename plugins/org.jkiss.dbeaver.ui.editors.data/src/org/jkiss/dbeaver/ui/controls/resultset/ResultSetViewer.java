@@ -121,8 +121,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 /**
@@ -3697,7 +3697,8 @@ public class ResultSetViewer extends Viewer
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
             DBDAttributeBinding ownBinding = bindingsModel.getAttributeBinding(ownAttr.getAttribute());
             if (ownBinding == null) {
-                DBWorkbench.getPlatformUI().showError("Cannot navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
+                DBWorkbench.getPlatformUI()
+                    .showError("Cannot navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
                 return;
             }
 
@@ -3710,9 +3711,8 @@ public class ResultSetViewer extends Viewer
             }
 
         }
-        // Save cur data filter in state
         if (curState == null) {
-            setNewState((DBSDataContainer) targetEntity, model.getDataFilter());
+            setNewState(container.getDataContainer(), model.getDataFilter());
         }
         curState.filter = new DBDDataFilter(bindingsModel.getDataFilter());
         navigateEntity(monitor, newWindow, targetEntity, constraints);
