@@ -190,7 +190,7 @@ public final class AIUtils {
             .collect(Collectors.joining("\n"));
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         return serviceSQL != null ?
-            serviceSQL.confirmScriptExecution(title, message, scriptText, getContextProvider(scriptElements), true) :
+            serviceSQL.confirmQueryExecution(title, message, scriptText, getContextProvider(scriptElements), true) :
             DBWorkbench.getPlatformUI().confirmAction(title, message, true);
     }
 

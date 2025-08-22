@@ -24,14 +24,12 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.ModalContext;
-import org.eclipse.jface.text.TextViewer;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -48,7 +46,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
-import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
@@ -57,7 +54,6 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
-import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
@@ -66,7 +62,6 @@ import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditHelpers;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
@@ -90,7 +85,6 @@ public class DesktopUI extends ConsoleUserInterface {
     private static final Log log = Log.getLog(DesktopUI.class);
 
     private WorkbenchContextListener contextListener;
-    private UIServiceSQL serviceSQL;
 
     public static DesktopUI getInstance() {
         return (DesktopUI) DBWorkbench.getPlatformUI();
@@ -735,12 +729,5 @@ public class DesktopUI extends ConsoleUserInterface {
         } catch (Exception ex) { // when workbench is not initialized yet during startup
             return 800; // see org.eclipse.ui.internal.progress.ProgressManager.getLongOperationTime()
         }
-    }
-
-    private static int calculateHeightHint(TextViewer sqlPanel, String scriptText) {
-        int lineHeight = UIUtils.getTextHeight(sqlPanel.getTextWidget());
-        int lineCount = scriptText.split("\n").length;
-        int totalHeight = lineCount * lineHeight + 10;
-        return Math.min(totalHeight, 300);
     }
 }

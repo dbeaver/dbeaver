@@ -95,10 +95,10 @@ public interface UIServiceSQL {
 
     boolean useIsolatedConnections(DBPContextProvider contextProvider);
 
-    boolean confirmScriptExecution(
+    boolean confirmQueryExecution(
         @NotNull String title,
         @NotNull String message,
-        @NotNull String detailsText,
+        @NotNull String queryText,
         @NotNull DataSourceContextProvider contextProvider,
         boolean isWarning
     );

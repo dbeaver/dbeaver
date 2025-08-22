@@ -272,10 +272,10 @@ public class UIServiceSQLImpl implements UIServiceSQL {
     }
 
     @Override
-    public boolean confirmScriptExecution(
+    public boolean confirmQueryExecution(
         @NotNull String title,
         @NotNull String message,
-        @NotNull String scriptText,
+        @NotNull String queryText,
         @NotNull DataSourceContextProvider contextProvider,
         boolean isWarning
     ) {
@@ -299,7 +299,7 @@ public class UIServiceSQLImpl implements UIServiceSQL {
                         contextProvider.getExecutionContext(),
                         UIMessages.dialog_confirm_action_query,
                         null,
-                        scriptText,
+                        queryText,
                         false,
                         false
                     )
