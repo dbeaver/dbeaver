@@ -188,7 +188,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
             throw new DBException("OpenAI API token is not set");
         }
 
-        return OpenAIClient.createClient(token);
+        return OpenAIClient.createClient(properties.getBaseUrl(), token);
     }
 
     @Nullable
