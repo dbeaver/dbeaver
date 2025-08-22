@@ -222,6 +222,9 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     private void changeProfile() {
+        if (profilesCombo == null || profilesCombo.isDisposed()) {
+            return;
+        }
         int selectionIndex = profilesCombo.getSelectionIndex();
         if (selectionIndex < 0) {
             return;
