@@ -53,7 +53,7 @@ public class DBTTaskScheduleConfiguration {
     // Repetition interval in minutes
     public int repetitionInterval;
 
-    // Execution minute on an hour
+    // Execution minute of an hour
     public int executionMinute;
 
     public final Map<String, Object> properties = new HashMap<>();
