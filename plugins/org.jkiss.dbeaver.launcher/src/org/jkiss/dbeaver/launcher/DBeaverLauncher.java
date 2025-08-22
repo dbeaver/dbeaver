@@ -759,10 +759,13 @@ public class DBeaverLauncher {
 
             if (output != null && !output.isEmpty()) {
                 // since we don't have gson and don't deserialize the response, remove escaping for cleaner output
-                output = output.replace("\\\\\\\"", "\"")
+                output = output
+                    .replace("\\\\\\\"", "\"")
                     .replace("\\\"", "\"")
+                    .replace("\\\\\\\\t", "\t")
                     .replace("\\\"{", "{")
                     .replace("}\\\"", "}")
+                    .replace("\\\\\\\\n", "\n")
                     .replace("\\\\n", "\n")
                     .replace("\\n", "\n");
                 System.out.println(output);
