@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClient;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
@@ -50,9 +51,13 @@ import java.util.Locale;
 public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends OpenAIProperties>
     implements IObjectPropertyConfigurator<ENGINE, LegacyAISettings<PROPERTIES>> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
+    protected String baseUrl;
     protected volatile String token = "";
     private String temperature = "0.0";
     private boolean logQuery = false;
+
+    @Nullable
+    private Text baseUrlText;
 
     @Nullable
     protected Text tokenText;
@@ -74,6 +79,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         createConnectionParameters(composite);
 
         createModelParameters(composite);
+        createBaseUrlParameter(composite);
 
         createAdditionalSettings(composite);
         UIUtils.syncExec(this::applySettings);
@@ -81,6 +87,10 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
 
     @Override
     public void loadSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
+        baseUrl = CommonUtils.toString(configuration.getProperties().getBaseUrl());
+        if (baseUrl.isEmpty()) {
+            baseUrl = OpenAIClient.OPENAI_ENDPOINT;
+        }
         token = CommonUtils.toString(configuration.getProperties().getToken());
         modelSelectorField.setSelectedModel(
             CommonUtils.toString(configuration.getProperties().getModel(), OpenAIModels.DEFAULT_MODEL)
@@ -96,6 +106,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
 
     @Override
     public void saveSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
+        configuration.getProperties().setBaseUrl(baseUrl);
         configuration.getProperties().setToken(token);
         configuration.getProperties().setModel(modelSelectorField.getSelectedModel());
         configuration.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
@@ -169,6 +180,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
 
         OpenAIProperties properties = new OpenAIProperties();
         properties.setToken(token);
+        properties.setBaseUrl(baseUrl);
 
         try (OpenAICompletionEngine<OpenAIProperties> engine = new OpenAICompletionEngine<>(properties)) {
             return engine.getModels(monitor);
@@ -188,6 +200,18 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         tokenText.addModifyListener((e -> token = tokenText.getText()));
         tokenText.setMessage("API access token");
         createURLInfoLink(parent);
+    }
+
+    protected void createBaseUrlParameter(@NotNull Composite parent) {
+        baseUrlText = UIUtils.createLabelText(
+            parent,
+            AIUIMessages.gpt_preference_page_selector_base_url,
+            ""
+        );
+        baseUrlText.addModifyListener((e -> baseUrl = baseUrlText.getText()));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 150;
+        baseUrlText.setLayoutData(gd);
     }
 
     protected void createURLInfoLink(@NotNull Composite parent) {
@@ -211,6 +235,9 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
     }
 
     protected void applySettings() {
+        if (baseUrlText != null) {
+            baseUrlText.setText(baseUrl);
+        }
         if (tokenText != null) {
             tokenText.setText(token);
         }
