@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
@@ -49,8 +50,8 @@ public class PasswordChangeDialog extends BaseDialog
         this.oldPasswordVisible = oldPasswordVisible;
     }
 
-    public DBAPasswordChangeInfo getPasswordInfo()
-    {
+    @NotNull
+    public DBAPasswordChangeInfo getPasswordInfo() {
         return passwordInfo;
     }
 
@@ -86,6 +87,8 @@ public class PasswordChangeDialog extends BaseDialog
             verifyText = verifyPasswordText.getText();
             updateButtons();
         });
+
+        UIUtils.asyncExec(this::updateButtons);
 
         return credGroup;
     }

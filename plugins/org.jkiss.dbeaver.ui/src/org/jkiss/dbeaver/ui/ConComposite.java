@@ -21,7 +21,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 
 public class ConComposite extends Composite {
 
@@ -31,7 +30,7 @@ public class ConComposite extends Composite {
 
     public ConComposite(@NotNull Composite parent, int style) {
         super(parent, style);
-        CSSUtils.setCSSClass(this, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(this);
     }
 
     public void setGridLayout(int columns) {
