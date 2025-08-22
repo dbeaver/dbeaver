@@ -17,11 +17,19 @@
 package org.jkiss.dbeaver.registry.task;
 
 import com.google.gson.Gson;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,8 +60,38 @@ public class TaskUtils {
         }
     }
 
+    @NotNull
+    public static ZonedDateTime parseDateTime(@NotNull String text) {
+        var accessor = DATE_TIME_FORMATTER.parseBest(text, ZonedDateTime::from, LocalDateTime::from);
+        if (accessor instanceof LocalDateTime localDateTime) {
+            return localDateTime.atZone(ZoneId.systemDefault());
+        } else {
+            return (ZonedDateTime) accessor;
+        }
+    }
+
+    @NotNull
+    public static String formatDateTime(@NotNull ZonedDateTime zonedDateTime) {
+        return zonedDateTime.format(DATE_TIME_FORMATTER);
+    }
 
     public static String buildRunLogFileName(String runId) {
         return RUN_LOG_PREFIX + runId + "." + RUN_LOG_EXT;
+    }
+
+    /**
+     * An adapter that conveniently wraps {@link #parseDateTime(String)} and {@link #formatDateTime(ZonedDateTime)}
+     * helper methods for use with Gson.
+     */
+    public static final class ZonedDateTimeAdapter extends TypeAdapter<ZonedDateTime> {
+        @Override
+        public void write(JsonWriter out, ZonedDateTime value) throws IOException {
+            out.value(formatDateTime(value));
+        }
+
+        @Override
+        public ZonedDateTime read(JsonReader in) throws IOException {
+            return parseDateTime(in.nextString());
+        }
     }
 }

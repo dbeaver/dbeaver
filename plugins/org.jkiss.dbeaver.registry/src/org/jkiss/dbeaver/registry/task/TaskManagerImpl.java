@@ -46,10 +46,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -66,7 +63,6 @@ public class TaskManagerImpl implements DBTTaskManager {
         .setPrettyPrinting()
         .create();
 
-    final DateTimeFormatter systemDateFormat;
 
     private final Set<TaskRunJob> runningTasks = Collections.synchronizedSet(new HashSet<>());
     private Job serviceJob;
@@ -78,7 +74,6 @@ public class TaskManagerImpl implements DBTTaskManager {
     public TaskManagerImpl(BaseProjectImpl projectMetadata, Path statisticsFolder) {
         this.projectMetadata = projectMetadata;
         this.statisticsFolder = statisticsFolder;
-        this.systemDateFormat = TaskUtils.DATE_TIME_FORMATTER;
         loadConfiguration();
     }
 
@@ -407,8 +402,8 @@ public class TaskManagerImpl implements DBTTaskManager {
                     String label = CommonUtils.toString(JSONUtils.getString(taskJSON, TaskConstants.TAG_LABEL), id);
                     String description = JSONUtils.getString(taskJSON, TaskConstants.TAG_DESCRIPTION);
                     String taskFolderName = JSONUtils.getString(taskJSON, TaskConstants.TAG_TASK_FOLDER);
-                    ZonedDateTime createTime = parseDateTime(JSONUtils.getString(taskJSON, TaskConstants.TAG_CREATE_TIME));
-                    ZonedDateTime updateTime = parseDateTime(JSONUtils.getString(taskJSON, TaskConstants.TAG_UPDATE_TIME));
+                    ZonedDateTime createTime = TaskUtils.parseDateTime(JSONUtils.getString(taskJSON, TaskConstants.TAG_CREATE_TIME));
+                    ZonedDateTime updateTime = TaskUtils.parseDateTime(JSONUtils.getString(taskJSON, TaskConstants.TAG_UPDATE_TIME));
                     int maxExecutionTime = JSONUtils.getInteger(taskJSON, TaskConstants.TAG_MAX_EXEC_TIME);
                     Map<String, Object> state = JSONUtils.getObject(taskJSON, TaskConstants.TAG_STATE);
 
@@ -448,17 +443,6 @@ public class TaskManagerImpl implements DBTTaskManager {
                 log.warn("Error parsing task configuration", e);
             }
 
-        }
-    }
-
-    @NotNull
-    private ZonedDateTime parseDateTime(@NotNull String text) {
-        var accessor = systemDateFormat.parseBest(text, ZonedDateTime::from, LocalDateTime::from);
-        if (accessor instanceof LocalDateTime localDateTime) {
-            // Backward compatibility
-            return localDateTime.atZone(ZoneId.systemDefault());
-        } else {
-            return (ZonedDateTime) accessor;
         }
     }
 
@@ -570,8 +554,8 @@ public class TaskManagerImpl implements DBTTaskManager {
             if (taskFolder != null) {
                 JSONUtils.field(jsonWriter, TaskConstants.TAG_TASK_FOLDER, taskFolder.getName());
             }
-            JSONUtils.field(jsonWriter, TaskConstants.TAG_CREATE_TIME, systemDateFormat.format(task.getCreateTime()));
-            JSONUtils.field(jsonWriter, TaskConstants.TAG_UPDATE_TIME, systemDateFormat.format(task.getUpdateTime()));
+            JSONUtils.field(jsonWriter, TaskConstants.TAG_CREATE_TIME, TaskUtils.formatDateTime(task.getCreateTime()));
+            JSONUtils.field(jsonWriter, TaskConstants.TAG_UPDATE_TIME, TaskUtils.formatDateTime(task.getUpdateTime()));
             JSONUtils.serializeProperties(jsonWriter, TaskConstants.TAG_STATE, task.getProperties(), true);
             if (task.getMaxExecutionTime() > 0) {
                 JSONUtils.field(jsonWriter, TaskConstants.TAG_MAX_EXEC_TIME, task.getMaxExecutionTime());
