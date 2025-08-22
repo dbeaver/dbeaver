@@ -231,9 +231,9 @@ public class TabbedFolderList extends ConComposite {
             e.gc.setForeground(widgetForeground);
             if (selected) {
 				/* selected tab is bold font */
-                e.gc.setFont(BaseThemeSettings.instance.baseFontBold);
+                e.gc.setFont(BaseThemeSettings.instance.partTitleBoldFont);
             } else {
-                e.gc.setFont(BaseThemeSettings.instance.baseFont);
+                e.gc.setFont(BaseThemeSettings.instance.partTitleFont);
             }
             e.gc.drawText(tab.getText(), textIndent, textMiddle, true);
             if (((TabbedFolderList) getParent()).focus && selected) {
@@ -447,10 +447,10 @@ public class TabbedFolderList extends ConComposite {
                 SharedTextColors sharedColors = UIUtils.getSharedTextColors();
                 if (listBackground.hashCode() < connectionColor.hashCode()) {
                     // Foreground darker than background - make element background darker
-                    connectionColor = sharedColors.getColor(UIUtils.blend(black, connectionColor.getRGB(), 25));
+                    connectionColor = sharedColors.getColor(UIUtils.blend(black, connectionColor.getRGB(), 15));
                 } else {
                     // Make element background lighter
-                    connectionColor = sharedColors.getColor(UIUtils.blend(white, connectionColor.getRGB(), 25));
+                    connectionColor = sharedColors.getColor(UIUtils.blend(white, connectionColor.getRGB(), 15));
                 }
             }
 
@@ -493,6 +493,7 @@ public class TabbedFolderList extends ConComposite {
 
             public void controlResized(ControlEvent e) {
                 computeTopAndBottomTab();
+                UIUtils.asyncExec(() -> redraw());
             }
         });
         this.addTraverseListener(this::handleTraverse);
@@ -717,7 +718,7 @@ public class TabbedFolderList extends ConComposite {
      */
     private Point getTextDimension(String text) {
         GC gc = new GC(this);
-        gc.setFont(BaseThemeSettings.instance.baseFontBold);
+        gc.setFont(BaseThemeSettings.instance.partTitleBoldFont);
         Point point = gc.textExtent(text);
         point.x++;
         gc.dispose();
