@@ -190,6 +190,11 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                     }
                 } catch (Exception e) {
                     log.error("Error evaluating parameter '" + param.getName() + "'", e);
+                    result = new CmdProcessResult(
+                        CmdProcessResult.PostAction.ERROR,
+                        "Error evaluating parameter '" + param.getName() + "': " + CommonUtils.getAllExceptionMessages(e)
+                    );
+                    break;
                 }
                 if (param.isExitAfterExecute()) {
                     result = new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN);

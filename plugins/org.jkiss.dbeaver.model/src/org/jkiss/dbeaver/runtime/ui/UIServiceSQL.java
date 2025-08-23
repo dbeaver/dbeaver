@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.runtime.ui;
 
-import org.eclipse.core.resources.IResource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -93,8 +92,13 @@ public interface UIServiceSQL {
 
     Object openRecentScript(DBSObject forObject);
 
-    void openResource(IResource element);
-
     boolean useIsolatedConnections(DBPContextProvider contextProvider);
 
+    boolean confirmQueryExecution(
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull String queryText,
+        @NotNull DBPContextProvider contextProvider,
+        boolean isWarning
+    );
 }
