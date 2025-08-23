@@ -129,7 +129,7 @@ public class DataGripImporterTest {
             }
             
             if (dataSourceStorage == null) {
-                throw new RuntimeException("No dataSourceStorage component found");
+                throw new IllegalStateException("No dataSourceStorage component found");
             }
             
             // Parse each data-source element (simulate the private method)

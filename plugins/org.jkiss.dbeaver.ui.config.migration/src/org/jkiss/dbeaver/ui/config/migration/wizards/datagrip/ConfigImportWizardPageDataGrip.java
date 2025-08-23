@@ -56,6 +56,8 @@ import java.util.Map;
  */
 public class ConfigImportWizardPageDataGrip extends ConfigImportWizardPage {
 
+    private static final Map<String, String> DRIVER_PREFIX_MAP = createDriverPrefixMap();
+    
     private static final Log log = Log.getLog(ConfigImportWizardPageDataGrip.class);
 
     // DataGrip settings file structure
