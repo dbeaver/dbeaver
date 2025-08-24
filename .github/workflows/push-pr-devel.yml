@@ -33,6 +33,7 @@ jobs:
       # FIXME: here and later we assume that we work with a PR inside the dbeaver org, but what if it's a fork?
       - name: Check if a custom p2 build is needed
         shell: sh
+        id: p2-check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH_NAME: ${{ steps.branch-info.outputs.branch-name }}
@@ -58,7 +59,7 @@ jobs:
           fi
 
       - name: Checkout p2 if needed
-        if: ${{ steps.check-if-a-custom-p2-build-is-needed.outputs.custom_p2_build_needed == 'true' }}
+        if: ${{ steps.p2-check.outputs.custom_p2_build_needed == 'true' }}
         uses: actions/checkout@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -67,7 +68,7 @@ jobs:
           path: ${{ env.CHECKOUT_PATH || '.' }}/dbeaver-deps-ce
 
       - name: Build custom p2 if needed
-        if: ${{ steps.check-if-a-custom-p2-build-is-needed.outputs.custom_p2_build_needed == 'true' }}
+        if: ${{ steps.p2-check.outputs.custom_p2_build_needed == 'true' }}
         uses: dbeaver/github-actions/build-p2@dbeaver/dbeaver-devops#2023-custom-p2
         id: build-p2
         with:
@@ -76,7 +77,7 @@ jobs:
       - name: Verify
         working-directory: ./dbeaver/product/aggregate
         run: |
-          if [ ${{ steps.check-if-a-custom-p2-build-is-needed.outputs.custom_p2_build_needed }} = 'true' ]; then
+          if [ ${{ steps.p2-check.outputs.custom_p2_build_needed }} = 'true' ]; then
             p2_repo=${{ inputs.repo-root-dir || env.CHECKOUT_PATH || '.' }}/p2/repository/target/repository
             echo "p2_repo=$p2_repo"
             p2_abs_path=$(realpath "$p2_repo")
