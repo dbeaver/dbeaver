@@ -58,9 +58,9 @@ jobs:
             fi
           fi
 
-      - name: Checkout p2 if needed
+      - name: Checkout p2
         if: ${{ steps.p2-check.outputs.custom_p2_build_needed == 'true' }}
-        uses: actions/checkout@v5
+        uses: dbeaver/github-actions/checkout-with-deps@dbeaver/dbeaver-devops#2023-custom-p2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: dbeaver/dbeaver-deps-ce
