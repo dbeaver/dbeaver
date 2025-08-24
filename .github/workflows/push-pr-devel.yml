@@ -76,8 +76,11 @@ jobs:
         run: |
           if [ ${{ steps.check-if-a-custom-p2-build-is-needed.outputs.custom_p2_build_needed }} = 'true' ]; then
             p2_repo=${{ inputs.repo-root-dir || env.CHECKOUT_PATH || '.' }}/p2/repository/target/repository
+            echo "p2_repo=$p2_repo"
             p2_abs_path=$(realpath "$p2_repo")
+            echo "p2_abs_path=$p2_abs_path"
             p2_uri="file://$p2_abs_path"
+            echo "p2_uri=$p2_uri"
             mvn clean verify -B -T1C ${{ inputs.mvn-args }} -Drepo.p2.dbeaver-ce.url="'$p2_uri'"
           else
             mvn clean verify -B -T1C ${{ inputs.mvn-args }}
