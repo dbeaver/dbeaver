@@ -47,7 +47,6 @@ jobs:
             echo "url_encoded_branch_name=$url_encoded_branch_name"
             http_status=$(curl -s -o /dev/null -w "%{http_code}" \
               -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: token $GITHUB_TOKEN" \
               "https://api.github.com/repos/dbeaver/dbeaver-deps-ce/branches/$url_encoded_branch_name")
             echo "httpstatus=$http_status"
             if [ "$http_status" = '200' ]; then
