@@ -43,7 +43,8 @@ jobs:
           if [ "$BRANCH_NAME" = 'devel' ]; then
             set_custom_p2_build_needed 'false'
           else
-            url_encoded_branch_name=$(echo $BRANCH_NAME | sed 's/\//%2F/g')
+            # Subsitute: / -> %2F, # -> %23
+            url_encoded_branch_name=$(echo $BRANCH_NAME | sed 's/\//%2F/g' | sed 's/#/%23/g')
             echo "url_encoded_branch_name=$url_encoded_branch_name"
             http_status=$(curl -s -o /dev/null -w "%{http_code}" \
               -H "Accept: application/vnd.github.v3+json" \
