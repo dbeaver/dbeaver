@@ -50,6 +50,7 @@ public class DamengTable extends GenericTable implements DBPObjectStatistics {
         super(container, tableName, tableCatalogName, tableSchemaName);
     }
 
+    @NotNull
     @Override
     public List<DBSEntityConstraintInfo> getSupportedConstraints() {
         return List.of(

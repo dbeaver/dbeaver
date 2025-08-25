@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.jkiss.dbeaver.db.feature"
-      label="%featureName"
-      version="1.0.148.qualifier"
-      provider-name="%providerName">
+      label="DBeaver Databases"
+      version="1.0.154.qualifier"
+      provider-name="DBeaver Corp">
 
-   <description>
-      %description
-   </description>
-
-   <copyright>
-      %copyright
-   </copyright>
+   <copyright>DBeaver Corp and others</copyright>
+   <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
    <plugin id="org.jkiss.dbeaver.ext.db2" version="0.0.0"/>
    <plugin id="org.jkiss.dbeaver.ext.mysql" version="0.0.0" />
@@ -38,6 +33,7 @@
    <plugin id="org.jkiss.dbeaver.ext.hive" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.hsqldb" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.informix" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.iotdb" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.netezza" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.oceanbase" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.tidb" version="0.0.0" />

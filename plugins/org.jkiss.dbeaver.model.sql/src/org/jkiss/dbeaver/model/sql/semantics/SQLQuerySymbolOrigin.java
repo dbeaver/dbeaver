@@ -18,15 +18,16 @@ package org.jkiss.dbeaver.model.sql.semantics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -37,55 +38,36 @@ public abstract class SQLQuerySymbolOrigin {
     public interface Visitor {
         void visitDbObjectFromDbObject(DbObjectFromDbObject origin);
 
-        void visitDbObjectFromContext(DbObjectFromContext origin);
-
-        void visitRowsetRefFromContext(RowsetRefFromContext origin);
-
-        void visitValueRefFromContext(ValueRefFromContext origin);
+        void visitDbObjectRef(DbObjectRef origin);
 
         void visitColumnRefFromReferencedContext(ColumnRefFromReferencedContext origin);
 
-        void visitColumnNameFromContext(ColumnNameFromContext origin);
-
         void visitMemberOfType(MemberOfType origin);
-
-        void visitDataContextSymbol(DataContextSymbolOrigin origin);
-
-        /**
-         * Visitor for * or table-alias.* which are supposed to be expanded to the list of columns on completion
-         */
-        void visitExpandableTupleRef(ExpandableTupleRef tupleRef);
 
         void visitRowsSourceRef(RowsSourceRef rowsSourceRef);
 
         void visitRowsDataRef(RowsDataRef rowsDataRef);
+
+        void visitExpandableRowsTupleRef(ExpandableRowsTupleRef tupleRef);
+
+        void visitColumnNameFromRowsData(ColumnNameFromRowsData origin);
+
+        void visitSyntaxBasedFromRowsData(SyntaxBasedFromRowsData origin);
     }
 
     public abstract boolean isChained();
 
     public abstract void apply(Visitor visitor);
 
-    public static class DataContextSymbolOrigin extends SQLQuerySymbolOrigin {
-
-        private final SQLQueryDataContext dataContext;
-
-        public DataContextSymbolOrigin(SQLQueryDataContext dataContext) {
-            this.dataContext = dataContext;
-        }
-
-        @Override
-        public boolean isChained() {
-            return false;
-        }
-
-        public SQLQueryDataContext getDataContext() {
-            return this.dataContext;
-        }
-
-        @Override
-        public void apply(Visitor visitor) {
-            visitor.visitDataContextSymbol(this);
-        }
+    /**
+     * Purpose of the objects produced by the origin in the corresponding lexical context
+     */
+    public enum DbObjectFilterMode {
+        DEFAULT,
+        ROWSET,
+        VALUE,
+        FUNCTION,
+        OBJECT
     }
 
     /**
@@ -99,13 +81,21 @@ public abstract class SQLQuerySymbolOrigin {
         @NotNull
         private final Set<DBSObjectType> objectTypes;
 
-        public DbObjectFromDbObject(@NotNull DBSObject object, @NotNull DBSObjectType memberType) {
-            this(object, Set.of(memberType));
-        }
+        @NotNull
+        private final SQLQueryRowsSourceContext rowsContext;
 
-        public DbObjectFromDbObject(@NotNull DBSObject object, @NotNull Set<DBSObjectType> objectTypes) {
+        @NotNull
+        private final DbObjectFilterMode  filterMode;
+
+        public DbObjectFromDbObject(
+            @NotNull DBSObject object,
+            @NotNull SQLQueryRowsSourceContext rowsContext,
+            @NotNull DbObjectFilterMode filterMode
+        ) {
             this.object = object;
-            this.objectTypes = objectTypes;
+            this.objectTypes = Collections.emptySet();
+            this.rowsContext = rowsContext;
+            this.filterMode = filterMode;
         }
 
         @NotNull
@@ -116,6 +106,16 @@ public abstract class SQLQuerySymbolOrigin {
         @NotNull
         public Set<DBSObjectType> getMemberTypes() {
             return this.objectTypes;
+        }
+
+        @NotNull
+        public SQLQueryRowsSourceContext getRowsContext() {
+            return this.rowsContext;
+        }
+
+        @NotNull
+        public DbObjectFilterMode getFilterMode() {
+            return this.filterMode;
         }
 
         @Override
@@ -132,26 +132,26 @@ public abstract class SQLQuerySymbolOrigin {
     /**
      * Context is a scope for DB object name
      */
-    public static class DbObjectFromContext extends DataContextSymbolOrigin {
+    public static class DbObjectRef extends RowsSourceRef {
 
         @NotNull
         private final Set<DBSObjectType> objectTypes;
 
         private final boolean includingRowsets;
 
-        public DbObjectFromContext(
-            @NotNull SQLQueryDataContext dataContext,
+        public DbObjectRef(
+            @NotNull SQLQueryRowsSourceContext rowsSourceContext,
             @NotNull DBSObjectType objectType
         ) {
-            this(dataContext, Set.of(objectType), false);
+            this(rowsSourceContext, Set.of(objectType), false);
         }
 
-        public DbObjectFromContext(
-            @NotNull SQLQueryDataContext dataContext,
+        public DbObjectRef(
+            @NotNull SQLQueryRowsSourceContext rowsSourceContext,
             @NotNull Set<DBSObjectType> objectTypes,
             boolean includingRowsets
         ) {
-            super(dataContext);
+            super(rowsSourceContext);
             this.objectTypes = objectTypes;
             this.includingRowsets = includingRowsets;
         }
@@ -160,44 +160,14 @@ public abstract class SQLQuerySymbolOrigin {
         public Set<DBSObjectType> getObjectTypes() {
             return this.objectTypes;
         }
-        
+
         public boolean isIncludingRowsets() {
             return this.includingRowsets;
         }
 
         @Override
         public void apply(Visitor visitor) {
-            visitor.visitDbObjectFromContext(this);
-        }
-    }
-
-    /**
-     * Context is a scope for rowset reference (rowset alias or table name)
-     */
-    public static class RowsetRefFromContext extends DataContextSymbolOrigin {
-
-        public RowsetRefFromContext(SQLQueryDataContext dataContext) {
-            super(dataContext);
-        }
-
-        @Override
-        public void apply(Visitor visitor) {
-            visitor.visitRowsetRefFromContext(this);
-        }
-    }
-
-    /**
-     * Context is a scope for value reference (column name of any kind: simple or fully-qualified, single or tuple)
-     */
-    public static class ValueRefFromContext extends DataContextSymbolOrigin {
-
-        public ValueRefFromContext(SQLQueryDataContext dataContext) {
-            super(dataContext);
-        }
-
-        @Override
-        public void apply(Visitor visitor) {
-            visitor.visitValueRefFromContext(this);
+            visitor.visitDbObjectRef(this);
         }
     }
 
@@ -229,20 +199,6 @@ public abstract class SQLQuerySymbolOrigin {
     }
 
     /**
-     * Context is a scope for strictly simple separate column name
-     */
-    public static class ColumnNameFromContext extends DataContextSymbolOrigin {
-        public ColumnNameFromContext(SQLQueryDataContext dataContext) {
-            super(dataContext);
-        }
-
-        @Override
-        public void apply(Visitor visitor) {
-            visitor.visitColumnNameFromContext(this);
-        }
-    }
-
-    /**
      * Type is a scope for its member name
      */
     public static class MemberOfType extends SQLQuerySymbolOrigin {
@@ -253,6 +209,7 @@ public abstract class SQLQuerySymbolOrigin {
             this.type = type;
         }
 
+        @NotNull
         public final SQLQueryExprType getType() {
             return this.type;
         }
@@ -268,18 +225,83 @@ public abstract class SQLQuerySymbolOrigin {
         }
     }
 
-    public static class ExpandableTupleRef extends DataContextSymbolOrigin {
+    public static class RowsSourceRef extends SQLQuerySymbolOrigin {
+
+        @NotNull
+        private final SQLQueryRowsSourceContext rowsSourceContext;
+
+        public RowsSourceRef(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
+            this.rowsSourceContext = rowsSourceContext;
+        }
+
+        public boolean isChained() {
+            return false;
+        }
+
+        @NotNull
+        public SQLQueryRowsSourceContext getRowsSourceContext() {
+            return this.rowsSourceContext;
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitRowsSourceRef(this);
+        }
+    }
+
+    public static class RowsDataRef extends SQLQuerySymbolOrigin {
+        
+        @NotNull
+        private final SQLQueryRowsDataContext rowsDataContext;
+
+        public RowsDataRef(@NotNull SQLQueryRowsDataContext rowsDataContext) {
+            this.rowsDataContext = rowsDataContext;
+        }
+
+        public boolean isChained() {
+            return false;
+        }
+
+        @NotNull
+        public SQLQueryRowsDataContext getRowsDataContext() {
+            return this.rowsDataContext;
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitRowsDataRef(this);
+        }
+    }
+
+    /**
+     * Context is a scope for strictly simple separate column name
+     */
+    public static class ColumnNameFromRowsData extends RowsDataRef {
+
+        public ColumnNameFromRowsData(@NotNull SQLQueryRowsDataContext dataContext) {
+            super(dataContext);
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitColumnNameFromRowsData(this);
+        }
+    }
+
+    /**
+     * Placeholder is a reference to a columns subset provided by the referencedSource or to all columns of the rows data
+     */
+    public static class ExpandableRowsTupleRef extends RowsDataRef {
 
         @NotNull
         private final STMTreeNode placeholder;
 
         @Nullable
-
         private final SourceResolutionResult referencedSource;
 
-        public ExpandableTupleRef(
+        public ExpandableRowsTupleRef(
             @NotNull STMTreeNode placeholder,
-            @NotNull SQLQueryDataContext dataContext,
+            @NotNull SQLQueryRowsDataContext dataContext,
             @Nullable SourceResolutionResult referencedSource
         ) {
             super(dataContext);
@@ -298,56 +320,28 @@ public abstract class SQLQuerySymbolOrigin {
         }
 
         @Nullable
-        public SourceResolutionResult getRowsSource() {
+        public SourceResolutionResult getReferencedSource() {
             return this.referencedSource;
         }
 
         @Override
         public void apply(Visitor visitor) {
-            visitor.visitExpandableTupleRef(this);
+            visitor.visitExpandableRowsTupleRef(this);
         }
     }
 
-    // TODO: extends SQLQuerySymbolOrigin after removing DataContextSymbolOrigin
-    public static class RowsSourceRef extends DataContextSymbolOrigin {
+    /**
+     * Context is a scope for strictly simple separate column name
+     */
+    public static class SyntaxBasedFromRowsData extends RowsDataRef {
 
-        @NotNull
-        private final SQLQueryRowsSourceContext rowsSourceContext;
-
-        public RowsSourceRef(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
-            super(null);
-            this.rowsSourceContext = rowsSourceContext;
-        }
-        
-        public @NotNull SQLQueryRowsSourceContext getRowsSourceContext() {
-            return this.rowsSourceContext;
+        public SyntaxBasedFromRowsData(@NotNull SQLQueryRowsDataContext dataContext) {
+            super(dataContext);
         }
 
         @Override
         public void apply(Visitor visitor) {
-            visitor.visitRowsSourceRef(this);
-        }
-    }
-
-    // TODO: extends SQLQuerySymbolOrigin after removing DataContextSymbolOrigin
-    public static class RowsDataRef extends DataContextSymbolOrigin {
-        
-        @NotNull
-        private final SQLQueryRowsDataContext rowsDataContext;
-
-        public RowsDataRef(@NotNull SQLQueryRowsDataContext rowsDataContext) {
-            super(null);
-            this.rowsDataContext = rowsDataContext;
-        }
-
-        @NotNull
-        public SQLQueryRowsDataContext getRowsDataContext() {
-            return this.rowsDataContext;
-        }
-
-        @Override
-        public void apply(Visitor visitor) {
-            visitor.visitRowsDataRef(this);
+            visitor.visitSyntaxBasedFromRowsData(this);
         }
     }
 }

@@ -156,9 +156,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             return DriverDescriptor.getProvidedDriversStorageFolder();
         }
         if (DBWorkbench.isDistributed() || isCustom()) {
-            // we do not have any provided drivers in distributed mode
-            // and custom drivers stored in the workspace
-            return DriverDescriptor.getWorkspaceDriversStorageFolder();
+            return DriverDescriptor.getExternalDriversStorageFolder();
         }
 
         return DriverDescriptor.getProvidedDriversStorageFolder();
@@ -183,9 +181,15 @@ public class DriverLibraryLocal extends DriverLibraryAbstract {
             // Use custom drivers path
             file = DriverDescriptor.getCustomDriversHome().resolve(localPath);
         }
-        if (!Files.exists(file) && (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser())) {
-            // driver file can be in workspace folder for multiuser applications
-            return DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(localPath);
+        if (!Files.exists(file)) {
+            if (DBWorkbench.isDistributed()) {
+                // in distributed mode we use external drivers storage folder to store
+                // all driver files (including custom ones)
+                return DriverDescriptor.getExternalDriversStorageFolder().resolve(localPath);
+            } else if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+                // driver file can be in workspace folder for multiuser applications
+                return DriverDescriptor.getWorkspaceDriversStorageFolder().resolve(localPath);
+            }
         }
         return file;
     }

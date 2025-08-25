@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -235,9 +235,14 @@ public class MavenRepository
                 extPath = id;
                 break;
         }
-        Path customDriversHome = DBWorkbench.getPlatform().getApplication().isMultiuser() ?
-            DriverDescriptor.getWorkspaceDriversStorageFolder() :
-            DriverDescriptor.getCustomDriversHome();
+        Path customDriversHome;
+
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser() && !DBWorkbench.getPlatform().getApplication().isDistributed()) {
+            customDriversHome = DriverDescriptor.getWorkspaceDriversStorageFolder();
+        } else {
+            customDriversHome = DriverDescriptor.getExternalDriversStorageFolder();
+        }
+
         Path homeFolder = customDriversHome.resolve("maven/" + extPath);
         //File homeFolder = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "maven/" + extPath);
         if (!Files.exists(homeFolder)) {

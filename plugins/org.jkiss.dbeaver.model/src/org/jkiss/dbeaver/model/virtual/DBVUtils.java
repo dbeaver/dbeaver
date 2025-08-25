@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.eclipse.core.runtime.IAdaptable;
@@ -392,9 +391,12 @@ public abstract class DBVUtils {
 
     @NotNull
     public static DBSEntity tryGetRealEntity(@NotNull DBSEntity entity) {
-        if (entity instanceof DBVEntity) {
+        if (entity instanceof DBVEntity vEntity) {
             try {
-                return ((DBVEntity) entity).getRealEntity(new VoidProgressMonitor());
+                DBSEntity realEntity = vEntity.getRealEntity(new VoidProgressMonitor());
+                if (realEntity != null) {
+                    return realEntity;
+                }
             } catch (DBException e) {
                 log.error("Can't get real entity from virtual entity", e);
             }
@@ -406,8 +408,8 @@ public abstract class DBVUtils {
         if (source == null) {
             return null;
         }
-        if (source instanceof DBVObject) {
-            return (DBVObject) source;
+        if (source instanceof DBVObject vObject) {
+            return vObject;
         }
         DBPDataSource dataSource = source.getDataSource();
         return dataSource == null ? null : dataSource.getContainer().getVirtualModel().findObject(source, create);
@@ -423,49 +425,36 @@ public abstract class DBVUtils {
             return null;
         }
 
-        return evaluateDataExpression(allAttributes, row, expression, attribute.getName());
+        DBVEntity entity = attribute.getEntity();
+        DBSObject dataContainer = null;
+        try {
+            dataContainer = entity.getRealEntity(new VoidProgressMonitor());
+        } catch (DBException e) {
+            log.debug(e);
+        }
+        if (dataContainer == null) {
+            dataContainer = entity;
+        }
+
+        return evaluateDataExpression(dataContainer, allAttributes, row, expression, attribute.getName());
     }
 
-    public static Object evaluateDataExpression(DBDAttributeBinding[] allAttributes, Object[] row, JexlExpression expression, String attributeName) {
-        Map<String, Object> nsList = getExpressionNamespaces();
-
-        JexlContext context = new JexlContext() {
-            @Override
-            public Object get(String s) {
-                Object ns = nsList.get(s);
-                if (ns != null) {
-                    return ns;
-                }
-                if (s.equals(attributeName)) {
-                    return null;
-                }
-                for (DBDAttributeBinding attr : allAttributes) {
-                    if (s.equals(attr.getLabel())) {
-                        return DBUtils.getAttributeValue(attr, allAttributes, row);
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            public void set(String s, Object o) {
-
-            }
-
-            @Override
-            public boolean has(String s) {
-                return get(s) != null;
-            }
-        };
+    public static Object evaluateDataExpression(
+        @NotNull DBSObject dataContainer,
+        @NotNull DBDAttributeBinding[] allAttributes,
+        @NotNull Object[] row,
+        @NotNull JexlExpression expression,
+        @Nullable String attributeName
+    ) {
         try {
-            return expression.evaluate(context);
+            return expression.evaluate(new DBVDataContext(dataContainer, allAttributes, row, attributeName));
         } catch (Exception e) {
             return GeneralUtils.getExpressionParseMessage(e);
         }
     }
 
     @NotNull
-    private static Map<String, Object> getExpressionNamespaces() {
+    static Map<String, Object> getExpressionNamespaces() {
         Map<String, Object> nsList = new HashMap<>();
 
         for (ExpressionNamespaceDescriptor ns : ExpressionRegistry.getInstance().getExpressionNamespaces()) {
@@ -492,31 +481,29 @@ public abstract class DBVUtils {
         if (attributes.isEmpty()) {
             return false;
         }
-        DBSEntity table = attributes.get(0).getParentObject();
+        DBSEntity table = attributes.getFirst().getParentObject();
 
         {
             // Check constraints
             Collection<? extends DBSEntityConstraint> constraints = getAllConstraints(monitor, table);
-            if (constraints != null) {
-                for (DBSEntityConstraint constraint : constraints) {
-                    if (DBUtils.isIdentifierConstraint(monitor, constraint)) {
-                        List<? extends DBSEntityAttributeRef> attrRefs = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
-                        if (attrRefs == null) {
-                            continue;
+            for (DBSEntityConstraint constraint : constraints) {
+                if (DBUtils.isIdentifierConstraint(monitor, constraint)) {
+                    List<? extends DBSEntityAttributeRef> attrRefs = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
+                    if (attrRefs == null) {
+                        continue;
+                    }
+                    if (attributes.size() != attrRefs.size()) {
+                        continue;
+                    }
+                    boolean matches = true;
+                    for (int i = 0; i < attributes.size(); i++) {
+                        if (attributes.get(i) != attrRefs.get(i).getAttribute()) {
+                            matches = false;
+                            break;
                         }
-                        if (attributes.size() != attrRefs.size()) {
-                            continue;
-                        }
-                        boolean matches = true;
-                        for (int i = 0; i < attributes.size(); i++) {
-                            if (attributes.get(i) != attrRefs.get(i).getAttribute()) {
-                                matches = false;
-                                break;
-                            }
-                        }
-                        if (matches) {
-                            return true;
-                        }
+                    }
+                    if (matches) {
+                        return true;
                     }
                 }
             }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,8 +112,10 @@ public class SQLContextInformer
         return !CommonUtils.isEmpty(objectReferences);
     }
 
-    public void searchInformation(IRegion region)
-    {
+    public void searchInformation(@Nullable IRegion region) {
+        this.objectReferences = Collections.emptyList();
+        this.keywords = new String[0];
+
         ITextViewer textViewer = editor.getTextViewer();
         final DBCExecutionContext executionContext = editor.getExecutionContext();
         if (region == null || textViewer == null || executionContext == null) {
@@ -236,7 +238,7 @@ public class SQLContextInformer
                 // Register disconnect listener
                 DBPEventListener dbpEventListener = new DBPEventListener() {
                     @Override
-                    public void handleDataSourceEvent(DBPEvent event) {
+                    public void handleDataSourceEvent(@NotNull DBPEvent event) {
                         if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && Boolean.FALSE.equals(event.getEnabled())) {
                             synchronized (LINKS_CACHE) {
                                 LINKS_CACHE.remove(container.getId());

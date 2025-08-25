@@ -22,7 +22,9 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.window.Window;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -46,10 +48,19 @@ public class DatabaseNotificationSink {
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             try {
-                if (Platform.isRunning() && PlatformUI.getWorkbench() != null
-                    && PlatformUI.getWorkbench().getDisplay() != null
-                    && !PlatformUI.getWorkbench().getDisplay().isDisposed()) {
-                    PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+                if (Platform.isRunning()) {
+                    if (!PlatformUI.isWorkbenchRunning()) {
+                        // Not initialized yet?
+                        schedule(1000);
+                        return Status.OK_STATUS;
+                    }
+
+                    Display display = PlatformUI.getWorkbench().getDisplay();
+                    if (display == null || display.isDisposed()) {
+                        return Status.OK_STATUS;
+                    }
+
+                    display.asyncExec(() -> {
                         collectNotifications();
 
                         if (popup != null && popup.getReturnCode() == Window.CANCEL) {

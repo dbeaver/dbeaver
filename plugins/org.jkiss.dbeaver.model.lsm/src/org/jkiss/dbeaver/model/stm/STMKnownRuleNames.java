@@ -354,6 +354,9 @@ public class STMKnownRuleNames {
     public static final String anyWordWithAnyValue = SQLStandardParser.ruleNames[SQLStandardParser.RULE_anyWordWithAnyValue];
     public static final String anyProperty = SQLStandardParser.ruleNames[SQLStandardParser.RULE_anyProperty];
     public static final String anyWordsWithProperty = SQLStandardParser.ruleNames[SQLStandardParser.RULE_anyWordsWithProperty];
+    public static final String functionCallExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_functionCallExpression];
+    public static final String functionCallTargetName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_functionCallTargetName];
+    public static final String functionCallOperand = SQLStandardParser.ruleNames[SQLStandardParser.RULE_functionCallOperand];
 
     public static final String tableHintKeywords = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableHintKeywords];
 
@@ -365,7 +368,7 @@ public class STMKnownRuleNames {
     public static final String INTO_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.INTO);
     public static final String ASTERISK_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.Asterisk);
     public static final String PERIOD_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.Period);
-    public static final String RIGHT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LeftParen);
-    public static final String LEFT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.RightParen);
+    public static final String LEFT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LeftParen);
+    public static final String RIGHT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.RightParen);
     public static final String LATERAL_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LATERAL);
 }

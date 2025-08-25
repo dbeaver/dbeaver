@@ -18,7 +18,8 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
+
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformerExt;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -50,5 +51,12 @@ public class QueryTransformerLimitCubrid extends QueryTransformerLimit
         }
 
         return true;
+    }
+
+    @Override
+    public String transformQueryString(SQLQuery query) throws DBCException {
+        String sql = super.transformQueryString(query);
+        CubridDataSource dataSource = (CubridDataSource) query.getDataSource();
+        return dataSource.wrapShardQuery(sql);
     }
 }

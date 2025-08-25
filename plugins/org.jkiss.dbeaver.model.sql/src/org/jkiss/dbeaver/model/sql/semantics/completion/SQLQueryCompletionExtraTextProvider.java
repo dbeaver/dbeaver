@@ -19,12 +19,13 @@ package org.jkiss.dbeaver.model.sql.semantics.completion;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySemanticUtils;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionItemVisitor<String> {
 
@@ -36,7 +37,8 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     @NotNull
     @Override
     public String visitSubqueryAlias(@NotNull SQLRowsSourceAliasCompletionItem rowsSourceAlias) {
-        return rowsSourceAlias.sourceInfo.tableOrNull != null ? " - Table alias" : " - Subquery alias";
+        return (rowsSourceAlias.sourceInfo.tableOrNull != null ? " - Table alias" : " - Subquery alias")
+             + (rowsSourceAlias.isRelated ? " (related)" : "");
     }
 
     @Nullable
@@ -50,6 +52,13 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
         return typeName == null ? " - Composite attribute" : (" : " + typeName);
     }
 
+    @Nullable
+    @Override
+    public String visitSpecialCompositeField(@NotNull SQLSpecialCompositeFieldCompletionItem compositeField) {
+        String typeName = this.prepareTypeNameString(compositeField.memberInfo.type());
+        return typeName == null ? " - Pseudo composite attribute" : (" : " + typeName);
+    }
+
     @NotNull
     @Override
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
@@ -60,7 +69,20 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     @NotNull
     @Override
     public String visitTableName(@NotNull SQLTableNameCompletionItem tableName) {
-        return (DBUtils.isView(tableName.object) ? " - View " : " - Table ");
+        String tail;
+        if (tableName.isRelated || tableName.isUsed) {
+            List<String> tags = new ArrayList<>();
+            if (tableName.isRelated) {
+                tags.add("related");
+            }
+            if (tableName.isUsed) {
+                tags.add("used");
+            }
+            tail = "(" +  String.join(", ", tags) + ")";
+        } else {
+            tail = "";
+        }
+        return (DBUtils.isView(tableName.object) ? " - View " : " - Table ") + tail;
     }
 
     @Nullable
@@ -72,18 +94,8 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     @NotNull
     @Override
     public String visitNamedObject(@NotNull SQLDbNamedObjectCompletionItem namedObject) {
-        DBSObject o = namedObject.object;
-        String typeName =  DBUtils.getObjectTypeName(o);
-        if (typeName.equalsIgnoreCase("Object")) {
-            if (o instanceof DBSSchema) {
-                typeName = "Schema";
-            } else if (o instanceof DBSCatalog) {
-                typeName = "Catalog";
-            } else {
-                typeName = "";
-            }
-        }
-        return CommonUtils.isEmpty(typeName) ? null : (" - " + typeName);
+        String typeName = SQLQuerySemanticUtils.getObjectTypeName(namedObject.object);
+        return CommonUtils.isEmpty(typeName) ? "" : (" - " + typeName);
     }
 
     @NotNull

@@ -18,15 +18,11 @@ package org.jkiss.dbeaver.ui.editors.sql.semantics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.completion.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -79,25 +75,5 @@ public class SQLEditorQueryCompletionAnalyzer extends SQLQueryCompletionAnalyzer
             filterString,
             proposalScore
         );
-    }
-
-    @NotNull
-    @Override
-    protected DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
-        return switch (item.getKind()) {
-            case SCHEMA, CATALOG, UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
-            case RESERVED -> UIIcon.SQL_TEXT;
-            case SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
-            case DERIVED_COLUMN_NAME -> DBIcon.TREE_DERIVED_COLUMN;
-            case NEW_TABLE_NAME, USED_TABLE_NAME -> {
-                DBPObject object = item.getObject();
-                yield object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
-            }
-            case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
-            case COMPOSITE_FIELD_NAME -> DBIcon.TREE_DATA_TYPE;
-            case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
-            case PROCEDURE -> item.getObject() == null ? DBIcon.TREE_FUNCTION : DBValueFormatting.getObjectImage(item.getObject());
-            default -> throw new IllegalStateException("Unexpected completion item kind " + item.getKind());
-        };
     }
 }

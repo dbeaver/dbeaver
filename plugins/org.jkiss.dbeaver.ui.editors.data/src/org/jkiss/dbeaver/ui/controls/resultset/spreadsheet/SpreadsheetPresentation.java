@@ -684,7 +684,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             final DBDAttributeBinding attr = getAttributeFromGrid(colElement, gridRow);
                             final ResultSetRow row = getResultRowFromGrid(colElement, gridRow);
                             if (attr == null || row == null ||
-                                controller.getAttributeReadOnlyStatus(attr, true, true) != null
+                                controller.getAttributeReadOnlyStatus(attr, true, false) != null
                             ) {
                                 continue;
                             }
@@ -3041,11 +3041,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
         @NotNull
         private String getAttributeText(DBDAttributeBinding binding) {
-            if (CommonUtils.isEmpty(binding.getLabel())) {
-                return binding.getName();
-            } else {
-                return binding.getLabel();
+            String label = CommonUtils.isEmpty(binding.getLabel()) ? binding.getName() : binding.getLabel();
+            // get show column position configuration
+            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+            if (store.getBoolean(ResultSetPreferences.RESULT_SET_SHOW_COLUMN_POS)) {
+                label = label + " (" + (binding.getOrdinalPosition() + 1) + ")";
             }
+            return label;
         }
 
         @Nullable

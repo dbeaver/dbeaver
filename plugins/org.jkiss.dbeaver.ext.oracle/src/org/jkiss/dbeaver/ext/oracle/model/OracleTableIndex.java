@@ -140,7 +140,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTableBa
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(
             getDataSource(),
             getTable().getContainer(),
@@ -155,7 +155,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTableBa
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (indexDDL == null && isPersisted()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read index definition")) {
                 indexDDL = JDBCUtils.queryString(session, "SELECT DBMS_METADATA.GET_DDL('INDEX', ?, ?) TXT FROM DUAL",

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,14 +41,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
-{
+public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransformProvider {
     private static final Log log = Log.getLog(CubridMetaModel.class);
 
     @Nullable
@@ -65,10 +65,14 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Nullable
     @Override
-    public List<GenericSchema> loadSchemas(@NotNull JDBCSession session, @NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog)
-            throws DBException {
+    public List<GenericSchema> loadSchemas(
+        @NotNull JDBCSession session,
+        @NotNull GenericDataSource dataSource,
+        @Nullable GenericCatalog catalog) throws DBException {
         List<GenericSchema> users = new ArrayList<>();
-        try (JDBCPreparedStatement dbStat = session.prepareStatement("select * from db_user")) {
+        String sql = "select * from db_user";
+        sql = ((CubridDataSource) dataSource).wrapShardQuery(sql);
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             dbStat.executeStatement();
             try (JDBCResultSet dbResult = dbStat.getResultSet()) {
                 while (dbResult.next()) {
@@ -95,12 +99,14 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         String sql = "select a.*,a.class_name as TABLE_NAME, case when class_type = 'CLASS' then 'TABLE'\r\n"
                 + " when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE,\r\n"
                 + " a.comment as REMARKS, b.current_val from db_class a LEFT JOIN\r\n"
-                + " db_serial b on a.class_name = b.class_name\r\n"
+                + " (select class_name, current_val from db_serial where owner.name = ?\r\n"
+                + " group by class_name) b on a.class_name = b.class_name\r\n"
                 + " left join db_partition p on a.class_name = p.partition_class_name\r\n"
                 + " where a.owner_name = ? and p.partition_class_name is null";
-
+        sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, owner.getName());
+        dbStat.setString(2, owner.getName());
         return dbStat;
     }
 
@@ -128,6 +134,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             }
         }
         sql.append("ORDER BY def_order");
+        ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
         if (forTable != null) {
             dbStat.setString(1, forTable.getName());
@@ -155,6 +162,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         String sql = "select *, t1.index_name as PK_NAME from db_index t1 join db_index_key t2 \n"
                 + "on t1.index_name = t2.index_name where is_unique = 'YES' and t1.class_name = ? \n"
                 + (table.getDataSource().getSupportMultiSchema() ? "and t1.owner_name = ?" : "");
+        sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, table.getName());
         if (table.getDataSource().getSupportMultiSchema()) {
@@ -166,11 +174,11 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
     @Nullable
     @Override
     public GenericTableConstraintColumn[] createConstraintColumnsImpl(
-            @NotNull JDBCSession session,
-            @NotNull GenericTableBase parent,
-            @Nullable GenericUniqueKey object,
-            @Nullable GenericMetaObject pkObject,
-            @NotNull JDBCResultSet dbResult)
+        @NotNull JDBCSession session,
+        @NotNull GenericTableBase parent,
+        @NotNull GenericUniqueKey object,
+        @Nullable GenericMetaObject pkObject,
+        @NotNull JDBCResultSet dbResult)
             throws DBException {
         String name = JDBCUtils.safeGetStringTrimmed(dbResult, "key_attr_name");
         Integer keyOrder = JDBCUtils.safeGetInteger(dbResult, "key_order") + 1;
@@ -243,6 +251,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             @NotNull GenericStructContainer container)
             throws SQLException {
         String sql = "select *, owner.name from db_serial where owner.name = ?";
+        sql = ((CubridDataSource) container.getDataSource()).wrapShardQuery(sql);
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, container.getName());
         return dbStat;
@@ -266,6 +275,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             @NotNull GenericStructContainer container)
             throws SQLException {
         String sql = "select * from db_synonym where synonym_owner_name = ?";
+        sql = ((CubridDataSource) container.getDataSource()).wrapShardQuery(sql);
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, container.getName());
         return dbStat;
@@ -306,20 +316,21 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         String sql = "select t1.*, t2.*, t1.owner.name from db_trigger as t1, db_trig as t2 \n"
                 + "where t1.name = t2.trigger_name and t1.owner.name = ? and t2.target_class_name = ? \n"
                 + (supportMultiSchema ? "and t1.owner.name = t2.owner_name" : "");
+        sql = ((CubridDataSource) container.getDataSource()).wrapShardQuery(sql);
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, container.getName());
         dbStat.setString(2, table.getName());
         return dbStat;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public CubridTrigger createTableTriggerImpl(
-            @NotNull JDBCSession session,
-            @NotNull GenericStructContainer container,
-            @Nullable GenericTableBase table,
-            @Nullable String triggerName,
-            @NotNull JDBCResultSet dbResult)
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer container,
+        @NotNull GenericTableBase table,
+        @Nullable String triggerName,
+        @NotNull JDBCResultSet dbResult)
             throws DBException {
         String name = JDBCUtils.safeGetString(dbResult, CubridConstants.NAME);
         String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
@@ -336,6 +347,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         String sql = "select t1.*, t2.*, t1.owner.name from db_trigger as t1, db_trig as t2 \n"
                 + "where t1.name = t2.trigger_name and t1.owner.name = ?\n"
                 + (supportMultiSchema ? "and t1.owner.name = t2.owner_name" : "");
+        sql = ((CubridDataSource) container.getDataSource()).wrapShardQuery(sql);
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, container.getName());
         return dbStat;
@@ -363,6 +375,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
             throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load procedures")) {
             String sql = "select * from db_stored_procedure where owner = ?";
+            sql = ((CubridDataSource) container.getDataSource()).wrapShardQuery(sql);
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 dbStat.setString(1, container.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -371,6 +384,10 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                         String description = JDBCUtils.safeGetString(dbResult, CubridConstants.COMMENT);
                         String type = JDBCUtils.safeGetString(dbResult, "sp_type");
                         String returnType = JDBCUtils.safeGetString(dbResult, "return_type");
+                        String code = null;
+                        if (((CubridDataSource) container.getDataSource()).isSupportDbmsOutputPlCsql()) {
+                            code = JDBCUtils.safeGetString(dbResult, "code");
+                        }
                         DBSProcedureType procedureType;
                         if (type.equalsIgnoreCase(CubridConstants.TERM_PROCEDURE)) {
                             procedureType = DBSProcedureType.PROCEDURE;
@@ -379,7 +396,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                         } else {
                             procedureType = DBSProcedureType.UNKNOWN;
                         }
-                        container.addProcedure(new CubridProcedure(container, procedureName, description, procedureType, returnType));
+                        container.addProcedure(new CubridProcedure(container, procedureName, description, procedureType, code, returnType));
                     }
                 }
             }
@@ -390,24 +407,39 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Nullable
     @Override
-    public String getViewDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericView object, @NotNull Map<String, Object> options) throws DBException {
-        String ddl = "-- View definition not available";
+    public String getViewDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericView object,
+        @NotNull Map<String, Object> options) throws DBException {
+        String fallbackDDL = "-- View definition not available";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl")) {
             String sql = String.format("show create view %s", ((CubridView) object).getUniqueName());
+            sql = ((CubridDataSource) object.getDataSource()).wrapShardQuery(sql);
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        ddl = "create or replace view " + dbResult.getString("View") + " as " + dbResult.getString("Create View");
-                        ddl = SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
+                    List<String> ddlFragments = new ArrayList<>();
+                    String viewName = null;
+                    while (dbResult.next()) {
+                        viewName = JDBCUtils.safeGetStringTrimmed(dbResult, "View");
+                        String ddlFragment = JDBCUtils.safeGetStringTrimmed(dbResult, "Create View");
+                        if (CommonUtils.isNotEmpty(ddlFragment)) {
+                            ddlFragments.add(ddlFragment.trim());
+                        }
                     }
+                    if (CommonUtils.isEmpty(viewName) || CommonUtils.isEmpty(ddlFragments)) {
+                        return fallbackDDL;
+                    }
+                    String ddl = "create or replace view " + viewName + " as " + String.join(" union all ", ddlFragments);
+                    return SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
                 }
             }
         } catch (SQLException e) {
             log.error("Cannot load view ddl", e);
         }
-        return ddl;
+        return fallbackDDL;
     }
 
+    @Nullable
     @Override
     public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
         return new CubridQueryPlanner((CubridDataSource) dataSource);

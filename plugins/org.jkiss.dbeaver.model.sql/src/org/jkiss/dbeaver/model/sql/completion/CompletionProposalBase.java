@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql.completion;
 
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPKeywordType;
+
 public abstract class CompletionProposalBase {
 
     /**
@@ -27,6 +30,39 @@ public abstract class CompletionProposalBase {
      * The string that will be inserted to the replacement offset when completion proposal is applied
      */
     public abstract String getReplacementString();
+
+    /**
+     * The display string for the completion proposal.
+     * This is typically used in the UI to show the proposal to the user.
+     */
+    public abstract String getDisplayString();
+
+    /**
+     * The type of the completion proposal.
+     * This is used to categorize the proposal, such as keyword, object, etc.
+     */
+    public abstract DBPKeywordType getProposalType();
+
+    /**
+     * The length of the replacement string.
+     * This is used to determine how many characters will be replaced in the document.
+     */
+    public abstract int getReplacementLength();
+
+    /**
+     * The score of the completion proposal.
+     * This is used to rank the proposal among other proposals.
+     * Higher scores indicate more relevant proposals.
+     */
+    public abstract int getProposalScore();
+
+    /**
+     * Returns the image associated with the object of this proposal.
+     * This is typically used to display an icon in the UI alongside the proposal.
+     *
+     * @return the image associated with the object of this proposal
+     */
+    public abstract DBPImage getObjectImage();
 
     @Override
     public boolean equals(Object o) {

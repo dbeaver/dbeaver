@@ -32,7 +32,7 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/datafuselabs/databend-jdbc"
                     categories="sql,analytic,columns">
-                    <file type="jar" path="maven:/com.databend:databend-jdbc:RELEASE[0.3.1]" load-optional-dependencies="true" bundle="!drivers.databend" />
+                    <file type="jar" path="maven:/com.databend:databend-jdbc:RELEASE[0.3.9]" load-optional-dependencies="true" bundle="!drivers.databend" />
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <file type="jar" path="drivers/databend" bundle="drivers.databend"/>
                     <!-- Disable server timezone as it confuses during timestamp edit -->
@@ -69,8 +69,7 @@
                 description="SSL settings"
                 secured="false"
                 desktop="true"
-                pinned="true"
-                order="100"
+                order="2"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.databend.DatabendDataSourceProvider"/>
         </handler>

@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
@@ -56,16 +55,11 @@ public class SQLQueryValueTypeCastExpression extends SQLQueryValueExpression {
     }
 
     @Override
-    protected void propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        this.value.propagateContext(context, statistics);
-        this.resolveTypeImpl();
-    }
-
-    @Override
     protected void resolveRowSourcesImpl(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
         this.value.resolveRowSources(context, statistics);
     }
 
+    @NotNull
     @Override
     protected SQLQueryExprType resolveValueTypeImpl(
         @NotNull SQLQueryRowsDataContext context,

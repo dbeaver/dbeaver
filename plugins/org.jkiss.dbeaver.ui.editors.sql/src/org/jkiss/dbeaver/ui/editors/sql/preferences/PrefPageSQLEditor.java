@@ -20,7 +20,9 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
+import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
@@ -33,6 +35,8 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -62,6 +66,8 @@ public class PrefPageSQLEditor extends TargetPrefPage {
     private Button autoOpenOutputView;
     private Button replaceCurrentTab;
     private Spinner sizeWarningThresholdSpinner;
+    // Initialized to empty immutable list to avoid null checks
+    private List<SQLPresentationToggle> presentationToggles = List.of();
 
     public PrefPageSQLEditor() {
         super();
@@ -160,6 +166,27 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         }
 
         {
+            presentationToggles = SQLPresentationRegistry.getInstance().getPresentations().stream()
+                .filter(p -> p.getSettingKey() != null)
+                .map(SQLPresentationToggle::new)
+                .toList();
+
+            if (!presentationToggles.isEmpty()) {
+                Group group = UIUtils.createControlGroup(
+                    composite,
+                    SQLEditorMessages.pref_page_sql_editor_group_presentations,
+                    1,
+                    GridData.VERTICAL_ALIGN_BEGINNING,
+                    0
+                );
+                ((GridData) group.getLayoutData()).horizontalSpan = 2;
+                presentationToggles.forEach(toggle ->
+                    toggle.button = UIUtils.createCheckbox(group, toggle.descriptor.getPrefLabel(), toggle.descriptor.getPrefTip(), true, 1)
+                );
+            }
+        }
+
+        {
             Composite linksGroup = UIUtils.createControlGroup(composite, "", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             UIUtils.createPreferenceLink(
@@ -209,6 +236,12 @@ public class PrefPageSQLEditor extends TargetPrefPage {
             }
             store.setValue(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW, autoOpenOutputView.getSelection());
             store.setValue(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY, sizeWarningThresholdSpinner.getSelection());
+
+            presentationToggles.forEach(toggle -> {
+                    store.setValue(toggle.descriptor.getSettingKey(), toggle.button.getSelection());
+                    updateUI(toggle.descriptor.getSettingKey());
+                }
+            );
         } catch (Exception e) {
             log.warn(e);
         }
@@ -230,6 +263,10 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB);
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
         store.setToDefault(SQLPreferenceConstants.OUTPUT_PANEL_AUTO_SHOW);
+
+        presentationToggles.forEach(toggle ->
+            store.setToDefault(toggle.descriptor.getSettingKey())
+        );
     }
 
     @Override
@@ -313,10 +350,35 @@ public class PrefPageSQLEditor extends TargetPrefPage {
                     ? store.getDefaultInt(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY)
                     : store.getInt(SQLPreferenceConstants.RESULT_SET_MAX_TABS_PER_QUERY)
             );
+
+            presentationToggles.forEach(ref ->
+                ref.button.setSelection(
+                    useDefaults
+                        ? store.getDefaultBoolean(ref.descriptor.getSettingKey())
+                        : store.getBoolean(ref.descriptor.getSettingKey())
+                )
+            );
+
         } catch (Exception e) {
             log.warn(e);
         }
     }
 
+    private void updateUI(String settingKey) {
+        PlatformUI.getWorkbench()
+            .getService(IEvaluationService.class)
+            .requestEvaluation(settingKey);
+
+    }
+
+    private static final class SQLPresentationToggle {
+        final SQLPresentationDescriptor descriptor;
+
+        private Button button;
+
+        public SQLPresentationToggle(@NotNull SQLPresentationDescriptor descriptor) {
+            this.descriptor = descriptor;
+        }
+    }
 
 }

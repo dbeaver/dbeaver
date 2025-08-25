@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.launcher;
 
 import org.eclipse.equinox.launcher.JNIBridge;
 
+import java.awt.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -33,6 +34,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,6 +46,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import javax.swing.*;
 
 
 /**
@@ -128,7 +131,9 @@ public class DBeaverLauncher {
     private String splashLocation = null;
     private String endSplash = null;
     private boolean initialize = false;
+    private boolean newInstance = false;
     protected boolean splashDown = false;
+    protected boolean cliMode = false;
 
     public final class SplashHandler extends Thread {
         @Override
@@ -174,6 +179,7 @@ public class DBeaverLauncher {
     private static final String APPEND_VMARGS = "--launcher.appendVmargs"; //$NON-NLS-1$
     private static final String OVERRIDE_VMARGS = "--launcher.overrideVmargs"; //$NON-NLS-1$
     private static final String NL = "-nl"; //$NON-NLS-1$
+    private static final String NEW_INSTANCE = "-newInstance"; //$NON-NLS-1$
     private static final String ENDSPLASH = "-endsplash"; //$NON-NLS-1$
     private static final String[] SPLASH_IMAGES = {"splash.png", //$NON-NLS-1$
             "splash.jpg", //$NON-NLS-1$
@@ -308,6 +314,13 @@ public class DBeaverLauncher {
     private static final String DBEAVER_CONFIG_FOLDER = "settings";
     private static final String DBEAVER_CONFIG_FILE = "global-settings.ini";
     private static final String DBEAVER_PROP_LANGUAGE = "nl";
+
+    // List of incompatible Windows versions for those which we want to show a warning dialog
+    private static final Set<String> INCOMPATIBLE_WINDOWS_VERSIONS = Set.of(
+        "Windows 7",
+        "Windows 8",
+        "Windows Server 2012"
+    );
 
     /**
      * A structured form for a version identifier.
@@ -584,6 +597,8 @@ public class DBeaverLauncher {
      * @throws Exception thrown if a problem occurs during the launch
      */
     protected void basicRun(String[] args) throws Exception {
+        checkCompatibleWindowsVersion();
+
         System.setProperty("eclipse.startTime", Long.toString(System.currentTimeMillis())); //$NON-NLS-1$
         commands = args;
         String[] passThruArgs = processCommandLine(args);
@@ -596,11 +611,14 @@ public class DBeaverLauncher {
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
         try {
-            if (processCommandLineAsClient(args, dbeaverDataDir)) {
+            if (processCommandLineAsClient(passThruArgs, dbeaverDataDir)) {
                 System.setProperty(PROP_EXITCODE, Integer.toString(0));
                 return;
             }
         } catch (Exception e) {
+            if (log == null) {
+                openLogFile();
+            }
             log.write(e.getMessage());
         }
         Path secretStoragePath = useCustomSecretStorage(dbeaverDataDir);
@@ -643,18 +661,52 @@ public class DBeaverLauncher {
         invokeFramework(passThruArgs, bootPath);
     }
 
+    private void checkCompatibleWindowsVersion() {
+        if (GraphicsEnvironment.isHeadless() || isCompatibleWindowsVersion()) {
+            return;
+        }
+
+        try {
+            SwingUtilities.invokeAndWait(() -> JOptionPane.showMessageDialog(
+                null,
+                """
+                    You are using an incompatible operating system version: minimal supported
+                    version is Windows 10 (1607) or Windows Server 2016.
+                    
+                    You might experience issues and unexpected behavior when running DBeaver.
+                    
+                    Consider using an older version of DBeaver that supports your operating
+                    system, or upgrade your operating system to a newer version.
+                    """,
+                "Incompatible OS",
+                JOptionPane.ERROR_MESSAGE
+            ));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private static boolean isCompatibleWindowsVersion() {
+        String name = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+        for (String other : INCOMPATIBLE_WINDOWS_VERSIONS) {
+            if (name.startsWith(other.toLowerCase(Locale.ROOT))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     private boolean processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
-        if (args == null || args.length == 0) {
-            return false;
+        if (args == null || args.length == 0 || newInstance) {
+            return cliMode;
         }
         Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
         if (Files.notExists(workspacePath)) {
-            return false;
+            return cliMode;
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
         if (serverPort == null) {
-            return false;
+            return cliMode;
         }
         //TODO auto-closable after full 21 java migration
         ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
@@ -667,12 +719,10 @@ public class DBeaverLauncher {
         try {
             HttpResponse.BodyHandler<String> stringBodyHandler =
                 response -> HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8);
-            String json = "{args=[" +
-                Arrays.stream(args)
-                    .filter(Objects::nonNull)
-                    .map(arg -> "\"" + LauncherUtils.escape(arg) + "\"")
-                    .collect(Collectors.joining(","))
-                + "]}";
+            String json = Arrays.stream(args)
+                .filter(Objects::nonNull)
+                .map(arg -> "\"" + LauncherUtils.escape(arg) + "\"")
+                .collect(Collectors.joining(",", "{\"args\":[", "]}"));
             HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + serverPort + "/handleCommandLine"))
                 .header("Content-Type", "application/json")
@@ -682,7 +732,7 @@ public class DBeaverLauncher {
             String responseData = response.body();
             if (!responseData.startsWith("{") || !responseData.endsWith("}")) {
                 System.out.println("Response is not expected json: " + responseData);
-                return false;
+                return cliMode;
             }
             // remove json '{' '}' braces
             //            responseData = responseData.substring(1, responseData.length() - 1);
@@ -708,7 +758,16 @@ public class DBeaverLauncher {
             }
 
             if (output != null && !output.isEmpty()) {
-                output = output.replace("\\n", "\n");
+                // since we don't have gson and don't deserialize the response, remove escaping for cleaner output
+                output = output
+                    .replace("\\\\\\\"", "\"")
+                    .replace("\\\"", "\"")
+                    .replace("\\\\\\\\t", "\t")
+                    .replace("\\\"{", "{")
+                    .replace("}\\\"", "}")
+                    .replace("\\\\\\\\n", "\n")
+                    .replace("\\\\n", "\n")
+                    .replace("\\n", "\n");
                 System.out.println(output);
             }
         } catch (Exception e) {
@@ -718,7 +777,7 @@ public class DBeaverLauncher {
         } finally {
             httpExecutor.shutdown();
         }
-        return shutdownApplication;
+        return shutdownApplication || cliMode;
     }
 
     /**
@@ -1693,6 +1752,17 @@ public class DBeaverLauncher {
                 found = true;
             }
 
+            // look for the new instance arg
+            if (args[i].equalsIgnoreCase(NEW_INSTANCE)) {
+                newInstance = true;
+                found = true;
+            }
+
+            if (args[i].equalsIgnoreCase(Constants.ARG_FORCE_CLI_MODE)) {
+                cliMode = true;
+                found = true;
+            }
+
             // check if this is initialization pass
             if (args[i].equalsIgnoreCase(INITIALIZE)) {
                 initialize = true;
@@ -1966,6 +2036,9 @@ public class DBeaverLauncher {
 
     private Path useCustomSecretStorage(Path localPath) {
         try {
+            if (!Files.exists(localPath)) {
+                Files.createDirectories(localPath);
+            }
             if (Files.exists(localPath)) {
                 Path storagePath =
                     localPath
@@ -2064,7 +2137,12 @@ public class DBeaverLauncher {
     private void processGlobalConfiguration() {
         try {
             final Properties config = readGlobalConfiguration();
-            setSystemPropertyIfNotSet(PROP_NL, config.getProperty(DBEAVER_PROP_LANGUAGE));
+            String nlProperty = config.getProperty(DBEAVER_PROP_LANGUAGE);
+            if (nlProperty == null || nlProperty.isBlank()) {
+                // Make English the default language
+                nlProperty = "en";
+            }
+            setSystemPropertyIfNotSet(PROP_NL, nlProperty);
         } catch (IOException e) {
             log("Unable to read global configuration file: " + e.getMessage());
         }

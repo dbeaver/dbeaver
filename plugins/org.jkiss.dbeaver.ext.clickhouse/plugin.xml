@@ -69,7 +69,6 @@
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd HH:mm:ss[.fffffffff]"/>
                     <property name="use_server_time_zone" value="false"/>
 
-                    <parameter name="omit-catalog" value="true"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="alter-table-add-column" value="true"/>
@@ -98,8 +97,7 @@
                 description="SSL settings"
                 secured="false"
                 desktop="false"
-                pinned="true"
-                order="100"
+                order="2"
                 handlerClass="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseSSLImpl">
             <propertyGroup label="SSL Settings">
                 <property id="ssl.ca.cert.value" label="CA Certificate" type="file" description="Choose CA certificate file" features="secured" length="MULTILINE"/>
@@ -133,6 +131,8 @@
             <type name="UUID"/>
             <type name="IPV4"/>
             <type name="IPV6"/>
+            <type name="TUPLE*"/>
+            <type name="MAP*"/>
         </provider>
     </extension>
 

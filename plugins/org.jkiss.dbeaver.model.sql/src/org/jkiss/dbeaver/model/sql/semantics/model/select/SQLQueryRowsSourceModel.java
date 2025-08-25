@@ -20,7 +20,6 @@ import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
@@ -32,10 +31,6 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
  */
 public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
     @Nullable
-    private SQLQueryDataContext givenDataContext = null;
-    @Nullable
-    private SQLQueryDataContext resultDataContext = null;
-    @Nullable
     private SQLQueryRowsSourceContext rowsSourceContext = null;
     @Nullable
     private SQLQueryRowsDataContext rowsDataContext = null;
@@ -46,27 +41,6 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
 
     public SQLQueryRowsSourceModel(@NotNull Interval region, @NotNull STMTreeNode syntaxNode, @Nullable SQLQueryNodeModel ... subnodes) {
         super(region, syntaxNode, subnodes);
-    }
-
-    /**
-     * Returns given data context before the semantics of this model item was applied
-     */
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return this.givenDataContext;
-    }
-
-    /**
-     * Returns result data context, if it has been resolved. Otherwise, throws IllegalStateException.
-     */
-    @NotNull
-    public SQLQueryDataContext getResultDataContext() {
-        if (this.resultDataContext == null) {
-            throw new IllegalStateException("Data context was not resolved for the rows source yet");
-        } else {
-            return this.resultDataContext;
-        }
     }
 
     /**
@@ -94,32 +68,10 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
         return this.rowsDataContext != null && this.rowsSourceContext != null;
     }
 
-    @Override
-    protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext recognitionContext) {
-        this.propagateContext(dataContext, recognitionContext);
-    }
-
-    /**
-     * Propagate semantics context and establish relations through the query model by applying this model item's semantics
-     */
-    @NotNull
-    public final SQLQueryDataContext propagateContext(
-        @NotNull SQLQueryDataContext context,
-        @NotNull SQLQueryRecognitionContext statistics
-    ) {
-        this.givenDataContext = context;
-        return this.resultDataContext = this.propagateContextImpl(context, statistics);
-    }
-
-    @NotNull
-    protected abstract SQLQueryDataContext propagateContextImpl(
-        @NotNull SQLQueryDataContext context,
-        @NotNull SQLQueryRecognitionContext statistics
-    );
-
     /**
      * Propagate information about available tables down the model and about actually referenced tables back up
      */
+    @Override
     public final void resolveObjectAndRowsReferences(
         @NotNull SQLQueryRowsSourceContext context,
         @NotNull SQLQueryRecognitionContext statistics
@@ -147,6 +99,7 @@ public abstract class SQLQueryRowsSourceModel extends SQLQueryModelContent {
     /**
      * Propagate information about values and row tuples across the query model
      */
+    @Override
     public final void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
         traverseSubtreeSmart(
             this,
