@@ -20,13 +20,13 @@ import org.jkiss.dbeaver.model.sql.completion.CompletionProposalBase;
 
 import java.util.Comparator;
 
-public class SQLCompletionSorter implements Comparator<CompletionProposalBase> {
+public class SQLCompletionProposalComparator implements Comparator<CompletionProposalBase> {
 
     private final boolean sortAlphabetically;
 
     private final boolean isSearchInsideNames;
 
-    public SQLCompletionSorter(boolean sortAlphabetically, boolean isSearchInsideNames) {
+    public SQLCompletionProposalComparator(boolean sortAlphabetically, boolean isSearchInsideNames) {
         this.sortAlphabetically = sortAlphabetically;
         this.isSearchInsideNames = isSearchInsideNames;
     }

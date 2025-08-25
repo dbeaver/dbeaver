@@ -20,7 +20,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposalSorter;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
-import org.jkiss.dbeaver.model.sql.semantics.completion.SQLCompletionSorter;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLCompletionProposalComparator;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 
@@ -31,12 +31,12 @@ public class SQLCompletionSorterUI implements ICompletionProposalSorter {
 
     private final SQLEditorBase editor;
 
-    private SQLCompletionSorter sqlCompletionSorter;
+    private SQLCompletionProposalComparator sqlCompletionProposalComparator;
 
     public SQLCompletionSorterUI(SQLEditorBase editor) {
         this.editor = editor;
         DBPPreferenceStore prefStore = this.editor.getActivePreferenceStore();
-        sqlCompletionSorter = new SQLCompletionSorter(
+        sqlCompletionProposalComparator = new SQLCompletionProposalComparator(
             prefStore.getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY),
             prefStore.getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS));
     }
@@ -47,12 +47,12 @@ public class SQLCompletionSorterUI implements ICompletionProposalSorter {
             || !(p2 instanceof SQLCompletionProposalBase completionProposalBase2)) {
             return 0;
         }
-        return sqlCompletionSorter.compare(completionProposalBase1, completionProposalBase2);
+        return sqlCompletionProposalComparator.compare(completionProposalBase1, completionProposalBase2);
     }
 
     public void refreshSettings() {
         DBPPreferenceStore prefStore = this.editor.getActivePreferenceStore();
-        sqlCompletionSorter = new SQLCompletionSorter(
+        sqlCompletionProposalComparator = new SQLCompletionProposalComparator(
             prefStore.getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY),
             prefStore.getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS));
     }
