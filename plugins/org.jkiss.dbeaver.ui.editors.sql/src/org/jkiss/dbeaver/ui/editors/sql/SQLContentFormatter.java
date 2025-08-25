@@ -16,14 +16,18 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.formatter.*;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 
-class SQLContentFormatter extends ContentFormatter implements IContentFormatterExtension  {
-    private SQLEditorBase editor;
+class SQLContentFormatter extends ContentFormatter implements IContentFormatterExtension {
+    private static final Log log = Log.getLog(SQLContentFormatter.class);
+
+    private final SQLEditorBase editor;
 
     SQLContentFormatter(SQLEditorBase editor) {
         this.editor = editor;
@@ -31,24 +35,31 @@ class SQLContentFormatter extends ContentFormatter implements IContentFormatterE
 
     @Override
     public void format(IDocument document, IFormattingContext context) {
-        if (!editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY)) {
-            IRegion region= (IRegion)context.getProperty(FormattingContextProperties.CONTEXT_REGION);
-            if (region == null) {
-                region = new Region(0, editor.getDocument().getLength());
-            }
-            if (region != null) {
-                super.format(document, region);
-                return;
-            }
+        IFormattingStrategy strategy = getFormattingStrategy(IDocument.DEFAULT_CONTENT_TYPE);
+        if (strategy == null) {
+            return;
         }
-        IFormattingStrategy strategy= getFormattingStrategy(IDocument.DEFAULT_CONTENT_TYPE);
-        if (strategy != null) {
+
+        IRegion region;
+        if (editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY)) {
             SQLScriptElement activeQuery = editor.extractActiveQuery();
             if (activeQuery == null) {
                 return;
             }
-            super.format(document, new Region(activeQuery.getOffset(), activeQuery.getLength()));
+            region = new Region(activeQuery.getOffset(), activeQuery.getLength());
+        } else {
+            region = (IRegion) context.getProperty(FormattingContextProperties.CONTEXT_REGION);
+            if (region == null) {
+                region = new Region(0, document.getLength());
+            }
         }
 
+        try {
+            String source = document.get(region.getOffset(), region.getLength());
+            String formatted = strategy.format(source, false, null, null);
+            document.replace(region.getOffset(), region.getLength(), formatted);
+        } catch (BadLocationException e) {
+            log.error("Error formatting the document", e);
+        }
     }
 }

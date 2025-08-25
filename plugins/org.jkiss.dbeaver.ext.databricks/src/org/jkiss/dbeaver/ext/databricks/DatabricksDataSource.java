@@ -71,10 +71,7 @@ public class DatabricksDataSource extends GenericDataSource {
         String purpose,
         DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
-        String userAgent = URLEncoder.encode(
-            GeneralUtils.getProductName() + "/" + GeneralUtils.getProductVersion(),
-            StandardCharsets.UTF_8
-        );
+        String userAgent = GeneralUtils.getProductName().replace(" ", "+") + "/" + GeneralUtils.getProductVersion();
         connectionInfo.setProperty(DatabricksConstants.USER_AGENT_ENTRY, userAgent);
         return super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
     }

@@ -61,9 +61,9 @@ public class OpenAIClient implements Closeable {
         return client.getHttpClient();
     }
 
-    public static OpenAIClient createClient(String token) {
+    public static OpenAIClient createClient(String baseUrl, String token) {
         return new OpenAIClient(
-            OPENAI_ENDPOINT,
+            baseUrl,
             List.of(new OpenAIRequestFilter(token))
         );
     }
