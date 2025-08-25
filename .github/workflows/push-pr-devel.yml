@@ -77,6 +77,9 @@ jobs:
       - name: Verify
         working-directory: ./dbeaver/product/aggregate
         run: |
+          echo "working directory is $(pwd). Contents: "
+          ls -lah
+
           if [ ${{ steps.p2-check.outputs.custom_p2_build_needed }} = 'true' ]; then
             p2_repo='./dbeaver-deps-ce/p2/repository/target/repository'
             p2_uri="file://$(realpath "$p2_repo")"
