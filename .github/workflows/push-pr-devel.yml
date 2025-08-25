@@ -74,8 +74,7 @@ jobs:
         with:
           repo-root-dir: ./dbeaver-deps-ce
 
-      - name: Verify
-        working-directory: ./dbeaver/product/aggregate
+      - name: Build DBeaver
         run: |
           echo "working directory is $(pwd). Contents: "
           ls -lah
@@ -84,9 +83,9 @@ jobs:
             p2_repo='./dbeaver-deps-ce/p2/repository/target/repository'
             p2_uri="file://$(realpath "$p2_repo")"
             echo "p2_uri=$p2_uri"
-            mvn clean verify -B -T1C ${{ inputs.mvn-args }} -Drepo.p2.dbeaver-ce.url="'$p2_uri'"
+            mvn clean verify -B -T1C ${{ inputs.mvn-args }} -Drepo.p2.dbeaver-ce.url="'$p2_uri'" -f './dbeaver/product/aggregate'
           else
-            mvn clean verify -B -T1C ${{ inputs.mvn-args }}
+            mvn clean verify -B -T1C ${{ inputs.mvn-args }} -f './dbeaver/product/aggregate'
           fi
 
   lint-java:
