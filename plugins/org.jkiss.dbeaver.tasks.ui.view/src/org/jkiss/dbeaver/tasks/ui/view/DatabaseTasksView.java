@@ -413,8 +413,9 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
     private void updateViewTitle() {
         IViewDescriptor viewDescriptor = PlatformUI.getWorkbench().getViewRegistry().find(VIEW_ID);
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        setPartName(Objects.requireNonNull(viewDescriptor == null ? null : viewDescriptor.getLabel(), "") +
-            " - " + Objects.requireNonNull(activeProject == null ? null : activeProject.getName(), ""));
+        String projectName = Objects.requireNonNull(activeProject == null ? null : activeProject.getName(), "");
+        setPartName(Objects.requireNonNull(viewDescriptor == null ? null : viewDescriptor.getLabel(), "") + " - " + projectName);
+        setTitleToolTip(NLS.bind(TaskUIViewMessages.db_tasks_view_adapter_label_database_tasks_tooltip, projectName));
     }
 
     private void loadTasks() {

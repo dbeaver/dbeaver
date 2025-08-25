@@ -129,6 +129,7 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     @Nullable
+    @Override
     public DBPDataSource getDataSource() {
         return dataSource;
     }
