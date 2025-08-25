@@ -50,8 +50,8 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * PrefPageDataFormat
@@ -222,6 +222,9 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     private void changeProfile() {
+        if (profilesCombo == null || profilesCombo.isDisposed()) {
+            return;
+        }
         int selectionIndex = profilesCombo.getSelectionIndex();
         if (selectionIndex < 0) {
             return;
@@ -408,12 +411,29 @@ public class PrefPageDataFormat extends TargetPrefPage
         formatterProfile = null;
         refreshProfileList();
         setCurrentProfile(getDefaultProfile());
+
+        changeProfile();
+
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         datetimeNativeFormatCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT));
         numericNativeFormatCheck.setSelection(store.getDefaultBoolean(ModelPreferences.RESULT_NATIVE_NUMERIC_FORMAT));
         boolean isNumericSc = store.getDefaultBoolean(ModelPreferences.RESULT_SCIENTIFIC_NUMERIC_FORMAT);
         numericScientificFormatCheck.setSelection(isNumericSc);
         numericScientificFormatCheck.setEnabled(isNumericSc);
+
+        profileLocale = Locale.getDefault();
+        localeSelector.setLocale(profileLocale);
+
+        profileProperties.clear();
+
+        for (DataFormatterDescriptor descriptor : formatterDescriptors) {
+            Map<String, Object> defaultProps = descriptor.getSample().getDefaultProperties(profileLocale);
+            if (defaultProps != null && !defaultProps.isEmpty()) {
+                profileProperties.put(descriptor.getId(), new HashMap<>(defaultProps));
+            }
+        }
+
+        reloadFormatter();
         reloadSample();
         super.performDefaults();
     }

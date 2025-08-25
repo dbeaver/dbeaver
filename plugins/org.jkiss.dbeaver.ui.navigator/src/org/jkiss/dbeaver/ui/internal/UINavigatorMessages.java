@@ -50,6 +50,7 @@ public class UINavigatorMessages extends NLS {
     public static String dialog_filter_save_label;
     public static String dialog_filter_name_label;
     public static String dialog_filter_hint_text;
+    public static String dialog_filter_objects_scope_hint_text;
 
     public static String actions_navigator__objects;
     public static String actions_navigator_hide_objects;

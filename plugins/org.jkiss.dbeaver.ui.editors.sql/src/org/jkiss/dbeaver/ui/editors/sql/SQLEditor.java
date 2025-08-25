@@ -1146,7 +1146,7 @@ public class SQLEditor extends SQLEditorBase implements
         UIExecutionQueue.queueExec(this::onDataSourceChange);
 
         Consumer<String> fontUpdater = s -> {
-            final Font font = BaseThemeSettings.instance.baseFont;
+            final Font font = BaseThemeSettings.instance.partTitleFont;
             if (resultTabs != null) {
                 resultTabs.setFont(font);
             }
@@ -1157,7 +1157,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         };
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.Eclipse.PART_TITLE_FONT,
             fontUpdater,
             parent
         );
@@ -1418,7 +1418,7 @@ public class SQLEditor extends SQLEditorBase implements
             });
         }
         resultTabs.setSimple(true);
-        resultTabs.setFont(JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
+        resultTabs.setFont(JFaceResources.getFont(UIFonts.Eclipse.PART_TITLE_FONT));
 
         resultTabs.addMouseListener(new MouseAdapter() {
             @Override

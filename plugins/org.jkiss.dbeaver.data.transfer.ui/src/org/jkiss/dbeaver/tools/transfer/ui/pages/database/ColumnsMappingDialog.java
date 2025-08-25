@@ -152,7 +152,7 @@ class ColumnsMappingDialog extends DialogPage {
                 } else {
                     cell.setBackground(null);
                 }
-                cell.setFont(BaseThemeSettings.instance.baseFontBold);
+                cell.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
             }
         }, new EditingSupport(mappingViewer) {
             @Override
@@ -229,7 +229,7 @@ class ColumnsMappingDialog extends DialogPage {
                 DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) cell.getElement();
                 DBPDataSource dataSource = settings.getTargetDataSource(attrMapping);
                 cell.setText(attrMapping.getTargetType(dataSource, true));
-                cell.setFont(BaseThemeSettings.instance.baseFontBold);
+                cell.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
             }
         }, new EditingSupport(mappingViewer) {
             @Override

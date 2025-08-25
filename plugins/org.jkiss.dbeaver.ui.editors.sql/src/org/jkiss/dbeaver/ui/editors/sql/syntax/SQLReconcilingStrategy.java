@@ -37,6 +37,7 @@ import org.eclipse.ui.texteditor.spelling.SpellingService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -413,6 +414,12 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         @Override
         public void reset() {
             //do nothing
+        }
+
+        @Nullable
+        @Override
+        public DBPDataSource getDataSource() {
+            return null;
         }
     }
 
