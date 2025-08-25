@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIAssistant;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
@@ -34,7 +35,7 @@ public class AIAssistantDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public AIAssistant createInstance() throws DBException {
-        return objectType.createInstance(AIAssistant.class);
+    public AIAssistant createInstance(DBPWorkspace workspace) throws DBException {
+        return objectType.createInstance(AIAssistant.class, workspace);
     }
 }

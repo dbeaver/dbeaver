@@ -23,7 +23,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
+import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
@@ -48,6 +53,18 @@ import java.util.stream.Collectors;
 public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
 
+    @Nullable
+    public static AIEngineDescriptor getActiveEngineDescriptor() {
+        return AIEngineRegistry.getInstance().getEngineDescriptor(
+            AISettingsManager.getInstance().getSettings().activeEngine()
+        );
+    }
+
+    public static boolean hasValidConfiguration() throws DBException {
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        AIEngineProperties configuration = aiSettings.getEngineConfiguration(aiSettings.activeEngine());
+        return configuration.isValidConfiguration();
+    }
     /**
      * Retrieves a secret value from the global secret controller.
      * If the secret value is empty, it returns the provided default value.

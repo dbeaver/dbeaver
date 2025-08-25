@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.ai.AITranslateRequest;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
@@ -74,8 +75,7 @@ public class AILegacyTranslator {
         }
 
         try {
-            AIAssistant aiAssistant = AIAssistantRegistry.getInstance().createAssistant(dataSourceContainer.getProject().getWorkspace());
-            if (!aiAssistant.hasValidConfiguration()) {
+            if (!AIUtils.hasValidConfiguration()) {
                 UIUtils.showPreferencesFor(
                     editor.getSite().getShell(),
                     AISettingsManager.getInstance().getSettings(),

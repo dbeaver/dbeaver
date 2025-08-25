@@ -22,7 +22,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.registry.*;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISchemaGeneratorRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.ai.registry.AISqlFormatterRegistry;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,15 +43,12 @@ public class AIAssistantImpl implements AIAssistant {
     private static final int MANY_REQUESTS_TIMEOUT = 500;
     public static final String LOG_INDENT = "\t";
 
-    protected final AISettingsManager settingsRegistry;
-    protected final AIEngineRegistry engineRegistry;
     protected final AISqlFormatterRegistry formatterRegistry;
     protected final AIEngineRequestFactory requestFactory;
 
-    public AIAssistantImpl() {
+    public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this(
-            AISettingsManager.getInstance(),
-            AIEngineRegistry.getInstance(),
+            workspace,
             AISqlFormatterRegistry.getInstance(),
             new AIEngineRequestFactory(
                 new AIDatabaseSnapshotService(AISchemaGeneratorRegistry.getInstance()),
@@ -58,20 +58,12 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     public AIAssistantImpl(
-        AISettingsManager settingsRegistry,
-        AIEngineRegistry engineRegistry,
-        AISqlFormatterRegistry formatterRegistry,
-        AIEngineRequestFactory requestFactory
+        @NotNull DBPWorkspace workspace,
+        @NotNull AISqlFormatterRegistry formatterRegistry,
+        @NotNull AIEngineRequestFactory requestFactory
     ) {
-        this.settingsRegistry = settingsRegistry;
-        this.engineRegistry = engineRegistry;
         this.formatterRegistry = formatterRegistry;
         this.requestFactory = requestFactory;
-    }
-
-    @Override
-    public void initialize(@NotNull DBPWorkspace workspace) {
-        // no-op
     }
 
     /**
@@ -196,23 +188,6 @@ public class AIAssistantImpl implements AIAssistant {
         return new AICommandResult(finalSQL, messages.toString());
     }
 
-    /**
-     * Check if the AI assistant has valid configuration.
-     *
-     * @return true if the AI assistant has valid configuration, false otherwise
-     * @throws DBException if an error occurs
-     */
-    @Override
-    public boolean hasValidConfiguration() throws DBException {
-        AIEngineProperties activeEngineConfiguration = getActiveEngineConfiguration();
-        if (activeEngineConfiguration == null) {
-            log.warn("No active AI engine configuration found");
-            return false;
-        }
-
-        return activeEngineConfiguration.isValidConfiguration();
-    }
-
     protected MessageChunk[] processAndSplitCompletion(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIDatabaseContext context,
@@ -248,15 +223,9 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     @NotNull
-    @Override
     public AIEngine createEngine() throws DBException {
-        return engineRegistry.createEngine(settingsRegistry.getSettings().activeEngine());
-    }
-
-    @Nullable
-    @Override
-    public AIEngineDescriptor getActiveEngineDescriptor() {
-        return engineRegistry.getEngineDescriptor(settingsRegistry.getSettings().activeEngine());
+        return AIEngineRegistry.getInstance().createEngine(
+            AISettingsManager.getInstance().getSettings().activeEngine());
     }
 
     protected AIEngineResponse requestCompletion(
@@ -337,11 +306,12 @@ public class AIAssistantImpl implements AIAssistant {
 
     @Nullable
     private AIEngineProperties getActiveEngineConfiguration() throws DBException {
-        String activeEngine = settingsRegistry.getSettings().activeEngine();
+        AISettingsManager settingsManager = AISettingsManager.getInstance();
+        String activeEngine = settingsManager.getSettings().activeEngine();
         if (activeEngine == null || activeEngine.isEmpty()) {
             log.warn("No active AI engine configured");
             return null;
         }
-        return settingsRegistry.getSettings().getEngineConfiguration(activeEngine);
+        return settingsManager.getSettings().getEngineConfiguration(activeEngine);
     }
 }

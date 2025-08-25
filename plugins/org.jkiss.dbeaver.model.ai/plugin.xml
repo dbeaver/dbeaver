@@ -29,7 +29,7 @@
     </extension>
 
     <extension point="com.dbeaver.ai.sql.formatter">
-        <formatter id="core" class="org.jkiss.dbeaver.model.ai.impl.AISqlFormatterImpl"/>
+        <formatter id="core" class="org.jkiss.dbeaver.model.ai.impl.SimpleSqlFormatterImpl"/>
     </extension>
 
     <extension point="com.dbeaver.ai.schema.generator">

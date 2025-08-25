@@ -55,14 +55,13 @@ public class AIAssistantRegistry {
         AIAssistant assistant;
         if (customDescriptor != null) {
             try {
-                assistant = customDescriptor.createInstance();
+                assistant = customDescriptor.createInstance(workspace);
             } catch (DBException e) {
                 throw new IllegalStateException(e);
             }
         } else {
-            assistant = new AIAssistantImpl();
+            assistant = new AIAssistantImpl(workspace);
         }
-        assistant.initialize(workspace);
         return (T) assistant;
     }
 

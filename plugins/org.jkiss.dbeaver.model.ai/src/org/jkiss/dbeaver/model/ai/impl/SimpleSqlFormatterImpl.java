@@ -22,7 +22,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
-public class AISqlFormatterImpl implements AISqlFormatter {
+public class SimpleSqlFormatterImpl implements AISqlFormatter {
+
     @Override
     public String formatGeneratedQuery(
         @NotNull DBRProgressMonitor monitor,
