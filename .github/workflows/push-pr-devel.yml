@@ -72,17 +72,14 @@ jobs:
         uses: dbeaver/github-actions/build-p2@dbeaver/dbeaver-devops#2023-custom-p2
         id: build-p2
         with:
-          repo-root-dir: ${{ env.CHECKOUT_PATH || '.' }}/dbeaver-deps-ce
+          repo-root-dir: ./dbeaver-deps-ce
 
       - name: Verify
         working-directory: ./dbeaver/product/aggregate
         run: |
           if [ ${{ steps.p2-check.outputs.custom_p2_build_needed }} = 'true' ]; then
-            p2_repo=${{ inputs.repo-root-dir || env.CHECKOUT_PATH || '.' }}/p2/repository/target/repository
-            echo "p2_repo=$p2_repo"
-            p2_abs_path=$(realpath "$p2_repo")
-            echo "p2_abs_path=$p2_abs_path"
-            p2_uri="file://$p2_abs_path"
+            p2_repo='./dbeaver-deps-ce/p2/repository/target/repository'
+            p2_uri="file://$(realpath "$p2_repo")"
             echo "p2_uri=$p2_uri"
             mvn clean verify -B -T1C ${{ inputs.mvn-args }} -Drepo.p2.dbeaver-ce.url="'$p2_uri'"
           else
