@@ -20,7 +20,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import com.google.gson.ToNumberPolicy;
-import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -40,7 +39,6 @@ public class LegacyAISettings<P extends AIEngineProperties> implements AIEngineS
     private final P properties;
 
     @Nullable
-    @SerializedName(FALLBACK_ENGINE_ID)
     private String fallbackEngineId;
 
     public LegacyAISettings(@NotNull P properties) {

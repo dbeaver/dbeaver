@@ -190,7 +190,7 @@ public abstract class AbstractDescriptor {
             this(cfg, ATTR_NAME);
         }
 
-        public ObjectType(IConfigurationElement cfg, String typeAttr) {
+        public ObjectType(@NotNull IConfigurationElement cfg, @NotNull String typeAttr) {
             this.implName = cfg.getAttribute(typeAttr);
             String condition = cfg.getAttribute(ATTR_IF);
             if (!CommonUtils.isEmpty(condition)) {
@@ -206,14 +206,17 @@ public abstract class AbstractDescriptor {
             }
         }
 
+        @NotNull
         public String getImplName() {
             return implName;
         }
 
+        @Nullable
         public Class<?> getObjectClass() {
             return getObjectClass(Object.class);
         }
 
+        @Nullable
         public <T> Class<? extends T> getObjectClass(Class<T> type) {
             if (implName == null) {
                 return null;
@@ -224,7 +227,7 @@ public abstract class AbstractDescriptor {
             return (Class<? extends T>) implClass;
         }
 
-        public <T> void checkObjectClass(Class<T> type)
+        public <T> void checkObjectClass(@NotNull Class<T> type)
             throws DBException {
             Class<? extends T> objectClass = getObjectClass(type);
             if (objectClass == null) {
@@ -235,7 +238,7 @@ public abstract class AbstractDescriptor {
             }
         }
 
-        public boolean appliesTo(Object object, Object context) {
+        public boolean appliesTo(@NotNull Object object, @Nullable Object context) {
             if (!matchesType(object.getClass())) {
                 return false;
             }
@@ -251,7 +254,7 @@ public abstract class AbstractDescriptor {
             return true;
         }
 
-        public <T> T createInstance(Class<T> type, Object... args) throws DBException {
+        public <T> T createInstance(@NotNull Class<T> type, @Nullable Object... args) throws DBException {
             if (implName == null) {
                 throw new DBException("No implementation class name set for '" + type.getName() + "'");
             }
@@ -271,8 +274,7 @@ public abstract class AbstractDescriptor {
             }
         }
 
-        public <T> T createInstance(Class<T> type)
-            throws DBException {
+        public <T> T createInstance(@NotNull Class<T> type) throws DBException {
             if (implName == null) {
                 throw new DBException("No implementation class name set for '" + type.getName() + "'");
             }
@@ -288,7 +290,7 @@ public abstract class AbstractDescriptor {
             }
         }
 
-        public boolean matchesType(Class<?> clazz) {
+        public boolean matchesType(@NotNull Class<?> clazz) {
             // Check class only if bundle was loaded or forceCheck is set. Otherwise we'll load ALL bundles which have some
             // data type mappings (no matter which type they refer)
 

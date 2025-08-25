@@ -9,7 +9,7 @@
     <extension-point id="com.dbeaver.ai.engine.settingsSerDe" name="AI engine settings serde" schema="schema/com.dbeaver.ai.engine.settingsSerDe.exsd"/>
 
     <extension point="com.dbeaver.ai.engine">
-        <completionEngine id="openai" label="OpenAI" class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngineFactory" default="true">
+        <completionEngine id="openai" label="OpenAI" class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine" properties="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties" default="true">
             <propertyGroup label="Engine settings">
                 <property id="gpt.token" label="API token" type="string" hint="Copy-paste API token from https://platform.openai.com/account/api-keys" features="password"/>
                 <property id="gpt.model" label="Model" type="string" validValues="gpt-3.5-turbo,gpt-3.5-turbo-instruct,gpt-4,gpt-4o,gpt-4-turbo,gpt-4o-mini" defaultValue="gpt-4o"/>

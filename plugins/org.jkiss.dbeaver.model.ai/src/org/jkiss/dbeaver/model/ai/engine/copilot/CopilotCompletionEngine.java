@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Flow;
 
-public class CopilotCompletionEngine extends BaseCompletionEngine {
+public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotProperties> {
     private static final Log log = Log.getLog(CopilotCompletionEngine.class);
 
     private final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
@@ -48,13 +48,20 @@ public class CopilotCompletionEngine extends BaseCompletionEngine {
             disposedValue.close();
         }
     };
+    private CopilotSessionToken sessionToken;
 
-    private final CopilotProperties properties;
+    public CopilotCompletionEngine() throws DBException {
+        super();
+    }
 
-    private volatile CopilotSessionToken sessionToken;
+    public CopilotCompletionEngine(CopilotProperties properties) throws DBException {
+        super(properties);
+    }
 
-    public CopilotCompletionEngine(CopilotProperties properties) {
-        this.properties = properties;
+    @NotNull
+    @Override
+    protected String getEngineId() {
+        return CopilotConstants.COPILOT_ENGINE;
     }
 
     @NotNull

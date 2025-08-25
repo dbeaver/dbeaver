@@ -18,9 +18,10 @@ package org.jkiss.dbeaver.model.ai.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineFactory;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -37,17 +38,19 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     private final IConfigurationElement contributorConfig;
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
     private final ObjectType objectType;
-    private final LazyValue<AIEngineFactory<?>, DBException> factoryInstance;
+    private final ObjectType propertiesType;
+    private final LazyValue<AIEngine, DBException> factoryInstance;
 
-    protected AIEngineDescriptor(IConfigurationElement contributorConfig) {
+    protected AIEngineDescriptor(@NotNull IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.contributorConfig = contributorConfig;
         this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
+        this.propertiesType = new ObjectType(contributorConfig, "properties");
         this.factoryInstance = new LazyValue<>() {
             @NotNull
             @Override
-            protected AIEngineFactory<?> initialize() throws DBException {
-                return objectType.createInstance(AIEngineFactory.class, AISettingsRegistry.getInstance());
+            protected AIEngine initialize() throws DBException {
+                return objectType.createInstance(AIEngine.class);
             }
         };
 
@@ -56,14 +59,17 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         }
     }
 
+    @NotNull
     public String getId() {
         return contributorConfig.getAttribute("id");
     }
 
+    @NotNull
     public String getLabel() {
         return contributorConfig.getAttribute("label");
     }
 
+    @Nullable
     public String getReplaces() {
         return contributorConfig.getAttribute("replaces");
     }
@@ -72,11 +78,28 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         return CommonUtils.toBoolean(contributorConfig.getAttribute("default"));
     }
 
+    @NotNull
     public List<DBPPropertyDescriptor> getProperties() {
         return properties;
     }
 
+    @NotNull
+    public Class<? extends AIEngineProperties> getPropertiesType() {
+        Class<? extends AIEngineProperties> propsClass = propertiesType.getObjectClass(AIEngineProperties.class);
+        if (propsClass == null) {
+            throw new IllegalStateException("AI properties class not specified (" + getId() + ")");
+        }
+        return propsClass;
+    }
+
+
+    @NotNull
+    public <T extends AIEngineProperties> T createPropertiesInstance() throws DBException {
+        return (T)propertiesType.createInstance(AIEngineProperties.class);
+    }
+
+    @NotNull
     public AIEngine createInstance() throws DBException {
-        return factoryInstance.getInstance().getEngine();
+        return factoryInstance.getInstance();
     }
 }

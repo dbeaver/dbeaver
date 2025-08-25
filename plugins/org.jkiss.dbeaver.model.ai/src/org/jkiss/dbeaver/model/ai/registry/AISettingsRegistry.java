@@ -18,14 +18,11 @@ package org.jkiss.dbeaver.model.ai.registry;
 
 import com.google.gson.*;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineSettings;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineSettingsSerDe;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
@@ -37,8 +34,6 @@ import org.jkiss.utils.CommonUtils;
 import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class AISettingsRegistry {
     private static final Log log = Log.getLog(AISettingsRegistry.class);
@@ -194,42 +189,22 @@ public class AISettingsRegistry {
 
     @NotNull
     private static AISettings loadSettingsFromConfig() {
-        AISettings settings;
+        AISettings settings = null;
         try {
             String content = loadConfig();
-            if (CommonUtils.isEmpty(content)) {
-                settings = prepareDefaultSettings();
-            } else {
+            if (!CommonUtils.isEmpty(content)) {
                 settings = readPropsGson.fromJson(new StringReader(content), AISettings.class);
             }
         } catch (Exception e) {
             log.error("Error loading AI settings, falling back to defaults.", e);
-            settings = prepareDefaultSettings();
+        }
+        if (settings == null) {
+            settings = new AISettings();
         }
 
         if (settings.activeEngine() == null || !settings.hasConfiguration(settings.activeEngine())) {
             settings.setActiveEngine(OpenAIConstants.OPENAI_ENGINE);
         }
-
-        return settings;
-    }
-
-    private static AISettings prepareDefaultSettings() {
-        AISettings settings = new AISettings();
-        if (DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_DISABLED) != null) {
-            settings.setAiDisabled(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_DISABLED));
-        } else {
-            // Enable AI by default
-            settings.setAiDisabled(false);
-        }
-
-        Map<String, AIEngineSettings<?>> stringMap = AIEngineSettingsRegistry.getInstance().getSerDes().stream()
-            .collect(Collectors.toMap(
-                AIEngineSettingsSerDe::getId,
-                serDe -> serDe.deserialize(null, readPropsGson)
-            ));
-
-        settings.setEngineConfigurations(stringMap);
 
         return settings;
     }
@@ -267,7 +242,6 @@ public class AISettingsRegistry {
 
     private static class AIConfigurationSerDe
         implements JsonSerializer<AISettings>, JsonDeserializer<AISettings> {
-        private final List<AIEngineSettingsSerDe<?>> engineSerDe = AIEngineSettingsRegistry.getInstance().getSerDes();
 
         @Override
         public AISettings deserialize(
@@ -275,65 +249,61 @@ public class AISettingsRegistry {
             Type typeOfT,
             JsonDeserializationContext context
         ) throws JsonParseException {
-            if (json == null || !json.isJsonObject()) {
-                return prepareDefaultSettings();
-            }
-
-            JsonObject root = json.getAsJsonObject();
             AISettings aiSettings = new AISettings();
+            Map<String, AIEngineProperties> engineConfigurationMap = new LinkedHashMap<>();
 
-            JsonElement aiDisabledEl = root.get(AI_DISABLED_KEY);
-            aiSettings.setAiDisabled(
-                aiDisabledEl != null
-                    && aiDisabledEl.isJsonPrimitive()
-                    && aiDisabledEl.getAsJsonPrimitive().isBoolean()
-                    && aiDisabledEl.getAsBoolean()
-            );
+            if (json != null && json.isJsonObject()) {
+                JsonObject root = json.getAsJsonObject();
 
-            JsonElement activeEngineEl = root.get(ACTIVE_ENGINE_KEY);
-            aiSettings.setActiveEngine(
-                activeEngineEl != null && !activeEngineEl.isJsonNull()
-                    ? activeEngineEl.getAsString()
-                    : null
-            );
+                JsonElement aiDisabledEl = root.get(AI_DISABLED_KEY);
+                aiSettings.setAiDisabled(
+                    aiDisabledEl != null
+                        && aiDisabledEl.isJsonPrimitive()
+                        && aiDisabledEl.getAsJsonPrimitive().isBoolean()
+                        && aiDisabledEl.getAsBoolean()
+                );
 
-            JsonObject ecRoot = root.has(ENGINE_CONFIGURATIONS_KEY)
-                && root.get(ENGINE_CONFIGURATIONS_KEY).isJsonObject()
-                ? root.getAsJsonObject(ENGINE_CONFIGURATIONS_KEY)
-                : new JsonObject();
+                JsonElement activeEngineEl = root.get(ACTIVE_ENGINE_KEY);
+                aiSettings.setActiveEngine(
+                    activeEngineEl != null && !activeEngineEl.isJsonNull()
+                        ? activeEngineEl.getAsString()
+                        : null
+                );
 
-            Map<String, AIEngineSettings<?>> engineConfigurationMap = new HashMap<>();
-            Map<String, String> replacements = AIEngineSettingsRegistry.getInstance().getReplacements();
-            for (Map.Entry<String, JsonElement> entry : ecRoot.entrySet()) {
-                String engineId = entry.getKey();
-                String engineIdReplaced = replacements.get(engineId);
-                String fallbackEngineId = Optional.ofNullable(
-                        entry.getValue()
-                            .getAsJsonObject()
-                            .get(AIEngineSettings.FALLBACK_ENGINE_ID)
-                    )
-                    .map(JsonElement::getAsString)
-                    .orElse(null);
+                JsonObject ecRoot = root.has(ENGINE_CONFIGURATIONS_KEY)
+                    && root.get(ENGINE_CONFIGURATIONS_KEY).isJsonObject()
+                    ? root.getAsJsonObject(ENGINE_CONFIGURATIONS_KEY)
+                    : new JsonObject();
 
-                Stream.of(engineId, engineIdReplaced, fallbackEngineId)
-                    .filter(Objects::nonNull)
-                    .map(id ->
-                        deserializeEngineSettings(id, entry.getValue())
-                            .map(settings -> Map.entry(id, settings))
-                            .orElse(null)
-                    )
-                    .filter(Objects::nonNull)
-                    .findFirst()
-                    .ifPresent(e -> engineConfigurationMap.put(e.getKey(), e.getValue()));
+                //Map<String, String> replacements = AIEngineSettingsRegistry.getInstance().getReplacements();
+                for (Map.Entry<String, JsonElement> entry : ecRoot.entrySet()) {
+                    String engineId = entry.getKey();
+//                    String engineIdReplaced = replacements.get(engineId);
+//                    String fallbackEngineId = Optional.ofNullable(
+//                            entry.getValue()
+//                                .getAsJsonObject()
+//                                .get(AIEngineSettings.FALLBACK_ENGINE_ID)
+//                        )
+//                        .map(JsonElement::getAsString)
+//                        .orElse(null);
+
+                    AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
+                    AIEngineProperties engineSettings = readPropsGson.fromJson(
+                        entry.getValue(), engineDescriptor.getPropertiesType());
+
+                    engineConfigurationMap.put(engineId, engineSettings);
+                }
             }
 
-            // Set default engine configurations for engines that are not specified in the config
-            engineSerDe.forEach(serDe -> {
-                engineConfigurationMap.computeIfAbsent(
-                    serDe.getId(),
-                    id -> serDe.deserialize(null, readPropsGson)
-                );
-            });
+            for (AIEngineDescriptor aed : AIEngineRegistry.getInstance().getCompletionEngines()) {
+                if (!engineConfigurationMap.containsKey(aed.getId())) {
+                    try {
+                        engineConfigurationMap.put(aed.getId(), aed.createPropertiesInstance());
+                    } catch (DBException e) {
+                        log.error(e);
+                    }
+                }
+            }
 
             aiSettings.setEngineConfigurations(engineConfigurationMap);
 
@@ -347,32 +317,13 @@ public class AISettingsRegistry {
             json.addProperty(ACTIVE_ENGINE_KEY, src.activeEngine());
 
             JsonObject engineConfigurations = new JsonObject();
-            for (AIEngineSettingsSerDe<?> serDe : engineSerDe) {
-                try {
-                    engineConfigurations.add(serDe.getId(), serDe.serialize(src.getEngineConfiguration(serDe.getId()), savePropsGson()));
-                } catch (DBException e) {
-                    throw new JsonParseException("Error serializing AI engine settings: " + serDe.getId(), e);
-                }
+            for (Map.Entry<String, AIEngineProperties> configuration : src.getEngineConfigurations().entrySet()) {
+                JsonElement savedProps = savePropsGson.toJsonTree(configuration.getValue());
+                engineConfigurations.add(configuration.getKey(), savedProps);
             }
             json.add(ENGINE_CONFIGURATIONS_KEY, engineConfigurations);
 
             return json;
-        }
-
-        private Optional<AIEngineSettings<?>> deserializeEngineSettings(
-            @Nullable String engineId,
-            @NotNull JsonElement engineConfigJson
-        ) {
-            if (engineId == null) {
-                return Optional.empty();
-            }
-
-            return engineSerDe.stream()
-                .filter(s -> s.getId().equals(engineId))
-                .findFirst()
-                .map(serDe ->
-                    serDe.deserialize(engineConfigJson.getAsJsonObject(), readPropsGson)
-                );
         }
     }
 
