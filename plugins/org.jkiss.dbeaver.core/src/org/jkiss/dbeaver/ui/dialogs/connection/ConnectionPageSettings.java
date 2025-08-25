@@ -289,10 +289,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
                 var toolBar = new ToolBar(toolBarComposite, SWT.FLAT | SWT.RIGHT);
                 handlerItem = createHandlerItem(toolBar, allPages);
-                handlerItem.setForeground(UIStyles.getDefaultTextForeground());
                 profileItem = createProfileItem(toolBar);
-                profileItem.setForeground(UIStyles.getDefaultTextForeground());
                 tabFolder.setTopRight(toolBarComposite, SWT.RIGHT);
+                UIStyles.fixToolBarForeground(toolBar);
 
                 updateHandlerItem(allPages);
                 updateProfileItem();

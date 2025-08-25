@@ -1636,22 +1636,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         }
-        UIUtils.asyncExec(this::applyButtonTextColors);
-    }
-
-    private void applyButtonTextColors() {
-        Color textColor = UIStyles.getDefaultTextForeground();
-
-        // Save/Cancel buttons when have any changes in result set
-        for (ToolBarManager toolbarManager : toolbarList) {
-            ToolBar toolbar = toolbarManager.getControl();
-            if (toolbar != null && !toolbar.isDisposed()) {
-                toolbar.setForeground(textColor);
-                for (ToolItem item : toolbar.getItems()) {
-                    item.setForeground(textColor);
-                }
-            }
-        }
+        UIUtils.asyncExec(() -> UIStyles.fixToolBarForeground(toolbarList));
     }
 
     /**
