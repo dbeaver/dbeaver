@@ -206,6 +206,18 @@ public class AISettingsRegistry {
             settings.setActiveEngine(OpenAIConstants.OPENAI_ENGINE);
         }
 
+        // Fill missing settings
+        Map<String, AIEngineProperties> configurations = settings.getEngineConfigurations();
+        for (AIEngineDescriptor aed : AIEngineRegistry.getInstance().getCompletionEngines()) {
+            if (!configurations.containsKey(aed.getId())) {
+                try {
+                    configurations.put(aed.getId(), aed.createPropertiesInstance());
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+        }
+
         return settings;
     }
 
@@ -288,19 +300,13 @@ public class AISettingsRegistry {
 //                        .orElse(null);
 
                     AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
-                    AIEngineProperties engineSettings = readPropsGson.fromJson(
-                        entry.getValue(), engineDescriptor.getPropertiesType());
-
-                    engineConfigurationMap.put(engineId, engineSettings);
-                }
-            }
-
-            for (AIEngineDescriptor aed : AIEngineRegistry.getInstance().getCompletionEngines()) {
-                if (!engineConfigurationMap.containsKey(aed.getId())) {
                     try {
-                        engineConfigurationMap.put(aed.getId(), aed.createPropertiesInstance());
-                    } catch (DBException e) {
-                        log.error(e);
+                        AIEngineProperties engineSettings = readPropsGson.fromJson(
+                            entry.getValue(), engineDescriptor.getPropertiesType());
+
+                        engineConfigurationMap.put(engineId, engineSettings);
+                    } catch (JsonSyntaxException e) {
+                        log.error("Error parsing '" + engineId + "' properties", e);
                     }
                 }
             }

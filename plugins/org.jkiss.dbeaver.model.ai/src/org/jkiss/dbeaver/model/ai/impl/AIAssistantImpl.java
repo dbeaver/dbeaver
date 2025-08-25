@@ -204,13 +204,13 @@ public class AIAssistantImpl implements AIAssistant {
      */
     @Override
     public boolean hasValidConfiguration() throws DBException {
-        AIEngineSettings<?> activeEngineConfiguration = getActiveEngineConfiguration();
+        AIEngineProperties activeEngineConfiguration = getActiveEngineConfiguration();
         if (activeEngineConfiguration == null) {
             log.warn("No active AI engine configuration found");
             return false;
         }
 
-        return activeEngineConfiguration.isValid();
+        return activeEngineConfiguration.isValidConfiguration();
     }
 
     protected MessageChunk[] processAndSplitCompletion(
@@ -326,7 +326,7 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     private boolean isLoggingEnabled() throws DBException {
-        AIEngineSettings<?> activeEngineConfiguration = getActiveEngineConfiguration();
+        AIEngineProperties activeEngineConfiguration = getActiveEngineConfiguration();
         if (activeEngineConfiguration == null) {
             log.warn("No active AI engine configuration found");
             return false;
@@ -336,7 +336,7 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     @Nullable
-    private AIEngineSettings<?> getActiveEngineConfiguration() throws DBException {
+    private AIEngineProperties getActiveEngineConfiguration() throws DBException {
         String activeEngine = settingsRegistry.getSettings().activeEngine();
         if (activeEngine == null || activeEngine.isEmpty()) {
             log.warn("No active AI engine configured");
