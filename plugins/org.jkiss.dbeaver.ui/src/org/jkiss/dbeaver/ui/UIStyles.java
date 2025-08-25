@@ -285,7 +285,7 @@ public class UIStyles {
     }
 
     /**
-     * Fix toolbar foreground color on macOS for toolbar managers.
+     * Fix toolbar foreground color on macOS for toolbar managers
      */
     public static void fixToolBarForeground(Collection<ToolBarManager> toolbarManagers) {
         if (RuntimeUtils.isMacOS()) {
@@ -303,7 +303,7 @@ public class UIStyles {
     }
 
     /**
-     * Fix toolbar foreground color on macOS.
+     * Fix toolbar foreground color on macOS
      */
     public static void fixToolBarForeground(ToolBar toolBar) {
         if (RuntimeUtils.isMacOS() && toolBar != null && !toolBar.isDisposed()) {
