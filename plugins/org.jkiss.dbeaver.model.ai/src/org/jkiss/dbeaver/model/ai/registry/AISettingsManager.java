@@ -35,22 +35,19 @@ import java.io.StringReader;
 import java.lang.reflect.Type;
 import java.util.*;
 
-public class AISettingsRegistry {
-    private static final Log log = Log.getLog(AISettingsRegistry.class);
+public class AISettingsManager {
+    private static final Log log = Log.getLog(AISettingsManager.class);
+
+    public static final String AI_CONFIGURATION_FILE_NAME = "ai-configuration.json";
+
     private static final String AI_DISABLED_KEY = "aiDisabled";
     private static final String ACTIVE_ENGINE_KEY= "activeEngine";
     private static final String ENGINE_CONFIGURATIONS_KEY = "engineConfigurations";
 
-    public static final String AI_CONFIGURATION_JSON = "ai-configuration.json";
+    private static AISettingsManager instance = null;
 
-
-    private static AISettingsRegistry instance = null;
-
-    private static final Gson readPropsGson = new GsonBuilder()
-        .setStrictness(Strictness.LENIENT)
-        .registerTypeAdapter(AISettings.class, new AIConfigurationSerDe())
-        .create();
-    private static final Gson savePropsGson = savePropsGson();
+    private static final Gson readPropsGson = createPropertiesLoadGson();
+    private static final Gson savePropsGson = createPropertiesSaveGson();
 
     private final Set<AISettingsEventListener> settingsChangedListeners = Collections.synchronizedSet(new HashSet<>());
 
@@ -145,17 +142,18 @@ public class AISettingsRegistry {
     }
 
 
-    private AISettingsRegistry() {
-        WorkspaceConfigEventManager.addConfigChangedListener(AI_CONFIGURATION_JSON, o -> {
+    private AISettingsManager() {
+        WorkspaceConfigEventManager.addConfigChangedListener(
+            AI_CONFIGURATION_FILE_NAME, o -> {
             // reset current context for settings to be lazily reloaded when needed
             this.getSettingsHolder().reset();
             this.raiseChangedEvent(this); // consider detailed event info
         });
     }
 
-    public static synchronized AISettingsRegistry getInstance() {
+    public static synchronized AISettingsManager getInstance() {
         if (instance == null) {
-            instance = new AISettingsRegistry();
+            instance = new AISettingsManager();
         }
         return instance;
     }
@@ -168,7 +166,7 @@ public class AISettingsRegistry {
         this.settingsChangedListeners.remove(listener);
     }
 
-    private void raiseChangedEvent(AISettingsRegistry registry) {
+    private void raiseChangedEvent(AISettingsManager registry) {
         for (AISettingsEventListener listener : this.settingsChangedListeners.toArray(AISettingsEventListener[]::new)) {
             listener.onSettingsUpdate(registry);
         }
@@ -233,7 +231,7 @@ public class AISettingsRegistry {
             }
             String content = savePropsGson.toJson(settings);
 
-            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_JSON, content);
+            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
             this.getSettingsHolder().setSettings(settings);
         } catch (Exception e) {
             log.error("Error saving AI configuration", e);
@@ -244,7 +242,7 @@ public class AISettingsRegistry {
     private static String loadConfig() throws DBException {
         return DBWorkbench.getPlatform()
             .getConfigurationController()
-            .loadConfigurationFile(AI_CONFIGURATION_JSON);
+            .loadConfigurationFile(AI_CONFIGURATION_FILE_NAME);
     }
 
     public static boolean isConfigExists() throws DBException {
@@ -338,12 +336,18 @@ public class AISettingsRegistry {
         return application.isMultiuser() || application.isDistributed();
     }
 
-    private static Gson savePropsGson() {
+
+    @NotNull
+    private static Gson createPropertiesLoadGson() {
+        return new GsonBuilder()
+            .setStrictness(Strictness.LENIENT)
+            .registerTypeAdapter(AISettings.class, new AIConfigurationSerDe())
+            .create();
+    }
+
+    private static Gson createPropertiesSaveGson() {
         if (saveSecretsAsPlainText()) {
-            return new GsonBuilder()
-                .setStrictness(Strictness.LENIENT)
-                .registerTypeAdapter(AISettings.class, new AIConfigurationSerDe())
-                .create();
+            return createPropertiesLoadGson();
         } else {
             return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
                 .registerTypeAdapter(AISettings.class, new AIConfigurationSerDe())

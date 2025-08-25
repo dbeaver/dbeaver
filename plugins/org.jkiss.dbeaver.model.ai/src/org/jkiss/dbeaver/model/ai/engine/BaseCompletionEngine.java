@@ -18,14 +18,14 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
 public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> implements AIEngine {
 
     protected final PROPS properties;
 
     public BaseCompletionEngine() throws DBException {
-        this.properties = AISettingsRegistry.getInstance().getSettings()
+        this.properties = AISettingsManager.getInstance().getSettings()
             .getEngineConfiguration(getEngineId());
     }
 

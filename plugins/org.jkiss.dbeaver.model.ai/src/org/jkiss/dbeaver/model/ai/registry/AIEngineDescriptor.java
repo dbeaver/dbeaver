@@ -28,31 +28,24 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.LazyValue;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class AIEngineDescriptor extends AbstractDescriptor {
 
+    public static final String EXTENSION_ID = "com.dbeaver.ai.engine";
+
     private final IConfigurationElement contributorConfig;
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
     private final ObjectType objectType;
     private final ObjectType propertiesType;
-    private final LazyValue<AIEngine, DBException> factoryInstance;
 
     protected AIEngineDescriptor(@NotNull IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.contributorConfig = contributorConfig;
         this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
         this.propertiesType = new ObjectType(contributorConfig, "properties");
-        this.factoryInstance = new LazyValue<>() {
-            @NotNull
-            @Override
-            protected AIEngine initialize() throws DBException {
-                return objectType.createInstance(AIEngine.class);
-            }
-        };
 
         for (IConfigurationElement propGroup : ArrayUtils.safeArray(contributorConfig.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
             properties.addAll(PropertyDescriptor.extractProperties(propGroup));
@@ -92,14 +85,13 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         return propsClass;
     }
 
-
     @NotNull
     public <T extends AIEngineProperties> T createPropertiesInstance() throws DBException {
         return (T)propertiesType.createInstance(AIEngineProperties.class);
     }
 
     @NotNull
-    public AIEngine createInstance() throws DBException {
-        return factoryInstance.getInstance();
+    public AIEngine createEngineInstance() throws DBException {
+        return objectType.createInstance(AIEngine.class);
     }
 }

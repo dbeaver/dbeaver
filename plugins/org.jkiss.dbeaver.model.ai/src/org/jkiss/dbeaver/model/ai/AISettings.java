@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
 import java.lang.reflect.Type;
 import java.util.HashSet;
@@ -99,7 +99,7 @@ public class AISettings implements IAdaptable {
         }
 
         if (aiEngineSettings != null) {
-            if (!AISettingsRegistry.saveSecretsAsPlainText()) {
+            if (!AISettingsManager.saveSecretsAsPlainText()) {
                 if (!resolvedSecrets.contains(engineId)) {
                     aiEngineSettings.resolveSecrets();
                     resolvedSecrets.add(engineId);

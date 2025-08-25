@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
@@ -64,10 +64,10 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     private Button enableAICheck;
 
     public AIPreferencePageMain() {
-        this.settings = AISettingsRegistry.getInstance().getSettings();
+        this.settings = AISettingsManager.getInstance().getSettings();
         String activeEngine = this.settings.activeEngine();
         try {
-            completionEngine = AIEngineRegistry.getInstance().getCompletionEngine(activeEngine);
+            completionEngine = AIEngineRegistry.getInstance().createEngine(activeEngine);
         } catch (DBException e) {
             log.error("Error getting engine configuration", e);
 
@@ -135,7 +135,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                 }
             }
         }
-        AISettingsRegistry.getInstance().saveSettings(this.settings);
+        AISettingsManager.getInstance().saveSettings(this.settings);
         try {
             store.save();
         } catch (IOException e) {
@@ -188,7 +188,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             public void widgetSelected(SelectionEvent e) {
                 String id = serviceNameMappings.get(serviceCombo.getText());
                 try {
-                    completionEngine = AIEngineRegistry.getInstance().getCompletionEngine(id);
+                    completionEngine = AIEngineRegistry.getInstance().createEngine(id);
                 } catch (DBException ex) {
                     log.error("Error getting engine configuration");
                     return;

@@ -40,14 +40,14 @@ public class AIAssistantImpl implements AIAssistant {
     private static final int MANY_REQUESTS_TIMEOUT = 500;
     public static final String LOG_INDENT = "\t";
 
-    protected final AISettingsRegistry settingsRegistry;
+    protected final AISettingsManager settingsRegistry;
     protected final AIEngineRegistry engineRegistry;
     protected final AISqlFormatterRegistry formatterRegistry;
     protected final AIEngineRequestFactory requestFactory;
 
     public AIAssistantImpl() {
         this(
-            AISettingsRegistry.getInstance(),
+            AISettingsManager.getInstance(),
             AIEngineRegistry.getInstance(),
             AISqlFormatterRegistry.getInstance(),
             new AIEngineRequestFactory(
@@ -58,7 +58,7 @@ public class AIAssistantImpl implements AIAssistant {
     }
 
     public AIAssistantImpl(
-        AISettingsRegistry settingsRegistry,
+        AISettingsManager settingsRegistry,
         AIEngineRegistry engineRegistry,
         AISqlFormatterRegistry formatterRegistry,
         AIEngineRequestFactory requestFactory
@@ -90,7 +90,7 @@ public class AIAssistantImpl implements AIAssistant {
     ) throws DBException {
         AIEngine engine = request.engine() != null ?
             request.engine() :
-            getActiveEngine();
+            createEngine();
 
         AIMessage userMessage = new AIMessage(AIMessageType.USER, request.text());
 
@@ -147,7 +147,7 @@ public class AIAssistantImpl implements AIAssistant {
     ) throws DBException {
         AIEngine engine = request.engine() != null ?
             request.engine() :
-            getActiveEngine();
+            createEngine();
 
         AIPromptBuilder promptBuilder = createPromptBuilder();
         promptBuilder
@@ -249,8 +249,8 @@ public class AIAssistantImpl implements AIAssistant {
 
     @NotNull
     @Override
-    public AIEngine getActiveEngine() throws DBException {
-        return engineRegistry.getCompletionEngine(settingsRegistry.getSettings().activeEngine());
+    public AIEngine createEngine() throws DBException {
+        return engineRegistry.createEngine(settingsRegistry.getSettings().activeEngine());
     }
 
     @Nullable

@@ -58,7 +58,7 @@ public interface AIAssistant {
     boolean hasValidConfiguration() throws DBException;
 
     @NotNull
-    AIEngine getActiveEngine() throws DBException;
+    AIEngine createEngine() throws DBException;
 
     @Nullable
     AIEngineDescriptor getActiveEngineDescriptor();

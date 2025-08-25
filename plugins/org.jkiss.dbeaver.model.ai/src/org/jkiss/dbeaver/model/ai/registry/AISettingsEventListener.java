@@ -19,5 +19,5 @@ package org.jkiss.dbeaver.model.ai.registry;
 import org.jkiss.code.NotNull;
 
 public interface AISettingsEventListener {
-    void onSettingsUpdate(@NotNull AISettingsRegistry registry);
+    void onSettingsUpdate(@NotNull AISettingsManager registry);
 }

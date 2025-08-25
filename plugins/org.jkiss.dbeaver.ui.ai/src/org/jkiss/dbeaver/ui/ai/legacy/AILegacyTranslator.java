@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AITranslateRequest;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
@@ -56,7 +56,7 @@ public class AILegacyTranslator {
         // CE legacy popup
         AIFeatures.SQL_AI_POPUP.use();
 
-        if (AISettingsRegistry.getInstance().getSettings().isAiDisabled()) {
+        if (AISettingsManager.getInstance().getSettings().isAiDisabled()) {
             return;
         }
         if (!(HandlerUtil.getActiveEditor(event) instanceof SQLEditor editor)) {
@@ -78,7 +78,7 @@ public class AILegacyTranslator {
             if (!aiAssistant.hasValidConfiguration()) {
                 UIUtils.showPreferencesFor(
                     editor.getSite().getShell(),
-                    AISettingsRegistry.getInstance().getSettings(),
+                    AISettingsManager.getInstance().getSettings(),
                     AIPreferencePageMain.PAGE_ID
                 );
                 return;
