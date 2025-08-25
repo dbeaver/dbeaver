@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -254,7 +255,7 @@ public abstract class AbstractDescriptor {
             return true;
         }
 
-        public <T> T createInstance(@NotNull Class<T> type, @Nullable Object... args) throws DBException {
+        public <T> T createInstance(@NotNull Class<T> type, @NotNull Object... args) throws DBException {
             if (implName == null) {
                 throw new DBException("No implementation class name set for '" + type.getName() + "'");
             }
@@ -263,13 +264,24 @@ public abstract class AbstractDescriptor {
                 throw new DBException("Can't load class '" + getImplName() + "'");
             }
             try {
-                Class[] argClasses = Arrays.stream(args)
-                    .map(Object::getClass)
-                    .toArray(Class[]::new);
+                for (Constructor<?> c : objectClass.getConstructors()) {
+                    Class<?>[] parameterTypes = c.getParameterTypes();
+                    if (parameterTypes.length == args.length) {
+                        boolean matches = true;
+                        for (int i = 0; i < parameterTypes.length; i++) {
+                            if (!parameterTypes[i].isInstance(args[i])) {
+                                matches = false;
+                                break;
+                            }
+                        }
+                        if (matches) {
+                            return (T) c.newInstance(args);
+                        }
+                    }
+                }
 
-                return objectClass.getDeclaredConstructor(argClasses).newInstance(args);
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
-                     InvocationTargetException e) {
+                throw new DBException("Cannot find constructor matching args " + args);
+            } catch (Exception e) {
                 throw new DBException("Can't instantiate class '" + getImplName() + "'", e);
             }
         }

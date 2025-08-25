@@ -23,19 +23,26 @@ import org.jkiss.dbeaver.model.ai.AIAssistant;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.utils.CommonUtils;
 
 public class AIAssistantDescriptor extends AbstractDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.assistant";
     private final ObjectType objectType;
+    private final int priority;
 
     protected AIAssistantDescriptor(IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
+        this.priority = CommonUtils.toInt(contributorConfig.getAttribute("priority"));
     }
 
     @NotNull
     public AIAssistant createInstance(DBPWorkspace workspace) throws DBException {
         return objectType.createInstance(AIAssistant.class, workspace);
+    }
+
+    public int getPriority() {
+        return priority;
     }
 }

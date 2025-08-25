@@ -28,6 +28,10 @@
         </completionEngine>
     </extension>
 
+    <extension point="com.dbeaver.ai.assistant">
+        <assistant id="ce-assistant" priority="1" class="org.jkiss.dbeaver.model.ai.impl.AIAssistantImpl"/>
+    </extension>
+
     <extension point="com.dbeaver.ai.sql.formatter">
         <formatter id="core" class="org.jkiss.dbeaver.model.ai.impl.SimpleSqlFormatterImpl"/>
     </extension>
