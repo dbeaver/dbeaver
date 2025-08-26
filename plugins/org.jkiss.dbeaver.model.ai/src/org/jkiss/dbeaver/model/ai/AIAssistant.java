@@ -18,8 +18,9 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.List;
 
 /**
  * AI Assistant interface. Provides methods for AI-based operations.
@@ -27,12 +28,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface AIAssistant {
 
     @NotNull
-    default String translateTextToSql(
+    default AIMessage processPrompt(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIDatabaseContext context,
-        @NotNull String text
+        @NotNull List<AIMessage> messages // Prompts including system messages
     ) throws DBException {
-        return "";
+        return AIMessage.assistantMessage("");
     }
 
     /**

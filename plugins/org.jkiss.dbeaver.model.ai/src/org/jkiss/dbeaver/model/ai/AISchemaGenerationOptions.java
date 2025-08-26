@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-public record AIDdlGenerationOptions(
+public record AISchemaGenerationOptions(
     int maxDbSnapshotTokens,
     boolean sendObjectComment,
     boolean sendColumnTypes,
@@ -80,8 +80,8 @@ public record AIDdlGenerationOptions(
             return this;
         }
 
-        public AIDdlGenerationOptions build() {
-            return new AIDdlGenerationOptions(
+        public AISchemaGenerationOptions build() {
+            return new AISchemaGenerationOptions(
                 maxDbSnapshotTokens,
                 sendObjectComment,
                 sendColumnTypes,

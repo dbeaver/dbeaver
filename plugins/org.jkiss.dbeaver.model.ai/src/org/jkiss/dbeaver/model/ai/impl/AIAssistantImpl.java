@@ -85,8 +85,8 @@ public class AIAssistantImpl implements AIAssistant {
 
         AIPromptBuilder promptBuilder = createPromptBuilder();
         promptBuilder
-            .addContexts(AIPromptBuilder.describeContext(request.context().getDataSource()))
-            .addInstructions(AIPromptBuilder.createInstructionList(request.context().getDataSource()))
+            .addContexts(AIPromptUtils.describeDataSourceInfo(request.context().getDataSource()))
+            .addInstructions(AIPromptUtils.createDatabaseInstructions(request.context().getDataSource()))
             .addGoals(
                 "Translate natural language text to SQL."
             )
@@ -139,8 +139,8 @@ public class AIAssistantImpl implements AIAssistant {
     ) throws DBException {
         AIPromptBuilder promptBuilder = createPromptBuilder();
         promptBuilder
-            .addContexts(AIPromptBuilder.describeContext(request.context().getDataSource()))
-            .addInstructions(AIPromptBuilder.createInstructionList(request.context().getDataSource()))
+            .addContexts(AIPromptUtils.describeDataSourceInfo(request.context().getDataSource()))
+            .addInstructions(AIPromptUtils.createDatabaseInstructions(request.context().getDataSource()))
             .addGoals(
                 "Translate natural language text to SQL."
             )

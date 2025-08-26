@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
-import org.jkiss.dbeaver.model.ai.AIDdlGenerationOptions;
+import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
@@ -55,7 +55,7 @@ public class AIDatabaseSnapshotService {
     public String createDbSnapshot(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext aiDatabaseContext,
-        @NotNull AIDdlGenerationOptions options
+        @NotNull AISchemaGenerationOptions options
     ) throws DBException {
         schemaGenerator = AIAssistantRegistry.getInstance().getDescriptor().createSchemaGenerator();
 
@@ -73,7 +73,7 @@ public class AIDatabaseSnapshotService {
         }
 
         // --- fall-back -----------------------------------------------------
-        AIDdlGenerationOptions fallback = buildFallbackOptions(options);
+        AISchemaGenerationOptions fallback = buildFallbackOptions(options);
         if (options.equals(fallback)) {        // nothing else we can exclude
             return prompt.toString();
         }
@@ -91,7 +91,7 @@ public class AIDatabaseSnapshotService {
     private boolean appendContext(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIDatabaseContext ctx,
-        @NotNull AIDdlGenerationOptions options,
+        @NotNull AISchemaGenerationOptions options,
         @NotNull TokenBoundedStringBuilder out,
         boolean refreshCache
     ) throws DBException {
@@ -134,7 +134,7 @@ public class AIDatabaseSnapshotService {
         @NotNull TokenBoundedStringBuilder out,
         @NotNull DBSObject obj,
         @Nullable DBCExecutionContext execCtx,
-        @NotNull AIDdlGenerationOptions options,
+        @NotNull AISchemaGenerationOptions options,
         boolean useFqn,
         boolean refreshCache
     ) throws DBException {
@@ -163,7 +163,7 @@ public class AIDatabaseSnapshotService {
         @NotNull TokenBoundedStringBuilder out,
         @NotNull DBSObjectContainer container,
         @Nullable DBCExecutionContext execCtx,
-        @NotNull AIDdlGenerationOptions options,
+        @NotNull AISchemaGenerationOptions options,
         boolean refreshCache
     ) throws DBException {
 
@@ -218,7 +218,7 @@ public class AIDatabaseSnapshotService {
             && !(parent.equals(def.getDefaultCatalog()) || parent.equals(def.getDefaultSchema()));
     }
 
-    private static AIDdlGenerationOptions buildFallbackOptions(AIDdlGenerationOptions original) {
+    private static AISchemaGenerationOptions buildFallbackOptions(AISchemaGenerationOptions original) {
         return original.toBuilder()
             .withSendObjectComment(false)
             .withSendColumnTypes(false)
