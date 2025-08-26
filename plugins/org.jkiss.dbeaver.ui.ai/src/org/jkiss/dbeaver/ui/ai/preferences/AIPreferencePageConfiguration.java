@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.impl.AISchemaGeneratorImpl;
-import org.jkiss.dbeaver.model.ai.registry.AISchemaGeneratorRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -54,7 +54,7 @@ public class AIPreferencePageConfiguration extends AbstractPrefPage implements I
     public AIPreferencePageConfiguration() {
         this.settings = AISettingsManager.getInstance().getSettings();
         try {
-            ddlGenerator = AISchemaGeneratorRegistry.getInstance().getDdlGenerator();
+            ddlGenerator = AIAssistantRegistry.getInstance().getDescriptor().createSchemaGenerator();
         } catch (DBException e) {
             log.error("Formatter not found", e);
             ddlGenerator = new AISchemaGeneratorImpl();

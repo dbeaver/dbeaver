@@ -50,6 +50,10 @@ public class AIAssistantRegistry {
         }
     }
 
+    public AIAssistantDescriptor getDescriptor() {
+        return globalDescriptor;
+    }
+
     @NotNull
     public <T extends AIAssistant> T createAssistant(@NotNull DBPWorkspace workspace) throws IllegalStateException {
         if (globalDescriptor != null) {

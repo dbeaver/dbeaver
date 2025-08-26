@@ -24,8 +24,9 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AIDdlGenerationOptions;
+import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.registry.AISchemaGeneratorRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
@@ -45,12 +46,9 @@ import java.util.stream.Stream;
 public class AIDatabaseSnapshotService {
 
     private static final Log LOG = Log.getLog(AIDatabaseSnapshotService.class);
+    private AISchemaGenerator schemaGenerator;
 
-    @NotNull
-    private final AISchemaGeneratorRegistry generatorRegistry;
-
-    public AIDatabaseSnapshotService(@NotNull AISchemaGeneratorRegistry generatorRegistry) {
-        this.generatorRegistry = generatorRegistry;
+    public AIDatabaseSnapshotService() {
     }
 
     @NotNull
@@ -59,6 +57,7 @@ public class AIDatabaseSnapshotService {
         @Nullable AIDatabaseContext aiDatabaseContext,
         @NotNull AIDdlGenerationOptions options
     ) throws DBException {
+        schemaGenerator = AIAssistantRegistry.getInstance().getDescriptor().createSchemaGenerator();
 
         if (aiDatabaseContext == null) {
             return "";
@@ -148,8 +147,7 @@ public class AIDatabaseSnapshotService {
         }
 
         if (obj instanceof DBSEntity entity) {
-            String ddl = generatorRegistry.getDdlGenerator()
-                .generateSchema(monitor, entity, execCtx, options, useFqn) + "\n";
+            String ddl = schemaGenerator.generateSchema(monitor, entity, execCtx, options, useFqn) + "\n";
             return out.append(ddl);
         }
 

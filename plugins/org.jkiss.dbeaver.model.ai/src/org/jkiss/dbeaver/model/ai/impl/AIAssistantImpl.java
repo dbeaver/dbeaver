@@ -22,10 +22,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
+import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISchemaGeneratorRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
-import org.jkiss.dbeaver.model.ai.registry.AISqlFormatterRegistry;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -43,15 +42,14 @@ public class AIAssistantImpl implements AIAssistant {
     private static final int MANY_REQUESTS_TIMEOUT = 500;
     public static final String LOG_INDENT = "\t";
 
-    protected final AISqlFormatterRegistry formatterRegistry;
     protected final AIEngineRequestFactory requestFactory;
+    private AISqlFormatter sqlFormatter;
 
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
         this(
             workspace,
-            AISqlFormatterRegistry.getInstance(),
             new AIEngineRequestFactory(
-                new AIDatabaseSnapshotService(AISchemaGeneratorRegistry.getInstance()),
+                new AIDatabaseSnapshotService(),
                 new DummyTokenCounter()
             )
         );
@@ -59,11 +57,15 @@ public class AIAssistantImpl implements AIAssistant {
 
     public AIAssistantImpl(
         @NotNull DBPWorkspace workspace,
-        @NotNull AISqlFormatterRegistry formatterRegistry,
         @NotNull AIEngineRequestFactory requestFactory
     ) {
-        this.formatterRegistry = formatterRegistry;
         this.requestFactory = requestFactory;
+        try {
+            this.sqlFormatter = AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
+        } catch (DBException e) {
+            log.error("Error creating SQL formatter", e);
+            this.sqlFormatter = new SimpleSqlFormatterImpl();
+        }
     }
 
     /**
@@ -193,7 +195,7 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIDatabaseContext context,
         @NotNull String completion
     ) throws DBException {
-        String processedCompletion = formatterRegistry.getSqlPostProcessor().formatGeneratedQuery(
+        String processedCompletion = sqlFormatter.formatGeneratedQuery(
             monitor,
             context.getExecutionContext(),
             context.getScopeObject(),
