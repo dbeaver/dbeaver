@@ -730,5 +730,4 @@ public class DesktopUI extends ConsoleUserInterface {
             return 800; // see org.eclipse.ui.internal.progress.ProgressManager.getLongOperationTime()
         }
     }
-
 }

@@ -134,6 +134,9 @@ public class UIMessages extends NLS {
     public static String dialog_auth_code_code_label;
     public static String dialog_auth_code_copy_and_open_label;
 
+    public static String dialog_confirm_action_query;
+    public static String dialog_confirm_action_show_query;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIMessages.class);
