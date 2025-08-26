@@ -120,7 +120,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         }
 
         List<SQLScriptElement> scriptElements = SQLScriptParser.parseScript(dataSource, script);
-        if (!AIUtils.confirmExecutionIfNeeded(scriptElements, true)) {
+        if (!AIUtils.confirmExecutionIfNeeded(dataSource, scriptElements, true)) {
             return SQLControlResult.failure();
         }
         AIUtils.disableAutoCommitIfNeeded(

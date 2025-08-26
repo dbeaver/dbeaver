@@ -165,11 +165,6 @@ public class AIAssistantImpl implements AIAssistant {
             engine.getContextWindowSize(monitor)
         );
 
-        List<AIMessage> chatMessages = List.of(
-            AIMessage.systemMessage(prompt),
-            AIMessage.userMessage(request.text())
-        );
-
         AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
 
         MessageChunk[] messageChunks = processAndSplitCompletion(
