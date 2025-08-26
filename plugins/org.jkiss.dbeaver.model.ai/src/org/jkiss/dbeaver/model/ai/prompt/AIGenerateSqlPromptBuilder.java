@@ -29,6 +29,18 @@ public class AIGenerateSqlPromptBuilder extends AIPromptBuilder {
 
     public static final String SQL_GENERATOR_ID = "sql";
 
+    public static final String[] SQL_GENERATE_GOALS = {
+        "Help users write SQL queries.",
+        "Provide information about SQL syntax, functions, and best practices.",
+        "Assist with database design and data modeling.",
+        "Answer questions about database concepts and technologies.",
+        "Provide information about database performance tuning and optimization."
+    };
+    public static final String[] SQL_OUTPUT_FORMATS = {
+        "Place any explanation or comments before the SQL code block.",
+        "Provide the SQL query in a fenced Markdown code block."
+    };
+
     @NotNull
     @Override
     public String generatorId() {
@@ -53,17 +65,8 @@ public class AIGenerateSqlPromptBuilder extends AIPromptBuilder {
                 .addInstructions(AIPromptUtils.createDatabaseInstructions(dataSource));
         }
         builder
-            .addGoals(
-                "Help users write SQL queries.",
-                "Provide information about SQL syntax, functions, and best practices.",
-                "Assist with database design and data modeling.",
-                "Answer questions about database concepts and technologies.",
-                "Provide information about database performance tuning and optimization."
-            )
-            .addOutputFormats(
-                "Place any explanation or comments before the SQL code block.",
-                "Provide the SQL query in a fenced Markdown code block."
-            );
+            .addGoals(SQL_GENERATE_GOALS)
+            .addOutputFormats(SQL_OUTPUT_FORMATS);
 
         addJoinInstructions(builder);
     }
