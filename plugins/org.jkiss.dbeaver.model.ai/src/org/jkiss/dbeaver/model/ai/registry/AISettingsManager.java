@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.registry;
 
 import com.google.gson.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
@@ -26,13 +27,13 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.auth.SMSessionPersistent;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.StringReader;
-import java.lang.reflect.Type;
 import java.util.*;
 
 public class AISettingsManager {
@@ -43,6 +44,7 @@ public class AISettingsManager {
     private static final String AI_DISABLED_KEY = "aiDisabled";
     private static final String ACTIVE_ENGINE_KEY= "activeEngine";
     private static final String ENGINE_CONFIGURATIONS_KEY = "engineConfigurations";
+    public static final String ENGINE_PROPERTIES = "properties";
 
     private static AISettingsManager instance = null;
 
@@ -50,6 +52,198 @@ public class AISettingsManager {
     private static final Gson savePropsGson = createPropertiesSaveGson();
 
     private final Set<AISettingsEventListener> settingsChangedListeners = Collections.synchronizedSet(new HashSet<>());
+
+    private AISettingsManager() {
+        WorkspaceConfigEventManager.addConfigChangedListener(
+            AI_CONFIGURATION_FILE_NAME, o -> {
+            // reset current context for settings to be lazily reloaded when needed
+            this.getSettingsHolder().reset();
+            this.raiseChangedEvent(this); // consider detailed event info
+        });
+    }
+
+    public static synchronized AISettingsManager getInstance() {
+        if (instance == null) {
+            instance = new AISettingsManager();
+        }
+        return instance;
+    }
+
+    public void addChangedListener(AISettingsEventListener listener) {
+        this.settingsChangedListeners.add(listener);
+    }
+
+    public void removeChangedListener(AISettingsEventListener listener) {
+        this.settingsChangedListeners.remove(listener);
+    }
+
+    private void raiseChangedEvent(AISettingsManager registry) {
+        for (AISettingsEventListener listener : this.settingsChangedListeners.toArray(AISettingsEventListener[]::new)) {
+            listener.onSettingsUpdate(registry);
+        }
+    }
+
+    private AISettingsHolder getSettingsHolder() {
+        if (DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession() instanceof SMSessionPersistent session) {
+            return AISettingsSessionHolder.getForSession(session);
+        } else {
+            return AISettingsLocalHolder.INSTANCE;
+        }
+    }
+
+    @NotNull
+    public AISettings getSettings() {
+        return this.getSettingsHolder().getSettings();
+    }
+
+    @NotNull
+    private static AISettings loadSettingsFromConfig() {
+        Map<String, Object> configMap = null;
+        try {
+            String content = loadConfig();
+            if (!CommonUtils.isEmpty(content)) {
+                configMap = readPropsGson.fromJson(new StringReader(content), JSONUtils.MAP_TYPE_TOKEN);
+            }
+        } catch (Exception e) {
+            log.error("Error loading AI settings, falling back to defaults.", e);
+        }
+        if (configMap == null) {
+            configMap = new LinkedHashMap<>();
+        }
+
+        AISettings settings = new AISettings();
+
+        {
+            Map<String, AIEngineProperties> engineConfigurationMap = new LinkedHashMap<>();
+
+            if (!configMap.isEmpty()) {
+                settings.setAiDisabled(JSONUtils.getBoolean(configMap, AI_DISABLED_KEY));
+                settings.setActiveEngine(JSONUtils.getString(configMap, ACTIVE_ENGINE_KEY));
+                Map<String, Object> ecRoot = JSONUtils.getObject(configMap, ENGINE_CONFIGURATIONS_KEY);
+
+                //Map<String, String> replacements = AIEngineSettingsRegistry.getInstance().getReplacements();
+                for (Map.Entry<String, Object> entry : ecRoot.entrySet()) {
+                    String engineId = entry.getKey();
+                    //                    String engineIdReplaced = replacements.get(engineId);
+                    //                    String fallbackEngineId = Optional.ofNullable(
+                    //                            entry.getValue()
+                    //                                .getAsJsonObject()
+                    //                                .get(AIEngineSettings.FALLBACK_ENGINE_ID)
+                    //                        )
+                    //                        .map(JsonElement::getAsString)
+                    //                        .orElse(null);
+
+                    AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
+                    if (engineDescriptor == null) {
+                        log.error("AI engine '" + engineId + "' not found. Ignore config");
+                        continue;
+                    }
+                    if (entry.getValue() instanceof Map map) {
+                        try {
+                            Map<String, Object> properties = JSONUtils.getObject(map, ENGINE_PROPERTIES);
+                            JsonElement engineConfigTree = readPropsGson.toJsonTree(properties, Map.class);
+                            AIEngineProperties engineSettings = readPropsGson.fromJson(
+                                engineConfigTree, engineDescriptor.getPropertiesType());
+
+                            engineConfigurationMap.put(engineId, engineSettings);
+                        } catch (JsonSyntaxException e) {
+                            log.error("Error parsing '" + engineId + "' properties", e);
+                        }
+                    }
+                }
+            }
+
+            settings.setEngineConfigurations(engineConfigurationMap);
+        }
+        if (settings.activeEngine() == null || !settings.hasConfiguration(settings.activeEngine())) {
+            settings.setActiveEngine(OpenAIConstants.OPENAI_ENGINE);
+        }
+
+        // Fill missing settings
+        Map<String, AIEngineProperties> configurations = settings.getEngineConfigurations();
+        for (AIEngineDescriptor aed : AIEngineRegistry.getInstance().getCompletionEngines()) {
+            if (!configurations.containsKey(aed.getId())) {
+                try {
+                    configurations.put(aed.getId(), aed.createPropertiesInstance());
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+        }
+
+        return settings;
+    }
+
+    public void saveSettings(@NotNull AISettings settings) {
+        try {
+            if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+                log.warn("The user has no permission to save AI configuration");
+                return;
+            }
+
+            JsonObject json = new JsonObject();
+            json.addProperty(AI_DISABLED_KEY, settings.isAiDisabled());
+            json.addProperty(ACTIVE_ENGINE_KEY, settings.activeEngine());
+
+            JsonObject engineConfigurations = new JsonObject();
+            for (Map.Entry<String, AIEngineProperties> configuration : settings.getEngineConfigurations().entrySet()) {
+                JsonElement savedProps = savePropsGson.toJsonTree(configuration.getValue());
+                if (savedProps instanceof JsonObject jo && !jo.isEmpty()) {
+                    JsonObject props = new JsonObject();
+                    props.add(ENGINE_PROPERTIES, savedProps);
+                    engineConfigurations.add(configuration.getKey(), props);
+                }
+            }
+            json.add(ENGINE_CONFIGURATIONS_KEY, engineConfigurations);
+
+            String content = savePropsGson.toJson(json);
+
+            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
+
+            if (!saveSecretsAsPlainText()) {
+                settings.saveSecrets();
+            }
+
+            this.getSettingsHolder().setSettings(settings);
+        } catch (Exception e) {
+            log.error("Error saving AI configuration", e);
+        }
+        raiseChangedEvent(this);
+    }
+
+    @Nullable
+    private static String loadConfig() throws DBException {
+        return DBWorkbench.getPlatform()
+            .getConfigurationController()
+            .loadConfigurationFile(AI_CONFIGURATION_FILE_NAME);
+    }
+
+    public static boolean isConfigExists() throws DBException {
+        String content = loadConfig();
+        return CommonUtils.isNotEmpty(content);
+    }
+
+    public static boolean saveSecretsAsPlainText() {
+        DBPApplication application = DBWorkbench.getPlatform().getApplication();
+        return application.isMultiuser() || application.isDistributed();
+    }
+
+
+    @NotNull
+    private static Gson createPropertiesLoadGson() {
+        return new GsonBuilder()
+            .setStrictness(Strictness.LENIENT)
+            .create();
+    }
+
+    @NotNull
+    private static Gson createPropertiesSaveGson() {
+        if (saveSecretsAsPlainText()) {
+            return createPropertiesLoadGson();
+        } else {
+            return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder().create();
+        }
+    }
 
     private interface AISettingsHolder {
         AISettings getSettings();
@@ -142,216 +336,4 @@ public class AISettingsManager {
     }
 
 
-    private AISettingsManager() {
-        WorkspaceConfigEventManager.addConfigChangedListener(
-            AI_CONFIGURATION_FILE_NAME, o -> {
-            // reset current context for settings to be lazily reloaded when needed
-            this.getSettingsHolder().reset();
-            this.raiseChangedEvent(this); // consider detailed event info
-        });
-    }
-
-    public static synchronized AISettingsManager getInstance() {
-        if (instance == null) {
-            instance = new AISettingsManager();
-        }
-        return instance;
-    }
-
-    public void addChangedListener(AISettingsEventListener listener) {
-        this.settingsChangedListeners.add(listener);
-    }
-
-    public void removeChangedListener(AISettingsEventListener listener) {
-        this.settingsChangedListeners.remove(listener);
-    }
-
-    private void raiseChangedEvent(AISettingsManager registry) {
-        for (AISettingsEventListener listener : this.settingsChangedListeners.toArray(AISettingsEventListener[]::new)) {
-            listener.onSettingsUpdate(registry);
-        }
-    }
-
-    private AISettingsHolder getSettingsHolder() {
-        if (DBWorkbench.getPlatform().getWorkspace().getWorkspaceSession() instanceof SMSessionPersistent session) {
-            return AISettingsSessionHolder.getForSession(session);
-        } else {
-            return AISettingsLocalHolder.INSTANCE;
-        }
-    }
-
-    @NotNull
-    public AISettings getSettings() {
-        return this.getSettingsHolder().getSettings();
-    }
-
-    @NotNull
-    private static AISettings loadSettingsFromConfig() {
-        AISettings settings = null;
-        try {
-            String content = loadConfig();
-            if (!CommonUtils.isEmpty(content)) {
-                settings = readPropsGson.fromJson(new StringReader(content), AISettings.class);
-            }
-        } catch (Exception e) {
-            log.error("Error loading AI settings, falling back to defaults.", e);
-        }
-        if (settings == null) {
-            settings = new AISettings();
-        }
-
-        if (settings.activeEngine() == null || !settings.hasConfiguration(settings.activeEngine())) {
-            settings.setActiveEngine(OpenAIConstants.OPENAI_ENGINE);
-        }
-
-        // Fill missing settings
-        Map<String, AIEngineProperties> configurations = settings.getEngineConfigurations();
-        for (AIEngineDescriptor aed : AIEngineRegistry.getInstance().getCompletionEngines()) {
-            if (!configurations.containsKey(aed.getId())) {
-                try {
-                    configurations.put(aed.getId(), aed.createPropertiesInstance());
-                } catch (DBException e) {
-                    log.error(e);
-                }
-            }
-        }
-
-        return settings;
-    }
-
-    public void saveSettings(AISettings settings) {
-        try {
-            if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
-                log.warn("The user has no permission to save AI configuration");
-                return;
-            }
-
-            if (!saveSecretsAsPlainText()) {
-                settings.saveSecrets();
-            }
-            String content = savePropsGson.toJson(settings);
-
-            DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
-            this.getSettingsHolder().setSettings(settings);
-        } catch (Exception e) {
-            log.error("Error saving AI configuration", e);
-        }
-        raiseChangedEvent(this);
-    }
-
-    private static String loadConfig() throws DBException {
-        return DBWorkbench.getPlatform()
-            .getConfigurationController()
-            .loadConfigurationFile(AI_CONFIGURATION_FILE_NAME);
-    }
-
-    public static boolean isConfigExists() throws DBException {
-        String content = loadConfig();
-        return CommonUtils.isNotEmpty(content);
-    }
-
-    private static class AIConfigurationSerDe
-        implements JsonSerializer<AISettings>, JsonDeserializer<AISettings> {
-
-        @Override
-        public AISettings deserialize(
-            JsonElement json,
-            Type typeOfT,
-            JsonDeserializationContext context
-        ) throws JsonParseException {
-            AISettings aiSettings = new AISettings();
-            Map<String, AIEngineProperties> engineConfigurationMap = new LinkedHashMap<>();
-
-            if (json != null && json.isJsonObject()) {
-                JsonObject root = json.getAsJsonObject();
-
-                JsonElement aiDisabledEl = root.get(AI_DISABLED_KEY);
-                aiSettings.setAiDisabled(
-                    aiDisabledEl != null
-                        && aiDisabledEl.isJsonPrimitive()
-                        && aiDisabledEl.getAsJsonPrimitive().isBoolean()
-                        && aiDisabledEl.getAsBoolean()
-                );
-
-                JsonElement activeEngineEl = root.get(ACTIVE_ENGINE_KEY);
-                aiSettings.setActiveEngine(
-                    activeEngineEl != null && !activeEngineEl.isJsonNull()
-                        ? activeEngineEl.getAsString()
-                        : null
-                );
-
-                JsonObject ecRoot = root.has(ENGINE_CONFIGURATIONS_KEY)
-                    && root.get(ENGINE_CONFIGURATIONS_KEY).isJsonObject()
-                    ? root.getAsJsonObject(ENGINE_CONFIGURATIONS_KEY)
-                    : new JsonObject();
-
-                //Map<String, String> replacements = AIEngineSettingsRegistry.getInstance().getReplacements();
-                for (Map.Entry<String, JsonElement> entry : ecRoot.entrySet()) {
-                    String engineId = entry.getKey();
-//                    String engineIdReplaced = replacements.get(engineId);
-//                    String fallbackEngineId = Optional.ofNullable(
-//                            entry.getValue()
-//                                .getAsJsonObject()
-//                                .get(AIEngineSettings.FALLBACK_ENGINE_ID)
-//                        )
-//                        .map(JsonElement::getAsString)
-//                        .orElse(null);
-
-                    AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
-                    try {
-                        AIEngineProperties engineSettings = readPropsGson.fromJson(
-                            entry.getValue(), engineDescriptor.getPropertiesType());
-
-                        engineConfigurationMap.put(engineId, engineSettings);
-                    } catch (JsonSyntaxException e) {
-                        log.error("Error parsing '" + engineId + "' properties", e);
-                    }
-                }
-            }
-
-            aiSettings.setEngineConfigurations(engineConfigurationMap);
-
-            return aiSettings;
-        }
-
-        @Override
-        public JsonElement serialize(AISettings src, Type typeOfSrc, JsonSerializationContext context) {
-            JsonObject json = new JsonObject();
-            json.addProperty(AI_DISABLED_KEY, src.isAiDisabled());
-            json.addProperty(ACTIVE_ENGINE_KEY, src.activeEngine());
-
-            JsonObject engineConfigurations = new JsonObject();
-            for (Map.Entry<String, AIEngineProperties> configuration : src.getEngineConfigurations().entrySet()) {
-                JsonElement savedProps = savePropsGson.toJsonTree(configuration.getValue());
-                engineConfigurations.add(configuration.getKey(), savedProps);
-            }
-            json.add(ENGINE_CONFIGURATIONS_KEY, engineConfigurations);
-
-            return json;
-        }
-    }
-
-    public static boolean saveSecretsAsPlainText() {
-        DBPApplication application = DBWorkbench.getPlatform().getApplication();
-        return application.isMultiuser() || application.isDistributed();
-    }
-
-
-    @NotNull
-    private static Gson createPropertiesLoadGson() {
-        return new GsonBuilder()
-            .setStrictness(Strictness.LENIENT)
-            .registerTypeAdapter(AISettings.class, new AIConfigurationSerDe())
-            .create();
-    }
-
-    private static Gson createPropertiesSaveGson() {
-        if (saveSecretsAsPlainText()) {
-            return createPropertiesLoadGson();
-        } else {
-            return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
-                .registerTypeAdapter(AISettings.class, new AIConfigurationSerDe())
-                .create();
-        }
-    }
 }
