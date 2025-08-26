@@ -109,7 +109,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         String script = result.sql();
         if (script == null) {
             if (!CommonUtils.isEmpty(result.message())) {
-                throw new DBException(result.message());
+                scriptContext.getOutputWriter().println(AI_OUTPUT_SEVERITY, prompt + " ==>\n\n" + result.message() + "\n");
             }
             throw new DBException("Empty AI response for '" + prompt + "'");
         }
