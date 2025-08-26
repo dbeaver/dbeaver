@@ -36,7 +36,7 @@ jobs:
 
       - name: Build DBeaver
         working-directory: ./dbeaver/product/aggregate
-        run: mvn clean verify -B -T1C {{ steps.prepare-p2.outputs.mvn-flag }}
+        run: mvn clean verify -B -T1C ${{ steps.prepare-p2.outputs.mvn-flag }}
 
   lint-java:
     name: Check style
