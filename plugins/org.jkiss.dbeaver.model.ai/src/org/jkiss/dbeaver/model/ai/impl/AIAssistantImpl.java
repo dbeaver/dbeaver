@@ -171,17 +171,14 @@ public class AIAssistantImpl implements AIAssistant {
             engine.getContextWindowSize(monitor)
         );
 
-        List<AIMessage> chatMessages = List.of(
-            AIMessage.systemMessage(prompt),
-            AIMessage.userMessage(request.text())
-        );
-
         AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
-
+        String responseVariant = completionResponse.variants().stream().findFirst().orElseThrow(
+            () -> new DBException("Empty AI response for '" + request.text() + "'")
+        );
         MessageChunk[] messageChunks = processAndSplitCompletion(
             monitor,
             request.context(),
-            completionResponse.variants().getFirst()
+            responseVariant
         );
 
         String finalSQL = null;
