@@ -34,15 +34,15 @@ jobs:
           repo: "dbeaver-deps-ce"
 
       - name: Build DBeaver
+        working-directory: ./dbeaver/product/aggregate
         run: |
           if [ ${{ steps.prepare-p2.outputs.p2-found }} = 'true' ]; then
-            p2_repo='./dbeaver-deps-ce/p2/repository/target/repository'
-            p2_uri="file://$(realpath "$p2_repo")"
-            echo "p2_uri=$p2_uri"
-            mvn clean verify -B -T1C ${{ inputs.mvn-args }} -Drepo.p2.dbeaver-ce.url="$p2_uri" -f './dbeaver/product/aggregate'
+            p2_uri="file://$(realpath ../../../dbeaver-deps-ce/p2/repository/target/repository)"
+            additional_args="-Drepo.p2.dbeaver-ce.url=$p2_uri"
           else
-            mvn clean verify -B -T1C ${{ inputs.mvn-args }} -f './dbeaver/product/aggregate'
+            additional_args=''
           fi
+          mvn clean verify -B -T1C "$additional_args"
 
   lint-java:
     name: Check style
