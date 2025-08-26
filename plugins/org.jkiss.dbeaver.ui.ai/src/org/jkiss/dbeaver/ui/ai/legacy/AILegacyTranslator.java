@@ -170,7 +170,7 @@ public class AILegacyTranslator {
                 DBPWorkspace workspace = executionContext.getDataSource().getContainer().getProject().getWorkspace();
                 AIAssistant aiAssistant = AIAssistantRegistry.getInstance().createAssistant(workspace);
 
-                AIPromptBuilder sysPromptBuilder = AIGenerateSqlPromptBuilder.create(dbContext.getDataSource());
+                AIPromptBuilder sysPromptBuilder = AIGenerateSqlPromptBuilder.create(dbContext::getDataSource);
                 AIMessage userMessage = AIMessage.userMessage(userInput);
                 String result = aiAssistant.generateText(
                     monitor,

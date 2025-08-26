@@ -21,17 +21,38 @@ import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISqlJoinRule;
 import org.jkiss.dbeaver.model.ai.impl.AIPromptUtils;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
+import org.jkiss.dbeaver.model.logical.DBSLogicalDataSourceSupplier;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 public class AIGenerateSqlPromptBuilder extends AIPromptBuilder {
 
+    public static final String SQL_GENERATOR_ID = "sql";
+
     @NotNull
-    public static AIGenerateSqlPromptBuilder create(DBSLogicalDataSource dataSource) {
+    @Override
+    public String generatorId() {
+        return SQL_GENERATOR_ID;
+    }
+
+    @NotNull
+    public static AIGenerateSqlPromptBuilder create(@NotNull DBSLogicalDataSourceSupplier dsSupplier) {
         AIGenerateSqlPromptBuilder builder = new AIGenerateSqlPromptBuilder();
+        addSqlGenerateInstructions(dsSupplier, builder);
+        return builder;
+    }
+
+    public static void addSqlGenerateInstructions(
+        @NotNull DBSLogicalDataSourceSupplier dsSupplier,
+        @NotNull AIPromptBuilder builder
+    ) {
+        DBSLogicalDataSource dataSource = dsSupplier.get();
+        if (dataSource != null) {
+            builder
+                .addContexts(AIPromptUtils.describeDataSourceInfo(dataSource))
+                .addInstructions(AIPromptUtils.createDatabaseInstructions(dataSource));
+        }
         builder
-            .addContexts(AIPromptUtils.describeDataSourceInfo(dataSource))
-            .addInstructions(AIPromptUtils.createDatabaseInstructions(dataSource))
             .addGoals(
                 "Help users write SQL queries.",
                 "Provide information about SQL syntax, functions, and best practices.",
@@ -45,8 +66,6 @@ public class AIGenerateSqlPromptBuilder extends AIPromptBuilder {
             );
 
         addJoinInstructions(builder);
-
-        return builder;
     }
 
     public static void addJoinInstructions(AIPromptBuilder builder) {
@@ -64,5 +83,4 @@ public class AIGenerateSqlPromptBuilder extends AIPromptBuilder {
 
         builder.addInstructions(joinHint);
     }
-
 }

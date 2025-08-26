@@ -24,6 +24,9 @@ import org.jkiss.code.NotNull;
 public interface AIPromptGenerator {
 
     @NotNull
+    String generatorId();
+
+    @NotNull
     String build();
 
 }

@@ -4,6 +4,7 @@
 <plugin>
     <extension-point id="com.dbeaver.ai.engine" name="AI integrations" schema="schema/com.dbeaver.ai.engine.exsd"/>
     <extension-point id="com.dbeaver.ai.assistant" name="AI assistants" schema="schema/com.dbeaver.ai.assistant.exsd"/>
+    <extension-point id="com.dbeaver.ai.prompt" name="AI promt generators" schema="schema/com.dbeaver.ai.prompt.exsd"/>
 
     <extension point="com.dbeaver.ai.engine">
         <completionEngine id="openai" label="OpenAI" class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine" properties="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties" default="true" fallbacks="openai-pro">
@@ -31,6 +32,10 @@
             class="org.jkiss.dbeaver.model.ai.impl.AIAssistantImpl"
             sqlFormatter="org.jkiss.dbeaver.model.ai.impl.SimpleSqlFormatterImpl"
             schemaGenerator="org.jkiss.dbeaver.model.ai.impl.AISchemaGeneratorImpl"/>
+    </extension>
+
+    <extension point="com.dbeaver.ai.prompt">
+        <prompt id="sql" class="org.jkiss.dbeaver.model.ai.prompt.AIGenerateSqlPromptBuilder"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">

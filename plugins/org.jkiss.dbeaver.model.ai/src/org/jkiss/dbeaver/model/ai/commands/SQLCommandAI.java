@@ -105,7 +105,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         }
         AIDatabaseContext dbContext = contextBuilder.build();
 
-        AIPromptBuilder sysPromptBuilder = AIGenerateSqlPromptBuilder.create(dbContext.getDataSource());
+        AIPromptBuilder sysPromptBuilder = AIGenerateSqlPromptBuilder.create(() -> dbContext.getDataSource());
 
         AIAssistant assistant = AIAssistantRegistry.getInstance()
             .createAssistant(dataSourceContainer.getProject().getWorkspace());
