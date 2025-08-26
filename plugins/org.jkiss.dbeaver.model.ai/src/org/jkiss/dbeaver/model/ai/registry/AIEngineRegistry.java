@@ -105,6 +105,15 @@ public class AIEngineRegistry {
         return descriptor.createEngineInstance();
     }
 
+    public boolean isEngineSupports(@NotNull String id, @NotNull Class<?> api) {
+        AIEngineDescriptor descriptor = getEngineDescriptor(id);
+        if (descriptor != null) {
+            Class<?> objectClass = descriptor.getEngineObjectType().getObjectClass();
+            return objectClass != null && api.isAssignableFrom(objectClass);
+        }
+        return false;
+    }
+
     @Nullable
     public AIEngineDescriptor getEngineDescriptor(@NotNull String id) {
         while (true) {

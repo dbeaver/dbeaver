@@ -29,12 +29,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotClient;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotModels;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceAuth;
@@ -49,7 +49,7 @@ import java.net.URI;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
-public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine, CopilotProperties> {
+public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngineDescriptor, CopilotProperties> {
 
     private Text temperatureText;
     private ContextWindowSizeField contextWindowSizeField;
@@ -65,7 +65,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     @Override
     public void createControl(
         @NotNull Composite parent,
-        AIEngine object,
+        AIEngineDescriptor object,
         @NotNull Runnable propertyChangeListener
     ) {
         Composite composite = UIUtils.createComposite(parent, 3);

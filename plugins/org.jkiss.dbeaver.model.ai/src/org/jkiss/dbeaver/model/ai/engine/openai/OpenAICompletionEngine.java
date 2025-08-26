@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
@@ -89,7 +90,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
 
     @NotNull
     @Override
-    public Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
+    public AIStreamPublisher requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {

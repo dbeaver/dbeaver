@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatChunk;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
@@ -102,7 +103,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
 
     @NotNull
     @Override
-    public Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
+    public AIStreamPublisher requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {

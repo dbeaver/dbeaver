@@ -30,13 +30,13 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClient;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -47,7 +47,7 @@ import org.jkiss.utils.function.ThrowableFunction;
 import java.util.List;
 import java.util.Locale;
 
-public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends OpenAIProperties>
+public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
     implements IObjectPropertyConfigurator<ENGINE, PROPERTIES> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String baseUrl;
@@ -70,7 +70,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
     @Override
     public void createControl(
         @NotNull Composite parent,
-        AIEngine object,
+        AIEngineDescriptor object,
         @NotNull Runnable propertyChangeListener
     ) {
         Composite composite = UIUtils.createComposite(parent, 3);

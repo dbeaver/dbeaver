@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
-import java.util.concurrent.Flow;
 
 public class AIAssistantImpl implements AIAssistant {
     private static final Log log = Log.getLog(AIAssistantImpl.class);
@@ -82,10 +81,6 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull DBRProgressMonitor monitor,
         @NotNull AITranslateRequest request
     ) throws DBException {
-        AIEngine engine = request.engine() != null ?
-            request.engine() :
-            createEngine();
-
         AIMessage userMessage = new AIMessage(AIMessageType.USER, request.text());
 
         AIPromptBuilder promptBuilder = createPromptBuilder();
@@ -102,15 +97,18 @@ public class AIAssistantImpl implements AIAssistant {
         addSqlCompletionInstructions(promptBuilder);
         String prompt = promptBuilder.build();
 
-        AIEngineRequest completionRequest = requestFactory.build(
-            monitor,
-            prompt,
-            request.context(),
-            List.of(userMessage),
-            engine.getContextWindowSize(monitor)
-        );
+        AIEngineResponse completionResponse;
+        try (AIEngine engine = createEngine()) {
+            AIEngineRequest completionRequest = requestFactory.build(
+                monitor,
+                prompt,
+                request.context(),
+                List.of(userMessage),
+                engine.getContextWindowSize(monitor)
+            );
 
-        AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
+            completionResponse = requestCompletion(engine, monitor, completionRequest);
+        }
 
         MessageChunk[] messageChunks = processAndSplitCompletion(
             monitor,
@@ -139,10 +137,6 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull DBRProgressMonitor monitor,
         @NotNull AICommandRequest request
     ) throws DBException {
-        AIEngine engine = request.engine() != null ?
-            request.engine() :
-            createEngine();
-
         AIPromptBuilder promptBuilder = createPromptBuilder();
         promptBuilder
             .addContexts(AIPromptBuilder.describeContext(request.context().getDataSource()))
@@ -157,15 +151,18 @@ public class AIAssistantImpl implements AIAssistant {
         addSqlCompletionInstructions(promptBuilder);
         String prompt = promptBuilder.build();
 
-        AIEngineRequest completionRequest = requestFactory.build(
-            monitor,
-            prompt,
-            request.context(),
-            List.of(AIMessage.userMessage(request.text())),
-            engine.getContextWindowSize(monitor)
-        );
+        AIEngineResponse completionResponse;
+        try (AIEngine engine = createEngine()) {
+            AIEngineRequest completionRequest = requestFactory.build(
+                monitor,
+                prompt,
+                request.context(),
+                List.of(AIMessage.userMessage(request.text())),
+                engine.getContextWindowSize(monitor)
+            );
 
-        AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
+            completionResponse = requestCompletion(engine, monitor, completionRequest);
+        }
 
         MessageChunk[] messageChunks = processAndSplitCompletion(
             monitor,
@@ -189,7 +186,7 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIDatabaseContext context,
         @NotNull String completion
-    ) throws DBException {
+    ) {
         String processedCompletion = sqlFormatter.formatGeneratedQuery(
             monitor,
             context.getExecutionContext(),
@@ -203,7 +200,7 @@ public class AIAssistantImpl implements AIAssistant {
         );
     }
 
-    private static <T> T callWithRetry(ThrowableSupplier<T, DBException> supplier) throws DBException {
+    protected static <T> T callWithRetry(ThrowableSupplier<T, DBException> supplier) throws DBException {
         int retry = 0;
         while (retry < MANY_REQUESTS_RETRIES) {
             try {
@@ -219,10 +216,19 @@ public class AIAssistantImpl implements AIAssistant {
         throw new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
     }
 
+    public static String getActiveEngineId() {
+        return AISettingsManager.getInstance().getSettings().activeEngine();
+    }
+
+    public boolean isEngineSupports(Class<?> api) {
+        return AIEngineRegistry.getInstance().isEngineSupports(
+            getActiveEngineId(),
+            api);
+    }
+
     @NotNull
     public AIEngine createEngine() throws DBException {
-        return AIEngineRegistry.getInstance().createEngine(
-            AISettingsManager.getInstance().getSettings().activeEngine());
+        return AIEngineRegistry.getInstance().createEngine(getActiveEngineId());
     }
 
     protected AIEngineResponse requestCompletion(
@@ -252,35 +258,7 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
-    protected Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
-        @NotNull AIEngine engine,
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull AIEngineRequest request
-    ) throws DBException {
-        try {
-            Flow.Publisher<AIEngineResponseChunk> publisher = callWithRetry(() -> engine.requestCompletionStream(monitor, request));
-            boolean loggingEnabled = isLoggingEnabled();
-
-            return subscriber -> {
-                if (loggingEnabled) {
-                    log.debug("AI stream request:\n" + CommonUtils.addTextIndent(request.toString(), LOG_INDENT));
-                    publisher.subscribe(new LogSubscriber(log, subscriber));
-                } else {
-                    publisher.subscribe(subscriber);
-                }
-            };
-        } catch (Exception e) {
-            log.error("Error requesting completion stream", e);
-
-            if (e instanceof DBException) {
-                throw (DBException) e;
-            } else {
-                throw new DBException("Error requesting completion stream", e);
-            }
-        }
-    }
-
-    protected AIPromptBuilder createPromptBuilder() throws DBException {
+    protected AIPromptBuilder createPromptBuilder() {
         return AIPromptBuilder.create();
     }
 
@@ -291,7 +269,7 @@ public class AIAssistantImpl implements AIAssistant {
 
     }
 
-    private boolean isLoggingEnabled() throws DBException {
+    protected boolean isLoggingEnabled() throws DBException {
         AIEngineProperties activeEngineConfiguration = getActiveEngineConfiguration();
         if (activeEngineConfiguration == null) {
             log.warn("No active AI engine configuration found");
