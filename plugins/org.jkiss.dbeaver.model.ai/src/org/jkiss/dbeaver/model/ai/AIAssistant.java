@@ -31,16 +31,17 @@ public interface AIAssistant {
 
     /**
      * Generates text according to the prompt
-     * @param context      database context. Creates database snapshot according to this context.
-     * @param systemPromptBuilder prompt explaining goals, additional instructions and context informations
-     * @param messages     user messages
+     *
+     * @param context         database context. Creates database snapshot according to this context.
+     * @param systemGenerator generates prompt explaining goals, additional instructions and context information
+     * @param messages        user messages
      * @return generated text
      */
     @NotNull
     String generateText(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIDatabaseContext context,
-        @NotNull AIPromptBuilder systemPromptBuilder,
+        @NotNull AIPromptGenerator systemGenerator,
         @NotNull List<AIMessage> messages
     ) throws DBException;
 

@@ -22,9 +22,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIAssistant;
 import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIPromptBuilder;
+import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.ai.AISqlFormatter;
 import org.jkiss.dbeaver.model.ai.engine.*;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptBuilder;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -71,11 +72,11 @@ public class AIAssistantImpl implements AIAssistant {
     public String generateText(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIDatabaseContext context,
-        @NotNull AIPromptBuilder systemPromptBuilder,
+        @NotNull AIPromptGenerator systemGenerator,
         @NotNull List<AIMessage> messages
     ) throws DBException {
         try (AIEngine engine = createEngine()) {
-            String systemPrompt = systemPromptBuilder.build();
+            String systemPrompt = systemGenerator.build();
 
             AIEngineRequest completionRequest = requestFactory.build(
                 monitor,

@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.prompts;
+package org.jkiss.dbeaver.model.ai.prompt;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AIPromptBuilder;
 import org.jkiss.dbeaver.model.ai.AISqlJoinRule;
 import org.jkiss.dbeaver.model.ai.impl.AIPromptUtils;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
@@ -66,8 +65,4 @@ public class AIGenerateSqlPromptBuilder extends AIPromptBuilder {
         builder.addInstructions(joinHint);
     }
 
-    @Override
-    public String build() {
-        return super.build();
-    }
 }

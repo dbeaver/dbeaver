@@ -14,15 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.prompt;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class AIPromptBuilder {
+public class AIPromptBuilder implements AIPromptGenerator {
     private final List<String> goals = new ArrayList<>();
     private final List<String> instructions = new ArrayList<>();
     private final List<String> examples = new ArrayList<>();
@@ -62,6 +63,7 @@ public class AIPromptBuilder {
         return this;
     }
 
+    @NotNull
     public String build() {
         StringBuilder prompt = new StringBuilder();
         prompt.append("Goals:\n");
