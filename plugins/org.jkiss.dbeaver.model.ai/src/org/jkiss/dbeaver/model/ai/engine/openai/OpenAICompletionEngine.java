@@ -30,10 +30,18 @@ import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Flow;
 
 public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
     extends BaseCompletionEngine {
+
+    private final ExecutorService iterablePublisher = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "IterablePublisher");
+        t.setDaemon(true);
+        return t;
+    });
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
@@ -61,7 +69,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
             .stream()
             .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
                 model.id(),
-                new AIModel(model.id(), null, OpenAIModels.getModelFeatures(model.id()))
+                new AIModel(model.id(), null, OpenAIModels.detectModelFeatures(model.id()))
             ))
             .toList();
     }
@@ -138,6 +146,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
     @Override
     public void close() throws DBException {
         openAiService.dispose();
+        iterablePublisher.shutdown();
     }
 
     @NotNull
@@ -178,8 +187,11 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
         if (token == null || token.isEmpty()) {
             throw new DBException("OpenAI API token is not set");
         }
-
-        return OpenAIClient.createClient(token);
+        String baseUrl = properties.getBaseUrl();
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            baseUrl = OpenAIClient.OPENAI_ENDPOINT;
+        }
+        return OpenAIClient.createClient(baseUrl, token);
     }
 
     @Nullable

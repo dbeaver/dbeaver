@@ -56,7 +56,7 @@ public interface DBPPlatformUI {
         STOP,
         RETRY,
     }
-    
+
     class UserChoiceResponse {
         /**
          * index of the user's choice or out of range value (-1) on dialog failure
