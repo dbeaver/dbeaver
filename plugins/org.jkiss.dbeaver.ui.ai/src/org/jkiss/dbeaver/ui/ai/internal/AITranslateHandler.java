@@ -29,7 +29,7 @@ public class AITranslateHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) {
         Command command = ActionUtils.findCommand(SQLEditorCommands.CMD_AI_CHAT_TOGGLE);
-        if (command != null && command.isEnabled() && command.getHandler() != null) {
+        if (false && command != null && command.isEnabled() && command.getHandler() != null) {
             // PRO products, sorry
             ActionUtils.runCommand(SQLEditorCommands.CMD_AI_CHAT_TOGGLE, HandlerUtil.getActiveWorkbenchWindow(event));
             return null;

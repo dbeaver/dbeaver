@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.AIAssistant;
+import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIPromptBuilder;
+import org.jkiss.dbeaver.model.ai.AISqlFormatter;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
@@ -28,7 +31,6 @@ import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,24 +43,14 @@ public class AIAssistantImpl implements AIAssistant {
     private static final int MANY_REQUESTS_TIMEOUT = 500;
     public static final String LOG_INDENT = "\t";
 
+    protected final DBPWorkspace workspace;
+
     protected final AIEngineRequestFactory requestFactory;
-    private AISqlFormatter sqlFormatter;
+    protected AISqlFormatter sqlFormatter;
 
     public AIAssistantImpl(@NotNull DBPWorkspace workspace) {
-        this(
-            workspace,
-            new AIEngineRequestFactory(
-                new AIDatabaseSnapshotService(),
-                new DummyTokenCounter()
-            )
-        );
-    }
-
-    public AIAssistantImpl(
-        @NotNull DBPWorkspace workspace,
-        @NotNull AIEngineRequestFactory requestFactory
-    ) {
-        this.requestFactory = requestFactory;
+        this.workspace = workspace;
+        this.requestFactory = createRequestFactory();
         try {
             this.sqlFormatter = AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
         } catch (DBException e) {
@@ -67,153 +59,36 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
-    /**
-     * Translate the specified text to SQL.
-     *
-     * @param monitor the progress monitor
-     * @param request the translate request
-     * @return the translated SQL
-     * @throws DBException if an error occurs
-     */
-    @NotNull
-    @Override
-    public String translateTextToSql(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull AITranslateRequest request
-    ) throws DBException {
-        AIMessage userMessage = new AIMessage(AIMessageType.USER, request.text());
-
-        AIPromptBuilder promptBuilder = createPromptBuilder();
-        promptBuilder
-            .addContexts(AIPromptUtils.describeDataSourceInfo(request.context().getDataSource()))
-            .addInstructions(AIPromptUtils.createDatabaseInstructions(request.context().getDataSource()))
-            .addGoals(
-                "Translate natural language text to SQL."
-            )
-            .addOutputFormats(
-                "Place any explanation or comments before the SQL code block.",
-                "Provide the SQL query in a fenced Markdown code block."
-            );
-        addSqlCompletionInstructions(promptBuilder);
-        String prompt = promptBuilder.build();
-
-        AIEngineResponse completionResponse;
-        try (AIEngine engine = createEngine()) {
-            AIEngineRequest completionRequest = requestFactory.build(
-                monitor,
-                prompt,
-                request.context(),
-                List.of(userMessage),
-                engine.getContextWindowSize(monitor)
-            );
-
-            completionResponse = requestCompletion(engine, monitor, completionRequest);
-        }
-
-        MessageChunk[] messageChunks = processAndSplitCompletion(
-            monitor,
-            request.context(),
-            completionResponse.variants().getFirst()
-        );
-
-        return AITextUtils.convertToSQL(
-            userMessage,
-            messageChunks,
-            request.context().getExecutionContext().getDataSource()
+    protected AIEngineRequestFactory createRequestFactory() {
+        return new AIEngineRequestFactory(
+            new AIDatabaseSnapshotService(),
+            new DummyTokenCounter()
         );
     }
 
-    /**
-     * Translate the specified user command to SQL.
-     *
-     * @param monitor the progress monitor
-     * @param request the command request
-     * @return the command result
-     * @throws DBException if an error occurs
-     */
     @NotNull
     @Override
-    public AICommandResult command(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull AICommandRequest request
-    ) throws DBException {
-        AIPromptBuilder promptBuilder = createPromptBuilder();
-        promptBuilder
-            .addContexts(AIPromptUtils.describeDataSourceInfo(request.context().getDataSource()))
-            .addInstructions(AIPromptUtils.createDatabaseInstructions(request.context().getDataSource()))
-            .addGoals(
-                "Translate natural language text to SQL."
-            )
-            .addOutputFormats(
-                "Place any explanation or comments before the SQL code block.",
-                "Provide the SQL query in a fenced Markdown code block."
-            );
-        addSqlCompletionInstructions(promptBuilder);
-        String prompt = promptBuilder.build();
-
-        AIEngineResponse completionResponse;
-        try (AIEngine engine = createEngine()) {
-            AIEngineRequest completionRequest = requestFactory.build(
-                monitor,
-                prompt,
-                request.context(),
-                List.of(AIMessage.userMessage(request.text())),
-                engine.getContextWindowSize(monitor)
-            );
-
-            completionResponse = requestCompletion(engine, monitor, completionRequest);
-        }
-
-        MessageChunk[] messageChunks = processAndSplitCompletion(
-            monitor,
-            request.context(),
-            completionResponse.variants().getFirst()
-        );
-
-        String finalSQL = null;
-        StringBuilder messages = new StringBuilder();
-        for (MessageChunk chunk : messageChunks) {
-            if (chunk instanceof MessageChunk.Code code) {
-                finalSQL = code.text();
-            } else if (chunk instanceof MessageChunk.Text textChunk) {
-                messages.append(textChunk.text());
-            }
-        }
-        return new AICommandResult(finalSQL, messages.toString());
-    }
-
-    protected MessageChunk[] processAndSplitCompletion(
+    public String generateText(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIDatabaseContext context,
-        @NotNull String completion
-    ) {
-        String processedCompletion = sqlFormatter.formatGeneratedQuery(
-            monitor,
-            context.getExecutionContext(),
-            context.getScopeObject(),
-            completion
-        );
+        @NotNull AIPromptBuilder systemPromptBuilder,
+        @NotNull List<AIMessage> messages
+    ) throws DBException {
+        try (AIEngine engine = createEngine()) {
+            String systemPrompt = systemPromptBuilder.build();
 
-        return AITextUtils.splitIntoChunks(
-            SQLUtils.getDialectFromDataSource(context.getExecutionContext().getDataSource()),
-            processedCompletion
-        );
-    }
+            AIEngineRequest completionRequest = requestFactory.build(
+                monitor,
+                systemPrompt,
+                context,
+                messages,
+                engine.getContextWindowSize(monitor)
+            );
 
-    protected static <T> T callWithRetry(ThrowableSupplier<T, DBException> supplier) throws DBException {
-        int retry = 0;
-        while (retry < MANY_REQUESTS_RETRIES) {
-            try {
-                return supplier.get();
-            } catch (TooManyRequestsException e) {
-                retry++;
-                if (retry < MANY_REQUESTS_RETRIES) {
-                    log.debug("Too many engine requests. Retry after " + MANY_REQUESTS_TIMEOUT + "ms");
-                    RuntimeUtils.pause(MANY_REQUESTS_TIMEOUT);
-                }
-            }
+            AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
+
+            return completionResponse.variants().getFirst();
         }
-        throw new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
     }
 
     public static String getActiveEngineId() {
@@ -262,13 +137,6 @@ public class AIAssistantImpl implements AIAssistant {
         return AIPromptBuilder.create();
     }
 
-    /**
-     * Adds any extra instruction for SQL completion
-     */
-    protected void addSqlCompletionInstructions(AIPromptBuilder promptBuilder) {
-
-    }
-
     protected boolean isLoggingEnabled() throws DBException {
         AIEngineProperties activeEngineConfiguration = getActiveEngineConfiguration();
         if (activeEngineConfiguration == null) {
@@ -289,4 +157,22 @@ public class AIAssistantImpl implements AIAssistant {
         }
         return settingsManager.getSettings().getEngineConfiguration(activeEngine);
     }
+
+
+    protected static <T> T callWithRetry(ThrowableSupplier<T, DBException> supplier) throws DBException {
+        int retry = 0;
+        while (retry < MANY_REQUESTS_RETRIES) {
+            try {
+                return supplier.get();
+            } catch (TooManyRequestsException e) {
+                retry++;
+                if (retry < MANY_REQUESTS_RETRIES) {
+                    log.debug("Too many engine requests. Retry after " + MANY_REQUESTS_TIMEOUT + "ms");
+                    RuntimeUtils.pause(MANY_REQUESTS_TIMEOUT);
+                }
+            }
+        }
+        throw new DBException("Request failed after " + MANY_REQUESTS_RETRIES + " attempts");
+    }
+
 }

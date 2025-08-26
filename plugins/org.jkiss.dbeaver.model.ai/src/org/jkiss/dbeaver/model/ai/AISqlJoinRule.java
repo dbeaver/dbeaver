@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.impl;
+package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.ai.AISqlFormatter;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+public enum AISqlJoinRule {
 
-public class SimpleSqlFormatterImpl implements AISqlFormatter {
+    DEFAULT("Default"),
+    JOIN("Explicit JOIN"),
+    SUB_QUERY("Sub-queries");
 
-    @Override
-    public String formatGeneratedQuery(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSource dataSource,
-        @NotNull String completionText
-    ) {
-        return completionText;
+    private final String title;
+
+    AISqlJoinRule(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
     }
 }

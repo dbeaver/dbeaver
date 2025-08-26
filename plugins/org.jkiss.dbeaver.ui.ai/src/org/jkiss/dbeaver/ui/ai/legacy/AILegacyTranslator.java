@@ -26,11 +26,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.ai.AIAssistant;
-import org.jkiss.dbeaver.model.ai.AICompletionSettings;
-import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AITranslateRequest;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.prompts.AIGenerateSqlPromptBuilder;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -48,6 +46,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -161,16 +160,27 @@ public class AILegacyTranslator {
         AtomicReference<String> sql = new AtomicReference<>();
         UIUtils.runInProgressDialog(monitor -> {
             try {
-                final AIDatabaseContext context = new AIDatabaseContext.Builder(dataSource)
+                AIDatabaseContext dbContext = new AIDatabaseContext.Builder(dataSource)
                     .setScope(popup.getScope())
                     .setCustomEntities(popup.getCustomEntities(monitor))
                     .setExecutionContext(executionContext)
                     .build();
 
-                AITranslateRequest daiTranslateRequest = new AITranslateRequest(userInput, context);
                 DBPWorkspace workspace = executionContext.getDataSource().getContainer().getProject().getWorkspace();
                 AIAssistant aiAssistant = AIAssistantRegistry.getInstance().createAssistant(workspace);
-                sql.set(aiAssistant.translateTextToSql(monitor, daiTranslateRequest));
+
+                AIPromptBuilder sysPromptBuilder = AIGenerateSqlPromptBuilder.create(dbContext.getDataSource());
+                AIMessage userMessage = AIMessage.userMessage(userInput);
+                String result = aiAssistant.generateText(
+                    monitor,
+                    dbContext,
+                    sysPromptBuilder,
+                    List.of(userMessage)
+                );
+
+                String finalText = AITextUtils.extractGeneratedSqlQuery(monitor, dbContext, userMessage, result);
+
+                sql.set(finalText);
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
             }

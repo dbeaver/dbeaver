@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.impl;
+package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 
@@ -29,7 +29,7 @@ public class AIPromptBuilder {
     private final List<String> contexts = new ArrayList<>();
     private final List<String> outputFormats = new ArrayList<>();
 
-    private AIPromptBuilder() {
+    protected AIPromptBuilder() {
     }
 
     @NotNull
