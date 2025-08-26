@@ -1953,11 +1953,16 @@ public class DataSourceDescriptor
         if (!(obj instanceof DataSourceDescriptor source)) {
             return false;
         }
-        return
-            CommonUtils.equalOrEmptyStrings(this.name, source.name) &&
-                CommonUtils.equalOrEmptyStrings(this.description, source.description) &&
-                CommonUtils.equalObjects(this.extensions, source.extensions) &&
-                equalConfiguration(source);
+        return isLooselyEqualTo(source) && equalConfiguration(source) && equalInternalConfiguration(source);
+    }
+
+    public boolean isLooselyEqualTo(DataSourceDescriptor source) {
+        return CommonUtils.equalOrEmptyStrings(this.name, source.name) &&
+            CommonUtils.equalOrEmptyStrings(this.description, source.description);
+    }
+
+    public boolean equalInternalConfiguration(DataSourceDescriptor source) {
+        return CommonUtils.equalObjects(this.extensions, source.extensions);
     }
 
     public boolean equalConfiguration(DataSourceDescriptor source) {
