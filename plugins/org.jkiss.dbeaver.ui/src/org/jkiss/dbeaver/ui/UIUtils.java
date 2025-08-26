@@ -176,11 +176,6 @@ public class UIUtils {
         };
     }
 
-    public static void createToolBarSeparator(Composite toolBar, int style) {
-        Label label = new Label(toolBar, SWT.NONE);
-        label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
-    }
-
     public static void createLabelSeparator(Composite toolBar, int style) {
         Label label = new Label(toolBar, SWT.SEPARATOR | style);
         label.setLayoutData(new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL));
@@ -2364,7 +2359,7 @@ public class UIUtils {
 
     public static void installAndUpdateMainFont(@NotNull Control control) {
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.DBeaver.MAIN_FONT,
             s -> applyMainFont(control),
             control
         );
@@ -2395,7 +2390,7 @@ public class UIUtils {
     }
 
     private static boolean mainFontIsDefault() {
-        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBeaver.MAIN_FONT);
         final FontData[] defaultFontData = JFaceResources.getFontRegistry().getFontData(JFaceResources.DEFAULT_FONT);
         return Arrays.equals(mainFontData, defaultFontData);
     }

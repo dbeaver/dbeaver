@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver H2 Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.h2;singleton:=true
-Bundle-Version: 1.0.217.qualifier
-Bundle-Release-Date: 20250901
+Bundle-Version: 1.0.218.qualifier
+Bundle-Release-Date: 20250922
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.data.gis,

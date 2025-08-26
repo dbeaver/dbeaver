@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.Map;
@@ -25,6 +26,8 @@ import java.util.Map;
  * AI engine settings
  */
 public interface AIEngineSettings<S extends AIEngineSettings<S>> {
+    String FALLBACK_ENGINE_ID = "fallbackEngineId";
+
     /**
      * Resolve secrets in the settings.
      */
@@ -53,4 +56,7 @@ public interface AIEngineSettings<S extends AIEngineSettings<S>> {
     boolean isValid();
 
     boolean isLoggingEnabled();
+
+    @Nullable
+    String fallbackEngineId();
 }

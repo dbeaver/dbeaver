@@ -46,7 +46,7 @@ public class SQLCompletionHelper {
      * @return Information about the object
      */
     @Nullable
-    public static Object readAdditionalProposalInfo(
+    public static String readAdditionalProposalInfo(
         @Nullable DBRProgressMonitor monitor,
         @NotNull SQLCompletionContext context,
         @Nullable DBPNamedObject object,

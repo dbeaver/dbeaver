@@ -40,7 +40,7 @@
                 id="stream.csv"
                 class="org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV"
                 description="%dataTransfer.producer.stream.processor.csv.description"
-                icon="icons/formats/csv.png"
+                icon="icons/formats/csv.svg"
                 label="%dataTransfer.producer.stream.processor.csv.name"
                 contentType="text/plain">
                 <propertyGroup label="%dataTransfer.producer.stream.processor.csv.propertyGroup.general.label">
@@ -76,7 +76,7 @@
                     id="stream.xml"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterXML"
                     description="%dataTransfer.processor.xml.description"
-                    icon="icons/formats/xml.png"
+                    icon="icons/formats/xml.svg"
                     label="%dataTransfer.processor.xml.name"
                     contentType="text/xml">
                 <propertyGroup label="%dataTransfer.processor.xml.propertyGroup.general.label">
@@ -88,7 +88,7 @@
                     id="stream.dbunit"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterDbUnit"
                     description="%dataTransfer.processor.dbunit.description"
-                    icon="icons/formats/xml.png"
+                    icon="icons/formats/xml.svg"
                     label="%dataTransfer.processor.dbunit.name"
                     contentType="text/xml">
                 <propertyGroup label="%dataTransfer.processor.dbunit.propertyGroup.general.label">
@@ -103,7 +103,7 @@
                     id="stream.json"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterJSON"
                     description="%dataTransfer.processor.json.description"
-                    icon="icons/formats/json.png"
+                    icon="icons/formats/json.svg"
                     label="%dataTransfer.processor.json.name"
                     contentType="text/json">
                 <propertyGroup label="%dataTransfer.processor.json.propertyGroup.general.label">
@@ -120,7 +120,7 @@
                     id="stream.html"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterHTML"
                     description="%dataTransfer.processor.html.description"
-                    icon="icons/formats/html.png"
+                    icon="icons/formats/html.svg"
                     label="%dataTransfer.processor.html.name"
                     appFileExtension="html"
                     appName="%dataTransfer.processor.web.name"
@@ -138,7 +138,7 @@
                     id="stream.csv"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV"
                     description="%dataTransfer.processor.csv.description"
-                    icon="icons/formats/csv.png"
+                    icon="icons/formats/csv.svg"
                     label="%dataTransfer.processor.csv.name"
                     contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.csv.propertyGroup.general.label">
@@ -162,7 +162,7 @@
                     id="stream.markdown.table"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterMarkdownTable"
                     description="%dataTransfer.processor.markdownTable.description"
-                    icon="icons/formats/markdown.png"
+                    icon="icons/formats/markdown.svg"
                     label="%dataTransfer.processor.markdownTable.name"
                 contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.markdownTable.propertyGroup.general.label">
@@ -200,7 +200,7 @@
                     id="stream.txt"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterTXT"
                     description="%dataTransfer.processor.txt.description"
-                    icon="icons/formats/text.png"
+                    icon="icons/formats/text.svg"
                     label="%dataTransfer.processor.txt.name"
                     contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.txt.propertyGroup.general.label">
@@ -226,7 +226,7 @@
                     id="stream.source.code"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSourceCode"
                     description="%dataTransfer.processor.source.code.description"
-                    icon="icons/formats/code.png"
+                    icon="icons/formats/code.svg"
                     label="%dataTransfer.processor.source.code.name"
                     contentType="text/plain">
                 <propertyGroup label="%dataTransfer.processor.source.code.propertyGroup.general.label">

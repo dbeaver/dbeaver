@@ -87,7 +87,7 @@ public class ItemListControl extends NodeListControl
         super(parent, style, workbenchSite, node, metaNode);
 
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS,
             s -> super.getItemsViewer().refresh(),
             this);
 
@@ -436,11 +436,11 @@ public class ItemListControl extends NodeListControl
         public Font getFont(Object element)
         {
             if (!(element instanceof DBNNode node)) {
-                return BaseThemeSettings.instance.baseFont;
+                return BaseThemeSettings.instance.treeAndTableFont;
             }
             final Object object = getObjectValue(node);
             return objectColumn.isNameColumn(object) && DBNUtils.isDefaultElement(element) ?
-                BaseThemeSettings.instance.baseFontBold : BaseThemeSettings.instance.baseFont;
+                BaseThemeSettings.instance.treeAndTableFontBold : BaseThemeSettings.instance.treeAndTableFont;
         }
 
         @Override

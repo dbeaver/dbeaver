@@ -487,28 +487,27 @@ public class MySQLTable extends MySQLTableBase
             Map<String, MySQLTableConstraint> pkMap = new HashMap<>();
 
             String whereClause = references
-                ? "kcu.REFERENCED_TABLE_SCHEMA = ? AND kcu.REFERENCED_TABLE_NAME = ?"
-                : "kcu.TABLE_SCHEMA = ? AND kcu.TABLE_NAME = ?";
+                ? "rc.UNIQUE_CONSTRAINT_SCHEMA = ? AND rc.REFERENCED_TABLE_NAME = ?"
+                : "rc.CONSTRAINT_SCHEMA = ? AND rc.TABLE_NAME = ?";
+
             String sqlTemplate = """
                 SELECT
-                  kcu.TABLE_SCHEMA               AS fk_table_schema,
-                  kcu.TABLE_NAME                 AS fk_table_name,
-                  kcu.COLUMN_NAME                AS fk_column_name,
-                  kcu.REFERENCED_TABLE_SCHEMA    AS pk_table_schema,
-                  kcu.REFERENCED_TABLE_NAME      AS pk_table_name,
-                  kcu.REFERENCED_COLUMN_NAME     AS pk_column_name,
-                  kcu.ORDINAL_POSITION           AS key_seq,
-                  kcu.CONSTRAINT_NAME            AS fk_name,
+                  kcu.TABLE_SCHEMA             AS fk_table_schema,
+                  kcu.TABLE_NAME               AS fk_table_name,
+                  kcu.COLUMN_NAME              AS fk_column_name,
+                  rc.UNIQUE_CONSTRAINT_SCHEMA  AS pk_table_schema,
+                  rc.REFERENCED_TABLE_NAME     AS pk_table_name,
+                  kcu.REFERENCED_COLUMN_NAME   AS pk_column_name,
+                  kcu.ORDINAL_POSITION         AS key_seq,
+                  kcu.CONSTRAINT_NAME          AS fk_name,
                   rc.UPDATE_RULE,
                   rc.DELETE_RULE,
-                  rc.UNIQUE_CONSTRAINT_NAME      AS pk_name
-                FROM information_schema.KEY_COLUMN_USAGE kcu
-                JOIN information_schema.REFERENTIAL_CONSTRAINTS rc
-                  ON kcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
-                 AND kcu.TABLE_SCHEMA    = rc.CONSTRAINT_SCHEMA
+                  rc.UNIQUE_CONSTRAINT_NAME    AS pk_name
+                FROM information_schema.REFERENTIAL_CONSTRAINTS rc
+                JOIN information_schema.KEY_COLUMN_USAGE kcu
+                  ON kcu.CONSTRAINT_SCHEMA = rc.CONSTRAINT_SCHEMA
+                 AND kcu.CONSTRAINT_NAME   = rc.CONSTRAINT_NAME
                 WHERE %s
-                  AND kcu.REFERENCED_TABLE_NAME IS NOT NULL
-                ORDER BY kcu.ORDINAL_POSITION
                 """;
             String sql = sqlTemplate.formatted(whereClause);
 

@@ -268,7 +268,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
         try {
             gc.setForeground(NavigatorThemeSettings.instance.hintColor);
-            gc.setFont(BaseThemeSettings.instance.baseFontItalic);
+            gc.setFont(BaseThemeSettings.instance.treeAndTableFontItalic);
 
             drawTextClipped(gc, text, bounds);
         } finally {

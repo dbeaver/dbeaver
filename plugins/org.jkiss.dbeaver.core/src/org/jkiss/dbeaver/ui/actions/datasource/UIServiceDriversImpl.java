@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.UIServiceDrivers;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * UIServiceDriversImpl
@@ -31,12 +32,13 @@ public class UIServiceDriversImpl implements UIServiceDrivers {
 
     @Override
     public boolean downloadDriverFiles(DBRProgressMonitor monitor, DBPDriver driver, DBPDriverDependencies dependencies) {
-        return new UITask<Boolean>() {
+        Boolean result = new UITask<Boolean>() {
             @Override
             protected Boolean runTask() {
                 return DriverDownloadDialog.downloadDriverFiles(null, driver, dependencies);
             }
         }.execute();
+        return CommonUtils.toBoolean(result, false);
     }
 
 }

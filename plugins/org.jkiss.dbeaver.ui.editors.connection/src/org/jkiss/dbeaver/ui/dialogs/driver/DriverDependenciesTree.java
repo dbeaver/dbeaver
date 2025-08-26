@@ -161,7 +161,7 @@ class DriverDependenciesTree {
             item.setText(1, CommonUtils.notEmpty(library.getVersion()));
             item.setText(2, CommonUtils.notEmpty(library.getDescription()));
             if (editable) {
-                item.setFont(1, BaseThemeSettings.instance.baseFontBold);
+                item.setFont(1, BaseThemeSettings.instance.treeAndTableFontBold);
                 item.setText(1, NLS.bind(UIConnectionMessages.dialog_driver_download_version_change_label, item.getText(1)));
             }
             totalItems++;
