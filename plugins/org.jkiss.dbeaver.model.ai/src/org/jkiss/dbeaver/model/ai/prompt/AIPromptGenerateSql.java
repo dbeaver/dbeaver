@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.logical.DBSLogicalDataSourceSupplier;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-public class AIGenerateSqlPromptBuilder extends AIPromptBuilder {
+public class AIPromptGenerateSql extends AIPromptAbstract {
 
     public static final String SQL_GENERATOR_ID = "sql";
 
@@ -48,15 +48,15 @@ public class AIGenerateSqlPromptBuilder extends AIPromptBuilder {
     }
 
     @NotNull
-    public static AIGenerateSqlPromptBuilder create(@NotNull DBSLogicalDataSourceSupplier dsSupplier) {
-        AIGenerateSqlPromptBuilder builder = new AIGenerateSqlPromptBuilder();
+    public static AIPromptGenerateSql create(@NotNull DBSLogicalDataSourceSupplier dsSupplier) {
+        AIPromptGenerateSql builder = new AIPromptGenerateSql();
         addSqlGenerateInstructions(dsSupplier, builder);
         return builder;
     }
 
     public static void addSqlGenerateInstructions(
         @NotNull DBSLogicalDataSourceSupplier dsSupplier,
-        @NotNull AIPromptBuilder builder
+        @NotNull AIPromptAbstract builder
     ) {
         DBSLogicalDataSource dataSource = dsSupplier.get();
         if (dataSource != null) {
@@ -71,7 +71,7 @@ public class AIGenerateSqlPromptBuilder extends AIPromptBuilder {
         addJoinInstructions(builder);
     }
 
-    public static void addJoinInstructions(AIPromptBuilder builder) {
+    public static void addJoinInstructions(AIPromptAbstract builder) {
         AISqlJoinRule joinRule = CommonUtils.valueOf(
             AISqlJoinRule.class,
             DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_JOIN_RULE),

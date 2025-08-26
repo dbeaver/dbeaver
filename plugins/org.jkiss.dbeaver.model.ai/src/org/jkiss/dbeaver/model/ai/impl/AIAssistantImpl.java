@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.ai.AISqlFormatter;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.prompt.AIPromptBuilder;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -134,8 +134,8 @@ public class AIAssistantImpl implements AIAssistant {
         }
     }
 
-    protected AIPromptBuilder createPromptBuilder() {
-        return AIPromptBuilder.create();
+    protected AIPromptAbstract createPromptBuilder() {
+        return AIPromptAbstract.create();
     }
 
     protected boolean isLoggingEnabled() throws DBException {

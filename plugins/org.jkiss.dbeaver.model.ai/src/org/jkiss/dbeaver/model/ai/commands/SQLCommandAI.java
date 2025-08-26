@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
-import org.jkiss.dbeaver.model.ai.prompt.AIGenerateSqlPromptBuilder;
-import org.jkiss.dbeaver.model.ai.prompt.AIPromptBuilder;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -105,7 +105,7 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         }
         AIDatabaseContext dbContext = contextBuilder.build();
 
-        AIPromptBuilder sysPromptBuilder = AIGenerateSqlPromptBuilder.create(() -> dbContext.getDataSource());
+        AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(() -> dbContext.getDataSource());
 
         AIAssistant assistant = AIAssistantRegistry.getInstance()
             .createAssistant(dataSourceContainer.getProject().getWorkspace());

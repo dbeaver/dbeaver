@@ -28,8 +28,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.prompt.AIGenerateSqlPromptBuilder;
-import org.jkiss.dbeaver.model.ai.prompt.AIPromptBuilder;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
+import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -170,7 +170,7 @@ public class AILegacyTranslator {
                 DBPWorkspace workspace = executionContext.getDataSource().getContainer().getProject().getWorkspace();
                 AIAssistant aiAssistant = AIAssistantRegistry.getInstance().createAssistant(workspace);
 
-                AIPromptBuilder sysPromptBuilder = AIGenerateSqlPromptBuilder.create(dbContext::getDataSource);
+                AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(dbContext::getDataSource);
                 AIMessage userMessage = AIMessage.userMessage(userInput);
                 String result = aiAssistant.generateText(
                     monitor,

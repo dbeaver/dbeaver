@@ -24,46 +24,46 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class AIPromptBuilder implements AIPromptGenerator {
+public class AIPromptAbstract implements AIPromptGenerator {
     private final List<String> goals = new ArrayList<>();
     private final List<String> instructions = new ArrayList<>();
     private final List<String> examples = new ArrayList<>();
     private final List<String> contexts = new ArrayList<>();
     private final List<String> outputFormats = new ArrayList<>();
 
-    protected AIPromptBuilder() {
+    protected AIPromptAbstract() {
     }
 
     @Deprecated
-    public static AIPromptBuilder create() {
-        return new AIPromptBuilder();
+    public static AIPromptAbstract create() {
+        return new AIPromptAbstract();
     }
 
-    public static AIPromptBuilder create(@NotNull DBSLogicalDataSourceSupplier dsSupplier) {
+    public static AIPromptAbstract create(@NotNull DBSLogicalDataSourceSupplier dsSupplier) {
         throw new IllegalStateException("Not supported in base generator");
     }
 
-    public AIPromptBuilder addGoals(@NotNull String... goals) {
+    public AIPromptAbstract addGoals(@NotNull String... goals) {
         this.goals.addAll(Arrays.asList(goals));
         return this;
     }
 
-    public AIPromptBuilder addExamples(@NotNull String... examples) {
+    public AIPromptAbstract addExamples(@NotNull String... examples) {
         this.examples.addAll(Arrays.asList(examples));
         return this;
     }
 
-    public AIPromptBuilder addInstructions(@NotNull String... instructions) {
+    public AIPromptAbstract addInstructions(@NotNull String... instructions) {
         this.instructions.addAll(Arrays.asList(instructions));
         return this;
     }
 
-    public AIPromptBuilder addContexts(@NotNull String... contexts) {
+    public AIPromptAbstract addContexts(@NotNull String... contexts) {
         this.contexts.addAll(Arrays.asList(contexts));
         return this;
     }
 
-    public AIPromptBuilder addOutputFormats(@NotNull String... outputFormats) {
+    public AIPromptAbstract addOutputFormats(@NotNull String... outputFormats) {
         this.outputFormats.addAll(Arrays.asList(outputFormats));
         return this;
     }
