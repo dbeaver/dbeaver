@@ -172,9 +172,9 @@ public class AIAssistantImpl implements AIAssistant {
         );
 
         AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
-        String responseVariant = completionResponse.variants().stream().findFirst().orElseThrow(
-            () -> new DBException("Empty AI response when executing command")
-        );
+        String responseVariant = completionResponse.variants().stream()
+            .findFirst()
+            .orElseThrow(() -> new DBException("Empty AI response when executing command"));
         MessageChunk[] messageChunks = processAndSplitCompletion(
             monitor,
             request.context(),
