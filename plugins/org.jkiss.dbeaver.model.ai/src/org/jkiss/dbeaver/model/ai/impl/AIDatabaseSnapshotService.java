@@ -96,7 +96,7 @@ public class AIDatabaseSnapshotService {
         boolean refreshCache
     ) throws DBException {
 
-        if (ctx.getScope() == AIDatabaseScope.CUSTOM) {
+        if (ctx.getScope() == AIDatabaseScope.CUSTOM && ctx.getCustomEntities() != null) {
             List<DBSObject> entities = normalizeCustomEntities(ctx.getCustomEntities());
             if (refreshCache) {
                 cacheStructuresIfNeeded(monitor, entities);
