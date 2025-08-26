@@ -67,6 +67,11 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         return contributorConfig.getAttribute("replaces");
     }
 
+    @Nullable
+    public String getFallbacks() {
+        return contributorConfig.getAttribute("fallbacks");
+    }
+
     public boolean isDefault() {
         return CommonUtils.toBoolean(contributorConfig.getAttribute("default"));
     }

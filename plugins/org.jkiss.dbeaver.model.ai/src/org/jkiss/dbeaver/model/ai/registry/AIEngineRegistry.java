@@ -49,6 +49,7 @@ public class AIEngineRegistry {
 
     private final Map<String, AIEngineDescriptor> descriptorMap = new LinkedHashMap<>();
     private final Map<String, String> replaceMap = new LinkedHashMap<>();
+    private final Map<String, String> fallbackMap = new LinkedHashMap<>();
 
     public AIEngineRegistry(@NotNull IExtensionRegistry registry) {
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(AIEngineDescriptor.EXTENSION_ID);
@@ -61,6 +62,12 @@ public class AIEngineRegistry {
                 if (!CommonUtils.isEmpty(replaces)) {
                     for (String rl : replaces.split(",")) {
                         replaceMap.put(rl, descriptor.getId());
+                    }
+                }
+                String fallbacks = descriptor.getFallbacks();
+                if (!CommonUtils.isEmpty(fallbacks)) {
+                    for (String rl : fallbacks.split(",")) {
+                        fallbackMap.put(rl, descriptor.getId());
                     }
                 }
             }
@@ -107,7 +114,14 @@ public class AIEngineRegistry {
             }
             id = replace;
         }
-        return descriptorMap.get(id);
+        AIEngineDescriptor engine = descriptorMap.get(id);
+        if (engine == null) {
+            String follBackId = fallbackMap.get(id);
+            if (follBackId != null) {
+                engine = descriptorMap.get(follBackId);
+            }
+        }
+        return engine;
     }
 
 }

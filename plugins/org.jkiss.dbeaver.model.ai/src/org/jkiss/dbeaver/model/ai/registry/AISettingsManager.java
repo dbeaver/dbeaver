@@ -121,18 +121,8 @@ public class AISettingsManager {
                 settings.setActiveEngine(JSONUtils.getString(configMap, ACTIVE_ENGINE_KEY));
                 Map<String, Object> ecRoot = JSONUtils.getObject(configMap, ENGINE_CONFIGURATIONS_KEY);
 
-                //Map<String, String> replacements = AIEngineSettingsRegistry.getInstance().getReplacements();
                 for (Map.Entry<String, Object> entry : ecRoot.entrySet()) {
                     String engineId = entry.getKey();
-                    //                    String engineIdReplaced = replacements.get(engineId);
-                    //                    String fallbackEngineId = Optional.ofNullable(
-                    //                            entry.getValue()
-                    //                                .getAsJsonObject()
-                    //                                .get(AIEngineSettings.FALLBACK_ENGINE_ID)
-                    //                        )
-                    //                        .map(JsonElement::getAsString)
-                    //                        .orElse(null);
-
                     AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
                     if (engineDescriptor == null) {
                         log.error("AI engine '" + engineId + "' not found. Ignore config");

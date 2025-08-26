@@ -81,7 +81,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         createBaseUrlParameter(composite);
 
         createAdditionalSettings(composite);
-        UIUtils.syncExec(this::applySettings);
     }
 
     @Override
