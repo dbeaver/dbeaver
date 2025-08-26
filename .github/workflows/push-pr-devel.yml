@@ -26,60 +26,16 @@ jobs:
           project-deps: ./dbeaver/project.deps
           token: ${{ secrets.DEVOPS_ISSUE_RO_TOKEN }}
 
-      - name: Gather current branch info
-        uses: dbeaver/github-actions/branch-info@dbeaver/dbeaver-devops#2023-custom-p2
-        id: branch-info
-
-      # FIXME: here and later we assume that we work with a PR inside the dbeaver org, but what if it's a fork?
-      - name: Check if a custom p2 build is needed
-        shell: sh
-        id: p2-check
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH_NAME: ${{ steps.branch-info.outputs.branch-name }}
-        run: |
-          set_custom_p2_build_needed() {
-            echo "custom_p2_build_needed=$1" >> "$GITHUB_OUTPUT"
-          }
-          if [ "$BRANCH_NAME" = 'devel' ]; then
-            set_custom_p2_build_needed 'false'
-          else
-            # Subsitute: / -> %2F, # -> %23
-            url_encoded_branch_name=$(echo $BRANCH_NAME | sed 's/\//%2F/g' | sed 's/#/%23/g')
-            echo "url_encoded_branch_name=$url_encoded_branch_name"
-            http_status=$(curl -s -o /dev/null -w "%{http_code}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/dbeaver/dbeaver-deps-ce/branches/$url_encoded_branch_name")
-            echo "httpstatus=$http_status"
-            if [ "$http_status" = '200' ]; then
-              set_custom_p2_build_needed 'true'
-            else
-              set_custom_p2_build_needed 'false'
-            fi
-          fi
-
-      - name: Checkout p2
-        if: ${{ steps.p2-check.outputs.custom_p2_build_needed == 'true' }}
-        uses: dbeaver/github-actions/checkout-with-deps@dbeaver/dbeaver-devops#2023-custom-p2
+      - name: Prepare custom p2
+        uses: dbeaver/github-actions/prepare-custom-p2@dbeaver/dbeaver-devops#2023-custom-p2 # CHANGEME after PR approval
+        if: ${{ github.event_name == 'pull_request' }}
+        id: prepare-p2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          owner: dbeaver
-          repo: dbeaver-deps-ce
-          ref: ${{ steps.branch-info.outputs.branch-name }}
-
-      - name: Build custom p2 if needed
-        if: ${{ steps.p2-check.outputs.custom_p2_build_needed == 'true' }}
-        uses: dbeaver/github-actions/build-p2@dbeaver/dbeaver-devops#2023-custom-p2
-        id: build-p2
-        with:
-          repo-root-dir: ./dbeaver-deps-ce
+          repo: "dbeaver-deps-ce"
 
       - name: Build DBeaver
         run: |
-          echo "working directory is $(pwd). Contents: "
-          ls -lah
-
-          if [ ${{ steps.p2-check.outputs.custom_p2_build_needed }} = 'true' ]; then
+          if [ ${{ steps.prepare-p2.outputs.p2-found }} = 'true' ]; then
             p2_repo='./dbeaver-deps-ce/p2/repository/target/repository'
             p2_uri="file://$(realpath "$p2_repo")"
             echo "p2_uri=$p2_uri"
