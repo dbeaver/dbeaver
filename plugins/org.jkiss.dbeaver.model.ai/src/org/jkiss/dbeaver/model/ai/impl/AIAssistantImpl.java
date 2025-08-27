@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.ai.AISqlFormatter;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -71,7 +70,7 @@ public class AIAssistantImpl implements AIAssistant {
     @Override
     public String generateText(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIDatabaseContext context,
+        @Nullable AIDatabaseContext context,
         @NotNull AIPromptGenerator systemGenerator,
         @NotNull List<AIMessage> messages
     ) throws DBException {
@@ -132,10 +131,6 @@ public class AIAssistantImpl implements AIAssistant {
                 throw new DBException("Error requesting completion", e);
             }
         }
-    }
-
-    protected AIPromptAbstract createPromptBuilder() {
-        return AIPromptAbstract.create();
     }
 
     protected boolean isLoggingEnabled() throws DBException {

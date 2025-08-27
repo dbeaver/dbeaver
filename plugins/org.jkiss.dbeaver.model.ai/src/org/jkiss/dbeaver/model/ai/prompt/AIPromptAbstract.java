@@ -18,13 +18,12 @@ package org.jkiss.dbeaver.model.ai.prompt;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
-import org.jkiss.dbeaver.model.logical.DBSLogicalDataSourceSupplier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class AIPromptAbstract implements AIPromptGenerator {
+public abstract class AIPromptAbstract implements AIPromptGenerator {
     private final List<String> goals = new ArrayList<>();
     private final List<String> instructions = new ArrayList<>();
     private final List<String> examples = new ArrayList<>();
@@ -32,15 +31,6 @@ public class AIPromptAbstract implements AIPromptGenerator {
     private final List<String> outputFormats = new ArrayList<>();
 
     protected AIPromptAbstract() {
-    }
-
-    @Deprecated
-    public static AIPromptAbstract create() {
-        return new AIPromptAbstract();
-    }
-
-    public static AIPromptAbstract create(@NotNull DBSLogicalDataSourceSupplier dsSupplier) {
-        throw new IllegalStateException("Not supported in base generator");
     }
 
     public AIPromptAbstract addGoals(@NotNull String... goals) {
@@ -66,12 +56,6 @@ public class AIPromptAbstract implements AIPromptGenerator {
     public AIPromptAbstract addOutputFormats(@NotNull String... outputFormats) {
         this.outputFormats.addAll(Arrays.asList(outputFormats));
         return this;
-    }
-
-    @NotNull
-    @Override
-    public String generatorId() {
-        return "default";
     }
 
     @NotNull

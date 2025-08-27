@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,7 +41,7 @@ public interface AIAssistant {
     @NotNull
     String generateText(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIDatabaseContext context,
+        @Nullable AIDatabaseContext context,
         @NotNull AIPromptGenerator systemGenerator,
         @NotNull List<AIMessage> messages
     ) throws DBException;
