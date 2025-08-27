@@ -94,7 +94,8 @@ public class SQLSemanticProcessor {
         }
     }
 
-    private static <T> T callWithTimeout(CCJSqlParser parser, Callable<T> task) throws DBCException {
+    @NotNull
+    private static <T> T callWithTimeout(@NotNull CCJSqlParser parser, @NotNull Callable<T> task) throws DBCException {
         Future<T> future = executor.submit(task);
         try {
             return future.get(PARSE_FUTURE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
@@ -110,11 +111,13 @@ public class SQLSemanticProcessor {
         }
     }
 
+    @NotNull
     public static List<Statement> parseQueries(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
         CCJSqlParser parser = buildParser(dialect, sql);
         return callWithTimeout(parser, parser::Statements);
     }
 
+    @NotNull
     public static Statement parseQuery(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
         CCJSqlParser parser = buildParser(dialect, sql);
         return callWithTimeout(parser, parser::Statement);
