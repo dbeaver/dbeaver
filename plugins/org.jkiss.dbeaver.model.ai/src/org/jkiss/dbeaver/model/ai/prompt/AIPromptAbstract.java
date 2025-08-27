@@ -23,6 +23,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Base class for prompt generators.
+ *
+ * Each prompt must implement function 'PromptClass create(DBSLogicalDataSourceSupplier)' in order to support
+ * prompt usage in chat conversations. It is used on persisted conversation loading.
+ */
 public abstract class AIPromptAbstract implements AIPromptGenerator {
     private final List<String> goals = new ArrayList<>();
     private final List<String> instructions = new ArrayList<>();

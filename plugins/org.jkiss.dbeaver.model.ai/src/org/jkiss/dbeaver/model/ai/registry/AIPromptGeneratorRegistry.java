@@ -45,7 +45,7 @@ public class AIPromptGeneratorRegistry {
     private final Map<String, AIPromptGeneratorDescriptor> descriptorMap = new LinkedHashMap<>();
 
     public AIPromptGeneratorRegistry(@NotNull IExtensionRegistry registry) {
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(AIEngineDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(AIPromptGeneratorDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if ("prompt".equals(ext.getName())) {
                 AIPromptGeneratorDescriptor descriptor = new AIPromptGeneratorDescriptor(ext);

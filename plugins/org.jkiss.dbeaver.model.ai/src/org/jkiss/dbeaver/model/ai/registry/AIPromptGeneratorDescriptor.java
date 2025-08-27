@@ -21,11 +21,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSourceSupplier;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
 
@@ -46,14 +46,18 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
-    public AIPromptGenerator createGenerator(DBSLogicalDataSourceSupplier dataSource) throws DBException {
+    public AIPromptGenerator createGenerator(@NotNull DBSLogicalDataSourceSupplier dataSource) throws DBException {
         Class<? extends AIPromptGenerator> objectClass = objectType.getObjectClass(AIPromptGenerator.class);
         if (objectClass == null) {
             throw new DBException("Object class " + objectType.getImplName() + " not found");
         }
         try {
-            Method createMethod = objectClass.getMethod("create", DBSLogicalDataSource.class);
-            return (AIPromptGenerator) createMethod.invoke(null, dataSource);
+            Method createMethod = objectClass.getMethod("create", DBSLogicalDataSourceSupplier.class);
+            if (Modifier.isStatic(createMethod.getModifiers())) {
+                return (AIPromptGenerator) createMethod.invoke(null, dataSource);
+            } else {
+                throw new DBException("Prompt method '" + createMethod + "' is not static");
+            }
         } catch (Exception e) {
             throw new DBException("Error creating prompt generator " + getId(), e);
         }
