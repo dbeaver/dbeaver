@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.model.ai.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSourceSupplier;
@@ -33,16 +35,30 @@ public class AIPromptGeneratorDescriptor extends AbstractDescriptor {
 
     private final IConfigurationElement contributorConfig;
     private final ObjectType objectType;
+    private final String label;
+    private final DBPImage icon;
 
-    protected AIPromptGeneratorDescriptor(@NotNull IConfigurationElement contributorConfig) {
-        super(contributorConfig);
-        this.contributorConfig = contributorConfig;
-        this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
+    protected AIPromptGeneratorDescriptor(@NotNull IConfigurationElement config) {
+        super(config);
+        this.contributorConfig = config;
+        this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
     }
 
     @NotNull
     public String getId() {
         return contributorConfig.getAttribute("id");
+    }
+
+    @Nullable
+    public DBPImage getIcon() {
+        return icon;
+    }
+
+    @Nullable
+    public String getLabel() {
+        return label;
     }
 
     @NotNull
