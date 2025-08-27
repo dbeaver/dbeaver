@@ -135,7 +135,7 @@ public class AISettingsManager {
                             AIEngineProperties engineSettings = readPropsGson.fromJson(
                                 engineConfigTree, engineDescriptor.getPropertiesType());
 
-                            engineConfigurationMap.put(engineId, engineSettings);
+                            engineConfigurationMap.put(engineDescriptor.getId(), engineSettings);
                         } catch (JsonSyntaxException e) {
                             log.error("Error parsing '" + engineId + "' properties", e);
                         }
