@@ -33,10 +33,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Metadata search utils
@@ -113,6 +110,10 @@ public class SQLSearchUtils {
         if (nameList.isEmpty()) {
             return Collections.emptyList();
         }
+        List<String> filteredNameList = nameList.stream()
+            .filter(Objects::nonNull)
+            .toList();
+
         DBPDataSource dataSource = objectContainer == null ? null : objectContainer.getDataSource();
         if (executionContext == null && dataSource != null) {
             executionContext = DBUtils.getDefaultContext(dataSource, true);
@@ -126,8 +127,8 @@ public class SQLSearchUtils {
         DBRProgressMonitor mdMonitor = dataSource.getContainer().isExtraMetadataReadEnabled() ?
             monitor : new LocalCacheProgressMonitor(monitor);
         if (!mdMonitor.isForceCacheUsage()) {
-            List<String> unquotedNames = new ArrayList<>(nameList.size());
-            for (String name : nameList) {
+            List<String> unquotedNames = new ArrayList<>(filteredNameList.size());
+            for (String name : filteredNameList) {
                 unquotedNames.add(DBUtils.getUnQuotedIdentifier(dataSource, name));
             }
 
@@ -140,8 +141,8 @@ public class SQLSearchUtils {
         }
         {
             // Fix names (convert case or remove quotes)
-            List<String> transformedNameList = new ArrayList<>(nameList);
-            for (int i = 0; i < nameList.size(); i++) {
+            List<String> transformedNameList = new ArrayList<>(filteredNameList);
+            for (int i = 0; i < filteredNameList.size(); i++) {
                 String name = nameList.get(i);
                 String unquotedName = DBUtils.getUnQuotedIdentifier(dataSource, name);
                 if (!unquotedName.equals(name)) {
