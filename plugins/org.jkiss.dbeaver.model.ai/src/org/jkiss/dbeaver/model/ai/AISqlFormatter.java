@@ -21,6 +21,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public interface AISqlFormatter {
+
+    /**
+     * Format AI-generated SQL queries
+     */
     String formatGeneratedQuery(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSource dataSource,

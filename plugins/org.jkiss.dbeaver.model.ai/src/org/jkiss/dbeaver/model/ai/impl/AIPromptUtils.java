@@ -71,8 +71,6 @@ public class AIPromptUtils {
     }
 
     public static String[] createDatabaseInstructions(@Nullable DBSLogicalDataSource dataSource) {
-        SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
-            SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
         List<String> instructions = new ArrayList<>();
         instructions.add("You are the DBeaver AI assistant.");
         instructions.add("Act as a database architect and SQL expert.");
@@ -87,6 +85,8 @@ public class AIPromptUtils {
             instructions.add("Use the same language as the user.");
         }
 
+        SQLDialect dialect = dataSource == null ? BasicSQLDialect.INSTANCE :
+            SQLUtils.getDialectFromDataSource(dataSource.getDataSourceContainer().getDataSource());
         String quoteRule = identifiersQuoteRule(dialect);
         if (quoteRule != null) {
             instructions.add(quoteRule);

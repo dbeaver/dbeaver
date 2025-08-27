@@ -31,7 +31,7 @@ public class AIAssistantRegistry {
 
     private AIAssistantDescriptor globalDescriptor;
 
-    public synchronized static AIAssistantRegistry getInstance() {
+    public static synchronized AIAssistantRegistry getInstance() {
         if (instance == null) {
             instance = new AIAssistantRegistry(Platform.getExtensionRegistry());
         }
@@ -58,12 +58,12 @@ public class AIAssistantRegistry {
     public <T extends AIAssistant> T createAssistant(@NotNull DBPWorkspace workspace) throws IllegalStateException {
         if (globalDescriptor != null) {
             try {
-                return (T)globalDescriptor.createInstance(workspace);
+                return (T) globalDescriptor.createInstance(workspace);
             } catch (DBException e) {
                 throw new IllegalStateException(e);
             }
         } else {
-            return (T)new AIAssistantImpl(workspace);
+            return (T) new AIAssistantImpl(workspace);
         }
     }
 

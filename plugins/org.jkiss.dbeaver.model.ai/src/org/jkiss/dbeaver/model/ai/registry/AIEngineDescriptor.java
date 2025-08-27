@@ -92,7 +92,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
 
     @NotNull
     public <T extends AIEngineProperties> T createPropertiesInstance() throws DBException {
-        return (T)propertiesType.createInstance(AIEngineProperties.class);
+        return (T) propertiesType.createInstance(AIEngineProperties.class);
     }
 
     @NotNull

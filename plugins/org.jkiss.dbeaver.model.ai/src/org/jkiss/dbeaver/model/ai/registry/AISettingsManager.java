@@ -42,7 +42,7 @@ public class AISettingsManager {
     public static final String AI_CONFIGURATION_FILE_NAME = "ai-configuration.json";
 
     private static final String AI_DISABLED_KEY = "aiDisabled";
-    private static final String ACTIVE_ENGINE_KEY= "activeEngine";
+    private static final String ACTIVE_ENGINE_KEY = "activeEngine";
     private static final String ENGINE_CONFIGURATIONS_KEY = "engineConfigurations";
     public static final String ENGINE_PROPERTIES = "properties";
 
@@ -56,10 +56,10 @@ public class AISettingsManager {
     private AISettingsManager() {
         WorkspaceConfigEventManager.addConfigChangedListener(
             AI_CONFIGURATION_FILE_NAME, o -> {
-            // reset current context for settings to be lazily reloaded when needed
-            this.getSettingsHolder().reset();
-            this.raiseChangedEvent(this); // consider detailed event info
-        });
+                // reset current context for settings to be lazily reloaded when needed
+                this.getSettingsHolder().reset();
+                this.raiseChangedEvent(this); // consider detailed event info
+            });
     }
 
     public static synchronized AISettingsManager getInstance() {

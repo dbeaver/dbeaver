@@ -20,6 +20,10 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 
 import java.util.concurrent.Flow;
 
+/**
+ * AI stream publisher.
+ * Basically just a classic publisher.
+ */
 public interface AIStreamPublisher extends Flow.Publisher<AIEngineResponseChunk> {
 
 

@@ -228,8 +228,7 @@ public abstract class AbstractDescriptor {
             return (Class<? extends T>) implClass;
         }
 
-        public <T> void checkObjectClass(@NotNull Class<T> type)
-            throws DBException {
+        public <T> void checkObjectClass(@NotNull Class<T> type) throws DBException {
             Class<? extends T> objectClass = getObjectClass(type);
             if (objectClass == null) {
                 throw new DBException("Class '" + implName + "' not found");

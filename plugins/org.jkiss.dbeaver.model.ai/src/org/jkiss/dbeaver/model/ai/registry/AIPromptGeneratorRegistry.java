@@ -35,7 +35,7 @@ public class AIPromptGeneratorRegistry {
 
     private static AIPromptGeneratorRegistry instance = null;
 
-    public synchronized static AIPromptGeneratorRegistry getInstance() {
+    public static synchronized AIPromptGeneratorRegistry getInstance() {
         if (instance == null) {
             instance = new AIPromptGeneratorRegistry(Platform.getExtensionRegistry());
         }
