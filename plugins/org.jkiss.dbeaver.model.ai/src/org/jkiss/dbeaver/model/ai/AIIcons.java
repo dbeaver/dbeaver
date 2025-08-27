@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 public enum AIIcons {
     ;
 
-    public static final DBIcon AI = new DBIcon("ai", "misc/ai.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon AI = new DBIcon("ai", "ai.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     static {
         DBIcon.loadIcons(AIIcons.class);
