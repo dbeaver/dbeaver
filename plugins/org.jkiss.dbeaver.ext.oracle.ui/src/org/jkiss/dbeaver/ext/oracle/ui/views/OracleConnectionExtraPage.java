@@ -58,6 +58,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button searchInSynonyms;
     private Button searchInSequences;
     private Button showDateAsDate;
+    private Text optimizerVersionText;
 
     public OracleConnectionExtraPage()
     {
@@ -113,6 +114,11 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
             useOptimizerHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
             useOptimizerHint.setToolTipText(OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
+
+            Composite optimizerPlaceholder = UIUtils.createPlaceholder(performanceGroup, 2);
+            optimizerPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            optimizerVersionText = UIUtils.createLabelText(optimizerPlaceholder, "Optimizer version", OracleConstants.OPTIMIZER_VERSION_DEFAULT);
+            optimizerVersionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             useRuleHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_rule, true);
             useRuleHint.setToolTipText(OracleUIMessages.edit_create_checkbox_adds_rule_tool_tip_text);
@@ -238,6 +244,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER),
             globalPreferences.getBoolean(OracleConstants.PROP_USE_META_OPTIMIZER)
         ));
+        optimizerVersionText.setText(CommonUtils.notEmpty(
+            providerProperties.get(OracleConstants.PROP_USE_META_OPTIMIZER_VERSION)));
         useAlternativeTableMetadataQuery.setSelection(CommonUtils.getBoolean(
             providerProperties.get(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY),
             globalPreferences.getBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY)
@@ -306,6 +314,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             providerProperties.put(
                 OracleConstants.PROP_USE_META_OPTIMIZER,
                 String.valueOf(useOptimizerHint.getSelection()));
+            providerProperties.put(
+                OracleConstants.PROP_USE_META_OPTIMIZER_VERSION,
+                optimizerVersionText.getText());
             providerProperties.put(
                     OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY,
                     String.valueOf(useAlternativeTableMetadataQuery.getSelection()));
