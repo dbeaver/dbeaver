@@ -15,13 +15,14 @@ concurrency:
 
 jobs:
   build-java:
-    uses: dbeaver/dbeaver-common/.github/workflows/mvn-package.yml@devel
+    uses: dbeaver/dbeaver-common/.github/workflows/mvn-package.yml@dbeaver/dbeaver-devops#2023-custom-p2-v2 #CHANGEME before merge
     name: Build
     secrets: inherit
     with:
       project-directory: ./dbeaver/product/aggregate
       project-deps: ./dbeaver/project.deps
       timeout-minutes: 5
+      p2-repos-to-mvn-flags-map: "['dbeaver-deps-ce']='repo.p2.dbeaver-ce.url'"
 
   lint-java:
     name: Check style
