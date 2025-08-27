@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,6 +153,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         serviceCombo = UIUtils.createLabelCombo(serviceComposite, "Engine", SWT.DROP_DOWN | SWT.READ_ONLY);
         List<AIEngineDescriptor> completionEngines = AIEngineRegistry.getInstance()
             .getCompletionEngines();
+        completionEngines.sort(Comparator.comparing(AIEngineDescriptor::getLabel));
         int defaultEngineSelection = -1;
         for (int i = 0; i < completionEngines.size(); i++) {
             serviceCombo.add(completionEngines.get(i).getLabel());
