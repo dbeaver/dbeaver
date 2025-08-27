@@ -285,28 +285,22 @@ public class UIStyles {
     }
 
     /**
-     * Fix toolbar foreground color on macOS for toolbar managers
+     * Fixes toolbars foreground colors on macOS to ensure proper text visibility
      */
-    public static void fixToolBarForeground(Collection<ToolBarManager> toolbarManagers) {
-        if (RuntimeUtils.isMacOS()) {
-            Color textColor = getDefaultTextForeground();
-            for (ToolBarManager toolbarManager : toolbarManagers) {
-                ToolBar toolbar = toolbarManager.getControl();
-                if (toolbar != null && !toolbar.isDisposed()) {
-                    toolbar.setForeground(textColor);
-                    for (ToolItem item : toolbar.getItems()) {
-                        item.setForeground(textColor);
-                    }
-                }
+    public static void fixToolBarForeground(@NotNull Collection<ToolBarManager> toolbarManagers) {
+        if (!RuntimeUtils.isMacOS()) {
+            return;
+        }
+        for (ToolBarManager toolbarManager : toolbarManagers) {
+            ToolBar toolbar = toolbarManager.getControl();
+            if (toolbar != null && !toolbar.isDisposed()) {
+                fixToolBarForeground(toolbar);
             }
         }
     }
 
-    /**
-     * Fix toolbar foreground color on macOS
-     */
-    public static void fixToolBarForeground(ToolBar toolBar) {
-        if (RuntimeUtils.isMacOS() && toolBar != null && !toolBar.isDisposed()) {
+    public static void fixToolBarForeground(@NotNull ToolBar toolBar) {
+        if (!toolBar.isDisposed()) {
             Color textColor = getDefaultTextForeground();
             toolBar.setForeground(textColor);
             for (ToolItem item : toolBar.getItems()) {
