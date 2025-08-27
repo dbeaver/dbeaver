@@ -83,7 +83,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
                     statistics,
                     this.tableName,
                     nameOrigin,
-                    SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET,
+                    SQLQuerySymbolOrigin.DbObjectFilterMode.TABLE,
                     SQLQuerySymbolClass.ERROR
                 );
                 statistics.appendError(this.getSyntaxNode(), "Invalid table name");
@@ -93,7 +93,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
 
                 if (realTable != null) {
                     SQLQuerySemanticUtils.setNamePartsDefinition(
-                        context, this.tableName, realTable, nameOrigin, SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT
+                        context, this.tableName, realTable, nameOrigin, SQLQuerySymbolOrigin.DbObjectFilterMode.TABLE
                     );
                 } else {
                     SQLQuerySemanticUtils.performPartialResolution(
@@ -101,7 +101,7 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
                         statistics,
                         this.tableName,
                         nameOrigin,
-                        SQLQuerySymbolOrigin.DbObjectFilterMode.DEFAULT,
+                        SQLQuerySymbolOrigin.DbObjectFilterMode.TABLE,
                         SQLQuerySymbolClass.TABLE
                     );
                 }
