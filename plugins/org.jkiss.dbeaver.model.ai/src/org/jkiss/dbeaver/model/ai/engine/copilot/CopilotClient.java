@@ -243,7 +243,7 @@ public class CopilotClient implements AutoCloseable {
             } catch (Exception ex) {
                 DBWorkbench.getPlatformUI().showError(
                     "Error reading model list",
-                    "Failed to read the model list",
+                    "Failed to read Copilot model list",
                     ex
                 );
             }
