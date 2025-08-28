@@ -69,18 +69,18 @@ public class AuthModelIAM extends AuthModelDatabaseNative<AuthModelIAMCredential
         String hostName = cnnParams.hostName();
         String userName = cnnParams.userName();
 
-        if (authType.equals(DSQLConstants.AUTH_TYPES.DSQL_TOKEN.toString())) {
+        if (authType.equals(DSQLConstants.AUTH.DSQL_TOKEN.toString())) {
             credentials.setUserPassword(token);
             return;
         }
 
-        if (authType.equals(DSQLConstants.AUTH_TYPES.AWS_SESSION_CREDENTIALS.toString())) {
+        if (authType.equals(DSQLConstants.AUTH.AWS_SESSION_CREDENTIALS.toString())) {
             credentialsProvider = StaticCredentialsProvider.create(AwsSessionCredentials.builder()
                 .accessKeyId(accessKey)
                 .secretAccessKey(secretKey)
                 .sessionToken(sessionToken)
                 .build());
-        } else if (authType.equals(DSQLConstants.AUTH_TYPES.AWS_PROFILE.toString())) {
+        } else if (authType.equals(DSQLConstants.AUTH.AWS_PROFILE.toString())) {
             credentialsProvider = ProfileCredentialsProvider.create(profile);
         }
 

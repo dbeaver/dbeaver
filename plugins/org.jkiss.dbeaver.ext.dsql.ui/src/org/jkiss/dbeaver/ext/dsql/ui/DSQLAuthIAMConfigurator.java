@@ -173,17 +173,17 @@ public class DSQLAuthIAMConfigurator implements IObjectPropertyConfigurator<Obje
 
         if (this.typeCredentialsRadio.getSelection()) {
             // Use AWS Creds
-            configuration.setProperty(DSQLConstants.AUTH_TYPE, DSQLConstants.AUTH_TYPES.AWS_SESSION_CREDENTIALS.toString());
+            configuration.setProperty(DSQLConstants.AUTH_TYPE, DSQLConstants.AUTH.AWS_SESSION_CREDENTIALS.toString());
             configuration.setProperty(DSQLConstants.AWS_ACCESS_KEY, trimText(accessKeyText));
             configuration.setProperty(DSQLConstants.AWS_SECRET_KEY, trimText(secretKeyText));
             configuration.setProperty(DSQLConstants.AWS_SESSION_TOKEN, trimText(sessionTokenText));
         } else if (this.typeProfileRadio.getSelection()) {
             // Use Profile
-            configuration.setProperty(DSQLConstants.AUTH_TYPE, DSQLConstants.AUTH_TYPES.AWS_PROFILE.toString());
+            configuration.setProperty(DSQLConstants.AUTH_TYPE, DSQLConstants.AUTH.AWS_PROFILE.toString());
             configuration.setProperty(DSQLConstants.AWS_PROFILE, trimText(profileText));
         } else if (this.typeTokenRadio.getSelection()) {
             // Use dsql token
-            configuration.setProperty(DSQLConstants.AUTH_TYPE, DSQLConstants.AUTH_TYPES.DSQL_TOKEN.toString());
+            configuration.setProperty(DSQLConstants.AUTH_TYPE, DSQLConstants.AUTH.DSQL_TOKEN.toString());
             configuration.setProperty(DSQLConstants.DSQL_TOKEN, trimText(tokenText));
         }
     }
@@ -233,11 +233,11 @@ public class DSQLAuthIAMConfigurator implements IObjectPropertyConfigurator<Obje
     }
 
     private void setSelectedAuthType(String authType) {
-        if (CommonUtils.isEmpty(authType) || authType.equals(DSQLConstants.AUTH_TYPES.AWS_PROFILE.toString())) {
+        if (CommonUtils.isEmpty(authType) || authType.equals(DSQLConstants.AUTH.AWS_PROFILE.toString())) {
             typeProfileRadio.setSelection(true);
-        } else if (authType.equals(DSQLConstants.AUTH_TYPES.AWS_SESSION_CREDENTIALS.toString())) {
+        } else if (authType.equals(DSQLConstants.AUTH.AWS_SESSION_CREDENTIALS.toString())) {
             typeCredentialsRadio.setSelection(true);
-        } else if (authType.equals(DSQLConstants.AUTH_TYPES.DSQL_TOKEN.toString())) {
+        } else if (authType.equals(DSQLConstants.AUTH.DSQL_TOKEN.toString())) {
             typeTokenRadio.setSelection(true);
         }
     }

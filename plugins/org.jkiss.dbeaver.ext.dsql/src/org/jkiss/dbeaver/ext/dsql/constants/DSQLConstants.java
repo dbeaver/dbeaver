@@ -22,7 +22,7 @@ public class DSQLConstants {
 
     // Configuration Constants
     public static String AUTH_TYPE = "auth_type";
-    public enum AUTH_TYPES {
+    public enum AUTH {
         AWS_SESSION_CREDENTIALS,
         AWS_PROFILE,
         DSQL_TOKEN
