@@ -268,7 +268,7 @@ public class MetaDataPanel implements IResultSetPanel {
         }
 
         @Override
-        protected Object getObjectValue(DBDAttributeBinding item) {
+        protected Object getObjectValue(@NotNull DBDAttributeBinding item) {
             if (item instanceof DBDAttributeBindingMeta) {
                 return item.getMetaAttribute();
             } else if (item != null) {

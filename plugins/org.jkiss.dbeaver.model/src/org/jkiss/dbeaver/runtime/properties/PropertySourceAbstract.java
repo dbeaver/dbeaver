@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -44,9 +45,9 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 {
     private static final Log log = Log.getLog(PropertySourceAbstract.class);
 
-    private Object sourceObject;
-    private Object object;
-    private boolean loadLazyProps;
+    private final Object sourceObject;
+    private final Object object;
+    private final boolean loadLazyProps;
     private final List<DBPPropertyDescriptor> props = new ArrayList<>();
     private Map<DBPPropertyDescriptor, Object> changedPropertiesValues = new HashMap<>();
     private final Map<Object, Object> propValues = new HashMap<>();
@@ -69,7 +70,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 
     public synchronized void addProperty(DBPPropertyDescriptor prop)
     {
-        if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isHidden()) {
+        if (prop instanceof ObjectPropertyDescriptor opd && opd.isHidden()) {
             // Do not add it to property list
         } else {
             props.add(prop);
@@ -224,8 +225,8 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                 return prop.readValue(object, monitor, formatValue);
             }
         } catch (Throwable e) {
-            if (e instanceof InvocationTargetException) {
-                e = ((InvocationTargetException) e).getTargetException();
+            if (e instanceof InvocationTargetException ite) {
+                e = ite.getTargetException();
             }
             log.error("Error reading property '" + prop.getId() + "' from " + object, e);
             return e.getMessage();
@@ -318,8 +319,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                     addProperty(desc);
                 }
             }
-            if (editableValue instanceof DBPPropertySource) {
-                DBPPropertySource ownPropSource = (DBPPropertySource) editableValue;
+            if (editableValue instanceof DBPPropertySource ownPropSource) {
                 DBPPropertyDescriptor[] ownProperties = ownPropSource.getProperties();
                 if (!ArrayUtils.isEmpty(ownProperties)) {
                     for (DBPPropertyDescriptor prop : ownProperties) {
@@ -363,17 +363,13 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 
     private class PropertyValueLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {
 
-        public static final String TEXT_LOADING = "...";
-
         public PropertyValueLoadService()
         {
-            super(TEXT_LOADING);
+            super(ModelMessages.model_navigator_load_);
         }
 
         @Override
-        public Map<ObjectPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException
-        {
+        public Map<ObjectPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException {
             try {
                 Map<ObjectPropertyDescriptor, Object> result = new IdentityHashMap<>();
                 for (ObjectPropertyDescriptor prop : obtainLazyProperties()) {
