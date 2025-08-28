@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCObjectSupplier;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -59,15 +60,21 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
 
     public JDBCStatementImpl(
         @NotNull JDBCSession connection,
-        @NotNull STATEMENT original,
+        @NotNull JDBCObjectSupplier<STATEMENT> original,
+        @Nullable String queryString,
         boolean disableLogging
-    ) {
+    ) throws SQLException {
         super(connection);
-        this.original = original;
         this.disableLogging = disableLogging;
+        this.query = queryString;
+
         if (isQMLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleStatementOpen(this);
         }
+
+        // We signal statement pen BEFORE we get actual one
+        // because opening a statement may take a time and we have to measure it
+        this.original = original.get();
     }
 
     public STATEMENT getOriginal() {
@@ -244,7 +251,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     }
 
     protected JDBCResultSet createResultSetImpl(ResultSet resultSet) throws SQLException {
-        return connection.getDataSource().getJdbcFactory().createResultSet(connection, this, resultSet, null, disableLogging);
+        return connection.getDataSource().getJdbcFactory().createResultSet(connection, this, resultSet, disableLogging);
     }
 
     ////////////////////////////////////////////////////////////////////

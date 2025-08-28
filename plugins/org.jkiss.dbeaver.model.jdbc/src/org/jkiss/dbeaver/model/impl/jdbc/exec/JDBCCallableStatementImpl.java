@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCObjectSupplier;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -63,11 +64,11 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl<Callabl
 
     public JDBCCallableStatementImpl(
         @NotNull JDBCSession connection,
-        @NotNull CallableStatement original,
+        @NotNull JDBCObjectSupplier<CallableStatement> stmtSupplier,
         @Nullable String query,
-        boolean disableLogging)
-    {
-        super(connection, original, query, disableLogging);
+        boolean disableLogging
+    ) throws SQLException {
+        super(connection, stmtSupplier, query, disableLogging);
 
         procResults = new JDBCResultSetCallable(getConnection(), this);
 
@@ -80,7 +81,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl<Callabl
 
         // Bind procedure parameters
         try {
-            ParameterMetaData paramsMeta = original.getParameterMetaData();
+            ParameterMetaData paramsMeta = getOriginal().getParameterMetaData();
             if (paramsMeta != null) {
                 int paramsCount = bindProcedureFromJDBC(paramsMeta);
                 if (procedure != null && paramsCount == 0 && hasOutputParameters()) {
@@ -106,7 +107,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl<Callabl
         ParameterMetaData paramsMeta = null;
 
         try {
-            paramsMeta = original.getParameterMetaData();
+            paramsMeta = getOriginal().getParameterMetaData();
         } catch (Throwable e) {
             log.debug("Error extracting parameters meta data", e);
         }

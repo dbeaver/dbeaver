@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCObjectSupplier;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -75,12 +76,11 @@ public class JDBCPreparedStatementImpl<STATEMENT extends PreparedStatement> exte
 
     JDBCPreparedStatementImpl(
         @NotNull JDBCSession connection,
-        @NotNull STATEMENT original,
+        @NotNull JDBCObjectSupplier<STATEMENT> stmtSupplier,
         @Nullable String query,
-        boolean disableLogging)
-    {
-        super(connection, original, disableLogging);
-        setQueryString(query);
+        boolean disableLogging
+    ) throws SQLException {
+        super(connection, stmtSupplier, query, disableLogging);
     }
 
     @Override

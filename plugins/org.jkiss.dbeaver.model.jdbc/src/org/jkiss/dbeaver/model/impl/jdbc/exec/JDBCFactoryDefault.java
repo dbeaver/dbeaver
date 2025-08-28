@@ -31,49 +31,48 @@ public class JDBCFactoryDefault implements JDBCFactory {
     @Override
     public JDBCDatabaseMetaData createMetaData(
         @NotNull JDBCSession session,
-        @NotNull DatabaseMetaData original
+        @NotNull JDBCObjectSupplier<DatabaseMetaData> metadata
     ) throws SQLException {
-        return new JDBCDatabaseMetaDataImpl(session, original);
+        return new JDBCDatabaseMetaDataImpl(session, metadata.get());
     }
 
     @Override
     public JDBCStatement createStatement(
         @NotNull JDBCSession session,
-        @NotNull Statement original,
+        @NotNull JDBCObjectSupplier<Statement> stmtSupplier,
         boolean disableLogging
     ) throws SQLException {
-        return new JDBCStatementImpl<>(session, original, disableLogging);
+        return new JDBCStatementImpl<>(session, stmtSupplier, null, disableLogging);
     }
 
     @Override
     public JDBCPreparedStatement createPreparedStatement(
         @NotNull JDBCSession session,
-        @NotNull PreparedStatement original,
+        @NotNull JDBCObjectSupplier<PreparedStatement> stmtSupplier,
         @Nullable String sql,
         boolean disableLogging
     ) throws SQLException {
-        return new JDBCPreparedStatementImpl(session, original, sql, disableLogging);
+        return new JDBCPreparedStatementImpl(session, stmtSupplier, sql, disableLogging);
     }
 
     @Override
     public JDBCCallableStatement createCallableStatement(
         @NotNull JDBCSession session,
-        @NotNull CallableStatement original,
+        @NotNull JDBCObjectSupplier<CallableStatement> stmtSupplier,
         @Nullable String sql,
         boolean disableLogging
     ) throws SQLException {
-        return new JDBCCallableStatementImpl(session, original, sql, disableLogging);
+        return new JDBCCallableStatementImpl(session, stmtSupplier, sql, disableLogging);
     }
 
     @Override
     public JDBCResultSet createResultSet(
         @NotNull JDBCSession session,
-        @Nullable JDBCStatement statement,
+        @NotNull JDBCStatement statement,
         @NotNull ResultSet original,
-        String description,
         boolean disableLogging
     ) throws SQLException {
-        return new JDBCResultSetImpl(session, statement, original, description, disableLogging);
+        return new JDBCResultSetImpl(session, statement, original, disableLogging);
     }
 
     @Override

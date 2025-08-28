@@ -35,42 +35,34 @@ class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl<PreparedStatement>
 
     JDBCFakeStatementImpl(
         @NotNull JDBCSession connection,
-        @NotNull JDBCResultSetImpl resultSet,
-        String description,
-        boolean disableLogging)
-    {
-        super(connection, JDBCVoidStatementImpl.INSTANCE, description, disableLogging);
-        this.resultSet = resultSet;
-        setQueryString(description);
+        String queryText,
+        boolean disableLogging
+    ) throws SQLException {
+        super(connection, () -> JDBCVoidStatementImpl.INSTANCE, queryText, disableLogging);
     }
 
     @Override
-    public boolean execute() throws SQLException
-    {
+    public boolean execute() throws SQLException {
         return false;
     }
 
     @Override
-    public boolean executeStatement() throws DBCException
-    {
+    public boolean executeStatement() throws DBCException {
         return false;
     }
 
     @Override
-    public int executeUpdate() throws SQLException
-    {
+    public int executeUpdate() throws SQLException {
         return 0;
     }
 
     @Override
-    public JDBCResultSet executeQuery()
-    {
+    public JDBCResultSet executeQuery() {
         return resultSet;
     }
 
     @Override
-    public JDBCResultSet getResultSet()
-    {
+    public JDBCResultSet getResultSet() {
         return resultSet;
     }
 
@@ -82,5 +74,9 @@ class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl<PreparedStatement>
             super.close();
             closed = true;
         }
+    }
+
+    public void setResultSet(JDBCResultSetImpl resultSet) {
+        this.resultSet = resultSet;
     }
 }
