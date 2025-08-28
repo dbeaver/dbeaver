@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,26 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
  * ResultSet container.
  * May be used as "fake" statement to wrap result sets returned by connection metadata or something.
  */
-class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
+class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl<PreparedStatement> {
 
     private JDBCResultSetImpl resultSet;
     private boolean closed;
 
     JDBCFakeStatementImpl(
-        JDBCSession connection,
-        JDBCResultSetImpl resultSet,
+        @NotNull JDBCSession connection,
+        @NotNull JDBCResultSetImpl resultSet,
         String description,
         boolean disableLogging)
     {
