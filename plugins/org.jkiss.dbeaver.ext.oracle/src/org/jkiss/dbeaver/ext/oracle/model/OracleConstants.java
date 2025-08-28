@@ -38,7 +38,20 @@ public class OracleConstants {
     public static final String VIEW_DBA_SOURCE = "DBA_SOURCE";
     public static final String VIEW_DBA_TAB_PRIVS = "DBA_TAB_PRIVS";
 
-    public static final String OPTIMIZER_VERSION_DEFAULT = "10.2.0.5";
+    public static final String OPTIMIZER_VERSION_102 = "10.2.0.5";
+    public static final String OPTIMIZER_VERSION_121 = "12.1.0.1";
+    public static final String OPTIMIZER_VERSION_181 = "18.1.0";
+    public static final String OPTIMIZER_VERSION_191 = "19.1.0";
+    public static final String OPTIMIZER_VERSION_231 = "23.1.0";
+    public static final String OPTIMIZER_VERSION_DEFAULT = OPTIMIZER_VERSION_102;
+    public static final String[] OPTIMIZER_VERSIONS = {
+        OPTIMIZER_VERSION_102,
+        OPTIMIZER_VERSION_121,
+        OPTIMIZER_VERSION_181,
+        OPTIMIZER_VERSION_191,
+        OPTIMIZER_VERSION_231,
+    };
+    public static final String OPTIMIZER_DOCS_LINK = "https://docs.oracle.com/en/database/oracle/oracle-database/23/refrn/OPTIMIZER_FEATURES_ENABLE.html";
 
     public static final String[] SYSTEM_SCHEMAS = {
         "CTXSYS",

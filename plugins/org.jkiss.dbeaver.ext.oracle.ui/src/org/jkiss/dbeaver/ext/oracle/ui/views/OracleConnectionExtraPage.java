@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.ui.views;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -58,7 +59,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Button searchInSynonyms;
     private Button searchInSequences;
     private Button showDateAsDate;
-    private Text optimizerVersionText;
+    private Combo optimizerVersionText;
 
     public OracleConnectionExtraPage()
     {
@@ -115,10 +116,18 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             useOptimizerHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer, true);
             useOptimizerHint.setToolTipText(OracleUIMessages.edit_create_checkbox_group_use_metadata_optimizer_tip);
 
-            Composite optimizerPlaceholder = UIUtils.createPlaceholder(performanceGroup, 2);
+            Composite optimizerPlaceholder = UIUtils.createPlaceholder(performanceGroup, 3);
             optimizerPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            optimizerVersionText = UIUtils.createLabelText(optimizerPlaceholder, "Optimizer version", OracleConstants.OPTIMIZER_VERSION_DEFAULT);
+            optimizerVersionText = UIUtils.createLabelCombo(optimizerPlaceholder, "Optimizer version", SWT.DROP_DOWN);
+            optimizerVersionText.setToolTipText("Oracle optimizer versions.\n"
+                + "May affect metadata read performance or even break some metadata reads.");
+            for (String version : OracleConstants.OPTIMIZER_VERSIONS) {
+                optimizerVersionText.add(version);
+            }
+            optimizerVersionText.setText(OracleConstants.OPTIMIZER_VERSION_DEFAULT);
             optimizerVersionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.createLink(optimizerPlaceholder, "<a>Info</a>", SelectionListener.widgetSelectedAdapter(
+                e -> UIUtils.openWebBrowser(OracleConstants.OPTIMIZER_DOCS_LINK)));
 
             useRuleHint = UIUtils.createCheckbox(performanceGroup, OracleUIMessages.edit_create_checkbox_group_use_rule, true);
             useRuleHint.setToolTipText(OracleUIMessages.edit_create_checkbox_adds_rule_tool_tip_text);
