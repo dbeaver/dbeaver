@@ -210,7 +210,7 @@ public final class RuntimeUtils {
         } else if (seconds >= 10) {
             return String.format("%ds", seconds);
         } else {
-            return String.format("%d.%03ds", seconds, millis);
+            return String.format("%d.%ds", seconds, millis / 100);
         }
     }
 
