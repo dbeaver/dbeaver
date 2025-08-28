@@ -92,10 +92,14 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
             return EMPTY_CHILDREN;
         }
         if (parentNode instanceof DBNLazyNode lazyNode && lazyNode.needsInitialization()) {
+            String nodeName = parentNode.getNodeDisplayName();
+            if (parentNode instanceof DBNDatabaseFolder) {
+                nodeName = parentNode.getParentNode().getNodeDisplayName() + " " + nodeName;
+            }
             return TreeLoadVisualizer.expandChildren(
                 navigatorTree.getViewer(),
                 new TreeLoadService(
-                    UINavigatorMessages.ui_navigator_loading_text_loading.trim() + " '" + parentNode.getName() + "'",
+                    UINavigatorMessages.ui_navigator_loading_text_loading.trim() + ": " + nodeName,
                     parentNode));
         } else {
             try {
