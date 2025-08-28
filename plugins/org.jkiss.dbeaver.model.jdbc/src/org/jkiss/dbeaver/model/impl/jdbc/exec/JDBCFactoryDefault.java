@@ -52,7 +52,7 @@ public class JDBCFactoryDefault implements JDBCFactory {
         @Nullable String sql,
         boolean disableLogging
     ) throws SQLException {
-        return new JDBCPreparedStatementImpl(session, stmtSupplier, sql, disableLogging);
+        return new JDBCPreparedStatementImpl<>(session, stmtSupplier, sql, disableLogging);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class JDBCFactoryDefault implements JDBCFactory {
     @Override
     public JDBCResultSet createResultSet(
         @NotNull JDBCSession session,
-        @NotNull JDBCStatement statement,
+        @Nullable JDBCStatement statement,
         @NotNull ResultSet original,
         boolean disableLogging
     ) throws SQLException {

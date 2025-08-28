@@ -52,9 +52,8 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
 
     public static JDBCResultSet makeResultSet(
         @NotNull JDBCSession session,
-        @NotNull JDBCStatement statement,
+        @Nullable JDBCStatement statement,
         @NotNull ResultSet original,
-        String description,
         boolean disableLogging
     ) throws SQLException {
         return session.getDataSource().getJdbcFactory().createResultSet(
@@ -63,7 +62,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
 
     protected JDBCResultSetImpl(
         @NotNull JDBCSession session,
-        @NotNull JDBCStatement statement,
+        @Nullable JDBCStatement statement,
         @NotNull ResultSet original,
         boolean disableLogging
     ) {
@@ -316,6 +315,11 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
             catch (SQLException e) {
                 log.error("Can't close result set", e);
             }
+        }
+
+        if (statement instanceof JDBCFakeStatementImpl) {
+            // Fake statements are closed by result set close
+            statement.close();
         }
 
         if (JDBCTrace.isApiTraceEnabled()) {

@@ -57,14 +57,16 @@ public class JDBCPreparedStatementImpl<STATEMENT extends PreparedStatement> exte
 
     protected static class ContentParameter {
         String displayString;
-        ContentParameter(JDBCSession session, Object value) {
-            if (value instanceof RowId) {
-                displayString = SQLUtils.quoteString(session.getDataSource(), new String(((RowId) value).getBytes()));
-            } else if (value instanceof byte[]) {
-                byte[] bytes = (byte[])value;
-                displayString = DBValueFormatting.formatBinaryString(session.getDataSource(), bytes, DBDDisplayFormat.NATIVE, true);
+        ContentParameter(@NotNull JDBCSession session, Object value) {
+            if (value instanceof RowId rowId) {
+                displayString = SQLUtils.quoteString(session.getDataSource(), new String(rowId.getBytes()));
+            } else if (value instanceof byte[] bytes) {
+                displayString = DBValueFormatting.formatBinaryString(
+                    session.getDataSource(), bytes, DBDDisplayFormat.NATIVE, true);
             } else {
-                displayString = "DATA(" + (value == null ? DBConstants.NULL_VALUE_LABEL : value.getClass().getSimpleName()) + ")";
+                displayString = "DATA(" + (value == null ?
+                    DBConstants.NULL_VALUE_LABEL :
+                    value.getClass().getSimpleName()) + ")";
             }
         }
 
