@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatChunk;
@@ -35,7 +34,6 @@ import java.util.Set;
 import java.util.concurrent.Flow;
 
 public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotProperties> {
-    private static final Log log = Log.getLog(CopilotCompletionEngine.class);
 
     private final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
         @NotNull
@@ -169,18 +167,18 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
         client.dispose();
     }
 
+    @NotNull
     private CopilotSessionToken requestSessionToken(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (sessionToken != null) {
             return sessionToken;
         }
 
         synchronized (this) {
-            if (sessionToken != null) {
-                return sessionToken;
+            if (sessionToken == null) {
+                sessionToken = client.getInstance().requestSessionToken(monitor, properties.getToken());
             }
-
-            return client.getInstance().requestSessionToken(monitor, properties.getToken());
         }
+        return sessionToken;
     }
 
     public String getModelName() throws DBException {

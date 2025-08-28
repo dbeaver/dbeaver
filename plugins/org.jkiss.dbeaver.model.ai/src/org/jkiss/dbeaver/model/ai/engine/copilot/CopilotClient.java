@@ -137,6 +137,7 @@ public class CopilotClient implements AutoCloseable {
     /**
      * Request session token
      */
+    @NotNull
     public CopilotSessionToken requestSessionToken(
         DBRProgressMonitor monitor,
         String accessToken
