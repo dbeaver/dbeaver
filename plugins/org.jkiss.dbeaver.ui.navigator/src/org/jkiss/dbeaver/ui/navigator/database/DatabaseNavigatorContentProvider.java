@@ -93,7 +93,7 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
         if (parentNode instanceof DBNLazyNode && ((DBNLazyNode) parentNode).needsInitialization()) {
             return TreeLoadVisualizer.expandChildren(
                 navigatorTree.getViewer(),
-                new TreeLoadService("Loading", parentNode));
+                new TreeLoadService("Loading '" + parentNode.getName() + "'", parentNode));
         } else {
             try {
                 // Read children with null monitor cos' it's not a lazy node
