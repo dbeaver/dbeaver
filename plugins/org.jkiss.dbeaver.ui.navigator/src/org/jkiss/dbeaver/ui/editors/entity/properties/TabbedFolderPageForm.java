@@ -92,8 +92,8 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
             @Override
             protected void openObjectLink(Object linkData) {
-                if (linkData instanceof DBSObject) {
-                    NavigatorHandlerObjectOpen.openEntityEditor((DBSObject) linkData);
+                if (linkData instanceof DBSObject dbsObject) {
+                    NavigatorHandlerObjectOpen.openEntityEditor(dbsObject);
                 }
             }
         };
@@ -116,11 +116,11 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 public void onCommandChange(DBECommand<?> command) {
                     UIUtils.asyncExec(() -> {
                         updateEditButtonsState();
-                        if (command instanceof DBECommandProperty) {
+                        if (command instanceof DBECommandProperty<?> cp) {
                             // We need to exclude current prop from update
                             // Simple value compare on update is not enough because value can be transformed (e.g. uppercased)
                             // and it will differ from the value in edit control
-                            Object propId = ((DBECommandProperty<?>) command).getHandler().getId();
+                            Object propId = cp.getHandler().getId();
                             formEditor.updateOtherPropertyValues(propId);
                         }
                     });
@@ -208,7 +208,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                         prop.isEditable(curPropertySource.getEditableValue())) {
                         primaryProps.add(prop);
                     } else {
-                        if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isSpecific()) {
+                        if (prop instanceof ObjectPropertyDescriptor pd && pd.isSpecific()) {
                             specificProps.add(prop);
                         } else {
                             secondaryProps.add(prop);
@@ -351,10 +351,10 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
     private EntityEditor getOwnerEditor() {
         IWorkbenchPartSite site = part.getSite();
-        if (site instanceof MultiPageEditorSite) {
-            MultiPageEditorPart mainEditor = ((MultiPageEditorSite) site).getMultiPageEditor();
-            if (mainEditor instanceof EntityEditor) {
-                return ((EntityEditor) mainEditor);
+        if (site instanceof MultiPageEditorSite mpe) {
+            MultiPageEditorPart mainEditor = mpe.getMultiPageEditor();
+            if (mainEditor instanceof EntityEditor ee) {
+                return ee;
             }
         }
         return null;
@@ -370,12 +370,14 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         disableControls = false;
         ControlEnableState blockEnableState = disableControls ? ControlEnableState.disable(propertiesGroup) : null;
 
+        DBPPropertySource propertySource = TabbedFolderPageForm.this.curPropertySource;
         LoadingJob<Map<DBPPropertyDescriptor, Object>> service = LoadingJob.createService(
-            new DatabaseLoadService<>("Load main properties", databaseObject.getDataSource()) {
+            new DatabaseLoadService<>(
+                "Load '" + DBValueFormatting.getDefaultValueDisplayString(
+                    propertySource.getEditableValue(), DBDDisplayFormat.UI) + "' properties",
+                databaseObject.getDataSource()) {
                 @Override
                 public Map<DBPPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor) {
-                    DBPPropertySource propertySource = TabbedFolderPageForm.this.curPropertySource;
-                    monitor.beginTask("Load '" + DBValueFormatting.getDefaultValueDisplayString(propertySource.getEditableValue(), DBDDisplayFormat.UI) + "' properties", allProps.size());
                     Map<DBPPropertyDescriptor, Object> propValues = new HashMap<>();
                     for (DBPPropertyDescriptor prop : allProps) {
                         if (monitor.isCanceled()) {
@@ -383,9 +385,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                         }
                         Object value = propertySource.getPropertyValue(monitor, prop.getId());
                         propValues.put(prop, value);
-                        monitor.worked(1);
                     }
-                    monitor.done();
                     return propValues;
                 }
             },
