@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.*;
-import org.eclipse.ui.intro.IIntroSite;
 import org.eclipse.ui.part.EditorActionBarContributor;
 
 public class ActionBars {
@@ -38,32 +37,23 @@ public class ActionBars {
         IWorkbenchPage page= site.getPage();
         IWorkbenchPart activePart= page.getActivePart();
 
-        if (activePart instanceof IViewPart) {
-            IViewPart activeViewPart= (IViewPart)activePart;
+        if (activePart instanceof IViewPart activeViewPart) {
             IViewSite activeViewSite= activeViewPart.getViewSite();
             return activeViewSite.getActionBars();
         }
 
-        if (activePart instanceof IEditorPart) {
-            IEditorPart activeEditorPart= (IEditorPart)activePart;
+        if (activePart instanceof IEditorPart activeEditorPart) {
             IEditorActionBarContributor contributor= activeEditorPart.getEditorSite().getActionBarContributor();
-            if (contributor instanceof EditorActionBarContributor) {
-                return ((EditorActionBarContributor) contributor).getActionBars();
+            if (contributor instanceof EditorActionBarContributor abc) {
+                return abc.getActionBars();
             }
         }
-        if (site instanceof IViewSite) {
-            IViewSite viewSite = (IViewSite) site;
+        if (site instanceof IViewSite viewSite) {
             return viewSite.getActionBars();
         }
-        if (site instanceof IEditorSite) {
-            IEditorSite editorSite = (IEditorSite) site;
+        if (site instanceof IEditorSite editorSite) {
             return editorSite.getActionBars();
         }
-        if (site instanceof IIntroSite) {
-            IIntroSite introSite = (IIntroSite) site;
-            return introSite.getActionBars();
-        }
-        //OMG, what is it?
         return null;
     }
 }
