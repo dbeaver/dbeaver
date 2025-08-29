@@ -159,7 +159,7 @@ public class DesktopProjectImpl extends BaseProjectImpl implements RCPProject, D
                     return;
                 }
 
-                if (DBWorkbench.getPlatform().getApplication() instanceof DesktopApplicationImpl && !DBWorkbench.isDistributed()) {
+                if (DBWorkbench.getPlatform().getApplication() instanceof RCPApplicationImpl && !DBWorkbench.isDistributed()) {
                     // Validate project structure only for local desktop apps
                     Path mdFolder = getMetadataFolder(false);
 

@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.navigator.DesktopNavigatorModel;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMRegistry;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.rcp.RCPConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
@@ -69,7 +70,6 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
 
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
-    public static final String DBEAVER_DATA_DIR = "DBeaverData";
 
     private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
     private static final String DBEAVER_CONFIG_FOLDER = "settings";
@@ -257,7 +257,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
     }
 
     private void setConfigProperty(@NotNull String key, @Nullable String value) throws IOException {
-        final Path root = Path.of(RuntimeUtils.getWorkingDirectory(DBEAVER_DATA_DIR));
+        final Path root = Path.of(RuntimeUtils.getWorkingDirectory(RCPConstants.DBEAVER_DATA_DIR));
         final Path file = root.resolve(DBEAVER_CONFIG_FOLDER).resolve(DBEAVER_CONFIG_FILE);
         final Properties properties = new Properties();
 

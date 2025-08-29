@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.app.standalone;
+package org.jkiss.dbeaver.model.rcp;
 
 import org.apache.commons.cli.CommandLine;
 import org.jkiss.code.Nullable;
@@ -22,9 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.ApplicationCommandLine;
 import org.jkiss.dbeaver.model.cli.CmdProcessResult;
 import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
-import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
-import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
-import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
+import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -113,8 +111,8 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
         }
 
         if (commandLine.hasOption(PARAM_REUSE_WORKSPACE)) {
-            if (DBeaverApplication.instance != null) {
-                DBeaverApplication.instance.setReuseWorkspace(true);
+            if (RCPApplicationImpl.instance != null) {
+                RCPApplicationImpl.instance.setReuseWorkspace(true);
             }
         }
 
@@ -179,7 +177,7 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
             exitAfterExecute = true;
         }
         if (commandLine.hasOption(PARAM_DISCONNECT_ALL)) {
-            controller.executeWorkbenchCommand(ConnectionCommands.CMD_DISCONNECT_ALL);
+            controller.executeWorkbenchCommand(RCPConstants.CMD_DISCONNECT_ALL);
             exitAfterExecute = true;
         }
         if (commandLine.hasOption(PARAM_BRING_TO_FRONT)) {
@@ -203,16 +201,20 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
         // Reuse workspace if custom parameters are specified
         for (CommandLineParameterDescriptor param : customParameters.values()) {
             if (param.isExclusiveMode() && (commandLine.hasOption(param.getName()) || commandLine.hasOption(param.getLongName()))) {
-                if (DBeaverApplication.instance != null) {
-                    DBeaverApplication.instance.setExclusiveMode(true);
+                if (RCPApplicationImpl.instance != null) {
+                    RCPApplicationImpl.instance.setExclusiveMode(true);
                 }
                 break;
             }
         }
 
         try {
-            IInstanceController client = DBeaverInstanceServer.createClient(instanceLoc);
-            return executeCommandLineCommands(commandLine, client, false);
+            IInstanceController client = RCPApplicationImpl.getInstance().createInstanceClient(instanceLoc);
+            if (client != null) {
+                return executeCommandLineCommands(commandLine, client, false);
+            } else {
+                throw new DBCFeatureNotSupportedException("Instance clients are not supported by current application");
+            }
         } catch (Throwable e) {
             log.error("Error while calling remote server", e);
         }

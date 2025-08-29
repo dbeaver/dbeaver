@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.app.standalone.rpc;
+package org.jkiss.dbeaver.model.rcp;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.cli.ApplicationInstanceController;

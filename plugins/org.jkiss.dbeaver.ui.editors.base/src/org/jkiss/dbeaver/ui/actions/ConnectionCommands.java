@@ -23,7 +23,6 @@ public interface ConnectionCommands {
 
     String CMD_CONNECT = "org.jkiss.dbeaver.core.connect";
     String CMD_DISCONNECT = "org.jkiss.dbeaver.core.disconnect";
-    String CMD_DISCONNECT_ALL = "org.jkiss.dbeaver.core.disconnectAll";
     String CMD_DISCONNECT_OTHER = "org.jkiss.dbeaver.core.disconnectOther";
     String CMD_INVALIDATE = "org.jkiss.dbeaver.core.invalidate";
     String CMD_READONLY = "org.jkiss.dbeaver.core.connection.readonly";

@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.rcp.RCPApplicationImpl;
 import org.jkiss.dbeaver.model.runtime.BaseProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -86,7 +87,7 @@ class DBeaverSettingsImporter {
             }
         }
 
-        String oldVersion = workspaceProps.getProperty(DBeaverApplication.VERSION_PROP_PRODUCT_VERSION);
+        String oldVersion = workspaceProps.getProperty(RCPApplicationImpl.VERSION_PROP_PRODUCT_VERSION);
         if (oldVersion == null) {
             oldVersion = "3.x";
         } else {

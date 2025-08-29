@@ -18,7 +18,9 @@ Export-Package: org.jkiss.dbeaver.model.app,
 Require-Bundle: org.eclipse.core.expressions,
  org.eclipse.core.filesystem,
  org.eclipse.core.resources;visibility:=reexport,
+ org.apache.commons.cli,
  org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.cli;visibility:=reexport,
  org.jkiss.dbeaver.registry
 Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.model.rcp

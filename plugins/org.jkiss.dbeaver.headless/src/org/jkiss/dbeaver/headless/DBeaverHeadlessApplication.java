@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
+import org.jkiss.dbeaver.model.rcp.RCPApplicationImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -35,7 +35,7 @@ import java.nio.file.Path;
 /**
  * Headless application
  */
-public class DBeaverHeadlessApplication extends DesktopApplicationImpl {
+public class DBeaverHeadlessApplication extends RCPApplicationImpl {
 
     private static final Log log = Log.getLog(DBeaverHeadlessApplication.class);
 
