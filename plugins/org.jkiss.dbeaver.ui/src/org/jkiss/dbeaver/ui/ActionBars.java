@@ -19,10 +19,16 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.EditorActionBarContributor;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
+/**
+ * Action bar utils
+ */
 public class ActionBars {
 
-    public static IStatusLineManager extractStatusLineManager(IWorkbenchSite site) {
+    @Nullable
+    public static IStatusLineManager extractStatusLineManager(@NotNull IWorkbenchSite site) {
         IActionBars actionBars = extractActionBars(site);
         if (actionBars == null) {
             return null;
@@ -30,10 +36,8 @@ public class ActionBars {
         return actionBars.getStatusLineManager();
     }
 
-    public static IActionBars extractActionBars(IWorkbenchSite site) {
-        if (site == null) {
-            return null;
-        }
+    @Nullable
+    public static IActionBars extractActionBars(@NotNull IWorkbenchSite site) {
         IWorkbenchPage page= site.getPage();
         IWorkbenchPart activePart= page.getActivePart();
 
