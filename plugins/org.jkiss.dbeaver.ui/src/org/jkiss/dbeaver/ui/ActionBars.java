@@ -38,16 +38,16 @@ public class ActionBars {
 
     @Nullable
     public static IActionBars extractActionBars(@NotNull IWorkbenchSite site) {
-        IWorkbenchPage page= site.getPage();
-        IWorkbenchPart activePart= page.getActivePart();
+        IWorkbenchPage page = site.getPage();
+        IWorkbenchPart activePart = page.getActivePart();
 
         if (activePart instanceof IViewPart activeViewPart) {
-            IViewSite activeViewSite= activeViewPart.getViewSite();
+            IViewSite activeViewSite = activeViewPart.getViewSite();
             return activeViewSite.getActionBars();
         }
 
         if (activePart instanceof IEditorPart activeEditorPart) {
-            IEditorActionBarContributor contributor= activeEditorPart.getEditorSite().getActionBarContributor();
+            IEditorActionBarContributor contributor = activeEditorPart.getEditorSite().getActionBarContributor();
             if (contributor instanceof EditorActionBarContributor abc) {
                 return abc.getActionBars();
             }
