@@ -176,12 +176,7 @@ public class DBeaverLauncher {
     private static final String NL = "-nl"; //$NON-NLS-1$
     private static final String NEW_INSTANCE = "-newInstance"; //$NON-NLS-1$
     private static final String ENDSPLASH = "-endsplash"; //$NON-NLS-1$
-    private static final String[] SPLASH_IMAGES = {"splash.png", //$NON-NLS-1$
-            "splash.jpg", //$NON-NLS-1$
-            "splash.jpeg", //$NON-NLS-1$
-            "splash.gif", //$NON-NLS-1$
-            "splash.bmp", //$NON-NLS-1$
-    };
+    private static final String[] SPLASH_IMAGES = { "splash.png" }; //$NON-NLS-1$
     private static final String CLEAN = "-clean"; //$NON-NLS-1$
     private static final String NOEXIT = "-noExit"; //$NON-NLS-1$
     private static final String OS = "-os"; //$NON-NLS-1$
@@ -2625,7 +2620,7 @@ public class DBeaverLauncher {
     private static String[] buildNLVariants(String locale) {
         //build list of suffixes for loading resource bundles
         String nl = locale;
-        ArrayList<String> result = new ArrayList<>(4);
+        List<String> result = new ArrayList<>(4);
         int lastSeparator;
         while (true) {
             for (String name : SPLASH_IMAGES) {
@@ -2675,7 +2670,7 @@ public class DBeaverLauncher {
                     log.newLine();
                     newSession = false;
                 }
-                write(obj);
+                writeLog(obj);
             } finally {
                 if (logFile == null) {
                     if (log != null)
@@ -2690,7 +2685,7 @@ public class DBeaverLauncher {
             //we failed to write, so dump log entry to console instead
             try {
                 log = logForStream(System.err);
-                write(obj);
+                writeLog(obj);
                 log.flush();
             } catch (Exception e2) {
                 System.err.println("An exception occurred while logging to the console:"); //$NON-NLS-1$
@@ -2704,7 +2699,7 @@ public class DBeaverLauncher {
     /*
      * This should only be called from #log()
      */
-    private void write(Object obj) throws IOException {
+    private void writeLog(Object obj) throws IOException {
         if (obj == null)
             return;
         if (obj instanceof Throwable) {
