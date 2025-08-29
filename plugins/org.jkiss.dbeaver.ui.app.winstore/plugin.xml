@@ -1,25 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?eclipse version="3.2"?>
-
-
-<!--
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
-  -->
-
 <plugin>
+
+    <extension point="org.eclipse.core.runtime.applications" id="application" name="WinStore">
+        <application visible="true">
+            <run class="org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication"/>
+        </application>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.products" id="product">
+        <product application="org.jkiss.dbeaver.ui.app.winstore.application" description="Universal Database Manager" name="DBeaver CE">
+            <property name="aboutText" value="DBeaver CE"/>
+            <property name="copyright" value="© DBeaver Corp"/>
+            <property name="subTitle" value="Universal Database Manager"/>
+            <property name="website" value="https://dbeaver.com"/>
+            <property name="email" value="support@dbeaver.com"/>
+            <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
+            <property name="appName" value="DBeaver CE"/>
+            <property name="versionInfoCoord" value="170,55"/>
+            <property name="versionInfoSize" value="8"/>
+            <property name="startupMessageRect" value="60,273,340,21"/>
+            <property name="startupProgressRect" value="0,294,600,6"/>
+            <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_default"/>
+            <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.ui.themes/images/"/>
+            <property name="applicationXMI" value="org.jkiss.dbeaver.ui.app.standalone/dbeaver.e4xmi"/>
+            <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
+            <property name="preferenceCustomization" value="plugin_customization.ini"/>
+        </product>
+    </extension>
+
+    <extension point="org.eclipse.ui.splashHandlers">
+        <splashHandlerProductBinding productId="org.jkiss.dbeaver.ui.app.standalone.appstore" splashId="org.jkiss.dbeaver.ui.splash.interactive"/>
+    </extension>
 
     <extension point="org.jkiss.dbeaver.pluginService">
         <service class="org.jkiss.dbeaver.winstore.WinStoreService"/>
