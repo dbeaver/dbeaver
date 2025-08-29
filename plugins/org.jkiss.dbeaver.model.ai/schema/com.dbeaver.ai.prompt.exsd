@@ -3,10 +3,10 @@
 <schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="com.dbeaver.ai.engine.settingsSerDe" id="com.dbeaver.ai.engine.settingsSerDe" name="AI Engine Settings Serde"/>
+         <meta.schema plugin="org.jkiss.dbeaver.model.ai" id="com.dbeaver.ai.prompt" name="AI prompts"/>
       </appInfo>
       <documentation>
-         AI Engine Configuration Serde
+         AI prompt generators
       </documentation>
    </annotation>
 
@@ -18,20 +18,20 @@
       </annotation>
       <complexType>
          <sequence>
-            <element ref="serde" minOccurs="0" maxOccurs="unbounded"/>
+            <element ref="prompt" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
       </complexType>
    </element>
 
-   <element name="serde">
+   <element name="prompt">
       <complexType>
          <attribute name="class" type="string">
             <annotation>
                <documentation>
-
+                  
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.engine.AIEngineSettingsSerDe"/>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.ai.AIPromptGenerator"/>
                </appInfo>
             </annotation>
          </attribute>

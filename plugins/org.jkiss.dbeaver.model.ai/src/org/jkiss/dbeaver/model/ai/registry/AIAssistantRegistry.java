@@ -29,9 +29,9 @@ public class AIAssistantRegistry {
 
     private static AIAssistantRegistry instance = null;
 
-    private final AIAssistantDescriptor customDescriptor;
+    private AIAssistantDescriptor globalDescriptor;
 
-    public synchronized static AIAssistantRegistry getInstance() {
+    public static synchronized AIAssistantRegistry getInstance() {
         if (instance == null) {
             instance = new AIAssistantRegistry(Platform.getExtensionRegistry());
         }
@@ -39,31 +39,32 @@ public class AIAssistantRegistry {
     }
 
     public AIAssistantRegistry(IExtensionRegistry registry) {
-        AIAssistantDescriptor customAssistantDescriptor = null;
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(AIAssistantDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if ("assistant".equals(ext.getName())) {
-                customAssistantDescriptor = new AIAssistantDescriptor(ext);
-                break;
+                AIAssistantDescriptor descriptor = new AIAssistantDescriptor(ext);
+                if (globalDescriptor == null || descriptor.getPriority() > globalDescriptor.getPriority()) {
+                    this.globalDescriptor = descriptor;
+                }
             }
         }
-        this.customDescriptor = customAssistantDescriptor;
+    }
+
+    public AIAssistantDescriptor getDescriptor() {
+        return globalDescriptor;
     }
 
     @NotNull
     public <T extends AIAssistant> T createAssistant(@NotNull DBPWorkspace workspace) throws IllegalStateException {
-        AIAssistant assistant;
-        if (customDescriptor != null) {
+        if (globalDescriptor != null) {
             try {
-                assistant = customDescriptor.createInstance();
+                return (T) globalDescriptor.createInstance(workspace);
             } catch (DBException e) {
                 throw new IllegalStateException(e);
             }
         } else {
-            assistant = new AIAssistantImpl();
+            return (T) new AIAssistantImpl(workspace);
         }
-        assistant.initialize(workspace);
-        return (T) assistant;
     }
 
 }
