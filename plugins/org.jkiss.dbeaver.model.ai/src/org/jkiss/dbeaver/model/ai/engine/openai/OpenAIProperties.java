@@ -50,6 +50,9 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @SerializedName("gpt.log.query")
     private Boolean loggingEnabled;
 
+    public OpenAIProperties() {
+    }
+
     @Nullable
     @Override
     public String getBaseUrl() {

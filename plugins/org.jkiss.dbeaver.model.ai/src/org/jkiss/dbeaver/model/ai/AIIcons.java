@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
+import org.jkiss.dbeaver.model.DBIcon;
 
-public record AICommandRequest(
-    @NotNull String text,
-    @NotNull AIDatabaseContext context,
-    @Nullable AIEngine engine
-) {
-    public AICommandRequest(@NotNull String text, @NotNull AIDatabaseContext context) {
-        this(text, context, null);
+/**
+ * AI icons
+ */
+public enum AIIcons {
+    ;
+
+    public static final DBIcon AI = new DBIcon("ai", "ai.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    static {
+        DBIcon.loadIcons(AIIcons.class);
     }
+
 }
