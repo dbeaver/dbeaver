@@ -14,27 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.registry;
+package org.jkiss.dbeaver.model.ai;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+public enum AISqlJoinRule {
 
-public abstract class AbstractReplaceableDescriptor<T> extends AbstractDescriptor {
-    protected final IConfigurationElement cfg;
+    DEFAULT("Default"),
+    JOIN("Explicit JOIN"),
+    SUB_QUERY("Sub-queries");
 
-    protected AbstractReplaceableDescriptor(IConfigurationElement cfg) {
-        super(cfg);
-        this.cfg = cfg;
+    private final String title;
+
+    AISqlJoinRule(String title) {
+        this.title = title;
     }
 
-    public String getId() {
-        return cfg.getAttribute("id");
+    public String getTitle() {
+        return title;
     }
-
-    public String getReplaces() {
-        return cfg.getAttribute("replaces");
-    }
-
-    public abstract T createInstance() throws DBException;
 }
