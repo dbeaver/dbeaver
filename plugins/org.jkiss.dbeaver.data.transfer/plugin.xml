@@ -18,31 +18,31 @@
         </node>
 
         <node type="consumer"
-            id="database_consumer"
-            class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
-            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/table.svg"
-            label="%dataTransfer.consumer.database.name"
-            description="%dataTransfer.consumer.database.description"
-            settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings"
-            advanced="true">
+              id="database_consumer"
+              class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
+              icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/table.svg"
+              label="%dataTransfer.consumer.database.name"
+              description="%dataTransfer.consumer.database.description"
+              settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings"
+              advanced="true">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
         </node>
 
         <node type="producer"
-            id="stream_producer"
-            class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer"
-            icon="icons/formats/file.svg"
-            label="%dataTransfer.producer.stream.name"
-            description="%dataTransfer.producer.stream.description"
-            settings="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings">
+              id="stream_producer"
+              class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer"
+              icon="icons/formats/file.svg"
+              label="%dataTransfer.producer.stream.name"
+              description="%dataTransfer.producer.stream.description"
+              settings="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings">
 
             <processor
-                id="stream.csv"
-                class="org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV"
-                description="%dataTransfer.producer.stream.processor.csv.description"
-                icon="icons/formats/csv.svg"
-                label="%dataTransfer.producer.stream.processor.csv.name"
-                contentType="text/plain">
+                    id="stream.csv"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.importer.DataImporterCSV"
+                    description="%dataTransfer.producer.stream.processor.csv.description"
+                    icon="icons/formats/csv.svg"
+                    label="%dataTransfer.producer.stream.processor.csv.name"
+                    contentType="text/plain">
                 <propertyGroup label="%dataTransfer.producer.stream.processor.csv.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.producer.stream.processor.csv.property.extension.label" defaultValue="csv,tsv,txt"/>
                     <property id="encoding" label="%dataTransfer.producer.stream.processor.csv.property.encoding.label" defaultValue="utf-8"/>
@@ -116,7 +116,6 @@
                     <property id="extension" label="%dataTransfer.processor.json.property.extension.label" defaultValue="json"/>
                 </propertyGroup>
             </processor>
-
             <processor
                     id="stream.html"
                     class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterHTML"
