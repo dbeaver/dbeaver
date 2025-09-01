@@ -243,7 +243,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
         if (getOwnerProject() instanceof DBFResourceAdapter rm) {
             // Drop supported only if both nodes are resource with the same handler and DROP feature is supported
-            return otherNode.getAdapter(Path.class) != null
+            return (otherNode.getAdapter(Path.class) != null || otherNode.getAdapter(InputStream.class) != null)
                    && otherNode != this
                    && otherNode.getParentNode() != this
                    && !this.isChildOf(otherNode);
