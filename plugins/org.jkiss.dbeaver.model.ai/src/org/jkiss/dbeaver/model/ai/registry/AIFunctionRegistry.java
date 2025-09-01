@@ -23,7 +23,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,7 +49,7 @@ public class AIFunctionRegistry {
     public AIFunctionRegistry(@NotNull IExtensionRegistry registry) {
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(AIFunctionDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
-            if ("prompt".equals(ext.getName())) {
+            if ("function".equals(ext.getName())) {
                 AIFunctionDescriptor descriptor = new AIFunctionDescriptor(ext);
                 descriptorMap.put(descriptor.getId(), descriptor);
             }
@@ -55,8 +57,13 @@ public class AIFunctionRegistry {
     }
 
     @Nullable
-    public AIFunctionDescriptor getPromptGenerator(@NotNull String id) {
+    public AIFunctionDescriptor getFunction(@NotNull String id) {
         return descriptorMap.get(id);
+    }
+
+    @NotNull
+    public List<AIFunctionDescriptor> getAllFunctions() {
+        return new ArrayList<>(descriptorMap.values());
     }
 
 }

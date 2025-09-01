@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.ai.AISqlFormatter;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
@@ -74,15 +75,15 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIPromptGenerator systemGenerator,
         @NotNull List<AIMessage> messages
     ) throws DBException {
-        try (AIEngine engine = createEngine()) {
-            String systemPrompt = systemGenerator.build();
-
+        AIEngineDescriptor engineDescriptor = getEngineDescriptor();
+        try (AIEngine engine = engineDescriptor.createEngineInstance()) {
             AIEngineRequest completionRequest = requestFactory.build(
                 monitor,
-                systemPrompt,
+                engine,
+                engineDescriptor,
+                systemGenerator,
                 context,
-                messages,
-                engine.getContextWindowSize(monitor)
+                messages
             );
 
             AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
@@ -104,6 +105,21 @@ public class AIAssistantImpl implements AIAssistant {
     @NotNull
     public AIEngine createEngine() throws DBException {
         return AIEngineRegistry.getInstance().createEngine(getActiveEngineId());
+    }
+
+    @NotNull
+    public AIEngineDescriptor getEngineDescriptor() throws DBException {
+        AIEngineDescriptor descriptor = AIEngineRegistry.getInstance().getEngineDescriptor(getActiveEngineId());
+        if (descriptor == null) {
+            log.trace("Active engine is not present in the configuration, switching to default active engine");
+            AIEngineDescriptor defaultCompletionEngineDescriptor =
+                AIEngineRegistry.getInstance().getDefaultCompletionEngineDescriptor();
+            if (defaultCompletionEngineDescriptor == null) {
+                throw new DBException("AI engine  not found");
+            }
+            descriptor = defaultCompletionEngineDescriptor;
+        }
+        return descriptor;
     }
 
     protected AIEngineResponse requestCompletion(
