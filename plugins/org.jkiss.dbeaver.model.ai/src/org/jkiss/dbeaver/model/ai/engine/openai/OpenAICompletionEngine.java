@@ -23,10 +23,8 @@ import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionResult;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatMessage;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -158,16 +156,23 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         List<AIMessage> messages = request.getMessages();
         completionRequest.setMessages(fromMessages(messages));
         completionRequest.setTemperature(temperature());
-        completionRequest.setFrequencyPenalty(0.0);
-        completionRequest.setPresencePenalty(0.0);
+//        completionRequest.setFrequencyPenalty(0.0);
+//        completionRequest.setPresencePenalty(0.0);
         completionRequest.setN(1);
         completionRequest.setModel(model());
         if (!CommonUtils.isEmpty(request.getFunctions())) {
 //            completionRequest.setFunctions(request.getFunctions().stream()
-//                .map(AIFunctionDescriptor::getSignature).toList());
+//                .map(this::makeFunctionFrom).toList());
         }
 
         return openAiService.getInstance().createChatCompletion(monitor, completionRequest);
+    }
+
+    private ChatFunction makeFunctionFrom(AIFunctionDescriptor fd) {
+        ChatFunction.Builder cfb = ChatFunction.builder().name(fd.getId());
+        //cfb.
+
+        return cfb.build();
     }
 
     @NotNull

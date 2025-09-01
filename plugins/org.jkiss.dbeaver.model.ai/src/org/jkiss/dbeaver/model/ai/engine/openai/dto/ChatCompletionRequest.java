@@ -106,7 +106,7 @@ public class ChatCompletionRequest {
     /**
      * A list of the available functions.
      */
-    private List<?> functions;
+    private List<ChatFunction> functions;
 
     /**
      * Controls how the model responds to function calls, as specified in the <a href="https://platform.openai.com/docs/api-reference/chat/create#chat/create-function_call">OpenAI documentation</a>.
@@ -214,7 +214,7 @@ public class ChatCompletionRequest {
         return functions;
     }
 
-    public void setFunctions(List<?> functions) {
+    public void setFunctions(List<ChatFunction> functions) {
         this.functions = functions;
     }
 
