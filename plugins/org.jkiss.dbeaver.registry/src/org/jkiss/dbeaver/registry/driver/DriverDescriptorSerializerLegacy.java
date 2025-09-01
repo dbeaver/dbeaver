@@ -54,7 +54,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
 
     public void serializeDrivers(OutputStream os, List<DataSourceProviderDescriptor> providers) throws IOException {
         XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
-        xml.setButify(true);
+        xml.setBeautify(true);
         try (var ignored = xml.startElement(RegistryConstants.TAG_DRIVERS)) {
             for (DataSourceProviderDescriptor provider : providers) {
                 if (provider.isTemporary()) {
