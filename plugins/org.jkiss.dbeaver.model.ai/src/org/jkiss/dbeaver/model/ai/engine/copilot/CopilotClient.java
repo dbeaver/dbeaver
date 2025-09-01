@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -147,7 +148,7 @@ public class CopilotClient implements AutoCloseable {
             .header("authorization", "token " + accessToken)
             .header("editor-version", EDITOR_VERSION)
             .header("editor-plugin-version", EDITOR_PLUGIN_VERSION)
-            .header("user-agent", USER_AGENT)
+            .header(HttpConstants.HEADER_USER_AGENT, USER_AGENT)
             .GET()
             .timeout(TIMEOUT)
             .build();

@@ -27,8 +27,10 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionResult;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatMessage;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.concurrent.Flow;
@@ -80,7 +82,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        ChatCompletionResult completionResult = complete(monitor, request.getMessages());
+        ChatCompletionResult completionResult = complete(monitor, request);
         List<String> choices = completionResult.getChoices().stream()
             .map(it -> it.getMessage().getContent())
             .toList();
@@ -151,15 +153,20 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
     @NotNull
     protected ChatCompletionResult complete(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull List<AIMessage> messages
+        @NotNull AIEngineRequest request
     ) throws DBException {
         ChatCompletionRequest completionRequest = new ChatCompletionRequest();
+        List<AIMessage> messages = request.getMessages();
         completionRequest.setMessages(fromMessages(messages));
         completionRequest.setTemperature(temperature());
         completionRequest.setFrequencyPenalty(0.0);
         completionRequest.setPresencePenalty(0.0);
         completionRequest.setN(1);
         completionRequest.setModel(model());
+        if (!CommonUtils.isEmpty(request.getFunctions())) {
+            completionRequest.setFunctions(request.getFunctions().stream()
+                .map(AIFunctionDescriptor::getSignature).toList());
+        }
 
         return openAiService.getInstance().createChatCompletion(monitor, completionRequest);
     }

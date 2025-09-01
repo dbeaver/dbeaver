@@ -22,9 +22,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.AIFunction;
+import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.logical.DBSLogicalDataSourceSupplier;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.utils.CommonUtils;
 
 public class AIFunctionDescriptor extends AbstractDescriptor {
 
@@ -32,20 +33,22 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
 
     private final IConfigurationElement contributorConfig;
     private final ObjectType objectType;
-    private final String label;
+    private final String id;
     private final DBPImage icon;
+    private final boolean global;
 
     protected AIFunctionDescriptor(@NotNull IConfigurationElement config) {
         super(config);
         this.contributorConfig = config;
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
-        this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.id = config.getAttribute("id");
+        this.global = CommonUtils.toBoolean(config.getAttribute("global"));
     }
 
     @NotNull
     public String getId() {
-        return contributorConfig.getAttribute("id");
+        return id;
     }
 
     @Nullable
@@ -55,15 +58,36 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
 
     @Nullable
     public String getLabel() {
-        return label;
+        return contributorConfig.getAttribute("label");
+    }
+
+    /**
+     * Global functions are passed in ALL requests
+     */
+    public boolean isGlobal() {
+        return global;
     }
 
     @NotNull
-    public AIFunction createGenerator(@NotNull DBSLogicalDataSourceSupplier dataSource) throws DBException {
+    public AIFunction createInstance() throws DBException {
         try {
             return objectType.createInstance(AIFunction.class);
         } catch (Exception e) {
             throw new DBException("Error creating AI function " + getId(), e);
         }
+    }
+
+    public boolean isApplicable(@NotNull AIEngineDescriptor engine, @NotNull AIPromptGenerator prompt) {
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "AI function: " + getId();
+    }
+
+    @NotNull
+    public String getSignature() {
+        return getId();
     }
 }

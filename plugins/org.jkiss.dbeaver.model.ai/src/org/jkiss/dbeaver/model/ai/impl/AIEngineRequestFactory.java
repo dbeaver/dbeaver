@@ -140,10 +140,12 @@ public class AIEngineRequestFactory {
         if (!engineDescriptor.isSupportsFunctions()) {
             return;
         }
-        for (AIFunctionDescriptor fd : AIFunctionRegistry.getInstance().getAllFunctions()) {
-
-        }
         List<AIFunctionDescriptor> functions = new ArrayList<>();
+        for (AIFunctionDescriptor fd : AIFunctionRegistry.getInstance().getAllFunctions()) {
+            if (fd.isGlobal() || fd.isApplicable(engineDescriptor, systemPromptGenerator)) {
+                functions.add(fd);
+            }
+        }
         request.setFunctions(functions);
     }
 

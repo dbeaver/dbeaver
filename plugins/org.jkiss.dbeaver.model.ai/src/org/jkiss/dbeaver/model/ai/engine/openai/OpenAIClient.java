@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.HttpConstants;
 
 import java.io.Closeable;
 import java.net.http.HttpClient;
@@ -90,11 +92,7 @@ public class OpenAIClient implements Closeable {
         @NotNull DBRProgressMonitor monitor,
         @NotNull ChatCompletionRequest completionRequest
     ) throws DBException {
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, "chat/completions"))
-            .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
-            .timeout(TIMEOUT)
-            .build();
+        HttpRequest request = createCompletionRequest(completionRequest);
 
         HttpRequest modifiedRequest = applyFilters(request);
         HttpResponse<String> response = client.send(monitor, modifiedRequest);
@@ -107,16 +105,22 @@ public class OpenAIClient implements Closeable {
         }
     }
 
+    private HttpRequest createCompletionRequest(@NotNull ChatCompletionRequest completionRequest) throws DBException {
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(AIHttpUtils.resolve(baseUrl, "chat/completions"))
+            .header(HttpConstants.HEADER_USER_AGENT, GeneralUtils.getProductTitle())
+            .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
+            .timeout(TIMEOUT)
+            .build();
+        return request;
+    }
+
     @NotNull
     public Flow.Publisher<ChatCompletionChunk> createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull ChatCompletionRequest completionRequest
     ) throws DBException {
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, "chat/completions"))
-            .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
-            .timeout(TIMEOUT)
-            .build();
+        HttpRequest request = createCompletionRequest(completionRequest);
 
         HttpRequest modifiedRequest = applyFilters(request);
 

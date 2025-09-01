@@ -38,6 +38,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
 
     private final IConfigurationElement contributorConfig;
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
+    private final String id;
     private final ObjectType objectType;
     private final ObjectType propertiesType;
     private final boolean supportsFunctions;
@@ -45,6 +46,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     protected AIEngineDescriptor(@NotNull IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.contributorConfig = contributorConfig;
+        this.id = contributorConfig.getAttribute("id");
         this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
         this.supportsFunctions = CommonUtils.toBoolean(contributorConfig.getAttribute("supportsFunctions"));
         this.propertiesType = new ObjectType(contributorConfig, "properties");
@@ -56,7 +58,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
 
     @NotNull
     public String getId() {
-        return contributorConfig.getAttribute("id");
+        return id;
     }
 
     @NotNull
