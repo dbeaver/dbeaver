@@ -40,11 +40,13 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
     private final ObjectType objectType;
     private final ObjectType propertiesType;
+    private final boolean supportsFunctions;
 
     protected AIEngineDescriptor(@NotNull IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.contributorConfig = contributorConfig;
         this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
+        this.supportsFunctions = CommonUtils.toBoolean(contributorConfig.getAttribute("supportsFunctions"));
         this.propertiesType = new ObjectType(contributorConfig, "properties");
 
         for (IConfigurationElement propGroup : ArrayUtils.safeArray(contributorConfig.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
@@ -74,6 +76,10 @@ public class AIEngineDescriptor extends AbstractDescriptor {
 
     public boolean isDefault() {
         return CommonUtils.toBoolean(contributorConfig.getAttribute("default"));
+    }
+
+    public boolean isSupportsFunctions() {
+        return supportsFunctions;
     }
 
     @NotNull

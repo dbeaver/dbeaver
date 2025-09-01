@@ -14,42 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine;
+package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * Request to AI engine
+ * Reference to AI function.
+ *
+ * Can be returned in AI responses, signaling that certain AI function was used.
+ * This information can be used in UI to render links which trigger some UI actions.
  */
-public final class AIEngineRequest {
-    @NotNull
-    private final List<AIMessage> messages;
-    private final List<AIFunctionDescriptor> functions = new ArrayList<>();
-
-    public AIEngineRequest(
-        @NotNull List<AIMessage> messages
-    ) {
-        this.messages = messages;
-    }
+public class AIFunctionReference {
 
     @NotNull
-    public List<AIMessage> getMessages() {
-        return messages;
+    private final AIFunctionDescriptor function;
+    @Nullable
+    private final String text;
+
+    public AIFunctionReference(@NotNull AIFunctionDescriptor function, @Nullable String text) {
+        this.function = function;
+        this.text = text;
     }
 
     @NotNull
-    public List<AIFunctionDescriptor> getFunctions() {
-        return functions;
+    public AIFunctionDescriptor getFunction() {
+        return function;
     }
 
-    public void setFunctions(@NotNull List<AIFunctionDescriptor> functions) {
-        this.functions.clear();
-        this.functions.addAll(functions);
+    @Nullable
+    public String getText() {
+        return text;
     }
-
 }

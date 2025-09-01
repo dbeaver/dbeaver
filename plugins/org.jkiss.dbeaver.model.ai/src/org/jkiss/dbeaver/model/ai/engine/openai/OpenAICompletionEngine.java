@@ -80,7 +80,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        ChatCompletionResult completionResult = complete(monitor, request.messages());
+        ChatCompletionResult completionResult = complete(monitor, request.getMessages());
         List<String> choices = completionResult.getChoices().stream()
             .map(it -> it.getMessage().getContent())
             .toList();
@@ -95,7 +95,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         @NotNull AIEngineRequest request
     ) throws DBException {
         ChatCompletionRequest ccr = new ChatCompletionRequest();
-        ccr.setMessages(fromMessages(request.messages()));
+        ccr.setMessages(fromMessages(request.getMessages()));
         ccr.setTemperature(temperature());
         ccr.setFrequencyPenalty(0.0);
         ccr.setPresencePenalty(0.0);

@@ -82,7 +82,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
             .withModel(getModelName())
-            .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
+            .withMessages(request.getMessages().stream().map(CopilotMessage::from).toList())
             .withTemperature(properties.getTemperature())
             .withStream(false)
             .withIntent(false)
@@ -107,7 +107,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
             .withModel(getModelName())
-            .withMessages(request.messages().stream().map(CopilotMessage::from).toList())
+            .withMessages(request.getMessages().stream().map(CopilotMessage::from).toList())
             .withTemperature(properties.getTemperature())
             .withStream(true)
             .withIntent(false)
