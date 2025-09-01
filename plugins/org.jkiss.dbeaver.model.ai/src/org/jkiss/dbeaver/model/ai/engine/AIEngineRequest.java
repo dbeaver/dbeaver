@@ -37,6 +37,12 @@ public final class AIEngineRequest {
         this.messages = messages;
     }
 
+    public AIEngineRequest(
+        @NotNull AIMessage message
+    ) {
+        this.messages = List.of(message);
+    }
+
     @NotNull
     public List<AIMessage> getMessages() {
         return messages;

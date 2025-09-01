@@ -87,6 +87,15 @@ public class OpenAIClient implements Closeable {
         }
     }
 
+    private HttpRequest createCompletionRequest(@NotNull ChatCompletionRequest completionRequest) throws DBException {
+        return HttpRequest.newBuilder()
+            .uri(AIHttpUtils.resolve(baseUrl, "chat/completions"))
+            .header(HttpConstants.HEADER_USER_AGENT, GeneralUtils.getProductTitle())
+            .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
+            .timeout(TIMEOUT)
+            .build();
+    }
+
     @NotNull
     public ChatCompletionResult createChatCompletion(
         @NotNull DBRProgressMonitor monitor,
@@ -103,16 +112,6 @@ public class OpenAIClient implements Closeable {
         } else {
             throw new DBException("Request failed: " + response.statusCode() + ", body=" + response.body());
         }
-    }
-
-    private HttpRequest createCompletionRequest(@NotNull ChatCompletionRequest completionRequest) throws DBException {
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, "chat/completions"))
-            .header(HttpConstants.HEADER_USER_AGENT, GeneralUtils.getProductTitle())
-            .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
-            .timeout(TIMEOUT)
-            .build();
-        return request;
     }
 
     @NotNull

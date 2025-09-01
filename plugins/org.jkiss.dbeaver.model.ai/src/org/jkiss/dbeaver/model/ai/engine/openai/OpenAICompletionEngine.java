@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionResult;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatMessage;
-import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -164,8 +163,8 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         completionRequest.setN(1);
         completionRequest.setModel(model());
         if (!CommonUtils.isEmpty(request.getFunctions())) {
-            completionRequest.setFunctions(request.getFunctions().stream()
-                .map(AIFunctionDescriptor::getSignature).toList());
+//            completionRequest.setFunctions(request.getFunctions().stream()
+//                .map(AIFunctionDescriptor::getSignature).toList());
         }
 
         return openAiService.getInstance().createChatCompletion(monitor, completionRequest);
