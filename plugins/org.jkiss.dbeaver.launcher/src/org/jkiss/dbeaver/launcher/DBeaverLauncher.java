@@ -39,7 +39,6 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -611,9 +610,9 @@ public class DBeaverLauncher {
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
         try {
-            CliData cliData = processCommandLineAsClient(passThruArgs, dbeaverDataDir);
-            if (cliData.isShutdown()) {
-                System.setProperty(PROP_EXITCODE, Integer.toString(cliData.getExitCode()));
+            CommandLineExecuteResult commandLineExecuteResult = processCommandLineAsClient(passThruArgs, dbeaverDataDir);
+            if (commandLineExecuteResult.shutdown()) {
+                System.setProperty(PROP_EXITCODE, Integer.toString(commandLineExecuteResult.exitCode()));
                 return;
             }
         } catch (Exception e) {
@@ -697,17 +696,17 @@ public class DBeaverLauncher {
         return true;
     }
 
-    private CliData processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
+    private CommandLineExecuteResult processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
         if (args == null || args.length == 0 || newInstance) {
-            return new CliData(cliMode);
+            return new CommandLineExecuteResult(cliMode);
         }
         Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
         if (Files.notExists(workspacePath)) {
-            return new CliData(cliMode);
+            return new CommandLineExecuteResult(cliMode);
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
         if (serverPort == null) {
-            return new CliData(cliMode);
+            return new CommandLineExecuteResult(cliMode);
         }
         //TODO auto-closable after full 21 java migration
         ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
@@ -734,20 +733,14 @@ public class DBeaverLauncher {
             String responseData = response.body();
             if (!responseData.startsWith("{") || !responseData.endsWith("}")) {
                 System.out.println("Response is not expected json: " + responseData);
-                return new CliData(cliMode);
+                return new CommandLineExecuteResult(cliMode);
             }
-            // remove json '{' '}' braces
-            //            responseData = responseData.substring(1, responseData.length() - 1);
-            Pattern actionPattern = Pattern.compile("\"postAction\"\s*:\s*\"([^,]*)\",");
-            Pattern exitCodePattern = Pattern.compile("\"exitCode\"\s*:\s*(\\d+),");
-            Pattern outputPattern = Pattern.compile("\"output\"\s*:\s*\"(.*?)\"}");
-
 
             String action = null;
             String output = null;
-            Matcher actionMatcher = actionPattern.matcher(responseData);
-            Matcher outputMatcher = outputPattern.matcher(responseData);
-            Matcher exitCodeMatcher = exitCodePattern.matcher(responseData);
+            Matcher actionMatcher = CommandLineConstants.ACTION_PATTERN.matcher(responseData);
+            Matcher outputMatcher = CommandLineConstants.OUTPUT_PATTERN.matcher(responseData);
+            Matcher exitCodeMatcher = CommandLineConstants.EXIT_CODE_PATTERN.matcher(responseData);
 
             if (actionMatcher.find()) {
                 action = actionMatcher.group(1);
@@ -781,7 +774,7 @@ public class DBeaverLauncher {
                     .replace("\\n", "\n");
                 System.out.println(output);
             }
-            return new CliData(shutdownApplication || cliMode, exitCode);
+            return new CommandLineExecuteResult(shutdownApplication || cliMode, exitCode);
         } catch (Exception e) {
             if (e.getMessage() != null) {
                 System.out.println("Error during calling DBeaver server: " + e.getMessage());
@@ -789,7 +782,7 @@ public class DBeaverLauncher {
         } finally {
             httpExecutor.shutdown();
         }
-        return new CliData(shutdownApplication || cliMode, exitCode);
+        return new CommandLineExecuteResult(shutdownApplication || cliMode, exitCode);
     }
 
     /**

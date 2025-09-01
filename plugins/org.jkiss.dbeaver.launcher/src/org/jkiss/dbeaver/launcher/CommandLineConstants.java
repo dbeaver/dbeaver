@@ -16,24 +16,11 @@
  */
 package org.jkiss.dbeaver.launcher;
 
-public class CliData {
-    private final boolean shutdown;
-    private final short exitCode;
+import java.util.regex.Pattern;
 
-    public CliData(boolean shutdown) {
-        this(shutdown, shutdown ? (short) 0 : (short) -1);
-    }
+public interface CommandLineConstants {
+    Pattern ACTION_PATTERN = Pattern.compile("\"postAction\"\s*:\s*\"([^,]*)\",");
+    Pattern EXIT_CODE_PATTERN = Pattern.compile("\"exitCode\"\s*:\s*(\\d+),");
+    Pattern OUTPUT_PATTERN = Pattern.compile("\"output\"\s*:\s*\"(.*?)\"}");
 
-    public CliData(boolean shutdown, short exitCode) {
-        this.shutdown = shutdown;
-        this.exitCode = exitCode;
-    }
-
-    public short getExitCode() {
-        return exitCode;
-    }
-
-    public boolean isShutdown() {
-        return shutdown;
-    }
 }
