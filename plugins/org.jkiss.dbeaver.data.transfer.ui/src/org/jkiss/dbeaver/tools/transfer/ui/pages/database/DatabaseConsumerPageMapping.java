@@ -901,8 +901,6 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 } else {
                     if (value instanceof DBPNamedObject dbpNamedObject) {
                         combo.setText(dbpNamedObject.getName());
-                    } else if (value instanceof Enum anEnum) {
-                        combo.setText(anEnum.name());
                     } else {
                         combo.setText(CommonUtils.toString(value));
                     }
