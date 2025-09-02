@@ -3,7 +3,7 @@
 
 <plugin>
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
-        <propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.openai.OpenAiConfigurator"/>
+        <propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.openai.OpenAiConfigurator"/>
         <propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.copilot.CopilotConfigurator"/>
     </extension>
 

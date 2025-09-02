@@ -16,12 +16,13 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-import org.jkiss.code.NotNull;
+import java.util.Map;
 
-import java.util.List;
+public class OAIResponsesPrompt {
 
-public record ModelList(
-    @NotNull String object,
-    @NotNull List<Model> data
-) {
+    public String id;
+    public Map<String, String> variables;
+    public String version;
+
+
 }

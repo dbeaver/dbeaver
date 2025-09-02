@@ -16,31 +16,11 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-public class ChatFunctionCall {
+import java.util.List;
+import java.util.Map;
 
-    /**
-     * The name of the function being called
-     */
-    private String name;
+public class OAIResponsesResponse extends OAIResponsesBase {
 
-    /**
-     * The arguments of the call produced by the model, represented as a JsonNode for easy manipulation.
-     */
-    private Object arguments;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Object getArguments() {
-        return arguments;
-    }
-
-    public void setArguments(Object arguments) {
-        this.arguments = arguments;
-    }
+    public List<OAIMessage> output;
+    public Map<String, Object> usage;
 }

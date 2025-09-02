@@ -8,7 +8,7 @@
     <extension-point id="com.dbeaver.ai.function" name="AI functions" schema="schema/com.dbeaver.ai.function.exsd"/>
 
     <extension point="com.dbeaver.ai.engine">
-        <completionEngine id="openai" label="OpenAI" class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine" properties="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties" default="true" supportsFunctions="true" fallbacks="openai-pro">
+        <completionEngine id="openai" label="OpenAI" class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine" properties="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties" default="true" supportsFunctions="true" fallbacks="openai-pro">
             <propertyGroup label="Engine settings">
                 <property id="gpt.token" label="API token" type="string" hint="Copy-paste API token from https://platform.openai.com/account/api-keys" features="password"/>
                 <property id="gpt.model" label="Model" type="string" validValues="gpt-3.5-turbo,gpt-3.5-turbo-instruct,gpt-4,gpt-4o,gpt-4-turbo,gpt-4o-mini" defaultValue="gpt-4o"/>

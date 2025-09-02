@@ -130,7 +130,7 @@ public class AIAssistantImpl implements AIAssistant {
         try {
             boolean loggingEnabled = isLoggingEnabled();
             if (loggingEnabled) {
-                log.debug("AI request:\n" + CommonUtils.addTextIndent(request.toString(), LOG_INDENT));
+                log.debug("AI request:\n" + CommonUtils.addTextIndent(request.getMessages().toString(), LOG_INDENT));
             }
 
             AIEngineResponse completionResponse = callWithRetry(() -> engine.requestCompletion(monitor, request));
