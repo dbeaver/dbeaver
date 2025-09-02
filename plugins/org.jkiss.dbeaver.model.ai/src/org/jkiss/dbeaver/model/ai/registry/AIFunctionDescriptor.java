@@ -27,28 +27,67 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AIFunctionDescriptor extends AbstractDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.function";
 
+    public static class Parameter {
+        private final IConfigurationElement config;
+
+        Parameter(@NotNull IConfigurationElement config) {
+            this.config = config;
+        }
+
+        @NotNull
+        public String getName() {
+            return config.getAttribute("name");
+        }
+
+        @NotNull
+        public String getType() {
+            return config.getAttribute("type");
+        }
+
+        @Nullable
+        public String getDescription() {
+            return config.getAttribute("description");
+        }
+
+        @Nullable
+        public String[] getValidValues() {
+            String validValues = config.getAttribute("validValues");
+            return CommonUtils.isEmpty(validValues) ? null : validValues.split(", ");
+        }
+    }
+
     private final IConfigurationElement contributorConfig;
     private final ObjectType objectType;
-    private final String id;
+    private final String name;
     private final DBPImage icon;
     private final boolean global;
+    private final Parameter[] parameters;
 
-    protected AIFunctionDescriptor(@NotNull IConfigurationElement config) {
+    public AIFunctionDescriptor(@NotNull IConfigurationElement config) {
         super(config);
         this.contributorConfig = config;
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
-        this.id = config.getAttribute("id");
+        this.name = config.getAttribute("name");
         this.global = CommonUtils.toBoolean(config.getAttribute("global"));
+
+        List<Parameter> params = new ArrayList<>();
+        for (IConfigurationElement pe : config.getChildren("parameter")) {
+            params.add(new Parameter(pe));
+        }
+        this.parameters = params.toArray(new Parameter[0]);
     }
 
     @NotNull
-    public String getId() {
-        return id;
+    public String getName() {
+        return name;
     }
 
     @Nullable
@@ -57,8 +96,8 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     }
 
     @Nullable
-    public String getLabel() {
-        return contributorConfig.getAttribute("label");
+    public String getDescription() {
+        return contributorConfig.getAttribute("description");
     }
 
     /**
@@ -69,11 +108,16 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     }
 
     @NotNull
+    public Parameter[] getParameters() {
+        return parameters;
+    }
+
+    @NotNull
     public AIFunction createInstance() throws DBException {
         try {
             return objectType.createInstance(AIFunction.class);
         } catch (Exception e) {
-            throw new DBException("Error creating AI function " + getId(), e);
+            throw new DBException("Error creating AI function " + getName(), e);
         }
     }
 
@@ -83,11 +127,11 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
 
     @Override
     public String toString() {
-        return "AI function: " + getId();
+        return "AI function: " + getName();
     }
 
     @NotNull
     public String getSignature() {
-        return getId();
+        return getName();
     }
 }

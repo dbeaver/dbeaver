@@ -16,25 +16,33 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
+import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class OAIMessage {
     public static final String TYPE_MESSAGE = "message";
+    public static final String TYPE_FUNCTION_CALL = "function_call";
 
-    public String type;
     public String id;
+    public String type;
     public String status;
     public String role;
+    public String name;
+    public Map<String, Object> arguments;
+    @SerializedName("call_id")
+    public String callId;
     public List<OAIMessageContent> content;
 
     public OAIMessage() {
     }
 
-    public OAIMessage(AIMessage msg) {
+    public OAIMessage(@NotNull AIMessage msg) {
         type = TYPE_MESSAGE;
         role = mapRole(msg.getRole());
         boolean input = switch (msg.getRole()) {
@@ -44,11 +52,16 @@ public class OAIMessage {
         content = List.of(new OAIMessageContent(input, msg.getContent()));
     }
 
+    @NotNull
     public String getFullText() {
+        if (content == null) {
+            return "";
+        }
         return content.stream().map(c -> c.text).collect(Collectors.joining());
     }
 
-    private static String mapRole(AIMessageType role) {
+    @NotNull
+    private static String mapRole(@NotNull AIMessageType role) {
         return switch (role) {
             case SYSTEM -> "system";
             case USER -> "user";

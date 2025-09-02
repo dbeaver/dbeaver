@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
 import java.util.Map;
 
 public abstract class OAIResponsesBase {
@@ -74,7 +75,7 @@ public abstract class OAIResponsesBase {
     public String toolChoice;
 
     @SerializedName("tools")
-    public Object[] tools;
+    public List<OAITool> tools;
 
     @SerializedName("top_logprobs")
     public Integer topLogprobs;

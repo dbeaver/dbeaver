@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -92,16 +93,9 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        OAIResponsesRequest ccr = new OAIResponsesRequest();
-        ccr.input = fromMessages(request.getMessages());
-        ccr.temperature = temperature();
-//        ccr.setFrequencyPenalty(0.0);
-//        ccr.setPresencePenalty(0.0);
-//        ccr.setN(1);
-        ccr.model = model();
-        ccr.store = false;
-        ccr.stream = true;
-        Flow.Publisher<OAIResponsesChunk> publisher = openAiService.getInstance().createChatCompletionStream(monitor, ccr);
+        OAIResponsesRequest oaiRequest = createOpenAiRequest(request);
+        oaiRequest.stream = true;
+        Flow.Publisher<OAIResponsesChunk> publisher = openAiService.getInstance().createChatCompletionStream(monitor, oaiRequest);
 
         return subscriber -> publisher.subscribe(new Flow.Subscriber<>() {
             @Override
@@ -159,18 +153,41 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
+        OAIResponsesRequest oaiRequest = createOpenAiRequest(request);
+
+        return openAiService.getInstance().createChatCompletion(monitor, oaiRequest);
+    }
+
+    @NotNull
+    private OAIResponsesRequest createOpenAiRequest(@NotNull AIEngineRequest request) throws DBException {
         OAIResponsesRequest oaiRequest = new OAIResponsesRequest();
         List<AIMessage> messages = request.getMessages();
         oaiRequest.input = fromMessages(messages);
         oaiRequest.temperature = temperature();
         oaiRequest.store = false;
         oaiRequest.model = model();
+
         if (!CommonUtils.isEmpty(request.getFunctions())) {
-//            oaiRequest.setFunctions(request.getFunctions().stream()
-//                .map(this::makeFunctionFrom).toList());
+            List<OAITool> tools = new ArrayList<>();
+            for (AIFunctionDescriptor fd : request.getFunctions()) {
+                OAITool tool = new OAITool();
+                tool.type = OAITool.TYPE_FUNCTION;
+                tool.name = fd.getName();
+                tool.description = fd.getDescription();
+                tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
+                for (AIFunctionDescriptor.Parameter param : fd.getParameters()) {
+                    OAIToolParameter tp = new OAIToolParameter();
+                    tp.type = param.getType();
+                    tp.description = param.getDescription();
+                    tp.enumItems = param.getValidValues();
+                    tool.parameters.properties.put(param.getName(), tp);
+                }
+                tools.add(tool);
+            }
+            oaiRequest.tools = tools;
         }
 
-        return openAiService.getInstance().createChatCompletion(monitor, oaiRequest);
+        return oaiRequest;
     }
 
     @NotNull
