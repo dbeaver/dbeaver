@@ -20,8 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConstants;
-import org.jkiss.dbeaver.model.ai.AIDdlGenerationOptions;
 import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -85,7 +85,7 @@ public class AIEngineRequestFactory {
 
         String dbSnapshot = "";
         if (aiDatabaseContext != null && dbSnapshotTokenBudget > 0) {
-            AIDdlGenerationOptions ddlOptions = buildOptions(dbSnapshotTokenBudget);
+            AISchemaGenerationOptions ddlOptions = buildOptions(dbSnapshotTokenBudget);
             dbSnapshot = databaseSnapshotService.createDbSnapshot(monitor, aiDatabaseContext, ddlOptions);
         }
 
@@ -115,10 +115,10 @@ public class AIEngineRequestFactory {
         return new AIEngineRequest(truncated);
     }
 
-    protected AIDdlGenerationOptions buildOptions(int dbSnapshotTokenBudget) {
+    protected AISchemaGenerationOptions buildOptions(int dbSnapshotTokenBudget) {
         DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
 
-        return AIDdlGenerationOptions.builder()
+        return AISchemaGenerationOptions.builder()
             .withMaxDbSnapshotTokens(dbSnapshotTokenBudget)
             .withSendObjectComment(prefs.getBoolean(AIConstants.AI_SEND_DESCRIPTION))
             .withSendColumnTypes(prefs.getBoolean(AIConstants.AI_SEND_TYPE_INFO))
