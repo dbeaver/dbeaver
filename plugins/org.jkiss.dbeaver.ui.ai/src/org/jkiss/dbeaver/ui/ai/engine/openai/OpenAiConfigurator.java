@@ -30,14 +30,13 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
-import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClient;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -48,8 +47,8 @@ import org.jkiss.utils.function.ThrowableFunction;
 import java.util.List;
 import java.util.Locale;
 
-public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends OpenAIProperties>
-    implements IObjectPropertyConfigurator<ENGINE, LegacyAISettings<PROPERTIES>> {
+public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
+    implements IObjectPropertyConfigurator<ENGINE, PROPERTIES> {
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String baseUrl;
     protected volatile String token = "";
@@ -71,7 +70,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
     @Override
     public void createControl(
         @NotNull Composite parent,
-        AIEngine object,
+        AIEngineDescriptor object,
         @NotNull Runnable propertyChangeListener
     ) {
         Composite composite = UIUtils.createComposite(parent, 3);
@@ -82,40 +81,39 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
         createBaseUrlParameter(composite);
 
         createAdditionalSettings(composite);
-        UIUtils.syncExec(this::applySettings);
     }
 
     @Override
-    public void loadSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
-        baseUrl = CommonUtils.toString(configuration.getProperties().getBaseUrl());
+    public void loadSettings(@NotNull PROPERTIES configuration) {
+        baseUrl = CommonUtils.toString(configuration.getBaseUrl());
         if (baseUrl.isEmpty()) {
             baseUrl = OpenAIClient.OPENAI_ENDPOINT;
         }
-        token = CommonUtils.toString(configuration.getProperties().getToken());
+        token = CommonUtils.toString(configuration.getToken());
         modelSelectorField.setSelectedModel(
-            CommonUtils.toString(configuration.getProperties().getModel(), OpenAIModels.DEFAULT_MODEL)
+            CommonUtils.toString(configuration.getModel(), OpenAIModels.DEFAULT_MODEL)
         );
-        temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
-        logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
+        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
         applySettings();
 
-        contextWindowSizeField.setValue(configuration.getProperties().getContextWindowSize());
+        contextWindowSizeField.setValue(configuration.getContextWindowSize());
 
         modelSelectorField.refreshModelListSilently(false);
     }
 
     @Override
-    public void saveSettings(@NotNull LegacyAISettings<PROPERTIES> configuration) {
-        configuration.getProperties().setBaseUrl(baseUrl);
-        configuration.getProperties().setToken(token);
-        configuration.getProperties().setModel(modelSelectorField.getSelectedModel());
-        configuration.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
-        configuration.getProperties().setTemperature(CommonUtils.toDouble(temperature));
-        configuration.getProperties().setLoggingEnabled(logQuery);
+    public void saveSettings(@NotNull PROPERTIES configuration) {
+        configuration.setBaseUrl(baseUrl);
+        configuration.setToken(token);
+        configuration.setModel(modelSelectorField.getSelectedModel());
+        configuration.setContextWindowSize(contextWindowSizeField.getValue());
+        configuration.setTemperature(CommonUtils.toDouble(temperature));
+        configuration.setLoggingEnabled(logQuery);
     }
 
     @Override
-    public void resetSettings(@NotNull LegacyAISettings<PROPERTIES> openAIPropertiesLegacyAISettings) {
+    public void resetSettings(@NotNull PROPERTIES openAIPropertiesLegacyAISettings) {
 
     }
 

@@ -157,10 +157,12 @@ public class ObjectInformationView {
                         infoComposite.layout(true, true);
                         mainComposite.layout(true, true);
                         UIUtils.asyncExec(() -> {
-                            Shell shell = mainComposite.getShell();
-                            Point sz = shell.getMinimumSize();
-                            shell.setMinimumSize(sz.x + extraWidth, sz.y + metadataComposite.getSize().y);
-                            mainComposite.getShell().layout(true, true);
+                            if (!mainComposite.isDisposed()) {
+                                Shell shell = mainComposite.getShell();
+                                Point sz = shell.getMinimumSize();
+                                shell.setMinimumSize(sz.x + extraWidth, sz.y + metadataComposite.getSize().y);
+                                mainComposite.getShell().layout(true, true);
+                            }
                         });
                     }
                 });
