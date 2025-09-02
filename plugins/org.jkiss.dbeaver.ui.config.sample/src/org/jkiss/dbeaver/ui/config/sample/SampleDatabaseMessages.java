@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.config.sample;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class SampleDatabaseMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.config.sample.SampleDatabaseResources"; //$NON-NLS-1$
