@@ -47,7 +47,7 @@ public class OpenAIClient implements Closeable {
 
     private static final String DATA_EVENT = "data: ";
     private static final String EVENT_EVENT = "event: ";
-    private static final String DONE_EVENT = "[DONE]";
+
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
     private static final Gson GSON = new GsonBuilder().create();
     public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";

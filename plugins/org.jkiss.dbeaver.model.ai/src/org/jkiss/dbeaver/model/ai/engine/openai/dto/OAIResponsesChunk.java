@@ -27,9 +27,12 @@ public class OAIResponsesChunk {
     @SerializedName("sequence_number")
     public Integer sequenceNumber;
     public OAIResponsesResponse response;
-    public String item_id;
-    public int output_index;
-    public int content_index;
+    @SerializedName("item_id")
+    public String itemId;
+    @SerializedName("output_index")
+    public int outputIndex;
+    @SerializedName("content_index")
+    public int contentIndex;
     public String delta;
 
 }

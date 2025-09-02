@@ -166,7 +166,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         oaiRequest.store = false;
         oaiRequest.model = model();
         if (!CommonUtils.isEmpty(request.getFunctions())) {
-//            completionRequest.setFunctions(request.getFunctions().stream()
+//            oaiRequest.setFunctions(request.getFunctions().stream()
 //                .map(this::makeFunctionFrom).toList());
         }
 
