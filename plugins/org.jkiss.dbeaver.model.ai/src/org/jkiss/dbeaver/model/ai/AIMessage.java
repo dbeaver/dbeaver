@@ -111,4 +111,7 @@ public class AIMessage {
         return time;
     }
 
+    public AIMessage withContent(String newContent) {
+        return new AIMessage(role, newContent, displayMessage, time);
+    }
 }

@@ -39,7 +39,6 @@ import org.jkiss.utils.Pair;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -56,6 +55,8 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
     private final SQLQueryComplexName name;
     @Nullable
     private DBSEntity table = null;
+    @Nullable
+    private DBSObject immediateTargetObject = null;
 
     private final boolean forDdl;
 
@@ -82,6 +83,11 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
     @Nullable
     public DBSEntity getTable() {
         return this.table;
+    }
+
+    @Nullable
+    public DBSObject getImmediateTargetObject() {
+        return this.immediateTargetObject;
     }
 
     @Nullable
@@ -121,7 +127,7 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
                 statistics,
                 this.name,
                 rowsetRefOrigin,
-                Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET,
                 SQLQuerySymbolClass.ERROR
             );
             statistics.appendError(this.getSyntaxNode(), "Invalid table reference");
@@ -157,7 +163,10 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
         this.table = obj instanceof DBSEntity e && (obj instanceof DBSTable || obj instanceof DBSView) ? e : null;
 
         if (this.table != null) {
-            SQLQuerySemanticUtils.setNamePartsDefinition(this.name, refTarget, SQLQuerySymbolClass.TABLE, rowsetRefOrigin);
+            this.immediateTargetObject = refTarget;
+            SQLQuerySemanticUtils.setNamePartsDefinition(
+                context, this.name, refTarget, SQLQuerySymbolClass.TABLE, rowsetRefOrigin, SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET
+            );
             context = context.reset().appendSource(this, name, this.table);
         } else {
             SQLQuerySymbolClass tableSymbolClass = statistics.isTreatErrorsAsWarnings()
@@ -168,11 +177,11 @@ public class SQLQueryRowsTableDataModel extends SQLQueryRowsSourceModel
                 statistics,
                 this.name,
                 rowsetRefOrigin,
-                Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.ROWSET,
                 tableSymbolClass
             );
             context = context.resetAsUnresolved();
-            if (candidates.isEmpty() || (candidates.size() == 1 && table != null)) {
+            if (candidates.isEmpty() || candidates.size() == 1) {
                 statistics.appendError(this.name.syntaxNode, "Table " + this.name.getNameString() + " not found");
             }
         }

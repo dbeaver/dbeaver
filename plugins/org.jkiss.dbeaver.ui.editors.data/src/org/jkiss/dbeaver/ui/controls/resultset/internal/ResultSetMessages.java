@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class ResultSetMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages"; //$NON-NLS-1$

@@ -82,6 +82,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -213,6 +214,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     // INavigatorModelView implementation
     // We need it to support a set of standard commands like copy/paste/rename/etc
 
+    @Nullable
     @Override
     public DBNNode getRootNode() {
         IEditorInput editorInput = this.getEditorInput();
@@ -283,6 +285,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         editModeComposite = new EditModeComposite(contentContainer);
         contentContainer = editModeComposite.getPlaceholder();
+        CSSUtils.setExcludeFromStyling(contentContainer);
 
         super.createPartControl(contentContainer);
 

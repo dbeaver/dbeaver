@@ -17,18 +17,31 @@
 
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Statement type
  */
 public enum SQLQueryType {
-    UNKNOWN,
-    SELECT,
-    INSERT,
-    DELETE,
-    UPDATE,
-    MERGE,
-    DDL,
-    USE,
-    COMMIT,
-    ROLLBACK
+    UNKNOWN(SQLQueryCategory.UNKNOWN),
+    SELECT(SQLQueryCategory.SQL),
+    INSERT(SQLQueryCategory.DML),
+    DELETE(SQLQueryCategory.DML),
+    UPDATE(SQLQueryCategory.DML),
+    MERGE(SQLQueryCategory.DML),
+    DDL(SQLQueryCategory.DDL),
+    USE(SQLQueryCategory.DDL),
+    COMMIT(SQLQueryCategory.TCL),
+    ROLLBACK(SQLQueryCategory.TCL);
+
+    private final SQLQueryCategory category;
+
+    SQLQueryType(@NotNull SQLQueryCategory category) {
+        this.category = category;
+    }
+
+    @NotNull
+    public SQLQueryCategory getCategory() {
+        return category;
+    }
 }

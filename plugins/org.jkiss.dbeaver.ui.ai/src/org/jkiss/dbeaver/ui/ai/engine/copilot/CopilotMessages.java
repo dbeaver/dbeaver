@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.ai.engine.copilot;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class CopilotMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.engine.copilot.CopilotMessages"; //$NON-NLS-1$

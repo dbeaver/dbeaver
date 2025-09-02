@@ -54,7 +54,7 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
 
     public void serializeDrivers(OutputStream os, List<DataSourceProviderDescriptor> providers) throws IOException {
         XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
-        xml.setButify(true);
+        xml.setBeautify(true);
         try (var ignored = xml.startElement(RegistryConstants.TAG_DRIVERS)) {
             for (DataSourceProviderDescriptor provider : providers) {
                 if (provider.isTemporary()) {
@@ -379,6 +379,16 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                             log.warn("Driver loader '" + loaderId + "' not found for driver '" + curDriver.getFullId() + "'");
                         }
                         curDriverLoader = curDriver.getDefaultDriverLoader();
+                    }
+                    if (loaderId != null) {
+                        DBPDriverLibraryProvider libProvider = DataSourceProviderRegistry.getInstance().getAuthModel(loaderId);
+                        if (libProvider == null) {
+                            log.warn("Auth model '" + loaderId + "' not found");
+                        } else {
+                            if (!curDriverLoader.getLibraryProviders().contains(libProvider)) {
+                                curDriverLoader.addLibraryProvider(libProvider);
+                            }
+                        }
                     }
 
                     DBPDriverLibrary.FileType type;

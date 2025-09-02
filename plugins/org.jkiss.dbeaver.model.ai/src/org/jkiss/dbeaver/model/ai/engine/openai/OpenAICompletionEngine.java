@@ -17,17 +17,16 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionResult;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatMessage;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -35,8 +34,6 @@ import java.util.List;
 import java.util.concurrent.Flow;
 
 public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
-    private static final Log log = Log.getLog(OpenAICompletionEngine.class);
-    public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
@@ -46,18 +43,35 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         }
 
         @Override
-        protected void onDispose(OpenAIClient disposedValue) {
+        protected void onDispose(@NotNull OpenAIClient disposedValue) {
             disposedValue.close();
         }
     };
 
-    public OpenAICompletionEngine(AISettingsRegistry registry) {
-        super(registry);
+    public OpenAICompletionEngine() throws DBException {
+        super();
     }
 
+    public OpenAICompletionEngine(PROPS properties) throws DBException {
+        super(properties);
+    }
+
+    @NotNull
     @Override
-    public int getMaxContextSize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return OpenAIModel.getByName(getProperties().getModel()).getMaxTokens();
+    protected String getEngineId() {
+        return OpenAIConstants.OPENAI_ENGINE;
+    }
+
+    @NotNull
+    @Override
+    public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return openAiService.getInstance().getModels(monitor)
+            .stream()
+            .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
+                model.id(),
+                new AIModel(model.id(), null, OpenAIModels.detectModelFeatures(model.id()))
+            ))
+            .toList();
     }
 
     @NotNull
@@ -76,7 +90,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
 
     @NotNull
     @Override
-    public Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
+    public AIStreamPublisher requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
@@ -85,7 +99,6 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         ccr.setTemperature(temperature());
         ccr.setFrequencyPenalty(0.0);
         ccr.setPresencePenalty(0.0);
-        ccr.setMaxTokens(AIConstants.MAX_RESPONSE_TOKENS);
         ccr.setN(1);
         ccr.setModel(model());
         ccr.setStream(true);
@@ -121,12 +134,18 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
     }
 
     @Override
-    public void onSettingsUpdate(@NotNull AISettingsRegistry registry) {
-        try {
-            openAiService.dispose();
-        } catch (DBException e) {
-            log.error("Error disposing OpenAI service", e);
+    public int getContextWindowSize(DBRProgressMonitor monitor) throws DBException {
+        Integer contextWindowSize = properties.getContextWindowSize();
+        if (contextWindowSize != null) {
+            return contextWindowSize;
         }
+
+        throw new DBException("Context window size is not set for the model: " + model());
+    }
+
+    @Override
+    public void close() throws DBException {
+        openAiService.dispose();
     }
 
     @NotNull
@@ -139,7 +158,6 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         completionRequest.setTemperature(temperature());
         completionRequest.setFrequencyPenalty(0.0);
         completionRequest.setPresencePenalty(0.0);
-        completionRequest.setMaxTokens(AIConstants.MAX_RESPONSE_TOKENS);
         completionRequest.setN(1);
         completionRequest.setModel(model());
 
@@ -162,24 +180,25 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         };
     }
 
+    @NotNull
     protected OpenAIClient createClient() throws DBException {
-        return new OpenAIClient(
-            OPENAI_ENDPOINT,
-            List.of(new OpenAIRequestFilter(getProperties().getToken()))
-        );
+        String token = properties.getToken();
+        if (token == null || token.isEmpty()) {
+            throw new DBException("OpenAI API token is not set");
+        }
+        String baseUrl = properties.getBaseUrl();
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            baseUrl = OpenAIClient.OPENAI_ENDPOINT;
+        }
+        return OpenAIClient.createClient(baseUrl, token);
     }
 
+    @Nullable
     protected String model() throws DBException {
-        return OpenAIModel.getByName(getProperties().getModel()).getName();
+        return properties.getModel();
     }
 
     protected double temperature() throws DBException {
-        return getProperties().getTemperature();
-    }
-
-    @Override
-    protected PROPS getProperties() throws DBException {
-        return registry.getSettings().<LegacyAISettings<PROPS>> getEngineConfiguration(OpenAIConstants.OPENAI_ENGINE)
-            .getProperties();
+        return properties.getTemperature();
     }
 }

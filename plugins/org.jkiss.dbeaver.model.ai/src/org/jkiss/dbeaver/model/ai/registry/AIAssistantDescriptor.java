@@ -20,21 +20,45 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIAssistant;
+import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
+import org.jkiss.dbeaver.model.ai.AISqlFormatter;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.utils.CommonUtils;
 
 public class AIAssistantDescriptor extends AbstractDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.assistant";
     private final ObjectType objectType;
+    private final ObjectType formatterType;
+    private final ObjectType schemaGeneratorType;
+    private final int priority;
 
     protected AIAssistantDescriptor(IConfigurationElement contributorConfig) {
         super(contributorConfig);
         this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
+        this.formatterType = new ObjectType(contributorConfig, "sqlFormatter");
+        this.schemaGeneratorType = new ObjectType(contributorConfig, "schemaGenerator");
+        this.priority = CommonUtils.toInt(contributorConfig.getAttribute("priority"));
     }
 
     @NotNull
-    public AIAssistant createInstance() throws DBException {
-        return objectType.createInstance(AIAssistant.class);
+    public AIAssistant createInstance(DBPWorkspace workspace) throws DBException {
+        return objectType.createInstance(AIAssistant.class, workspace);
+    }
+
+    @NotNull
+    public AISqlFormatter createSqlFormatter() throws DBException {
+        return formatterType.createInstance(AISqlFormatter.class);
+    }
+
+    @NotNull
+    public AISchemaGenerator createSchemaGenerator() throws DBException {
+        return schemaGeneratorType.createInstance(AISchemaGenerator.class);
+    }
+
+    public int getPriority() {
+        return priority;
     }
 }

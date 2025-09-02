@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.actions;
 
-import org.jkiss.api.DriverReference;
+import org.jkiss.api.CompositeObjectId;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -114,7 +114,7 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
 
     protected abstract String createConnectionName(List<Path> fileList);
 
-    protected abstract DriverReference getDriverReference();
+    protected abstract CompositeObjectId getDriverReference();
 
     protected boolean isSingleDatabaseConnection() {
         return true;
