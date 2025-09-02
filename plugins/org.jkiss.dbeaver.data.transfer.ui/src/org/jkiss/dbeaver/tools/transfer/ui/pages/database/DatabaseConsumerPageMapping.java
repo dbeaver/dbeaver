@@ -893,8 +893,19 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             @Override
             protected void doSetValue(Object value) {
-                if (combo != null && !combo.isDisposed()) {
-                    combo.setText(CommonUtils.toString(value));
+                if (combo == null || combo.isDisposed()) {
+                    return;
+                }
+                if (value == null) {
+                    combo.setText("");
+                } else {
+                    if (value instanceof DBPNamedObject dbpNamedObject) {
+                        combo.setText(dbpNamedObject.getName());
+                    } else if (value instanceof Enum anEnum) {
+                        combo.setText(anEnum.name());
+                    } else {
+                        combo.setText(CommonUtils.toString(value));
+                    }
                 }
             }
         };
