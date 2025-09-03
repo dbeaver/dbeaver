@@ -339,6 +339,9 @@ public abstract class PostgreTable extends PostgreTableReal
     @Nullable
     public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
         if (superTables == null && getDataSource().getServerType().supportsInheritance() && isPersisted() && monitor != null) {
+            if (monitor.isForceCacheUsage()) {
+                return Collections.emptyList();
+            }
             superTables = initSuperTables(monitor);
         }
         return superTables == null || superTables.isEmpty() ? null : superTables;
