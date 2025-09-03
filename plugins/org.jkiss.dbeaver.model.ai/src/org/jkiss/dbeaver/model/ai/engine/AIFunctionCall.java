@@ -27,11 +27,14 @@ import java.util.Map;
  */
 public class AIFunctionCall {
     @NotNull
-    private final String function;
+    private String function;
     @NotNull
-    private final Map<String, Object> arguments;
+    private Map<String, Object> arguments;
     @Nullable
     private String hint;
+
+    public AIFunctionCall() {
+    }
 
     public AIFunctionCall(@NotNull String function, @NotNull Map<String, Object> arguments) {
         this.function = function;
@@ -43,9 +46,17 @@ public class AIFunctionCall {
         return function;
     }
 
+    public void setFunction(@NotNull String function) {
+        this.function = function;
+    }
+
     @NotNull
     public Map<String, Object> getArguments() {
         return arguments;
+    }
+
+    public void setArguments(@NotNull Map<String, Object> arguments) {
+        this.arguments = arguments;
     }
 
     @Nullable

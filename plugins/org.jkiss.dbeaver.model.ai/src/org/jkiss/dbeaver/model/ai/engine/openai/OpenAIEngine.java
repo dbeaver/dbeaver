@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
-import com.google.gson.JsonSyntaxException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,13 +26,11 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
@@ -89,14 +86,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         }
         OAIMessage message = messages.getFirst();
         if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
-            String argumentsStr = message.arguments;
-            Map<String, Object> arguments;
-            try {
-                arguments = JSONUtils.GSON.fromJson(argumentsStr, JSONUtils.MAP_TYPE_TOKEN);
-            } catch (JsonSyntaxException e) {
-                throw new DBException("Error parsing function call arguments", e);
-            }
-            AIFunctionCall fc = new AIFunctionCall(message.name, arguments);
+            AIFunctionCall fc = OpenAIClient.createFunctionCall(message);
             return new AIEngineResponse(fc);
         } else {
             List<String> choices = messages.stream()

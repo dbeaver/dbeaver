@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineListener;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
+import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.engine.TooManyRequestsException;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
@@ -40,6 +42,8 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class OpenAIClient implements Closeable {
     private static final Log log = Log.getLog(OpenAIClient.class);
@@ -52,6 +56,8 @@ public class OpenAIClient implements Closeable {
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
     private static final Gson GSON = JSONUtils.GSON;
     public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
+    public static final String EVENT_TYPE_ITEM_DONE = "response.output_item.done";
+    public static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
     public static final String EVENT_TYPE_TEXT_DELTA = "response.output_text.delta";
 
     private final String baseUrl;
@@ -64,6 +70,19 @@ public class OpenAIClient implements Closeable {
     ) {
         this.baseUrl = baseUrl;
         this.requestFilters = requestFilters;
+    }
+
+    @NotNull
+    static AIFunctionCall createFunctionCall(OAIMessage message) throws DBException {
+        String argumentsStr = message.arguments;
+        Map<String, Object> arguments;
+        try {
+            arguments = JSONUtils.GSON.fromJson(argumentsStr, JSONUtils.MAP_TYPE_TOKEN);
+        } catch (JsonSyntaxException e) {
+            throw new DBException("Error parsing function call arguments", e);
+        }
+        AIFunctionCall fc = new AIFunctionCall(message.name, arguments);
+        return fc;
     }
 
     @NotNull
@@ -132,59 +151,11 @@ public class OpenAIClient implements Closeable {
 
         HttpRequest modifiedRequest = applyFilters(request);
 
+        Consumer<String> stringConsumer = new StreamConsumer(listener);
         client.sendAsync(
             modifiedRequest, //  "type" : "response.content_part.done"
             // {"type":"response.output_item.done","sequence_number":25,"output_index":0,"item":{"id":"msg_68b6f090a8d88195a69524dd04f8eac90c5742e9db37e5a3","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"If you have any more questions or need further assistance with SQL queries, feel free to ask!"}],"role":"assistant"}},
-            event -> {
-                if (CommonUtils.isEmpty(event)) {
-                    return;
-                }
-                if (event.startsWith(DATA_EVENT)) {
-                    String data = event.substring(DATA_EVENT.length()).trim();
-                    try {
-                        OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
-                        if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
-                            listener.onClose();
-                        } else {
-                            List<String> choices = new ArrayList<>();
-                            if (OpenAIClient.EVENT_TYPE_TEXT_DELTA.equals(chunk.type)) {
-                                choices.add(chunk.delta);
-                            } else if (chunk.response != null) {
-                                for (OAIMessage msg : chunk.response.output) {
-                                    for (OAIMessageContent content : msg.content) {
-                                        if (!CommonUtils.isEmpty(content.text)) {
-                                            choices.add(content.text);
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (!choices.isEmpty()) {
-                                listener.onNext(new AIEngineResponseChunk(choices));
-                            }
-                        }
-                    } catch (Exception e) {
-                        listener.onError(e);
-                    }
-                } else if (event.startsWith(EVENT_EVENT)) {
-                    String eventType = event.substring(EVENT_EVENT.length()).trim();
-                    if (!CommonUtils.isEmpty(eventType)) {
-                        switch (eventType) {
-                            case "response.created":
-                            case "response.in_progress":
-                            case "response.output_item.added":
-                            case EVENT_TYPE_TEXT_DELTA:
-                            case "response.output_text.done":
-                            case "response.content_part.done":
-                            case "response.output_item.done":
-                            case EVENT_TYPE_RESPONSE_COMPLETED:
-                                break;
-                        }
-                    }
-                } else {
-                    log.debug("Unknown OpenAI event: " + event);
-                }
-            },
+            stringConsumer,
             listener::onError,
             listener::onClose
         );
@@ -218,5 +189,81 @@ public class OpenAIClient implements Closeable {
     public interface HttpRequestFilter {
         @NotNull
         HttpRequest filter(@NotNull HttpRequest request, boolean setContentType) throws DBException;
+    }
+
+    private static class StreamConsumer implements Consumer<String> {
+        private final AIEngineListener listener;
+        private boolean functionCall;
+
+        public StreamConsumer(AIEngineListener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public void accept(String event) {
+            if (CommonUtils.isEmpty(event)) {
+                return;
+            }
+            if (event.startsWith(DATA_EVENT)) {
+                String data = event.substring(DATA_EVENT.length()).trim();
+                try {
+                    OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
+                    if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
+                        listener.onClose();
+                    } else {
+
+                        if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {
+                            functionCall = true;
+                            return;
+                        }
+                        if (functionCall) {
+                            // FIXME: proper handle of items
+                            if (EVENT_TYPE_ITEM_DONE.equals(chunk.type)) {
+                                if (chunk.item != null) {
+                                    listener.onNext(new AIEngineResponseChunk(
+                                        createFunctionCall(chunk.item)));
+                                }
+                            }
+                        } else {
+                            List<String> choices = new ArrayList<>();
+                            if (OpenAIClient.EVENT_TYPE_TEXT_DELTA.equals(chunk.type)) {
+                                choices.add(chunk.delta);
+                            } else if (chunk.response != null) {
+                                for (OAIMessage msg : chunk.response.output) {
+                                    for (OAIMessageContent content : msg.content) {
+                                        if (!CommonUtils.isEmpty(content.text)) {
+                                            choices.add(content.text);
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (!choices.isEmpty()) {
+                                listener.onNext(new AIEngineResponseChunk(choices));
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    listener.onError(e);
+                }
+            } else if (event.startsWith(EVENT_EVENT)) {
+                String eventType = event.substring(EVENT_EVENT.length()).trim();
+                if (!CommonUtils.isEmpty(eventType)) {
+                    switch (eventType) {
+                        case "response.created":
+                        case "response.in_progress":
+                        case "response.output_item.added":
+                        case EVENT_TYPE_TEXT_DELTA:
+                        case "response.output_text.done":
+                        case "response.content_part.done":
+                        case "response.output_item.done":
+                        case EVENT_TYPE_RESPONSE_COMPLETED:
+                            break;
+                    }
+                }
+            } else {
+                log.debug("Unknown OpenAI event: " + event);
+            }
+        }
     }
 }
