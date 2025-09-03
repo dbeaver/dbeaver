@@ -1926,10 +1926,9 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         private EntityAssociationsInfo prepareAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) {
             try {
-                Map<DBSEntityAttribute, EntityAssociationTargetsInfo> associatedAttributes = Stream.concat(
-                        Optional.ofNullable(entity.getAssociations(monitor)).stream().flatMap(Collection::stream),
-                        Optional.ofNullable(entity.getReferences(monitor)).stream().flatMap(Collection::stream)
-                    ).filter(c -> c instanceof DBSTableForeignKey)
+                Map<DBSEntityAttribute, EntityAssociationTargetsInfo> associatedAttributes =
+                    Optional.ofNullable(entity.getReferences(monitor)).stream()
+                    .filter(c -> c instanceof DBSTableForeignKey fk)
                     .map(c -> {
                         try {
                             return ((DBSTableForeignKey) c).getAttributeReferences(monitor);

@@ -265,7 +265,7 @@ public abstract class PostgreTable extends PostgreTableReal
 
     @Override
     public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (monitor == null) {
+        if (monitor == null || monitor.isForceCacheUsage()) {
             return null;
         }
         List<DBSEntityAssociation> refs = new ArrayList<>(
