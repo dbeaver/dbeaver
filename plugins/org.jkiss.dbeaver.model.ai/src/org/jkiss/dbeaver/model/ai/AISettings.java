@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineSettings;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
@@ -35,6 +36,8 @@ import java.util.Set;
  * Keeps global parameters and configuration of all AI engines
  */
 public class AISettings implements IAdaptable {
+    private static final Log log = Log.getLog(AISettings.class);
+
     private boolean aiDisabled;
     private String activeEngine;
     private final Map<String, AIEngineSettings<?>> engineConfigurations = new HashMap<>();
@@ -81,7 +84,11 @@ public class AISettings implements IAdaptable {
         if (aiEngineSettings != null) {
             if (!AISettingsRegistry.saveSecretsAsPlainText()) {
                 if (!resolvedSecrets.contains(engineId)) {
-                    aiEngineSettings.resolveSecrets();
+                    try {
+                        aiEngineSettings.resolveSecrets();
+                    } catch (DBException e) {
+                        log.error("Error resolving secrets in engine configuration", e);
+                    }
                     resolvedSecrets.add(engineId);
                 }
             }
