@@ -124,6 +124,7 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_tooltips;
     public static String pref_page_database_general_label_show_tooltips_tip;
     public static String pref_page_database_general_label_show_contents_in_tooltips;
+    public static String pref_page_ui_general_show_table_grid;
     public static String pref_page_database_general_label_show_contents_in_tooltips_tip;
     public static String pref_page_database_general_label_order_elements_alphabetically;
     public static String pref_page_database_general_label_order_elements_alphabetically_tip;
