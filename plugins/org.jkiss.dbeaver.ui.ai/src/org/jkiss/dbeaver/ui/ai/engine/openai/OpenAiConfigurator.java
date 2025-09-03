@@ -41,8 +41,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.ai.model.CachedValue;
+import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.function.ThrowableFunction;
 
 import java.util.List;
 import java.util.Locale;
@@ -226,24 +227,5 @@ public class OpenAiConfigurator<ENGINE extends AIEngine, PROPERTIES extends Open
             && contextWindowSizeField.isComplete();
     }
 
-    protected static class CachedValue<T> {
-        private volatile T value;
 
-        private final ThrowableFunction<DBRProgressMonitor, T, DBException> supplier;
-
-        protected CachedValue(ThrowableFunction<DBRProgressMonitor, T, DBException> supplier) {
-            this.supplier = supplier;
-        }
-
-        public T get(DBRProgressMonitor monitor, boolean refresh) throws DBException {
-            if (value == null || refresh) {
-                synchronized (this) {
-                    if (value == null || refresh) {
-                        value = supplier.apply(monitor);
-                    }
-                }
-            }
-            return value;
-        }
-    }
 }
