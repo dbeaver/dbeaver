@@ -164,6 +164,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
         return propInfo.expensive();
     }
 
+    public boolean isInfo() {
+        return propInfo.info();
+    }
+
     public boolean isNumeric() {
         Class<?> propType = getGetter().getReturnType();
         return propType != null && BeanUtils.isNumericType(propType);
@@ -323,6 +327,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                 return this.isPassword();
             case DBConstants.PROP_FEATURE_NON_SECURED:
                 return this.isNonSecuredProperty();
+            case DBConstants.PROP_FEATURE_INFO:
+                return this.isInfo();
         }
 
         return ArrayUtils.contains(propInfo.features(), feature);
