@@ -14,29 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.model.cli;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.utils.rest.RequestMapping;
-import org.jkiss.utils.rest.RequestParameter;
-
-/**
- * DBeaver instance controller.
- */
-public interface ApplicationInstanceController {
-    String CONFIG_PROP_FILE = "dbeaver-instance.properties";
-
-    @NotNull
-    @RequestMapping(value = "handleCommandLine")
-    CliProcessResult handleCommandLine(@RequestParameter("args") @NotNull String[] args);
-
-    @RequestMapping(value = "ping", timeout = 5)
-    long ping(@RequestParameter("payload") long payload);
-
-    @RequestMapping("version")
-    String getVersion();
-
-    @RequestMapping("threadDump")
-    String getThreadDump();
+public interface CliConstants {
+    short EXIT_CODE_CONTINUE = -1;
+    short EXIT_CODE_OK = 0;
+    short EXIT_CODE_ERROR = 1;
+    short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
 }

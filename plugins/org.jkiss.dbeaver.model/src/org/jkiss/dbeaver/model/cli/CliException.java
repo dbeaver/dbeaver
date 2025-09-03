@@ -14,20 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.client;
+package org.jkiss.dbeaver.model.cli;
 
-import org.jkiss.dbeaver.launcher.DBeaverLauncher;
+import org.jkiss.dbeaver.DBException;
 
-import java.nio.file.Path;
+public class CliException extends DBException {
+    private final short exitCode;
 
-public class DBeaverRestClient {
-
-    public static Integer getDBeaverServerPort(Path dbeaverDataPath) {
-        return 1;
+    public CliException(String message, short exitCode) {
+        super(message);
+        this.exitCode = exitCode;
     }
 
-    public static boolean supportsAutoLaunch() {
-        String launchPath = System.getenv(DBeaverLauncher.PROP_LAUNCHER);
-        return launchPath != null && !launchPath.trim().isEmpty();
+    public CliException(String message, Throwable cause, short exitCode) {
+        super(message, cause);
+        this.exitCode = exitCode;
+    }
+
+    public short getExitCode() {
+        return exitCode;
     }
 }
