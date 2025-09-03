@@ -21,6 +21,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineListener;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.TooManyRequestsException;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
@@ -36,9 +38,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Flow;
-import java.util.concurrent.SubmissionPublisher;
 
 public class OpenAIClient implements Closeable {
     private static final Log log = Log.getLog(OpenAIClient.class);
@@ -122,16 +123,14 @@ public class OpenAIClient implements Closeable {
         }
     }
 
-    @NotNull
-    public Flow.Publisher<OAIResponsesChunk> createChatCompletionStream(
+    public void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull OAIResponsesRequest completionRequest
+        @NotNull OAIResponsesRequest completionRequest,
+        @NotNull AIEngineListener listener
     ) throws DBException {
         HttpRequest request = createCompletionRequest(completionRequest);
 
         HttpRequest modifiedRequest = applyFilters(request);
-
-        SubmissionPublisher<OAIResponsesChunk> publisher = new SubmissionPublisher<>();
 
         client.sendAsync(
             modifiedRequest, //  "type" : "response.content_part.done"
@@ -145,12 +144,27 @@ public class OpenAIClient implements Closeable {
                     try {
                         OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
                         if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
-                            publisher.close();
+                            listener.onClose();
                         } else {
-                            publisher.submit(chunk);
+                            List<String> choices = new ArrayList<>();
+                            if (OpenAIClient.EVENT_TYPE_TEXT_DELTA.equals(chunk.type)) {
+                                choices.add(chunk.delta);
+                            } else if (chunk.response != null) {
+                                for (OAIMessage msg : chunk.response.output) {
+                                    for (OAIMessageContent content : msg.content) {
+                                        if (!CommonUtils.isEmpty(content.text)) {
+                                            choices.add(content.text);
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (!choices.isEmpty()) {
+                                listener.onNext(new AIEngineResponseChunk(choices));
+                            }
                         }
                     } catch (Exception e) {
-                        publisher.closeExceptionally(e);
+                        listener.onError(e);
                     }
                 } else if (event.startsWith(EVENT_EVENT)) {
                     String eventType = event.substring(EVENT_EVENT.length()).trim();
@@ -171,11 +185,9 @@ public class OpenAIClient implements Closeable {
                     log.debug("Unknown OpenAI event: " + event);
                 }
             },
-            publisher::closeExceptionally,
-            publisher::close
+            listener::onError,
+            listener::onClose
         );
-
-        return publisher;
     }
 
     @Override

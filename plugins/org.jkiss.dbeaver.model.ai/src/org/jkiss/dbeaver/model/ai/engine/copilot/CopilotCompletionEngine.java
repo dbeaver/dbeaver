@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatChunk;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotMessage;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
@@ -32,7 +30,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Flow;
 
 public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotProperties> {
 
@@ -102,9 +99,10 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
 
     @NotNull
     @Override
-    public AIStreamPublisher requestCompletionStream(
+    public void requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIEngineRequest request
+        @NotNull AIEngineRequest request,
+        @NotNull AIEngineListener listener
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
             .withModel(getModelName())
@@ -116,39 +114,11 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
             .withN(1)
             .build();
 
-        Flow.Publisher<CopilotChatChunk> chunkPublisher = client.getInstance().createChatCompletionStream(
+        client.getInstance().createChatCompletionStream(
             monitor,
             requestSessionToken(monitor).token(),
-            chatRequest
-        );
-
-
-        return subscriber -> chunkPublisher.subscribe(
-            new Flow.Subscriber<>() {
-                @Override
-                public void onSubscribe(Flow.Subscription subscription) {
-                    subscriber.onSubscribe(subscription);
-                }
-
-                @Override
-                public void onNext(CopilotChatChunk chunk) {
-                    List<String> choices = chunk.choices().stream()
-                        .takeWhile(it -> it.delta().content() != null)
-                        .map(it -> it.delta().content())
-                        .toList();
-                    subscriber.onNext(new AIEngineResponseChunk(choices));
-                }
-
-                @Override
-                public void onError(Throwable throwable) {
-                    subscriber.onError(throwable);
-                }
-
-                @Override
-                public void onComplete() {
-                    subscriber.onComplete();
-                }
-            }
+            chatRequest,
+            listener
         );
     }
 

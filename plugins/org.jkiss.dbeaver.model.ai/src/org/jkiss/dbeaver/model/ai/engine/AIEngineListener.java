@@ -14,17 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.engine;
 
-import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
-
-import java.util.concurrent.Flow;
+import org.jkiss.code.NotNull;
 
 /**
- * AI stream publisher.
- * Basically just a classic publisher.
+ * Subscriber which listens for response stream
  */
-public interface AIStreamPublisher extends Flow.Publisher<AIEngineResponseChunk> {
+public interface AIEngineListener {
 
+    void onNext(@NotNull AIEngineResponseChunk chunk);
 
+    void onError(@NotNull Throwable throwable);
+
+    void onClose();
 }

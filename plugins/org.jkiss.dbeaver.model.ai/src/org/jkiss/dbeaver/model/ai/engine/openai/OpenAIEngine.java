@@ -22,7 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
@@ -35,7 +34,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Flow;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
@@ -109,50 +107,15 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         }
     }
 
-    @NotNull
     @Override
-    public AIStreamPublisher requestCompletionStream(
+    public void requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIEngineRequest request
+        @NotNull AIEngineRequest request,
+        @NotNull AIEngineListener listener
     ) throws DBException {
         OAIResponsesRequest oaiRequest = createOpenAiRequest(request);
         oaiRequest.stream = true;
-        Flow.Publisher<OAIResponsesChunk> publisher = openAiService.getInstance().createChatCompletionStream(monitor, oaiRequest);
-
-        return subscriber -> publisher.subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscriber.onSubscribe(subscription);
-            }
-
-            @Override
-            public void onNext(OAIResponsesChunk item) {
-                List<String> choices = new ArrayList<>();
-                if (OpenAIClient.EVENT_TYPE_TEXT_DELTA.equals(item.type)) {
-                    choices.add(item.delta);
-                } else if (item.response != null) {
-                    for (OAIMessage msg : item.response.output) {
-                        for (OAIMessageContent content : msg.content) {
-                            if (!CommonUtils.isEmpty(content.text)) {
-                                choices.add(content.text);
-                            }
-                        }
-                    }
-                }
-
-                subscriber.onNext(new AIEngineResponseChunk(choices));
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                subscriber.onError(throwable);
-            }
-
-            @Override
-            public void onComplete() {
-                subscriber.onComplete();
-            }
-        });
+        openAiService.getInstance().createChatCompletionStream(monitor, oaiRequest, listener);
     }
 
     @Override
