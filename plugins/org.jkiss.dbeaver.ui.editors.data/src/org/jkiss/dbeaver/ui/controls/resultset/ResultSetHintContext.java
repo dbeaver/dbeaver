@@ -48,7 +48,7 @@ public class ResultSetHintContext implements DBDValueHintContext {
     private final Supplier<DBSEntity> entitySupplier;
     private final Map<String, Object> contextAttributes = new HashMap<>();
 
-    private final Map<DBDValueHintProvider, HintProviderInfo> hintProviders = new IdentityHashMap<>();
+    private final Map<DBDValueHintProvider, HintProviderInfo> hintProviders = Collections.synchronizedMap(new IdentityHashMap<>());
     private ValueHintContextConfiguration contextConfiguration;
 
     static class HintProviderInfo {
@@ -132,7 +132,8 @@ public class ResultSetHintContext implements DBDValueHintContext {
 
     public List<DBDCellHintProvider> getCellHintProviders(DBDAttributeBinding attr) {
         List<DBDCellHintProvider> result = new ArrayList<>();
-        for (HintProviderInfo pi : hintProviders.values()) {
+        Collection<HintProviderInfo> hintProvidersSnapshot = new ArrayList<>(hintProviders.values());
+        for (HintProviderInfo pi : hintProvidersSnapshot) {
             if (pi.enabled && pi.provider instanceof DBDCellHintProvider chp && pi.attributes.contains(attr)) {
                 result.add(chp);
             }
@@ -142,7 +143,8 @@ public class ResultSetHintContext implements DBDValueHintContext {
 
     public List<DBDAttributeHintProvider> getColumnHintProviders(DBDAttributeBinding attr) {
         List<DBDAttributeHintProvider> result = new ArrayList<>();
-        for (HintProviderInfo pi : hintProviders.values()) {
+        Collection<HintProviderInfo> hintProvidersSnapshot = new ArrayList<>(hintProviders.values());
+        for (HintProviderInfo pi : hintProvidersSnapshot) {
             if (pi.enabled && pi.provider instanceof DBDAttributeHintProvider ahp && pi.attributes.contains(attr)) {
                 result.add(ahp);
             }
@@ -193,7 +195,8 @@ public class ResultSetHintContext implements DBDValueHintContext {
         @NotNull Collection<? extends DBDValueRow> rows,
         boolean cleanupCache
     ) throws DBException {
-        for (HintProviderInfo pi : hintProviders.values()) {
+        Collection<HintProviderInfo> hintProvidersSnapshot = new ArrayList<>(hintProviders.values());
+        for (HintProviderInfo pi : hintProvidersSnapshot) {
             if (pi.enabled && pi.provider instanceof DBDCellHintProvider chp) {
                 chp.cacheRequiredData(
                     monitor,
