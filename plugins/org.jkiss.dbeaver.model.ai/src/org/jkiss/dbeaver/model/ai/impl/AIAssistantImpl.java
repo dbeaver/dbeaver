@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.registry.*;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.exec.DBCMessageException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -132,7 +133,7 @@ public class AIAssistantImpl implements AIAssistant {
         String functionName = functionCall.getFunction();
         AIFunctionDescriptor function = registry.getFunction(functionName);
         if (function == null) {
-            throw new DBException("Function '" + functionName + "' not found");
+            throw new DBCMessageException("Function '" + functionName + "' not found");
         }
         return registry.callFunction(context, function, functionCall.getArguments());
     }

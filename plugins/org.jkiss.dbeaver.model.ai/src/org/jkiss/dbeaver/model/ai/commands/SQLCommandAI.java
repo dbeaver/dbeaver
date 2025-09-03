@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCMessageException;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -140,14 +141,14 @@ public class SQLCommandAI implements SQLControlCommandHandler {
 
         if (script == null) {
             if (!messages.isEmpty()) {
-                throw new DBException(messages.toString());
+                throw new DBCMessageException(messages.toString());
             }
-            throw new DBException("Empty AI response for '" + prompt + "'");
+            throw new DBCMessageException("Empty AI response for '" + prompt + "'");
         }
 
         SQLDialect dialect = SQLUtils.getDialectFromObject(dataSource);
         if (!script.contains("\n") && SQLUtils.isCommentLine(dialect, script)) {
-            throw new DBException(script);
+            throw new DBCMessageException(script);
         }
 
         List<SQLScriptElement> scriptElements = SQLScriptParser.parseScript(dataSource, script);
