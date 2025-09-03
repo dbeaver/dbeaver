@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * AI function.
@@ -30,9 +30,9 @@ public interface AIFunction {
      * Calls function
      */
     @NotNull
-    Object callFunction(
+    AIFunctionResult callFunction(
         @NotNull AIFunctionContext context,
-        @NotNull List<Object> parameters
+        @NotNull Map<String, Object> parameters
     ) throws DBException;
 
 }

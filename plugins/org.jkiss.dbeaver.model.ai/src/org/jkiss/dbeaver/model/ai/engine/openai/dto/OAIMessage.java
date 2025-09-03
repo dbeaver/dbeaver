@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class OAIMessage {
@@ -34,7 +33,7 @@ public class OAIMessage {
     public String status;
     public String role;
     public String name;
-    public Map<String, Object> arguments;
+    public String arguments;
     @SerializedName("call_id")
     public String callId;
     public List<OAIMessageContent> content;

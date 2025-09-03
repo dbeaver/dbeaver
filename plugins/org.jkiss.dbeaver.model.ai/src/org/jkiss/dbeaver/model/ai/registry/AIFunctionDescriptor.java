@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.AIFunction;
+import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -68,6 +69,7 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     private final String name;
     private final DBPImage icon;
     private final boolean global;
+    private final AIFunctionResult.FunctionType type;
     private final Parameter[] parameters;
 
     public AIFunctionDescriptor(@NotNull IConfigurationElement config) {
@@ -77,6 +79,11 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.name = config.getAttribute("name");
         this.global = CommonUtils.toBoolean(config.getAttribute("global"));
+        this.type = CommonUtils.valueOf(
+            AIFunctionResult.FunctionType.class,
+            config.getAttribute("type"),
+            AIFunctionResult.FunctionType.INFORMATION
+        );
 
         List<Parameter> params = new ArrayList<>();
         for (IConfigurationElement pe : config.getChildren("parameter")) {
@@ -93,6 +100,11 @@ public class AIFunctionDescriptor extends AbstractDescriptor {
     @Nullable
     public DBPImage getIcon() {
         return icon;
+    }
+
+    @NotNull
+    public AIFunctionResult.FunctionType getType() {
+        return type;
     }
 
     @Nullable

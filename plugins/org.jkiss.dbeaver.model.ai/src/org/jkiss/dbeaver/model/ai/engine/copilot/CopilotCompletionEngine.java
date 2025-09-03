@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatChunk;
@@ -96,7 +97,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
             .map(it -> it.message().content())
             .toList();
 
-        return new AIEngineResponse(choices);
+        return new AIEngineResponse(AIMessageType.ASSISTANT, choices);
     }
 
     @NotNull

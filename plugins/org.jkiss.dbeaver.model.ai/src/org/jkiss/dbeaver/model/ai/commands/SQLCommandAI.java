@@ -110,19 +110,22 @@ public class SQLCommandAI implements SQLControlCommandHandler {
         AIAssistant assistant = AIAssistantRegistry.getInstance()
             .createAssistant(dataSourceContainer.getProject().getWorkspace());
 
-        String text = assistant.generateText(
+        AIAssistantResponse result = assistant.generateText(
             monitor,
             dbContext,
             sysPromptBuilder,
             List.of(AIMessage.userMessage(prompt))
         );
+        if (!result.isText()) {
+            return SQLControlResult.success();
+        }
 
         AISqlFormatter sqlFormatter = AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
         MessageChunk[] messageChunks = AITextUtils.processAndSplitCompletion(
             monitor,
             dbContext,
             sqlFormatter,
-            text
+            result.getText()
         );
 
         String script = null;

@@ -14,27 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.function;
+package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIFunction;
-import org.jkiss.dbeaver.model.ai.AIFunctionContext;
-import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 
-import java.util.Map;
+public class AIFunctionResult {
+    public enum FunctionType {
+        INFORMATION,
+        ACTION
+    }
 
-/**
- * Metadata function.
- */
-public class AIFunctionMetadata implements AIFunction {
+
+    private final AIFunctionResult.FunctionType type;
+    private final Object value;
+
+    public AIFunctionResult(@NotNull AIFunctionResult.FunctionType type, @NotNull String value) {
+        this.type = type;
+        this.value = value;
+    }
 
     @NotNull
-    @Override
-    public AIFunctionResult callFunction(
-        @NotNull AIFunctionContext context,
-        @NotNull Map<String, Object> parameters
-    ) throws DBException {
-        return new AIFunctionResult(AIFunctionResult.FunctionType.INFORMATION, "N/A");
+    public AIFunctionResult.FunctionType getType() {
+        return type;
+    }
+
+    @NotNull
+    public Object getValue() {
+        return value;
     }
 }

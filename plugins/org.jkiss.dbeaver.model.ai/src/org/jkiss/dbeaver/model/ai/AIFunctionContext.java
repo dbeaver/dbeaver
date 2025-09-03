@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,19 +35,20 @@ public class AIFunctionContext {
     @Nullable
     private final AIDatabaseContext context;
     @NotNull
-    private final AIFunction systemGenerator;
+    private final AIPromptGenerator prompt;
     @NotNull
     private final List<AIMessage> promptMessages;
+    private final List<AIFunctionCall> functionCalls = new ArrayList<>();
 
     public AIFunctionContext(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext context,
-        @NotNull AIFunction systemGenerator,
+        @NotNull AIPromptGenerator prompt,
         @NotNull List<AIMessage> promptMessages
     ) {
         this.monitor = monitor;
         this.context = context;
-        this.systemGenerator = systemGenerator;
+        this.prompt = prompt;
         this.promptMessages = promptMessages;
     }
 
@@ -60,12 +63,20 @@ public class AIFunctionContext {
     }
 
     @NotNull
-    public AIFunction getSystemGenerator() {
-        return systemGenerator;
+    public AIPromptGenerator getPrompt() {
+        return prompt;
     }
 
     @NotNull
     public List<AIMessage> getPromptMessages() {
         return promptMessages;
+    }
+
+    public List<AIFunctionCall> getFunctionCalls() {
+        return functionCalls;
+    }
+
+    public void addFunctionCall(@NotNull AIFunctionCall functionCall) {
+        this.functionCalls.add(functionCall);
     }
 }

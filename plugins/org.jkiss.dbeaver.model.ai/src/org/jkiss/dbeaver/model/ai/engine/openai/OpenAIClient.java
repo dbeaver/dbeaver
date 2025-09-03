@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -26,6 +25,7 @@ import org.jkiss.dbeaver.model.ai.engine.TooManyRequestsException;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -49,7 +49,7 @@ public class OpenAIClient implements Closeable {
     private static final String EVENT_EVENT = "event: ";
 
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
-    private static final Gson GSON = new GsonBuilder().create();
+    private static final Gson GSON = JSONUtils.GSON;
     public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
     public static final String EVENT_TYPE_TEXT_DELTA = "response.output_text.delta";
 

@@ -20,21 +20,17 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.AIAssistant;
-import org.jkiss.dbeaver.model.ai.AIMessage;
-import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
-import org.jkiss.dbeaver.model.ai.AISqlFormatter;
+import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.registry.*;
 import org.jkiss.dbeaver.model.ai.utils.ThrowableSupplier;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AIAssistantImpl implements AIAssistant {
@@ -43,6 +39,7 @@ public class AIAssistantImpl implements AIAssistant {
     private static final int MANY_REQUESTS_RETRIES = 3;
     private static final int MANY_REQUESTS_TIMEOUT = 500;
     public static final String LOG_INDENT = "\t";
+    private static final int MAX_FUNCTION_CALLS = 5;
 
     protected final DBPWorkspace workspace;
 
@@ -69,7 +66,7 @@ public class AIAssistantImpl implements AIAssistant {
 
     @NotNull
     @Override
-    public String generateText(
+    public AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext context,
         @NotNull AIPromptGenerator systemGenerator,
@@ -85,11 +82,59 @@ public class AIAssistantImpl implements AIAssistant {
                 context,
                 messages
             );
+            AIFunctionContext functionContext = new AIFunctionContext(
+                monitor,
+                context,
+                systemGenerator,
+                messages
+            );
 
-            AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
+            AIEngineRequest request = completionRequest;
+            for (int tryIndex = 0; tryIndex < MAX_FUNCTION_CALLS; tryIndex++) {
+                AIEngineResponse completionResponse = requestCompletion(engine, monitor, request);
 
-            return completionResponse.variants().getFirst();
+                if (completionResponse.getType() == AIMessageType.FUNCTION) {
+                    AIFunctionCall functionCall = completionResponse.getFunctionCall();
+                    if (functionCall != null) {
+                        functionContext.addFunctionCall(functionCall);
+                        AIFunctionResult result = callFunction(functionContext, functionCall);
+                        String stringValue = CommonUtils.toString(result.getValue());
+                        if (result.getType() == AIFunctionResult.FunctionType.ACTION) {
+                            return new AIAssistantResponse(AIAssistantResponse.Type.FUNCTION, stringValue);
+                        } else {
+                            List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
+                            newMessages.add(new AIMessage(AIMessageType.USER, stringValue));
+                            AIEngineRequest newRequest = new AIEngineRequest(newMessages);
+                            newRequest.setFunctions(request.getFunctions());
+
+                            request = newRequest;
+                            continue;
+                        }
+                    }
+                } else {
+                    List<String> variants = completionResponse.getVariants();
+                    if (variants != null && !variants.isEmpty()) {
+                        return new AIAssistantResponse(AIAssistantResponse.Type.TEXT, variants.getFirst());
+                    }
+                }
+                return new AIAssistantResponse(AIAssistantResponse.Type.ERROR, AIMessages.ai_empty_engine_response);
+            }
+            throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");
         }
+    }
+
+    @NotNull
+    protected static AIFunctionResult callFunction(
+        @NotNull AIFunctionContext context,
+        @NotNull AIFunctionCall functionCall
+    ) throws DBException {
+        AIFunctionRegistry registry = AIFunctionRegistry.getInstance();
+        String functionName = functionCall.getFunction();
+        AIFunctionDescriptor function = registry.getFunction(functionName);
+        if (function == null) {
+            throw new DBException("Function '" + functionName + "' not found");
+        }
+        return registry.callFunction(context, function, functionCall.getArguments());
     }
 
     public static String getActiveEngineId() {
@@ -122,6 +167,7 @@ public class AIAssistantImpl implements AIAssistant {
         return descriptor;
     }
 
+    @NotNull
     protected AIEngineResponse requestCompletion(
         @NotNull AIEngine engine,
         @NotNull DBRProgressMonitor monitor,
@@ -141,8 +187,8 @@ public class AIAssistantImpl implements AIAssistant {
 
             return completionResponse;
         } catch (Exception e) {
-            if (e instanceof DBException) {
-                throw (DBException) e;
+            if (e instanceof DBException dbe) {
+                throw dbe;
             } else {
                 throw new DBException("Error requesting completion", e);
             }

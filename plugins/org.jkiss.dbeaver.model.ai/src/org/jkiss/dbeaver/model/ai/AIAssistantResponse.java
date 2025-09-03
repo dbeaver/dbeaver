@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -26,15 +27,36 @@ import java.util.List;
  */
 public class AIAssistantResponse {
 
-    private final String text;
+    public enum Type {
+        TEXT,
+        FUNCTION,
+        ERROR
+    }
+
+    private final Type type;
+    private final Object result;
     private List<AIFunctionReference> functionsRefs;
 
-    public AIAssistantResponse(@NotNull String text) {
-        this.text = text;
+    public AIAssistantResponse(@NotNull Type type, @NotNull Object result) {
+        this.type = type;
+        this.result = result;
+    }
+
+    @NotNull
+    public Type getType() {
+        return type;
+    }
+
+    public boolean isText() {
+        return type == Type.TEXT;
+    }
+
+    public boolean isError() {
+        return type == Type.ERROR;
     }
 
     public String getText() {
-        return text;
+        return CommonUtils.toString(result);
     }
 
     @Nullable
@@ -45,4 +67,5 @@ public class AIAssistantResponse {
     public void setFunctionsRefs(@NotNull List<AIFunctionReference> functionsRefs) {
         this.functionsRefs = functionsRefs;
     }
+
 }

@@ -21,7 +21,11 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIFunction;
+import org.jkiss.dbeaver.model.ai.AIFunctionContext;
+import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -66,4 +70,13 @@ public class AIFunctionRegistry {
         return new ArrayList<>(descriptorMap.values());
     }
 
+    @NotNull
+    public AIFunctionResult callFunction(
+        @NotNull AIFunctionContext context,
+        @NotNull AIFunctionDescriptor descriptor,
+        @NotNull Map<String, Object> arguments
+    ) throws DBException {
+        AIFunction function = descriptor.createInstance();
+        return function.callFunction(context, arguments);
+    }
 }
