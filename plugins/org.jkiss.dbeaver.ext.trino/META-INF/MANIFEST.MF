@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Trino Support
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.trino;singleton:=true
-Bundle-Version: 1.0.55.qualifier
-Bundle-Release-Date: 20250901
+Bundle-Version: 1.0.56.qualifier
+Bundle-Release-Date: 20250922
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.generic
 Bundle-ActivationPolicy: lazy

@@ -20,33 +20,52 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIQueryConfirmationRule;
+import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
 
+    @Nullable
+    public static AIEngineDescriptor getActiveEngineDescriptor() {
+        return AIEngineRegistry.getInstance().getEngineDescriptor(
+            AISettingsManager.getInstance().getSettings().activeEngine()
+        );
+    }
+
+    public static boolean hasValidConfiguration() throws DBException {
+        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
+        AIEngineProperties configuration = aiSettings.getEngineConfiguration(aiSettings.activeEngine());
+        return configuration.isValidConfiguration();
+    }
     /**
      * Retrieves a secret value from the global secret controller.
      * If the secret value is empty, it returns the provided default value.
@@ -112,6 +131,7 @@ public final class AIUtils {
     }
 
     public static boolean confirmExecutionIfNeeded(
+        @NotNull DBPDataSource dataSource,
         @NotNull List<SQLScriptElement> scriptElements,
         boolean isCommand
     ) {
@@ -121,17 +141,17 @@ public final class AIUtils {
         if (isDdlOrUnknown && isConfirmationNeeded(AIConstants.AI_CONFIRM_DDL)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_ddl_message :
                 AIMessages.ai_execute_query_confirm_ddl_message;
-            return confirmExecute(AIMessages.ai_execute_query_title, message);
+            return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
         }
         if (queryCategories.contains(SQLQueryCategory.DML) && isConfirmationNeeded(AIConstants.AI_CONFIRM_DML)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_dml_message :
                 AIMessages.ai_execute_query_confirm_dml_message;
-            return confirmExecute(AIMessages.ai_execute_query_title, message);
+            return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
         }
         if (queryCategories.contains(SQLQueryCategory.SQL) && isConfirmationNeeded(AIConstants.AI_CONFIRM_SQL)) {
             String message = isCommand ? AIMessages.ai_execute_command_confirm_sql_message :
                 AIMessages.ai_execute_query_confirm_sql_message;
-            return confirmExecute(AIMessages.ai_execute_query_title, message);
+            return confirmExecute(AIMessages.ai_execute_query_title, message, dataSource, scriptElements);
         }
         return true;
     }
@@ -174,7 +194,27 @@ public final class AIUtils {
         ) == AIQueryConfirmationRule.CONFIRM;
     }
 
-    private static boolean confirmExecute(String title, String message) {
-        return DBWorkbench.getPlatformUI().confirmAction(title, message, true);
+    private static boolean confirmExecute(
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull DBPDataSource dataSource,
+        @NotNull List<SQLScriptElement> scriptElements
+    ) {
+        String delimiter = SQLUtils.getDefaultScriptDelimiter(dataSource.getSQLDialect());
+        String scriptText = scriptElements.stream()
+            .map(Object::toString)
+            .collect(Collectors.joining(delimiter + "\n"));
+        UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
+        return serviceSQL != null ?
+            serviceSQL.confirmQueryExecution(title, message, scriptText, getContextProvider(scriptElements), true) :
+            DBWorkbench.getPlatformUI().confirmAction(title, message, true);
+    }
+
+    @NotNull
+    private static DBPContextProvider getContextProvider(@NotNull List<SQLScriptElement> script) {
+        DBPDataSource dataSource = script.stream().findFirst()
+            .map(SQLScriptElement::getDataSource)
+            .orElse(null);
+        return new DataSourceContextProvider(dataSource);
     }
 }

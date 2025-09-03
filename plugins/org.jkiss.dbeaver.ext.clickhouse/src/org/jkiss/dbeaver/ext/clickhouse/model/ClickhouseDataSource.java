@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
@@ -50,6 +51,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
 public class ClickhouseDataSource extends GenericDataSource {
@@ -305,5 +307,25 @@ public class ClickhouseDataSource extends GenericDataSource {
             }
             return null;
         }
+    }
+
+    @Override
+    protected boolean isConnectionReadOnlyBroken() {
+        return isDriverVersionAtLeast(0, 8);
+    }
+
+    @Override
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
+        Connection connection = super.openConnection(monitor, context, purpose);
+
+        if (getContainer().isConnectionReadOnly() && isConnectionReadOnlyBroken()) {
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("SET readonly=1");
+            } catch (SQLException e) {
+                log.error("Failed to set readonly mode", e);
+            }
+        }
+
+        return connection;
     }
 }

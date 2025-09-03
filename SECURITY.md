@@ -2,4 +2,4 @@
 
 ### Reporting a Vulnerability
 
-Please report security issues to tech-support@dbeaver.com
+Please report security issues to security@dbeaver.com
