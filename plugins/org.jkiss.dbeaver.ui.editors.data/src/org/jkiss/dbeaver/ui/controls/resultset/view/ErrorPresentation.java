@@ -84,9 +84,15 @@ public class ErrorPresentation extends AbstractPresentation {
         }
 
         // Enable key bindings
+        enableHostEditingFor(controller, parent);
+    }
+
+    private static void enableHostEditingFor(@NotNull IResultSetController controller, @NotNull Composite parent) {
         for (Control child : parent.getChildren()) {
             if (child instanceof Text || child instanceof StyledText) {
                 TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), child);
+            } else if (child instanceof Composite composite) {
+                enableHostEditingFor(controller, composite);
             }
         }
     }
