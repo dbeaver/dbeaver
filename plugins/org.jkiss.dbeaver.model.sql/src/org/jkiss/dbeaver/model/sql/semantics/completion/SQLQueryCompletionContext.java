@@ -1927,7 +1927,9 @@ public abstract class SQLQueryCompletionContext {
         private EntityAssociationsInfo prepareAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) {
             try {
                 Map<DBSEntityAttribute, EntityAssociationTargetsInfo> associatedAttributes =
-                    Optional.ofNullable(entity.getReferences(monitor)).stream()
+                    Optional.ofNullable(entity.getAssociations(monitor))
+                    .stream()
+                    .flatMap(Collection::stream) // don't remove flatMap here, it exposes elements of the Optional collection!
                     .filter(c -> c instanceof DBSTableForeignKey fk)
                     .map(c -> {
                         try {
