@@ -138,10 +138,10 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
         }
 
-        return handleCustomParameters(commandLine);
+        return handleCustomParameters(commandLine, controller);
     }
 
-    public CliProcessResult handleCustomParameters(CommandLine commandLine) {
+    public CliProcessResult handleCustomParameters(@Nullable CommandLine commandLine, @Nullable T controller) {
         CliProcessResult result = new CliProcessResult(CliProcessResult.PostAction.UNKNOWN_COMMAND);
 
         if (commandLine == null) {
@@ -168,7 +168,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         List<CommandLineParameterDescriptor> allParameters = new ArrayList<>(initialParameters);
         allParameters.addAll(parameters);
 
-        try (CommandLineContext context = new CommandLineContext()) {
+        try (CommandLineContext context = new CommandLineContext(controller)) {
             for (CommandLineParameterDescriptor param : allParameters) {
                 try {
                     if (param.hasArg()) {

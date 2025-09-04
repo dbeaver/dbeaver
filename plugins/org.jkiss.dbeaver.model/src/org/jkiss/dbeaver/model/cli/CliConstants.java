@@ -21,4 +21,6 @@ public interface CliConstants {
     short EXIT_CODE_OK = 0;
     short EXIT_CODE_ERROR = 1;
     short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
+
+    String PARAM_PROJECT = "project";
 }

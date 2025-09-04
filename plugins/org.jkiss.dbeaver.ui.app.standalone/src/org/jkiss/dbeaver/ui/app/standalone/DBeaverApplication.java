@@ -236,7 +236,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Custom parameters
         try {
             headlessMode = true;
-            CliProcessResult cliProcessResult = DBeaverCommandLine.getInstance().handleCustomParameters(commandLine);
+            CliProcessResult cliProcessResult = DBeaverCommandLine.getInstance().handleCustomParameters(commandLine, null);
             if (cliProcessResult.getPostAction() == CliProcessResult.PostAction.SHUTDOWN) {
                 return IApplication.EXIT_OK;
             }

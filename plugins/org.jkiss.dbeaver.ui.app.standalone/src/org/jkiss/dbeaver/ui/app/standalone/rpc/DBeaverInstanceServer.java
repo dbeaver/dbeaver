@@ -197,7 +197,8 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
             GeneralUtils.replaceVariables(connectionSpec, SystemVariablesResolver.INSTANCE),
             instanceConParameters,
             false,
-            instanceConParameters.createNewConnection);
+            instanceConParameters.isCreateNewConnection()
+        );
         if (dataSourceContainer == null) {
             filesToConnect.clear();
             return;
@@ -207,14 +208,14 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
                 EditorUtils.setFileDataSource(file, new SQLNavigatorContext(dataSourceContainer));
             }
         }
-        if (instanceConParameters.openConsole) {
+        if (instanceConParameters.isOpenConsole()) {
             final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             UIUtils.syncExec(() -> {
                 SQLEditorHandlerOpenEditor.openSQLConsole(workbenchWindow, new SQLNavigatorContext(dataSourceContainer), dataSourceContainer.getName(), "");
                 workbenchWindow.getShell().forceActive();
 
             });
-        } else if (instanceConParameters.makeConnect) {
+        } else if (instanceConParameters.isMakeConnect()) {
             DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
         }
         filesToConnect.clear();
@@ -269,28 +270,5 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
                 shell.setActive();
             }
         });
-    }
-
-    private static class InstanceConnectionParameters implements GeneralUtils.IParameterHandler {
-        boolean makeConnect = true, openConsole = false, createNewConnection = true;
-
-        @Override
-        public boolean setParameter(String name, String value) {
-            return switch (name) {
-                case "connect" -> {
-                    makeConnect = CommonUtils.toBoolean(value);
-                    yield true;
-                }
-                case "openConsole" -> {
-                    openConsole = CommonUtils.toBoolean(value);
-                    yield true;
-                }
-                case "create" -> {
-                    createNewConnection = CommonUtils.toBoolean(value);
-                    yield true;
-                }
-                default -> false;
-            };
-        }
     }
 }

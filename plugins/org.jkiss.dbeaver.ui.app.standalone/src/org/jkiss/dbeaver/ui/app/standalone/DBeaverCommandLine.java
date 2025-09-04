@@ -60,14 +60,20 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
     private static DBeaverCommandLine INSTANCE = null;
 
     static {
-         ALL_OPTIONS.addOption(PARAM_CONFIG, "variablesFile", true, "Uses a specified configuration file for variable resolving")
+        ALL_OPTIONS.addOption(PARAM_CONFIG, "variablesFile", true, "Uses a specified configuration file for variable resolving")
             .addOption(PARAM_FILE, "file", true, "Open a file")
             .addOption(PARAM_STOP, "quit", false, "Stop DBeaver running instance")
             .addOption(PARAM_CONNECT, "connect", true, "Connects to a specified database")
+            .addOption("p", "project", true, "Specify used project")
             .addOption(PARAM_DISCONNECT_ALL, "disconnectAll", false, "Disconnect from all databases")
             .addOption(PARAM_CLOSE_TABS, "closeTabs", false, "Close all open editors")
             .addOption(PARAM_REUSE_WORKSPACE, PARAM_REUSE_WORKSPACE, false, "Force workspace reuse (do not show warnings)")
-            .addOption(PARAM_NEW_INSTANCE, PARAM_NEW_INSTANCE, false, "Force creating new application instance (do not try to activate already running)")
+            .addOption(
+                PARAM_NEW_INSTANCE,
+                PARAM_NEW_INSTANCE,
+                false,
+                "Force creating new application instance (do not try to activate already running)"
+            )
             .addOption(PARAM_BRING_TO_FRONT, PARAM_BRING_TO_FRONT, false, "Bring DBeaver window on top of other applications")
             .addOption(PARAM_QUIET, PARAM_QUIET, false, "Run quietly (do not print logs)")
             // Eclipse options
