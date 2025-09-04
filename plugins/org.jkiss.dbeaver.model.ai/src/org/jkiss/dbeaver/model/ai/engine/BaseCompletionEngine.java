@@ -16,27 +16,23 @@
  */
 package org.jkiss.dbeaver.model.ai.engine;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
 public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> implements AIEngine {
 
-    protected final AISettingsRegistry registry;
+    protected final PROPS properties;
 
-    protected BaseCompletionEngine(AISettingsRegistry registry) {
-        this.registry = registry;
+    public BaseCompletionEngine() throws DBException {
+        this.properties = AISettingsManager.getInstance().getSettings()
+            .getEngineConfiguration(getEngineId());
     }
 
-    @Override
-    public boolean hasValidConfiguration() throws DBException {
-        return getProperties().isValidConfiguration();
+    public BaseCompletionEngine(@NotNull PROPS properties) throws DBException {
+        this.properties = properties;
     }
 
-    @Override
-    public boolean isLoggingEnabled() throws DBException {
-        return getProperties().isLoggingEnabled();
-    }
-
-    protected abstract PROPS getProperties() throws DBException;
-
+    @NotNull
+    protected abstract String getEngineId();
 }

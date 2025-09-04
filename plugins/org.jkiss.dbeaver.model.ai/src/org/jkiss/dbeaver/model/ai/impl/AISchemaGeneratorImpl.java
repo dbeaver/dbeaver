@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPObjectWithDescription;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.ai.AIDdlGenerationOptions;
+import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerator;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,7 +40,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntity entity,
         @Nullable DBCExecutionContext ctx,
-        @NotNull AIDdlGenerationOptions options,
+        @NotNull AISchemaGenerationOptions options,
         boolean useFqn
     ) throws DBException {
         if (entity instanceof DBSTable table) {
@@ -55,7 +55,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSTable table,
         @Nullable DBCExecutionContext ctx,
-        @NotNull AIDdlGenerationOptions options,
+        @NotNull AISchemaGenerationOptions options,
         boolean useFqn
     ) throws DBException {
         StringBuilder ddl = new StringBuilder();
@@ -77,15 +77,15 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
             ddl.append("CREATE TABLE ");
         }
 
-        ddl.append(name).append(" (\n");
+        ddl.append(name);
 
         List<? extends DBSEntityAttribute> attributes = table.getAttributes(monitor);
 
         if (attributes == null || attributes.isEmpty()) {
-            return ddl.append(");\n").toString();
+            return ddl.append(");").toString();
         }
 
-        StringJoiner columnsJoiner = new StringJoiner(",\n");
+        StringJoiner columnsJoiner = new StringJoiner(",", " (", ") ");
         attributes.forEach(attr -> {
             if (DBUtils.isHiddenObject(attr)) {
                 return;
@@ -98,8 +98,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
             );
         });
 
-        ddl.append(columnsJoiner);
-        return ddl.append("\n)").toString();
+        return ddl.append(columnsJoiner).toString();
     }
 
     @NotNull

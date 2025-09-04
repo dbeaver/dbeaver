@@ -137,6 +137,7 @@ public class CopilotClient implements AutoCloseable {
     /**
      * Request session token
      */
+    @NotNull
     public CopilotSessionToken requestSessionToken(
         DBRProgressMonitor monitor,
         String accessToken
@@ -243,7 +244,7 @@ public class CopilotClient implements AutoCloseable {
             } catch (Exception ex) {
                 DBWorkbench.getPlatformUI().showError(
                     "Error reading model list",
-                    "Failed to read the model list",
+                    "Failed to read Copilot model list",
                     ex
                 );
             }
@@ -274,7 +275,7 @@ public class CopilotClient implements AutoCloseable {
 
         HttpResponse<String> response = client.send(monitor, request);
         if (response.statusCode() == 200) {
-            CopilotModels copilotModels = GSON.fromJson(response.body(), CopilotModels.class);
+            CopilotModelList copilotModels = GSON.fromJson(response.body(), CopilotModelList.class);
             return copilotModels.data().stream().filter(CopilotModel::isEnabled).toList();
         } else {
             throw new DBException("Request failed: status=" + response.statusCode() + ", body=" + response.body());

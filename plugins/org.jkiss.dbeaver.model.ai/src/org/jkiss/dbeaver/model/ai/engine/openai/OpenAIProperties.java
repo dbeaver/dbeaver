@@ -17,26 +17,47 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class OpenAIProperties implements OpenAIBaseProperties {
+    @Nullable
+    @SerializedName("gpt.base_url")
+    private String baseUrl;
+
+    @Nullable
     @SecureProperty
     @SerializedName("gpt.token")
     private String token;
 
+    @Nullable
     @SerializedName("gpt.model")
     private String model;
 
+    @Nullable
+    @SerializedName("gpt.contextWindowSize")
+    private Integer contextWindowSize;
+
     @SerializedName("gpt.model.temperature")
-    private double temperature;
+    private Double temperature;
 
     @SerializedName("gpt.log.query")
-    private boolean loggingEnabled;
+    private Boolean loggingEnabled;
+
+    public OpenAIProperties() {
+    }
+
+    @Nullable
+    @Override
+    public String getBaseUrl() {
+        return baseUrl;
+    }
 
     @Override
     public String getToken() {
@@ -45,29 +66,36 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     @Override
     public String getModel() {
-        if (fallbackToPrefStore()) {
-            return DBWorkbench.getPlatform().getPreferenceStore().getString(OpenAIConstants.GPT_MODEL);
+        if (model != null) {
+            return OpenAIModels.getEffectiveModelName(model);
         }
 
-        return model;
+        String modelName = DBWorkbench.getPlatform()
+            .getPreferenceStore()
+            .getString(OpenAIConstants.GPT_MODEL);
+        return OpenAIModels.getEffectiveModelName(modelName);
     }
 
     @Override
     public double getTemperature() {
-        if (fallbackToPrefStore()) {
-            return DBWorkbench.getPlatform().getPreferenceStore().getDouble(OpenAIConstants.AI_TEMPERATURE);
+        if (temperature != null) {
+            return temperature;
         }
 
-        return temperature;
+        return DBWorkbench.getPlatform()
+            .getPreferenceStore()
+            .getDouble(OpenAIConstants.AI_TEMPERATURE);
     }
 
     @Override
     public boolean isLoggingEnabled() {
-        if (fallbackToPrefStore()) {
-            return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(AIConstants.AI_LOG_QUERY);
+        if (loggingEnabled != null) {
+            return loggingEnabled;
         }
 
-        return loggingEnabled;
+        return DBWorkbench.getPlatform()
+            .getPreferenceStore()
+            .getBoolean(AIConstants.AI_LOG_QUERY);
     }
 
     @Override
@@ -82,12 +110,31 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         }
     }
 
-    public void setToken(String token) {
+    public void setBaseUrl(@Nullable String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
+
+    public void setToken(@Nullable String token) {
         this.token = token;
     }
 
-    public void setModel(String model) {
+    public void setModel(@Nullable String model) {
         this.model = model;
+    }
+
+    @Nullable
+    public Integer getContextWindowSize() {
+        if (contextWindowSize != null) {
+            return contextWindowSize;
+        }
+
+        return OpenAIModels.getModelByName(getModel())
+            .map(AIModel::contextWindowSize)
+            .orElse(null);
+    }
+
+    public void setContextWindowSize(@Nullable Integer contextWindowSize) {
+        this.contextWindowSize = contextWindowSize;
     }
 
     public void setTemperature(double temperature) {
@@ -96,9 +143,5 @@ public class OpenAIProperties implements OpenAIBaseProperties {
 
     public void setLoggingEnabled(boolean loggingEnabled) {
         this.loggingEnabled = loggingEnabled;
-    }
-
-    private boolean fallbackToPrefStore() {
-        return this.model == null;
     }
 }

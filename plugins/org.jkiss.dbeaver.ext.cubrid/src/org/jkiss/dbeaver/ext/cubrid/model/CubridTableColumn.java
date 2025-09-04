@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyLength;
 
 public class CubridTableColumn extends GenericTableColumn
 {
@@ -80,14 +81,14 @@ public class CubridTableColumn extends GenericTableColumn
 
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey && object.cubridTable", order = 20, listProvider = ColumnTypeNameListProvider.class)
     public String getTypeName() {
         return super.getTypeName();
     }
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 40)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey && object.cubridTable", order = 40)
     public long getMaxLength() {
         if (getDataKind().equals(DBPDataKind.STRING)) {
             return super.getMaxLength();
@@ -97,14 +98,14 @@ public class CubridTableColumn extends GenericTableColumn
 
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 50)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey && object.cubridTable", order = 50)
     public boolean isRequired() {
         return super.isRequired();
     }
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey", order = 70)
+    @Property(viewable = true, editable = true, updatableExpr = "!object.foreignKey && object.cubridTable", order = 70)
     public String getDefaultValue() {
         return super.getDefaultValue();
     }
@@ -125,5 +126,21 @@ public class CubridTableColumn extends GenericTableColumn
     @Override
     public int getRadix() {
         return 0;
+    }
+
+    @Nullable
+    @Override
+    @Property(viewable = true, editable = true, updatableExpr = "object.descriptionEditable", length = PropertyLength.MULTILINE, order = 100)
+    public String getDescription() {
+        return super.getDescription();
+    }
+
+    public boolean isCubridTable() {
+        return getTable() instanceof CubridTable;
+    }
+
+    public boolean isDescriptionEditable() {
+        return getTable().getDataSource().isServerVersionAtLeast(11, 0)
+               || (isCubridTable() && !isForeignKey());
     }
 }

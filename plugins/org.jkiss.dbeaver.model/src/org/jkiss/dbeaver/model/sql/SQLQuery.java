@@ -50,7 +50,6 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.StandardConstants;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -130,8 +129,14 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     @Nullable
+    @Override
     public DBPDataSource getDataSource() {
         return dataSource;
+    }
+
+    @NotNull
+    public List<SQLScriptElement> getScriptElements() {
+        return List.of(this);
     }
 
     private void parseQuery() {
