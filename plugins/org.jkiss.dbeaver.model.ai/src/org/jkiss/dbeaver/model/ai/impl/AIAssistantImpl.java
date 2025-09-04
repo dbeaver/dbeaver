@@ -130,11 +130,12 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIFunctionCall functionCall
     ) throws DBException {
         AIFunctionRegistry registry = AIFunctionRegistry.getInstance();
-        String functionName = functionCall.getFunction();
+        String functionName = functionCall.getFunctionName();
         AIFunctionDescriptor function = registry.getFunction(functionName);
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
+        functionCall.setFunction(function);
         return registry.callFunction(context, function, functionCall.getArguments());
     }
 

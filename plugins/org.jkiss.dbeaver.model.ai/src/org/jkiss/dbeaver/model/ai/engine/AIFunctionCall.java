@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 
 import java.util.Map;
 
@@ -27,27 +28,29 @@ import java.util.Map;
  */
 public class AIFunctionCall {
     @NotNull
-    private String function;
+    private String functionName;
     @NotNull
     private Map<String, Object> arguments;
     @Nullable
     private String hint;
+    @Nullable
+    private AIFunctionDescriptor function;
 
     public AIFunctionCall() {
     }
 
-    public AIFunctionCall(@NotNull String function, @NotNull Map<String, Object> arguments) {
-        this.function = function;
+    public AIFunctionCall(@NotNull String functionName, @NotNull Map<String, Object> arguments) {
+        this.functionName = functionName;
         this.arguments = arguments;
     }
 
     @NotNull
-    public String getFunction() {
-        return function;
+    public String getFunctionName() {
+        return functionName;
     }
 
-    public void setFunction(@NotNull String function) {
-        this.function = function;
+    public void setFunctionName(@NotNull String functionName) {
+        this.functionName = functionName;
     }
 
     @NotNull
@@ -68,8 +71,18 @@ public class AIFunctionCall {
         this.hint = hint;
     }
 
+    @Nullable
+    public AIFunctionDescriptor getFunction() {
+        return function;
+    }
+
+     public void setFunction(@NotNull AIFunctionDescriptor function) {
+        this.function = function;
+    }
+
     @Override
     public String toString() {
-        return function + "(" + arguments + ")";
+        return functionName + "(" + arguments + ")";
     }
+
 }

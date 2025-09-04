@@ -66,10 +66,10 @@ public class AIMessage {
     ) {
         this.role = AIMessageType.FUNCTION;
         this.content = functionCall.toString();
-        this.displayMessage = functionCall.getFunction() + " " + result.getValue();
         this.time = LocalDateTime.now();
         this.functionCall = functionCall;
         this.functionResult = result;
+        this.displayMessage = CommonUtils.toString(result.getValue());
     }
 
     @NotNull
