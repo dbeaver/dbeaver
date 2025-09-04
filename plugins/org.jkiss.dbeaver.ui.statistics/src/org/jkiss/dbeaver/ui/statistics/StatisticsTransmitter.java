@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.statistics;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -56,7 +55,8 @@ public class StatisticsTransmitter {
     public StatisticsTransmitter(String workspaceId) {
         this.workspaceId = workspaceId;
 
-        if (System.getProperty(DBConstants.LM_STAGE_MODE) != null) {
+        //TODO: remove lm.stage.mode usage
+        if (System.getProperty("lm.stage.mode") != null) {
             endpoint = URL_TEMPLATE.formatted(STATS_STAGE_DBEAVER);
         } else {
             endpoint = URL_TEMPLATE.formatted(STATS_DBEAVER_COM);;
