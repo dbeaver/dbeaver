@@ -213,17 +213,19 @@ public class OpenAIClient implements Closeable {
                     } else {
 
                         if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {
-                            functionCall = true;
-                            return;
-                        }
-                        if (functionCall) {
-                            // FIXME: proper handle of items
                             if (EVENT_TYPE_ITEM_DONE.equals(chunk.type)) {
                                 if (chunk.item != null) {
                                     listener.onNext(new AIEngineResponseChunk(
                                         createFunctionCall(chunk.item)));
                                 }
+                                functionCall = false;
+                            } else {
+                                functionCall = true;
                             }
+                            return;
+                        }
+                        if (functionCall) {
+                            // do nothing
                         } else {
                             List<String> choices = new ArrayList<>();
                             if (OpenAIClient.EVENT_TYPE_TEXT_DELTA.equals(chunk.type)) {
