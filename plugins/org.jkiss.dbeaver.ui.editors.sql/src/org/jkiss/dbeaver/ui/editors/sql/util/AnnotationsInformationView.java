@@ -57,6 +57,20 @@ public class AnnotationsInformationView {
 
     private static final String QUICK_FIX_COMMAND_ID = "org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals";
 
+    private Composite linksContainer;
+    private int tooltipAnchorLine = -1;
+    private IRegion tooltipAnchorRegion = null;
+    private boolean forceAnnotationIcon = false;
+
+    @NotNull
+    private final AbstractInformationControl container;
+    @NotNull
+    private final SQLEditorBase editor;
+    @Nullable
+    private final IQuickAssistAssistant quickAssistAssistant;
+    @Nullable
+    private final QuickFixCommandInfo quickFixCommandInfo;
+
     private abstract class ContextfulHyperlinkListener implements IHyperlinkListener {
         private Point oldSelection = null;
 
@@ -109,20 +123,6 @@ public class AnnotationsInformationView {
             hyperlink.quickFix(editor);
         }
     };
-
-    private Composite linksContainer;
-    private int tooltipAnchorLine = -1;
-    private IRegion tooltipAnchorRegion = null;
-    private boolean forceAnnotationIcon = false;
-
-    @NotNull
-    private final AbstractInformationControl container;
-    @NotNull
-    private final SQLEditorBase editor;
-    @Nullable
-    private final IQuickAssistAssistant quickAssistAssistant;
-    @Nullable
-    private final QuickFixCommandInfo quickFixCommandInfo;
 
     public AnnotationsInformationView(@NotNull AbstractInformationControl container, @NotNull SQLEditorBase editor) {
         this.container = container;

@@ -101,7 +101,8 @@ public class SQLEditorQuickAssistProcessor implements IQuickAssistProcessor {
     @Override
     @NotNull
     public ICompletionProposal[] computeQuickAssistProposals(@NotNull IQuickAssistInvocationContext invocationContext) {
-        ICompletionProposal[] proposals = processors.stream().flatMap(p -> Arrays.stream(p.processor.computeQuickAssistProposals(invocationContext)))
+        ICompletionProposal[] proposals = processors.stream()
+            .flatMap(p -> Arrays.stream(p.processor.computeQuickAssistProposals(invocationContext)))
             .filter(p -> !(p instanceof NoCompletionsProposal))
             .toArray(ICompletionProposal[]::new);
         return ArrayUtils.isEmpty(proposals) ? noSuggestionsProposal : proposals;

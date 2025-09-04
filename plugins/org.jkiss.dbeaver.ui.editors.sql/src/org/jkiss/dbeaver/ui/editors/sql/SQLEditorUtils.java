@@ -795,10 +795,11 @@ public class SQLEditorUtils {
             List<Pair<IWorkbenchPage, SQLEditor>> results = new LinkedList<>();
             for (Pair<IWorkbenchPage, IEditorReference> editorRef : this) {
                 IEditorPart editor = editorRef.getSecond().getEditor(false);
-                if (editor instanceof SQLEditor sqlEditor && (
-                    sqlEditor.getDataSourceContainer() == null && !sqlEditor.getDataSourceContainer().isConnected()
-                )) {
-                    results.add(Pair.of(editorRef.getFirst(), sqlEditor));
+                if (editor instanceof SQLEditor sqlEditor) {
+                    DBPDataSourceContainer container = sqlEditor.getDataSourceContainer();
+                    if (container == null || !container.isConnected()) {
+                        results.add(Pair.of(editorRef.getFirst(), sqlEditor));
+                    }
                 }
             }
             return results;

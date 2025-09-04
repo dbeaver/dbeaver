@@ -35,6 +35,9 @@ public class SQLEditorQuickFixProcessorsRegistry {
     @Nullable
     private static SQLEditorQuickFixProcessorsRegistry instance = null;
 
+    @NotNull
+    private final Collection<SQLEditorQuickFixProcessorDescriptor> quickFixProcDescriptors;
+
     /**
      * Returns instance of SQLEditorAddInsRegistry
      */
@@ -44,9 +47,6 @@ public class SQLEditorQuickFixProcessorsRegistry {
         }
         return instance;
     }
-
-    @NotNull
-    private final Collection<SQLEditorQuickFixProcessorDescriptor> quickFixProcDescriptors;
 
     private SQLEditorQuickFixProcessorsRegistry(@NotNull IExtensionRegistry registry) {
         Map<Class<?>, SQLEditorQuickFixProcessorDescriptor> descs = new HashMap<>();

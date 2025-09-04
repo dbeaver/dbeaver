@@ -55,7 +55,7 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
      * @param overviewRuler the overview ruler
      * @param showsAnnotationOverview <code>true</code> if the overview ruler should be shown
      * @param styles the SWT style bits
-     * @param sqlEditor
+     * @param sqlEditor editor
      */
     public SQLEditorSourceViewer(
         @NotNull Composite parent,

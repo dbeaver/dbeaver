@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.addins;
 
 import org.eclipse.core.expressions.Expression;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.text.quickassist.IQuickAssistProcessor;
@@ -90,22 +91,25 @@ public class SQLEditorQuickFixProcessorDescriptor extends AbstractDescriptor {
     public boolean handlesAnnotation(@NotNull Annotation annotation) {
         if (this.handledMarkerTypes == null) {
             return true;
-        } else {
+        } else if (annotation instanceof MarkerAnnotation markerAnnotation) {
             try {
-                return annotation instanceof MarkerAnnotation markerAnnotation && (
-                    this.handledMarkerTypes.stream().anyMatch(t -> {
-                        try {
-                            return markerAnnotation.getMarker().isSubtypeOf(t);
-                        } catch (CoreException e) {
-                            log.error(e);
-                            return false;
-                        }
-                    }) || this.handledMarkerTypes.contains(markerAnnotation.getMarker().getType())
-                );
+                IMarker marker = markerAnnotation.getMarker();
+                if (this.handledMarkerTypes.contains(marker.getType())) {
+                    return true;
+                }
+                return this.handledMarkerTypes.stream().anyMatch(t -> {
+                    try {
+                        return marker.isSubtypeOf(t);
+                    } catch (CoreException e) {
+                        log.error(e);
+                        return false;
+                    }
+                });
             } catch (CoreException e) {
                 log.error(e);
                 return false;
             }
         }
+        return false;
     }
 }
