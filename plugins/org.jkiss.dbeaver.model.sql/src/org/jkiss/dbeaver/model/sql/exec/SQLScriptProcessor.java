@@ -51,6 +51,7 @@ public class SQLScriptProcessor {
     private final DBCStatistics totalStatistics = new DBCStatistics();
 
     private int fetchSize;
+    private int maxRows;
     private long fetchFlags;
     private SQLScriptCommitType commitType = SQLScriptCommitType.AUTOCOMMIT;
     private SQLScriptErrorHandling errorHandling = SQLScriptErrorHandling.STOP_ROLLBACK;
@@ -70,6 +71,10 @@ public class SQLScriptProcessor {
 
     public void setFetchSize(int fetchSize) {
         this.fetchSize = fetchSize;
+    }
+
+    public void setMaxRows(int maxRows) {
+        this.maxRows = maxRows;
     }
 
     public void setFetchFlags(long fetchFlags) {
@@ -239,7 +244,7 @@ public class SQLScriptProcessor {
             sqlQuery,
             0,
             0);
-        DBExecUtils.setStatementFetchSize(statement, 0, 0, fetchSize);
+        DBExecUtils.setStatementFetchSize(statement, 0, maxRows, fetchSize);
 
         // Execute statement
         try {
