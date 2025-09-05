@@ -21,11 +21,11 @@ import org.jkiss.code.NotNull;
 /**
  * Subscriber which listens for response stream
  */
-public interface AIEngineListener {
+public interface AIEngineResponseConsumer {
 
-    void onNext(@NotNull AIEngineResponseChunk chunk);
+    void nextChunk(@NotNull AIEngineResponseChunk chunk);
 
-    void onError(@NotNull Throwable throwable);
+    void error(@NotNull Throwable throwable);
 
-    void onClose();
+    void close();
 }

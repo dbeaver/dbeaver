@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import java.util.Collections;
 import java.util.List;
 
+// FIXME: create several subclasses for different types of chunks
 public final class AIEngineResponseChunk {
     @NotNull
     private final List<String> choices;

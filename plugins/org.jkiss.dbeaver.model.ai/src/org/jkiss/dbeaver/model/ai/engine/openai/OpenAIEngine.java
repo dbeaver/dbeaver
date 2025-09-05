@@ -101,7 +101,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     public void requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request,
-        @NotNull AIEngineListener listener
+        @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         OAIResponsesRequest oaiRequest = createOpenAiRequest(request);
         oaiRequest.stream = true;

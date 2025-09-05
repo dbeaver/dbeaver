@@ -58,7 +58,7 @@ public interface AIEngine extends AutoCloseable {
     void requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request,
-        @NotNull AIEngineListener listener
+        @NotNull AIEngineResponseConsumer listener
     ) throws DBException;
 
     int getContextWindowSize(DBRProgressMonitor monitor) throws DBException;

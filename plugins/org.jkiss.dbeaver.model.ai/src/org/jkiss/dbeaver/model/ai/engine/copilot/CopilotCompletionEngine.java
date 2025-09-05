@@ -102,7 +102,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
     public void requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request,
-        @NotNull AIEngineListener listener
+        @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         CopilotChatRequest chatRequest = CopilotChatRequest.builder()
             .withModel(getModelName())

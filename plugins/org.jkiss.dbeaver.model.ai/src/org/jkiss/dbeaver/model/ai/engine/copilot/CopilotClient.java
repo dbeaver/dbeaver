@@ -23,8 +23,8 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineListener;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
@@ -190,7 +190,7 @@ public class CopilotClient implements AutoCloseable {
         @NotNull DBRProgressMonitor monitor,
         @NotNull String token,
         @NotNull CopilotChatRequest chatRequest,
-        @NotNull AIEngineListener listener
+        @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
@@ -208,7 +208,7 @@ public class CopilotClient implements AutoCloseable {
 
                     String data = line.substring(6).trim();
                     if (DONE_EVENT.equals(data)) {
-                        listener.onClose();
+                        listener.close();
                     } else {
                         try {
                             CopilotChatChunk chunk = GSON.fromJson(data, CopilotChatChunk.class);
@@ -216,15 +216,15 @@ public class CopilotClient implements AutoCloseable {
                                 .takeWhile(it -> it.delta().content() != null)
                                 .map(it -> it.delta().content())
                                 .toList();
-                            listener.onNext(new AIEngineResponseChunk(choices));
+                            listener.nextChunk(new AIEngineResponseChunk(choices));
                         } catch (Exception e) {
-                            listener.onError(e);
+                            listener.error(e);
                         }
                     }
                 }
             },
-            listener::onError,
-            listener::onClose
+            listener::error,
+            listener::close
         );
     }
 

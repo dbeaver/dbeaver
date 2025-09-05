@@ -22,8 +22,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineListener;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.engine.TooManyRequestsException;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
@@ -145,7 +145,7 @@ public class OpenAIClient implements Closeable {
     public void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull OAIResponsesRequest completionRequest,
-        @NotNull AIEngineListener listener
+        @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         HttpRequest request = createCompletionRequest(completionRequest);
 
@@ -156,8 +156,8 @@ public class OpenAIClient implements Closeable {
             modifiedRequest, //  "type" : "response.content_part.done"
             // {"type":"response.output_item.done","sequence_number":25,"output_index":0,"item":{"id":"msg_68b6f090a8d88195a69524dd04f8eac90c5742e9db37e5a3","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"If you have any more questions or need further assistance with SQL queries, feel free to ask!"}],"role":"assistant"}},
             stringConsumer,
-            listener::onError,
-            listener::onClose
+            listener::error,
+            listener::close
         );
     }
 
@@ -192,10 +192,10 @@ public class OpenAIClient implements Closeable {
     }
 
     private static class StreamConsumer implements Consumer<String> {
-        private final AIEngineListener listener;
+        private final AIEngineResponseConsumer listener;
         private boolean functionCall;
 
-        public StreamConsumer(AIEngineListener listener) {
+        public StreamConsumer(AIEngineResponseConsumer listener) {
             this.listener = listener;
         }
 
@@ -209,13 +209,13 @@ public class OpenAIClient implements Closeable {
                 try {
                     OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
                     if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
-                        listener.onClose();
+                        listener.close();
                     } else {
 
                         if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {
                             if (EVENT_TYPE_ITEM_DONE.equals(chunk.type)) {
                                 if (chunk.item != null) {
-                                    listener.onNext(new AIEngineResponseChunk(
+                                    listener.nextChunk(new AIEngineResponseChunk(
                                         createFunctionCall(chunk.item)));
                                 }
                                 functionCall = false;
@@ -241,12 +241,12 @@ public class OpenAIClient implements Closeable {
                             }
 
                             if (!choices.isEmpty()) {
-                                listener.onNext(new AIEngineResponseChunk(choices));
+                                listener.nextChunk(new AIEngineResponseChunk(choices));
                             }
                         }
                     }
                 } catch (Exception e) {
-                    listener.onError(e);
+                    listener.error(e);
                 }
             } else if (event.startsWith(EVENT_EVENT)) {
                 String eventType = event.substring(EVENT_EVENT.length()).trim();
