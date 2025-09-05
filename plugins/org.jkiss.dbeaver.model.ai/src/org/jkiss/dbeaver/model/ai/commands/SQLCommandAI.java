@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptAbstract;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
@@ -59,6 +60,10 @@ public class SQLCommandAI implements SQLControlCommandHandler {
     @NotNull
     @Override
     public SQLControlResult handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull SQLScriptContext scriptContext) throws DBException {
+        if (AISettingsManager.getInstance().getSettings().isAiDisabled()) {
+            throw new DBException("AI integration is disabled");
+        }
+
         DBPDataSource dataSource = command.getDataSource();
         if (dataSource == null) {
             throw new DBException("Not connected to database");
