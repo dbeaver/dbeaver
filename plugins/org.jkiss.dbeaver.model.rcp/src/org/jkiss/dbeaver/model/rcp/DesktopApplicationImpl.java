@@ -49,7 +49,7 @@ public abstract class DesktopApplicationImpl extends BaseApplicationImpl impleme
 
     // Dirty fix of pro#6833
     // We should keep this flag somewhere in basic UI plugin
-    public boolean isIsForcedRestart() {
+    public boolean isForcedRestart() {
         return isForcedRestart;
     }
 

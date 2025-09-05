@@ -410,7 +410,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
     private boolean saveAndCleanup() {
         if (getWorkbenchConfigurer().emergencyClosing() ||
-            (DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop ad && ad.isIsForcedRestart())
+            (DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop ad && ad.isForcedRestart())
         ) {
             return true;
         }

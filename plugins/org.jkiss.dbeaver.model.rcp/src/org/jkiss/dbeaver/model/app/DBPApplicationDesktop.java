@@ -30,6 +30,6 @@ public interface DBPApplicationDesktop extends DBPApplication {
     @NotNull
     DBPPreferenceStore getPreferenceStore();
 
-    boolean isIsForcedRestart();
+    boolean isForcedRestart();
 
 }
