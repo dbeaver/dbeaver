@@ -44,8 +44,7 @@ import java.util.stream.Stream;
 public class StatisticsTransmitter {
 
     private static final Log log = Log.getLog(StatisticsTransmitter.class);
-    public static final String STATS_STAGE_DBEAVER = "stats.stage.dbeaver.infra";
-    public static final String STATS_DBEAVER_COM = "stats.dbeaver.com";
+    public static final String STATS_HOSTS = /*<STATS-PROD-URL*/ "stats.dbeaver.com" /*/>*/;
     private static final String URL_TEMPLATE = "https://%s/send-statistics";
 
     private final String endpoint;
@@ -55,12 +54,7 @@ public class StatisticsTransmitter {
     public StatisticsTransmitter(String workspaceId) {
         this.workspaceId = workspaceId;
 
-        //TODO: remove lm.stage.mode usage
-        if (System.getProperty("lm.stage.mode") != null) {
-            endpoint = URL_TEMPLATE.formatted(STATS_STAGE_DBEAVER);
-        } else {
-            endpoint = URL_TEMPLATE.formatted(STATS_DBEAVER_COM);;
-        }
+        endpoint = URL_TEMPLATE.formatted(STATS_HOSTS);
     }
 
     public void send(boolean detached) {
