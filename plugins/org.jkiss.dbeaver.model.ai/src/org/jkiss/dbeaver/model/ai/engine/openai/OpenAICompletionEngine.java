@@ -35,7 +35,7 @@ import java.util.concurrent.Flow;
 
 public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
-    private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
+    protected final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
         @Override
         protected OpenAIClient initialize() throws DBException {
