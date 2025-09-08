@@ -135,6 +135,10 @@ public final class AIUtils {
         @NotNull List<SQLScriptElement> scriptElements,
         boolean isCommand
     ) {
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+            // TODO: change behavior in multiuser mode
+            return true;
+        }
         Set<SQLQueryCategory> queryCategories = SQLQueryCategory.categorizeScript(scriptElements);
         boolean isDdlOrUnknown = queryCategories.contains(SQLQueryCategory.DDL) ||
             queryCategories.contains(SQLQueryCategory.UNKNOWN);
