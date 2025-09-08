@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,7 +106,7 @@ public class SQLQueryParameterRegistry {
         Path storeFile = DBWorkbench.getPlatform().getLocalConfigurationFile(CONFIG_FILE_NAME);
         try (OutputStream os = Files.newOutputStream(storeFile)) {
             XMLBuilder xml = new XMLBuilder(os, GeneralUtils.UTF8_ENCODING);
-            xml.setButify(true);
+            xml.setBeautify(true);
             xml.startElement("bindings");
             for (ParameterInfo param : parameterMap.values()) {
                 xml.startElement(TAG_PARAMETER);

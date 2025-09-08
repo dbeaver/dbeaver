@@ -3,7 +3,7 @@
 <schema targetNamespace="org.jkiss.dbeaver.model.ai" xmlns="http://www.w3.org/2001/XMLSchema">
    <annotation>
       <appInfo>
-         <meta.schema plugin="com.dbeaver.ai.assistant" id="com.dbeaver.ai.assistant" name="AI assistants"/>
+         <meta.schema plugin="org.jkiss.dbeaver.model.ai" id="com.dbeaver.ai.assistant" name="AI assistants"/>
       </appInfo>
       <documentation>
          AI assistants

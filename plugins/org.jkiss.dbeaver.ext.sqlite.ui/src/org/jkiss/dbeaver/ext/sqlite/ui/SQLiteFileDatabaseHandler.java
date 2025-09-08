@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.ui;
 
-import org.jkiss.api.DriverReference;
+import org.jkiss.api.CompositeObjectId;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.sqlite.SQLiteUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractFileDatabaseHandler;
@@ -45,7 +45,7 @@ public class SQLiteFileDatabaseHandler extends AbstractFileDatabaseHandler {
     }
 
     @Override
-    protected DriverReference getDriverReference() {
+    protected CompositeObjectId getDriverReference() {
         return SQLiteUtils.DRIVER_REFERENCE;
     }
 

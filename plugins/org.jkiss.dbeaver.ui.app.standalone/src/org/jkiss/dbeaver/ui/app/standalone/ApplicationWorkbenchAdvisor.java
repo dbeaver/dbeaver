@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -86,8 +87,8 @@ import java.awt.*;
 import java.awt.desktop.SystemEventListener;
 import java.awt.desktop.SystemSleepEvent;
 import java.awt.desktop.SystemSleepListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -187,7 +188,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS
         )
     );
-    private static boolean isForcedRestart = false;
 
     //processor must be created before we start event loop
     protected final DBPApplication application;
@@ -409,7 +409,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     }
 
     private boolean saveAndCleanup() {
-        if (getWorkbenchConfigurer().emergencyClosing() || isIsForcedRestart()) {
+        if (getWorkbenchConfigurer().emergencyClosing() ||
+            (DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop ad && ad.isForcedRestart())
+        ) {
             return true;
         }
         try {
@@ -554,14 +556,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         store.setToDefault(PROP_PERSPECTIVE_VERSION);
         store.setToDefault(PROP_WORKBENCH_VERSION);
-    }
-
-    public static boolean isIsForcedRestart() {
-        return isForcedRestart;
-    }
-
-    public static void setIsForcedRestart(boolean isForcedRestart) {
-        ApplicationWorkbenchAdvisor.isForcedRestart = isForcedRestart;
     }
 
     /**
