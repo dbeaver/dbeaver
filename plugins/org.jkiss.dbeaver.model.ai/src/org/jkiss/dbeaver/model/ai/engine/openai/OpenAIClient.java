@@ -168,6 +168,35 @@ public class OpenAIClient implements Closeable {
         );
     }
 
+    public List<float[]> embedTexts(
+        DBRProgressMonitor monitor,
+        List<String> texts,
+        String model,
+        int dimension
+    ) throws DBException {
+        CreateEmbeddings createEmbeddingsDto = new CreateEmbeddings(
+            texts,
+            model,
+            dimension,
+            CreateEmbeddings.Encoding.FLOAT
+        );
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(AIHttpUtils.resolve(baseUrl, "embeddings"))
+            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(createEmbeddingsDto)))
+            .timeout(TIMEOUT)
+            .build();
+
+        HttpResponse<String> response = client.send(monitor, applyFilters(request));
+        if (response.statusCode() == 200) {
+            return GSON.fromJson(response.body(), EmbeddingObjectList.class).data().stream()
+                .map(EmbeddingObject::embedding)
+                .toList();
+        } else {
+            throw new DBException("Request failed: " + response.statusCode() + ", body=" + response.body());
+        }
+    }
+
     @Override
     public void close() {
         client.close();
