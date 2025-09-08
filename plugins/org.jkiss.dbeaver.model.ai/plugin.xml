@@ -3,13 +3,11 @@
 
 <plugin>
     <extension-point id="com.dbeaver.ai.engine" name="AI integrations" schema="schema/com.dbeaver.ai.engine.exsd"/>
-    <extension-point id="com.dbeaver.ai.sql.formatter" name="AI SQL formatters" schema="schema/com.dbeaver.ai.sql.formatter.exsd"/>
-    <extension-point id="com.dbeaver.ai.schema.generator" name="AI Schema generators" schema="schema/com.dbeaver.ai.schema.generator.exsd"/>
     <extension-point id="com.dbeaver.ai.assistant" name="AI assistants" schema="schema/com.dbeaver.ai.assistant.exsd"/>
-    <extension-point id="com.dbeaver.ai.engine.settingsSerDe" name="AI engine settings serde" schema="schema/com.dbeaver.ai.engine.settingsSerDe.exsd"/>
+    <extension-point id="com.dbeaver.ai.prompt" name="AI promt generators" schema="schema/com.dbeaver.ai.prompt.exsd"/>
 
     <extension point="com.dbeaver.ai.engine">
-        <completionEngine id="openai" label="OpenAI" class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngineFactory" default="true">
+        <completionEngine id="openai" label="OpenAI" class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine" properties="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties" default="true" fallbacks="openai-pro">
             <propertyGroup label="Engine settings">
                 <property id="gpt.token" label="API token" type="string" hint="Copy-paste API token from https://platform.openai.com/account/api-keys" features="password"/>
                 <property id="gpt.model" label="Model" type="string" validValues="gpt-3.5-turbo,gpt-3.5-turbo-instruct,gpt-4,gpt-4o,gpt-4-turbo,gpt-4o-mini" defaultValue="gpt-4o"/>
@@ -18,7 +16,7 @@
                 <property id="gpt.contextWindowSize" label="Context window size" type="integer" defaultValue="0" required="true"/>
             </propertyGroup>
         </completionEngine>
-        <completionEngine id="copilot" label="Github Copilot" class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotFactory">
+        <completionEngine id="copilot" label="Github Copilot" class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine"  properties="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties">
             <propertyGroup label="Engine settings">
                 <property id="copilot.access.token" label="Copilot Access Token" type="string" hint="OAuth token for Copilot (acquired manually for now)" features="password"/>
                 <property id="gpt.model.temperature" label="Temperature" type="integer" hint="Lower temperatures give more precise results"/>
@@ -29,17 +27,15 @@
         </completionEngine>
     </extension>
 
-    <extension point="com.dbeaver.ai.engine.settingsSerDe">
-        <serde id="openai" class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAISettingsSerDe"/>
-        <serde id="copilot" class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotSettingsSerDe"/>
+    <extension point="com.dbeaver.ai.assistant">
+        <assistant id="ce-assistant" priority="1"
+            class="org.jkiss.dbeaver.model.ai.impl.AIAssistantImpl"
+            sqlFormatter="org.jkiss.dbeaver.model.ai.impl.SimpleSqlFormatterImpl"
+            schemaGenerator="org.jkiss.dbeaver.model.ai.impl.AISchemaGeneratorImpl"/>
     </extension>
 
-    <extension point="com.dbeaver.ai.sql.formatter">
-        <formatter id="core" class="org.jkiss.dbeaver.model.ai.impl.AISqlFormatterImpl"/>
-    </extension>
-
-    <extension point="com.dbeaver.ai.schema.generator">
-        <generator id="core" class="org.jkiss.dbeaver.model.ai.impl.AISchemaGeneratorImpl"/>
+    <extension point="com.dbeaver.ai.prompt">
+        <prompt id="sql" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/sql/sql_text.svg" class="org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">

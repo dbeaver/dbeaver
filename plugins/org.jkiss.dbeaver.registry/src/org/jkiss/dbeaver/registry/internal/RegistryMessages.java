@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.registry.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class RegistryMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.registry.internal.RegistryMessages"; //$NON-NLS-1$

@@ -26,7 +26,10 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
@@ -51,6 +54,10 @@ public class TabbedFolderList extends ConComposite {
     protected static final int INDENT_RIGHT = 10;
     public static final String LABEL_NA = "N/A";
     public static final int SECTION_DIV_HEIGHT = 7;
+    private static final RGB white = new RGB(255, 255, 255);
+    private static final RGB black = new RGB(0, 0, 0);
+
+
     private final boolean section;
 
     private boolean focus = false;
@@ -81,8 +88,6 @@ public class TabbedFolderList extends ConComposite {
     private Color bottomNavigationElementShadowStroke2;
 
     private final Map<Image, Image> grayedImages = new IdentityHashMap<>();
-    private RGB white;
-    private RGB black;
 
     /**
      * One of the tabs in the tabbed property list.
@@ -109,21 +114,18 @@ public class TabbedFolderList extends ConComposite {
             this.index = index;
 
             addPaintListener(this::paint);
-            addMouseListener(new MouseAdapter() {
-
-                public void mouseUp(MouseEvent e) {
-                    if (!selected) {
-                        select(getIndex(ListElement.this));
-                        /*
-						 * We set focus to the tabbed property composite so that
-						 * focus is moved to the appropriate widget in the
-						 * section.
-						 */
-                        Composite tabbedPropertyComposite = getParent();
-                        tabbedPropertyComposite.setFocus();
-                    }
+            addMouseListener(MouseListener.mouseUpAdapter(mouseEvent -> {
+                if (!selected) {
+                    select(getIndex(ListElement.this));
+                    /*
+                     * We set focus to the tabbed property composite so that
+                     * focus is moved to the appropriate widget in the
+                     * section.
+                     */
+                    Composite tabbedPropertyComposite = getParent();
+                    tabbedPropertyComposite.setFocus();
                 }
-            });
+            }));
             addMouseMoveListener(e -> {
                 String tooltip = tab.getTooltip();
                 if (tooltip != null) {
@@ -134,13 +136,10 @@ public class TabbedFolderList extends ConComposite {
                     redraw();
                 }
             });
-            addMouseTrackListener(new MouseTrackAdapter() {
-
-                public void mouseExit(MouseEvent e) {
-                    hover = false;
-                    redraw();
-                }
-            });
+            addMouseTrackListener(MouseTrackListener.mouseExitAdapter(e -> {
+                hover = false;
+                redraw();
+            }));
             setFont(TabbedFolderList.this.getFont());
         }
 
@@ -288,20 +287,17 @@ public class TabbedFolderList extends ConComposite {
         public TopNavigationElement(Composite parent) {
             super(parent, SWT.NO_FOCUS);
             addPaintListener(this::paint);
-            addMouseListener(new MouseAdapter() {
-
-                public void mouseUp(MouseEvent e) {
-                    if (isUpScrollRequired()) {
-                        bottomVisibleIndex--;
-                        if (topVisibleIndex != 0) {
-                            topVisibleIndex--;
-                        }
-                        layoutTabs();
-                        topNavigationElement.redraw();
-                        bottomNavigationElement.redraw();
+            addMouseListener(MouseListener.mouseUpAdapter(mouseEvent -> {
+                if (isUpScrollRequired()) {
+                    bottomVisibleIndex--;
+                    if (topVisibleIndex != 0) {
+                        topVisibleIndex--;
                     }
+                    layoutTabs();
+                    topNavigationElement.redraw();
+                    bottomNavigationElement.redraw();
                 }
-            });
+            }));
             setFont(TabbedFolderList.this.getFont());
         }
 
@@ -369,20 +365,17 @@ public class TabbedFolderList extends ConComposite {
         public BottomNavigationElement(Composite parent) {
             super(parent, SWT.NO_FOCUS);
             addPaintListener(this::paint);
-            addMouseListener(new MouseAdapter() {
-
-                public void mouseUp(MouseEvent e) {
-                    if (isDownScrollRequired()) {
-                        topVisibleIndex++;
-                        if (bottomVisibleIndex != elements.length - 1) {
-                            bottomVisibleIndex++;
-                        }
-                        layoutTabs();
-                        topNavigationElement.redraw();
-                        bottomNavigationElement.redraw();
+            addMouseListener(MouseListener.mouseUpAdapter(mouseEvent -> {
+                if (isDownScrollRequired()) {
+                    topVisibleIndex++;
+                    if (bottomVisibleIndex != elements.length - 1) {
+                        bottomVisibleIndex++;
                     }
+                    layoutTabs();
+                    topNavigationElement.redraw();
+                    bottomNavigationElement.redraw();
                 }
-            });
+            }));
             setFont(TabbedFolderList.this.getFont());
         }
 
@@ -489,13 +482,10 @@ public class TabbedFolderList extends ConComposite {
                 }
             }
         });
-        this.addControlListener(new ControlAdapter() {
-
-            public void controlResized(ControlEvent e) {
-                computeTopAndBottomTab();
-                UIUtils.asyncExec(() -> redraw());
-            }
-        });
+        this.addControlListener(ControlListener.controlResizedAdapter(e -> {
+            computeTopAndBottomTab();
+            UIUtils.asyncExec(() -> { if (!isDisposed()) redraw(); });
+        }));
         this.addTraverseListener(this::handleTraverse);
         addDisposeListener(e -> {
             for (Image di : grayedImages.values()) {
@@ -512,7 +502,7 @@ public class TabbedFolderList extends ConComposite {
      */
     protected void computeTabsThatFitInComposite() {
         tabsThatFitInComposite = Math
-            .round((getSize().y - 22) / getTabHeight());
+            .round((float) (getSize().y - 22) / getTabHeight());
         if (tabsThatFitInComposite <= 0) {
             tabsThatFitInComposite = 1;
         }
@@ -743,12 +733,9 @@ public class TabbedFolderList extends ConComposite {
         } else {
             widgetBackground = getBackground();
         }
-        widgetForeground = UIStyles.isDarkHighContrastTheme() ? UIStyles.COLOR_WHITE : UIStyles.getDefaultTextForeground();
+        widgetForeground = UIStyles.getDefaultTextForeground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
-
-        white = display.getSystemColor(SWT.COLOR_WHITE).getRGB();
-        black = display.getSystemColor(SWT.COLOR_BLACK).getRGB();
 
 		/*
 		 * gradient in the default tab: start colour WIDGET_NORMAL_SHADOW 100% +
@@ -946,7 +933,6 @@ public class TabbedFolderList extends ConComposite {
     private void initAccessible() {
         final Accessible accessible = getAccessible();
         accessible.addAccessibleListener(new AccessibleAdapter() {
-
             public void getName(AccessibleEvent e) {
                 if (getSelectionIndex() != NONE) {
                     e.result = elements[getSelectionIndex()].getInfo().getText();
@@ -1001,10 +987,9 @@ public class TabbedFolderList extends ConComposite {
     }
 
     public void addSelectionListener(SelectionListener listener) {
-        checkWidget ();
-        TypedListener typedListener = new TypedListener (listener);
-        addListener (SWT.Selection,typedListener);
-        addListener (SWT.DefaultSelection,typedListener);
+        checkWidget();
+        addListener(SWT.Selection, event -> listener.widgetSelected(new SelectionEvent(event)));
+        addListener(SWT.DefaultSelection, event -> listener.widgetDefaultSelected(new SelectionEvent(event)));
     }
 
     public void handleTraverse(TraverseEvent e) {

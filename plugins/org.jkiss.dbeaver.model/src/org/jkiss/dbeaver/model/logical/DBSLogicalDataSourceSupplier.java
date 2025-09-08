@@ -14,19 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
+package org.jkiss.dbeaver.model.logical;
 
-public record AICommandRequest(
-    @NotNull String text,
-    @NotNull AIDatabaseContext context,
-    @Nullable AIEngine engine
-) {
-    public AICommandRequest(@NotNull String text, @NotNull AIDatabaseContext context) {
-        this(text, context, null);
-    }
+import java.util.function.Supplier;
+
+/**
+ * Logical datasource supplier
+ */
+public interface DBSLogicalDataSourceSupplier extends Supplier<DBSLogicalDataSource> {
 }

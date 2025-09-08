@@ -19,26 +19,41 @@ package org.jkiss.dbeaver.model.cli;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public class CmdProcessResult {
+public class CliProcessResult {
     public enum PostAction {
-        START_INSTANCE,
-        SHUTDOWN,
-        ERROR,
-        UNKNOWN_COMMAND;
+        START_INSTANCE(CliConstants.EXIT_CODE_CONTINUE),
+        SHUTDOWN(CliConstants.EXIT_CODE_OK),
+        ERROR(CliConstants.EXIT_CODE_ERROR),
+        UNKNOWN_COMMAND(CliConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
+        private final short defaultExitCode;
+
+        PostAction(short exitCode) {
+            this.defaultExitCode = exitCode;
+        }
     }
 
     @NotNull
     private final PostAction postAction;
+    private final short exitCode;
     @Nullable
     private final String output;
 
-    public CmdProcessResult(@NotNull PostAction postAction) {
-        this(postAction, null);
+    public CliProcessResult(@NotNull PostAction postAction) {
+        this(postAction, null, postAction.defaultExitCode);
     }
 
-    public CmdProcessResult(@NotNull PostAction postAction, @Nullable String output) {
+    public CliProcessResult(@NotNull PostAction postAction, short exitCode) {
+        this(postAction, null, exitCode);
+    }
+
+    public CliProcessResult(@NotNull PostAction postAction, @Nullable String output) {
+        this(postAction, output, postAction.defaultExitCode);
+    }
+
+    public CliProcessResult(@NotNull PostAction postAction, @Nullable String output, short exitCode) {
         this.postAction = postAction;
         this.output = output;
+        this.exitCode = exitCode;
     }
 
     @NotNull
@@ -49,6 +64,10 @@ public class CmdProcessResult {
     @Nullable
     public String getOutput() {
         return output;
+    }
+
+    public short getExitCode() {
+        return exitCode;
     }
 }
 
