@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +37,7 @@ public class DTMessages extends NLS {
     public static String data_transfer_wizard_output_checkbox_select_row_count;
     public static String data_transfer_wizard_output_checkbox_selected_columns_only;
     public static String data_transfer_wizard_output_checkbox_selected_rows_only;
+    public static String data_transfer_wizard_output_checkbox_enable_qm_logging;
     public static String data_transfer_wizard_output_combo_extract_type_item_by_segments;
     public static String data_transfer_wizard_output_combo_extract_type_item_single_query;
     public static String data_transfer_wizard_output_description;
@@ -69,6 +69,8 @@ public class DTMessages extends NLS {
     public static String data_transfer_wizard_output_name;
     public static String data_transfer_wizard_output_title;
     public static String data_transfer_wizard_output_export_to_external_storage_link;
+    public static String data_transfer_wizard_output_log_select_queries_check;
+    public static String data_transfer_wizard_output_log_select_queries_check_tip;
     public static String data_transfer_wizard_settings_binaries_item_inline;
     public static String data_transfer_wizard_settings_binaries_item_save_to_file;
     public static String data_transfer_wizard_settings_binaries_item_set_to_null;
@@ -112,8 +114,8 @@ public class DTMessages extends NLS {
     public static String data_transfer_db_consumer_existing_table_description;
     public static String data_transfer_db_consumer_new_table;
     public static String data_transfer_db_consumer_new_table_description;
-    public static String data_transfer_db_consumer_button_configure;
-    public static String data_transfer_db_consumer_button_configure_description;
+    public static String data_transfer_db_consumer_button_customise;
+    public static String data_transfer_db_consumer_button_customise_description;
     public static String data_transfer_db_consumer_column_mappings;
     public static String data_transfer_db_consumer_column_mappings_description;
     public static String data_transfer_db_consumer_ddl;
@@ -143,6 +145,7 @@ public class DTMessages extends NLS {
     public static String database_consumer_settings_option_disable_referential_integrity;
     public static String database_consumer_settings_option_use_bulk_load;
     public static String database_consumer_settings_option_truncate_before_load;
+    public static String database_consumer_settings_option_enable_qm_logging;
 
     public static String data_transfer_settings_title_find_producer;
     public static String data_transfer_settings_message_find_data_producer;

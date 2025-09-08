@@ -21,9 +21,9 @@ import java.util.Collection;
 public class SQLQueryCompletionSet {
     private final int replacementPosition;
     private final int replacementLength;
-    private final Collection<SQLQueryCompletionItem> items;
+    private final Collection<? extends SQLQueryCompletionItem> items;
     
-    public SQLQueryCompletionSet(int replacementPosition, int replacementLength, Collection<SQLQueryCompletionItem> items) {
+    public SQLQueryCompletionSet(int replacementPosition, int replacementLength, Collection<? extends SQLQueryCompletionItem> items) {
         this.replacementPosition = replacementPosition;
         this.replacementLength = replacementLength;
         this.items = items;
@@ -37,7 +37,7 @@ public class SQLQueryCompletionSet {
         return this.replacementLength;
     }
     
-    public Collection<SQLQueryCompletionItem> getItems() {
+    public Collection<? extends SQLQueryCompletionItem> getItems() {
         return this.items;
     }
 }

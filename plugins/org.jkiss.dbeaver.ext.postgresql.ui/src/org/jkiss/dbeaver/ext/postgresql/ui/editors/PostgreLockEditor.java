@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +23,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.lock.PostgreLock;
 import org.jkiss.dbeaver.ext.postgresql.model.lock.PostgreLockManager;
-import org.jkiss.dbeaver.ext.ui.locks.edit.AbstractLockEditor;
-import org.jkiss.dbeaver.ext.ui.locks.manage.LockManagerViewer;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockItem;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.editors.locks.edit.AbstractLockEditor;
+import org.jkiss.dbeaver.ui.editors.locks.manage.LockManagerViewer;
 
 import java.util.HashMap;
 
@@ -53,7 +52,7 @@ public class PostgreLockEditor extends AbstractLockEditor {
                 super.onLockSelect(lock);
                 if (lock != null) {
                     final PostgreLock pLock = (PostgreLock) lock;
-                    super.refreshDetail(new HashMap<String, Object>() {{
+                    super.refreshDetail(new HashMap<>() {{
                         put(PostgreLockManager.pidHold, pLock.getHold_pid());
                         put(PostgreLockManager.pidWait, pLock.getWait_pid());
                     }});

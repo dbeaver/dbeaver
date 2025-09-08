@@ -31,7 +31,8 @@ public enum HANAObjectType implements DBSObjectType {
     PROCEDURE("PROCEDURE", "HANA procedure", HANAProcedure.class, DBIcon.TREE_PROCEDURE),
     SYNONYM("SYNONYM", "HANA synonym", HANASynonym.class, DBIcon.TREE_SYNONYM),
     TABLE("TABLE", "HANA table", GenericTable.class, DBIcon.TREE_TABLE),
-    VIEW("VIEW", "HANA view", HANAView.class, DBIcon.TREE_VIEW);
+    VIEW("VIEW", "HANA view", HANAView.class, DBIcon.TREE_VIEW),
+    SCHEMA("SCHEMA", "HANA schema", HANASchema.class, DBIcon.TREE_SCHEMA);
 
     private final String type;
     private final String description;

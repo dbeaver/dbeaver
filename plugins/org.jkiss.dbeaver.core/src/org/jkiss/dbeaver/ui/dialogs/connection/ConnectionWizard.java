@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.*;
@@ -72,7 +73,6 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     protected ConnectionWizard() {
         setNeedsProgressMonitor(true);
-        //setDefaultPageImageDescriptor(DBeaverActivator.getImageDescriptor("icons/driver-logo.png"));
     }
 
     @Override
@@ -124,11 +124,11 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         }
         if (info == null && driver != null) {
             DBPConnectionConfiguration connectionInfo = getDefaultConnectionConfiguration();
-            info = new DataSourceDescriptor(
-                registry,
+            info = registry.createDataSource(
                 DataSourceDescriptor.generateNewId(driver),
                 driver,
-                connectionInfo);
+                connectionInfo
+            );
             DBPNativeClientLocation defaultClientLocation = driver.getDefaultClientLocation();
             if (defaultClientLocation != null) {
                 info.getConnectionConfiguration().setClientHomeId(defaultClientLocation.getName());
@@ -161,7 +161,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         DataSourceDescriptor targetDataSource;
 
         if (canUseTemporaryDataSource(activeDataSource)) {
-            targetDataSource = new DataSourceDescriptor(activeDataSource, activeDataSource.getRegistry());
+            targetDataSource = activeDataSource.getRegistry().createDataSource(activeDataSource);
             // Generate new ID to avoid session conflicts in QM
             targetDataSource.setId(DataSourceDescriptor.generateNewId(activeDataSource.getDriver()));
             targetDataSource.setTemporary(true);
@@ -233,6 +233,12 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                         throw new InterruptedException("cancel");
                     }
                 });
+
+                var oldUserPassword = activeDataSource.getActualConnectionConfiguration().getUserPassword();
+                var newUserPassword = targetDataSource.getActualConnectionConfiguration().getUserPassword();
+                if (newUserPassword != null && !newUserPassword.equals(oldUserPassword)) {
+                    DBUtils.fireObjectUpdate(activeDataSource, targetDataSource.getActualConnectionConfiguration());
+                }
 
                 new ConnectionTestDialog(
                     getShell(),

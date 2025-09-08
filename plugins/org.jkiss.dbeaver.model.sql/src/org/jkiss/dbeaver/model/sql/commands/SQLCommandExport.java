@@ -17,12 +17,11 @@
 package org.jkiss.dbeaver.model.sql.commands;
 
 import com.google.gson.Gson;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.sql.SQLControlCommand;
-import org.jkiss.dbeaver.model.sql.SQLControlCommandHandler;
-import org.jkiss.dbeaver.model.sql.SQLPragmaHandler;
-import org.jkiss.dbeaver.model.sql.SQLScriptContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.*;
 
 import java.io.StringReader;
 import java.util.Map;
@@ -32,8 +31,9 @@ import java.util.Map;
  */
 public class SQLCommandExport implements SQLControlCommandHandler {
 
+    @NotNull
     @Override
-    public boolean handleCommand(SQLControlCommand command, SQLScriptContext scriptContext) throws DBException {
+    public SQLControlResult handleCommand(@NotNull DBRProgressMonitor monitor, @NotNull SQLControlCommand command, @NotNull SQLScriptContext scriptContext) throws DBException {
         final Map<String, Object> params;
 
         try {
@@ -44,6 +44,6 @@ public class SQLCommandExport implements SQLControlCommandHandler {
 
         scriptContext.setPragma(SQLPragmaHandler.PRAGMA_EXPORT, params);
 
-        return true;
+        return SQLControlResult.success();
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.Map;
 
@@ -40,13 +41,19 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
         public boolean isBinary;
         public boolean isHTML;
         public Date startTimestamp;
+        public OutputStream exportToStream;
 
         public TransferParameters() {
         }
 
         public TransferParameters(boolean isBinary, boolean isHTML) {
+            this(isBinary, isHTML, null);
+        }
+
+        public TransferParameters(boolean isBinary, boolean isHTML, OutputStream exportToStream) {
             this.isBinary = isBinary;
             this.isHTML = isHTML;
+            this.exportToStream = exportToStream;
         }
     }
 

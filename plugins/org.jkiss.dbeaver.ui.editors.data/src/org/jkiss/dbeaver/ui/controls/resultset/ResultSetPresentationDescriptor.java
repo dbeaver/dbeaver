@@ -55,6 +55,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     private final boolean supportsPanels;
     private final boolean supportsNavigation;
     private final boolean supportsEdit;
+    private final boolean supportsHints;
 
     protected ResultSetPresentationDescriptor(IConfigurationElement config) {
         super(config);
@@ -66,10 +67,11 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         this.icon = iconToImage(config.getAttribute("icon"));
         this.order = CommonUtils.toInt(config.getAttribute("order"));
         this.presentationType = IResultSetPresentation.PresentationType.valueOf(config.getAttribute("type").toUpperCase(Locale.ENGLISH));
-        this.supportsRecordMode = CommonUtils.toBoolean(config.getAttribute("supportsRecordMode"));
+        this.supportsRecordMode = CommonUtils.toBoolean(config.getAttribute("supportsRecordMode"), false);
         this.supportsPanels = CommonUtils.getBoolean(config.getAttribute("supportsPanels"), true);
         this.supportsNavigation = CommonUtils.getBoolean(config.getAttribute("supportsNavigation"), true);
         this.supportsEdit = CommonUtils.getBoolean(config.getAttribute("supportsEdit"), true);
+        this.supportsHints = CommonUtils.getBoolean(config.getAttribute("supportsHints"), false);
 
         for (IConfigurationElement typeCfg : config.getChildren(CONTENT_TYPE)) {
             String type = typeCfg.getAttribute("type");
@@ -180,6 +182,10 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
 
     public boolean supportsEdit() {
         return supportsEdit;
+    }
+
+    public boolean supportsHints() {
+        return supportsHints;
     }
 
     @Override

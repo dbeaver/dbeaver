@@ -421,7 +421,7 @@ public class OffsetKeyedTreeMap<T> {
 
                 @Override
                 public int getCurrOffset() {
-                    return 0;
+                    return position;
                 }
 
                 @Override
@@ -447,7 +447,7 @@ public class OffsetKeyedTreeMap<T> {
 
                 @Override
                 public int getCurrOffset() {
-                    return this.beforeFirst ? 0 : (this.afterLast ? Integer.MAX_VALUE : this.theOnlyNode.offset);
+                    return this.beforeFirst ? Integer.MIN_VALUE : (this.afterLast ? Integer.MAX_VALUE : this.theOnlyNode.offset);
                 }
 
                 @Override
@@ -523,7 +523,10 @@ public class OffsetKeyedTreeMap<T> {
                 public boolean next() {
                     if (this.initial && initialLocation.node.isSentinel()) {
                         // the exact initial position not found, so proceed with its parent
-                        NodeAndOffset<T> parentLocation = new NodeAndOffset<>(initialLocation.parent, position - initialLocation.offset);
+                        NodeAndOffset<T> parentLocation = new NodeAndOffset<>(
+                            initialLocation.parent,
+                            position - initialLocation.offset - (initialLocation.isLeft ? 0 : initialLocation.parent.offset)
+                        );
                         this.currentLocation = initialLocation.isLeft ? parentLocation : findNext(parentLocation);
                     } else if (this.afterLast) {
                         return false;
@@ -980,6 +983,7 @@ public class OffsetKeyedTreeMap<T> {
 
     public void forEach(BiConsumer<Integer, T> action) {
         if (root.isNotSentinel()) {
+            int currOffset = 0;
             Node<T> node = root;
             Node<T> prev = null;
             Node<T> next = null;
@@ -993,26 +997,31 @@ public class OffsetKeyedTreeMap<T> {
                         next = node.left;
                     } else if (node.right.isNotSentinel()) {
                         // node's left is empty, go to the right
-                        action.accept(node.offset, node.content);
+                        action.accept(currOffset + node.offset, node.content);
+                        currOffset += node.offset;
                         next = node.right;
                     } else {
                         // both left and right are sentinels, so this is leaf
-                        action.accept(node.offset, node.content);
+                        action.accept(currOffset + node.offset, node.content);
+                        currOffset -= node.parent != null && node.parent.right == node ? node.parent.offset : 0;
                         next = node.parent;
                     }
                 } else if (prev == node.left) {
                     // left is ready, prepare right
-                    action.accept(node.offset, node.content);
+                    action.accept(currOffset + node.offset, node.content);
 
                     if (node.right.isNotSentinel()) {
                         // right will be created later
+                        currOffset += node.offset;
                         next = node.right;
                     } else {
                         // right is sentinel
+                        currOffset -= node.parent != null && node.parent.right == node ? node.parent.offset : 0;
                         next = node.parent;
                     }
                 } else if (prev == node.right) {
                     // both subnodes are ready, rightmost was the last one
+                    currOffset -= node.parent != null && node.parent.right == node ? node.parent.offset : 0;
                     next = node.parent;
                 } else {
                     throw new IllegalStateException("RB-tree inconsistency detected");

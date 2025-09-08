@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPlugin;
-import org.eclipse.ui.internal.ide.ChooseWorkspaceData;
 import org.eclipse.ui.internal.ide.ChooseWorkspaceDialog;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -47,6 +46,8 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.app.DBPApplicationController;
 import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.cli.CliProcessResult;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
@@ -57,6 +58,7 @@ import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
+import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateDialog;
@@ -72,12 +74,10 @@ import org.osgi.framework.Version;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -103,14 +103,16 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String PROP_EXIT_CODE = "eclipse.exitcode"; //$NON-NLS-1$
 
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
+    public static final String DEFAULT_WORKSPACES_FILE = ".workspaces";
 
+    private static final String PLUGINS_FOLDER = ".plugins";
+    private static final String CORE_RESOURCES_PLUGIN_FOLDER = "org.eclipse.core.resources";
     private static final String STARTUP_ACTIONS_FILE = "dbeaver-startup-actions.properties";
     private static final String RESET_USER_PREFERENCES = "reset_user_preferences";
     private static final String RESET_WORKSPACE_CONFIGURATION = "reset_workspace_configuration";
 
-    private final String WORKSPACE_DIR_6; //$NON-NLS-1$
     private final Path FILE_WITH_WORKSPACES;
-    public final String WORKSPACE_DIR_CURRENT;
+    private final String WORKSPACE_DIR_CURRENT;
 
     static boolean WORKSPACE_MIGRATED = false;
 
@@ -133,10 +135,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private long lastUserActivityTime = -1;
 
     public DBeaverApplication() {
-        this(DesktopPlatform.DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER);
+        this(DesktopPlatform.DBEAVER_DATA_DIR, DEFAULT_WORKSPACE_FOLDER, DEFAULT_WORKSPACES_FILE);
     }
 
-    protected DBeaverApplication(String defaultWorkspaceLocation, String defaultAppWorkspaceName) {
+    protected DBeaverApplication(String defaultWorkspaceLocation, String defaultAppWorkspaceName, String defaultWorkspacesFile) {
 
         // Explicitly set UTF-8 as default file encoding
         // In some places Eclipse reads this property directly.
@@ -150,9 +152,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         String workingDirectory = RuntimeUtils.getWorkingDirectory(defaultWorkspaceLocation);
 
         // Workspace dir
-        WORKSPACE_DIR_6 = new File(workingDirectory, defaultAppWorkspaceName).getAbsolutePath();
-        WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_6;
-        FILE_WITH_WORKSPACES = Paths.get(workingDirectory, ".workspaces"); //$NON-NLS-1$
+        WORKSPACE_DIR_CURRENT = new File(workingDirectory, defaultAppWorkspaceName).getAbsolutePath();
+        FILE_WITH_WORKSPACES = Paths.get(workingDirectory, defaultWorkspacesFile); //$NON-NLS-1$
     }
 
     /**
@@ -180,12 +181,21 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         Location instanceLoc = Platform.getInstanceLocation();
 
-        CommandLine commandLine = DBeaverCommandLine.getCommandLine();
+        CommandLine commandLine = DBeaverCommandLine.getInstance().getCommandLine();
         String defaultHomePath = getDefaultInstanceLocation();
-        if (DBeaverCommandLine.handleCommandLine(commandLine, defaultHomePath)) {
+        if (DBeaverCommandLine.getInstance()
+            .handleCommandLineAsClient(commandLine, defaultHomePath)
+            .getPostAction() == CliProcessResult.PostAction.SHUTDOWN
+        ) {
             if (!Log.isQuietMode()) {
                 System.err.println("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
             }
+            return IApplication.EXIT_OK;
+        }
+
+        if (!isWorkspaceSwitchingAllowed() && !WORKSPACE_DIR_CURRENT.equals(defaultHomePath)) {
+            log.error("Workspace switching is not allowed when participating in the early access program. Exiting "
+                + GeneralUtils.getProductName() + ".");
             return IApplication.EXIT_OK;
         }
 
@@ -217,13 +227,17 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 e.printStackTrace();
             }
         }
+
+        loadStartupActions(instanceLoc);
+
         // Register core components
         initializeApplicationServices();
 
         // Custom parameters
         try {
             headlessMode = true;
-            if (DBeaverCommandLine.handleCustomParameters(commandLine)) {
+            CliProcessResult cliProcessResult = DBeaverCommandLine.getInstance().handleCustomParameters(commandLine);
+            if (cliProcessResult.getPostAction() == CliProcessResult.PostAction.SHUTDOWN) {
                 return IApplication.EXIT_OK;
             }
         } finally {
@@ -252,6 +266,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Write version info
         writeWorkspaceInfo();
 
+        // Initialize display early
+        // It sets main windows name and images
+        getDisplay();
+
         // https://github.com/eclipse-platform/eclipse.platform.swt/issues/772
         if (!RuntimeUtils.isMacOS() || !RuntimeUtils.isOSVersionAtLeast(14, 0, 0)) {
             // Update splash. Do it AFTER platform startup because platform may initiate some splash shell interactions
@@ -264,6 +282,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         DBWorkbench.getPlatform();
 
+        WorkbenchPatcher.patchWorkbenchXmi(instanceLoc);
         initializeApplication();
 
         // Run instance server
@@ -275,12 +294,13 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
         TimezoneRegistry.overrideTimezone();
 
-        if (RuntimeUtils.isWindows()
-            && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
+        if (CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE))
             && CommonUtils.isEmpty(System.getProperty(GeneralUtils.PROP_TRUST_STORE_TYPE))
-            && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)
         ) {
-            System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
+            DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+            if (RuntimeUtils.isWindows() && preferenceStore.getBoolean(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE)) {
+                System.setProperty(GeneralUtils.PROP_TRUST_STORE_TYPE, GeneralUtils.VALUE_TRUST_STORE_TYPE_WINDOWS);
+            }
         }
 
         // Prefs default
@@ -291,13 +311,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             log.debug("Run workbench");
             getDisplay();
             int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor());
-
-            if (resetUserPreferencesOnRestart || resetWorkspaceConfigurationOnRestart) {
-                resetUISettings(instanceLoc);
-            }
-            if (resetWorkspaceConfigurationOnRestart) {
-                // FIXME: ???
-            }
 
             // Copy-pasted from IDEApplication
             // Magic with exit codes to let Eclipse starter switcg workspace
@@ -350,12 +363,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         if (!isWorkspaceSwitchingAllowed()) {
             return false;
         }
-        Collection<String> recentWorkspaces = getRecentWorkspaces(instanceLoc);
-        if (recentWorkspaces.isEmpty()) {
-            return false;
-        }
-        String lastWorkspace = recentWorkspaces.iterator().next();
-        if (!CommonUtils.isEmpty(lastWorkspace) && !WORKSPACE_DIR_CURRENT.equals(lastWorkspace)) {
+        String lastWorkspace = DBeaverWorkspaces.fetchRecentWorkspaces(this, instanceLoc).getFirst();
+        if (!WORKSPACE_DIR_CURRENT.equals(lastWorkspace)) {
             try {
                 final URL selectedWorkspaceURL = new URL(
                     "file",  //$NON-NLS-1$
@@ -365,84 +374,23 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
                 return true;
             } catch (Exception e) {
-                System.err.println("Can't set IDE workspace to '" + lastWorkspace + "'");
-                e.printStackTrace();
+                log.debug("Can't set IDE workspace to '" + lastWorkspace + "'", e);
             }
         }
         return false;
     }
 
+    /**
+     * Returns path to the {@code .workspaces} file.
+     */
     @NotNull
-    private Collection<String> getRecentWorkspaces(@NotNull Location instanceLoc) {
-        ChooseWorkspaceData launchData = new ChooseWorkspaceData(instanceLoc.getDefault());
-        String[] arrayOfRecentWorkspaces = launchData.getRecentWorkspaces();
-        Collection<String> recentWorkspaces;
-        int maxSize;
-        if (arrayOfRecentWorkspaces == null) {
-            maxSize = 0;
-            recentWorkspaces = new ArrayList<>();
-        } else {
-            maxSize = arrayOfRecentWorkspaces.length;
-            recentWorkspaces = new ArrayList<>(Arrays.asList(arrayOfRecentWorkspaces));
-        }
-        recentWorkspaces.removeIf(Objects::isNull);
-        Collection<String> backedUpWorkspaces = getBackedUpWorkspaces();
-        if (recentWorkspaces.equals(backedUpWorkspaces) && backedUpWorkspaces.contains(WORKSPACE_DIR_CURRENT)) {
-            return backedUpWorkspaces;
-        }
-
-        List<String> workspaces = Stream.concat(recentWorkspaces.stream(), backedUpWorkspaces.stream())
-            .distinct()
-            .limit(maxSize)
-            .collect(Collectors.toList());
-        if (!recentWorkspaces.contains(WORKSPACE_DIR_CURRENT)) {
-            if (recentWorkspaces.size() < maxSize) {
-                recentWorkspaces.add(WORKSPACE_DIR_CURRENT);
-            } else if (maxSize > 1) {
-                workspaces.set(recentWorkspaces.size() - 1, WORKSPACE_DIR_CURRENT);
-            }
-        }
-        launchData.setRecentWorkspaces(Arrays.copyOf(workspaces.toArray(new String[0]), maxSize));
-        launchData.writePersistedData();
-        saveWorkspacesToBackup(workspaces);
-        return workspaces;
+    public Path getWorkspacesFile() {
+        return FILE_WITH_WORKSPACES;
     }
 
     @NotNull
-    private Collection<String> getBackedUpWorkspaces() {
-        if (!Files.exists(FILE_WITH_WORKSPACES) || Files.isDirectory(FILE_WITH_WORKSPACES)) {
-            return Collections.emptyList();
-        }
-        try {
-            return Files.readAllLines(FILE_WITH_WORKSPACES);
-        } catch (IOException e) {
-            System.err.println("Unable to read backed up workspaces"); //$NON-NLS-1$
-            e.printStackTrace();
-            return Collections.emptyList();
-        }
-    }
-
-    private void saveWorkspacesToBackup(@NotNull List<? extends CharSequence> workspaces) {
-        try {
-            if (!Files.exists(FILE_WITH_WORKSPACES.getParent())) {
-                Files.createDirectories(FILE_WITH_WORKSPACES.getParent());
-            } else if (Files.isDirectory(FILE_WITH_WORKSPACES)) {
-                // Bug in 22.0.5
-                try {
-                    Files.delete(FILE_WITH_WORKSPACES);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            Files.write(FILE_WITH_WORKSPACES, workspaces, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (IOException e) {
-            System.err.println("Unable to save backed up workspaces"); //$NON-NLS-1$
-            e.printStackTrace();
-        }
-    }
-    @Nullable
     public Path getDefaultWorkingFolder() {
-        return  Path.of(WORKSPACE_DIR_CURRENT);
+        return Path.of(WORKSPACE_DIR_CURRENT);
     }
 
     @NotNull
@@ -456,7 +404,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return isHeadlessMode() ? ConsoleUserInterface.class : DesktopUI.class;
     }
 
-    private String getDefaultInstanceLocation() {
+    public String getDefaultInstanceLocation() {
         String defaultHomePath = WORKSPACE_DIR_CURRENT;
         Location instanceLoc = Platform.getInstanceLocation();
         if (instanceLoc.isSet()) {
@@ -475,8 +423,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             return;
         }
         try {
-            getDisplay();
-
             // look and see if there's a splash shell we can parent off of
             Shell shell = WorkbenchPlugin.getSplashShell(display);
             if (shell != null) {
@@ -494,6 +440,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 shell.addDisposeListener(e -> {
                     Log.removeListener(splashListener);
                 });
+                DBeaverSplashHandler.showMessage("Starting " + Platform.getProduct().getName());
             }
         } catch (Throwable e) {
             e.printStackTrace(System.err);
@@ -502,41 +449,6 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
 
     }
 
-    private void resetUISettings(Location instanceLoc) {
-        try {
-            File instanceDir = new File(instanceLoc.getURL().toURI());
-            if (instanceDir.exists()) {
-                File settingsFile = new File(instanceDir, ".metadata/.plugins/org.eclipse.e4.workbench/workbench.xmi");
-                if (settingsFile.exists()) {
-                    settingsFile.deleteOnExit();
-                }
-                //markFoldertoDelete(new File(instanceDir, ".metadata/.plugins/org.eclipse.core.resources/.root"));
-                //markFoldertoDelete(new File(instanceDir, ".metadata/.plugins/org.eclipse.core.resources/.safetable"));
-            }
-        } catch (Throwable e) {
-            log.error("Error resetting UI settings", e);
-        }
-    }
-
-    private void markFoldertoDelete(File folder) {
-        if (!folder.exists()) {
-            return;
-        }
-        File[] files = folder.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    markFoldertoDelete(file);
-                } else {
-                    log.debug("Delete resource file " + file.getAbsolutePath());
-                    file.deleteOnExit();
-                }
-            }
-        }
-        folder.deleteOnExit();
-    }
-
-    // Called
     protected void initializeConfiguration() {
         ModelPreferences.IPType stack = ModelPreferences.IPType.getPreferredStack();
         if (stack != ModelPreferences.IPType.AUTO) {
@@ -545,6 +457,10 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         ModelPreferences.IPType address = ModelPreferences.IPType.getPreferredAddresses();
         if (address != ModelPreferences.IPType.AUTO) {
             System.setProperty("java.net.preferIPv6Addresses", String.valueOf(address == ModelPreferences.IPType.IPV6));
+        }
+        boolean debugNetworkConnections = ModelPreferences.getPreferences().getBoolean(ModelPreferences.PROP_DEBUG_NETWORK_CONNECTIONS);
+        if (debugNetworkConnections) {
+            System.setProperty("javax.net.debug", "all");
         }
     }
 
@@ -669,8 +585,22 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return true;
     }
 
-    public static void writeWorkspaceInfo() {
-        final Path metadataFolder = GeneralUtils.getMetadataFolder();
+    private void writeWorkspaceInfo() {
+        Path defaultDir = getDefaultWorkingFolder();
+        Path metadataFolder;
+        if (defaultDir != null) {
+            metadataFolder = defaultDir.resolve(DBPWorkspace.METADATA_FOLDER);
+            if (!Files.exists(metadataFolder)) {
+                try {
+                    Files.createDirectories(metadataFolder);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.err.println("Error creating metadata folder: " + metadataFolder);
+                }
+            }
+        } else {
+            metadataFolder = GeneralUtils.getMetadataFolder();
+        }
         Properties props = BaseWorkspaceImpl.readWorkspaceInfo(metadataFolder);
         props.setProperty(VERSION_PROP_PRODUCT_NAME, GeneralUtils.getProductName());
         props.setProperty(VERSION_PROP_PRODUCT_VERSION, GeneralUtils.getProductVersion().toString());
@@ -698,6 +628,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         log.debug("DBeaver is stopping"); //$NON-NLS-1$
 
         saveStartupActions();
+
+        Location location = Platform.getInstanceLocation();
+        if (location.isSet()) {
+            DBeaverWorkspaces.flushRecentWorkspaces(this, location);
+        }
 
         try {
             DBeaverInstanceServer server = instanceServer;
@@ -749,6 +684,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     }
 
     @Nullable
+    @Override
     public IInstanceController getInstanceServer() {
         return instanceServer;
     }
@@ -857,6 +793,102 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 log.error("Unable to save startup actions", e);
             }
         }
+    }
+
+    private void loadStartupActions(@NotNull Location instanceLoc) {
+        Path instancePath;
+        Path actionsPath;
+
+        try {
+            instancePath = RuntimeUtils.getLocalPathFromURL(instanceLoc.getURL()).resolve(DBPWorkspace.METADATA_FOLDER);
+            actionsPath = instancePath.resolve(STARTUP_ACTIONS_FILE);
+        } catch (Exception e) {
+            return;
+        }
+
+        if (Files.notExists(actionsPath)) {
+            return;
+        }
+
+        try (Reader reader = Files.newBufferedReader(actionsPath)) {
+            final Properties properties = new Properties();
+            properties.load(reader);
+
+            if (!properties.isEmpty()) {
+                processStartupActions(instancePath, properties.stringPropertyNames());
+            }
+        } catch (Exception e) {
+            log.error("Unable to read startup actions", e);
+        } finally {
+            try {
+                Files.delete(actionsPath);
+            } catch (IOException e) {
+                log.error("Unable to delete startup actions file: " + e.getMessage());
+            }
+        }
+    }
+
+    private void processStartupActions(
+        @NotNull Path instancePath,
+        @NotNull Set<String> actions
+    ) throws Exception {
+        final boolean resetUserPreferences = actions.contains(RESET_USER_PREFERENCES);
+        final boolean resetWorkspaceConfiguration = actions.contains(RESET_WORKSPACE_CONFIGURATION);
+
+        if (!resetUserPreferences && !resetWorkspaceConfiguration) {
+            return;
+        }
+        Path path = instancePath.resolve(PLUGINS_FOLDER);
+        if (Files.notExists(path) || !Files.isDirectory(path)) {
+            return;
+        }
+
+        Files.walkFileTree(path, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                log.trace("Deleting " + file);
+
+                try {
+                    Files.delete(file);
+                } catch (IOException e) {
+                    log.trace("Unable to delete " + file + ":" + e.getMessage());
+                }
+
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                if (dir.endsWith(PLUGINS_FOLDER)) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                final Path relative = path.relativize(dir);
+
+                if (resetUserPreferences && !relative.startsWith(CORE_RESOURCES_PLUGIN_FOLDER)) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                if (resetWorkspaceConfiguration && relative.startsWith(CORE_RESOURCES_PLUGIN_FOLDER)) {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                return FileVisitResult.SKIP_SUBTREE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+                log.trace("Deleting " + dir);
+
+                try {
+                    Files.delete(dir);
+                } catch (IOException e) {
+                    log.trace("Unable to delete " + dir + ":" + e.getMessage());
+                }
+
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
     private class ProxyPrintStream extends OutputStream {

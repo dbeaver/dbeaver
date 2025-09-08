@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.TreeEditor;
@@ -23,7 +24,6 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -36,8 +36,10 @@ import org.jkiss.dbeaver.model.exec.DBExceptionWithHistory;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.ProgressMonitorWithExceptionContext;
 import org.jkiss.dbeaver.registry.DBConnectionConstants;
+import org.jkiss.dbeaver.registry.driver.DriverLibraryMavenArtifact;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -45,7 +47,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -53,20 +54,20 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.net.ssl.SSLHandshakeException;
 
 class DriverDependenciesTree {
     private static final Log log = Log.getLog(DriverDependenciesTree.class);
 
     public static final String NETWORK_TEST_URL = "https://repo1.maven.org";
-    private DBRRunnableContext runnableContext;
-    private DBPDriver driver;
-    private Collection<? extends DBPDriverLibrary> libraries;
+    private final DBRRunnableContext runnableContext;
+    private final DBPDriver driver;
+    private final Collection<? extends DBPDriverLibrary> libraries;
     private final DBPDriverDependencies dependencies;
-    private boolean editable;
+    private final boolean editable;
 
-    private Tree filesTree;
+    private final Tree filesTree;
     private TreeEditor treeEditor;
-    private Font boldFont;
 
     public DriverDependenciesTree(Composite parent, DBRRunnableContext runnableContext, DBPDriverDependencies dependencies, DBPDriver driver, Collection<? extends DBPDriverLibrary> libraries, boolean editable) {
         this.runnableContext = runnableContext;
@@ -85,8 +86,6 @@ class DriverDependenciesTree {
         UIUtils.createTreeColumn(filesTree, SWT.LEFT, "Description");
 
         if (editable) {
-            boldFont = UIUtils.makeBoldFont(filesTree.getFont());
-
             treeEditor = new TreeEditor(filesTree);
             treeEditor.horizontalAlignment = SWT.RIGHT;
             treeEditor.verticalAlignment = SWT.CENTER;
@@ -106,8 +105,6 @@ class DriverDependenciesTree {
                     disposeOldEditor();
                 }
             });
-
-            filesTree.addDisposeListener(e -> UIUtils.dispose(boldFont));
         }
     }
 
@@ -164,7 +161,8 @@ class DriverDependenciesTree {
             item.setText(1, CommonUtils.notEmpty(library.getVersion()));
             item.setText(2, CommonUtils.notEmpty(library.getDescription()));
             if (editable) {
-                item.setFont(1, boldFont);
+                item.setFont(1, BaseThemeSettings.instance.treeAndTableFontBold);
+                item.setText(1, NLS.bind(UIConnectionMessages.dialog_driver_download_version_change_label, item.getText(1)));
             }
             totalItems++;
             if (addDependencies(item, node)) {
@@ -193,9 +191,9 @@ class DriverDependenciesTree {
         Path localFile = node.library.getLocalFile();
         try {
             if (node.library.isInvalidLibrary()) {
-                item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_RED));
+                item.setBackground(BaseThemeSettings.instance.colorError);
             } else if (editable && localFile != null && Files.exists(localFile) && Files.size(localFile) > 0) {
-                item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+                item.setBackground(BaseThemeSettings.instance.colorSuccess);
             }
         } catch (IOException ex) {
             log.error("Error reading " + node.library.getDisplayName() + " local file", ex);
@@ -268,7 +266,7 @@ class DriverDependenciesTree {
                 item.setText(2, CommonUtils.notEmpty(dep.library.getDescription()));
                 grayOutInstalledArtifact(dep, item);
                 if (dep.duplicate) {
-                    item.setForeground(filesTree.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+                    item.setBackground(BaseThemeSettings.instance.colorWarning);
                 } else {
                     addDependencies(item, dep);
                 }
@@ -309,40 +307,38 @@ class DriverDependenciesTree {
         } catch (InterruptedException e) {
             return;
         }
-        final String currentVersion = dependencyNode.library.getVersion();
-        if (currentVersion != null && !allVersions.contains(currentVersion)) {
+
+        final String currentVersion = CommonUtils.notEmpty(dependencyNode.library.getVersion());
+        if (!allVersions.contains(currentVersion)) {
             allVersions.add(currentVersion);
         }
 
         final CCombo editor = new CCombo(filesTree, SWT.DROP_DOWN | SWT.READ_ONLY);
         editor.setVisibleItemCount(15);
-        int versionIndex = -1;
-        for (int i = 0; i < allVersions.size(); i++) {
-            String version = allVersions.get(i);
-            editor.add(version);
-            if (version.equals(currentVersion)) {
-                versionIndex = i;
-            }
-        }
-        if (versionIndex >= 0) {
-            editor.select(versionIndex);
-            editor.setText(currentVersion);
-        }
         editor.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                String newVersion = editor.getItem(editor.getSelectionIndex());
+                String newVersion = allVersions.get(editor.getSelectionIndex());
                 disposeOldEditor();
-                setLibraryVersion(dependencyNode.library, newVersion);
+                if (dependencyNode.library instanceof DriverLibraryMavenArtifact mavenLib) {
+                    setLibraryVersion(mavenLib, newVersion);
+                }
             }
         });
+        for (String version : allVersions) {
+            editor.add(version);
+        }
+
+        int currentVersionIndex = allVersions.indexOf(currentVersion);
+        editor.setItem(currentVersionIndex, NLS.bind(UIConnectionMessages.dialog_driver_download_current_version_label, currentVersion));
+        editor.select(currentVersionIndex);
 
         treeEditor.setEditor(editor, item, 1);
         editor.setListVisible(true);
     }
 
     // This may be overridden
-    protected void setLibraryVersion(DBPDriverLibrary library, String version) {
+    protected void setLibraryVersion(DriverLibraryMavenArtifact library, String version) {
 
     }
 

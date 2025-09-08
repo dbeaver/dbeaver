@@ -17,17 +17,15 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class PostgreServerExtensionBaseTest {
+public class PostgreServerExtensionBaseTest extends DBeaverUnitTest {
 
     @Mock
     private PostgreTableRegular table;

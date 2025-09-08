@@ -134,10 +134,12 @@ public class SQLRuleManager {
 
             try {
                 String commandPrefix = syntaxManager.getControlCommandPrefix();
+                String doubleCommandPrefix = commandPrefix + commandPrefix;
 
                 // Control rules
                 for (SQLCommandHandlerDescriptor controlCommand : SQLCommandsRegistry.getInstance().getCommandHandlers()) {
                     rules.add(new SQLCommandRule(commandPrefix, controlCommand, controlToken)); //$NON-NLS-1$
+                    rules.add(new SQLMultilineCommandRule(doubleCommandPrefix, controlCommand, controlToken));
                 }
             } catch (Exception e) {
                 log.error(e);

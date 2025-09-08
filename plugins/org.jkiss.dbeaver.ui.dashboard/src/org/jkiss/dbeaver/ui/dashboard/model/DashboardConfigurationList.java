@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.dashboard.DashboardConstants;
 import org.jkiss.dbeaver.ui.dashboard.internal.UIDashboardActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
@@ -178,7 +179,7 @@ public class DashboardConfigurationList {
     private String saveToString() throws IOException {
         StringWriter buffer = new StringWriter();
         XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.UTF8_ENCODING, true);
-        xml.setButify(true);
+        xml.setBeautify(true);
         serializeConfig(xml);
         xml.flush();
 
@@ -194,7 +195,7 @@ public class DashboardConfigurationList {
         } else {
             StringWriter buffer = new StringWriter();
             XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.UTF8_ENCODING, false);
-            xml.setButify(false);
+            xml.setBeautify(false);
             serializeConfig(xml);
             xml.flush();
             dataSourceContainer.setExtension(DashboardConstants.DS_PROP_DASHBOARDS, buffer.toString());
@@ -211,7 +212,7 @@ public class DashboardConfigurationList {
     }
 
     private Path getConfigFile(boolean forceCreate) {
-        Path pluginFolder = UIDashboardActivator.getDefault().getStateLocation().toPath();
+        Path pluginFolder = RuntimeUtils.getPluginStateLocation(UIDashboardActivator.getDefault());
         Path viewConfigFolder = pluginFolder.resolve("views");
         if (!Files.exists(viewConfigFolder)) {
             if (forceCreate) {

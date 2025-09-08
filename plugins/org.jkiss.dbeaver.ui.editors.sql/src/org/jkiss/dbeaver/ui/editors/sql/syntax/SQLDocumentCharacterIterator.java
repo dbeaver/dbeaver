@@ -37,7 +37,7 @@ import java.text.CharacterIterator;
  */
 public class SQLDocumentCharacterIterator implements CharacterIterator, CharSequence {
 
-    private int index = -1;
+    private int index;
     private final IDocument document;
     private final int first;
     private final int last;
@@ -88,8 +88,8 @@ public class SQLDocumentCharacterIterator implements CharacterIterator, CharSequ
         this.document = document;
         this.first = first;
         this.last = last;
-        index = first;
-        invariant();
+        this.index = first;
+        this.invariant();
     }
 
     @Override

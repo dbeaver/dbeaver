@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt3;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectExt4;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.sql.ResultSet;
 import java.sql.Types;
@@ -202,7 +203,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
     @LazyProperty(cacheValidator = CommentLoadValidator.class)
     public String getComment(DBRProgressMonitor monitor) {
-        if (isPersisted() && comment == null) {
+        if (isPersisted() && comment == null && !DBWorkbench.getPlatform().isUnitTestMode()) {
             // Load comments for all table columns
             getTable().loadColumnComments(monitor);
         }

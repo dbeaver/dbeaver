@@ -874,7 +874,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
                     for (DBSEntityAttribute refAttr : refAttributes) {
                         vUniqueKey.addAttribute(refAttr.getName());
                     }
-                    vRefEntity.addConstraint(vUniqueKey, true);
+                    if (!vRefEntity.addConstraint(vUniqueKey, true)) {
+                        throw new DBVException("Virtual Unique Key with name '" + vUniqueKey.getName() + "' already exists");
+                    }
                     curConstraints.add(vUniqueKey);
                 }
             }
@@ -904,6 +906,9 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
 
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(ObjectEditorMessages.dialog_struct_edit_fk_error_load_constraints_title, ObjectEditorMessages.dialog_struct_edit_fk_error_load_constraints_message, e.getTargetException());
+        } catch (DBVException e) {
+            DBWorkbench.getPlatformUI().showError(ObjectEditorMessages.dialog_struct_edit_fk_error_load_constraints_title,
+                ObjectEditorMessages.dialog_struct_edit_fk_error_load_constraints_message, e);
         } catch (InterruptedException e) {
             // do nothing
         }

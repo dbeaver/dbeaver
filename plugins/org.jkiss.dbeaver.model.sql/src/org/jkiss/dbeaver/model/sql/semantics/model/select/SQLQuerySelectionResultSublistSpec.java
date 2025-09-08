@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ package org.jkiss.dbeaver.model.sql.semantics.model.select;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
@@ -32,29 +33,16 @@ import java.util.List;
  */
 public abstract class SQLQuerySelectionResultSublistSpec extends SQLQueryNodeModel {
 
-    @NotNull
-    private final SQLQuerySelectionResultModel resultModel;
-
-    protected SQLQuerySelectionResultSublistSpec(@NotNull SQLQuerySelectionResultModel resultModel, @NotNull STMTreeNode syntaxNode) {
+    protected SQLQuerySelectionResultSublistSpec(@NotNull STMTreeNode syntaxNode) {
         super(syntaxNode.getRealInterval(), syntaxNode);
-        this.resultModel = resultModel;
     }
 
     @Nullable
     @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return resultModel.getResultDataContext();
-    }
+    public abstract SQLQuerySymbolClass getAssociatedSymbolClass();
 
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return resultModel.getResultDataContext();
-    }
-
-    @NotNull
     protected abstract void collectColumns(
-        @NotNull SQLQueryDataContext context,
+        @NotNull SQLQueryRowsDataContext knownValues,
         @NotNull SQLQueryRowsProjectionModel rowsSourceModel,
         @NotNull SQLQueryRecognitionContext statistics,
         @NotNull LinkedList<SQLQueryResultColumn> resultColumns
@@ -66,7 +54,9 @@ public abstract class SQLQuerySelectionResultSublistSpec extends SQLQueryNodeMod
         @NotNull LinkedList<SQLQueryResultColumn> resultColumns
     ) {
         for (SQLQueryResultColumn c : foreignColumns) {
-            resultColumns.addLast(new SQLQueryResultColumn(resultColumns.size(), c.symbol, rowsSourceModel, c.realSource, c.realAttr, c.type));
+            resultColumns.addLast(
+                new SQLQueryResultColumn(resultColumns.size(), c.symbol, rowsSourceModel, c.realSource, c.realAttr, c.type)
+            );
         }
     }
 }

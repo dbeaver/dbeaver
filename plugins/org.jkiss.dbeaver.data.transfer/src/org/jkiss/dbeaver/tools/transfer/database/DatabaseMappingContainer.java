@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     private static final Log log = Log.getLog(DatabaseMappingContainer.class);
 
     private final DatabaseConsumerSettings consumerSettings;
-    private DBSDataContainer source;
+    private final DBSDataContainer source;
     private DBSDataManipulator target;
     private String targetName;
     private DatabaseMappingType mappingType;
@@ -179,16 +179,14 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             } else {
                 DBSDataContainer theSource = this.source;
                 if (theSource != null) {
-                    if (theSource instanceof IAdaptable) {
-                        DBSDataContainer adapterSource = ((IAdaptable) theSource).getAdapter(DBSDataContainer.class);
+                    if (theSource instanceof IAdaptable adaptable) {
+                        DBSDataContainer adapterSource = adaptable.getAdapter(DBSDataContainer.class);
                         if (adapterSource != null) {
                             theSource = adapterSource;
                         }
                     }
-                    if (theSource instanceof SQLQueryContainer) {
-                        final SQLQueryContainer sqlQueryContainer = (SQLQueryContainer) theSource;
-                        if (sqlQueryContainer.getQuery() instanceof SQLQuery) {
-                            final SQLQuery sqlQuery = (SQLQuery) sqlQueryContainer.getQuery();
+                    if (theSource instanceof SQLQueryContainer sqlQueryContainer) {
+                        if (sqlQueryContainer.getQuery() instanceof SQLQuery sqlQuery) {
                             if (sqlQuery.getStatement() instanceof Select) {
                                 final Table table = SQLSemanticProcessor.getTableFromSelect((Select) sqlQuery.getStatement());
                                 if (table != null) {
@@ -205,19 +203,16 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 }
             }
         }
-        switch (mappingType) {
-            case existing:
-            case recreate:
+        return switch (mappingType) {
+            case existing, recreate -> {
                 if (target != null) {
-                    return target.getName();
+                    yield target.getName();
                 }
-                return targetTableName;
-            case skip:
-                return DatabaseMappingAttribute.TARGET_NAME_SKIP;
-            case create:
-            default:
-                return targetTableName;
-        }
+                yield targetTableName;
+            }
+            case skip -> DatabaseMappingAttribute.TARGET_NAME_SKIP;
+            default -> targetTableName;
+        };
     }
 
     public void setTargetName(String targetName) {
@@ -252,8 +247,12 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             try {
                 readAttributes(monitor);
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError(DTMessages.database_mapping_container_title_attributes_read_failed,
-                        NLS.bind(DTMessages.database_mapping_container_message_get_attributes_from, DBUtils.getObjectFullName(source, DBPEvaluationContext.UI)), e);
+                DBWorkbench.getPlatformUI().showError(
+                    DTMessages.database_mapping_container_title_attributes_read_failed,
+                    NLS.bind(
+                        DTMessages.database_mapping_container_message_get_attributes_from,
+                        DBUtils.getObjectFullName(source, DBPEvaluationContext.UI)),
+                    e);
             }
         }
         return attributeMappings;

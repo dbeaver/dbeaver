@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: DBeaver Corp
 Bundle-Name: DBeaver API
 Bundle-SymbolicName: org.jkiss.dbeaver.model;singleton:=true
-Bundle-Version: 2.0.4.qualifier
-Bundle-Release-Date: 20241202
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-Version: 2.0.23.qualifier
+Bundle-Release-Date: 20250922
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.bundle.ModelActivator
 Export-Package: org.jkiss.dbeaver,
@@ -17,8 +17,10 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.auth,
  org.jkiss.dbeaver.model.auth.impl,
  org.jkiss.dbeaver.model.connection,
+ org.jkiss.dbeaver.model.cli,
  org.jkiss.dbeaver.model.data,
  org.jkiss.dbeaver.model.data.aggregate,
+ org.jkiss.dbeaver.model.data.hints,
  org.jkiss.dbeaver.model.data.json,
  org.jkiss.dbeaver.model.data.storage,
  org.jkiss.dbeaver.model.dpi,
@@ -31,6 +33,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.exec.trace,
  org.jkiss.dbeaver.model.fs,
  org.jkiss.dbeaver.model.fs.event,
+ org.jkiss.dbeaver.model.fs.lock,
  org.jkiss.dbeaver.model.impl,
  org.jkiss.dbeaver.model.impl.admin.locks,
  org.jkiss.dbeaver.model.impl.app,
@@ -56,10 +59,12 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.navigator.meta,
  org.jkiss.dbeaver.model.net,
  org.jkiss.dbeaver.model.qm,
+ org.jkiss.dbeaver.model.qm.ai,
  org.jkiss.dbeaver.model.qm.filters,
  org.jkiss.dbeaver.model.qm.meta,
  org.jkiss.dbeaver.model.preferences,
  org.jkiss.dbeaver.model.rm,
+ org.jkiss.dbeaver.model.rpc,
  org.jkiss.dbeaver.model.runtime,
  org.jkiss.dbeaver.model.runtime.features,
  org.jkiss.dbeaver.model.runtime.load,
@@ -72,6 +77,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.struct.rdb,
  org.jkiss.dbeaver.model.task,
  org.jkiss.dbeaver.model.virtual,
+ org.jkiss.dbeaver.registry.data.hints,
  org.jkiss.dbeaver.registry.expressions,
  org.jkiss.dbeaver.registry.formatter,
  org.jkiss.dbeaver.registry.timezone,
@@ -93,7 +99,6 @@ Import-Package: org.bouncycastle.asn1,
  org.bouncycastle.operator,
  org.bouncycastle.operator.jcajce,
  org.bouncycastle.util.io.pem
-Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security;visibility:=reexport,
  org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.core.expressions,

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,13 @@ import org.apache.commons.cli.CommandLine;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.cli.CommandLineContext;
+import org.jkiss.dbeaver.model.cli.ICommandLineParameterHandler;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.ui.app.standalone.CommandLineParameterHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
@@ -42,7 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class DataBaseInfoHandler implements CommandLineParameterHandler {
+public class DataBaseInfoHandler implements ICommandLineParameterHandler {
     private static final String OUTPUT_DATABASES_JSON = "database.drivers.json"; //$NON-NLS-1$
     private static final String PRODUCT_ID_LABEL = "id"; //$NON-NLS-1$
     private static final String PRODUCT_NAME_LABEL = "name"; //$NON-NLS-1$
@@ -62,7 +63,12 @@ public class DataBaseInfoHandler implements CommandLineParameterHandler {
         .create();
 
     @Override
-    public void handleParameter(CommandLine commandLine, String name, String directory) {
+    public void handleParameter(
+        @NotNull CommandLine commandLine,
+        @NotNull String name,
+        String directory,
+        @NotNull CommandLineContext context
+    ) {
         Path path = Path.of(directory);
         if (!path.toFile().exists()) {
             log.error("Directory by path '" + directory + "' does not exists"); //$NON-NLS-1$

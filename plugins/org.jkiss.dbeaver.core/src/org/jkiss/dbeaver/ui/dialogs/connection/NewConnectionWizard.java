@@ -224,8 +224,12 @@ public class NewConnectionWizard extends ConnectionWizard
         if (dataSourceNew == null) {
             ConnectionPageSettings pageSettings = getPageSettings();
             DataSourceDescriptor dataSourceTpl = pageSettings == null ? getActiveDataSource() : pageSettings.getActiveDataSource();
-            dataSourceNew = new DataSourceDescriptor(
-                dataSourceRegistry, dataSourceTpl.getId(), driver, dataSourceTpl.getConnectionConfiguration());
+            dataSourceNew = dataSourceRegistry.createDataSource(
+                dataSourceTpl.getId(),
+                driver,
+                dataSourceTpl.getConnectionConfiguration()
+            );
+
             dataSourceNew.copyFrom(dataSourceTpl);
             saveSettings(dataSourceNew);
 

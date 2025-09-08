@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSServerStateEvent extends WSAbstractEvent {
+    private static final String ID = "cb_server_state_updated";
     @NotNull
     private final String action;
 
@@ -28,7 +30,7 @@ public class WSServerStateEvent extends WSAbstractEvent {
         @Nullable String userId,
         @NotNull String action
     ) {
-        super(WSEventType.SERVER_STATE, sessionId, userId);
+        super(ID, WSConstants.TOPIC_SERVER_STATE, sessionId, userId);
         this.action = action;
     }
 

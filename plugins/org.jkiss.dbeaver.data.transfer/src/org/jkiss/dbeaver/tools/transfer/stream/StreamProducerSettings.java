@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,10 +130,14 @@ public class StreamProducerSettings implements IDataTransferSettings {
         @NotNull DataTransferSettings dataTransferSettings
     ) {
         try {
+            var processor = dataTransferSettings.getProcessor();
+            if (processor == null) {
+                throw new DBException("Processor haven't chosen for data import/export (e.g., XML, CSV, etc.).");
+            }
             updateProducerSettingsFromStream(
                 monitor,
                 producer,
-                dataTransferSettings.getProcessor().getInstance(),
+                processor.getInstance(),
                 dataTransferSettings.getProcessorProperties()
             );
         } catch (DBException e) {

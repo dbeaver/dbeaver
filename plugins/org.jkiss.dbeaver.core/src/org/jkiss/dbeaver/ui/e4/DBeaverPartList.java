@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,16 +88,27 @@ public class DBeaverPartList extends BasicPartList {
         }
     }
 
+    @Nullable
+    private String getPattern() {
+        final SearchPattern matcher = getMatcher();
+        if (matcher == null) {
+            return null;
+        }
+        // A newer version of Eclipse introduced a change so the pattern is regex-like now.
+        // Judging by the code, it just adds leading and trailing asterisks, so remove them.
+        return matcher.getPattern().replaceAll("^\\*|\\*$", "");
+    }
+
     private class NamePatternFilter extends ViewerFilter {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            final SearchPattern matcher = getMatcher();
-            if (matcher == null) {
+            String pattern = getPattern();
+            if (pattern == null) {
                 return true;
             }
             final ILabelProvider provider = (ILabelProvider) ((ContentViewer) viewer).getLabelProvider();
             final String name = provider.getText(element);
-            return SearchCellLabelProvider.matches(matcher.getPattern(), name);
+            return SearchCellLabelProvider.matches(pattern, name);
         }
     }
 
@@ -113,12 +124,7 @@ public class DBeaverPartList extends BasicPartList {
         @Nullable
         @Override
         public String getPattern() {
-            final SearchPattern matcher = getMatcher();
-            if (matcher != null) {
-                return matcher.getPattern();
-            } else {
-                return null;
-            }
+            return DBeaverPartList.this.getPattern();
         }
 
         @NotNull

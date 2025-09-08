@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +42,6 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Locale;
 
@@ -154,11 +152,7 @@ public class DataExporterJSON extends StreamExporterAbstract implements IDocumen
     }
 
     private void writeDocument(DBCSession session, DBDDocument document) throws DBException, IOException {
-        document.serializeDocument(
-            session.getProgressMonitor(),
-            getOutputStream(),
-            StandardCharsets.UTF_8
-        );
+        document.serializeDocument(session.getProgressMonitor(), getWriter());
     }
 
     @Override

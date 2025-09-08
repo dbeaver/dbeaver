@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.model.app;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.cli.ApplicationInstanceController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 import java.nio.file.Path;
+import java.util.Map;
 
 /**
  * DB application.
@@ -64,6 +66,9 @@ public interface DBPApplication {
     boolean isDistributed();
 
     boolean isDetachedProcess();
+
+    @NotNull
+    Map<String, String> getAdditionalApplicationProperties();
 
     /**
      * Application information details.
@@ -146,13 +151,25 @@ public interface DBPApplication {
         return false;
     }
 
-
     /**
      * Returns last user activity time
      * @return -1 by default
      */
     default long getLastUserActivityTime() {
         return -1;
+    }
+
+    @Nullable
+    default String defaultDistributedDriversFolderName() {
+        return null;
+    }
+
+    /**
+     * @return internal cli server
+     */
+    @Nullable
+    default ApplicationInstanceController getInstanceServer() {
+        return null;
     }
 
 }

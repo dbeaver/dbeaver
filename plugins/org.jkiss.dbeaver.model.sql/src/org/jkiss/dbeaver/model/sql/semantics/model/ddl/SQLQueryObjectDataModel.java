@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -41,19 +46,26 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
 
     private static final Log log = Log.getLog(SQLQueryObjectDataModel.class);
     @NotNull
-    private final SQLQueryQualifiedName name;
+    private final SQLQueryComplexName name;
     @NotNull
     private DBSObjectType objectType;
+    @NotNull
+    private Set<DBSObjectType> objectContainerTypes;
     @Nullable
     private DBSObject object = null;
 
+    private SQLQuerySymbolOrigin objectNameOrigin = null;
+
     public SQLQueryObjectDataModel(
         @NotNull STMTreeNode syntaxNode,
-        @NotNull SQLQueryQualifiedName name,
-        @NotNull DBSObjectType objectType) {
+        @NotNull SQLQueryComplexName name,
+        @NotNull DBSObjectType objectTypes,
+        @NotNull Set<DBSObjectType> objectContainerTypes
+    ) {
         super(syntaxNode);
         this.name = name;
-        this.objectType = objectType;
+        this.objectType = objectTypes;
+        this.objectContainerTypes = objectContainerTypes;
     }
 
     @NotNull
@@ -62,7 +74,7 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
     }
 
     @NotNull
-    public SQLQueryQualifiedName getName() {
+    public SQLQueryComplexName getName() {
         return this.name;
     }
 
@@ -71,26 +83,70 @@ public class SQLQueryObjectDataModel extends SQLQueryRowsSourceModel implements 
         return object;
     }
 
-    @NotNull
-    @Override
-    public SQLQuerySymbolClass getSymbolClass() {
-        return this.object != null ? SQLQuerySymbolClass.TABLE : SQLQuerySymbolClass.ERROR;
+    @Nullable
+    public SQLQuerySymbolOrigin getObjectNameOrigin() {
+        return this.objectNameOrigin;
     }
 
     @NotNull
     @Override
-    protected SQLQueryDataContext propagateContextImpl(@NotNull SQLQueryDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        if (this.name.isNotClassified()) {
-            List<String> nameStrings = this.name.toListOfStrings();
-            this.object = context.findRealObject(statistics.getMonitor(), objectType, nameStrings);
+    public SQLQuerySymbolClass getSymbolClass() {
+        return this.object instanceof DBSTable || this.object instanceof DBSView
+            ? SQLQuerySymbolClass.TABLE
+            : this.object != null ? SQLQuerySymbolClass.OBJECT : SQLQuerySymbolClass.ERROR;
+    }
 
-            if (this.object != null) {
-                this.name.setDefinition(object);
-            } else {
-                statistics.appendError(getSyntaxNode(), "Object " + this.name.toIdentifierString() + " not found in the database");
+    @Override
+    protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        Set<DBSObjectType> scopeMemberTypes = new HashSet<>();
+        scopeMemberTypes.addAll(this.objectContainerTypes);
+        scopeMemberTypes.add(this.objectType);
+        this.objectNameOrigin = new SQLQuerySymbolOrigin.DbObjectRef(context, scopeMemberTypes, false);
+
+        List<? extends DBSObject> candidates = context.getConnectionInfo().findRealObjects(statistics.getMonitor(), objectType, this.name.stringParts);
+        if (candidates.isEmpty()) {
+            SQLQuerySemanticUtils.performPartialResolution(
+                context,
+                statistics,
+                this.name,
+                this.objectNameOrigin,
+                SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT,
+                SQLQuerySymbolClass.ERROR
+            );
+            statistics.appendError(this.getSyntaxNode(), "Object " + this.name.getNameString() + " not found in the database");
+            return context.resetAsUnresolved();
+        } else if (candidates.size() > 1) {
+            statistics.appendError(this.name.syntaxNode, "Object name " + this.name.getNameString() + " is ambiguous");
+            this.name.parts.forEach(p -> p.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR));
+            return context.resetAsUnresolved();
+        } else {
+            this.object = candidates.getFirst();
+            SQLQuerySemanticUtils.setNamePartsDefinition(
+                context,
+                this.name,
+                this.object,
+                this.objectNameOrigin,
+                SQLQuerySymbolOrigin.DbObjectFilterMode.OBJECT
+            );
+            if (!this.objectType.getTypeClass().isAssignableFrom(this.object.getClass())) {
+                statistics.appendError(
+                    this.getSyntaxNode(),
+                    SQLQuerySemanticUtils.getObjectTypeName(this.object) + " found while expecting " + this.objectType.getTypeName()
+                );
             }
+            return context.reset();
         }
-        return context;
+    }
+
+    @Override
+    protected SQLQueryRowsDataContext resolveRowDataImpl(
+        @NotNull SQLQueryRowsDataContext context,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        return this.getRowsSources().makeEmptyTuple();
     }
 
     @Override

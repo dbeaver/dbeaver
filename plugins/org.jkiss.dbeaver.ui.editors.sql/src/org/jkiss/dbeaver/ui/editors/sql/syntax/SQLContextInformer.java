@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,8 +112,10 @@ public class SQLContextInformer
         return !CommonUtils.isEmpty(objectReferences);
     }
 
-    public void searchInformation(IRegion region)
-    {
+    public void searchInformation(@Nullable IRegion region) {
+        this.objectReferences = Collections.emptyList();
+        this.keywords = new String[0];
+
         ITextViewer textViewer = editor.getTextViewer();
         final DBCExecutionContext executionContext = editor.getExecutionContext();
         if (region == null || textViewer == null || executionContext == null) {
@@ -128,7 +130,7 @@ public class SQLContextInformer
         SQLWordPartDetector wordDetector = new SQLWordPartDetector(document, syntaxManager, region.getOffset());
         wordRegion = wordDetector.extractIdentifier(document, region, editor.getRuleManager());
 
-        if (wordRegion.word.length() == 0) {
+        if (wordRegion.word.isEmpty()) {
             return;
         }
 
@@ -193,7 +195,7 @@ public class SQLContextInformer
             tlc = new ObjectLookupCache();
             contextCache.put(fullName, tlc);
 
-            DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, editor.getDataSource());
+            DBSStructureAssistant<?> structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, editor.getDataSource());
             TablesFinderJob job = new TablesFinderJob(executionContext, structureAssistant, containerNames, tableName, caseSensitive, tlc);
             job.schedule();
         }
@@ -236,7 +238,7 @@ public class SQLContextInformer
                 // Register disconnect listener
                 DBPEventListener dbpEventListener = new DBPEventListener() {
                     @Override
-                    public void handleDataSourceEvent(DBPEvent event) {
+                    public void handleDataSourceEvent(@NotNull DBPEvent event) {
                         if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && Boolean.FALSE.equals(event.getEnabled())) {
                             synchronized (LINKS_CACHE) {
                                 LINKS_CACHE.remove(container.getId());
@@ -296,7 +298,6 @@ public class SQLContextInformer
             return Status.OK_STATUS;
         }
 
-        @Nullable
         private boolean findTables(DBRProgressMonitor monitor) throws DBException {
             monitor.beginTask("Read metadata information", 1);
             cache.references = new ArrayList<>();

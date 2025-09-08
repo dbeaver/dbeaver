@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -73,6 +76,8 @@ public abstract class JDBCAttribute extends AbstractAttribute implements DBSObje
 
     protected static DBPImage getOverlayImage(DBPImage columnImage, JDBCColumnKeyType keyType)
     {
+        return columnImage;
+/*
         if (keyType == null || !(keyType.isInUniqueKey() || keyType.isInReferenceKey())) {
             return columnImage;
         }
@@ -86,6 +91,7 @@ public abstract class JDBCAttribute extends AbstractAttribute implements DBSObje
             return columnImage;
         }
         return new DBIconComposite(columnImage, false, null, null, null, overImage);
+*/
     }
 
 }

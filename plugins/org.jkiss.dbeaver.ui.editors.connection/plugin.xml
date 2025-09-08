@@ -26,7 +26,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/driver_manager.png"/>
+        <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/driver_manager.svg"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">

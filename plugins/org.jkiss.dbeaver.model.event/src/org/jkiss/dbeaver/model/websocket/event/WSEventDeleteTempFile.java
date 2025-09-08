@@ -17,12 +17,13 @@
 package org.jkiss.dbeaver.model.websocket.event;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 
 public class WSEventDeleteTempFile extends WSAbstractEvent {
     private final String sessionId;
 
     public WSEventDeleteTempFile(String sessionId) {
-        super(WSEventType.TEMP_FOLDER_DELETED);
+        super("cb_temp_folder_deleted", WSConstants.TOPIC_DELETE_TEMP_FOLDER);
         this.sessionId = sessionId;
     }
 

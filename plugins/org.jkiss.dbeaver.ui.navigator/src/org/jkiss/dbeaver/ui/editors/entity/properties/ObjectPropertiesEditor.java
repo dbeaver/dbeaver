@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,6 @@ import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.editors.*;
 import org.jkiss.dbeaver.ui.editors.entity.*;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -114,6 +113,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             @Override
             public void fillCustomActions(IContributionManager contributionManager) {
                 super.fillCustomActions(contributionManager);
+
                 if (propertiesPanel != null && folderComposite == null) {
                     // We have object editor and no folders - contribute default actions
                     DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
@@ -121,10 +121,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 createPropertyRefreshAction(contributionManager);
             }
         };
-        CSSUtils.setCSSClass(pageControl, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(pageControl);
         pageControl.setShowDivider(true);
 
-        mainComposite = new Composite(pageControl, SWT.NONE);
+        mainComposite = new ConComposite(pageControl, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.verticalSpacing = 5;
         gl.horizontalSpacing = 0;
@@ -185,13 +185,14 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private void createPropertiesPanel(Composite container) {
         // Main panel
-        propsPlaceholder = new Composite(container, SWT.NONE);
+        propsPlaceholder = new ConComposite(container);
         propsPlaceholder.setLayout(new FillLayout());
     }
 
     private Composite createFoldersPanel(Composite parent, TabbedFolderInfo[] folders) {
         // Properties
-        Composite foldersPlaceholder = UIUtils.createPlaceholder(parent, 1, 0);
+        ConComposite foldersPlaceholder = new ConComposite(parent);
+        foldersPlaceholder.setGridLayout(1);
         foldersPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         boolean single = folders.length < 4;
@@ -268,7 +269,18 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
             }
         });
-        
+
+        boolean validFolder = false;
+        for (TabbedFolderInfo folder : folders) {
+            if (folder.getId().equals(curFolderId)) {
+                validFolder = true;
+                break;
+            }
+        }
+        if (!validFolder && folders.length > 0) {
+            curFolderId = folders[0].getId();
+        }
+
         UIUtils.syncExec(() -> folderComposite.switchFolder(curFolderId));
         
         return foldersPlaceholder;
@@ -516,20 +528,29 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Override
     public RefreshResult refreshPart(Object source, boolean force) {
-        if (propertiesPanel != null) {
-            if (propertiesPanel.refreshPart(source, force) == RefreshResult.CANCELED) {
-                return RefreshResult.CANCELED;
-            }
-        }
-        if (folderComposite != null && folderComposite.getFolders() != null) {
-            for (TabbedFolderInfo folder : folderComposite.getFolders()) {
-                if (folder.getContents() instanceof IRefreshablePart) {
-                    if (((IRefreshablePart) folder.getContents()).refreshPart(source, force) == RefreshResult.CANCELED) {
-                        return RefreshResult.CANCELED;
+
+        Runnable afterRefresh = () -> {
+            if (folderComposite != null && folderComposite.getFolders() != null) {
+                for (TabbedFolderInfo folder : folderComposite.getFolders()) {
+                    if (folder.getContents() instanceof IRefreshablePart) {
+                        ((IRefreshablePart) folder.getContents()).refreshPart(source, force);
                     }
                 }
             }
+        };
+
+        if (propertiesPanel != null) {
+            RefreshResult result = propertiesPanel.refreshPart(force, afterRefresh);
+            if (result == RefreshResult.CANCELED) {
+                return RefreshResult.CANCELED;
+            } else if (result == RefreshResult.IGNORED) {
+                UIUtils.asyncExec(afterRefresh);
+            }
+        } else {
+            // we still have to refresh folders in that way
+            UIUtils.asyncExec(afterRefresh);
         }
+
         return RefreshResult.REFRESHED;
     }
 
@@ -607,7 +628,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             if (!extraCategories.isEmpty()) {
                 tabList.add(new TabbedFolderInfo(
                     PropertiesContributor.TAB_PROPERTIES,
-                    extraCategories.get(0) + (extraCategories.size() == 1 ? "" :" / ... "),
+                    extraCategories.getFirst() + (extraCategories.size() == 1 ? "" :" / ... "),
                     DBIcon.TREE_INFO,
                     String.join(", ", extraCategories),
                     false,
@@ -636,7 +657,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     {
         monitor.beginTask("Collect tabs", 1);
         // Add all nested folders as tabs
-        if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
+        if (node instanceof DBNDataSource ds && !ds.getDataSourceContainer().isConnected()) {
             // Do not add children tabs
         } else if (node != null) {
             try {

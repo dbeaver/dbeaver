@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
 
     public SQLServerConnectionPage() {
         LOGO_AZURE = createImage("icons/azure_logo.png");
-        LOGO_BABELFISH = createImage("icons/bbfsh_logo.png");
+        LOGO_BABELFISH = createImage("icons/babelfish_logo.png");
         LOGO_SQLSERVER = createImage("icons/mssql_logo.png");
         LOGO_SYBASE = createImage("icons/sybase_logo.png");
     }
@@ -131,14 +131,14 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             hostLabel = new Label(addrGroup, SWT.NONE);
             hostLabel.setText(SQLServerUIMessages.dialog_connection_host_label);
             hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            addControlToGroup(GROUP_CONNECTION, hostLabel);
 
             hostText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             hostText.setLayoutData(gd);
+            UIUtils.setDefaultTextControlWidthHint(hostText);
             hostText.addModifyListener(textListener);
-            addControlToGroup(GROUP_CONNECTION, hostText);
+            addControlToGroup(GROUP_CONNECTION, hostLabel, hostText);
 
             if (isDriverAzure || !needsPort) {
                 // no port number for Azure
@@ -147,14 +147,13 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
                 portLabel = new Label(addrGroup, SWT.NONE);
                 portLabel.setText(SQLServerUIMessages.dialog_connection_port_label);
                 portLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-                addControlToGroup(GROUP_CONNECTION, portLabel);
 
                 portText = new Text(addrGroup, SWT.BORDER);
                 gd = new GridData(GridData.CENTER);
                 gd.widthHint = UIUtils.getFontHeight(portText) * 7;
                 portText.setLayoutData(gd);
                 portText.addModifyListener(textListener);
-                addControlToGroup(GROUP_CONNECTION, portText);
+                addControlToGroup(GROUP_CONNECTION, portLabel, portText);
             }
         }
 
@@ -162,16 +161,15 @@ public class SQLServerConnectionPage extends ConnectionPageWithAuth implements I
             dbLabel = new Label(addrGroup, SWT.NONE);
             dbLabel.setText(SQLServerUIMessages.dialog_connection_database_schema_label);
             dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            addControlToGroup(GROUP_CONNECTION, dbLabel);
 
             dbText = new Text(addrGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
-            //gd.widthHint = 270;
             gd.horizontalSpan = 3;
             dbText.setLayoutData(gd);
+            UIUtils.setDefaultTextControlWidthHint(dbText);
             dbText.addModifyListener(textListener);
-            addControlToGroup(GROUP_CONNECTION, dbText);
+            addControlToGroup(GROUP_CONNECTION, dbLabel, dbText);
         }
 
         {

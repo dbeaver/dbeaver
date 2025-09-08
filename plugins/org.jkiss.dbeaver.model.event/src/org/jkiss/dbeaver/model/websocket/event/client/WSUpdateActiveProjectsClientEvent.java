@@ -17,9 +17,8 @@
 package org.jkiss.dbeaver.model.websocket.event.client;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 import org.jkiss.dbeaver.model.websocket.event.WSClientEvent;
-import org.jkiss.dbeaver.model.websocket.event.WSClientEventType;
-import org.jkiss.dbeaver.model.websocket.event.WSEventTopic;
 
 import java.util.Set;
 
@@ -27,11 +26,13 @@ import java.util.Set;
  * Subscribe on event topic
  */
 public class WSUpdateActiveProjectsClientEvent extends WSClientEvent {
+    public static final String ID = "cb_client_projects_active";
+
     @NotNull
     private final Set<String> projectIds;
 
     public WSUpdateActiveProjectsClientEvent(@NotNull Set<String> projectIds) {
-        super(WSClientEventType.ACTIVE_PROJECTS.getEventId(), WSEventTopic.PROJECTS.getTopicId());
+        super(ID, WSConstants.TOPIC_PROJECTS);
         this.projectIds = projectIds;
     }
 

@@ -26,7 +26,7 @@ import java.util.Map;
 public class FailedExportFileCleanerProcessorConfigurator implements IDataTransferEventProcessorConfigurator<StreamConsumerSettings> {
     @Override
     public boolean isApplicable(@NotNull StreamConsumerSettings settings) {
-        return !settings.isOutputClipboard();
+        return !settings.isOutputClipboard() && !settings.isUseSingleFile();
     }
 
     @Override

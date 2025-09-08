@@ -671,7 +671,7 @@ public class ColorSettingsDialog extends BaseDialog {
     protected void okPressed() {
         vEntitySrc.copyFrom(vEntity, vEntity.getModel());
         vEntitySrc.persistConfiguration();
-        resultSetViewer.getModel().updateColorMapping(true);
+        resultSetViewer.getModel().updateColorMapping(vEntitySrc, true);
 
         super.okPressed();
     }

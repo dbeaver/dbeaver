@@ -98,7 +98,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
             if (SocksConstants.PROTOCOL_SOCKS5.equals(requestingProtocol) || SocksConstants.PROTOCOL_SOCKS4.equals(requestingProtocol)) {
                 DBPDataSourceContainer activeContext = DBExecUtils.findConnectionContext(getRequestingHost(), getRequestingPort(), getRequestingScheme());
                 if (activeContext != null) {
-                    for (DBWHandlerConfiguration networkHandler : activeContext.getConnectionConfiguration().getHandlers()) {
+                    for (DBWHandlerConfiguration networkHandler : activeContext.getActualConnectionConfiguration().getHandlers()) {
                         if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
                             String userName = networkHandler.getUserName();
                             String userPassword = networkHandler.getPassword();
@@ -142,7 +142,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
     }
 
     private DBPAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword) {
-        return DBWorkbench.getPlatformUI().promptUserCredentials(prompt, userName, userPassword, false, true);
+        return DBWorkbench.getPlatformUI().promptUserCredentials(prompt, null, userName, userPassword, false, true);
     }
 
     @Nullable
@@ -183,6 +183,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
             if (CommonUtils.isNotEmpty(password)) {
                 secrets.setPrivateSecretValue(ModelPreferences.UI_PROXY_PASSWORD, password);
             }
+            secrets.flushChanges();
         }
     }
 

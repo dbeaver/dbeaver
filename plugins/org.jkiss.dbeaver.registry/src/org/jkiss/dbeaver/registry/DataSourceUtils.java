@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -343,7 +343,7 @@ public class DataSourceUtils {
 
         DBPDataSourceContainer newDS = dsRegistry.createDataSource(driver, connConfig);
         newDS.setName(dsName);
-        ((DataSourceDescriptor)newDS).setTemporary(isTemporary);
+        newDS.setTemporary(isTemporary);
         if (savePassword) {
             newDS.setSavePassword(true);
         }
@@ -380,7 +380,7 @@ public class DataSourceUtils {
         }
         DBPConnectionConfiguration cfg = dataSourceContainer.getConnectionConfiguration();
         if (cfg.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
-            String hostText = DBWUtils.getTargetTunnelHostName(cfg);
+            String hostText = DBWUtils.getTargetTunnelHostName(dataSourceContainer, cfg);
             String hostPort = cfg.getHostPort();
             if (!CommonUtils.isEmpty(hostPort)) {
                 return hostText + ":" + hostPort;

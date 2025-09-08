@@ -189,9 +189,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         return allowsChildren();
     }
 
-    /**
-     * @param monitor progress monitor. If null then only cached children may be returned.
-     */
     public abstract DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     void clearNode(boolean reflect) {
@@ -331,7 +328,9 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
             } else if (!isFolder1 && isFolder2) {
                 return 1;
             }
-            return o1.getNodeDisplayName().compareToIgnoreCase(o2.getNodeDisplayName());
+            String odn1 = o1.getNodeDisplayName();
+            String odn2 = o2.getNodeDisplayName();
+            return odn1 == null || odn2 == null ? 0 : odn1.compareToIgnoreCase(odn2);
         });
     }
 

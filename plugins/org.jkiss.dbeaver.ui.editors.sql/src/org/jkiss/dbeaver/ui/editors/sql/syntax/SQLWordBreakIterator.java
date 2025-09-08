@@ -150,8 +150,6 @@ public class SQLWordBreakIterator extends BreakIterator {
     }
 
     private Run consumeRun(int offset) {
-        // assert offset < length
-
         char ch = text.charAt(offset);
         int length = text.length();
         Run run = getRun(ch);

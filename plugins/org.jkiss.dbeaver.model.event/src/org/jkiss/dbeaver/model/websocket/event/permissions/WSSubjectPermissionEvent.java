@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.model.websocket.event.permissions;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.security.SMSubjectType;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 import org.jkiss.dbeaver.model.websocket.event.WSAbstractEvent;
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
 
 public class WSSubjectPermissionEvent extends WSAbstractEvent {
 
@@ -28,13 +28,12 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
     private final String subjectId;
 
     protected WSSubjectPermissionEvent(
-        @NotNull WSEventType eventType,
         @NotNull SMSubjectType subjectType,
         @NotNull String subjectId,
         @Nullable String sessionId,
         @Nullable String userId
     ) {
-        super(eventType, sessionId, userId);
+        super("cb_subject_permissions_updated", WSConstants.TOPIC_SUBJECT_PERMISSIONS, sessionId, userId);
         this.subjectType = subjectType;
         this.subjectId = subjectId;
     }
@@ -46,7 +45,6 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
         @NotNull String subjectId
     ) {
         return new WSSubjectPermissionEvent(
-            WSEventType.SUBJECT_PERMISSIONS_UPDATED,
             subjectType,
             subjectId,
             sessionId,
@@ -54,6 +52,7 @@ public class WSSubjectPermissionEvent extends WSAbstractEvent {
         );
     }
 
+    @NotNull
     public String getSubjectId() {
         return subjectId;
     }

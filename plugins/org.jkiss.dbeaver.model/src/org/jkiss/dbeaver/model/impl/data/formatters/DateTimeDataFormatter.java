@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     private StringBuffer buffer;
     private FieldPosition position;
     private DateTimeFormatter dateTimeFormatter;
+    private boolean hasZone;
 
     @Override
     public void init(DBSTypedObject type, Locale locale, Map<String, Object> properties)
@@ -66,6 +67,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
         // DateTimeFormatter pattern for nanoseconds is "n" but old "f" (ExtendedDateFormat)
         String java8DatePattern = pattern.replaceAll("f+", "n");
         dateTimeFormatter = DateTimeFormatter.ofPattern(java8DatePattern);
+        hasZone = java8DatePattern.contains("Z");
     }
 
     @Nullable
@@ -129,7 +131,15 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
                 }
             }
         }
-        return dateFormat.parse(value);
+        try {
+            if (hasZone) {
+                return OffsetDateTime.parse(value, dateTimeFormatter);
+            } else {
+                return LocalDateTime.parse(value, dateTimeFormatter);
+            }
+        } catch (Exception e) {
+            return dateFormat.parse(value);
+        }
     }
 
 }

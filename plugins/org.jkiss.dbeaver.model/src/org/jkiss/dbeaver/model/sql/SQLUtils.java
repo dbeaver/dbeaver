@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,15 @@ public final class SQLUtils {
 //        }
     }
 
+    public static boolean isCommentLine(SQLDialect dialect, String line) {
+        for (String slc : dialect.getSingleLineComments()) {
+            if (line.startsWith(slc)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static String stripComments(@NotNull SQLDialect dialect, @NotNull String query)
     {
         Pair<String, String> multiLineComments = dialect.getMultiLineComments();
@@ -80,46 +89,89 @@ public final class SQLUtils {
             dialect.getSingleLineComments());
     }
 
-    public static boolean isCommentLine(SQLDialect dialect, String line) {
-        for (String slc : dialect.getSingleLineComments()) {
-            if (line.startsWith(slc)) {
-                return true;
-            }
+    @NotNull
+    public static String[] extractComments(@NotNull SQLDialect dialect, @NotNull String query) {
+        if (query.isEmpty()) {
+            return new String[0];
         }
-        return false;
+
+        SQLCommentScanner scanner = new SQLCommentScanner(
+            dialect.getMultiLineComments(),
+            dialect.getSingleLineComments(),
+            query
+        );
+
+        List<String> comments = new ArrayList<>();
+        while (scanner.hasNext()) {
+            comments.add(scanner.next());
+        }
+        return comments.toArray(new String[0]);
     }
 
-    public static String stripComments(@NotNull String query, @Nullable String mlCommentStart, @Nullable String mlCommentEnd, String[] slComments)
-    {
-        String leading = "", trailing = "";
-        {
-            int startPos, endPos;
-            for (startPos = 0; startPos < query.length(); startPos++) {
-                if (!Character.isWhitespace(query.charAt(startPos))) {
-                    break;
-                }
+
+    /**
+     * Removes both multi-line and single-line comments from an SQL query
+     */
+    public static String stripComments(
+        @NotNull String query,
+        @Nullable String mlCommentStart,
+        @Nullable String mlCommentEnd,
+        String[] slComments
+    ) {
+        int startPos;
+        int endPos;
+        for (startPos = 0; startPos < query.length(); startPos++) {
+            if (!Character.isWhitespace(query.charAt(startPos))) {
+                break;
             }
-            for (endPos = query.length() - 1; endPos > startPos; endPos--) {
-                if (!Character.isWhitespace(query.charAt(endPos))) {
-                    break;
-                }
+        }
+        for (endPos = query.length() - 1; endPos > startPos; endPos--) {
+            if (!Character.isWhitespace(query.charAt(endPos))) {
+                break;
             }
-            if (startPos > 0) {
-                leading = query.substring(0, startPos);
-            }
-            if (endPos < query.length() - 1) {
-                trailing = query.substring(endPos + 1);
-            }
+        }
+
+        String leading = "";
+        String trailing = "";
+        if (startPos > 0) {
+            leading = query.substring(0, startPos);
+        }
+        if (endPos < query.length() - 1) {
+            trailing = query.substring(endPos + 1);
         }
         query = query.trim();
-        if (mlCommentStart != null && mlCommentEnd != null && query.startsWith(mlCommentStart)) {
-            int endPos = query.indexOf(mlCommentEnd);
-            if (endPos != -1) {
-                query = query.substring(endPos + mlCommentEnd.length());
+        query = removeMlComments(query, mlCommentStart, mlCommentEnd);
+        query = removeSlComments(query, slComments);
+        if ((mlCommentStart != null && query.startsWith(mlCommentStart))) { //for remove if there's comments after comments
+            query = stripComments(query, mlCommentStart, mlCommentEnd, slComments);
+        }
+        return leading + query + trailing;
+    }
+
+    private static String removeMlComments(
+        @NotNull String query,
+        @Nullable String mlCommentStart,
+        @Nullable String mlCommentEnd
+    ) {
+        if (mlCommentStart != null && mlCommentEnd != null) {
+            int startPos = query.indexOf(mlCommentStart);
+            while (startPos != -1) {
+                int endPos = query.indexOf(mlCommentEnd, startPos + mlCommentStart.length());
+                if (endPos != -1) { //remove multiline comment
+                    query = query.substring(0, startPos) + query.substring(endPos + mlCommentEnd.length());
+                } else { //non closed comment
+                    query = query.substring(0, startPos); // to prevent infinity recursion
+                    break;
+                }
+                startPos = query.indexOf(mlCommentStart);
             }
         }
-        for (int i = 0; i < slComments.length; i++) {
-            while (query.startsWith(slComments[i])) {
+        return query;
+    }
+
+    private static String removeSlComments(@NotNull String query, String[] slComments) {
+        for (String slComment : slComments) {
+            while (query.startsWith(slComment)) {
                 int crPos = query.indexOf('\n');
                 if (crPos == -1) {
                     // Query is comment line - return empty
@@ -130,7 +182,7 @@ public final class SQLUtils {
                 }
             }
         }
-        return leading + query + trailing;
+        return query;
     }
 
     public static List<String> splitFilter(String filter)
@@ -162,12 +214,19 @@ public final class SQLUtils {
 
         for (int i = 0; i < like.length(); i++) {
             char c = like.charAt(i);
-            if (c == '*') result.append(".*");
-            else if (c == '?' || c == '_') result.append(".");
-            else if (c == '%') result.append(".*");
-            else if (Character.isLetterOrDigit(c)) result.append(c);
-            else if (c == '(' || c == ')' || c == '[' || c == ']') result.append('\\').append(c);
-            else if (c == '\\') {
+            if (c == '*') {
+                result.append(".*");
+            } else if (c == '?' || c == '_') {
+                result.append(".");
+            } else if (c == '%') {
+                result.append(".*");
+            } else if (Character.isLetterOrDigit(c)) {
+                result.append(c);
+            } else if (c == '(' || c == ')' || c == '[' || c == ']') {
+                result.append('\\').append(c);
+            } else if (c == '+' || c == '^' || c == '$' || c == '.' || c == '|' || c == '{' || c == '}') {
+                result.append('\\').append(c);
+            } else if (c == '\\') {
                 if (i < like.length() - 1) {
                     char nc = like.charAt(i + 1);
                     if (nc == '_' || nc == '*' || nc == '?' || nc == '.' || nc == '%') {
@@ -177,8 +236,7 @@ public final class SQLUtils {
                         result.append("\\");
                     }
                 }
-            }
-            else {
+            } else {
                 result.append(c);
             }
         }
@@ -468,8 +526,8 @@ public final class SQLUtils {
         @NotNull DBPDataSource dataSource,
         @Nullable String conditionTable,
         @NotNull StringBuilder query,
-        boolean inlineCriteria)
-    {
+        boolean inlineCriteria
+    ) throws DBException {
         appendConditionString(filter, dataSource, conditionTable, query, inlineCriteria, false);
     }
 
@@ -480,9 +538,15 @@ public final class SQLUtils {
         @NotNull StringBuilder query,
         boolean inlineCriteria,
         boolean subQuery
-    ) {
-        dataSource.getSQLDialect().getQueryGenerator().appendConditionString(filter, dataSource, conditionTable, query, inlineCriteria,
-            subQuery);
+    ) throws DBException {
+        dataSource.getSQLDialect().getQueryGenerator().appendConditionString(
+            filter,
+            dataSource,
+            conditionTable,
+            query,
+            inlineCriteria,
+            subQuery
+        );
     }
 
     public static void appendConditionString(
@@ -492,9 +556,17 @@ public final class SQLUtils {
         @Nullable String conditionTable,
         @NotNull StringBuilder query,
         boolean inlineCriteria,
-        boolean subQuery) {
-        dataSource.getSQLDialect().getQueryGenerator().appendConditionString(filter, constraints, dataSource,
-            conditionTable, query, inlineCriteria, subQuery);
+        boolean subQuery
+    ) throws DBException {
+        dataSource.getSQLDialect().getQueryGenerator().appendConditionString(
+            filter,
+            constraints,
+            dataSource,
+            conditionTable,
+            query,
+            inlineCriteria,
+            subQuery
+        );
     }
 
     public static void appendOrderString(
@@ -629,7 +701,7 @@ public final class SQLUtils {
         return dataSource.getSQLDialect().getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
-    public static String getScriptDescripion(@NotNull String sql) {
+    public static String getScriptDescription(@NotNull String sql) {
         sql = stripComments(BasicSQLDialect.INSTANCE, sql);
         Matcher matcher = CREATE_PREFIX_PATTERN.matcher(sql);
         if (matcher.find() && matcher.start(0) == 0) {
@@ -648,15 +720,17 @@ public final class SQLUtils {
             return name;
         }
 
+        SQLDialect dialect = entity.getParentObject().getDataSource().getSQLDialect();
         StringBuilder buf = new StringBuilder();
         boolean prevNonLetter = true;
         char prevChar = 0;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
+            boolean isValidChar = (buf.isEmpty() && dialect.validIdentifierStart(c)) || (!buf.isEmpty() && dialect.validIdentifierPart(c, false));
             if (!Character.isLetter(c)) {
                 prevNonLetter = true;
             } else {
-                if (prevNonLetter || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c))) {
+                if (isValidChar && (prevNonLetter || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c)))) {
                     buf.append(c);
                 }
                 prevNonLetter = false;
@@ -664,10 +738,9 @@ public final class SQLUtils {
             prevChar = c;
         }
         String alias;
-        if(!CommonUtils.isEmpty(buf)) {
+        if (!CommonUtils.isEmpty(buf)) {
             alias = buf.toString().toLowerCase(Locale.ENGLISH);
-        }
-        else{
+        } else {
             alias = "t";
         }
 
@@ -962,9 +1035,7 @@ public final class SQLUtils {
 
         // In reverse order
         sql = generateTableJoinByColumns(monitor, rightTable, rightAlias, leftTable, leftAlias);
-        if (sql != null) return sql;
-
-        return null;
+        return sql;
     }
 
     private static String generateTableJoinByColumns(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
@@ -1008,11 +1079,10 @@ public final class SQLUtils {
         boolean hasCriteria = false;
         StringBuilder joinSQL = new StringBuilder();
         for (DBSEntityAttributeRef ar : fk.getAttributeReferences(monitor)) {
-            if (ar instanceof DBSTableForeignKeyColumn) {
+            if (ar instanceof DBSTableForeignKeyColumn fkc) {
                 if (hasCriteria) {
                     joinSQL.append(" AND ");
                 }
-                DBSTableForeignKeyColumn fkc = (DBSTableForeignKeyColumn)ar;
                 joinSQL
                     .append(leftAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc)).append(" = ")
                     .append(rightAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc.getReferencedColumn()));
@@ -1027,11 +1097,11 @@ public final class SQLUtils {
     }
 
     public static void appendQueryConditions(
-        DBPDataSource dataSource,
+        @NotNull DBPDataSource dataSource,
         @NotNull StringBuilder query,
         @Nullable String tableAlias,
         @Nullable DBDDataFilter dataFilter
-    ) {
+    ) throws DBException {
         dataSource.getSQLDialect().getQueryGenerator().appendQueryConditions(dataSource, query, tableAlias, dataFilter);
     }
 

@@ -18,7 +18,8 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
+
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformerExt;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -37,19 +38,25 @@ public class QueryTransformerLimitCubrid extends QueryTransformerLimit
     }
 
     public boolean isLimitApplicable(Statement statement) {
-        if (statement instanceof Select select
-                && select.getSelectBody() instanceof PlainSelect selectBody) {
-            String where = String.valueOf(selectBody.getWhere()).toUpperCase();
+        if (statement instanceof PlainSelect select) {
+            String where = String.valueOf(select.getWhere()).toUpperCase();
             if (where.contains("ROWNUM") || where.contains("INST_NUM")) {
                 return false;
             }
 
-            String having = String.valueOf(selectBody.getHaving()).toUpperCase();
+            String having = String.valueOf(select.getHaving()).toUpperCase();
             if (having.contains("GROUPBY_NUM")) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    @Override
+    public String transformQueryString(SQLQuery query) throws DBCException {
+        String sql = super.transformQueryString(query);
+        CubridDataSource dataSource = (CubridDataSource) query.getDataSource();
+        return dataSource.wrapShardQuery(sql);
     }
 }

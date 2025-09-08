@@ -56,7 +56,7 @@ public class DataSourceBindingDescriptor extends AbstractContextDescriptor {
             if (!CommonUtils.isEmpty(id) && !driver.getProviderDescriptor().matchesId(id)) {
                 return false;
             }
-            if (!CommonUtils.isEmpty(this.driver) && !this.driver.equals(driver.getId())) {
+            if (!CommonUtils.isEmpty(this.driver) && !driver.matchesId(this.driver)) {
                 return false;
             }
             if (expression != null) {

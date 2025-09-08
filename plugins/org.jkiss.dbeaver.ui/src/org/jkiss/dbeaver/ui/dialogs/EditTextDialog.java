@@ -33,20 +33,17 @@ public class EditTextDialog extends BaseDialog {
     private boolean readonly = false;
     private boolean monospaceFont;
 
-    public EditTextDialog(Shell parentShell, String title, String text)
-    {
+    public EditTextDialog(Shell parentShell, String title, String text) {
         this(parentShell, title, text, false);
     }
 
-    public EditTextDialog(Shell parentShell, String title, String text, boolean readOnly)
-    {
+    public EditTextDialog(Shell parentShell, String title, String text, boolean readOnly) {
         super(parentShell, title, null);
         this.text = text;
         this.readonly = readOnly;
     }
 
-    public void setReadonly(boolean readonly)
-    {
+    public void setReadonly(boolean readonly) {
         this.readonly = readonly;
     }
 
@@ -65,8 +62,7 @@ public class EditTextDialog extends BaseDialog {
     }
 
     @Override
-    protected Composite createDialogArea(Composite parent)
-    {
+    protected Composite createDialogArea(Composite parent) {
         Composite composite = super.createDialogArea(parent);
         createControlsBeforeText(composite);
         textControl = new Text(composite, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
@@ -96,23 +92,20 @@ public class EditTextDialog extends BaseDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
-		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-		if (!readonly) {
-			createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-		}
+    protected void createButtonsForButtonBar(Composite parent) {
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+        if (!readonly) {
+            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+        }
     }
 
     @Override
-    protected void okPressed()
-    {
+    protected void okPressed() {
         text = textControl.getText();
         super.okPressed();
     }
 
-    public static String editText(Shell parentShell, String title, String text)
-    {
+    public static String editText(Shell parentShell, String title, String text) {
         EditTextDialog dialog = new EditTextDialog(parentShell, title, text);
         if (dialog.open() == IDialogConstants.OK_ID) {
             return dialog.text;
@@ -121,8 +114,7 @@ public class EditTextDialog extends BaseDialog {
         }
     }
 
-    public static void showText(Shell parentShell, String title, String text)
-    {
+    public static void showText(Shell parentShell, String title, String text) {
         EditTextDialog dialog = new EditTextDialog(parentShell, title, text);
         dialog.setReadonly(true);
         dialog.open();

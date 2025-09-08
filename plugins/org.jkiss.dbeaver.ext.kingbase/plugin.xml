@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.postgresql.serverType">
+        <serverType id="kingbase" name="Kingbase" class="org.jkiss.dbeaver.ext.kingbase.model.PostgreServerKingbase" logo="icons/kingbase_icon.png" customURL="true" turnOffPreparedStatements="true"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.kingbase.KingbaseDataSourceProvider"
+                description="%datasource.kingbase.description"
+                id="kingbase"
+                parent="postgresql"
+                label="Kingbase"
+                icon="icons/kingbase_icon.png"
+                dialect="kingbase"
+                inheritClients="false">
+                     
+            <treeInjection path="postgresql/database/schema/procedure" remove="true"/>
+            <treeInjection path="postgresql/database/schema" after="index">
+                <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseProcedure" label="%tree.procedures.node.name"
+                        icon="#procedures" description="%tree.procedures.node.tip">
+                    <items label="%tree.procedure.node.name" itemLabel="%tree.procedure.node.name" path="procedure"
+                           property="kingbaseProcedures" icon="#procedure">
+                        <folder label="%tree.procedure_columns.node.name" icon="#columns"
+                                description="%tree.procedure_columns.node.name">
+                            <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name"
+                                   path="column" property="parameters" navigable="false"/>
+                        </folder>
+                    </items>
+                </folder>
+            </treeInjection>
+            <treeInjection path="postgresql/database/schema" after="procedure">
+                <folder type="org.jkiss.dbeaver.ext.kingbase.model.KingbaseFunction" label="%tree.functions.node.name"
+                        icon="#procedures" description="%tree.procedures.node.tip">
+                    <items label="%tree.function.node.name" itemLabel="%tree.functions.node.name" path="function"
+                           property="kingbaseFunctions" icon="#function">
+                        <folder label="%tree.function_columns.node.name" icon="#columns"
+                                description="%tree.function_columns.node.name">
+                            <items label="%tree.function_columns.node.name" itemLabel="%tree.column.node.name"
+                                   path="column" property="parameters" navigable="false"/>
+                        </folder>
+                    </items>
+                </folder>
+            </treeInjection>
+
+            <drivers managable="true">
+                <driver
+                        id="kingbase-jdbc"
+                        label="Kingbase"
+                        icon="icons/kingbase_icon.png"
+                        iconBig="icons/kingbase_icon_big.png"
+                        class="com.kingbase8.Driver"
+                        sampleURL="jdbc:kingbase8://{host}[:{port}]/[{database}]"
+                        defaultPort="54321"
+                        defaultDatabase="test"
+                        defaultUser="system"
+                        description="%driver.kingbase.description"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql"
+                        dialect="kingbase">
+                        <file type="jar" path="maven:/cn.com.kingbase:kingbase8:RELEASE[8.6.1]" bundle="!drivers.kingbase"/>
+                        <parameter name="serverType" value="kingbase"/>
+                        <property name="loginTimeout" value="20"/>
+                        <property name="connectTimeout" value="20"/>
+                        <property name="escapeSyntaxCallMode" value="callIfNoReturn"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+   
+    
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseDatabaseManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseDatabase"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseSchemaManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseSchema"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseProcedureManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseProcedure"/>
+        <manager class="org.jkiss.dbeaver.ext.kingbase.edit.KingbaseFunctionManager" objectType="org.jkiss.dbeaver.ext.kingbase.model.KingbaseFunction"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sqlDialect">
+        <dialect id="kingbase" parent="basic" class="org.jkiss.dbeaver.ext.kingbase.model.KingbaseDialect" label="Kingbase" description="Kingbase dialect." icon="icons/kingbase_icon.png">
+            <property name="insertMethods" value="pgInsertIgnore,pgReplaceIgnore"/>
+        </dialect>
+    </extension>
+
+</plugin>

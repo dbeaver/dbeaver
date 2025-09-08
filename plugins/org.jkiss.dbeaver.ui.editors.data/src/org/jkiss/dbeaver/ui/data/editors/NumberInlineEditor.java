@@ -101,7 +101,7 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
             return null;
         }
         Object curValue = valueController.getValue();
-        if (curValue instanceof String) {
+        if (curValue instanceof String || curValue instanceof Boolean) {
             return text;
         }
         Class<?> hintType = curValue instanceof Number ?
@@ -114,7 +114,7 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
                 formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, valueController.getValueType()),
                 true);
         } catch (Exception e) {
-            log.debug(e);
+            log.debug("Error parsing numeric: " + e.getMessage());
             return null;
         }
     }

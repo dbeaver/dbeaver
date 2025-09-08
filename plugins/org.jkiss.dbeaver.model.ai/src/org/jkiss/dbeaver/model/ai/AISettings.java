@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,49 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.Strictness;
+import com.google.gson.ToNumberPolicy;
+import com.google.gson.reflect.TypeToken;
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
-import java.util.*;
+import java.lang.reflect.Type;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * AI integration
+ * AI global settings.
+ * Keeps global parameters and configuration of all AI engines
  */
-public class AISettings {
-
-    private static final Log log = Log.getLog(AISettings.class);
-
-
+public class AISettings implements IAdaptable {
     private boolean aiDisabled;
     private String activeEngine;
+    private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
+    private final Set<String> resolvedSecrets = new HashSet<>();
 
-    private final Map<String, AIEngineSettings> engineConfigurations = new LinkedHashMap<>();
+    private static final Gson GSON = new GsonBuilder()
+        .setStrictness(Strictness.LENIENT)
+        .setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
+        .create();
 
+    public static AIEngineProperties updatePropertiesFromMap(AIEngineProperties configuration, Map<String, Object> properties) {
+        Type type = new TypeToken<Map<String, Object>>() {
+        }.getType();
 
-    public AISettings() {
+        Map<String, Object> propMap = GSON.fromJson(GSON.toJson(properties), type);
+        Map<String, Object> mergedMap = new LinkedHashMap<>(propMap);
+        mergedMap.putAll(properties);
+
+        return GSON.fromJson(GSON.toJsonTree(mergedMap), configuration.getClass());
     }
 
     public boolean isAiDisabled() {
@@ -49,45 +69,77 @@ public class AISettings {
         this.aiDisabled = aiDisabled;
     }
 
-    @Property
-    public String getActiveEngine() {
+    public String activeEngine() {
         return activeEngine;
     }
 
     public void setActiveEngine(String activeEngine) {
+        AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(activeEngine);
+        if (engineDescriptor != null) {
+            // Replacement?
+            activeEngine = engineDescriptor.getId();
+        }
         this.activeEngine = activeEngine;
     }
 
+    public boolean hasConfiguration(String engineId) {
+        return engineConfigurations.containsKey(engineId);
+    }
+
     @NotNull
-    public Map<String, AIEngineSettings> getEngineConfigurations() {
+    public synchronized <T extends AIEngineProperties> T getEngineConfiguration(@NotNull String engineId) throws DBException {
+        AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
+        if (engineDescriptor == null) {
+            throw new DBException("AI engine " + engineId + " not found");
+        }
+
+        AIEngineProperties aiEngineSettings = engineConfigurations.get(engineId);
+        if (aiEngineSettings == null) {
+            aiEngineSettings = engineDescriptor.createPropertiesInstance();
+        }
+
+        if (aiEngineSettings != null) {
+            if (!AISettingsManager.saveSecretsAsPlainText()) {
+                if (!resolvedSecrets.contains(engineId)) {
+                    aiEngineSettings.resolveSecrets();
+                    resolvedSecrets.add(engineId);
+                }
+            }
+        }
+
+        return (T) aiEngineSettings;
+    }
+
+    public Map<String, AIEngineProperties> getEngineConfigurations() {
         return engineConfigurations;
     }
 
-    @NotNull
-    public AIEngineSettings getEngineConfiguration(String engine) {
-        AIEngineSettings settings = engineConfigurations.get(engine);
-        if (settings == null) {
-            settings = new AIEngineSettings();
-            settings.setEngineEnabled(!aiDisabled);
-            engineConfigurations.put(engine, settings);
-        }
-        tryMigrateFromPrefStore(engine, settings);
-        return settings;
+    public void setEngineConfiguration(
+        @NotNull String engineId,
+        @NotNull AIEngineProperties engineConfiguration
+    ) {
+        engineConfigurations.put(engineId, engineConfiguration);
     }
 
-    private void tryMigrateFromPrefStore(String engine, AIEngineSettings settings) {
-        // migrate from pref store
-        if (AIConstants.OPENAI_ENGINE.equals(engine) && settings.getProperties().get(AIConstants.GPT_MODEL) == null) {
-            DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-            String model = preferenceStore.getString(AIConstants.GPT_MODEL);
-            if (model != null) {
-                settings.getProperties().put(AIConstants.GPT_MODEL, model);
+    public void setEngineConfigurations(
+        @NotNull Map<String, AIEngineProperties> engineConfigurations
+    ) {
+        this.engineConfigurations.putAll(engineConfigurations);
+    }
+
+    public void saveSecrets() throws DBException {
+        for (Map.Entry<String, AIEngineProperties> entry : engineConfigurations.entrySet()) {
+            String engineId = entry.getKey();
+            AIEngineProperties engineConfiguration = entry.getValue();
+
+            if (resolvedSecrets.contains(engineId)) {
+                engineConfiguration.saveSecrets();
             }
-            Double temperature = preferenceStore.getDouble(AIConstants.AI_TEMPERATURE);
-            settings.getProperties().put(AIConstants.AI_TEMPERATURE, temperature);
-            Boolean logQuery = preferenceStore.getBoolean(AIConstants.AI_LOG_QUERY);
-            settings.getProperties().put(AIConstants.AI_LOG_QUERY, logQuery);
         }
+    }
+
+    @Override
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
+        return null;
     }
 }
-

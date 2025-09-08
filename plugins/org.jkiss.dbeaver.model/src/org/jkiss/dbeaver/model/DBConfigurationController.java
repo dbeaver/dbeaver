@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 /**
@@ -27,15 +28,13 @@ public interface DBConfigurationController extends DBPObjectController {
     /**
      * Loads config file contents.
      * @param filePath relative or absolute file path
-     *
      */
+    @Nullable
     String loadConfigurationFile(@NotNull String filePath) throws DBException;
 
     /**
      * Saves config file contents
      * @param filePath relative or absolute
-     * @param data
-     * @throws DBException
      */
     void saveConfigurationFile(
         @NotNull String filePath,

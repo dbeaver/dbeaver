@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.utils.CommonUtils;
@@ -23,7 +26,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Data source information
  */
-public class QMMConnectionInfo extends QMMObject {
+public class QMMConnectionInfo extends QMMObject implements QMMDataSourceInfo {
 
     @Include
     private final QMMProjectInfo projectInfo;
@@ -127,7 +130,16 @@ public class QMMConnectionInfo extends QMMObject {
     }
 
     public void reopen(DBCExecutionContext context) {
-        initFromContext(context, transactional);
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+        boolean autoCommit = true;
+        if (txnManager != null) {
+            try {
+                autoCommit = txnManager.isAutoCommit();
+            } catch (DBCException e) {
+                log.warn(e);
+            }
+        }
+        initFromContext(context, !autoCommit);
         super.reopen();
     }
 
@@ -295,14 +307,26 @@ public class QMMConnectionInfo extends QMMObject {
         return projectInfo;
     }
 
+    @NotNull
+    @Override
+    public String getProjectId() {
+        return projectInfo.getId();
+    }
+
+    @NotNull
+    @Override
     public String getContainerId() {
         return containerId;
     }
 
+    @Nullable
+    @Override
     public String getContainerName() {
         return containerName;
     }
 
+    @NotNull
+    @Override
     public String getDriverId() {
         return driverId;
     }
@@ -337,6 +361,7 @@ public class QMMConnectionInfo extends QMMObject {
         return connectionUserName;
     }
 
+    @Override
     public String getConnectionUrl() {
         return connectionUrl;
     }

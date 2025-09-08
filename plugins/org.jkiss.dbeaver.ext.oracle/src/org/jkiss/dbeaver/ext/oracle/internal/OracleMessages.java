@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,4 +44,14 @@ public class OracleMessages extends NLS {
     public static String oracle_server_session_manager_display_exec_plan_description;
     public static String pseudo_column_rowid_description;
     public static String pseudo_column_ora_rowscn_description;
+    public static String global_variable_sysdate;
+    public static String global_variable_systimestamp;
+    public static String global_variable_dbtimezone;
+    public static String global_variable_sessiontimezone;
+    public static String global_variable_current_timestamp;
+    public static String global_variable_current_date;
+    public static String global_variable_ora_invoking_user;
+    public static String global_variable_ora_invoking_userid;
+    public static String global_variable_uid;
+    public static String global_variable_user;
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPAuthInfo;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.fs.DBNPathBase;
 import org.jkiss.dbeaver.model.runtime.*;
@@ -127,16 +125,6 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         return UserResponse.IGNORE;
     }
 
-    @Override
-    public long getLongOperationTimeout() {
-        return 0;
-    }
-
-    @Override
-    public void notifyAgent(String message, int status) {
-        // do nothing
-    }
-
     private void printStatus(@NotNull IStatus status, int level) {
         char[] indent = new char[level * 4];
         for (int i = 0; i < indent.length; i++) indent[i] = ' ';
@@ -176,6 +164,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         throw new IllegalStateException("Can not prompt user credentials in non-interactive mode");
     }
 
+    @Nullable
     @Override
     public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword, boolean userEditable, boolean oldPasswordEditable) {
         throw new IllegalStateException("Can not prompt user password change in non-interactive mode");
@@ -189,11 +178,6 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public boolean acceptLicense(String message, String licenseText) {
         return true;
-    }
-
-    @Override
-    public boolean downloadDriverFiles(DBPDriver driverDescriptor, DBPDriverDependencies dependencies) {
-        return false;
     }
 
     @Override
@@ -249,6 +233,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
         }
     }
 
+    @Override
+    public <T> T runWithMonitor(@NotNull DBRRunnableWithReturn<T> runnable) throws DBException {
+        return runnable.runTask(new LoggingProgressMonitor(log));
+    }
+
     @NotNull
     @Override
     public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
@@ -266,11 +255,6 @@ public class ConsoleUserInterface implements DBPPlatformUI {
                 }
             }
         };
-    }
-
-    @Override
-    public void refreshPartState(Object part) {
-        // do nothing
     }
 
     @Override

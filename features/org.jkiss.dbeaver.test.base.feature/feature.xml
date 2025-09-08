@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+        id="org.jkiss.dbeaver.test.base.feature"
+        label="DBeaver Standalone"
+        version="24.3.1.qualifier"
+        provider-name="DBeaver Corp"
+        plugin="org.jkiss.dbeaver.headless.application">
+
+    <copyright>DBeaver Corp and others</copyright>
+    <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
+
+    <url>
+        <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
+    </url>
+    <!-- DO NOT REMOVE THIS LINE -->
+    <includes id="org.eclipse.pde.spies" version="0.0.0" />
+
+    <requires>
+        <import plugin="org.eclipse.core.runtime" version="3.7" match="greaterOrEqual"/>
+        <!-- Equinox -->
+        <import plugin="org.eclipse.equinox.common" version="0.0.0" match="greaterOrEqual"/>
+        <import plugin="org.eclipse.equinox.event" version="0.0.0" match="greaterOrEqual"/>
+        <import plugin="org.eclipse.equinox.preferences" version="0.0.0" match="greaterOrEqual"/>
+        <import plugin="org.eclipse.equinox.registry" version="0.0.0" match="greaterOrEqual"/>
+        <import plugin="org.eclipse.osgi.compatibility.state" version="0.0.0" match="greaterOrEqual"/>
+        <!-- Main Equinox service provider -->
+        <import plugin="org.apache.felix.scr" version="0.0.0" match="greaterOrEqual"/>
+    </requires>
+    <plugin id="org.jkiss.dbeaver.slf4j" version="0.0.0" />
+    <plugin id="org.junit" version="0.0.0" />
+    <plugin id="com.google.gson" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.headless" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.osgi.test.runner" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.test.platform" version="0.0.0"/>
+
+    <plugin id="org.mockito.mockito-core" version="0.0.0" />
+    <plugin id="org.objenesis" version="0.0.0" />
+    <plugin id="net.bytebuddy.byte-buddy" version="0.0.0" />
+    <plugin id="net.bytebuddy.byte-buddy-agent" version="0.0.0" />
+
+</feature>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,28 +110,7 @@ public class SQLScriptProcessor {
                 }
 
                 monitor.beginTask("Execute queries (" + queries.size() + ")", queries.size());
-
-                for (SQLScriptElement query : queries) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                    // Execute query
-                    boolean runNext = executeSingleQuery(session, query);
-                    if (!runNext) {
-                        if (lastError == null) {
-                            // Execution cancel
-                            break;
-                        }
-                        if (errorHandling != SQLScriptErrorHandling.IGNORE) {
-                            log.error(lastError);
-                            break;
-                        } else {
-                            log.warn("Query failed: " + lastError.getMessage());
-                        }
-                    }
-
-                    monitor.worked(1);
-                }
+                executeScript(session, queries, true);
                 monitor.done();
 
                 // Commit data
@@ -169,11 +148,45 @@ public class SQLScriptProcessor {
         }
     }
 
+    private void executeScript(
+        @NotNull DBCSession session,
+        @NotNull List<SQLScriptElement> script,
+        boolean trackMonitor
+    ) {
+        for (SQLScriptElement query : script) {
+            if (session.getProgressMonitor().isCanceled()) {
+                break;
+            }
+            // Execute query
+            boolean runNext = executeSingleQuery(session, query);
+            if (!runNext) {
+                if (lastError == null) {
+                    // Execution cancel
+                    break;
+                }
+                if (errorHandling != SQLScriptErrorHandling.IGNORE) {
+                    log.error(lastError);
+                    break;
+                } else {
+                    log.warn("Query failed: " + lastError.getMessage());
+                }
+            }
+            if (trackMonitor) {
+                session.getProgressMonitor().worked(1);
+            }
+        }
+    }
+
     private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLScriptElement element) {
-        if (element instanceof SQLControlCommand) {
+        if (element instanceof SQLControlCommand controlCommand) {
             log.debug(STAT_LOG_PREFIX + "Execute command\n" + element.getText());
             try {
-                return scriptContext.executeControlCommand((SQLControlCommand) element);
+                SQLControlResult controlResult = scriptContext.executeControlCommand(session.getProgressMonitor(), controlCommand);
+                if (controlResult.getTransformed() != null) {
+                    element = controlResult.getTransformed();
+                } else {
+                    return true;
+                }
             } catch (Throwable e) {
                 if (!(e instanceof DBException)) {
                     log.error("Unexpected error while processing SQL command", e);
@@ -182,29 +195,35 @@ public class SQLScriptProcessor {
                 return false;
             }
         }
-        SQLQuery sqlQuery = (SQLQuery) element;
-        scriptContext.fillQueryParameters(sqlQuery, () -> dataReceiver, true);
-        lastError = null;
+        if (element instanceof SQLScript script) {
+            this.executeScript(session, script.getScriptElements(), false);
+        } else if (!(element instanceof SQLQuery sqlQuery)) {
+            log.error("Unsupported SQL element type: " + element);
+            return false;
+        } else {
+            scriptContext.fillQueryParameters(sqlQuery, () -> dataReceiver, true);
+            lastError = null;
 
-        try {
-            statistics.reset();
-            statistics.setQueryText(sqlQuery.getText());
+            try {
+                statistics.reset();
+                statistics.setQueryText(sqlQuery.getText());
 
-            DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
-                try {
-                    long execStartTime = System.currentTimeMillis();
-                    executeStatement(session, sqlQuery, execStartTime);
-                } catch (Throwable e) {
-                    throw new InvocationTargetException(e);
+                DBExecUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
+                    try {
+                        long execStartTime = System.currentTimeMillis();
+                        executeStatement(session, sqlQuery, execStartTime);
+                    } catch (Throwable e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (Throwable ex) {
+                if (!(ex instanceof DBException)) {
+                    log.error("Unexpected error while processing SQL", ex);
                 }
-            });
-        } catch (Throwable ex) {
-            if (!(ex instanceof DBException)) {
-                log.error("Unexpected error while processing SQL", ex);
+                lastError = ex;
+            } finally {
+                scriptContext.clearStatementContext();
             }
-            lastError = ex;
-        } finally {
-            scriptContext.clearStatementContext();
         }
 
         return lastError == null || errorHandling == SQLScriptErrorHandling.IGNORE;

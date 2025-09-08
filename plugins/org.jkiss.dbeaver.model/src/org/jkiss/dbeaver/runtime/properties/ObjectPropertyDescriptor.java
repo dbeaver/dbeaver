@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPConditionalProperty;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.dpi.DPIClientObject;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.meta.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNodeReference;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -52,7 +55,8 @@ import java.util.stream.Collectors;
 /**
  * ObjectPropertyDescriptor
 */
-public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>
+public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
+    implements DBPPropertyDescriptor, DBPConditionalProperty, IPropertyValueListProvider<Object>
 {
 
     private final Property propInfo;
@@ -65,6 +69,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     private IPropertyValueValidator valueValidator;
     private final Class<?> declaringClass;
     private Format displayFormat = null;
+    private IPropertyValueTransformer labelProvider;
 
     public ObjectPropertyDescriptor(
         DBPPropertySource source,
@@ -98,7 +103,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
         }
 
-        // Obtain value transformer
+        // Obtain value render
         Class<? extends IPropertyValueTransformer> valueRendererClass = propInfo.valueRenderer();
         if (valueRendererClass != IPropertyValueTransformer.class) {
             try {
@@ -115,6 +120,17 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 valueValidator = valueValidatorClass.getConstructor().newInstance();
             } catch (Throwable e) {
                 log.warn("Can't create value validator", e);
+            }
+        }
+
+        // Obtain label provider
+        Class<? extends IPropertyValueTransformer> labelProviderClass = propInfo.labelProvider();
+        labelProvider = null;
+        if (labelProviderClass != IPropertyValueTransformer.class) {
+            try {
+                labelProvider = labelProviderClass.getConstructor().newInstance();
+            } catch (Throwable e) {
+                log.warn("Can't create label provider", e);
             }
         }
 
@@ -265,6 +281,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return features.toArray(new String[0]);
     }
 
+    @Nullable
+    @Override
+    public String[] getRequiredFeatures() {
+        return propInfo.requiredFeatures();
+    }
+
     @Override
     public boolean hasFeature(@NotNull String feature) {
 
@@ -341,9 +363,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     }
 
     @Override
-    public String getCategory()
-    {
-        return CommonUtils.isEmpty(propInfo.category()) ? null : propInfo.category();
+    public String getCategory() {
+        return CommonUtils.isEmpty(propInfo.category()) ?
+            getParent() == null ? null : CommonUtils.notEmpty(getParent().getCategory()) :
+            propInfo.category();
     }
 
     @Override
@@ -362,6 +385,21 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     @Override
     public String getDisplayName()
     {
+        if (labelProvider != null && getSource() != null) {
+            Object editableValue = getSource().getEditableValue();
+            if (editableValue == null) {
+                if (getSource() instanceof DBNNodeReference nodeReference &&
+                    nodeReference.getReferencedNode() instanceof DBNDatabaseNode dbNode) {
+                    editableValue = dbNode.getObject();
+                }
+            }
+            if (editableValue != null) {
+                String propLabel = CommonUtils.toString(labelProvider.transform(editableValue, null), null);
+                if (propLabel != null) {
+                    return propLabel;
+                }
+            }
+        }
         return propName;
     }
 
@@ -657,6 +695,18 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         // Copied from ResourceTranslator.getResourceBundle
 //        Locale locale = (language == null) ? Locale.getDefault() : new Locale(language);
 //        return ResourceBundle.getBundle("plugin", locale, ownerClass.getClassLoader()); //$NON-NLS-1$
+    }
+
+    @Nullable
+    @Override
+    public String getHideExpression() {
+        return CommonUtils.nullIfEmpty(propInfo.hideExpr());
+    }
+
+    @Nullable
+    @Override
+    public String getReadOnlyExpression() {
+        return CommonUtils.nullIfEmpty(propInfo.readOnlyExpr());
     }
 
 }

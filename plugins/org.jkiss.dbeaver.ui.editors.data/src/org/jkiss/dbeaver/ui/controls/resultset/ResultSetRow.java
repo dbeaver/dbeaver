@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -28,7 +29,7 @@ import java.util.Map;
 /**
  * Row data
  */
-public class ResultSetRow {
+public class ResultSetRow implements DBDValueRow {
 
     public static final byte STATE_NORMAL = 1;
     public static final byte STATE_ADDED = 2;
@@ -66,6 +67,7 @@ public class ResultSetRow {
         this.state = STATE_NORMAL;
     }
 
+    @Override
     @NotNull
     public Object[] getValues() {
         return values;
@@ -75,6 +77,7 @@ public class ResultSetRow {
         return changes != null && !changes.isEmpty();
     }
 
+    @Override
     public int getRowNumber() {
         return rowNumber;
     }

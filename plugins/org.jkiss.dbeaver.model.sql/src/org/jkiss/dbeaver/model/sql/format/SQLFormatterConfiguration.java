@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLModelPreferences;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -29,6 +30,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * SQLFormatterConfiguration
@@ -108,6 +110,12 @@ public class SQLFormatterConfiguration {
 
     public boolean isFunction(String name) {
         return syntaxManager.getDialect().getFunctions().contains(name.toUpperCase(Locale.ENGLISH));
+    }
+
+    public boolean isIdentifier(@NotNull String name) {
+        SQLDialect dialect = syntaxManager.getDialect();
+        boolean isQuoted = dialect.isQuotedIdentifier(name);
+        return name.chars().allMatch(c -> dialect.validIdentifierPart((char) c, isQuoted));
     }
 
     public Object getProperty(String name) {

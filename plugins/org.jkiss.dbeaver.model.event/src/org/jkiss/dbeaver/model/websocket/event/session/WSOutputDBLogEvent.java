@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.websocket.event.session;
 
-import org.jkiss.dbeaver.model.websocket.event.WSEventType;
+import org.jkiss.dbeaver.model.websocket.WSConstants;
 import org.jkiss.dbeaver.model.websocket.event.WSOutputLogInfo;
 
 import java.util.List;
@@ -29,7 +29,7 @@ public class WSOutputDBLogEvent extends WSAbstractSessionEvent {
     public WSOutputDBLogEvent(String contextId,
                               List<WSOutputLogInfo> messages,
                               long eventTimestamp) {
-        super(WSEventType.DB_LOG_UPDATED);
+        super("cb_database_output_log_updated", WSConstants.TOPIC_DATABASE_OUTPUT_LOG);
         this.contextId = contextId;
         this.messages = messages;
         this.eventTimestamp = eventTimestamp;

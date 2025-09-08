@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
@@ -271,10 +272,14 @@ public interface SQLDialect {
 
     boolean supportsSubqueries();
 
+    /**
+     * Returns true when database dialect allows <b>table</b> alias in FROM clause
+     */
     boolean supportsAliasInSelect();
 
     boolean supportsAliasInUpdate();
 
+    boolean supportsAsKeywordBeforeAliasInFromClause();
     /**
      * Column name to list all table columns. Usually asterisk (*).
      */
@@ -399,7 +404,13 @@ public interface SQLDialect {
     @NotNull
     MultiValueInsertMode getDefaultMultiValueInsertMode();
 
-    String addFiltersToQuery(DBRProgressMonitor monitor, DBPDataSource dataSource, String query, DBDDataFilter filter);
+    @NotNull
+    String addFiltersToQuery(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull String query,
+        @NotNull DBDDataFilter filter
+    ) throws DBException;
 
     /**
      * Two-item array containing begin and end of multi-line comments.
@@ -457,6 +468,11 @@ public interface SQLDialect {
      * they are right before the block declaration
      */
     boolean isStripCommentsBeforeBlocks();
+
+    /**
+     * Returns true if need to escape backslash character
+     */
+    boolean isEscapeBackslash();
 
     /**
      * Returns true if query is definitely transactional. Otherwise returns false, however it still may be transactional.
@@ -525,4 +541,7 @@ public interface SQLDialect {
         return false;
     }
 
+    default boolean supportsQualifiedColumnNames() {
+        return true;
+    }
 }

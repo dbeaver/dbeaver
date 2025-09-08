@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.ByteNumberFormat;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -97,12 +98,17 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     @Override
     public boolean allowsChildren() {
-        return Files.isDirectory(getPath());
+        return isDirectory();
+    }
+
+    public boolean isDirectory() {
+        DBNFileSystemRoot rootNode = getFileSystemRoot();
+        return rootNode != null && rootNode.getRoot().getFileSystem().isDirectory(getPath());
     }
 
     @Override
     public DBNNode[] getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (children == null && allowsChildren() && !monitor.isForceCacheUsage()) {
+        if (children == null && isDirectory() && !monitor.isForceCacheUsage()) {
             this.children = readChildNodes(monitor);
         }
         return children;
@@ -111,7 +117,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
     protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException {
         List<DBNNode> result;
         Path path = getPath();
-        if (allowsChildren() && Files.exists(path)) {
+        if (isDirectory() && Files.exists(path)) {
             try {
                 try (Stream<Path> fileList = Files.list(path)) {
                     result = new ArrayList<>();
@@ -209,7 +215,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     @Override
     public boolean supportsRename() {
-        return false;
+        return true;
     }
 
     @Override
@@ -218,8 +224,11 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         try {
             setPath(Files.move(path, path.getParent().resolve(newName)));
         } catch (IOException e) {
-            throw new DBException("Can't rename resource", e);
+            throw new DBException("Cannot rename resource '" + getPath() + "'", e);
+        } catch (UnsupportedOperationException e) {
+            throw new DBException("File rename is not supported by file system '" + path.getFileSystem().provider().getScheme(), e);
         }
+        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
     }
 
     @Override
@@ -228,7 +237,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
             return true;
         }
 
-        if (Files.isRegularFile(getPath())) {
+        if (!this.isDirectory()) {
             return getParentNode().supportsDrop(otherNode);
         }
 
@@ -249,13 +258,12 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
         if (thisResource == null) {
             return;
         }
-        if (Files.isDirectory(thisResource)) {
+        DBNNode nodeToRefresh = this;
+        if (isDirectory()) {
             folder = thisResource;
         } else {
             folder = thisResource.getParent();
-        }
-        if (!Files.isDirectory(folder)) {
-            throw new DBException("Can't drop files into non-folder '" + folder + "'");
+            nodeToRefresh = getParentNode();
         }
         if (nodes.isEmpty()) {
             return;
@@ -281,7 +289,18 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     break;
                 }
                 Path resource = node.getAdapter(Path.class);
-                if (resource == null || !Files.exists(resource)) {
+                if (resource == null) {
+                    try (InputStream inputStream = node.getAdapter(InputStream.class)) {
+                        if (inputStream != null) {
+                            monitor.subTask("Copy file");
+                            Files.copy(inputStream, folder.resolve(node.getNodeDisplayName()));
+                        }
+                    } finally {
+                        monitor.worked(1);
+                    }
+                    continue;
+                }
+                if (Files.notExists(resource)) {
                     log.debug("Resource " + resource + " doesn't not exists");
                     continue;
                 }
@@ -293,7 +312,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                     // Already in this container
                     continue;
                 }
-               boolean doCopy = !isTheSameFileSystem(node);
+                boolean doCopy = !isTheSameFileSystem(node);
                 boolean doDelete = false;
                 monitor.subTask((doCopy ? "Copy" : "Move") + " file " + resource);
                 try {
@@ -333,7 +352,7 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
                 }
             }
             // Refresh folder
-            refreshNode(monitor, this);
+            nodeToRefresh.refreshNode(monitor, this);
         } catch (Exception e) {
             throw new DBException("Error creating NIO resource", e);
         } finally {
@@ -351,12 +370,10 @@ public abstract class DBNPathBase extends DBNNode implements DBNLazyNode {
 
     protected void sortChildren(DBNNode[] list) {
         Arrays.sort(list, (o1, o2) -> {
-            if (o1 instanceof DBNPathBase && o2 instanceof DBNPathBase) {
-                Path res1 = ((DBNPathBase) o1).getPath();
-                Path res2 = ((DBNPathBase) o2).getPath();
-                if (Files.isDirectory(res1) && !Files.isDirectory(res2)) {
+            if (o1 instanceof DBNPathBase p1 && o2 instanceof DBNPathBase p2) {
+                if (p1.isDirectory() && !p2.isDirectory()) {
                     return -1;
-                } else if (Files.isDirectory(res2) && !Files.isDirectory(res1)) {
+                } else if (p2.isDirectory() && !p1.isDirectory()) {
                     return 1;
                 }
             }

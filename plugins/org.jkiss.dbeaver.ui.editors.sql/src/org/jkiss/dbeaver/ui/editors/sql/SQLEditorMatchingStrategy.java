@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorMatchingStrategy;
 import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 
@@ -40,7 +39,7 @@ public class SQLEditorMatchingStrategy implements IEditorMatchingStrategy
                     return true;
                 }
             }
-        } catch (PartInitException e) {
+        } catch (Exception e) {
             log.debug("Error getting input from editor ref", e);
             return false;
         }

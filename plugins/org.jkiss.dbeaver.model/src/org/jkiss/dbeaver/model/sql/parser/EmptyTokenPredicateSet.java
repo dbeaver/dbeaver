@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql.parser;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.Collections;
@@ -33,13 +34,23 @@ public class EmptyTokenPredicateSet implements SQLTokenPredicateSet {
 
     private static final TrieNode<TokenEntry, SQLTokenPredicate> EMPTY_NODE = new TrieNode<>() {
         @Override
+        @Nullable
+        public TokenEntry getTerm() {
+            return null;
+        }
+
+        @Override
         @NotNull
         public Set<SQLTokenPredicate> getValues() {
             return Collections.emptySet();
         }
 
+        @Nullable
         @Override
-        public ListNode<TrieNode<TokenEntry, SQLTokenPredicate>> accumulateSubnodesByTerm(@NotNull TokenEntry term, @NotNull ListNode<TrieNode<TokenEntry, SQLTokenPredicate>> results) {
+        public ListNode<TrieNode<TokenEntry, SQLTokenPredicate>> accumulateSubnodesByTerm(
+            @NotNull TokenEntry term,
+            @Nullable ListNode<TrieNode<TokenEntry, SQLTokenPredicate>> results
+        ) {
             return results;
         }
     };
@@ -56,6 +67,11 @@ public class EmptyTokenPredicateSet implements SQLTokenPredicateSet {
     @Override
     public int getMaxSuffixLength() {
         return 0;
+    }
+
+    @Override
+    public boolean hasCaptures() {
+        return false;
     }
 
     @Override

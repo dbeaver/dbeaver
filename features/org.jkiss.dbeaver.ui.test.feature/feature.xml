@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.jkiss.dbeaver.ui.test.feature"
-      label="%featureName"
+      label="DBeaver Desktop UI Test Components"
       version="1.0.239.qualifier"
-      provider-name="%providerName">
+      provider-name="DBeaver Corp">
 
-   <description>
-      %description
-   </description>
+   <copyright>DBeaver Corp and others</copyright>
+   <license url="https://dbeaver.io/product/dbeaver_license.txt"/>
 
-   <copyright>
-      %copyright
-   </copyright>
+   <includes id="org.eclipse.pde.spies" version="0.0.0" />
 
-   <plugin id="org.jkiss.dbeaver.ext.test" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ui.app.devtools" version="0.0.0" />
 
 </feature>

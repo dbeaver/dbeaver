@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1721,12 +1721,6 @@ public final class DBUtils {
 
     @SuppressWarnings("unchecked")
     @NotNull
-    public static <T> Class<T> getDriverClass(@NotNull DBPDataSource dataSource, @NotNull String className) throws ClassNotFoundException {
-        return (Class<T>) Class.forName(className, true, dataSource.getContainer().getDriver().getClassLoader());
-    }
-
-    @SuppressWarnings("unchecked")
-    @NotNull
     public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, @NotNull String task) throws DBCException {
         DBCExecutionContext defaultContext = getOrOpenDefaultContext(object, true);
         if (defaultContext == null) {
@@ -2045,7 +2039,10 @@ public final class DBUtils {
             }
         }
         DBPDataSource dataSource = object.getDataSource();
-        return dataSource == null ? null : dataSource.getDefaultInstance();
+        if (dataSource == null || dataSource.isConnectionRefreshing()) {
+            return null;
+        }
+        return dataSource.getDefaultInstance();
     }
 
     public static DBCExecutionContext getDefaultContext(DBSObject object, boolean meta) {
@@ -2053,11 +2050,14 @@ public final class DBUtils {
             return null;
         }
         DBSInstance instance = getObjectOwnerInstance(object);
-        return instance == null ||
-            (instance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected())/* ||
-            !instance.getDataSource().getContainer().isConnected()*/ ?
-            null :
-            instance.getDefaultContext(new VoidProgressMonitor(), meta);
+        if (instance == null
+            || (instance instanceof DBSInstanceLazy instanceLazy && !instanceLazy.isInstanceConnected())
+            || (instance.getDataSource() != null && (instance.getDataSource().isConnectionRefreshing()
+            && !DBWorkbench.getPlatform().getApplication().isHeadlessMode()))) {
+            return null;
+        }
+
+        return instance.getDefaultContext(new VoidProgressMonitor(), meta);
     }
 
     public static DBCExecutionContext getOrOpenDefaultContext(DBSObject object, boolean meta) throws DBCException {
@@ -2563,4 +2563,5 @@ public final class DBUtils {
         }
         return false;
     }
+
 }

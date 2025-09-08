@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,19 @@ package org.jkiss.dbeaver.model.task;
  * Fired whenever task is create/deleted/updated.
  * Every task run also triggers UPDATE event.
  */
-public class DBTTaskEvent
-{
+public class DBTTaskEvent {
+
     public enum Action
     {
         TASK_ADD,
         TASK_UPDATE,
         TASK_REMOVE,
         TASK_EXECUTE,
+        TASK_ACTIVATE,
     }
 
-    private DBTTask task;
-    private Action action;
+    private final DBTTask task;
+    private final Action action;
 
     public DBTTaskEvent(DBTTask task, Action action) {
         this.task = task;

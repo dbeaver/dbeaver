@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,6 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import net.sf.jsqlparser.expression.NextValExpression;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -48,6 +45,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -74,7 +72,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     private volatile Boolean supportsIsExternalColumn;
 
     private volatile transient boolean hasStatistics;
-    private boolean isBabelfish;
+    private final boolean isBabelfish;
     private boolean isSynapseDatabase;
 
     public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
@@ -139,6 +137,15 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return info;
     }
 
+    @Override
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
+        int errorCode = SQLState.getCodeFromException(error);
+        if (errorCode == SQLServerConstants.EC_SQL_SERVER_LOGON_FAILED) {
+            return ErrorType.AUTHENTICATION_FAILED;
+        }
+        return super.discoverErrorType(error);
+    }
+
     public boolean isDataWarehouseServer(DBRProgressMonitor monitor) {
         return getServerVersion(monitor).contains(SQLServerConstants.SQL_DW_SERVER_LABEL);
     }
@@ -161,6 +168,10 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     public boolean isSynapseDatabase() {
         return isSynapseDatabase;
+    }
+
+    public boolean isAtLeastV16() {
+        return getInfo().getDatabaseVersion().getMajor() >= 16;
     }
 
     private String getServerVersion(DBRProgressMonitor monitor) {
@@ -193,6 +204,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return serverLoginCache;
     }
 
+    @NotNull
     @Override
     protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
@@ -213,8 +225,6 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
                 properties.put(SQLServerConstants.PROP_DRIVER_TRUST_SERVER_CERTIFICATE, Boolean.TRUE.toString());
             }
         }
-
-        fillConnectionProperties(connectionInfo, properties);
 
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(SQLServerConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
@@ -301,13 +311,11 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     @Override
     public Object getDataSourceFeature(String featureId) {
-        switch (featureId) {
-            case DBPDataSource.FEATURE_LIMIT_AFFECTS_DML:
-                return true;
-            case DBPDataSource.FEATURE_MAX_STRING_LENGTH:
-                return 8000;
-        }
-        return super.getDataSourceFeature(featureId);
+        return switch (featureId) {
+            case DBPDataSource.FEATURE_LIMIT_AFFECTS_DML -> true;
+            case DBPDataSource.FEATURE_MAX_STRING_LENGTH -> 8000;
+            default -> super.getDataSourceFeature(featureId);
+        };
     }
 
     @Override
@@ -384,17 +392,15 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
-        switch (dataKind) {
-            case BOOLEAN: return "bit";
-            case NUMERIC: return "int";
-            case STRING: return "varchar";
-            case DATETIME: return SQLServerConstants.TYPE_DATETIME;
-            case BINARY:
-            case CONTENT: return "varbinary";
-            case ROWID: return "uniqueidentifier";
-            default:
-                return super.getDefaultDataTypeName(dataKind);
-        }
+        return switch (dataKind) {
+            case BOOLEAN -> "bit";
+            case NUMERIC -> "int";
+            case STRING -> "varchar";
+            case DATETIME -> SQLServerConstants.TYPE_DATETIME;
+            case BINARY, CONTENT -> "varbinary";
+            case ROWID -> "uniqueidentifier";
+            default -> super.getDefaultDataTypeName(dataKind);
+        };
     }
 
     //////////////////////////////////////////////////////////
@@ -445,7 +451,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     @NotNull
     @Override
-    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
+    public Class<? extends DBSObject> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) {
         return SQLServerDatabase.class;
     }
 
@@ -483,7 +489,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
     }
 
     @Override
-    public ErrorPosition[] getErrorPosition(DBRProgressMonitor monitor, DBCExecutionContext context, String query, Throwable error) {
+    public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
         Throwable rootCause = CommonUtils.getRootCause(error);
         if (rootCause != null && SQLServerConstants.SQL_SERVER_EXCEPTION_CLASS_NAME.equals(rootCause.getClass().getName())) {
             // Read line number from SQLServerError class
@@ -561,16 +567,11 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         boolean hasNextValExpr = false;
         try {
             Statement statement = SQLSemanticProcessor.parseQuery(this.sqlDialect, query.getText());
-            if (statement instanceof Select) {
-                SelectBody selectBody = ((Select) statement).getSelectBody();
-                if (selectBody instanceof PlainSelect) {
-                    PlainSelect plainSelect = (PlainSelect) selectBody;
-                    if (plainSelect.getFromItem() == null) {
-                        hasNextValExpr = plainSelect.getSelectItems().stream().anyMatch(
-                            item -> (item instanceof SelectExpressionItem) 
-                                && (((SelectExpressionItem) item).getExpression() instanceof NextValExpression)
-                        );
-                    }
+            if (statement instanceof PlainSelect plainSelect) {
+                if (plainSelect.getFromItem() == null) {
+                    hasNextValExpr = plainSelect.getSelectItems()
+                        .stream()
+                        .anyMatch(item -> item.getExpression() instanceof NextValExpression);
                 }
             }
         } catch (DBCException e) {
@@ -579,7 +580,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         return !hasNextValExpr;
     }
     
-    static class DatabaseCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDatabase> {
+    public static class DatabaseCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDatabase> {
         DatabaseCache() {
             setListOrderComparator(DBUtils.nameComparator());
         }
@@ -631,7 +632,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         }
 
         @Override
-        protected SQLServerDatabase fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerDatabase fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDataSource owner, @NotNull JDBCResultSet resultSet) {
             String databaseName = JDBCUtils.safeGetString(resultSet, "name");
             if (CommonUtils.isEmpty(databaseName)) {
                 log.debug("Empty database name fetched");
@@ -642,7 +643,7 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
     }
 
-    private class SystemDataTypeCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDataType> {
+    private static class SystemDataTypeCache extends JDBCObjectCache<SQLServerDataSource, SQLServerDataType> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerDataSource sqlServerDataSource) throws SQLException {
@@ -650,12 +651,12 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
         }
 
         @Override
-        protected SQLServerDataType fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerDataType fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDataSource dataSource, @NotNull JDBCResultSet resultSet) {
             return new SQLServerDataType(dataSource, resultSet);
         }
     }
 
-    private class ServerLoginCache extends JDBCObjectCache<SQLServerDataSource, SQLServerLogin> {
+    public static class ServerLoginCache extends JDBCObjectCache<SQLServerDataSource, SQLServerLogin> {
 
         @NotNull
         @Override
@@ -665,7 +666,11 @@ public class SQLServerDataSource extends JDBCDataSource implements DBSInstanceCo
 
         @Nullable
         @Override
-        protected SQLServerLogin fetchObject(@NotNull JDBCSession session, @NotNull SQLServerDataSource dataSource, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerLogin fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull SQLServerDataSource dataSource,
+            @NotNull JDBCResultSet resultSet
+        ) {
             String loginName = JDBCUtils.safeGetString(resultSet, "name");
             if (CommonUtils.isNotEmpty(loginName)) {
                 return new SQLServerLogin(dataSource, loginName, resultSet);

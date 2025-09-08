@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,8 @@ public class DataEditorsPreferencesInitializer extends AbstractPreferenceInitial
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT, false);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT, 5000);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_BINARY_EDITOR_TYPE, IValueController.EditType.EDITOR);
-        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_ORDERING_MODE, ResultSetUtils.OrderingMode.SMART);
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_ORDERING_STRATEGY, ResultSetUtils.OrderingStrategy.SMART);
+        PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_ORDERING_POLICY, ResultSetUtils.OrderingPolicy.DEFAULT);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_ODD_ROWS, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_HIGHLIGHT_SELECTED_ROWS, true);
         PrefUtils.setDefaultPreferenceValue(store, ResultSetPreferences.RESULT_SET_SHOW_CELL_ICONS, true);

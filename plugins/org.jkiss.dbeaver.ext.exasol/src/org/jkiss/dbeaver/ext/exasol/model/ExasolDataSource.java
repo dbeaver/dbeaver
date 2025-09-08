@@ -356,6 +356,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
     	return this.driverMajorVersion;
     }
     
+    @NotNull
     @Override
     protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose,
                                                     DBPConnectionConfiguration connectionInfo) throws DBCException {

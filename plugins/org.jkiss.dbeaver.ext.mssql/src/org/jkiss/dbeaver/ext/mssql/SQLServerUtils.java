@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -316,12 +316,33 @@ public class SQLServerUtils {
         return auth;
     }
 
-    public static String changeCreateToAlterDDL(SQLDialect sqlDialect, String ddl) {
-        String firstKeyword = SQLUtils.getFirstKeyword(sqlDialect, ddl);
-        if ("CREATE".equalsIgnoreCase(firstKeyword)) {
-            return ddl.replaceFirst(firstKeyword, "ALTER");
+    /**
+     * If the data source indicates that it is running on SQL Server 2016 SP1 or later (i.e. version 16 or above),
+     * the "CREATE" keyword is replaced with "CREATE OR ALTER". Otherwise, it is replaced with "ALTER".
+     */
+    @NotNull
+    public static String changeCreateToAlterDDL(
+        @NotNull SQLServerDataSource dataSource,
+        @NotNull String ddl
+    ) {
+        var sqlDialect = dataSource.getSQLDialect();
+        var firstKeyword = SQLUtils.getFirstKeyword(sqlDialect, ddl);
+        var replacement = dataSource.isAtLeastV16() ? "CREATE OR ALTER" : "ALTER";
+        var strippedQuery = SQLUtils.stripComments(sqlDialect, ddl);
+        var fullDeclarationFirstKeyWord = getFullDeclarationFirstKeyWord(strippedQuery);
+        if ("CREATE".equalsIgnoreCase(firstKeyword) && !"CREATE OR ALTER".equalsIgnoreCase(fullDeclarationFirstKeyWord)) {
+            return ddl.replaceFirst(firstKeyword, replacement);
         }
         return ddl;
+    }
+
+    private static String getFullDeclarationFirstKeyWord(@NotNull String ddl) {
+        var pattern = Pattern.compile("(CREATE\\s+OR\\s+ALTER|\\w+)");
+        var matcher = pattern.matcher(ddl);
+        if (matcher.find()) {
+            return matcher.group(1).toUpperCase();
+        }
+        return "";
     }
 
     /**

@@ -24,12 +24,13 @@ public class WSProjectResourceEvent extends WSAbstractEvent implements WSProject
     protected final String projectId;
 
     public WSProjectResourceEvent(
-        @NotNull WSEventType eventType,
+        @NotNull String eventId,
+        @NotNull String topicId,
         @Nullable String sessionId,
         @Nullable String userId,
         @NotNull String projectId
     ) {
-        super(eventType, sessionId, userId);
+        super(eventId, topicId, sessionId, userId);
         this.projectId = projectId;
     }
 

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNNodeReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
@@ -92,7 +93,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
 
         createUpperControls(group);
 
-        objectList = createObjectSelector(group, singleSelection, listId, selectedObjects, false, new DBRRunnableWithResult<List<T>>() {
+        objectList = createObjectSelector(group, singleSelection, listId, selectedObjects, false, new DBRRunnableWithResult<>() {
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
                 try {
@@ -148,118 +149,7 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         boolean isSetFocusAfterLoad,
         DBRRunnableWithResult<List<T>> objectReader
     ) {
-        return new DatabaseObjectListControl<T>(
-            group,
-            (singleSelection ? SWT.SINGLE : SWT.MULTI),
-            null,
-            new ListContentProvider())
-        {
-            private Font boldFont;
-            private ISearchExecutor searcher = new SearcherFilter();
-
-            @NotNull
-            @Override
-            protected String getListConfigId(List<Class<?>> classList) {
-                return listId;
-            }
-
-            @Override
-            protected LoadingJob<Collection<T>> createLoadService(boolean forUpdate)
-            {
-                return LoadingJob.createService(
-                    new AbstractLoadService<Collection<T>>() {
-                        @Override
-                        public Collection<T> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                            objectReader.run(monitor);
-                            return objectReader.getResult();
-                        }
-
-                        @Override
-                        public Object getFamily() {
-                            return ObjectListDialog.class;
-                        }
-                    },
-                    new ObjectsLoadVisualizer() {
-                        @Override
-                        public void completeLoading(Collection<T> items) {
-                            super.completeLoading(items);
-                            performSearch(SearchType.NONE, false);
-                            if (isSetFocusAfterLoad) {
-                                getItemsViewer().getControl().setFocus();
-                            }
-                        }
-                    });
-            }
-
-            protected CellLabelProvider getColumnLabelProvider(ObjectColumn objectColumn) {
-                return new ObjectLabelProvider(objectColumn);
-            }
-
-            @Override
-            protected Object getObjectValue(T item) {
-                if (item instanceof DBSWrapper) {
-                    return ((DBSWrapper) item).getObject();
-                }
-                return super.getObjectValue(item);
-            }
-            @Override
-            protected DBPImage getObjectImage(T item)
-            {
-                if (item instanceof DBNNode node) {
-                    return node.getNodeIcon();
-                } else if (item instanceof DBPImageProvider imageProvider) {
-                    return imageProvider.getObjectImage();
-                }
-                return null;
-            }
-
-            @Override
-            protected void setListData(Collection<T> items, boolean append, boolean forUpdate) {
-                super.setListData(items, append, forUpdate);
-                if (selectedObjects != null) {
-                    getItemsViewer().setSelection(new StructuredSelection(selectedObjects), true);
-                }
-            }
-
-            @Override
-            public void fillCustomActions(IContributionManager contributionManager) {
-                super.fillCustomActions(contributionManager);
-                addColumnConfigAction(contributionManager);
-            }
-
-            protected void addSearchAction(IContributionManager contributionManager) {
-                contributionManager.add(new Action("Filter objects", DBeaverIcons.getImageDescriptor(UIIcon.SEARCH)) {
-                    @Override
-                    public void run() {
-                        performSearch(SearchType.NONE);
-                    }
-                });
-            }
-
-            @Override
-            protected ISearchExecutor getSearchRunner() {
-                return searcher;
-            }
-
-            class ObjectLabelProvider extends ObjectColumnLabelProvider implements IFontProvider {
-                ObjectLabelProvider(ObjectColumn objectColumn) {
-                    super(objectColumn);
-                }
-
-                @Override
-                public Font getFont(Object element)
-                {
-                    if (selectedObjects.contains(element)) {
-                        if (boldFont == null) {
-                            boldFont = UIUtils.makeBoldFont(group.getFont());
-                            group.addDisposeListener(e -> boldFont.dispose());
-                        }
-                        return boldFont;
-                    }
-                    return null;
-                }
-            }
-        };
+        return new DialogObjectListControl<>(group, singleSelection, listId, objectReader, isSetFocusAfterLoad, selectedObjects);
     }
 
     protected List<T> getObjects(DBRProgressMonitor monitor) throws DBException {
@@ -306,4 +196,136 @@ public class ObjectListDialog<T extends DBPObject> extends AbstractPopupPanel {
         }
     }
 
+    private static class DialogObjectListControl<T extends DBPObject> extends DatabaseObjectListControl<T> implements DBNNodeReference {
+        private final Composite group;
+        private final String listId;
+        private final DBRRunnableWithResult<List<T>> objectReader;
+        private final boolean isSetFocusAfterLoad;
+        private final List<T> selectedObjects;
+        private Font boldFont;
+        private final ISearchExecutor searcher;
+
+        public DialogObjectListControl(
+            Composite group,
+            boolean singleSelection,
+            String listId,
+            DBRRunnableWithResult<List<T>> objectReader,
+            boolean isSetFocusAfterLoad,
+            List<T> selectedObjects
+        ) {
+            super(group, (singleSelection ? SWT.SINGLE : SWT.MULTI), null, new ListContentProvider());
+            this.group = group;
+            this.listId = listId;
+            this.objectReader = objectReader;
+            this.isSetFocusAfterLoad = isSetFocusAfterLoad;
+            this.selectedObjects = selectedObjects;
+            searcher = new SearcherFilter();
+        }
+
+        @NotNull
+        @Override
+        protected String getListConfigId(List<Class<?>> classList) {
+            return listId;
+        }
+
+        @Override
+        protected LoadingJob<Collection<T>> createLoadService(boolean forUpdate) {
+            return LoadingJob.createService(
+                new AbstractLoadService<>() {
+                    @Override
+                    public Collection<T> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        objectReader.run(monitor);
+                        return objectReader.getResult();
+                    }
+
+                    @Override
+                    public Object getFamily() {
+                        return ObjectListDialog.class;
+                    }
+                },
+                new ObjectsLoadVisualizer() {
+                    @Override
+                    public void completeLoading(Collection<T> items) {
+                        super.completeLoading(items);
+                        performSearch(SearchType.NONE, false);
+                        if (isSetFocusAfterLoad) {
+                            getItemsViewer().getControl().setFocus();
+                        }
+                    }
+                });
+        }
+
+        protected CellLabelProvider getColumnLabelProvider(ObjectColumn objectColumn) {
+            return new ObjectLabelProvider(objectColumn);
+        }
+
+        @Override
+        protected Object getObjectValue(T item) {
+            if (item instanceof DBSWrapper) {
+                return ((DBSWrapper) item).getObject();
+            }
+            return super.getObjectValue(item);
+        }
+
+        @Override
+        protected DBPImage getObjectImage(T item) {
+            if (item instanceof DBNNode node) {
+                return node.getNodeIcon();
+            } else if (item instanceof DBPImageProvider imageProvider) {
+                return imageProvider.getObjectImage();
+            }
+            return null;
+        }
+
+        @Override
+        protected void setListData(Collection<T> items, boolean append, boolean forUpdate) {
+            super.setListData(items, append, forUpdate);
+            if (selectedObjects != null) {
+                getItemsViewer().setSelection(new StructuredSelection(selectedObjects), true);
+            }
+        }
+
+        @Override
+        public void fillCustomActions(IContributionManager contributionManager) {
+            super.fillCustomActions(contributionManager);
+            addColumnConfigAction(contributionManager);
+        }
+
+        protected void addSearchAction(IContributionManager contributionManager) {
+            contributionManager.add(new Action("Filter objects", DBeaverIcons.getImageDescriptor(UIIcon.SEARCH)) {
+                @Override
+                public void run() {
+                    performSearch(SearchType.NONE);
+                }
+            });
+        }
+
+        @Override
+        protected ISearchExecutor getSearchRunner() {
+            return searcher;
+        }
+
+        @Override
+        public DBNNode getReferencedNode() {
+            return selectedObjects.isEmpty() ? null : selectedObjects.get(0) instanceof DBNNode node ? node : null;
+        }
+
+        class ObjectLabelProvider extends ObjectColumnLabelProvider implements IFontProvider {
+            ObjectLabelProvider(ObjectColumn objectColumn) {
+                super(objectColumn);
+            }
+
+            @Override
+            public Font getFont(Object element) {
+                if (selectedObjects.contains(element)) {
+                    if (boldFont == null) {
+                        boldFont = UIUtils.makeBoldFont(group.getFont());
+                        group.addDisposeListener(e -> boldFont.dispose());
+                    }
+                    return boldFont;
+                }
+                return null;
+            }
+        }
+    }
 }

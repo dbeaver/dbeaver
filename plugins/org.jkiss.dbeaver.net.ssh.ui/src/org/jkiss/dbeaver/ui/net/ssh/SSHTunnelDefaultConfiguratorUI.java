@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -400,6 +400,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         try {
             return DBWorkbench.getPlatformUI().promptUserCredentials(
                 SSHUIMessages.model_ssh_dialog_credentials,
+                null,
                 SSHUIMessages.model_ssh_dialog_credentials_username,
                 CommonUtils.notEmpty(username),
                 type.equals(SSHConstants.AuthType.PUBLIC_KEY)
@@ -525,26 +526,11 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
         enableTunnelSharingCheck.setSelection(configuration.getBooleanProperty(SSHConstants.PROP_SHARE_TUNNELS, true));
 
         localHostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_LOCAL_HOST)));
-        int lpValue = configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT);
-        if (lpValue != 0) {
-            localPortSpinner.setText(String.valueOf(lpValue));
-        }
-
+        localPortSpinner.setText(String.valueOf(configuration.getIntProperty(SSHConstants.PROP_LOCAL_PORT)));
         remoteHostText.setText(CommonUtils.notEmpty(configuration.getStringProperty(SSHConstants.PROP_REMOTE_HOST)));
-        int rpValue = configuration.getIntProperty(SSHConstants.PROP_REMOTE_PORT);
-        if (rpValue != 0) {
-            remotePortSpinner.setText(String.valueOf(rpValue));
-        }
-
-        int kaValue = configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL);
-        if (kaValue != 0) {
-            keepAliveText.setText(String.valueOf(kaValue));
-        }
-
-        int timeoutValue = configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT);
-        if (timeoutValue != 0) {
-            tunnelTimeout.setText(String.valueOf(timeoutValue));
-        }
+        remotePortSpinner.setText(String.valueOf(configuration.getIntProperty(SSHConstants.PROP_REMOTE_PORT)));
+        keepAliveText.setText(String.valueOf(configuration.getIntProperty(SSHConstants.PROP_ALIVE_INTERVAL)));
+        tunnelTimeout.setText(String.valueOf(configuration.getIntProperty(SSHConstants.PROP_CONNECT_TIMEOUT)));
 
         savedConfiguration = new DBWHandlerConfiguration(configuration);
 
@@ -845,7 +831,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
 
         private void showPrivateKeyField(boolean show) {
             UIUtils.setControlVisible(privateKeyLabel, show);
-            UIUtils.setControlVisible(privateKeyText, show);
+            UIUtils.setControlVisible(privateKeyText.getPanel(), show);
         }
     }
 

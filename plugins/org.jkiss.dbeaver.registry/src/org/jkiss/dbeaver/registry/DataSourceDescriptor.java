@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,7 +148,7 @@ public class DataSourceDescriptor
     @NotNull
     private final Map<String, String> tags;
     @NotNull
-    private final Map<String, String> extensions;
+    private final Map<String, Object> extensions;
     @Nullable
     private DBPDataSource dataSource;
     @Nullable
@@ -156,7 +156,6 @@ public class DataSourceDescriptor
 
     private boolean temporary;
     private boolean hidden;
-    private boolean template;
     private boolean dpiEnabled;
 
     @NotNull
@@ -172,15 +171,17 @@ public class DataSourceDescriptor
     private volatile boolean disposed = false;
     private volatile boolean connecting = false;
 
+    private transient DBWNetworkHandler proxyHandler;
+    private transient DBWTunnel tunnelHandler;
+
     // secrets resolved from secret controller
     private volatile boolean secretsResolved = false;
     // secrets resolved from secret controller and contains db creds (we may not have db creds in the case when we store only ssh)
     private volatile boolean secretsContainsDatabaseCreds = false;
 
-    private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
-    private transient DBWNetworkHandler proxyHandler;
-    private transient DBWTunnel tunnelHandler;
-    private final List<DBPDataSourceTask> users = new ArrayList<>();
+    private transient final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
+    private transient final List<DBPDataSourceTask> users = new ArrayList<>();
+    private transient String clientApplicationName;
     // DPI controller
     private transient DPIProcessController dpiController;
 
@@ -473,6 +474,7 @@ public class DataSourceDescriptor
         return connectionReadOnly;
     }
 
+    @Override
     public void setConnectionReadOnly(boolean connectionReadOnly) {
         this.connectionReadOnly = connectionReadOnly;
     }
@@ -652,6 +654,17 @@ public class DataSourceDescriptor
         updateObjectFilter(type.getName(), parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject), filter);
     }
 
+    @Nullable
+    @Override
+    public String getClientApplicationName() {
+        return this.clientApplicationName;
+    }
+
+    @Override
+    public void setClientApplicationName(@NotNull String applicationName) {
+        this.clientApplicationName = applicationName;
+    }
+
     void clearFilters() {
         filterMap.clear();
     }
@@ -747,19 +760,11 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public boolean isTemplate() {
-        return template;
-    }
-
-    public void setTemplate(boolean template) {
-        this.template = template;
-    }
-
-    @Override
     public boolean isTemporary() {
         return temporary;
     }
 
+    @Override
     public void setTemporary(boolean temporary) {
         this.temporary = temporary;
     }
@@ -1041,7 +1046,7 @@ public class DataSourceDescriptor
         boolean succeeded = false;
         connecting = true;
         try {
-            getDriver().downloadRequiredDependencies(monitor);
+            getDriver().validateFilesPresence(monitor, this);
             if (isDetachedProcessEnabled() && !detachedProcess) {
                 // Open detached connection
                 succeeded = openDetachedConnection(monitor);
@@ -1152,7 +1157,6 @@ public class DataSourceDescriptor
         }
 
         resolvedConnectionInfo = new DBPConnectionConfiguration(connectionInfo);
-
         // Update auth properties if possible
         lastConnectionError = null;
         try {
@@ -1195,6 +1199,7 @@ public class DataSourceDescriptor
             }
 
             resolvePropertiesFromProfile();
+            patchConnectionProperties(monitor, resolvedConnectionInfo);
 
             // Handle tunnelHandler
             // Open tunnelHandler and replace connection info with new one
@@ -1281,6 +1286,7 @@ public class DataSourceDescriptor
             return true;
         } catch (Throwable e) {
             terminateChildProcesses();
+            handleConnectError(e);
             lastConnectionError = e.getMessage();
             //log.debug("Connection failed (" + getId() + ")", e);
             if (dataSource != null) {
@@ -1316,6 +1322,18 @@ public class DataSourceDescriptor
         } finally {
             monitor.done();
         }
+    }
+
+    protected void handleConnectError(@NotNull Throwable e) {
+
+    }
+
+
+    protected void patchConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPConnectionConfiguration resolvedConnectionInfo
+    ) throws DBException {
+
     }
 
     private void terminateChildProcesses() {
@@ -1688,12 +1706,12 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
-    public String getExtension(@NotNull String name) {
-        return extensions.get(name);
+    public <T> T getExtension(@NotNull String name) {
+        return (T) extensions.get(name);
     }
 
     @Override
-    public void setExtension(@NotNull String name, @Nullable String value) {
+    public void setExtension(@NotNull String name, @Nullable Object value) {
         if (value == null) {
             this.extensions.remove(name);
         } else {
@@ -1702,11 +1720,11 @@ public class DataSourceDescriptor
     }
 
     @NotNull
-    public Map<String, String> getExtensions() {
+    public Map<String, Object> getExtensions() {
         return extensions;
     }
 
-    public void setExtensions(Map<String, String> extensions) {
+    public void setExtensions(Map<String, Object> extensions) {
         this.extensions.clear();
         this.extensions.putAll(extensions);
     }
@@ -1779,8 +1797,8 @@ public class DataSourceDescriptor
                     }
                 }
             }
-            if (driver.getClassLoader() instanceof URLClassLoader) {
-                final URL[] urls = ((URLClassLoader) driver.getClassLoader()).getURLs();
+            if (driver.getDefaultDriverLoader().getClassLoader() instanceof URLClassLoader urlClassLoader) {
+                final URL[] urls = urlClassLoader.getURLs();
                 for (int urlIndex = 0; urlIndex < urls.length; urlIndex++) {
                     Object path = urls[urlIndex];
                     try {
@@ -2127,11 +2145,15 @@ public class DataSourceDescriptor
         boolean canSavePassword)
     {
         DBPAuthInfo authInfo;
-        authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(prompt,
-            RegistryMessages.dialog_connection_auth_username, user,
+        authInfo = DBWorkbench.getPlatformUI().promptUserCredentials(
+            prompt,
+            null,
+            RegistryMessages.dialog_connection_auth_username,
+            user,
             authType == DBWTunnel.AuthCredentials.PASSWORD
                 ? RegistryMessages.dialog_connection_auth_passphrase
-                : RegistryMessages.dialog_connection_auth_password, password,
+                : RegistryMessages.dialog_connection_auth_password,
+            password,
             false,
             canSavePassword
         );

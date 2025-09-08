@@ -43,13 +43,15 @@ public class ServiceRegistry {
         private final ObjectType type;
         private final ObjectType impl;
         private final boolean headless;
+        private final boolean singleton;
         private Object instance;
 
         ServiceDescriptor(IConfigurationElement config) {
             super(config);
             type = new ObjectType(config.getAttribute("name"));
             impl = new ObjectType(config.getAttribute("class"));
-            headless = CommonUtils.toBoolean(config.getAttribute("headless"));
+            this.headless = CommonUtils.toBoolean(config.getAttribute("headless"));
+            this.singleton = CommonUtils.toBoolean(config.getAttribute("singleton"), true);
         }
     }
 
@@ -79,6 +81,14 @@ public class ServiceRegistry {
             for (ServiceDescriptor descriptor : descriptors) {
                 if (descriptors.size() > 1 && headlessMode != descriptor.headless) {
                     continue;
+                }
+                if (!descriptor.singleton) {
+                    try {
+                        return descriptor.impl.createInstance(serviceType);
+                    } catch (DBException e) {
+                        log.debug(e);
+                        return null;
+                    }
                 }
                 if (descriptor.instance == null) {
                     try {

@@ -21,19 +21,21 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.junit.DBeaverUnitTest;
+import org.jkiss.junit.osgi.annotation.RunnerProxy;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.List;
 
 import static org.jkiss.dbeaver.model.sql.analyzer.builder.Builder.Consumer.empty;
 
-public class SQLCompletionAnalyzerTest {
+@RunnerProxy(MockitoJUnitRunner.Silent.class)
+public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
     private static RequestResult modelDataRequest;
-    private static final String ENABLE_EXPERIMENTAL_FEATURES = "SQLEditor.ContentAssistant.experimental.enable";
 
     @Before
     public void init() throws DBException {
@@ -266,9 +268,9 @@ public class SQLCompletionAnalyzerTest {
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM |");
             Assert.assertTrue(proposals.size() >= 3);
-            Assert.assertEquals("Table1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Table2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Table3", proposals.get(2).getReplacementString());
+            Assert.assertEquals("Table1 t", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Table2 t", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Table3 t", proposals.get(2).getReplacementString());
 
             // TODO: Is 'WHERE' even supposed to be here?
             // Assert.assertEquals("WHERE", proposals.get(3).getReplacementString());
@@ -277,9 +279,9 @@ public class SQLCompletionAnalyzerTest {
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Tb|");
             Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Tbl4", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Tbl5", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Tbl6", proposals.get(2).getReplacementString());
+            Assert.assertEquals("Tbl4 t", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Tbl5 t", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Tbl6 t", proposals.get(2).getReplacementString());
         }
     }
 
@@ -310,9 +312,9 @@ public class SQLCompletionAnalyzerTest {
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Schema1.|");
             Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Table1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Table2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Table3", proposals.get(2).getReplacementString());
+            Assert.assertEquals("Table1 t", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Table2 t", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Table3 t", proposals.get(2).getReplacementString());
         }
     }
 
@@ -359,9 +361,9 @@ public class SQLCompletionAnalyzerTest {
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database1.Schema1.|");
             Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Table1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Table2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Table3", proposals.get(2).getReplacementString());
+            Assert.assertEquals("Table1 t", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Table2 t", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Table3 t", proposals.get(2).getReplacementString());
         }
 
         {
@@ -374,7 +376,7 @@ public class SQLCompletionAnalyzerTest {
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database3.\"a.schema\".|");
             Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("\"a.table\"", proposals.get(0).getReplacementString());
+            Assert.assertEquals("\"a.table\" at2", proposals.get(0).getReplacementString());
             Assert.assertEquals(35, proposals.get(0).getReplacementOffset());
         }
     }
@@ -466,7 +468,6 @@ public class SQLCompletionAnalyzerTest {
     
     @Test
     public void testCompleteTablesWithAliasesPositive() throws DBException {
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(ENABLE_EXPERIMENTAL_FEATURES, true);
         List<SQLCompletionProposalBase> proposals = modelDataRequest
             .request("SELECT * FROM table1 a, table2 b WHERE |");
         
@@ -531,7 +532,6 @@ public class SQLCompletionAnalyzerTest {
     
     @Test
     public void testCompleteTablesWithAliasesQuotedPositive() throws DBException {
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(ENABLE_EXPERIMENTAL_FEATURES, true);
         List<SQLCompletionProposalBase> proposals = modelDataRequest
             .request("SELECT * FROM tableNaMeA a, tableNaMeB b WHERE |");
         // alias from a and b
@@ -557,7 +557,6 @@ public class SQLCompletionAnalyzerTest {
 
     @Test
     public void testCompleteTablesByAliaseNegative() throws DBException {
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(ENABLE_EXPERIMENTAL_FEATURES, true);
         List<SQLCompletionProposalBase> proposals = modelDataRequest
             .request("SELECT * FROM table1 a, table2 b WHERE c.|");
         Assert.assertTrue(proposals.isEmpty());

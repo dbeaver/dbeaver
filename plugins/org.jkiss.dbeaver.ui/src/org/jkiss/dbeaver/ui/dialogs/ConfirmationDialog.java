@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.registry.ConfirmationRegistry;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -40,11 +41,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
 
     public static final String PREF_KEY_PREFIX = "org.jkiss.dbeaver.core.confirm."; //$NON-NLS-1$
 
-    public static final String RES_KEY_TITLE = "title"; //$NON-NLS-1$
-    public static final String RES_KEY_MESSAGE = "message"; //$NON-NLS-1$
-    public static final String RES_KEY_TOGGLE_MESSAGE = "toggleMessage"; //$NON-NLS-1$
-
-    private boolean hideToggle;
+    private final boolean hideToggle;
 
     public ConfirmationDialog(
         Shell parentShell,
@@ -68,6 +65,11 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             getToggleButton().setVisible(false);
         }
         return dialogArea;
+    }
+
+    @Override
+    protected void initializeBounds() {
+        super.initializeBounds();
     }
 
     /**
@@ -139,22 +141,21 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     }
 
     public static String[] getButtonLabels(int kind) {
-        switch (kind) {
-        case ERROR:
-        case INFORMATION:
-        case WARNING:
-            return new String[] { IDialogConstants.OK_LABEL };
-        case CONFIRM:
-            return new String[] { IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL };
-        case QUESTION:
-            return new String[] { IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL };
-        case QUESTION_WITH_CANCEL: {
-            return new String[] { IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.CANCEL_LABEL };
-        }
-        default:
-            throw new IllegalArgumentException(
-                    "Illegal value for kind in MessageDialog.open()"); //$NON-NLS-1$
-        }
+        //$NON-NLS-1$
+        return switch (kind) {
+            case ERROR, INFORMATION, WARNING -> new String[]{IDialogConstants.OK_LABEL};
+            case CONFIRM -> RuntimeUtils.isMacOS() ?
+                new String[]{IDialogConstants.CANCEL_LABEL, IDialogConstants.OK_LABEL} :
+                new String[]{IDialogConstants.OK_LABEL, IDialogConstants.CANCEL_LABEL};
+            case QUESTION -> RuntimeUtils.isMacOS() ?
+                new String[]{IDialogConstants.NO_LABEL, IDialogConstants.YES_LABEL} :
+                new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL};
+            case QUESTION_WITH_CANCEL -> RuntimeUtils.isMacOS() ?
+                new String[]{IDialogConstants.CANCEL_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.YES_LABEL } :
+                new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL, IDialogConstants.CANCEL_LABEL};
+            default -> throw new IllegalArgumentException(
+                "Illegal value for kind in MessageDialog.open()"); //$NON-NLS-1$
+        };
     }
 
     public static int getDefaultIndex(int kind, int imageKind) {
@@ -165,14 +166,14 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
                 return 0;
             case CONFIRM:
                 if (imageKind == WARNING) {
-                    return 1;
+                    return RuntimeUtils.isMacOS() ? 0 : 1;
                 } else {
-                    return 0;
+                    return RuntimeUtils.isMacOS() ? 1 : 0;
                 }
             case QUESTION:
-                return 1;
+                return RuntimeUtils.isMacOS() ? 0 : 1;
             case QUESTION_WITH_CANCEL: {
-                return 2;
+                return RuntimeUtils.isMacOS() ? 0 : 2;
             }
             default:
                 throw new IllegalArgumentException(

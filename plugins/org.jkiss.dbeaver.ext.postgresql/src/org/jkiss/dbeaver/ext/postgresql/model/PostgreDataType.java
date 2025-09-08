@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
@@ -439,6 +440,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @Property(viewable = true, optional = true, order = 13)
     public PostgreDataType getElementType(DBRProgressMonitor monitor) {
+        if (typeType == PostgreTypeType.d) {
+            return getBaseType(monitor).getElementType(monitor);
+        }
         return elementTypeId == 0 ? null : getDatabase().getDataType(monitor, elementTypeId);
     }
 
@@ -519,7 +523,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @Property(category = CAT_MODIFIERS)
     public PostgreCollation getCollationId(DBRProgressMonitor monitor) throws DBException {
-        if (collationId != 0) {
+        if (collationId != 0 && getDataSource().getServerType().supportsCollations()) {
             return getDatabase().getCollation(monitor, collationId);
         }
         return null;
@@ -552,6 +556,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         return arrayDelimiter;
     }
 
+    /**
+     * Returns array type whose element is this type
+     */
     @Property(category = CAT_ARRAY)
     public PostgreDataType getArrayItemType(DBRProgressMonitor monitor) {
         return arrayItemTypeId == 0 ? null : getDatabase().getDataType(monitor, arrayItemTypeId);
@@ -581,17 +588,19 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     @Override
     public List<? extends DBSContextBoundAttribute> bindAttributesToContext(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSEntity dataContainer,
-        @NotNull DBSEntityAttribute memberContext
+        @NotNull DBDAttributeBinding memberContext
     ) throws DBException {
         List<PostgreDataTypeAttribute> attrs = this.getAttributes(monitor);
         if (attrs == null) {
             return null;
         }
-    
-        List<PostgreDataBoundTypeAttribute> boundAttrs = new ArrayList<>(attrs.size());
+
+        DBSEntityAttribute entityAttribute = memberContext.getTopParent().getEntityAttribute();
+        DBSEntity container = entityAttribute == null ? this : entityAttribute.getParentObject();
+
+        List<PostgreDataBoundTypeAttribute<?>> boundAttrs = new ArrayList<>(attrs.size());
         for (PostgreDataTypeAttribute attr : attrs) {
-            boundAttrs.add(new PostgreDataBoundTypeAttribute(monitor, (PostgreTableBase) dataContainer, memberContext, attr));
+            boundAttrs.add(new PostgreDataBoundTypeAttribute(monitor, container, memberContext, attr));
         }
         return boundAttrs;
     }
@@ -686,7 +695,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
 
     @NotNull
     @Override
-    public String getFullyQualifiedName(DBPEvaluationContext context) {
+    public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         final PostgreSchema owner = getParentObject();
         if (owner == null || owner.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
             return getName();
@@ -705,7 +714,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     }
 
     @Override
-    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+    public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         StringBuilder sql = new StringBuilder();
 
         if (typeType == PostgreTypeType.d) {

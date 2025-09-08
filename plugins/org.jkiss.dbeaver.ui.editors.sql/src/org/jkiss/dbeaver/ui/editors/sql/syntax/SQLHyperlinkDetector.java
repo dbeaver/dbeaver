@@ -42,9 +42,9 @@ import java.util.List;
 public class SQLHyperlinkDetector extends AbstractHyperlinkDetector {
     static protected final Log log = Log.getLog(SQLHyperlinkDetector.class);
 
-    private SQLContextInformer contextInformer;
+    private final SQLContextInformer contextInformer;
 
-    public SQLHyperlinkDetector(SQLEditorBase editor, SQLContextInformer contextInformer) {
+    public SQLHyperlinkDetector(SQLContextInformer contextInformer) {
         this.contextInformer = contextInformer;
     }
 
@@ -80,9 +80,11 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector {
             SQLQuerySymbolEntry token = context.findToken(offset);
             if (token != null) {
                 final IRegion refRegion = new Region(context.getLastAccessedTokenOffset(), token.getInterval().length());
-                SQLQuerySymbolEntry symbolEntry = token.getDefinition() instanceof SQLQuerySymbolEntry def ? def
-                    : token.getDefinition() instanceof SQLQueryRowsTableDataModel tab && tab.getTable() != null ? tab.getName().entityName 
-                    : null; 
+                SQLQuerySymbolEntry symbolEntry = token.getDefinition() instanceof SQLQuerySymbolEntry def
+                    ? def
+                    : token.getDefinition() instanceof SQLQueryRowsTableDataModel tab && tab.getTable() != null && tab.getName() != null
+                        ? tab.getName().parts.getLast()
+                        : null;
                 
                 if (symbolEntry != null) {
                     // TODO consider multiple definitions

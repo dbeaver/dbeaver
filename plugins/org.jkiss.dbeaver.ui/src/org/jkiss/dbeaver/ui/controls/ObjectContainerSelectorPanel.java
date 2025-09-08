@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +43,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
@@ -66,6 +66,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
     private final Combo containerNameCombo;
 
     private final List<HistoryItem> historyItems = new ArrayList<>();
+    private final ToolItem browseButton;
 
     private static class HistoryItem {
         private String containerName;
@@ -128,8 +129,8 @@ public abstract class ObjectContainerSelectorPanel extends Composite
         });
 
         ToolBar buttonToolbar = new ToolBar(this, SWT.FLAT | SWT.RIGHT);
-        final ToolItem browseButton = new ToolItem(buttonToolbar, SWT.NONE);
-        browseButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
+        browseButton = new ToolItem(buttonToolbar, SWT.NONE);
+        browseButton.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
         browseButton.setText(UIMessages.browse_button_choose);
         browseButton.setToolTipText(UIMessages.browse_button_choose_tooltip);
         Runnable containerSelector = () -> {
@@ -156,6 +157,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                             NLS.bind(UIMessages.bad_container_node_message, node.getName()), e);
                     }
                 }
+                updateToolTips();
             }
         };
         browseButton.addSelectionListener(new SelectionAdapter() {
@@ -172,6 +174,8 @@ public abstract class ObjectContainerSelectorPanel extends Composite
         });
 
         loadHistory();
+
+        updateToolTips();
     }
 
     public void checkValidContainerNode(DBNNode node) throws DBException
@@ -257,7 +261,20 @@ public abstract class ObjectContainerSelectorPanel extends Composite
                 containerNameCombo.remove(historyIndex);
             }
         }
+        updateToolTips();
         //setSelectedNode(node);
+    }
+
+    private void updateToolTips() {
+        DBNNode selectedNode = getSelectedNode();
+        if (selectedNode instanceof DBNDatabaseNode node) {
+            browseButton.setToolTipText(
+                NLS.bind(
+                    UIMessages.label_choose,
+                    UIUtils.getCatalogSchemaTerms(node.getDataSourceContainer(), true)));
+        } else {
+            browseButton.setToolTipText(UIMessages.browse_button_choose_tooltip);
+        }
     }
 
     private void loadHistory() {

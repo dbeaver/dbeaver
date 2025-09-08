@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,4 +29,12 @@ public class CubridMessages extends NLS {
     public static String dialog_struct_create_procedure_container;
     public static String dialog_struct_create_procedure_label_name;
     public static String dialog_struct_create_procedure_combo_type;
+    public static String statistic_trace_info;
+    public static String statistic_info;
+    public static String statistic_all_info;
+    public static String statistic_group_editor_title;
+    public static String statistic_instruction_message;
+    public static String pref_page_cubrid_group_dbms_output;
+    public static String pref_page_cubrid_checkbox_enable_dbms_output;
+    public static String pref_page_cubrid_label_buffer_size;
 }

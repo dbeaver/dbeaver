@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,12 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.model.task.DBTTaskEvent;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
+import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
-import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -43,9 +45,9 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     private static final Log log = Log.getLog(TaskProcessorUI.class);
 
     @NotNull
-    private DBTTask task;
+    private final DBTTask task;
     @NotNull
-    private DBRRunnableContext staticContext;
+    private final DBRRunnableContext staticContext;
     private long startTime;
     private boolean started;
     private long timeSincePreviousTask;
@@ -92,7 +94,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     private void sendNotification(@Nullable DBTTask task, @Nullable Throwable error, long elapsedTime, @Nullable Object settings) {
         UIUtils.asyncExec(() -> {
             boolean hasErrors = error != null;
-            DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
+
             StringBuilder completeMessage = new StringBuilder();
             completeMessage.append(task == null ? this.task.getType().getName() : task.getType().getName()).append(" ").append(TaskUIMessages.task_processor_ui_message_task_completed).append(" (").append(RuntimeUtils.formatExecutionTime(elapsedTime)).append(")");
             List<String> objects = new ArrayList<>();
@@ -102,8 +104,9 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
                 }
                 completeMessage.append("\nObject(s) processed: ").append(String.join(",", objects));
             }
-            if (elapsedTime > platformUI.getLongOperationTimeout() * 1000) {
-                platformUI.notifyAgent(
+            UIServiceSystemAgent serviceSystemAgent = DBWorkbench.getService(UIServiceSystemAgent.class);
+            if (serviceSystemAgent != null && elapsedTime > serviceSystemAgent.getLongOperationTimeout() * 1000) {
+                serviceSystemAgent.notifyAgent(
                     completeMessage.toString(), !hasErrors ? IStatus.INFO : IStatus.ERROR);
             }
 
@@ -113,7 +116,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
                     task == null ? this.task.getName() : task.getName(),
                     completeMessage.toString(),
                     DBPMessageType.INFORMATION,
-                    null);
+                    () -> TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_ACTIVATE)));
             } else if (error != null && !(error instanceof InterruptedException)) { ;
                 DBeaverNotifications.showNotification(
                     "task.execute.failure",

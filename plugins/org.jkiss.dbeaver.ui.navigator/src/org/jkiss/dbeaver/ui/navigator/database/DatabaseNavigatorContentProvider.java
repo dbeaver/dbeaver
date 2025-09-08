@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -35,41 +34,29 @@ import java.util.List;
 
 /**
  * DatabaseNavigatorContentProvider
-*/
+ */
 public class DatabaseNavigatorContentProvider implements IStructuredContentProvider, ITreeContentProvider {
     private static final Log log = Log.getLog(DatabaseNavigatorContentProvider.class);
 
     private static final Object[] EMPTY_CHILDREN = new Object[0];
 
-    private DatabaseNavigatorTree navigatorTree;
-    private boolean showRoot;
+    private final DatabaseNavigatorTree navigatorTree;
+    private final boolean showRoot;
 
-    public DatabaseNavigatorContentProvider(DatabaseNavigatorTree navigatorTree, boolean showRoot)
-    {
+    public DatabaseNavigatorContentProvider(DatabaseNavigatorTree navigatorTree, boolean showRoot) {
         this.navigatorTree = navigatorTree;
         this.showRoot = showRoot;
     }
 
     @Override
-    public void inputChanged(Viewer v, Object oldInput, Object newInput)
-    {
-    }
-
-    @Override
-    public void dispose()
-    {
-    }
-
-    @Override
-    public Object[] getElements(Object parent)
-    {
-        if (parent instanceof DatabaseNavigatorContent) {
-            DBNNode rootNode = ((DatabaseNavigatorContent) parent).getRootNode();
+    public Object[] getElements(Object parent) {
+        if (parent instanceof DatabaseNavigatorContent content) {
+            DBNNode rootNode = content.getRootNode();
             if (rootNode == null) {
                 return EMPTY_CHILDREN;
             }
             if (showRoot) {
-                return new Object[] {rootNode};
+                return new Object[]{rootNode};
             } else {
                 return getChildren(rootNode);
             }
@@ -92,25 +79,18 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
     }
 
     @Override
-    public Object[] getChildren(final Object parent)
-    {
+    public Object[] getChildren(final Object parent) {
         if (parent instanceof TreeNodeSpecial) {
             return EMPTY_CHILDREN;
         }
-        if (!(parent instanceof DBNNode)) {
+        if (!(parent instanceof DBNNode parentNode)) {
             return EMPTY_CHILDREN;
         }
-        final DBNNode parentNode = (DBNNode)parent;//view.getNavigatorModel().findNode(parent);
-/*
-        if (parentNode == null) {
-            log.error("Can't find parent node '" + ((DBSObject) parent).getName() + "' in model");
-            return EMPTY_CHILDREN;
-        }
-*/
+
         if (!parentNode.hasChildren(true)) {
             return EMPTY_CHILDREN;
         }
-        if (parentNode instanceof DBNLazyNode && ((DBNLazyNode)parentNode).needsInitialization()) {
+        if (parentNode instanceof DBNLazyNode && ((DBNLazyNode) parentNode).needsInitialization()) {
             return TreeLoadVisualizer.expandChildren(
                 navigatorTree.getViewer(),
                 new TreeLoadService("Loading", parentNode));
@@ -123,17 +103,15 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
                 if (children == null) {
                     Throwable lastLoadError = parentNode.getLastLoadError();
                     if (lastLoadError != null) {
-                        UIUtils.asyncExec(() -> {
-                            DBWorkbench.getPlatformUI().showError(
-                                "Error during node load",
-                                CommonUtils.notEmpty(lastLoadError.getMessage()),
-                                lastLoadError);
-                        });
+                        UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showError(
+                            "Error during node load",
+                            CommonUtils.notEmpty(lastLoadError.getMessage()),
+                            lastLoadError));
                     }
+                    return EMPTY_CHILDREN;
                 }
                 return getFinalNodes(parentNode, children);
-            }
-            catch (Throwable ex) {
+            } catch (Throwable ex) {
                 // Collapse this item
                 UIUtils.asyncExec(() -> {
                     DBWorkbench.getPlatformUI().showError(
@@ -149,8 +127,7 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
     }
 
     @Override
-    public boolean hasChildren(Object parent)
-    {
+    public boolean hasChildren(Object parent) {
         if (parent instanceof DBNDatabaseNode) {
             if (navigatorTree.getNavigatorFilter() != null && navigatorTree.getNavigatorFilter().isLeafObject(parent)) {
                 return false;
@@ -165,17 +142,22 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
     }
 
     @NotNull
-    private static Object[] getFinalNodes(@NotNull DBNNode parent, @NotNull DBNNode[] children) {
+    private Object[] getFinalNodes(@NotNull DBNNode parent, @NotNull DBNNode[] children) {
         final int maxFetchSize = Math.max(
             NavigatorPreferences.MIN_LONG_LIST_FETCH_SIZE,
             DBWorkbench.getPlatform().getPreferenceStore().getInt(NavigatorPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE)
         );
 
+        boolean searchBarIsActive = isSearchBarActive(children);
         if (parent.isFiltered() || maxFetchSize < children.length) {
             final List<Object> nodes = new ArrayList<>(maxFetchSize);
 
             if (parent.isFiltered()) {
-                nodes.add(new TreeNodeFilterConfigurator(parent));
+                if (searchBarIsActive) {
+                    nodes.add(new TreeNodeFilterSearch(parent));
+                } else {
+                    nodes.add(new TreeNodeFilter(parent));
+                }
             }
 
             if (maxFetchSize < children.length) {
@@ -188,8 +170,22 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
             return nodes.toArray();
         } else if (children.length == 0) {
             return EMPTY_CHILDREN;
+        } else if (searchBarIsActive) {
+            final List<Object> nodes = new ArrayList<>();
+            nodes.add(new TreeNodeSearch(parent));
+            nodes.addAll(List.of(children));
+            return nodes.toArray();
         } else {
             return children;
+        }
+    }
+
+    private boolean isSearchBarActive(@NotNull DBNNode[] children) {
+        if (navigatorTree == null) {
+            return false;
+        } else {
+            boolean isMatchingNeeded = children.length > 0 && navigatorTree.isMatchingNeeded(children[0]);
+            return navigatorTree.isFilterActive() && isMatchingNeeded;
         }
     }
 

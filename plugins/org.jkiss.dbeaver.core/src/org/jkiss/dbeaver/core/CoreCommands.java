@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.core;
 /**
  * Core module commands (some).
  */
-public interface CoreCommands
-{
-
-
+public interface CoreCommands {
+    String CMD_ADD_BOOKMARK = "org.jkiss.dbeaver.core.navigator.bookmark.add";
     String CMD_LINK_EDITOR = "org.jkiss.dbeaver.core.navigator.linkeditor";
-
 }

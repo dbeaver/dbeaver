@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,6 +168,9 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_download_network_unavailable_msg;
     public static String dialog_driver_download_network_unavailable_cert_msg;
     public static String dialog_driver_download_network_unavailable_cert_msg_advanced;
+    public static String dialog_driver_download_version_change_label;
+    public static String dialog_driver_download_current_version_label;
+
     // Driver edit
 	public static String dialog_edit_driver_setting;
     public static String dialog_edit_driver_type_label;
@@ -228,6 +230,7 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_manager_message_delete_driver_text;
     public static String dialog_driver_manager_message_delete_driver_title;
     public static String dialog_driver_manager_title;
+    public static String dialog_driver_manager_preferences_link;
 
     public static String viewer_selector_control_text_classic;
     public static String viewer_selector_control_text_gallery;
@@ -236,6 +239,7 @@ public class UIConnectionMessages extends NLS {
     // Drivers
     public static String pref_page_ui_general_group_settings;
     public static String pref_page_ui_general_check_new_driver_versions;
+    public static String pref_page_ui_general_check_new_driver_versions_tip;
     public static String pref_page_drivers_local_folder;
     public static String pref_page_drivers_group_file_repositories;
     public static String pref_page_drivers_button_add;
