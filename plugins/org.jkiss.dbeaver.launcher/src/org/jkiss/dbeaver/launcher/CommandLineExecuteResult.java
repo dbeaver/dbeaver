@@ -14,20 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.client;
+package org.jkiss.dbeaver.launcher;
 
-import org.jkiss.dbeaver.launcher.DBeaverLauncher;
-
-import java.nio.file.Path;
-
-public class DBeaverRestClient {
-
-    public static Integer getDBeaverServerPort(Path dbeaverDataPath) {
-        return 1;
-    }
-
-    public static boolean supportsAutoLaunch() {
-        String launchPath = System.getenv(DBeaverLauncher.PROP_LAUNCHER);
-        return launchPath != null && !launchPath.trim().isEmpty();
+public record CommandLineExecuteResult(boolean shutdown, short exitCode) {
+    public CommandLineExecuteResult(boolean shutdown) {
+        this(shutdown, shutdown ? (short) 0 : (short) -1);
     }
 }
