@@ -20,20 +20,26 @@ import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.e4.ui.css.swt.internal.theme.BootstrapTheme3x;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.css.swt.theme.IThemeManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
+
+import java.util.Collection;
 
 /**
  * UI Utils
@@ -277,4 +283,30 @@ public class UIStyles {
         }
         return p;
     }
+
+    /**
+     * Fixes toolbars foreground colors on macOS to ensure proper text visibility
+     */
+    public static void fixToolBarForeground(@NotNull Collection<ToolBarManager> toolbarManagers) {
+        if (!RuntimeUtils.isMacOS()) {
+            return;
+        }
+        for (ToolBarManager toolbarManager : toolbarManagers) {
+            ToolBar toolbar = toolbarManager.getControl();
+            if (toolbar != null && !toolbar.isDisposed()) {
+                fixToolBarForeground(toolbar);
+            }
+        }
+    }
+
+    public static void fixToolBarForeground(@NotNull ToolBar toolBar) {
+        if (!toolBar.isDisposed()) {
+            Color textColor = getDefaultTextForeground();
+            toolBar.setForeground(textColor);
+            for (ToolItem item : toolBar.getItems()) {
+                item.setForeground(textColor);
+            }
+        }
+    }
+
 }

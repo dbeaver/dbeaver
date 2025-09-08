@@ -19,47 +19,31 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.List;
+
 /**
- * AI Assistant interface. Provides methods for AI-based operations.
+ * AI Assistant interface.
+ * Provides various methods for AI-based operations.
  */
 public interface AIAssistant {
 
     /**
-     * Initializes assistant
-     */
-    void initialize(@NotNull DBPWorkspace workspace);
-
-    /**
-     * Translates text to SQL.
+     * Generates text according to the prompt
+     *
+     * @param context         database context. Creates database snapshot according to this context.
+     * @param systemGenerator generates prompt explaining goals, additional instructions and context information
+     * @param messages        user messages
+     * @return generated text
      */
     @NotNull
-    String translateTextToSql(
+    String generateText(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AITranslateRequest request
+        @Nullable AIDatabaseContext context,
+        @NotNull AIPromptGenerator systemGenerator,
+        @NotNull List<AIMessage> messages
     ) throws DBException;
 
-    /**
-     * Translates a user command to SQL. The active completion engine is used.
-     */
-    @NotNull
-    AICommandResult command(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull AICommandRequest request
-    ) throws DBException;
-
-    /**
-     * Returns whether the AI assistant has a valid configuration.
-     */
-    boolean hasValidConfiguration() throws DBException;
-
-    @NotNull
-    AIEngine getActiveEngine() throws DBException;
-
-    @Nullable
-    AIEngineDescriptor getActiveEngineDescriptor();
 }

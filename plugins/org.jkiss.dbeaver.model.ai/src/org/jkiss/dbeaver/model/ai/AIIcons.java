@@ -14,27 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.registry;
 
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+package org.jkiss.dbeaver.model.ai;
 
-public abstract class AbstractReplaceableDescriptor<T> extends AbstractDescriptor {
-    protected final IConfigurationElement cfg;
+import org.jkiss.dbeaver.model.DBIcon;
 
-    protected AbstractReplaceableDescriptor(IConfigurationElement cfg) {
-        super(cfg);
-        this.cfg = cfg;
+/**
+ * AI icons
+ */
+public enum AIIcons {
+    ;
+
+    public static final DBIcon AI = new DBIcon("ai", "ai.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    static {
+        DBIcon.loadIcons(AIIcons.class);
     }
 
-    public String getId() {
-        return cfg.getAttribute("id");
-    }
-
-    public String getReplaces() {
-        return cfg.getAttribute("replaces");
-    }
-
-    public abstract T createInstance() throws DBException;
 }

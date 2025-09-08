@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatChunk;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
@@ -33,8 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Flow;
 
-public class CopilotCompletionEngine extends BaseCompletionEngine {
-    private static final Log log = Log.getLog(CopilotCompletionEngine.class);
+public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotProperties> {
 
     private final DisposableLazyValue<CopilotClient, DBException> client = new DisposableLazyValue<>() {
         @NotNull
@@ -48,13 +47,20 @@ public class CopilotCompletionEngine extends BaseCompletionEngine {
             disposedValue.close();
         }
     };
+    private CopilotSessionToken sessionToken;
 
-    private final CopilotProperties properties;
+    public CopilotCompletionEngine() throws DBException {
+        super();
+    }
 
-    private volatile CopilotSessionToken sessionToken;
+    public CopilotCompletionEngine(CopilotProperties properties) throws DBException {
+        super(properties);
+    }
 
-    public CopilotCompletionEngine(CopilotProperties properties) {
-        this.properties = properties;
+    @NotNull
+    @Override
+    protected String getEngineId() {
+        return CopilotConstants.COPILOT_ENGINE;
     }
 
     @NotNull
@@ -95,7 +101,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine {
 
     @NotNull
     @Override
-    public Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
+    public AIStreamPublisher requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
@@ -161,18 +167,18 @@ public class CopilotCompletionEngine extends BaseCompletionEngine {
         client.dispose();
     }
 
+    @NotNull
     private CopilotSessionToken requestSessionToken(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (sessionToken != null) {
             return sessionToken;
         }
 
         synchronized (this) {
-            if (sessionToken != null) {
-                return sessionToken;
+            if (sessionToken == null) {
+                sessionToken = client.getInstance().requestSessionToken(monitor, properties.getToken());
             }
-
-            return client.getInstance().requestSessionToken(monitor, properties.getToken());
         }
+        return sessionToken;
     }
 
     public String getModelName() throws DBException {
