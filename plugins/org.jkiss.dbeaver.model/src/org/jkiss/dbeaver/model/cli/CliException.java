@@ -14,13 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.cli;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 
-public record AICommandResult(
-    @Nullable String sql,
-    @NotNull String message
-) {
+public class CliException extends DBException {
+    private final short exitCode;
+
+    public CliException(String message, short exitCode) {
+        super(message);
+        this.exitCode = exitCode;
+    }
+
+    public CliException(String message, Throwable cause, short exitCode) {
+        super(message, cause);
+        this.exitCode = exitCode;
+    }
+
+    public short getExitCode() {
+        return exitCode;
+    }
 }
