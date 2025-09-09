@@ -14,22 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.cli;
 
-package org.jkiss.dbeaver.model.app;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-
-/**
- * DB desktop application.
- */
-public interface DBPApplicationDesktop extends DBPApplication {
-
-    DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform);
-
-    @NotNull
-    DBPPreferenceStore getPreferenceStore();
-
-    boolean isForcedRestart();
-
+public interface CliConstants {
+    short EXIT_CODE_CONTINUE = -1;
+    short EXIT_CODE_OK = 0;
+    short EXIT_CODE_ERROR = 1;
+    short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
 }
