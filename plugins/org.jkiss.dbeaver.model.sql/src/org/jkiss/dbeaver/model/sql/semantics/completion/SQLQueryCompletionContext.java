@@ -796,6 +796,9 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull List<SQLQueryCompletionSet> results
             ) {
                 SQLQueryCompletionContext completionContext = this;
+                if (!origin.isChained() && !origin.isApplicable(syntaxInspectionResult)) {
+                    return;
+                }
                 origin.apply(new SQLQuerySymbolOrigin.Visitor() {
                     @Override
                     public void visitDbObjectFromDbObject(SQLQuerySymbolOrigin.DbObjectFromDbObject origin) {
