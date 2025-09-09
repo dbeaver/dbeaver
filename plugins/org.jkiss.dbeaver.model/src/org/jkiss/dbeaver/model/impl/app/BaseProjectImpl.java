@@ -288,6 +288,14 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
         }
     }
 
+    public void setProjectProperties(@NotNull Map<String, Object> properties) {
+        synchronized (metadataSync) {
+            loadProperties();
+            this.properties.putAll(properties);
+            saveProperties();
+        }
+    }
+
     protected void loadProperties() {
         if (properties != null) {
             return;
@@ -455,12 +463,14 @@ public abstract class BaseProjectImpl implements DBPProject, DBSSecretSubject {
 
     @Override
     public void updateProject(@Nullable String newName, @Nullable String description) throws DBException {
+        Map<String, Object> properties = new LinkedHashMap<>();
         if (CommonUtils.isNotEmpty(newName)) {
-            setProjectProperty(PROP_PROJECT_NAME, newName);
+            properties.put(PROP_PROJECT_NAME, newName);
         }
-        if (CommonUtils.isNotEmpty(description)) {
-            setProjectProperty(PROP_PROJECT_DESCRIPTION, description);
+        if (description != null) {
+            properties.put(PROP_PROJECT_DESCRIPTION, CommonUtils.notEmpty(description));
         }
+        setProjectProperties(properties);
     }
 
     public boolean resetResourceProperties(@NotNull String resourcePath) {

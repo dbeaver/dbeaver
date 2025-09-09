@@ -90,12 +90,15 @@ public class DBNProjectDesktop extends DBNProject {
             if (eclipseProject == null) {
                 throw new DBException("Eclipse project is null");
             }
+            project.updateProject(newName, null);
             if (DBWorkbench.isDistributed()) {
-                project.updateProject(newName, null);
+                // We need to change the project name in the navigator
+                fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, this));
+            } else {
+                final IProjectDescription description = eclipseProject.getDescription();
+                description.setName(newName);
+                eclipseProject.move(description, true, monitor.getNestedMonitor());
             }
-            final IProjectDescription description = eclipseProject.getDescription();
-            description.setName(newName);
-            eclipseProject.move(description, true, monitor.getNestedMonitor());
         } catch (Exception e) {
             throw new DBException("Can't rename project: " + e.getMessage(), e);
         }
