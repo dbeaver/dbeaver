@@ -1625,18 +1625,18 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    public void updateEditControls()
-    {
+    public void updateEditControls() {
         fireResultSetChange();
         updateToolbar();
         if (presentationSwitchFolder != null) {
             // Enable presentations
             for (VerticalButton pb : presentationSwitchFolder.getItems()) {
-                if (pb.getData() instanceof ResultSetPresentationDescriptor) {
-                    pb.setVisible(!recordMode || ((ResultSetPresentationDescriptor) pb.getData()).supportsRecordMode());
+                if (pb.getData() instanceof ResultSetPresentationDescriptor descriptor) {
+                    pb.setVisible(!recordMode || descriptor.supportsRecordMode());
                 }
             }
         }
+        UIUtils.asyncExec(() -> UIStyles.fixToolBarForeground(toolbarList));
     }
 
     /**

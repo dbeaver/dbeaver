@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
-import java.util.concurrent.Flow;
 
 /**
  * Completion engine
@@ -54,10 +54,10 @@ public interface AIEngine extends AutoCloseable {
      * @param request the completion request
      * @return the stream of completion chunks
      * @throws TooManyRequestsException if the request limit is exceeded and the request can be retried
-     * @throws DBException if an error occurs
+     * @throws DBException              if an error occurs
      */
     @NotNull
-    Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
+    AIStreamPublisher requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException;

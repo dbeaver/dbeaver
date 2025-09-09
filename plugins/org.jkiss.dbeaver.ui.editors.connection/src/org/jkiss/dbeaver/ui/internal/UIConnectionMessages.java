@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class UIConnectionMessages extends NLS {
 
