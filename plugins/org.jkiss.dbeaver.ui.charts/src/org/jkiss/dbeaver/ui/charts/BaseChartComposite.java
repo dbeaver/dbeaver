@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.charts.internal.UIChartsMessages;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.awt.geom.Point2D;
@@ -56,6 +57,7 @@ public class BaseChartComposite extends ChartComposite {
             30, 20,
             10000, 10000,
             true, false, true, true, true, true);
+        CSSUtils.markConnectionTypeColor(getChartCanvas());
     }
 
     public Canvas getChartCanvas() {
