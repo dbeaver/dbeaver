@@ -29,13 +29,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
-import org.jkiss.dbeaver.model.ai.engine.LegacyAISettings;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotClient;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotModels;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties;
+import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceAuth;
@@ -50,7 +49,7 @@ import java.net.URI;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
-public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine, LegacyAISettings<CopilotProperties>> {
+public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngineDescriptor, CopilotProperties> {
 
     private Text temperatureText;
     private ContextWindowSizeField contextWindowSizeField;
@@ -66,7 +65,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     @Override
     public void createControl(
         @NotNull Composite parent,
-        AIEngine object,
+        AIEngineDescriptor object,
         @NotNull Runnable propertyChangeListener
     ) {
         Composite composite = UIUtils.createComposite(parent, 3);
@@ -78,13 +77,13 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     }
 
     @Override
-    public void loadSettings(@NotNull LegacyAISettings<CopilotProperties> configuration) {
-        token = CommonUtils.toString(configuration.getProperties().getToken());
-        modelSelectorField.setSelectedModel(configuration.getProperties().getModel());
-        contextWindowSizeField.setValue(configuration.getProperties().getContextWindowSize());
-        temperature = CommonUtils.toString(configuration.getProperties().getTemperature(), "0.0");
-        logQuery = CommonUtils.toBoolean(configuration.getProperties().isLoggingEnabled());
-        accessToken = CommonUtils.toString(configuration.getProperties().getToken(), "");
+    public void loadSettings(@NotNull CopilotProperties configuration) {
+        token = CommonUtils.toString(configuration.getToken());
+        modelSelectorField.setSelectedModel(configuration.getModel());
+        contextWindowSizeField.setValue(configuration.getContextWindowSize());
+        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
+        accessToken = CommonUtils.toString(configuration.getToken(), "");
         accessTokenText.setText(accessToken);
         applySettings();
 
@@ -92,16 +91,16 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
     }
 
     @Override
-    public void saveSettings(@NotNull LegacyAISettings<CopilotProperties> copilotSettings) {
-        copilotSettings.getProperties().setToken(accessToken);
-        copilotSettings.getProperties().setModel(modelSelectorField.getSelectedModel());
-        copilotSettings.getProperties().setContextWindowSize(contextWindowSizeField.getValue());
-        copilotSettings.getProperties().setTemperature(Double.parseDouble(temperature));
-        copilotSettings.getProperties().setLoggingEnabled(logQuery);
+    public void saveSettings(@NotNull CopilotProperties properties) {
+        properties.setToken(accessToken);
+        properties.setModel(modelSelectorField.getSelectedModel());
+        properties.setContextWindowSize(contextWindowSizeField.getValue());
+        properties.setTemperature(CommonUtils.toDouble(temperature));
+        properties.setLoggingEnabled(logQuery);
     }
 
     @Override
-    public void resetSettings(@NotNull LegacyAISettings<CopilotProperties> copilotPropertiesLegacyAISettings) {
+    public void resetSettings(@NotNull CopilotProperties copilotPropertiesLegacyAISettings) {
 
     }
 
@@ -131,7 +130,16 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
             .withSelectionListener(SelectionListener.widgetSelectedAdapter((e) -> {
-                contextWindowSizeField.setValue(CopilotModels.getContextWindowSize(modelSelectorField.getSelectedModel()));
+                CopilotModels.getModelByName(modelSelectorField.getSelectedModel())
+                    .ifPresentOrElse(
+                        model -> {
+                            contextWindowSizeField.setValue(model.contextWindowSize());
+                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                        }, () -> {
+                            contextWindowSizeField.setValue(null);
+                            temperatureText.setText("0.0");
+                        }
+                    );
             }))
             .withModelListSupplier(modelListProvider)
             .build();
@@ -146,7 +154,7 @@ public class CopilotConfigurator implements IObjectPropertyConfigurator<AIEngine
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.setLayoutData(gridData);
-        UIUtils.createInfoLabel(parent, "Lower temperatures give more precise results", GridData.FILL_HORIZONTAL, 3);
+        temperatureText.setToolTipText("Lower temperatures give more precise results");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }

@@ -8,7 +8,7 @@
                 id="stream.xlsx"
                 class="org.jkiss.dbeaver.data.office.export.DataExporterXLSX"
                 description="%dataTransfer.processor.xlsx.description"
-                icon="icons/excel.png"
+                icon="icons/excel.svg"
                 label="%dataTransfer.processor.xlsx.name"
                 binary="true"
                 contentType="application/vnd.ms-excel"

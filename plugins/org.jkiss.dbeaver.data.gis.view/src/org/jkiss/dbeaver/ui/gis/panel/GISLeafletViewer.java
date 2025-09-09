@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.dbeaver.ui.css.DBStyles;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryDataUtils;
 import org.jkiss.dbeaver.ui.gis.GeometryViewerConstants;
@@ -123,7 +122,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         this.flipCoordinates = spatialDataProvider != null && spatialDataProvider.isFlipCoordinates();
 
         composite = UIUtils.createPlaceholder(parent, 1);
-        CSSUtils.setCSSClass(composite, DBStyles.COLORED_BY_CONNECTION_TYPE);
+        CSSUtils.markConnectionTypeColor(composite);
         browserCreating = true;
         try {
             browser = new Browser(composite, SWT.NONE);
@@ -177,7 +176,7 @@ public class GISLeafletViewer implements IGeometryValueEditor, DBPPreferenceList
         {
             statusBar = UIUtils.createPlaceholder(composite, 1);//new Composite(composite, SWT.NONE);
             statusBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            CSSUtils.setCSSClass(statusBar, DBStyles.COLORED_BY_CONNECTION_TYPE);
+            CSSUtils.markConnectionTypeColor(statusBar);
 
             ToolBar bottomToolbar = new ToolBar(statusBar, SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
 

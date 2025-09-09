@@ -58,7 +58,11 @@ public class ClickhouseTypeParser {
     }
 
     public static boolean isComplexType(@NotNull String typeName) {
-        return ENABLE_COMPLEX_TYPE_PARSING && (typeName.startsWith("Map") || typeName.startsWith("Tuple") || typeName.startsWith("Array"));
+        return ENABLE_COMPLEX_TYPE_PARSING && (
+            typeName.startsWith(ClickhouseConstants.DATA_TYPE_MAP) ||
+                typeName.startsWith(ClickhouseConstants.DATA_TYPE_TUPLE) ||
+                typeName.startsWith(ClickhouseConstants.DATA_TYPE_ARRAY)
+            );
     }
 
     @Nullable

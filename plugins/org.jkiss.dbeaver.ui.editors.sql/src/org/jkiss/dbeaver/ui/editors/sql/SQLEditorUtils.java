@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.core.internal.jobs.JobManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;

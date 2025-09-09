@@ -291,6 +291,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 handlerItem = createHandlerItem(toolBar, allPages);
                 profileItem = createProfileItem(toolBar);
                 tabFolder.setTopRight(toolBarComposite, SWT.RIGHT);
+                UIStyles.fixToolBarForeground(toolBar);
 
                 updateHandlerItem(allPages);
                 updateProfileItem();
@@ -760,6 +761,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         Dialog.applyDialogFont(panel);
                         UIUtils.configureScrolledComposite(panel, page.getControl());
                         panel.layout(true, true);
+                        panel.setMinSize(panel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     } catch (Throwable e) {
                         DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);
                     } finally {
