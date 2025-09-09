@@ -25,10 +25,10 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.ai.AICompletionSettings;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.AIIcons;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.qm.QMTranslationHistoryItem;
@@ -68,7 +68,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
         this.dataSource = dataSource;
         this.executionContext = executionContext;
         this.settings = settings;
-        setImage(DBIcon.AI);
+        setImage(AIIcons.AI);
         setModeless(true);
     }
 
@@ -99,7 +99,7 @@ public class AISuggestionPopup extends AbstractPopupPanel {
             UIIcon.CONFIGURATION,
             SelectionListener.widgetSelectedAdapter(e -> UIUtils.showPreferencesFor(
                 getShell(),
-                AISettingsRegistry.getInstance().getSettings(),
+                AISettingsManager.getInstance().getSettings(),
                 AIPreferencePageMain.PAGE_ID
             ))
         );

@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.api.DriverReference;
+import org.jkiss.api.CompositeObjectId;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -370,7 +370,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     @Nullable
     @Override
-    public DBPDriver findDriver(@NotNull DriverReference ref) {
+    public DBPDriver findDriver(@NotNull CompositeObjectId ref) {
         return findDriver(ref.shortId());
     }
 
@@ -568,7 +568,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             XMLBuilder xml = new XMLBuilder(baos, GeneralUtils.UTF8_ENCODING);
-            xml.setButify(true);
+            xml.setBeautify(true);
             xml.startElement(RegistryConstants.TAG_TYPES);
             for (DBPConnectionType connectionType : connectionTypes.values()) {
                 xml.startElement(RegistryConstants.TAG_TYPE);

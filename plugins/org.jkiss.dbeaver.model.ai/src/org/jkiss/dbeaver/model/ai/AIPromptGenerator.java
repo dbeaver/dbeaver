@@ -14,27 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine;
+package org.jkiss.dbeaver.model.ai;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
-public interface AIEngineSettingsSerDe<T extends AIEngineSettings<T>> {
-    @NotNull
-    String getId();
+/**
+ * Generates AI prompts.
+ */
+public interface AIPromptGenerator {
 
-    /**
-     * Serializes the given AI engine configuration into a JSON object.
-     */
     @NotNull
-    JsonObject serialize(@NotNull AIEngineSettings<T> configuration, Gson gson);
+    String generatorId();
 
-    /**
-     * Deserializes the given JSON object into an AI engine configuration.
-     * If the JSON object is null, a default configuration should be returned.
-     */
     @NotNull
-    T deserialize(@Nullable JsonObject jsonObject, Gson gson);
+    String build();
+
 }
