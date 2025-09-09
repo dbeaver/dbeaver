@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.charts.internal.UIChartsMessages;
-import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.awt.geom.Point2D;
@@ -57,7 +56,6 @@ public class BaseChartComposite extends ChartComposite {
             30, 20,
             10000, 10000,
             true, false, true, true, true, true);
-        CSSUtils.markConnectionTypeColor(getChartCanvas());
     }
 
     public Canvas getChartCanvas() {
