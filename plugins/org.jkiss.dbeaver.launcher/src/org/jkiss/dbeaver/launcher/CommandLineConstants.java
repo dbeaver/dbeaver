@@ -14,22 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.impl;
+package org.jkiss.dbeaver.launcher;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.ai.AISqlFormatter;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import java.util.regex.Pattern;
 
-public class AISqlFormatterImpl implements AISqlFormatter {
-    @Override
-    public String formatGeneratedQuery(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull DBSObjectContainer mainObject,
-        @NotNull String completionText
-    ) {
-        return completionText;
-    }
+public interface CommandLineConstants {
+    Pattern ACTION_PATTERN = Pattern.compile("\"postAction\"\s*:\s*\"([^,]*)\",");
+    Pattern EXIT_CODE_PATTERN = Pattern.compile("\"exitCode\"\s*:\s*(\\d+),");
+    Pattern OUTPUT_PATTERN = Pattern.compile("\"output\"\s*:\s*\"(.*?)\"}");
+
 }

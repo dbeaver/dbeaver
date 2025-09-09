@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
@@ -30,18 +31,9 @@ import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Flow;
 
-public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
-    extends BaseCompletionEngine {
-
-    private final ExecutorService iterablePublisher = Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "IterablePublisher");
-        t.setDaemon(true);
-        return t;
-    });
+public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
@@ -56,10 +48,18 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
         }
     };
 
-    protected final PROPS properties;
+    public OpenAICompletionEngine() throws DBException {
+        super();
+    }
 
-    public OpenAICompletionEngine(PROPS properties) {
-        this.properties = properties;
+    public OpenAICompletionEngine(PROPS properties) throws DBException {
+        super(properties);
+    }
+
+    @NotNull
+    @Override
+    protected String getEngineId() {
+        return OpenAIConstants.OPENAI_ENGINE;
     }
 
     @NotNull
@@ -90,7 +90,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
 
     @NotNull
     @Override
-    public Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
+    public AIStreamPublisher requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
@@ -146,7 +146,6 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
     @Override
     public void close() throws DBException {
         openAiService.dispose();
-        iterablePublisher.shutdown();
     }
 
     @NotNull
