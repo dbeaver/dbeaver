@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.messages;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class ModelSQLMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.sql.messages.ModelSQLResources"; //$NON-NLS-1$
