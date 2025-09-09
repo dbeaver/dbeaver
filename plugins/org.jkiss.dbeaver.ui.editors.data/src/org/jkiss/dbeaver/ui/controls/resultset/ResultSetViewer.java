@@ -3091,9 +3091,9 @@ public class ResultSetViewer extends Viewer
 
     private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr, ResultSetRow row) {
         // Collect all potentially applicable hints
-        Set<DBDValueHintProvider> applicableHintProviders = getModel().getHintContext().getApplicableHintProviders();
-        List<ValueHintProviderDescriptor> applicableHints = ValueHintRegistry.getInstance().getHintDescriptors()
-            .stream().filter(hd -> applicableHintProviders.contains(hd.getInstance())).toList();
+        List<ValueHintProviderDescriptor> applicableHints = getModel().getHintContext().filterApplicableHintProviderDescriptors(
+            ValueHintRegistry.getInstance().getHintDescriptors()
+        );
 
         Object cellValue = getModel().getCellValue(attr, row);
         Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators = new LinkedHashMap<>();
