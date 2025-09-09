@@ -3473,6 +3473,14 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    public boolean hasOnlyEmptyResultViews() {
+        return this.queryProcessors.isEmpty() || (
+            this.queryProcessors.stream().allMatch(qp -> qp.resultContainers.isEmpty() || (
+                qp.resultContainers.stream().allMatch(rc -> !rc.viewer.hasData())
+            ))
+        );
+    }
+
     private boolean isContextChanged(DBPEvent event) {
         DBPEvent.Action eventAction = event.getAction();
         DBSObject eventObject = event.getObject();
