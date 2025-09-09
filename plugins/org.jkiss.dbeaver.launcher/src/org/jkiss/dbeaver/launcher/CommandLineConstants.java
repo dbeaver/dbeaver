@@ -14,22 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.launcher;
 
-package org.jkiss.dbeaver.model.app;
+import java.util.regex.Pattern;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-
-/**
- * DB desktop application.
- */
-public interface DBPApplicationDesktop extends DBPApplication {
-
-    DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform);
-
-    @NotNull
-    DBPPreferenceStore getPreferenceStore();
-
-    boolean isForcedRestart();
+public interface CommandLineConstants {
+    Pattern ACTION_PATTERN = Pattern.compile("\"postAction\"\s*:\s*\"([^,]*)\",");
+    Pattern EXIT_CODE_PATTERN = Pattern.compile("\"exitCode\"\s*:\s*(\\d+),");
+    Pattern OUTPUT_PATTERN = Pattern.compile("\"output\"\s*:\s*\"(.*?)\"}");
 
 }
