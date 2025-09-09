@@ -1848,10 +1848,15 @@ public abstract class SQLQueryCompletionContext {
         }
 
         public boolean hasRelatedAssociationsWithTable(@NotNull DBSEntity table) {
-            EntityAssociationsInfo tableAssociations = this.findAssociationsInfo(this.associationPresenceResolutionMonitor, table);
-            return this.getAssociatedEntitiesOfColumnsList(this.associationPresenceResolutionMonitor).contains(table)
-                || this.extractRealAttributes(this.relatedContext.getColumnsList()).stream()
-                .anyMatch(tableAssociations.allAssociatedAttributes::contains);
+            if (this.getAssociatedEntitiesOfColumnsList(this.associationPresenceResolutionMonitor).contains(table)) {
+                return true;
+            }
+            Set<DBSEntityAttribute> realAttrs = this.extractRealAttributes(this.relatedContext.getColumnsList());
+            if (!realAttrs.isEmpty()) {
+                EntityAssociationsInfo tableAssociations = this.findAssociationsInfo(this.associationPresenceResolutionMonitor, table);
+                return realAttrs.stream().anyMatch(tableAssociations.allAssociatedAttributes::contains);
+            }
+            return false;
         }
 
         public boolean hasRelatedAssociationsWithTable(@NotNull SQLQueryRowsSourceModel source) {
@@ -1926,10 +1931,11 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         private EntityAssociationsInfo prepareAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) {
             try {
-                Map<DBSEntityAttribute, EntityAssociationTargetsInfo> associatedAttributes = Stream.concat(
-                        Optional.ofNullable(entity.getAssociations(monitor)).stream().flatMap(Collection::stream),
-                        Optional.ofNullable(entity.getReferences(monitor)).stream().flatMap(Collection::stream)
-                    ).filter(c -> c instanceof DBSTableForeignKey)
+                Map<DBSEntityAttribute, EntityAssociationTargetsInfo> associatedAttributes =
+                    Optional.ofNullable(entity.getAssociations(monitor))
+                    .stream()
+                    .flatMap(Collection::stream) // don't remove flatMap here, it exposes elements of the Optional collection!
+                    .filter(c -> c instanceof DBSTableForeignKey fk)
                     .map(c -> {
                         try {
                             return ((DBSTableForeignKey) c).getAttributeReferences(monitor);
