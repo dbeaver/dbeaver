@@ -395,8 +395,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
      * After ModelPreferences.CONNECTION_CLOSE_TIMEOUT delay returns false.
      * @return true on successful connection close
      */
-    public boolean closeConnection(final Connection connection, String purpose, boolean doRollback)
-    {
+    public boolean closeConnection(final Connection connection, String purpose, boolean doRollback) {
         if (connection != null) {
             synchronized (closingConnections) {
                 if (closingConnections.contains(connection)) {
@@ -430,24 +429,13 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     synchronized (closingConnections) {
                         closingConnections.remove(connection);
                     }
-                }, "Close JDBC connection (" + purpose + ")",
+                }, "Close JDBC connection " + getContainer().getName() + " (" + purpose + ")",
                 getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
         } else {
             log.debug("Null connection parameter");
             return true;
         }
     }
-
-/*
-    @Override
-    public JDBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
-    {
-        if (metaContext != null && (purpose == DBCExecutionPurpose.META || purpose == DBCExecutionPurpose.META_DDL)) {
-            return createConnection(monitor, this.metaContext, purpose, taskTitle);
-        }
-        return createConnection(monitor, executionContext, purpose, taskTitle);
-    }
-*/
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
 
