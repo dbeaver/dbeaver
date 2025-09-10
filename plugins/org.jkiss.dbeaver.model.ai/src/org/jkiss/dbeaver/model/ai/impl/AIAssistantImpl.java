@@ -74,6 +74,8 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIPromptGenerator systemGenerator,
         @NotNull List<AIMessage> messages
     ) throws DBException {
+        checkAiEnablement();
+
         try (AIEngine engine = createEngine()) {
             String systemPrompt = systemGenerator.build();
 
@@ -90,6 +92,12 @@ public class AIAssistantImpl implements AIAssistant {
             return completionResponse.variants().stream()
                 .findFirst()
                 .orElseThrow(() -> new DBException("Empty AI response when executing command"));
+        }
+    }
+
+    protected static void checkAiEnablement() throws DBException {
+        if (AISettingsManager.getInstance().getSettings().isAiDisabled()) {
+            throw new DBException("AI integration is disabled");
         }
     }
 

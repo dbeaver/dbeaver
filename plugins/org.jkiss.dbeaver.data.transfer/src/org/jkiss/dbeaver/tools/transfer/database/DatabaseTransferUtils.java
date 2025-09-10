@@ -57,6 +57,7 @@ public class DatabaseTransferUtils {
 
     private static final Pair<DBPDataKind, String> DATA_TYPE_UNKNOWN = new Pair<>(DBPDataKind.UNKNOWN, null);
     private static final Pair<DBPDataKind, String> DATA_TYPE_INTEGER = new Pair<>(DBPDataKind.NUMERIC, "INTEGER");
+    private static final Pair<DBPDataKind, String> DATA_TYPE_BIGINT = new Pair<>(DBPDataKind.NUMERIC, "BIGINT");
     private static final Pair<DBPDataKind, String> DATA_TYPE_REAL = new Pair<>(DBPDataKind.NUMERIC, "REAL");
     private static final Pair<DBPDataKind, String> DATA_TYPE_BOOLEAN = new Pair<>(DBPDataKind.BOOLEAN, "BOOLEAN");
     private static final Pair<DBPDataKind, String> DATA_TYPE_STRING = new Pair<>(DBPDataKind.STRING, "VARCHAR");
@@ -587,23 +588,20 @@ public class DatabaseTransferUtils {
         commandContext.saveChanges(monitor, options);
     }
 
-    public static Pair<DBPDataKind, String> getDataType(String value) {
+    @NotNull
+    public static Pair<DBPDataKind, String> getDataType(@Nullable String value) {
         if (CommonUtils.isEmpty(value)) {
             return DATA_TYPE_UNKNOWN;
         }
+
         char firstChar = value.charAt(0);
-        if (Character.isDigit(firstChar) || firstChar == '+' || firstChar == '-' || firstChar == '.') {
-            try {
-                Long.parseLong(value);
-                return DATA_TYPE_INTEGER;
-            } catch (NumberFormatException ignored) {
-            }
-            try {
-                Double.parseDouble(value);
-                return DATA_TYPE_REAL;
-            } catch (NumberFormatException ignored) {
+        if (isNumericStart(firstChar)) {
+            Pair<DBPDataKind, String> numeric = tryClassifyNumber(value);
+            if (numeric != null) {
+                return numeric;
             }
         }
+
         if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
             return DATA_TYPE_BOOLEAN;
         }
@@ -611,6 +609,30 @@ public class DatabaseTransferUtils {
             return DATA_TYPE_NATIONAL_STRING;
         }
         return DATA_TYPE_STRING;
+    }
+
+    private static boolean isNumericStart(char c) {
+        return Character.isDigit(c) || c == '+' || c == '-' || c == '.';
+    }
+
+    @Nullable
+    private static Pair<DBPDataKind, String> tryClassifyNumber(@NotNull String value) {
+        try {
+            Integer.parseInt(value);
+            return DATA_TYPE_INTEGER;
+        } catch (NumberFormatException ignore) {
+        }
+        try {
+            Long.parseLong(value);
+            return DATA_TYPE_BIGINT;
+        } catch (NumberFormatException ignore) {
+        }
+        try {
+            Double.parseDouble(value);
+            return DATA_TYPE_REAL;
+        } catch (NumberFormatException ignore) {
+            return null;
+        }
     }
 
     private static void ensureHasEditMetadataPermission(@NotNull DBPDataSourceContainer container) throws DBCException {

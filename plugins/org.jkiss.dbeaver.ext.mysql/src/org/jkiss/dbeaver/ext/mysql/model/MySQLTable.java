@@ -362,7 +362,7 @@ public class MySQLTable extends MySQLTableBase
     public Collection<MySQLTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (referenceCache == null) {
+        if (referenceCache == null && !monitor.isForceCacheUsage()) {
             referenceCache = loadForeignKeys(monitor, true);
         }
         return referenceCache;
@@ -372,7 +372,7 @@ public class MySQLTable extends MySQLTableBase
     public synchronized Collection<MySQLTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!foreignKeys.isFullyCached() && getDataSource().getInfo().supportsReferentialIntegrity() && monitor != null) {
+        if (!foreignKeys.isFullyCached() && getDataSource().getInfo().supportsReferentialIntegrity() && !monitor.isForceCacheUsage()) {
             List<MySQLTableForeignKey> fkList = loadForeignKeys(monitor, false);
             foreignKeys.setCache(fkList);
         }
@@ -476,7 +476,7 @@ public class MySQLTable extends MySQLTableBase
         boolean references
     ) throws DBException {
         List<MySQLTableForeignKey> fkList = new ArrayList<>();
-        if (!isPersisted() || monitor == null) {
+        if (!isPersisted() || monitor == null || monitor.isForceCacheUsage()) {
             return fkList;
         }
 

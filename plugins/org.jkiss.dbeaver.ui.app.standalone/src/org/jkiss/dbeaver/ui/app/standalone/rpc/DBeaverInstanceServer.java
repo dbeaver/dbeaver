@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.cli.ApplicationInstanceServer;
-import org.jkiss.dbeaver.model.cli.CmdProcessResult;
+import org.jkiss.dbeaver.model.cli.CliProcessResult;
 import org.jkiss.dbeaver.registry.DataSourceUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -155,7 +155,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
 
     @NotNull
     @Override
-    public CmdProcessResult handleCommandLine(@NotNull String[] args) {
+    public CliProcessResult handleCommandLine(@NotNull String[] args) {
         CommandLine cmd = DBeaverCommandLine.getInstance().getCommandLine(args);
 
         try {
@@ -165,7 +165,7 @@ public class DBeaverInstanceServer extends ApplicationInstanceServer<IInstanceCo
                 !DBeaverApplication.getInstance().isHeadlessMode()
             );
         } catch (Exception e) {
-            return new CmdProcessResult(CmdProcessResult.PostAction.ERROR, "Error executing command: " + e.getMessage());
+            return new CliProcessResult(CliProcessResult.PostAction.ERROR, "Error executing command: " + e.getMessage());
         }
     }
 
