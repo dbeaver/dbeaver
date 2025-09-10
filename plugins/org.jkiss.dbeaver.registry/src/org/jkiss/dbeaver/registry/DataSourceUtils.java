@@ -391,7 +391,7 @@ public class DataSourceUtils {
         }
     }
 
-    public static boolean isFolderHasTemporaryDataSources(DataSourceFolder folder) {
+    public static boolean isFolderHasTemporaryDataSources(DBPDataSourceFolder folder) {
         return folder.getDataSourceRegistry().getDataSources().stream().anyMatch(d -> d.getFolder() == folder && d.isTemporary());
     }
 
