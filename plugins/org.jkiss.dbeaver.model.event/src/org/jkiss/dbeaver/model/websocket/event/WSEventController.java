@@ -100,16 +100,14 @@ public class WSEventController {
                 return Status.CANCEL_STATUS;
             }
 
-            if (!events.isEmpty()) {
-                for (WSEvent event : events) {
-                    eventHandlersByType.getOrDefault(event.getTopicId(), List.of()).forEach(handler -> {
-                        try {
-                            handler.handleEvent(event);
-                        } catch (Exception e) {
-                            log.error("Error on event handle " + event.getTopicId(), e);
-                        }
-                    });
-                }
+            for (WSEvent event : events) {
+                eventHandlersByType.getOrDefault(event.getTopicId(), List.of()).forEach(handler -> {
+                    try {
+                        handler.handleEvent(event);
+                    } catch (Exception e) {
+                        log.error("Error on event handle " + event.getTopicId(), e);
+                    }
+                });
             }
 
             if (monitor.isCanceled() || Thread.currentThread().isInterrupted()) {
