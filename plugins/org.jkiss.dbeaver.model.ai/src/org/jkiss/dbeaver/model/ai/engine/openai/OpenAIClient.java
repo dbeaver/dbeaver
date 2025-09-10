@@ -153,8 +153,7 @@ public class OpenAIClient implements Closeable {
 
         Consumer<String> stringConsumer = new StreamConsumer(listener);
         client.sendAsync(
-            modifiedRequest, //  "type" : "response.content_part.done"
-            // {"type":"response.output_item.done","sequence_number":25,"output_index":0,"item":{"id":"msg_68b6f090a8d88195a69524dd04f8eac90c5742e9db37e5a3","type":"message","status":"completed","content":[{"type":"output_text","annotations":[],"logprobs":[],"text":"If you have any more questions or need further assistance with SQL queries, feel free to ask!"}],"role":"assistant"}},
+            modifiedRequest,
             stringConsumer,
             listener::error,
             listener::close
