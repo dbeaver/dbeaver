@@ -110,17 +110,22 @@ public class OpenAIClient implements Closeable {
         if (response.statusCode() == 200) {
             return GSON.fromJson(response.body(), OAIModelList.class).data();
         } else {
-            throw new DBException("Request failed: " + response.statusCode() + ", body=" + response.body());
+            throw new DBException("Models read failed: " + response.statusCode() + ", body=" + response.body());
         }
     }
 
     private HttpRequest createCompletionRequest(@NotNull OAIResponsesRequest completionRequest) throws DBException {
         return HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, "responses"))
+            .uri(AIHttpUtils.resolve(baseUrl, getResponsesEndpoint()))
             .header(HttpConstants.HEADER_USER_AGENT, GeneralUtils.getProductTitle())
             .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
             .timeout(TIMEOUT)
             .build();
+    }
+
+    @NotNull
+    protected String getResponsesEndpoint() {
+        return "responses";
     }
 
     @NotNull
@@ -138,7 +143,7 @@ public class OpenAIClient implements Closeable {
         } else if (response.statusCode() == 429) {
             throw new TooManyRequestsException("Too many requests: " + body);
         } else {
-            throw new DBException("Request failed: " + response.statusCode() + ", body=" + body);
+            throw new DBException("OpenAI request failed: " + response.statusCode() + ", body=" + body);
         }
     }
 
