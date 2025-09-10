@@ -54,7 +54,7 @@ public class AISettings implements IAdaptable {
         Type type = new TypeToken<Map<String, Object>>() {
         }.getType();
 
-        Map<String, Object> propMap = GSON.fromJson(GSON.toJson(properties), type);
+        Map<String, Object> propMap = GSON.fromJson(GSON.toJson(configuration), type);
         Map<String, Object> mergedMap = new LinkedHashMap<>(propMap);
         mergedMap.putAll(properties);
 
