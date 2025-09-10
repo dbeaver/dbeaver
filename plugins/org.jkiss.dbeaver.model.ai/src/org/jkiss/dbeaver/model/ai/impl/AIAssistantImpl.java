@@ -73,6 +73,8 @@ public class AIAssistantImpl implements AIAssistant {
         @NotNull AIPromptGenerator systemGenerator,
         @NotNull List<AIMessage> messages
     ) throws DBException {
+        checkAiEnablement();
+
         AIEngineDescriptor engineDescriptor = getEngineDescriptor();
         try (AIEngine engine = engineDescriptor.createEngineInstance()) {
             AIEngineRequest completionRequest = requestFactory.build(
@@ -137,6 +139,12 @@ public class AIAssistantImpl implements AIAssistant {
         }
         functionCall.setFunction(function);
         return registry.callFunction(context, function, functionCall.getArguments());
+    }
+
+    protected static void checkAiEnablement() throws DBException {
+        if (AISettingsManager.getInstance().getSettings().isAiDisabled()) {
+            throw new DBException("AI integration is disabled");
+        }
     }
 
     public static String getActiveEngineId() {
