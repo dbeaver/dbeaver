@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -201,7 +202,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
 
     @Property(visibleIf = OracleUserPropertyHiddenValidator.class, order = 15, info = true)
     public String getInfoLabel() {
-        return "The content of some fields is hidden. To see them enable \"Always use DBA_* views\" for your connection";
+        return OracleMessages.edit_oracle_user_disabled_fields_info_label;
     }
 
     @Override
