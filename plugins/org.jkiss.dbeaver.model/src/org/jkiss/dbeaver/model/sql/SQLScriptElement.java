@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 
 /**
  * SQL command (query or control)
@@ -43,4 +45,7 @@ public interface SQLScriptElement {
     void setData(Object data);
 
     void reset();
+
+    @Nullable
+    DBPDataSource getDataSource();
 }

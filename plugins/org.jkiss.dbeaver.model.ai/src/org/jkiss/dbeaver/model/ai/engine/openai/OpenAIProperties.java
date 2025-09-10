@@ -20,12 +20,17 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public class OpenAIProperties implements OpenAIBaseProperties {
+    @Nullable
+    @SerializedName("gpt.base_url")
+    private String baseUrl;
+
     @Nullable
     @SecureProperty
     @SerializedName("gpt.token")
@@ -45,7 +50,15 @@ public class OpenAIProperties implements OpenAIBaseProperties {
     @SerializedName("gpt.log.query")
     private Boolean loggingEnabled;
 
+    public OpenAIProperties() {
+    }
+
     @Nullable
+    @Override
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
     @Override
     public String getToken() {
         return token;
@@ -97,6 +110,10 @@ public class OpenAIProperties implements OpenAIBaseProperties {
         }
     }
 
+    public void setBaseUrl(@Nullable String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
+
     public void setToken(@Nullable String token) {
         this.token = token;
     }
@@ -111,7 +128,9 @@ public class OpenAIProperties implements OpenAIBaseProperties {
             return contextWindowSize;
         }
 
-        return OpenAIModels.getContextWindowSize(getModel());
+        return OpenAIModels.getModelByName(getModel())
+            .map(AIModel::contextWindowSize)
+            .orElse(null);
     }
 
     public void setContextWindowSize(@Nullable Integer contextWindowSize) {

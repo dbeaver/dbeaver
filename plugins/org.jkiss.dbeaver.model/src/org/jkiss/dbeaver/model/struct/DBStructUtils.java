@@ -530,7 +530,7 @@ public final class DBStructUtils {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSObject dbsObject
     ) throws DBException {
-        var result = new HashSet<DBSObject>();
+        var result = new LinkedHashSet<DBSObject>();
         if (dbsObject instanceof DBSEntity mainEntity) {
             result.add(mainEntity);
             try {

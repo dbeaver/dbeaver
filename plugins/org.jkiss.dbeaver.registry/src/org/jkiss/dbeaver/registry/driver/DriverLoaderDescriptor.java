@@ -414,7 +414,11 @@ public class DriverLoaderDescriptor implements DBPDriverLoader {
             resolvedFiles.put(node.library, info);
             collectLibraryFiles(node, info);
         }
-        driver.getProviderDescriptor().getRegistry().saveDrivers();
+        try {
+            driver.getProviderDescriptor().getRegistry().saveDrivers();
+        } catch (DBException e) {
+            log.error("Error saving drivers config", e);
+        }
         return true;
     }
 

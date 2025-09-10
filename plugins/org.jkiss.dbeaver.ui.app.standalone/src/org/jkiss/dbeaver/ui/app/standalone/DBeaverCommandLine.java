@@ -20,7 +20,7 @@ import org.apache.commons.cli.CommandLine;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.ApplicationCommandLine;
-import org.jkiss.dbeaver.model.cli.CmdProcessResult;
+import org.jkiss.dbeaver.model.cli.CliProcessResult;
 import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
@@ -92,15 +92,15 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
     }
 
     /**
-     * @return {@link CmdProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
+     * @return {@link CliProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
      */
-    public CmdProcessResult executeCommandLineCommands(
+    public CliProcessResult executeCommandLineCommands(
         @Nullable CommandLine commandLine,
         @Nullable IInstanceController controller,
         boolean uiActivated
     ) throws Exception {
-        CmdProcessResult result = super.executeCommandLineCommands(commandLine, controller, uiActivated);
-        if (result.getPostAction() != CmdProcessResult.PostAction.UNKNOWN_COMMAND) {
+        CliProcessResult result = super.executeCommandLineCommands(commandLine, controller, uiActivated);
+        if (result.getPostAction() != CliProcessResult.PostAction.UNKNOWN_COMMAND) {
             return result;
         }
         //must be checked in super method
@@ -109,7 +109,7 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
 
         if (commandLine.hasOption(PARAM_NEW_INSTANCE)) {
             // Do not try to execute commands in running instance
-            return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+            return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
         }
 
         if (commandLine.hasOption(PARAM_REUSE_WORKSPACE)) {
@@ -128,14 +128,14 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
                     SystemVariablesResolver.setConfiguration(properties);
                 } catch (Exception e) {
                     log.error("Error parsing command line ", e);
-                    return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+                    return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
                 }
             }
         }
 
         if (controller == null) {
             log.debug("Can't process commands because no running instance is present");
-            return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+            return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
         }
 
         boolean exitAfterExecute = false;
@@ -143,7 +143,7 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
             // These command can't be executed locally
             if (commandLine.hasOption(PARAM_STOP)) {
                 controller.quit();
-                return new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN);
+                return new CliProcessResult(CliProcessResult.PostAction.SHUTDOWN);
             }
         }
 
@@ -187,17 +187,17 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
             exitAfterExecute = true;
         }
 
-        var postAction = exitAfterExecute ? CmdProcessResult.PostAction.SHUTDOWN : CmdProcessResult.PostAction.START_INSTANCE;
-        return new CmdProcessResult(postAction);
+        var postAction = exitAfterExecute ? CliProcessResult.PostAction.SHUTDOWN : CliProcessResult.PostAction.START_INSTANCE;
+        return new CliProcessResult(postAction);
     }
 
     /**
-     * @return {@link CmdProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
+     * @return {@link CliProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
      */
     //TODO: we should never call this method?
-    public CmdProcessResult handleCommandLineAsClient(CommandLine commandLine, String instanceLoc) {
+    public CliProcessResult handleCommandLineAsClient(CommandLine commandLine, String instanceLoc) {
         if (commandLine == null || (ArrayUtils.isEmpty(commandLine.getArgs()) && ArrayUtils.isEmpty(commandLine.getOptions()))) {
-            return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+            return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
         }
 
         // Reuse workspace if custom parameters are specified
@@ -216,6 +216,6 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
         } catch (Throwable e) {
             log.error("Error while calling remote server", e);
         }
-        return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+        return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
     }
 }

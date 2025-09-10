@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -44,22 +46,12 @@ public final class CopilotModels {
         Function.identity()
     ));
 
-    @Nullable
-    public static Integer getContextWindowSize(@Nullable String model) {
+    @NotNull
+    public static Optional<AIModel> getModelByName(@Nullable String model) {
         if (model == null) {
-            return null;
+            return Optional.empty();
         }
 
-        AIModel copilotModel = KNOWN_MODELS.get(model);
-        if (copilotModel != null) {
-            return copilotModel.contextWindowSize();
-        }
-
-        AIModel openaiModel = OpenAIModels.KNOWN_MODELS.get(model);
-        if (openaiModel != null) {
-            return openaiModel.contextWindowSize();
-        }
-
-        return null;
+        return Optional.ofNullable(KNOWN_MODELS.get(model)).or(() -> OpenAIModels.getModelByName(model));
     }
 }

@@ -267,10 +267,10 @@ public class ClientHomesPanel extends Composite {
         homeItem.setImage(DBeaverIcons.getImage(UIIcon.HOME));
         homeItem.setData(homeInfo);
         if (!homeInfo.isProvided) {
-            homeItem.setFont(BaseThemeSettings.instance.baseFontItalic);
+            homeItem.setFont(BaseThemeSettings.instance.treeAndTableFontItalic);
         } else {
             if (homeInfo.isDefault) {
-                homeItem.setFont(BaseThemeSettings.instance.baseFontBold);
+                homeItem.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
             }
         }
         return homeItem;
@@ -317,9 +317,14 @@ public class ClientHomesPanel extends Composite {
         protected void buttonPressed(int buttonId) {
             if (IDialogConstants.OK_ID == buttonId) {
                 selectedHome = panel.getSelectedHome();
-                if (driver instanceof DriverDescriptor) {
-                    ((DriverDescriptor) driver).setNativeClientLocations(panel.getLocalLocations());
-                    ((DriverDescriptor) driver).getProviderDescriptor().getRegistry().saveDrivers();
+                if (driver instanceof DriverDescriptor descriptor) {
+                    descriptor.setNativeClientLocations(panel.getLocalLocations());
+                    try {
+                        descriptor.getProviderDescriptor().getRegistry().saveDrivers();
+                    } catch (DBException e) {
+                        DBWorkbench.getPlatformUI().showError("Save error", "Error saving drivers", e);
+                        return;
+                    }
                 }
             }
             super.buttonPressed(buttonId);

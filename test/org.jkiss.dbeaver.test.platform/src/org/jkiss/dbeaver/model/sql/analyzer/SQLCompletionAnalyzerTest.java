@@ -268,9 +268,9 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM |");
             Assert.assertTrue(proposals.size() >= 3);
-            Assert.assertEquals("Table1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Table2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Table3", proposals.get(2).getReplacementString());
+            Assert.assertEquals("Table1 t", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Table2 t", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Table3 t", proposals.get(2).getReplacementString());
 
             // TODO: Is 'WHERE' even supposed to be here?
             // Assert.assertEquals("WHERE", proposals.get(3).getReplacementString());
@@ -279,9 +279,9 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Tb|");
             Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Tbl4", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Tbl5", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Tbl6", proposals.get(2).getReplacementString());
+            Assert.assertEquals("Tbl4 t", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Tbl5 t", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Tbl6 t", proposals.get(2).getReplacementString());
         }
     }
 
@@ -312,9 +312,9 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Schema1.|");
             Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Table1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Table2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Table3", proposals.get(2).getReplacementString());
+            Assert.assertEquals("Table1 t", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Table2 t", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Table3 t", proposals.get(2).getReplacementString());
         }
     }
 
@@ -361,9 +361,9 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database1.Schema1.|");
             Assert.assertEquals(3, proposals.size());
-            Assert.assertEquals("Table1", proposals.get(0).getReplacementString());
-            Assert.assertEquals("Table2", proposals.get(1).getReplacementString());
-            Assert.assertEquals("Table3", proposals.get(2).getReplacementString());
+            Assert.assertEquals("Table1 t", proposals.get(0).getReplacementString());
+            Assert.assertEquals("Table2 t", proposals.get(1).getReplacementString());
+            Assert.assertEquals("Table3 t", proposals.get(2).getReplacementString());
         }
 
         {
@@ -376,7 +376,7 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database3.\"a.schema\".|");
             Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("\"a.table\"", proposals.get(0).getReplacementString());
+            Assert.assertEquals("\"a.table\" at2", proposals.get(0).getReplacementString());
             Assert.assertEquals(35, proposals.get(0).getReplacementOffset());
         }
     }
