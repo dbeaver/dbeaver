@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.statistics;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
@@ -45,8 +44,7 @@ import java.util.stream.Stream;
 public class StatisticsTransmitter {
 
     private static final Log log = Log.getLog(StatisticsTransmitter.class);
-    public static final String STATS_STAGE_DBEAVER = "stats.stage.dbeaver.infra";
-    public static final String STATS_DBEAVER_COM = "stats.dbeaver.com";
+    public static final String STATS_HOSTS = /*<STATS-PROD-URL*/"stats.dbeaver.com"/*/>*/;
     private static final String URL_TEMPLATE = "https://%s/send-statistics";
 
     private final String endpoint;
@@ -56,11 +54,7 @@ public class StatisticsTransmitter {
     public StatisticsTransmitter(String workspaceId) {
         this.workspaceId = workspaceId;
 
-        if (System.getProperty(DBConstants.LM_STAGE_MODE) != null) {
-            endpoint = URL_TEMPLATE.formatted(STATS_STAGE_DBEAVER);
-        } else {
-            endpoint = URL_TEMPLATE.formatted(STATS_DBEAVER_COM);;
-        }
+        endpoint = URL_TEMPLATE.formatted(STATS_HOSTS);
     }
 
     public void send(boolean detached) {
