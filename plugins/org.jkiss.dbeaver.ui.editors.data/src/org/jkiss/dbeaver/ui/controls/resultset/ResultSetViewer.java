@@ -359,10 +359,14 @@ public class ResultSetViewer extends Viewer
                 });
 
                 this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
-                Composite toolbarContainer = new Composite(panelFolder, SWT.NONE);
-                toolbarContainer.setLayout(new FillLayout());
-                this.panelToolBar.createControl(toolbarContainer);
-                this.panelFolder.setTopRight(toolbarContainer, SWT.RIGHT | SWT.WRAP);
+                Composite trControl = new ConComposite(panelFolder, SWT.NONE);
+                trControl.setLayout(new FillLayout());
+                trControl.addPaintListener(e -> {
+                    e.gc.setBackground(panelFolder.getBackground());
+                    e.gc.fillRectangle(trControl.getClientArea());
+                });
+                this.panelToolBar.createControl(trControl);
+                this.panelFolder.setTopRight(trControl, SWT.RIGHT | SWT.WRAP);
                 this.panelFolder.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
