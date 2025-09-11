@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.cubrid.model.plan.CubridQueryPlanner;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
@@ -79,6 +80,10 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                     String name = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.NAME);
                     String description = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.COMMENT);
                     CubridUser user = new CubridUser(dataSource, name, description);
+                    String defaultUser = ((CubridDataSource) dataSource).getCurrentUser();
+                    if (defaultUser.equalsIgnoreCase(user.getName())) {
+                        user.setVirtual(true);
+                    }
                     users.add(user);
 	            }
             }
@@ -413,7 +418,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         @NotNull Map<String, Object> options) throws DBException {
         String fallbackDDL = "-- View definition not available";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl")) {
-            String sql = String.format("show create view %s", ((CubridView) object).getUniqueName());
+            String sql = String.format("show create view %s", object.getFullyQualifiedName(DBPEvaluationContext.DDL));
             sql = ((CubridDataSource) object.getDataSource()).wrapShardQuery(sql);
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -429,7 +434,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                     if (CommonUtils.isEmpty(viewName) || CommonUtils.isEmpty(ddlFragments)) {
                         return fallbackDDL;
                     }
-                    String ddl = "create or replace view " + viewName + " as " + String.join(" union all ", ddlFragments);
+                    String ddl = "create or replace view " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + " as " + String.join(" union all ", ddlFragments);
                     return SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
                 }
             }
