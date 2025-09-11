@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.sql.semantics.completion;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -32,7 +31,6 @@ import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.CompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionHelper;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 public class SQLQueryCompletionProposal extends CompletionProposalBase {
@@ -110,8 +108,14 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase {
         return this.displayString; // because actual replacement string includes extra whitespaces
     }
 
+    @Override
     public int getProposalScore() {
         return proposalScore;
+    }
+
+    @Override
+    public int getProposalTypeSorterScore() {
+        return this.itemKind.sortOrder;
     }
 
     @Override
