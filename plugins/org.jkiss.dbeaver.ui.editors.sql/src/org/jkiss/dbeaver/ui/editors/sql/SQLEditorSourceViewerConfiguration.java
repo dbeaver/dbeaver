@@ -29,6 +29,7 @@ import org.eclipse.jface.text.information.InformationPresenter;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
+import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
@@ -39,6 +40,7 @@ import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -159,6 +161,13 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public IQuickAssistAssistant getQuickAssistAssistant(@NotNull ISourceViewer sourceViewer) {
         IQuickAssistAssistant quickAssistAssistant = super.getQuickAssistAssistant(sourceViewer);
+
+        if (quickAssistAssistant == null) {
+            quickAssistAssistant  = new QuickAssistAssistant() { {
+                setRestoreCompletionProposalSize(EditorsPlugin.getDefault().getDialogSettingsSection("quick_assist_proposal_size"));
+                setInformationControlCreator(p ->new DefaultInformationControl(p, EditorsPlugin.getAdditionalInfoAffordanceString()));
+            } };
+        }
 
         SQLEditorQuickAssistProcessor quickAssistProcessor = new SQLEditorQuickAssistProcessor(this.editor);
         if (quickAssistAssistant.getQuickAssistProcessor() != null) {
