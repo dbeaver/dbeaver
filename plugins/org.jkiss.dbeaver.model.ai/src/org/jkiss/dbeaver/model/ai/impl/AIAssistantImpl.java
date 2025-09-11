@@ -89,7 +89,9 @@ public class AIAssistantImpl implements AIAssistant {
 
             AIEngineResponse completionResponse = requestCompletion(engine, monitor, completionRequest);
 
-            return completionResponse.variants().getFirst();
+            return completionResponse.variants().stream()
+                .findFirst()
+                .orElseThrow(() -> new DBException("Empty AI response when executing command"));
         }
     }
 

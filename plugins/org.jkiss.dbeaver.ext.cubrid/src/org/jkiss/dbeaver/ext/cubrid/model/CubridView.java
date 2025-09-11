@@ -85,9 +85,13 @@ public class CubridView extends GenericView
         }
     }
 
+    public boolean isEnableSchema() {
+        return getDataSource().getSupportMultiSchema() || getDataSource().isDBAGroup();
+    }
+
     @NotNull
     @Override
-    @Property(viewable = true, editable = true, updatable = true, listProvider = OwnerListProvider.class, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 2)
+    @Property(viewable = true, editableExpr = "object.enableSchema", updatableExpr = "object.enableSchema", listProvider = OwnerListProvider.class, labelProvider = GenericSchema.SchemaNameTermProvider.class, order = 2)
     public GenericSchema getSchema() {
         return owner;
     }
@@ -101,10 +105,10 @@ public class CubridView extends GenericView
     @NotNull
     @Override
     public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-        if (this.isSystem()) {
+        if (this.isSystem() || !getDataSource().getSupportMultiSchema()) {
             return DBUtils.getFullQualifiedName(getDataSource(), this);
         } else {
-            return DBUtils.getFullQualifiedName(getDataSource(), this.getSchema(), this);
+            return DBUtils.getQuotedIdentifier(this.getSchema()) + "." + DBUtils.getFullQualifiedName(getDataSource(), this);
         }
     }
 
