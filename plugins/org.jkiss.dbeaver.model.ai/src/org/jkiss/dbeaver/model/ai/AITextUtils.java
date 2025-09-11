@@ -22,7 +22,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
+import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -103,20 +105,9 @@ public class AITextUtils {
     }
 
     @NotNull
-    public static MessageChunk[] splitIntoChunks(@NotNull SQLDialect dialect,  @NotNull String text) {
-        String[] scriptDelimiters = dialect.getScriptDelimiters();
-
-        if (text.startsWith(SQLConstants.KEYWORD_SELECT)) {
-            for (String delim : scriptDelimiters) {
-                if (text.endsWith(delim)) {
-                    // Likely a SQL query
-                    return new MessageChunk[]{new MessageChunk.Code(text, SQL_LANGUAGE_ID)};
-                }
-            }
-        }
-
+    public static MessageChunk[] splitIntoChunks(@NotNull SQLDialect dialect, @NotNull String text) {
         final List<MessageChunk> chunks = new ArrayList<>();
-        final StringBuilder buffer = new StringBuilder();
+        StringBuilder buffer = new StringBuilder();
         String codeBlockTag = null;
 
         for (String line : text.lines().toArray(String[]::new)) {
@@ -196,5 +187,45 @@ public class AITextUtils {
         }
 
         return output;
+    }
+
+    public static MessageChunk[] processAndSplitCompletion(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIDatabaseContext context,
+        @NotNull AISqlFormatter sqlFormatter,
+        @NotNull String text
+    ) {
+        String processedCompletion = sqlFormatter.formatGeneratedQuery(
+            monitor,
+            context.getExecutionContext().getDataSource(),
+            text
+        );
+
+        return splitIntoChunks(
+            SQLUtils.getDialectFromDataSource(context.getExecutionContext().getDataSource()),
+            processedCompletion
+        );
+    }
+
+    @NotNull
+    public static String extractGeneratedSqlQuery(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIDatabaseContext dbContext,
+        @NotNull AIMessage userMessage,
+        @NotNull String result
+    ) throws DBException {
+        AISqlFormatter sqlFormatter = AIAssistantRegistry.getInstance().getDescriptor().createSqlFormatter();
+        MessageChunk[] messageChunks = processAndSplitCompletion(
+            monitor,
+            dbContext,
+            sqlFormatter,
+            result
+        );
+
+        return convertToSQL(
+            userMessage,
+            messageChunks,
+            dbContext.getExecutionContext().getDataSource()
+        );
     }
 }

@@ -761,7 +761,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public RefreshResult refreshPart(Object source, boolean force)
     {
-        refreshDiagram(force, true);
+        refreshDiagram(force, force);
         return RefreshResult.REFRESHED;
     }
 

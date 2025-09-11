@@ -310,7 +310,7 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                             type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
                         }
                     }
-                    if (tableRef == null && resultColumn != null) {
+                    if (tableRef == null && (resultColumn != null || resultPseudoColumn != null)) {
                         restParts = restParts.subList(1, restParts.size());
                     }
                 } else {
