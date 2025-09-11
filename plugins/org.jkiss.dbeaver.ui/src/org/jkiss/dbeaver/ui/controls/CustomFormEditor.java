@@ -20,9 +20,7 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.ControlListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -77,15 +75,13 @@ public class CustomFormEditor {
     ///////////////////////////////////////////////
     //
 
-    public CustomFormEditor(@NotNull DBSObject databaseObject, @Nullable DBECommandContext commandContext, @NotNull DBPPropertySource propertySource) {
+    public CustomFormEditor(
+        @NotNull DBSObject databaseObject,
+        @Nullable DBECommandContext commandContext,
+        @NotNull DBPPropertySource propertySource
+    ) {
         this.databaseObject = databaseObject;
         this.commandContext = commandContext;
-        this.propertySource = propertySource;
-    }
-
-    public CustomFormEditor(@NotNull DBPPropertySource propertySource) {
-        this.databaseObject = null;
-        this.commandContext = null;
         this.propertySource = propertySource;
     }
 
@@ -98,7 +94,7 @@ public class CustomFormEditor {
     ////////////////////////////////////////////////
     //
 
-    public void updateOtherPropertyValues(Object excludePropId) {
+    public void updateOtherPropertyValues(@Nullable Object excludePropId) {
         List<DBPPropertyDescriptor> allProps = filterProperties(propertySource.getProperties());
 
         Map<DBPPropertyDescriptor, Object> propValues = new HashMap<>();
@@ -172,34 +168,36 @@ public class CustomFormEditor {
 
                 editorMap.put(prop, editControl);
 
-                if (editControl instanceof Combo combo) {
-                    if ((editControl.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
-                        combo.addSelectionListener(new SelectionAdapter() {
+                if (editable) {
+                    if (editControl instanceof Combo combo) {
+                        if ((editControl.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
+                            combo.addSelectionListener(new SelectionAdapter() {
+                                @Override
+                                public void widgetSelected(SelectionEvent e) {
+                                    updatePropertyValue(prop, combo.getText());
+                                }
+                            });
+                        } else {
+                            combo.addModifyListener(e -> {
+                                try {
+                                    updatePropertyValue(prop, combo.getText());
+                                } catch (Exception ex) {
+                                    log.debug("Error setting value from combo: " + ex.getMessage());
+                                }
+                            });
+                        }
+                    } else if (editControl instanceof Text text) {
+                        text.addModifyListener(e -> updatePropertyValue(prop, text.getText()));
+                    } else if (editControl instanceof StyledText text) {
+                        text.addModifyListener(e -> updatePropertyValue(prop, text.getText()));
+                    } else if (editControl instanceof Button button) {
+                        button.addSelectionListener(new SelectionAdapter() {
                             @Override
                             public void widgetSelected(SelectionEvent e) {
-                                updatePropertyValue(prop, combo.getText());
-                            }
-                        });
-                    } else {
-                        combo.addModifyListener(e -> {
-                            try {
-                                updatePropertyValue(prop, combo.getText());
-                            } catch (Exception ex) {
-                                log.debug("Error setting value from combo: " + ex.getMessage());
+                                updatePropertyValue(prop, button.getSelection());
                             }
                         });
                     }
-                } else if (editControl instanceof Text text) {
-                    text.addModifyListener(e -> updatePropertyValue(prop, text.getText()));
-                } else if (editControl instanceof StyledText text) {
-                    text.addModifyListener(e -> updatePropertyValue(prop, text.getText()));
-                } else if (editControl instanceof Button button) {
-                    button.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            updatePropertyValue(prop, button.getSelection());
-                        }
-                    });
                 }
             }
         } finally {
@@ -207,15 +205,21 @@ public class CustomFormEditor {
         }
     }
 
-    private void updatePropertyValue(DBPPropertyDescriptor prop, Object value) {
+    private void updatePropertyValue(@NotNull DBPPropertyDescriptor prop, @Nullable Object value) {
         if (!isLoading) {
             if (prop.getId().equals(DBConstants.PROP_ID_NAME) && databaseObject != null && databaseObject.isPersisted()) {
-                DBEObjectRenamer renamer = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(propertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
+                DBEObjectRenamer renamer = DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(
+                    propertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
                 if (commandContext != null && renamer != null) {
                     try {
                         Map<String, Object> options = new LinkedHashMap<>();
                         options.put(DBEObjectManager.OPTION_UI_SOURCE, this);
-                        renamer.renameObject(commandContext, databaseObject, options, CommonUtils.toString(UIUtils.normalizePropertyValue(value)));
+                        renamer.renameObject(
+                            commandContext,
+                            databaseObject,
+                            options,
+                            CommonUtils.toString(UIUtils.normalizePropertyValue(value))
+                        );
                     } catch (Throwable e) {
                         log.error("Error renaming object", e);
                     }
@@ -237,8 +241,13 @@ public class CustomFormEditor {
      * Text (strings, numbers, dates)
      * Button (booleans)
      */
-    public Control createEditorControl(Composite parent, Object object, DBPPropertyDescriptor property, Object value, boolean readOnly)
-    {
+    public Control createEditorControl(
+        @NotNull Composite parent,
+        @NotNull Object object,
+        @NotNull DBPPropertyDescriptor property,
+        @Nullable Object value,
+        boolean readOnly
+    ) {
         // List
         String propertyDisplayName = property.getDisplayName();
         if (property.isRequired()) {
@@ -252,12 +261,12 @@ public class CustomFormEditor {
             }
             if (items != null) {
                 List<String> strings = new ArrayList<>(items.length);
-                for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                    strings.add(objectValueToString(items[i]));
+                for (Object item : items) {
+                    strings.add(objectValueToString(item));
                 }
                 if (!property.isRequired()) {
                     // Add null value
-                    strings.add(0, "");
+                    strings.addFirst("");
                 }
                 String curValue = objectValueToString(value);
                 if (!CommonUtils.isEmpty(curValue) && !strings.contains(curValue)) {
@@ -266,9 +275,8 @@ public class CustomFormEditor {
                 Combo combo = UIUtils.createLabelCombo(
                     parent,
                     propertyDisplayName,
-                    SWT.BORDER | SWT.DROP_DOWN |
-                        (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY) |
-                        (readOnly ? SWT.READ_ONLY : SWT.NONE));
+                    SWT.BORDER | SWT.DROP_DOWN | (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY)
+                );
 
                 String[] stringsArray = strings.toArray(new String[0]);
                 combo.setItems(stringsArray);
@@ -296,14 +304,9 @@ public class CustomFormEditor {
             layout.marginHeight = 1;
             linkPH.setLayout(layout);
             Link link = new Link(linkPH, SWT.NONE);
-            link.setText(getLinktitle(value));
+            link.setText(getLinkTitle(value));
             link.setData(value);
-            link.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    openObjectLink(link.getData());
-                }
-            });
+            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> openObjectLink(link.getData())));
             link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             return link;
         } else if (isTextPropertyType(propType)) {
@@ -342,7 +345,27 @@ public class CustomFormEditor {
                 GridData gd = new GridData(GridData.FILL_HORIZONTAL);
                 curButtonsContainer.setLayoutData(gd);
             }
-            Button editor = UIUtils.createCheckbox(curButtonsContainer, propertyDisplayName, "", CommonUtils.toBoolean(value), 1);
+            Composite bPH = UIUtils.createComposite(curButtonsContainer, 2);
+            ((GridLayout)bPH.getLayout()).marginRight = 10;
+            Button editor = UIUtils.createCheckbox(
+                bPH,
+                "",
+                "",
+                CommonUtils.toBoolean(value),
+                1
+            );
+            Label label = UIUtils.createLabel(bPH, propertyDisplayName);
+            label.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseUp(MouseEvent e) {
+                    // Handle click on label
+                    if (editor.isEnabled()) {
+                        editor.setSelection(!editor.getSelection());
+                        editor.notifyListeners(SWT.Selection, new Event());
+                    }
+                }
+            });
+
             if (readOnly) {
                 editor.setEnabled(false);
             }
@@ -356,7 +379,8 @@ public class CustomFormEditor {
             Combo combo = UIUtils.createLabelCombo(
                 parent,
                 propertyDisplayName,
-                SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY | (readOnly ? SWT.READ_ONLY : SWT.NONE));
+                SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY | SWT.NONE
+            );
             combo.setItems(strings);
             combo.setText(objectValueToString(value));
             combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
@@ -370,16 +394,16 @@ public class CustomFormEditor {
         }
     }
 
-    private static boolean isLinkProperty(DBPPropertyDescriptor property) {
-        return property instanceof ObjectPropertyDescriptor &&
-            (((ObjectPropertyDescriptor)property).isLinkPossible() || ((ObjectPropertyDescriptor)property).isHref());
+    private static boolean isLinkProperty(@NotNull DBPPropertyDescriptor property) {
+        return property instanceof ObjectPropertyDescriptor opd &&
+            (opd.isLinkPossible() || opd.isHref());
     }
 
-    private String getLinktitle(Object value) {
+    private String getLinkTitle(Object value) {
         return value == null ? "N/A" : "<a>" + objectValueToString(value) + "</a>";
     }
 
-    public void loadEditorValues(Map<DBPPropertyDescriptor, Object> editorValues) {
+    public void loadEditorValues(@NotNull Map<DBPPropertyDescriptor, Object> editorValues) {
         try {
             isLoading = true;
             if (propertySource != null) {
@@ -393,8 +417,7 @@ public class CustomFormEditor {
         }
     }
 
-    public void setEditorValue(Object object, DBPPropertyDescriptor property, Object value)
-    {
+    public void setEditorValue(@NotNull Object object, @NotNull DBPPropertyDescriptor property, @Nullable Object value) {
         Control editorControl = editorMap.get(property);
         Class<?> propertyType = property.getDataType();
         // List
@@ -439,30 +462,31 @@ public class CustomFormEditor {
                 button.setSelection(CommonUtils.toBoolean(value));
             } else if (editorControl instanceof Link link) {
                 link.setData(value);
-                link.setText(getLinktitle(value));
+                link.setText(getLinkTitle(value));
             }
         }
     }
 
     private static String objectValueToString(Object value) {
-        if (value instanceof DBPQualifiedObject) {
-            return ((DBPQualifiedObject) value).getFullyQualifiedName(DBPEvaluationContext.UI);
-        } if (value instanceof DBPNamedObject) {
-            return ((DBPNamedObject) value).getName();
-        } else if (value instanceof Enum) {
-            return ((Enum<?>) value).name();
+        if (value instanceof DBPQualifiedObject qo) {
+            return qo.getFullyQualifiedName(DBPEvaluationContext.UI);
+        } if (value instanceof DBPNamedObject namedObject) {
+            return namedObject.getName();
+        } else if (value instanceof Enum<?> e) {
+            return e.name();
         } else {
             return DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.EDIT);
         }
     }
 
-    private static boolean isTextPropertyType(Class<?> propertyType) {
+    private static boolean isTextPropertyType(@Nullable Class<?> propertyType) {
         return propertyType == null || CharSequence.class.isAssignableFrom(propertyType) ||
             (propertyType.getComponentType() != null && CharSequence.class.isAssignableFrom(propertyType.getComponentType())) ||
             BeanUtils.isNumericType(propertyType);
     }
 
-    public List<DBPPropertyDescriptor> filterProperties(DBPPropertyDescriptor[] props) {
+    @NotNull
+    public List<DBPPropertyDescriptor> filterProperties(@NotNull DBPPropertyDescriptor[] props) {
         List<DBPPropertyDescriptor> result = new ArrayList<>();
         for (DBPPropertyDescriptor prop : props) {
             String category = prop.getCategory();
