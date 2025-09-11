@@ -23,21 +23,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AIEngineDescriptor extends AbstractDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.engine";
 
     private final IConfigurationElement contributorConfig;
-    private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
     private final ObjectType objectType;
     private final ObjectType propertiesType;
 
@@ -46,10 +39,6 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         this.contributorConfig = contributorConfig;
         this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
         this.propertiesType = new ObjectType(contributorConfig, "properties");
-
-        for (IConfigurationElement propGroup : ArrayUtils.safeArray(contributorConfig.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
-            properties.addAll(PropertyDescriptor.extractProperties(propGroup));
-        }
     }
 
     @NotNull
@@ -74,11 +63,6 @@ public class AIEngineDescriptor extends AbstractDescriptor {
 
     public boolean isDefault() {
         return CommonUtils.toBoolean(contributorConfig.getAttribute("default"));
-    }
-
-    @NotNull
-    public List<DBPPropertyDescriptor> getProperties() {
-        return properties;
     }
 
     @NotNull

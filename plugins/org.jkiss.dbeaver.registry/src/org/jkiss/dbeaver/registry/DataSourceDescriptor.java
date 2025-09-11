@@ -1953,10 +1953,16 @@ public class DataSourceDescriptor
         if (!(obj instanceof DataSourceDescriptor source)) {
             return false;
         }
-        return
-            CommonUtils.equalOrEmptyStrings(this.name, source.name) &&
-                CommonUtils.equalOrEmptyStrings(this.description, source.description) &&
-                equalConfiguration(source);
+        return isLooselyEqualTo(source) && equalConfiguration(source) && equalInternalConfiguration(source);
+    }
+
+    public boolean isLooselyEqualTo(DataSourceDescriptor source) {
+        return CommonUtils.equalOrEmptyStrings(this.name, source.name) &&
+            CommonUtils.equalOrEmptyStrings(this.description, source.description);
+    }
+
+    public boolean equalInternalConfiguration(DataSourceDescriptor source) {
+        return CommonUtils.equalObjects(this.extensions, source.extensions);
     }
 
     public boolean equalConfiguration(DataSourceDescriptor source) {
@@ -1976,7 +1982,6 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
                 CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
                 CommonUtils.equalObjects(this.folder, source.folder) &&
-                CommonUtils.equalObjects(this.extensions, source.extensions) &&
                 CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
                 CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }
