@@ -156,15 +156,6 @@ public class SQLQuery implements SQLScriptElement {
                 // Detect single source table (no joins, no group by, no sub-selects)
                 {
                     FromItem fromItem = plainSelect.getFromItem();
-                    if (fromItem instanceof ParenthesedSelect ps &&
-                        isPotentiallySingleSourceSelect(plainSelect) &&
-                        ps.getPlainSelect() != null &&
-                        isPotentiallySingleSourceSelect(ps.getPlainSelect())
-                    ) {
-                        // Real select is in sub-select
-                        plainSelect = ps.getPlainSelect();
-                        fromItem = plainSelect.getFromItem();
-                    }
                     if (fromItem instanceof Table fromTable && isPotentiallySingleSourceSelect(plainSelect)) {
                         boolean hasSubSelects = false;
                         boolean hasDirectSelects = false;

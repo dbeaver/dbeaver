@@ -40,7 +40,8 @@ public class CubridProcedureManager extends GenericProcedureManager {
     public boolean canCreateObject(@NotNull Object container) {
         CubridUser user = (CubridUser) container;
         CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
-        return dataSource.isShard();
+        boolean isCurrentUser = user.getName().equalsIgnoreCase(dataSource.getCurrentUser());
+        return isCurrentUser || !dataSource.isShard();
     }
 
     @Override
