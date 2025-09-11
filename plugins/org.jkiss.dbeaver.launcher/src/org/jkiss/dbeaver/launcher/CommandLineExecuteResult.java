@@ -14,22 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.launcher;
 
-package org.jkiss.dbeaver.model.app;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-
-/**
- * DB desktop application.
- */
-public interface DBPApplicationDesktop extends DBPApplication {
-
-    DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform);
-
-    @NotNull
-    DBPPreferenceStore getPreferenceStore();
-
-    boolean isForcedRestart();
-
+public record CommandLineExecuteResult(boolean shutdown, short exitCode) {
+    public CommandLineExecuteResult(boolean shutdown) {
+        this(shutdown, shutdown ? (short) 0 : (short) -1);
+    }
 }
