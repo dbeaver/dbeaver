@@ -203,7 +203,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
         // Configure how content assist information will appear.
         configureContentAssistant(store, assistant);
-        assistant.setSorter(new SQLCompletionSorter(editor));
+        assistant.setSorter(new SQLCompletionSorterUI(editor));
 
         assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
 
