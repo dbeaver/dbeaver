@@ -737,11 +737,12 @@ public final class SQLUtils {
             }
             prevChar = c;
         }
-        String alias;
+        String alias = "t";
         if (!CommonUtils.isEmpty(buf)) {
-            alias = buf.toString().toLowerCase(Locale.ENGLISH);
-        } else {
-            alias = "t";
+            String generatedAlias = buf.toString();
+            if (dialect.getReservedWords().stream().noneMatch(kw -> kw.equalsIgnoreCase(generatedAlias))) {
+                alias = generatedAlias.toLowerCase(Locale.ENGLISH);
+            }
         }
 
         String result = alias;
