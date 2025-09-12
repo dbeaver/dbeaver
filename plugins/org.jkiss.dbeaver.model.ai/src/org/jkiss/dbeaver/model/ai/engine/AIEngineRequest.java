@@ -24,9 +24,9 @@ import java.util.List;
 public record AIEngineRequest(
     @NotNull List<AIMessage> messages
 ) {
+
     @Override
     public String toString() {
         return "AI request " + messages;
     }
-
 }

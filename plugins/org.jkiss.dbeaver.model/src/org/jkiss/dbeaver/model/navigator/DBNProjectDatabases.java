@@ -218,8 +218,8 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
             }
         }
 
-        for (DBPDataSourceRegistry registy : registryToRefresh) {
-            registy.flushConfig();
+        for (DBPDataSourceRegistry registry : registryToRefresh) {
+            registry.flushConfig();
         }
 
         refreshChildren();
@@ -420,10 +420,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                             DBNEvent.NodeChange.BEFORE_LOAD : DBNEvent.NodeChange.AFTER_LOAD);
                 }
                 break;
-                }
+            }
             case OBJECT_UPDATE:
-            case OBJECT_SELECT:
-            {
+            case OBJECT_SELECT: {
                 DBNDatabaseNode dbmNode = model.getNodeByObject(event.getObject());
                 if (dbmNode != null) {
                     DBNEvent.NodeChange nodeChange;

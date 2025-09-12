@@ -22,9 +22,11 @@ import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-class DataSourceParseResults {
+public class DataSourceParseResults {
     public final Set<DBPDataSourceContainer> updatedDataSources = new LinkedHashSet<>();
     public final Set<DBPDataSourceContainer> addedDataSources = new LinkedHashSet<>();
+    public final Set<DBPDataSourceContainer> removedDataSources = new LinkedHashSet<>();
     public final Set<DBPDataSourceFolder> addedFolders = new LinkedHashSet<>();
     public final Set<DBPDataSourceFolder> updatedFolders = new LinkedHashSet<>();
+    public final Set<DBPDataSourceFolder> removedFolders = new LinkedHashSet<>();
 }

@@ -31,6 +31,9 @@ public class ClickhouseConstants {
     public static final String DATA_TYPE_IPV4 = "ipv4";
     public static final String DATA_TYPE_IPV6 = "ipv6";
     public static final String DATA_TYPE_STRING = "String";
+    public static final String DATA_TYPE_ARRAY = "Array";
+    public static final String DATA_TYPE_TUPLE = "Tuple";
+    public static final String DATA_TYPE_MAP = "Map";
     public static final String CLICKHOUSE_SETTING_SESSION_ID = "clickhouse_setting_session_id";
     public static final String CLICKHOUSE_SETTING_SESSION_TIMEOUT = "clickhouse_setting_session_timeout";
 }

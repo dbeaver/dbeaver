@@ -210,7 +210,7 @@
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
         </editor>
         <editor id="schedulerJob.action" class="org.jkiss.dbeaver.ext.oracle.ui.editors.SchedulerJobActionEditor"
-                label="%editor.scheduler.job.action.name" description="%editor.schedulerJob.action.description" icon="#sql_text" position="additions_middle"
+                label="%editor.scheduler.job.action.name" description="%editor.scheduler.job.action.description" icon="#sql_text" position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
         </editor>

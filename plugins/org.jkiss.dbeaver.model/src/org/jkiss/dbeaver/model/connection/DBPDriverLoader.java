@@ -45,7 +45,7 @@ public interface DBPDriverLoader {
     @NotNull
     <T> T getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
 
-    void loadDriver(DBRProgressMonitor monitor) throws DBException;
+    void loadDriver(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Flag that shows if a driver needs external dependencies (f.e. not all files are present).
@@ -67,6 +67,6 @@ public interface DBPDriverLoader {
      */
     boolean downloadDriverLibraries(@NotNull DBRProgressMonitor monitor, boolean resetVersions);
 
-    boolean resolveDriverFiles(Path targetFileLocation);
+    boolean resolveDriverFiles(@NotNull Path targetFileLocation);
 
 }

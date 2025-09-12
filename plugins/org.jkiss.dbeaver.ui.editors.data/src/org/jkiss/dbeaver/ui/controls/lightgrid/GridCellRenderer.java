@@ -336,7 +336,7 @@ public class GridCellRenderer extends AbstractRenderer {
             if (iconList != null) {
                 int iconsPaddingWidth = iconsWidth + 7;
                 Color oldBg = gc.getBackground(), oldFg = gc.getForeground();
-                gc.setBackground(focus ? grid.getBackground() : background);
+                gc.setBackground(background);
                 int leftDivPos = bounds.x + bounds.width - iconsPaddingWidth;
                 gc.fillRectangle(
                     leftDivPos,

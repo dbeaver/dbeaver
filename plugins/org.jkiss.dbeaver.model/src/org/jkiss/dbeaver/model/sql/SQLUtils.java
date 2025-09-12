@@ -214,12 +214,19 @@ public final class SQLUtils {
 
         for (int i = 0; i < like.length(); i++) {
             char c = like.charAt(i);
-            if (c == '*') result.append(".*");
-            else if (c == '?' || c == '_') result.append(".");
-            else if (c == '%') result.append(".*");
-            else if (Character.isLetterOrDigit(c)) result.append(c);
-            else if (c == '(' || c == ')' || c == '[' || c == ']') result.append('\\').append(c);
-            else if (c == '\\') {
+            if (c == '*') {
+                result.append(".*");
+            } else if (c == '?' || c == '_') {
+                result.append(".");
+            } else if (c == '%') {
+                result.append(".*");
+            } else if (Character.isLetterOrDigit(c)) {
+                result.append(c);
+            } else if (c == '(' || c == ')' || c == '[' || c == ']') {
+                result.append('\\').append(c);
+            } else if (c == '+' || c == '^' || c == '$' || c == '.' || c == '|' || c == '{' || c == '}') {
+                result.append('\\').append(c);
+            } else if (c == '\\') {
                 if (i < like.length() - 1) {
                     char nc = like.charAt(i + 1);
                     if (nc == '_' || nc == '*' || nc == '?' || nc == '.' || nc == '%') {
@@ -229,8 +236,7 @@ public final class SQLUtils {
                         result.append("\\");
                     }
                 }
-            }
-            else {
+            } else {
                 result.append(c);
             }
         }
@@ -716,25 +722,27 @@ public final class SQLUtils {
 
         SQLDialect dialect = entity.getParentObject().getDataSource().getSQLDialect();
         StringBuilder buf = new StringBuilder();
-        boolean prevInvalid = true;
+        boolean prevNonLetter = true;
         char prevChar = 0;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
-            if ((buf.isEmpty() && !dialect.validIdentifierStart(c)) || (!buf.isEmpty() && !dialect.validIdentifierPart(c, false))) {
-                prevInvalid = true;
+            boolean isValidChar = (buf.isEmpty() && dialect.validIdentifierStart(c)) || (!buf.isEmpty() && dialect.validIdentifierPart(c, false));
+            if (!Character.isLetter(c)) {
+                prevNonLetter = true;
             } else {
-                if (prevInvalid || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c))) {
+                if (isValidChar && (prevNonLetter || (prevChar != 0 && Character.isLowerCase(prevChar) && Character.isUpperCase(c)))) {
                     buf.append(c);
                 }
-                prevInvalid = false;
+                prevNonLetter = false;
             }
             prevChar = c;
         }
-        String alias;
+        String alias = "t";
         if (!CommonUtils.isEmpty(buf)) {
-            alias = buf.toString().toLowerCase(Locale.ENGLISH);
-        } else {
-            alias = "t";
+            String generatedAlias = buf.toString();
+            if (dialect.getReservedWords().stream().noneMatch(kw -> kw.equalsIgnoreCase(generatedAlias))) {
+                alias = generatedAlias.toLowerCase(Locale.ENGLISH);
+            }
         }
 
         String result = alias;

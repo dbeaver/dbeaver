@@ -56,7 +56,7 @@ public interface DBPPlatformUI {
         STOP,
         RETRY,
     }
-    
+
     class UserChoiceResponse {
         /**
          * index of the user's choice or out of range value (-1) on dialog failure
@@ -131,6 +131,7 @@ public interface DBPPlatformUI {
     /**
      * Asks for password change. Returns null if user canceled this action.
      */
+    @Nullable
     DBAPasswordChangeInfo promptUserPasswordChange(String prompt, @Nullable String userName, @Nullable String oldPassword, boolean userEditable, boolean oldPasswordVisible);
 
     /**
