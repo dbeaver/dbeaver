@@ -726,11 +726,10 @@ public class SQLEditorUtils {
         }
     }
 
-    public static boolean openSqlConsoleAndTryConnect(@NotNull DBPDataSourceContainer container, @NotNull Consumer<SQLEditor> onConnected) {
+    public static boolean openNewSqlConsoleAndTryConnect(@NotNull DBPDataSourceContainer container, @NotNull Consumer<SQLEditor> onConnected) {
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
         if (serviceSQL != null) {
             SQLEditor editor = (SQLEditor) serviceSQL.openSQLConsole(container, null, null, "Console", "");
-            onConnected.accept(editor);
             EditorConnector connector = new EditorConnector(editor, container, onConnected);
             connector.engage();
             return true;
