@@ -16,14 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone;
 
-import org.apache.commons.cli.*;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.Platform;
+import org.apache.commons.cli.CommandLine;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.ApplicationCommandLine;
-import org.jkiss.dbeaver.model.cli.CmdProcessResult;
+import org.jkiss.dbeaver.model.cli.CliProcessResult;
+import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
@@ -81,27 +79,6 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
             .addOption("registryMultiLanguage", false, "Multi-language mode")
         ;
     }
-    protected static final Map<String, CommandLineParameterDescriptor> customParameters = new LinkedHashMap<>();
-
-    static {
-        IExtensionRegistry er = Platform.getExtensionRegistry();
-        // Load datasource providers from external plugins
-        IConfigurationElement[] extElements = er.getConfigurationElementsFor(EXTENSION_ID);
-        for (IConfigurationElement ext : extElements) {
-            if ("parameter".equals(ext.getName())) {
-                try {
-                    CommandLineParameterDescriptor parameter = new CommandLineParameterDescriptor(ext);
-                    customParameters.put(parameter.getName(), parameter);
-                } catch (Exception e) {
-                    log.error("Can't load contributed parameter", e);
-                }
-            }
-        }
-
-        for (CommandLineParameterDescriptor param : customParameters.values()) {
-            ALL_OPTIONS.addOption(param.getName(), param.getLongName(), param.hasArg(), param.getDescription());
-        }
-    }
 
     private DBeaverCommandLine() {
         super();
@@ -115,32 +92,24 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
     }
 
     /**
-     * @return {@link CmdProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
+     * @return {@link CliProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
      */
-    public CmdProcessResult executeCommandLineCommands(
+    public CliProcessResult executeCommandLineCommands(
         @Nullable CommandLine commandLine,
         @Nullable IInstanceController controller,
         boolean uiActivated
     ) throws Exception {
-        CmdProcessResult result = super.executeCommandLineCommands(commandLine, controller, uiActivated);
-        if (result.getPostAction() != CmdProcessResult.PostAction.UNKNOWN_COMMAND) {
+        CliProcessResult result = super.executeCommandLineCommands(commandLine, controller, uiActivated);
+        if (result.getPostAction() != CliProcessResult.PostAction.UNKNOWN_COMMAND) {
             return result;
         }
         //must be checked in super method
         Objects.requireNonNull(commandLine);
-        for (CommandLineParameterDescriptor param : customParameters.values()) {
-            if (param.isExclusiveMode() && (commandLine.hasOption(param.getName()) || commandLine.hasOption(param.getLongName()))) {
-                if (param.isForceNewInstance()) {
-                    return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
-                }
-                break;
-            }
-        }
 
 
         if (commandLine.hasOption(PARAM_NEW_INSTANCE)) {
             // Do not try to execute commands in running instance
-            return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+            return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
         }
 
         if (commandLine.hasOption(PARAM_REUSE_WORKSPACE)) {
@@ -159,14 +128,14 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
                     SystemVariablesResolver.setConfiguration(properties);
                 } catch (Exception e) {
                     log.error("Error parsing command line ", e);
-                    return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+                    return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
                 }
             }
         }
 
         if (controller == null) {
             log.debug("Can't process commands because no running instance is present");
-            return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+            return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
         }
 
         boolean exitAfterExecute = false;
@@ -174,7 +143,7 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
             // These command can't be executed locally
             if (commandLine.hasOption(PARAM_STOP)) {
                 controller.quit();
-                return new CmdProcessResult(CmdProcessResult.PostAction.SHUTDOWN);
+                return new CliProcessResult(CliProcessResult.PostAction.SHUTDOWN);
             }
         }
 
@@ -218,17 +187,17 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
             exitAfterExecute = true;
         }
 
-        var postAction = exitAfterExecute ? CmdProcessResult.PostAction.SHUTDOWN : CmdProcessResult.PostAction.START_INSTANCE;
-        return new CmdProcessResult(postAction);
+        var postAction = exitAfterExecute ? CliProcessResult.PostAction.SHUTDOWN : CliProcessResult.PostAction.START_INSTANCE;
+        return new CliProcessResult(postAction);
     }
 
     /**
-     * @return {@link CmdProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
+     * @return {@link CliProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
      */
     //TODO: we should never call this method?
-    public CmdProcessResult handleCommandLineAsClient(CommandLine commandLine, String instanceLoc) {
+    public CliProcessResult handleCommandLineAsClient(CommandLine commandLine, String instanceLoc) {
         if (commandLine == null || (ArrayUtils.isEmpty(commandLine.getArgs()) && ArrayUtils.isEmpty(commandLine.getOptions()))) {
-            return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+            return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
         }
 
         // Reuse workspace if custom parameters are specified
@@ -247,46 +216,6 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
         } catch (Throwable e) {
             log.error("Error while calling remote server", e);
         }
-        return new CmdProcessResult(CmdProcessResult.PostAction.START_INSTANCE);
+        return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
     }
-
-    public boolean handleCustomParameters(CommandLine commandLine) {
-        if (commandLine == null) {
-            return false;
-        }
-        boolean exit = false;
-        for (Option cliOption : commandLine.getOptions()) {
-            CommandLineParameterDescriptor param = customParameters.get(cliOption.getOpt());
-            if (param == null) {
-                param = customParameters.get(cliOption.getLongOpt());
-            }
-            if (param == null) {
-                //log.error("Wrong command line parameter " + cliOption);
-                continue;
-            }
-            try {
-                if (param.hasArg()) {
-                    for (String optValue : commandLine.getOptionValues(param.getName())) {
-                        param.getHandler().handleParameter(
-                            commandLine,
-                            param.getName(),
-                            optValue);
-                    }
-                } else {
-                    param.getHandler().handleParameter(
-                        commandLine,
-                        param.getName(),
-                        null);
-                }
-            } catch (Exception e) {
-                log.error("Error evaluating parameter '" + param.getName() + "'", e);
-            }
-            if (param.isExitAfterExecute()) {
-                exit = true;
-            }
-        }
-
-        return exit;
-    }
-
 }

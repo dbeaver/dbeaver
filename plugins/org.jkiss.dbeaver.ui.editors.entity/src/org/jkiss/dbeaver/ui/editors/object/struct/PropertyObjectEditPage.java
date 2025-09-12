@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
+import org.jkiss.dbeaver.ui.ConComposite;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomFormEditor;
 import org.jkiss.dbeaver.ui.editors.object.internal.ObjectEditorMessages;
@@ -81,7 +82,7 @@ public class PropertyObjectEditPage<OBJECT extends DBSObject> extends BaseObject
         final Composite composite;
         String groupTitle = getPropertiesGroupTitle();
         if (CommonUtils.isEmpty(groupTitle)) {
-            composite = new Composite(parent, SWT.NONE);
+            composite = new ConComposite(parent, SWT.NONE);
         } else {
             composite = new Group(parent, SWT.NONE);
             ((Group)composite).setText(groupTitle);

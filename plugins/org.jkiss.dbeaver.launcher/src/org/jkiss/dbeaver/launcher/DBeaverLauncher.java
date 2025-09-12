@@ -34,12 +34,11 @@ import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -133,6 +132,7 @@ public class DBeaverLauncher {
     private boolean initialize = false;
     private boolean newInstance = false;
     protected boolean splashDown = false;
+    protected boolean cliMode = false;
 
     public final class SplashHandler extends Thread {
         @Override
@@ -610,8 +610,9 @@ public class DBeaverLauncher {
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
         try {
-            if (processCommandLineAsClient(passThruArgs, dbeaverDataDir)) {
-                System.setProperty(PROP_EXITCODE, Integer.toString(0));
+            CommandLineExecuteResult commandLineExecuteResult = processCommandLineAsClient(passThruArgs, dbeaverDataDir);
+            if (commandLineExecuteResult.shutdown()) {
+                System.setProperty(PROP_EXITCODE, Integer.toString(commandLineExecuteResult.exitCode()));
                 return;
             }
         } catch (Exception e) {
@@ -695,17 +696,17 @@ public class DBeaverLauncher {
         return true;
     }
 
-    private boolean processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
+    private CommandLineExecuteResult processCommandLineAsClient(String[] args, Path dbeaverDataDir) throws Exception {
         if (args == null || args.length == 0 || newInstance) {
-            return false;
+            return new CommandLineExecuteResult(cliMode);
         }
         Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
         if (Files.notExists(workspacePath)) {
-            return false;
+            return new CommandLineExecuteResult(cliMode);
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
         if (serverPort == null) {
-            return false;
+            return new CommandLineExecuteResult(cliMode);
         }
         //TODO auto-closable after full 21 java migration
         ExecutorService httpExecutor = Executors.newSingleThreadExecutor();
@@ -715,6 +716,7 @@ public class DBeaverLauncher {
             .sslContext(initCustomSslContext())
             .build();
         boolean shutdownApplication = false;
+        short exitCode = -1;
         try {
             HttpResponse.BodyHandler<String> stringBodyHandler =
                 response -> HttpResponse.BodySubscribers.ofString(StandardCharsets.UTF_8);
@@ -731,17 +733,14 @@ public class DBeaverLauncher {
             String responseData = response.body();
             if (!responseData.startsWith("{") || !responseData.endsWith("}")) {
                 System.out.println("Response is not expected json: " + responseData);
-                return false;
+                return new CommandLineExecuteResult(cliMode);
             }
-            // remove json '{' '}' braces
-            //            responseData = responseData.substring(1, responseData.length() - 1);
-            Pattern actionPattern = Pattern.compile("\"postAction\"\s*:\s*\"([^,]*)\",");
-            Pattern outputPattern = Pattern.compile("\"output\"\s*:\s*\"(.*?)\"}");
 
             String action = null;
             String output = null;
-            Matcher actionMatcher = actionPattern.matcher(responseData);
-            Matcher outputMatcher = outputPattern.matcher(responseData);
+            Matcher actionMatcher = CommandLineConstants.ACTION_PATTERN.matcher(responseData);
+            Matcher outputMatcher = CommandLineConstants.OUTPUT_PATTERN.matcher(responseData);
+            Matcher exitCodeMatcher = CommandLineConstants.EXIT_CODE_PATTERN.matcher(responseData);
 
             if (actionMatcher.find()) {
                 action = actionMatcher.group(1);
@@ -749,7 +748,13 @@ public class DBeaverLauncher {
             if (outputMatcher.find()) {
                 output = outputMatcher.group(1);
             }
-
+            if (exitCodeMatcher.find()) {
+                try {
+                    exitCode = Short.parseShort(exitCodeMatcher.group(1));
+                } catch (NumberFormatException e) {
+                    System.out.println("Error parsing exit code: " + e.getMessage());
+                }
+            }
             shutdownApplication = "SHUTDOWN".equals(action);
 
             if ("ERROR".equals(action)) {
@@ -757,9 +762,19 @@ public class DBeaverLauncher {
             }
 
             if (output != null && !output.isEmpty()) {
-                output = output.replace("\\n", "\n");
+                // since we don't have gson and don't deserialize the response, remove escaping for cleaner output
+                output = output
+                    .replace("\\\\\\\"", "\"")
+                    .replace("\\\"", "\"")
+                    .replace("\\\\\\\\t", "\t")
+                    .replace("\\\"{", "{")
+                    .replace("}\\\"", "}")
+                    .replace("\\\\\\\\n", "\n")
+                    .replace("\\\\n", "\n")
+                    .replace("\\n", "\n");
                 System.out.println(output);
             }
+            return new CommandLineExecuteResult(shutdownApplication || cliMode, exitCode);
         } catch (Exception e) {
             if (e.getMessage() != null) {
                 System.out.println("Error during calling DBeaver server: " + e.getMessage());
@@ -767,7 +782,7 @@ public class DBeaverLauncher {
         } finally {
             httpExecutor.shutdown();
         }
-        return shutdownApplication;
+        return new CommandLineExecuteResult(shutdownApplication || cliMode, exitCode);
     }
 
     /**
@@ -1745,6 +1760,11 @@ public class DBeaverLauncher {
             // look for the new instance arg
             if (args[i].equalsIgnoreCase(NEW_INSTANCE)) {
                 newInstance = true;
+                found = true;
+            }
+
+            if (args[i].equalsIgnoreCase(Constants.ARG_FORCE_CLI_MODE)) {
+                cliMode = true;
                 found = true;
             }
 

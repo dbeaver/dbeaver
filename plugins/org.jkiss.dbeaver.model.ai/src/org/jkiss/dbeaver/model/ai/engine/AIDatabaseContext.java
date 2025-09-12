@@ -28,9 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public class AIDatabaseContext {
     private final DBSLogicalDataSource dataSource;
@@ -60,9 +58,9 @@ public class AIDatabaseContext {
         return scope;
     }
 
-    @NotNull
+    @Nullable
     public List<DBSObject> getCustomEntities() {
-        return Collections.unmodifiableList(Objects.requireNonNull(customEntities, "Scope is not custom"));
+        return customEntities;
     }
 
     @NotNull
@@ -98,7 +96,7 @@ public class AIDatabaseContext {
             return this;
         }
 
-        @Nullable
+        @NotNull
         public AIDatabaseContext build() throws DBException {
             if (scope == null) {
                 throw new DBException("Scope must be specified");
@@ -107,7 +105,7 @@ public class AIDatabaseContext {
                 throw new DBException("Custom entities must be specified when using custom scope");
             }
             if (executionContext == null) {
-                return null;
+                throw new DBException("Execution context must be specified");
             }
             DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
             if (dataSource.getCurrentCatalog() == null && contextDefaults != null) {

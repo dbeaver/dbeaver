@@ -28,7 +28,7 @@ public interface AISchemaGenerator {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntity entity,
         @Nullable DBCExecutionContext ctx,
-        @NotNull AIDdlGenerationOptions options,
+        @NotNull AISchemaGenerationOptions options,
         boolean useFqn
     ) throws DBException;
 }

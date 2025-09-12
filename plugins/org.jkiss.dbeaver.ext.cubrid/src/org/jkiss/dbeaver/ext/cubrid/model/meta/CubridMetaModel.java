@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.cubrid.model.plan.CubridQueryPlanner;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
@@ -79,6 +80,10 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                     String name = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.NAME);
                     String description = JDBCUtils.safeGetStringTrimmed(dbResult, CubridConstants.COMMENT);
                     CubridUser user = new CubridUser(dataSource, name, description);
+                    String defaultUser = ((CubridDataSource) dataSource).getCurrentUser();
+                    if (defaultUser.equalsIgnoreCase(user.getName())) {
+                        user.setVirtual(true);
+                    }
                     users.add(user);
 	            }
             }
@@ -99,12 +104,14 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         String sql = "select a.*,a.class_name as TABLE_NAME, case when class_type = 'CLASS' then 'TABLE'\r\n"
                 + " when class_type = 'VCLASS' then 'VIEW' end as TABLE_TYPE,\r\n"
                 + " a.comment as REMARKS, b.current_val from db_class a LEFT JOIN\r\n"
-                + " db_serial b on a.class_name = b.class_name\r\n"
+                + " (select class_name, current_val from db_serial where owner.name = ?\r\n"
+                + " group by class_name) b on a.class_name = b.class_name\r\n"
                 + " left join db_partition p on a.class_name = p.partition_class_name\r\n"
                 + " where a.owner_name = ? and p.partition_class_name is null";
         sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, owner.getName());
+        dbStat.setString(2, owner.getName());
         return dbStat;
     }
 
@@ -412,7 +419,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
         @NotNull Map<String, Object> options) throws DBException {
         String fallbackDDL = "-- View definition not available";
         try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load view ddl")) {
-            String sql = String.format("show create view %s", ((CubridView) object).getUniqueName());
+            String sql = String.format("show create view %s", object.getFullyQualifiedName(DBPEvaluationContext.DDL));
             sql = ((CubridDataSource) object.getDataSource()).wrapShardQuery(sql);
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -428,7 +435,7 @@ public class CubridMetaModel extends GenericMetaModel implements DBCQueryTransfo
                     if (CommonUtils.isEmpty(viewName) || CommonUtils.isEmpty(ddlFragments)) {
                         return fallbackDDL;
                     }
-                    String ddl = "create or replace view " + viewName + " as " + String.join(" union all ", ddlFragments);
+                    String ddl = "create or replace view " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) + " as " + String.join(" union all ", ddlFragments);
                     return SQLFormatUtils.formatSQL(object.getDataSource(), ddl);
                 }
             }

@@ -176,11 +176,6 @@ public class UIUtils {
         };
     }
 
-    public static void createToolBarSeparator(Composite toolBar, int style) {
-        Label label = new Label(toolBar, SWT.NONE);
-        label.setImage(DBeaverIcons.getImage((style & SWT.HORIZONTAL) == SWT.HORIZONTAL ? UIIcon.SEPARATOR_H : UIIcon.SEPARATOR_V));
-    }
-
     public static void createLabelSeparator(Composite toolBar, int style) {
         Label label = new Label(toolBar, SWT.SEPARATOR | style);
         label.setLayoutData(new GridData(style == SWT.HORIZONTAL ? GridData.FILL_HORIZONTAL : GridData.FILL_VERTICAL));
@@ -686,7 +681,7 @@ public class UIUtils {
             label.setText(text);
             control = label;
         } else {
-            control = createInfoLink(parent, "<a href=\"#\">" + text + "</a>", callback).getParent();
+            control = createInfoLink(parent, createHrefText(text), callback).getParent();
         }
 
         if (gridStyle != SWT.NONE || hSpan > 1) {
@@ -696,6 +691,11 @@ public class UIUtils {
         }
 
         return control;
+    }
+
+    @NotNull
+    private static String createHrefText(@NotNull String text) {
+        return "<a href=\"#\">" + text + "</a>";
     }
 
     @NotNull
@@ -730,6 +730,14 @@ public class UIUtils {
         return link;
     }
 
+    public static void setInfoLinkText(@NotNull Control infoLink, @NotNull String text) {
+        if (infoLink instanceof Composite comp) {
+            Link link = UIUtils.getChildOfType(comp, Link.class);
+            if (link != null) {
+                link.setText(createHrefText(text));
+            }
+        }
+    }
     public static Text createLabelText(Composite parent, String label, String value) {
         return createLabelText(parent, label, value, SWT.BORDER);
     }
@@ -1262,7 +1270,9 @@ public class UIUtils {
         @Nullable SelectionListener selectionListener
     ) {
         Button button = new Button(parent, SWT.PUSH);
-        button.setText(label);
+        if (label != null) {
+            button.setText(label);
+        }
         button.setFont(JFaceResources.getDialogFont());
         if (icon != null) {
             button.setImage(DBeaverIcons.getImage(icon));
@@ -2249,12 +2259,21 @@ public class UIUtils {
         return BaseThemeSettings.instance.monospaceFont;
     }
 
-    public static <T extends Control> T getParentOfType(Control control, Class<T> parentType) {
+    public static <T extends Control> T getParentOfType(@NotNull Control control, @NotNull Class<T> parentType) {
         while (control != null) {
             if (parentType.isInstance(control)) {
                 return parentType.cast(control);
             }
             control = control.getParent();
+        }
+        return null;
+    }
+
+    public static <T extends Control> T getChildOfType(@NotNull Composite parent, @NotNull Class<T> childType) {
+        for (Control child : parent.getChildren()) {
+            if (childType.isInstance(child)) {
+                return childType.cast(child);
+            }
         }
         return null;
     }
@@ -2342,7 +2361,7 @@ public class UIUtils {
 
     public static void installAndUpdateMainFont(@NotNull Control control) {
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.DBeaver.MAIN_FONT,
             s -> applyMainFont(control),
             control
         );
@@ -2373,7 +2392,7 @@ public class UIUtils {
     }
 
     private static boolean mainFontIsDefault() {
-        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBeaver.MAIN_FONT);
         final FontData[] defaultFontData = JFaceResources.getFontRegistry().getFontData(JFaceResources.DEFAULT_FONT);
         return Arrays.equals(mainFontData, defaultFontData);
     }
@@ -2537,5 +2556,39 @@ public class UIUtils {
                 );
             });
         }};
+    }
+
+    /**
+     * Sets width hint for a control with GridData.
+     * Creates new GridData with FILL_HORIZONTAL if not exists.
+     *
+     * @param widget Control to set width hint for
+     * @param widthHint Desired width in pixels
+     */
+    public static void setWidgetWidthHint(@NotNull Control widget, int widthHint) {
+        if (widget.isDisposed()) {
+            return;
+        }
+
+        Composite parent = widget.getParent();
+        if (parent == null || !(parent.getLayout() instanceof GridLayout)) {
+            return;
+        }
+
+        Object layoutData = widget.getLayoutData();
+        GridData gd;
+
+        if (layoutData instanceof GridData gridData) {
+            gd = gridData;
+        } else {
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            widget.setLayoutData(gd);
+        }
+
+        gd.widthHint = widthHint;
+    }
+
+    public static void setDefaultTextControlWidthHint(@NotNull Control widget) {
+        setWidgetWidthHint(widget, 150);
     }
 }

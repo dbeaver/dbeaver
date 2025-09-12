@@ -684,7 +684,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             final DBDAttributeBinding attr = getAttributeFromGrid(colElement, gridRow);
                             final ResultSetRow row = getResultRowFromGrid(colElement, gridRow);
                             if (attr == null || row == null ||
-                                controller.getAttributeReadOnlyStatus(attr, true, true) != null
+                                controller.getAttributeReadOnlyStatus(attr, true, false) != null
                             ) {
                                 continue;
                             }

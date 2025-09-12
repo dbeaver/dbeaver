@@ -38,6 +38,21 @@ public class OracleConstants {
     public static final String VIEW_DBA_SOURCE = "DBA_SOURCE";
     public static final String VIEW_DBA_TAB_PRIVS = "DBA_TAB_PRIVS";
 
+    public static final String OPTIMIZER_VERSION_102 = "10.2.0.5";
+    public static final String OPTIMIZER_VERSION_121 = "12.1.0.1";
+    public static final String OPTIMIZER_VERSION_181 = "18.1.0";
+    public static final String OPTIMIZER_VERSION_191 = "19.1.0";
+    public static final String OPTIMIZER_VERSION_231 = "23.1.0";
+    public static final String OPTIMIZER_VERSION_DEFAULT = OPTIMIZER_VERSION_102;
+    public static final String[] OPTIMIZER_VERSIONS = {
+        OPTIMIZER_VERSION_102,
+        OPTIMIZER_VERSION_121,
+        OPTIMIZER_VERSION_181,
+        OPTIMIZER_VERSION_191,
+        OPTIMIZER_VERSION_231,
+    };
+    public static final String OPTIMIZER_DOCS_LINK = "https://docs.oracle.com/en/database/oracle/oracle-database/23/refrn/OPTIMIZER_FEATURES_ENABLE.html";
+
     public static final String[] SYSTEM_SCHEMAS = {
         "CTXSYS",
         "DBSNMP",
@@ -85,10 +100,12 @@ public class OracleConstants {
     public static final String PROP_ALWAYS_USE_DBA_VIEWS = DBConstants.INTERNAL_PROP_PREFIX + "always-use-dba-views@";
     public static final String PROP_USE_RULE_HINT = DBConstants.INTERNAL_PROP_PREFIX + "use-rule-hint@";
     public static final String PROP_USE_META_OPTIMIZER = DBConstants.INTERNAL_PROP_PREFIX + "use-meta-optimizer@";
+    public static final String PROP_USE_META_OPTIMIZER_VERSION = "oracle-meta-optimizer-version";
     public static final String PROP_METADATA_USE_SYS_SCHEMA = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-sys-schema@";
     public static final String PROP_METADATA_USE_SIMPLE_CONSTRAINTS = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-simple-constraints@";
     public static final String PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-alternative-table-query@";
     public static final String PROP_SEARCH_METADATA_IN_SYNONYMS = "oracle.meta-search-in-synonyms"; //$NON-NLS-1$
+    public static final String PROP_SEARCH_METADATA_IN_SEQUENCES = "oracle.meta-search-in-sequences"; //$NON-NLS-1$
     public static final String PROP_SHOW_DATE_AS_DATE = "oracle.show-date-as-date"; //$NON-NLS-1$
     public static final String PROP_ID_LOCKED = "locked";
     public static final String PROP_ID_PASSWORD = "password";
@@ -129,6 +146,8 @@ public class OracleConstants {
     public static final String TYPE_UUID = "VARCHAR2(36)";
     public static final String TYPE_BOOLEAN = "VARCHAR(1)";
     public static final String OPERATION_MODIFY = "MODIFY";
+    public static final String SEQ_CURRVAL = "CURRVAL";
+    public static final String SEQ_NEXTVAL = "NEXTVAL";
 
 
     public static final int TIMESTAMP_TYPE_LENGTH = 13;
@@ -148,6 +167,7 @@ public class OracleConstants {
     public static final String COL_TABLE_NAME = "TABLE_NAME";
     public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
     public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
+
     static final String COLUMN_CREATED = "CREATED";
     static final String COLUMN_LAST_DDL_TIME = "LAST_DDL_TIME";
     static final String COLUMN_OBJECT_NAME = "OBJECT_NAME";
