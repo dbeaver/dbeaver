@@ -57,7 +57,7 @@ public class DBNUtils {
     }
 
     @Nullable
-    public static DBNModel getNavigatorModel(DBSObject object) {
+    public static DBNModel getNavigatorModel(@NotNull DBSObject object) {
         DBPProject project = DBUtils.getObjectOwnerProject(object);
         if (project == null) {
             return null;
@@ -65,7 +65,12 @@ public class DBNUtils {
         return project.getNavigatorModel();
     }
 
-    public static DBNDatabaseNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean addFiltered) {
+    @Nullable
+    public static DBNDatabaseNode getNodeByObject(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObject object,
+        boolean addFiltered
+    ) {
         DBNModel model = getNavigatorModel(object);
         return model == null ? null : model.getNodeByObject(monitor, object, addFiltered);
     }
