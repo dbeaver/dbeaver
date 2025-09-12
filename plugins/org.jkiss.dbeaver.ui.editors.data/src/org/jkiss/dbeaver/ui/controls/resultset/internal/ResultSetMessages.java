@@ -198,7 +198,6 @@ public class ResultSetMessages extends NLS {
 
 
     public static String dialog_value_view_job_selector_name;
-    public static String dialog_value_view_label_dictionary;
 
     public static String dialog_filter_value_edit_title;
     public static String dialog_filter_value_edit_label_choose_values;

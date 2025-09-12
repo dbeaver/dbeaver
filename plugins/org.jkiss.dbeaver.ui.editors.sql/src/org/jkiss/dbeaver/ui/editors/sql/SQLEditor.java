@@ -425,11 +425,11 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public boolean setDataSourceContainer(@Nullable DBPDataSourceContainer container) {
-        if (!datasourceChanged && curDataSource != null) {
-            datasourceChanged = true;
-        }
         if (container == dataSourceContainer) {
             return false;
+        }
+        if (!datasourceChanged && curDataSource != null) {
+            datasourceChanged = true;
         }
 
         // Release ds container
@@ -3471,6 +3471,14 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             );
         }
+    }
+
+    public boolean hasOnlyEmptyResultViews() {
+        return this.queryProcessors.isEmpty() || (
+            this.queryProcessors.stream().allMatch(qp -> qp.resultContainers.isEmpty() || (
+                qp.resultContainers.stream().allMatch(rc -> !rc.viewer.hasData())
+            ))
+        );
     }
 
     private boolean isContextChanged(DBPEvent event) {
