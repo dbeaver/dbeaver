@@ -166,6 +166,37 @@ public class UIStyles {
     }
 
     @NotNull
+    public static Color mix(@NotNull Color color1, @NotNull Color color2, float weight) {
+        // https://github.com/JFormDesigner/FlatLaf/blob/34b19f00e4488292f5dd7869205d41982bed317a/flatlaf-core/src/main/java/com/formdev/flatlaf/util/ColorFunctions.java#L133C1-L156C3
+        if (weight >= 1) {
+            return color1;
+        }
+        if (weight <= 0) {
+            return color2;
+        }
+        if (color1.equals(color2)) {
+            return color1;
+        }
+
+        int r1 = color1.getRed();
+        int g1 = color1.getGreen();
+        int b1 = color1.getBlue();
+        int a1 = color1.getAlpha();
+
+        int r2 = color2.getRed();
+        int g2 = color2.getGreen();
+        int b2 = color2.getBlue();
+        int a2 = color2.getAlpha();
+
+        return new Color(
+            Math.round(r2 + ((r1 - r2) * weight)),
+            Math.round(g2 + ((g1 - g2) * weight)),
+            Math.round(b2 + ((b1 - b2) * weight)),
+            Math.round(a2 + ((a1 - a2) * weight))
+        );
+    }
+
+    @NotNull
     public static Color lighten(@NotNull Color color, float amount) {
         // https://github.com/JFormDesigner/FlatLaf/blob/34b19f00e4488292f5dd7869205d41982bed317a/flatlaf-core/src/main/java/com/formdev/flatlaf/util/ColorFunctions.java#L38
         var hsl = toHSL(color);
