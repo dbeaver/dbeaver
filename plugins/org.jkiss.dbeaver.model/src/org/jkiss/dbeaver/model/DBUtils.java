@@ -1554,7 +1554,7 @@ public final class DBUtils {
 
 
     @Nullable
-    public static DBPProject getObjectOwnerProject(DBSObject object) {
+    public static DBPProject getObjectOwnerProject(@NotNull DBSObject object) {
         var registry = getObjectRegistry(object);
         return registry == null ? null : registry.getProject();
     }
