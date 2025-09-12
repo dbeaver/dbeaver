@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -135,13 +136,14 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         @NotNull Map<String, Object> options
     ) {
         final CubridTableColumn column = (CubridTableColumn) command.getObject();
-        String table = column.getTable().getSchema().getName() + "." + column.getTable().getName();
         boolean isView = column.getTable().isView();
+        String table = column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
+        String columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName());
         String query;
         if (column.isForeignKey() || isView) {
             if (command.hasProperty("description")) {
-                query = (isView ? "ALTER VIEW " : "ALTER TABLE ") + table + " COMMENT ON COLUMN " + column.getName() + " = "
-                       + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()));
+                query = (isView ? "ALTER VIEW " : "ALTER TABLE ") + table + " COMMENT ON COLUMN " + columnName + " = "
+                        + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()));
                 actionList.add(new SQLDatabasePersistAction("Modify column", query));
             }
         } else {
@@ -158,13 +160,16 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
         @NotNull ObjectRenameCommand command,
         @NotNull Map<String, Object> options
     ) {
-        final CubridTableColumn column = (CubridTableColumn) command.getObject();
-        String table = column.getTable().getSchema().getName() + "." + column.getTable().getName();
+        CubridTableColumn column = (CubridTableColumn) command.getObject();
+        CubridDataSource dataSource = (CubridDataSource) column.getDataSource();
         boolean isView = column.getTable().isView();
-        actions.add(
-                new SQLDatabasePersistAction(
-                        "Rename column",
-                        (isView ? "ALTER VIEW " : "ALTER TABLE ") + table + " RENAME COLUMN " + command.getOldName() + " AS " + command.getNewName()));
+        String table = column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
+        actions.add(new SQLDatabasePersistAction(
+            "Rename column",
+            (isView ? "ALTER VIEW " : "ALTER TABLE ") + table + " RENAME COLUMN "
+            + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) + " AS "
+            + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())
+        ));
     }
 
     @Override

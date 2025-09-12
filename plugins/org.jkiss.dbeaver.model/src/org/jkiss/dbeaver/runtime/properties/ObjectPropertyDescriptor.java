@@ -140,7 +140,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                 getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_DESCRIPTION, propName, false, locale);
         this.propHint = CommonUtils.isEmpty(propInfo.hint()) ?
             null :
-            getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, propName, false, locale);
+            getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, null, false, locale);
     }
 
     @Override
