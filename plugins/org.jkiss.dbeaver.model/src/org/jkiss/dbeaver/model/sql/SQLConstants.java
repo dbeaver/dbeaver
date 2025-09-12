@@ -40,6 +40,7 @@ public class SQLConstants {
     public static final String DOT = ".";
 
     public static final String KEYWORD_SELECT = "SELECT";
+    public static final String KEYWORD_SEL = "SEL";
     public static final String KEYWORD_INSERT = "INSERT";
     public static final String KEYWORD_UPDATE = "UPDATE";
     public static final String KEYWORD_DELETE = "DELETE";
@@ -323,6 +324,7 @@ public class SQLConstants {
         "SEARCH",
         "SECOND",
         KEYWORD_SELECT,
+        KEYWORD_SEL,
         "SENSITIVE",
         "SESSION_USER",
         KEYWORD_SET,
