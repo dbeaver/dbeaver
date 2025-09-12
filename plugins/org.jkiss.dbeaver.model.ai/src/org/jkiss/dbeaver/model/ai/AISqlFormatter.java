@@ -17,15 +17,17 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
 public interface AISqlFormatter {
+
+    /**
+     * Format AI-generated SQL queries
+     */
     String formatGeneratedQuery(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull DBSObjectContainer mainObject,
+        @NotNull DBPDataSource dataSource,
         @NotNull String completionText
     );
 }

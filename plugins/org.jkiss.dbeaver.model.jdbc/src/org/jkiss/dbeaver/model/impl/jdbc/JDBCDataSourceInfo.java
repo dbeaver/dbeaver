@@ -220,7 +220,7 @@ public class JDBCDataSourceInfo extends AbstractDataSourceInfo {
 
     @Override
     public Version getDatabaseVersion() {
-        return dataSource.getDatabaseServerVersion();
+        return dataSource == null ? null : dataSource.getDatabaseServerVersion();
     }
 
     @Override

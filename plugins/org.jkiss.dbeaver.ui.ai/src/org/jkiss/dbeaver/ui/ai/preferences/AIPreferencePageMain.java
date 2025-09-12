@@ -30,11 +30,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AISettings;
-import org.jkiss.dbeaver.model.ai.engine.AIEngine;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineSettings;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
@@ -46,6 +45,7 @@ import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +55,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai";
     private final AISettings settings;
 
-    private AIEngine completionEngine;
+    private AIEngineDescriptor completionEngine;
     private Combo serviceCombo;
 
     private final Map<String, String> serviceNameMappings = new HashMap<>();
@@ -64,19 +64,9 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     private Button enableAICheck;
 
     public AIPreferencePageMain() {
-        this.settings = AISettingsRegistry.getInstance().getSettings();
+        this.settings = AISettingsManager.getInstance().getSettings();
         String activeEngine = this.settings.activeEngine();
-        try {
-            completionEngine = AIEngineRegistry.getInstance().getCompletionEngine(activeEngine);
-        } catch (DBException e) {
-            log.error("Error getting engine configuration", e);
-
-            DBWorkbench.getPlatformUI().showError(
-                "Error loading AI settings",
-                "Error loading AI settings for " + activeEngine,
-                e
-            );
-        }
+        completionEngine = AIEngineRegistry.getInstance().getEngineDescriptor(activeEngine);
     }
 
     @Override
@@ -90,9 +80,9 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     }
 
     @Nullable
-    private IObjectPropertyConfigurator<AIEngine, AIEngineSettings<?>> createEngineConfigurator() {
+    private IObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> createEngineConfigurator() {
         UIPropertyConfiguratorDescriptor engineDescriptor =
-            UIPropertyConfiguratorRegistry.getInstance().getDescriptor(completionEngine.getClass().getName());
+            UIPropertyConfiguratorRegistry.getInstance().getDescriptor(completionEngine.getEngineObjectType().getImplName());
         if (engineDescriptor != null) {
             try {
                 return engineDescriptor.createConfigurator();
@@ -122,7 +112,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         if (!serviceCombo.getText().isEmpty()) {
             for (Map.Entry<String, EngineConfiguratorPage> entry : engineConfiguratorMapping.entrySet()) {
                 try {
-                    AIEngineSettings<?> engineConfiguration = this.settings.getEngineConfiguration(entry.getKey());
+                    AIEngineProperties engineConfiguration = this.settings.getEngineConfiguration(entry.getKey());
                     entry.getValue().saveSettings(engineConfiguration);
                 } catch (DBException e) {
                     log.error("Error saving engine settings", e);
@@ -135,7 +125,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                 }
             }
         }
-        AISettingsRegistry.getInstance().saveSettings(this.settings);
+        AISettingsManager.getInstance().saveSettings(this.settings);
         try {
             store.save();
         } catch (IOException e) {
@@ -163,6 +153,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         serviceCombo = UIUtils.createLabelCombo(serviceComposite, "Engine", SWT.DROP_DOWN | SWT.READ_ONLY);
         List<AIEngineDescriptor> completionEngines = AIEngineRegistry.getInstance()
             .getCompletionEngines();
+        completionEngines.sort(Comparator.comparing(AIEngineDescriptor::getLabel));
         int defaultEngineSelection = -1;
         for (int i = 0; i < completionEngines.size(); i++) {
             serviceCombo.add(completionEngines.get(i).getLabel());
@@ -187,12 +178,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             @Override
             public void widgetSelected(SelectionEvent e) {
                 String id = serviceNameMappings.get(serviceCombo.getText());
-                try {
-                    completionEngine = AIEngineRegistry.getInstance().getCompletionEngine(id);
-                } catch (DBException ex) {
-                    log.error("Error getting engine configuration");
-                    return;
-                }
+                completionEngine = AIEngineRegistry.getInstance().getEngineDescriptor(id);
                 if (activeEngineConfiguratorPage != null) {
                     activeEngineConfiguratorPage.disposeControl();
                 }
@@ -210,7 +196,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         activeEngineConfiguratorPage = engineConfiguratorMapping.get(id);
 
         if (activeEngineConfiguratorPage == null) {
-            IObjectPropertyConfigurator<AIEngine, AIEngineSettings<?>> engineConfigurator
+            IObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> engineConfigurator
                 = createEngineConfigurator();
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
             activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
@@ -236,14 +222,14 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
     }
 
     private static class EngineConfiguratorPage {
-        private final IObjectPropertyConfigurator<AIEngine, AIEngineSettings<?>> configurator;
+        private final IObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> configurator;
         private Composite composite;
 
-        EngineConfiguratorPage(IObjectPropertyConfigurator<AIEngine, AIEngineSettings<?>> configurator) {
+        EngineConfiguratorPage(IObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> configurator) {
             this.configurator = configurator;
         }
 
-        private void createControl(Composite parent, AIEngine engine) {
+        private void createControl(Composite parent, AIEngineDescriptor engine) {
             composite = UIUtils.createComposite(parent, 1);
             composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (configurator != null) {
@@ -255,13 +241,13 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             composite.dispose();
         }
 
-        private void loadSettings(AIEngineSettings<?> settings) {
+        private void loadSettings(AIEngineProperties settings) {
             if (configurator != null) {
                 configurator.loadSettings(settings);
             }
         }
 
-        private void saveSettings(AIEngineSettings<?> settings) {
+        private void saveSettings(AIEngineProperties settings) {
             if (configurator != null) {
                 configurator.saveSettings(settings);
             }
