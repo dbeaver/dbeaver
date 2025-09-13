@@ -18,12 +18,15 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.ide.ResourceUtil;
+import org.eclipse.ui.texteditor.ITextEditorExtension2;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -738,4 +741,95 @@ public class SQLEditorUtils {
         }
     }
 
+    public static boolean isProblemMarker(@NotNull IMarker marker) {
+        try {
+            return marker.isSubtypeOf("org.eclipse.core.resources.problemmarker");
+        } catch (CoreException e) {
+            log.error(e);
+            return false;
+        }
+    }
+
+    @Nullable
+    public static EditorsCollection findResourceEditors(@NotNull IResource member) {
+        EditorsCollection editorRefs = null;
+
+        for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+            for (IWorkbenchPage page : window.getPages()) {
+                for (IEditorReference editorRef : page.getEditorReferences()) {
+                    try {
+                        IResource editorResource = ResourceUtil.getResource(editorRef.getEditorInput());
+                        if (editorResource != null && editorResource.equals(member)) {
+                            if (editorRefs == null) {
+                                editorRefs = new EditorsCollection();
+                            }
+                            editorRefs.add(Pair.of(page, editorRef));
+                        }
+                    } catch (PartInitException e) {
+                        log.error(e);
+                    }
+                }
+            }
+        }
+
+        return editorRefs;
+    }
+
+    public static class EditorsCollection extends LinkedList<Pair<IWorkbenchPage, IEditorReference>> {
+
+        @NotNull
+        public List<Pair<IWorkbenchPage, SQLEditor>> findConnectedSqlEditors() {
+            List<Pair<IWorkbenchPage, SQLEditor>> results = new LinkedList<>();
+            for (Pair<IWorkbenchPage, IEditorReference> editorRef : this) {
+                IEditorPart editor = editorRef.getSecond().getEditor(false);
+                if (editor instanceof SQLEditor sqlEditor && sqlEditor.getDataSource() != null) {
+                    results.add(Pair.of(editorRef.getFirst(), sqlEditor));
+                }
+            }
+            return results;
+        }
+
+        @NotNull
+        public List<Pair<IWorkbenchPage, SQLEditor>> findNotConnectedSqlEditors() {
+            List<Pair<IWorkbenchPage, SQLEditor>> results = new LinkedList<>();
+            for (Pair<IWorkbenchPage, IEditorReference> editorRef : this) {
+                IEditorPart editor = editorRef.getSecond().getEditor(false);
+                if (editor instanceof SQLEditor sqlEditor) {
+                    DBPDataSourceContainer container = sqlEditor.getDataSourceContainer();
+                    if (container == null || !container.isConnected()) {
+                        results.add(Pair.of(editorRef.getFirst(), sqlEditor));
+                    }
+                }
+            }
+            return results;
+        }
+
+        public void validateEditorInputState() {
+            for (Pair<IWorkbenchPage, IEditorReference> editorRef : this) {
+                IEditorPart editor = editorRef.getSecond().getEditor(false);
+                if (editor instanceof ITextEditorExtension2) {
+                    UIUtils.asyncExec(() -> ((ITextEditorExtension2) editor).validateEditorInputState());
+                }
+            }
+        }
+
+        public void setDataSourceForSqlEditors(@NotNull DBPDataSourceContainer fileDsContainer) {
+            for (Pair<IWorkbenchPage, IEditorReference> editorRef : this) {
+                IEditorPart editor = editorRef.getSecond().getEditor(false);
+                if (editor instanceof SQLEditor sqlEditor) {
+                    DBPDataSourceContainer editorDsContainer = sqlEditor.getDataSourceContainer();
+                    if (editorDsContainer != fileDsContainer) {
+                        UIUtils.asyncExec(() -> sqlEditor.setDataSourceContainer(fileDsContainer));
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void closeNoSave() {
+            for (Pair<IWorkbenchPage, IEditorReference> editorRef : this) {
+                editorRef.getFirst().closeEditors(new IEditorReference[] {editorRef.getSecond()}, false);
+            }
+        }
+    }
 }

@@ -28,6 +28,8 @@ import org.eclipse.jface.text.information.IInformationProvider;
 import org.eclipse.jface.text.information.InformationPresenter;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
+import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
+import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.BufferedRuleBasedScanner;
@@ -38,6 +40,7 @@ import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -48,6 +51,8 @@ import org.jkiss.dbeaver.model.sql.parser.SQLParserPartitions;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
+import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorQuickAssistProcessor;
+import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorQuickFixProcessorsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLStringAutoIndentStrategy;
@@ -151,6 +156,27 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             return new IAutoEditStrategy[]{new SQLStringAutoIndentStrategy(SQLParserPartitions.CONTENT_TYPE_SQL_STRING)};
         }
         return new IAutoEditStrategy[0];
+    }
+
+    @Override
+    public IQuickAssistAssistant getQuickAssistAssistant(@NotNull ISourceViewer sourceViewer) {
+        IQuickAssistAssistant quickAssistAssistant = super.getQuickAssistAssistant(sourceViewer);
+
+        if (quickAssistAssistant == null) {
+            quickAssistAssistant  = new QuickAssistAssistant() { {
+                setRestoreCompletionProposalSize(EditorsPlugin.getDefault().getDialogSettingsSection("quick_assist_proposal_size"));
+                setInformationControlCreator(p ->new DefaultInformationControl(p, EditorsPlugin.getAdditionalInfoAffordanceString()));
+            } };
+        }
+
+        SQLEditorQuickAssistProcessor quickAssistProcessor = new SQLEditorQuickAssistProcessor(this.editor);
+        if (quickAssistAssistant.getQuickAssistProcessor() != null) {
+            quickAssistProcessor.appendProcessor(quickAssistAssistant.getQuickAssistProcessor());
+        }
+        quickAssistProcessor.appendProcessors(SQLEditorQuickFixProcessorsRegistry.getInstance().getQuickFixProcessorDescriptors());
+
+        quickAssistAssistant.setQuickAssistProcessor(quickAssistProcessor);
+        return quickAssistAssistant;
     }
 
     /**

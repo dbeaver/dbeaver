@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.databricks;
+package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
+import org.eclipse.osgi.util.NLS;
 
-public class DatabricksDataSourceProvider extends GenericDataSourceProvider {
+public class SpreadsheetMessages extends NLS {
+
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetMessages";
+
+    public static String tooltip_column;
+    public static String tooltip_description;
 
     static {
-        // use slf4j instead of java.util.logging
-        // we need to set it before any driver usage
-        // https://github.com/databricks/databricks-jdbc/blob/main/docs/LOGGING.md
-        System.setProperty("com.databricks.jdbc.loggerImpl", "SLF4JLOGGER");
+        NLS.initializeMessages(BUNDLE_NAME, SpreadsheetMessages.class);
     }
 
-    public DatabricksDataSourceProvider() {
+    private SpreadsheetMessages() {
     }
 }
