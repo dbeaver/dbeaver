@@ -44,6 +44,7 @@
                     icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon.png"
                     iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon_big.png"
                     class="com.databricks.client.jdbc.Driver"
+                    sampleURL="jdbc:databricks://{host}[:{port}][/{database}]"
                     webURL="https://docs.databricks.com/integrations/jdbc-odbc-bi.html"
                     databaseDocumentationSuffixURL="Database-driver-Azure-Databricks"
                     description="Databricks driver"
