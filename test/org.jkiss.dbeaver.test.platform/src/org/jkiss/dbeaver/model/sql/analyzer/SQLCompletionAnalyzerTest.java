@@ -376,7 +376,7 @@ public class SQLCompletionAnalyzerTest extends DBeaverUnitTest {
         {
             final List<SQLCompletionProposalBase> proposals = request.request("SELECT * FROM Database3.\"a.schema\".|");
             Assert.assertEquals(1, proposals.size());
-            Assert.assertEquals("\"a.table\" at2", proposals.get(0).getReplacementString());
+            Assert.assertEquals("\"a.table\" t", proposals.get(0).getReplacementString());
             Assert.assertEquals(35, proposals.get(0).getReplacementOffset());
         }
     }

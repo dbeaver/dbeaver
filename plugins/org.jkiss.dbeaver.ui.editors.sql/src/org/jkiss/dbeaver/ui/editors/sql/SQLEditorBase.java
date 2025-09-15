@@ -640,7 +640,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             overviewRuler,
             true,
             styles,
-            this::getActivePreferenceStore
+            this::getActivePreferenceStore,
+            this
         );
     }
 
