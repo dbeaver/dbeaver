@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.oracle.internal.OracleMessages;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -42,8 +44,7 @@ import java.util.Map;
  * OracleUser
  */
 public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<OracleDataSource>, DBPSaveableObject, DBPRefreshableObject,
-    DBPScriptObject
-{
+    DBPScriptObject {
     private static final Log log = Log.getLog(OracleUser.class);
 
     private long id;
@@ -105,54 +106,46 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         this.name = name;
     }
 
-    @Property(order = 3)
-    public String getExternalName()
-    {
+    @Property(order = 3, visibleIf = OracleUserPropertyValidator.class)
+    public String getExternalName() {
         return externalName;
     }
 
-    @Property(viewable = true, order = 4)
-    public String getStatus()
-    {
+    @Property(viewable = true, order = 4, visibleIf = OracleUserPropertyValidator.class)
+    public String getStatus() {
         return status;
     }
 
     @Property(viewable = true, order = 5)
-    public Timestamp getCreateDate()
-    {
+    public Timestamp getCreateDate() {
         return createDate;
     }
 
-    @Property(order = 6)
-    public Timestamp getLockDate()
-    {
+    @Property(order = 6, visibleIf = OracleUserPropertyValidator.class)
+    public Timestamp getLockDate() {
         return lockDate;
     }
 
-    @Property(order = 7)
-    public Timestamp getExpiryDate()
-    {
+    @Property(order = 7, visibleIf = OracleUserPropertyValidator.class)
+    public Timestamp getExpiryDate() {
         return expiryDate;
     }
 
-    @Property(order = 8)
+    @Property(order = 8, visibleIf = OracleUserPropertyValidator.class)
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
-    public Object getDefaultTablespace(DBRProgressMonitor monitor) throws DBException
-    {
+    public Object getDefaultTablespace(DBRProgressMonitor monitor) throws DBException {
         return OracleTablespace.resolveTablespaceReference(monitor, this, "defaultTablespace");
     }
 
-    @Property(order = 9)
+    @Property(order = 9, visibleIf = OracleUserPropertyValidator.class)
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
-    public Object getTempTablespace(DBRProgressMonitor monitor) throws DBException
-    {
+    public Object getTempTablespace(DBRProgressMonitor monitor) throws DBException {
         return OracleTablespace.resolveTablespaceReference(monitor, this, "tempTablespace");
     }
 
     @Nullable
     @Override
-    public Object getLazyReference(Object propertyId)
-    {
+    public Object getLazyReference(Object propertyId) {
         if ("defaultTablespace".equals(propertyId)) {
             return defaultTablespace;
         } else if ("tempTablespace".equals(propertyId)) {
@@ -164,21 +157,20 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         }
     }
 
-    @Property(order = 10)
+    @Property(order = 10, visibleIf = OracleUserPropertyValidator.class)
     @LazyProperty(cacheValidator = ProfileReferenceValidator.class)
-    public Object getProfile(DBRProgressMonitor monitor) throws DBException
-    {
+    public Object getProfile(DBRProgressMonitor monitor) throws DBException {
         return OracleUtils.resolveLazyReference(monitor, getDataSource(), getDataSource().profileCache, this, "profile");
     }
 
-    @Property(order = 11)
-    public String getConsumerGroup()
-    {
+    @Property(order = 11, visibleIf = OracleUserPropertyValidator.class)
+    public String getConsumerGroup() {
         return consumerGroup;
     }
 
     /**
      * Passwords are never read from database. It is used to create/alter schema/user
+     *
      * @return password or null
      */
     @Property(visibleIf = OracleUserModifyValueValidator.class, editable = true, updatable = true, order = 12, password = true)
@@ -199,7 +191,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         this.confirmPassword = confirmPassword;
     }
 
-    @Property(visibleIf = OracleUserModifyValueValidator.class, editable = true, updatable = true, order = 14)
+    @Property(visibleIf = OracleUserLockedValueValidator.class, editable = true, updatable = true, order = 14)
     public boolean isLocked() {
         return isLocked;
     }
@@ -208,10 +200,14 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         isLocked = locked;
     }
 
+    @Property(visibleIf = OracleUserPropertyHiddenValidator.class, order = 15, info = true)
+    public String getInfoLabel() {
+        return OracleMessages.edit_oracle_user_disabled_fields_info_label;
+    }
+
     @Override
     @Association
-    public Collection<OraclePrivRole> getRolePrivs(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<OraclePrivRole> getRolePrivs(DBRProgressMonitor monitor) throws DBException {
         return rolePrivCache.getAllObjects(monitor, this);
     }
 
@@ -251,12 +247,11 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
 
     public static class ProfileReferenceValidator implements IPropertyCacheValidator<OracleUser> {
         @Override
-        public boolean isPropertyCached(OracleUser object, Object propertyId)
-        {
+        public boolean isPropertyCached(OracleUser object, Object propertyId) {
             return
                 object.getLazyReference(propertyId) instanceof OracleUserProfile ||
-                object.getLazyReference(propertyId) == null ||
-                object.getDataSource().profileCache.isFullyCached();
+                    object.getLazyReference(propertyId) == null ||
+                    object.getDataSource().profileCache.isFullyCached();
         }
     }
 
@@ -274,6 +269,30 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         @Override
         public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
             return object.getDataSource().supportsUserEdit();
+        }
+    }
+
+    public static class OracleUserLockedValueValidator implements IPropertyValueValidator<OracleUser, Object> {
+        @Override
+        public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
+            return object.getDataSource().supportsUserEdit() && CommonUtils.toBoolean(object.getDataSource().getContainer().getConnectionConfiguration()
+                .getProviderProperty(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS));
+        }
+    }
+
+    public static class OracleUserPropertyValidator implements IPropertyValueValidator<OracleUser, Object> {
+        @Override
+        public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
+            return CommonUtils.toBoolean(object.getDataSource().getContainer().getConnectionConfiguration()
+                .getProviderProperty(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS));
+        }
+    }
+
+    public static class OracleUserPropertyHiddenValidator implements IPropertyValueValidator<OracleUser, Object> {
+        @Override
+        public boolean isValidValue(OracleUser object, Object value) throws IllegalArgumentException {
+            return !CommonUtils.toBoolean(object.getDataSource().getContainer().getConnectionConfiguration()
+                .getProviderProperty(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS));
         }
     }
 
