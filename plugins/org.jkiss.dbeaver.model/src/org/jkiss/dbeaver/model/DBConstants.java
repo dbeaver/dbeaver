@@ -144,6 +144,7 @@ public class DBConstants {
     public static final String PROP_FEATURE_LINK_POSSIBLE = "linkPossible";
     public static final String PROP_FEATURE_HREF = "href";
     public static final String PROP_FEATURE_VIEWABLE = "viewable";
+    public static final String PROP_FEATURE_INFO = "info";
 
     public static final String PRODUCT_FEATURE_DISTRIBUTED = "distributed";
 
