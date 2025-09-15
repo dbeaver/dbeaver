@@ -617,8 +617,9 @@ public class PostgreUtils {
         @NotNull String definition,
         @NotNull Map<String, Object> options
     ) throws DBException {
+        String clearSQLDefinition = SQLUtils.stripComments(view.getDataSource().getSQLDialect(), definition);
         // In some cases view definition already has view header (e.g. Redshift + with no schema binding)
-        if (definition.toLowerCase(Locale.ENGLISH).startsWith("create ")) {
+        if (clearSQLDefinition.toLowerCase(Locale.ENGLISH).startsWith("create ")) {
             return definition;
         }
         StringBuilder sql = new StringBuilder(view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
