@@ -21,8 +21,8 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.widgets.CompositeFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -75,7 +75,6 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
     private final ObjectEditorPageControl ownerControl;
     private final CustomFormEditor formEditor;
-    private ScrolledComposite propertiesGroupHost;
     private Composite propertiesGroup;
     private DBPPropertySource curPropertySource;
 
@@ -107,10 +106,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 //        ScrolledComposite scrolled = new ScrolledComposite(parent, SWT.V_SCROLL);
 //        scrolled.setLayout(new GridLayout(1, false));
 
-        propertiesGroupHost = UIUtils.createScrolledComposite(parent, SWT.V_SCROLL);
-        propertiesGroup = new ConComposite(propertiesGroupHost, SWT.NONE);
-        UIUtils.configureScrolledComposite(propertiesGroupHost, propertiesGroup);
-        CSSUtils.markConnectionTypeColor(propertiesGroupHost);
+        propertiesGroup = new ConComposite(parent, SWT.NONE);
 
         curPropertySource = input.getPropertySource();
 
@@ -216,9 +212,10 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
             // Create edit forms
             for (DBPPropertyDescriptor prop : sortedProps) {
-                ConComposite placeholder = new ConComposite(propertiesGroup, SWT.NONE);
-                placeholder.setLayoutData(new ColumnLayoutData());
-                placeholder.setLayout(GridLayoutFactory.fillDefaults().numColumns(2).create());
+                var placeholder = CompositeFactory.newComposite(SWT.NONE)
+                    .layoutData(new ColumnLayoutData())
+                    .layout(GridLayoutFactory.fillDefaults().numColumns(2).create())
+                    .create(propertiesGroup);
 
                 formEditor.createPropertyEditor(placeholder, prop);
 
