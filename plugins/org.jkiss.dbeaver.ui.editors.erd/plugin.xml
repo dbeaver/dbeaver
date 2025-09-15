@@ -31,7 +31,7 @@
             label="%editor.erd.name"
             description="%editor.erd.description"
             position="additions_end"
-            icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.png">
+            icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.svg">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSObjectContainer" forceCheck="true" if="context.isEntityContainer(object)"/>
             <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable" forceCheck="true"/>
         </editor>
@@ -409,7 +409,7 @@
     <extension point="org.eclipse.ui.editors">
         <editor name="%editor.org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorStandalone.name"
                 extensions="erd"
-                icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.png"
+                icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.svg"
                 contributorClass="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorContributor"
                 class="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorStandalone"
                 id="org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorStandalone">
@@ -430,8 +430,8 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.erd.diagram.view" icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.png"/>
-        <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.png"/>
+        <image commandId="org.jkiss.dbeaver.erd.diagram.view" icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.svg"/>
+        <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.svg"/>
         <image commandId="org.jkiss.dbeaver.erd.diagram.saveAs" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/picture_save.svg"/>
         <image commandId="org.jkiss.dbeaver.erd.toggleHand" icon="platform:/plugin/org.jkiss.dbeaver.ui.editors.erd/icons/move.svg"/>
     </extension>
@@ -568,7 +568,7 @@
         <wizard
              category="org.jkiss.dbeaver.core.new.general"
              class="org.jkiss.dbeaver.ui.editors.erd.navigator.DiagramCreateWizard"
-             icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.png"
+             icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.svg"
              id="org.jkiss.dbeaver.ui.editors.erd.navigator.DiagramCreateWizard"
              name="%wizard.erd.name">
            <description>
