@@ -217,7 +217,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 try {
                     loadStringStreamManagers();
                 } catch (Throwable e) {
-                    DBWorkbench.getPlatformUI().showError("No string editor", "Can't load string content managers", e);
+                    DBWorkbench.getPlatformUI().showError(EditorMessages.create_control_error_title, EditorMessages.create_control_error_description, e);
                 }
             } else {
                 try {
@@ -408,7 +408,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         ContentTypeSwitchAction() {
             super(null, Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.PAGES));
-            setToolTipText("Content viewer settings");
+            setToolTipText(EditorMessages.content_viewer_settings);
         }
 
         @Override

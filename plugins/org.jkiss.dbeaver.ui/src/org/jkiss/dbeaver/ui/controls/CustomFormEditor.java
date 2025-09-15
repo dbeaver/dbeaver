@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.ConComposite;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.contentassist.StringContentProposalProvider;
@@ -49,8 +50,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * CustomFormEditor
@@ -292,6 +293,29 @@ public class CustomFormEditor {
             }
         }
         Class<?> propType = property.getDataType();
+        if (property.hasFeature(DBConstants.PROP_FEATURE_INFO)) {
+            Composite infoComposite = new Composite(parent, SWT.NONE);
+            GridLayout layout = new GridLayout(2, false);
+            layout.marginHeight = 0;
+            layout.marginWidth = 0;
+            infoComposite.setLayout(layout);
+
+            Label iconLabel = new Label(infoComposite, SWT.NONE);
+            iconLabel.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+            iconLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.TOP, false, false));
+
+            Label textLabel = new Label(infoComposite, SWT.WRAP);
+            textLabel.setText(objectValueToString(value));
+            GridData textGd = new GridData(SWT.FILL, SWT.FILL, true, false);
+            textLabel.setLayoutData(textGd);
+
+            GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
+            gd.horizontalSpan = 2;
+            infoComposite.setLayoutData(gd);
+            return infoComposite;
+
+        }
+
         if (DBSObject.class.isAssignableFrom(propType) || isLinkProperty(property)) {
             UIUtils.createControlLabel(
                 parent,
