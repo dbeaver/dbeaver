@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.api.DriverReference;
+import org.jkiss.api.CompositeObjectId;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -50,6 +50,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry {
@@ -57,7 +58,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     private static DataSourceProviderRegistry instance = null;
 
-    public synchronized static DataSourceProviderRegistry getInstance() {
+    public static synchronized DataSourceProviderRegistry getInstance() {
         if (instance == null) {
             instance = new DataSourceProviderRegistry();
             instance.loadExtensions(Platform.getExtensionRegistry());
@@ -83,6 +84,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private final Map<String, DataSourceOriginProviderDescriptor> dataSourceOrigins = new LinkedHashMap<>();
     private final Map<String, DBPDriverSubstitutionDescriptor> driverSubstitutions = new HashMap<>();
 
+
     private DataSourceProviderRegistry() {
         globalDataSourcePreferenceStore = new SimplePreferenceStore() {
             @Override
@@ -100,13 +102,19 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 // do nothing
             }
         };
-        WorkspaceConfigEventManager.addConfigChangedListener(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME, o -> {
-            // Delete custom drivers because they are removed from drivers.xml
-            for (DataSourceProviderDescriptor dataSourceProvider : dataSourceProviders) {
-                dataSourceProvider.removeCustomAndDisabledDrivers();
-            }
-            readDriversConfig();
-        });
+        WorkspaceConfigEventManager.addConfigChangedListener(DriverDescriptorSerializerLegacy.DRIVERS_FILE_NAME,
+            o -> onDriversConfigChanged()
+        );
+    }
+
+    private void onDriversConfigChanged() {
+        // Delete custom drivers because they are removed from drivers.xml
+        for (DataSourceProviderDescriptor dsp : dataSourceProviders) {
+            dsp.removeCustomAndDisabledDrivers();
+        }
+        readDriversConfig();
+
+        fireRegistryReload();
     }
 
     private void loadExtensions(IExtensionRegistry registry) {
@@ -362,7 +370,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     @Nullable
     @Override
-    public DBPDriver findDriver(@NotNull DriverReference ref) {
+    public DBPDriver findDriver(@NotNull CompositeObjectId ref) {
         return findDriver(ref.shortId());
     }
 
@@ -469,16 +477,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    public void saveDrivers() {
+    public void saveDrivers() throws DBException {
         saveDrivers(DBWorkbench.getPlatform().getConfigurationController());
     }
 
-    public void saveDrivers(DBConfigurationController configurationController) {
-        try {
-            saveDriversConfigFile(configurationController);
-        } catch (Exception ex) {
-            log.error("Error saving drivers", ex);
-        }
+    public void saveDrivers(DBConfigurationController configurationController) throws DBException {
+        saveDriversConfigFile(configurationController);
     }
 
     public void saveDriversConfigFile(DBConfigurationController configurationController) throws DBException {
@@ -497,7 +501,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     /**
      * Resolve all jar files in all enabled drivers.
      */
-    public void linkDriverFiles(Path targetFileLocation) {
+    public void linkDriverFiles(Path targetFileLocation) throws DBException {
         boolean didResolve = false;
         for (DataSourceProviderDescriptor dspd : this.dataSourceProviders) {
             for (DriverDescriptor driver : dspd.getDrivers()) {
@@ -564,7 +568,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             XMLBuilder xml = new XMLBuilder(baos, GeneralUtils.UTF8_ENCODING);
-            xml.setButify(true);
+            xml.setBeautify(true);
             xml.startElement(RegistryConstants.TAG_TYPES);
             for (DBPConnectionType connectionType : connectionTypes.values()) {
                 xml.startElement(RegistryConstants.TAG_TYPE);
@@ -686,17 +690,28 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
     }
 
-    void fireRegistryChange(DataSourceRegistry registry, boolean load) {
+    void fireRegistryChange(DataSourceRegistry<?> registry, boolean load) {
+
+        forEachRegistryListener(l -> {
+            if (load) {
+                l.handleRegistryLoad(registry);
+            } else {
+                l.handleRegistryUnload(registry);
+            }
+        });
+    }
+
+    void fireRegistryReload() {
+        forEachRegistryListener(DBPRegistryListener::handleRegistryReload);
+    }
+
+    private void forEachRegistryListener(Consumer<DBPRegistryListener> consumer) {
         List<DBPRegistryListener> lCopy;
         synchronized (registryListeners) {
             lCopy = new ArrayList<>(registryListeners);
         }
         for (DBPRegistryListener listener : lCopy) {
-            if (load) {
-                listener.handleRegistryLoad(registry);
-            } else {
-                listener.handleRegistryUnload(registry);
-            }
+            consumer.accept(listener);
         }
     }
 
@@ -760,6 +775,5 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
         }
     }
-
 
 }

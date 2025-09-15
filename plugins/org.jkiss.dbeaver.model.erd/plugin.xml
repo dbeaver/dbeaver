@@ -31,8 +31,8 @@
 
     <extension point="org.jkiss.dbeaver.resourceType">
         <type id="er-diagram" name="ER Diagram"
-              icon="icons/erd.png"
-              folderIcon="icons/erd_folder.png"
+              icon="icons/erd.svg"
+              folderIcon="icons/erd_folder.svg"
               managable="true">
             <root folder="Diagrams"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd"/>

@@ -340,6 +340,9 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         throws DBException
     {
         List<OracleTableForeignKey> refs = new ArrayList<>();
+        if (monitor.isForceCacheUsage()) {
+            return refs;
+        }
         // This is dummy implementation
         // Get references from this schema only
         final Collection<OracleTableForeignKey> allForeignKeys =

@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.editors.internal.EditorsMessages;
 
 import java.lang.reflect.InvocationTargetException;
@@ -102,6 +103,7 @@ public class ProgressEditorPart extends EditorPart {
         final DatabaseLazyEditorInput input = getEditorInput();
 
         progressCanvas = new Composite(parent, SWT.NONE);
+        CSSUtils.setExcludeFromStyling(progressCanvas);
 
         if (input.canLoadImmediately()) {
             scheduleEditorLoad();
