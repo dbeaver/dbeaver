@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.util;
 
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.layout.RowLayoutFactory;
 import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.util.Geometry;
 import org.eclipse.swt.SWT;
@@ -32,12 +35,14 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 import org.eclipse.ui.forms.events.IHyperlinkListener;
 import org.eclipse.ui.forms.widgets.Hyperlink;
+import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.stm.STMUtils;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.semantics.SQLSemanticErrorAnnotation;
@@ -50,12 +55,27 @@ public class AnnotationsInformationView {
 
     private static final Log log = Log.getLog(AnnotationsInformationView.class);
 
+    private static final String QUICK_FIX_COMMAND_ID = "org.eclipse.jdt.ui.edit.text.java.correction.assist.proposals";
+
+    private Composite linksContainer;
+    private int tooltipAnchorLine = -1;
+    private IRegion tooltipAnchorRegion = null;
+    private boolean forceAnnotationIcon = false;
+
     @NotNull
-    private final IHyperlinkListener hyperlinkListener = new IHyperlinkListener() {
+    private final AbstractInformationControl container;
+    @NotNull
+    private final SQLEditorBase editor;
+    @Nullable
+    private final IQuickAssistAssistant quickAssistAssistant;
+    @Nullable
+    private final QuickFixCommandInfo quickFixCommandInfo;
+
+    private abstract class ContextfulHyperlinkListener implements IHyperlinkListener {
         private Point oldSelection = null;
 
         @Override
-        public void linkEntered(@NotNull HyperlinkEvent e) {
+        public final void linkEntered(@NotNull HyperlinkEvent e) {
             if (e.getHref() instanceof AnnotationHyperlinkInfo hyperlink) {
                 this.oldSelection = editor.getTextViewer() != null ? editor.getTextViewer().getSelectedRange() : null;
                 Position hyperlinkRegion = hyperlink.position();
@@ -66,7 +86,7 @@ public class AnnotationsInformationView {
         }
 
         @Override
-        public void linkExited(@NotNull HyperlinkEvent e) {
+        public final void linkExited(@NotNull HyperlinkEvent e) {
             if (this.oldSelection != null && editor.getTextViewer() != null) {
                 editor.getTextViewer().setSelectedRange(this.oldSelection.x, this.oldSelection.y);
                 this.oldSelection = null;
@@ -74,24 +94,43 @@ public class AnnotationsInformationView {
         }
 
         @Override
-        public void linkActivated(@NotNull HyperlinkEvent e) {
+        public final void linkActivated(HyperlinkEvent e) {
             if (e.getHref() instanceof AnnotationHyperlinkInfo hyperlink) {
-                hyperlink.open(editor);
+                this.navigateLinkInternal(hyperlink);
             }
+        }
+
+        private void navigateLinkInternal(AnnotationHyperlinkInfo hyperlink) {
+            this.oldSelection = null;
+            this.navigateLink(hyperlink);
+        }
+
+        abstract void navigateLink(AnnotationHyperlinkInfo hyperlink);
+    }
+
+    @NotNull
+    private final IHyperlinkListener hyperlinkListener = new ContextfulHyperlinkListener() {
+        @Override
+        void navigateLink(AnnotationHyperlinkInfo hyperlink) {
+            hyperlink.open(editor);
         }
     };
 
-    private Composite linksContainer;
-    private int tooltipAnchorLine = -1;
-    private IRegion tooltipAnchorRegion = null;
-    private boolean forceAnnotationIcon = false;
-
-    private final AbstractInformationControl container;
-    private final SQLEditorBase editor;
+    @NotNull
+    private final IHyperlinkListener fixHyperlinkListener = new ContextfulHyperlinkListener() {
+        @Override
+        void navigateLink(AnnotationHyperlinkInfo hyperlink) {
+            hyperlink.quickFix(editor);
+        }
+    };
 
     public AnnotationsInformationView(@NotNull AbstractInformationControl container, @NotNull SQLEditorBase editor) {
         this.container = container;
         this.editor = editor;
+        this.quickAssistAssistant = this.editor.getViewer() != null
+            ? this.editor.getViewer().getQuickAssistAssistant()
+            : null;
+        this.quickFixCommandInfo = obtainQuickFixCommandInfo(editor.getEditorSite());
     }
 
     public Control createControl(@NotNull Composite parent) {
@@ -193,7 +232,10 @@ public class AnnotationsInformationView {
         @NotNull AnnotationHyperlinkInfo hyperlink,
         @NotNull String text
     ) {
-        Hyperlink link = new Hyperlink(groupLinksContainer, SWT.NONE);
+        Composite linkContainer = new Composite(groupLinksContainer, SWT.NONE);
+        linkContainer.setLayout(RowLayoutFactory.fillDefaults().spacing(0).create());
+
+        Hyperlink link = new Hyperlink(linkContainer, SWT.NONE);
         link.setHref(hyperlink);
         link.setText(text);
         link.setUnderlined(true);
@@ -204,16 +246,38 @@ public class AnnotationsInformationView {
                 link.setToolTipText(underlyingError);
             }
         }
+
+        if (this.quickFixCommandInfo != null &&
+            this.quickAssistAssistant != null &&
+            this.quickAssistAssistant.canFix(hyperlink.annotation)) {
+            UIUtils.createLabel(linkContainer, " (");
+            Hyperlink fixLink = new Hyperlink(linkContainer, SWT.NONE);
+            fixLink.setHref(hyperlink);
+            fixLink.setText(this.quickFixCommandInfo.name);
+            fixLink.setUnderlined(true);
+            fixLink.addHyperlinkListener(this.fixHyperlinkListener);
+            fixLink.setToolTipText(this.quickFixCommandInfo.description);
+            UIUtils.createLabel(linkContainer, ")");
+        }
     }
 
 
     public record AnnotationHyperlinkInfo(@NotNull Annotation annotation, @NotNull Position position) {
-        public void open(SQLEditorBase editor) {
+        public void open(@NotNull SQLEditorBase editor) {
             TextViewer textViewer = editor.getTextViewer();
             if (textViewer != null && !this.position.isDeleted) {
                 textViewer.setSelectedRange(this.position.getOffset(), this.position.getLength());
                 textViewer.revealRange(this.position.getOffset(), this.position.getLength());
                 textViewer.getTextWidget().setFocus();
+            }
+        }
+
+        public void quickFix(@NotNull SQLEditorBase editor) {
+            if (!this.position.isDeleted) {
+                editor.selectAndReveal(this.position.getOffset(), 0);
+                UIUtils.asyncExec(() -> ActionUtils.runCommand(
+                    QUICK_FIX_COMMAND_ID, editor.getSelectionProvider().getSelection(), editor.getSite()
+                ));
             }
         }
     }
@@ -302,5 +366,39 @@ public class AnnotationsInformationView {
         @Nullable IRegion hoverRegion,
         int tooltipAnchorLine
     ) {
+    }
+
+    private record QuickFixCommandInfo(
+        @NotNull String name,
+        @NotNull String description
+    ) {
+    }
+
+    /**
+     * Collects information for Quick Fix action link in the problem marker tooltip
+     */
+    @Nullable
+    private static QuickFixCommandInfo obtainQuickFixCommandInfo(@NotNull IServiceLocator site) {
+        Command command = ActionUtils.findCommand(QUICK_FIX_COMMAND_ID);
+        if (command == null) {
+            log.error("Failed to resolve command by id '" + QUICK_FIX_COMMAND_ID + "'");
+            return null;
+        }
+        String name;
+        String description;
+        try {
+            name = command.getName();
+            description = command.getDescription();
+        } catch (Throwable e) {
+            log.error("Failed to resolve command parameters for unknown command '" + QUICK_FIX_COMMAND_ID + "'", e);
+            return null;
+        }
+
+        String shortcut = ActionUtils.findCommandDescription(QUICK_FIX_COMMAND_ID, site, true);
+        if (CommonUtils.isNotEmpty(shortcut)) {
+            description = CommonUtils.isNotEmpty(description) ? (description + " (" + shortcut + ")") : shortcut;
+        }
+
+        return new QuickFixCommandInfo(name, description);
     }
 }
