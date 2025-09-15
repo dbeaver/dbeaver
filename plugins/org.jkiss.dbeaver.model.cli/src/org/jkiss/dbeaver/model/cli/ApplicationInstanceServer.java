@@ -50,6 +50,7 @@ public abstract class ApplicationInstanceServer<T extends ApplicationInstanceCon
         server = RestServer
             .builder(controllerClass, controllerClass.cast(this))
             .setFilter(address -> address.getAddress().isLoopbackAddress())
+            .setLandingPage(GeneralUtils.getProductTitle())
             .create();
 
         configFileChannel = FileChannel.open(

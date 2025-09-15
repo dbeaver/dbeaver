@@ -168,8 +168,6 @@ public class DBIcon implements DBPImage {
     public static final DBIcon SMALL_QUESTION = new DBIcon("small_question", "status/question_small.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SMALL_INFO = new DBIcon("small_info", "status/info_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    public static final DBIcon AI = new DBIcon("ai", "misc/ai.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-
     public static final DBIcon TINY_ERROR = new DBIcon("tiny_error", "status/error_tiny.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TINY_WARNING = new DBIcon("tiny_warning", "status/warning_tiny.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_TEXT = new DBIcon("sql_text", "sql/sql_text.svg");
