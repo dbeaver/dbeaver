@@ -77,7 +77,12 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         }
 
         for (CommandLineParameterDescriptor param : customParameters.values()) {
-            ALL_OPTIONS.addOption(param.getName(), param.getLongName(), param.hasArg(), param.getDescription());
+            Option newOption = new Option(param.getName(), param.getLongName(), param.hasArg(), param.getDescription());
+            if (param.hasOptionalArg()) {
+                newOption.setOptionalArg(param.hasOptionalArg());
+                newOption.setArgs(1);
+            }
+            ALL_OPTIONS.addOption(newOption);
         }
     }
 
@@ -171,7 +176,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         try (CommandLineContext context = new CommandLineContext(controller)) {
             for (CommandLineParameterDescriptor param : allParameters) {
                 try {
-                    if (param.hasArg()) {
+                    if (param.canBeWithArg() && commandLine.getOptionValues(param.getName()) != null) {
                         for (String optValue : commandLine.getOptionValues(param.getName())) {
                             param.getHandler().handleParameter(
                                 commandLine,
