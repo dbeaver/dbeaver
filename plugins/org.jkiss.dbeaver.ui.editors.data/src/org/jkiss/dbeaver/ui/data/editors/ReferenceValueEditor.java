@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -332,7 +331,8 @@ public class ReferenceValueEditor {
                 labelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 Link dictLabel = UIUtils.createLink(
                     labelGroup,
-                    NLS.bind(ResultSetMessages.dialog_value_view_label_dictionary, refTable.getName()), new SelectionAdapter() {
+                    "<a>" + refTable.getName() + "</a>",
+                    new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             // Open
@@ -351,9 +351,11 @@ public class ReferenceValueEditor {
                     });
                 dictLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-                Link hintLabel = UIUtils.createLink(
+                Button hintLabel = UIUtils.createPushButton(
                     labelGroup,
-                    "(<a>" + ResultSetMessages.reference_value_editor_define_description_value + "</a>)",
+                    null,
+                    ResultSetMessages.reference_value_editor_define_description_value,
+                    UIIcon.CONFIGURATION,
                     new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {

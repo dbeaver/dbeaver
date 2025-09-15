@@ -23,6 +23,7 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.ParenthesedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
@@ -64,7 +65,7 @@ public class SQLSemanticProcessor {
     private static final boolean ALLOW_COMPLEX_PARSING = false;
     private static final int PARSE_FUTURE_TIMEOUT_MS = 1000; // if we can't parse fast, we don't want to
 
-    private static ExecutorService executor = Executors.newCachedThreadPool();
+    private static final ExecutorService executor = Executors.newCachedThreadPool();
 
     public static void shutdownExecutor() {
         if (!executor.shutdownNow().isEmpty()) {
@@ -72,13 +73,14 @@ public class SQLSemanticProcessor {
         }
     }
 
-    public static Statement parseQuery(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
-        String sqlWithoutComments = dialect == null ? sql : SQLUtils.stripComments(dialect, sql);
+    @NotNull
+    private static CCJSqlParser buildParser(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
+        final String sqlWithoutComments = dialect == null ? sql : SQLUtils.stripComments(dialect, sql);
         try {
             CCJSqlParser parser = new CCJSqlParser(sqlWithoutComments)
                 .withAllowComplexParsing(ALLOW_COMPLEX_PARSING);
+
             if (dialect != null) {
-                // Enable square brackets
                 for (String[] qs : ArrayUtils.safeArray(dialect.getIdentifierQuoteStrings())) {
                     if (qs.length == 2 && "[".equals(qs[0]) && "]".equals(qs[1])) {
                         parser.withSquareBracketQuotation(true);
@@ -86,17 +88,39 @@ public class SQLSemanticProcessor {
                     }
                 }
             }
-            Future<Statement> future = executor.submit(parser::Statement);
-            try {
-                return future.get(PARSE_FUTURE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-            } catch (TimeoutException | InterruptedException interruptedEx) {
-                parser.interrupted = true;
-                future.cancel(true);
-                throw new DBCException("Failed to parse SQL query within reasonable time ", interruptedEx);
+            return parser;
+        } catch (ParseException e) {
+            throw new DBCException("Error initializing SQL parser: " + e.getMessage(), e);
+        }
+    }
+
+    @NotNull
+    private static <T> T callWithTimeout(@NotNull CCJSqlParser parser, @NotNull Callable<T> task) throws DBCException {
+        Future<T> future = executor.submit(task);
+        try {
+            return future.get(PARSE_FUTURE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException | InterruptedException e) {
+            parser.interrupted = true;
+            future.cancel(true);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
             }
-        } catch (Exception e) {
+            throw new DBCException("Failed to parse SQL query within reasonable time", e);
+        } catch (ExecutionException e) {
             throw new DBCException("Error parsing SQL query: " + e.getMessage(), e);
         }
+    }
+
+    @NotNull
+    public static List<Statement> parseQueries(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
+        CCJSqlParser parser = buildParser(dialect, sql);
+        return callWithTimeout(parser, parser::Statements);
+    }
+
+    @NotNull
+    public static Statement parseQuery(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
+        CCJSqlParser parser = buildParser(dialect, sql);
+        return callWithTimeout(parser, parser::Statement);
     }
 
     public static Statement parseQuery(@NotNull String sql) throws DBCException {

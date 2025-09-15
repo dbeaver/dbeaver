@@ -319,6 +319,9 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
                 if (otherResource != null) {
                     try {
                         if (otherResource instanceof EFSNIOResource) {
+                            if (DBWorkbench.isDistributed() && resource.getRawLocation() == null) {
+                                throw new DBException("Paste is not supported for " + resource);
+                            }
                             otherResource.copy(
                                 resource.getRawLocation().append(otherResource.getName()),
                                 true,
