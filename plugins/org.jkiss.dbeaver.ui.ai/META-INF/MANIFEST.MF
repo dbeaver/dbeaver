@@ -11,7 +11,8 @@ Export-Package: org.jkiss.dbeaver.ui.ai,
  org.jkiss.dbeaver.ui.ai.engine.openai,
  org.jkiss.dbeaver.ui.ai.format,
  org.jkiss.dbeaver.ui.ai.preferences,
- org.jkiss.dbeaver.ui.ai.internal
+ org.jkiss.dbeaver.ui.ai.internal,
+ org.jkiss.dbeaver.ui.ai.model
 Bundle-Release-Date: 20250922
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy

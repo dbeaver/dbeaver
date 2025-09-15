@@ -14,20 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.client;
+package org.jkiss.dbeaver.ui.app.standalone.tipoftheday;
 
-import org.jkiss.dbeaver.launcher.DBeaverLauncher;
+import org.eclipse.osgi.util.NLS;
 
-import java.nio.file.Path;
+public class TipOfTheDayMessages extends NLS {
 
-public class DBeaverRestClient {
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.app.standalone.tipoftheday.TipOfTheDayMessages";
 
-    public static Integer getDBeaverServerPort(Path dbeaverDataPath) {
-        return 1;
+    public static String tip_of_the_day_title;
+    public static String show_tips_on_startup;
+
+    static {
+        NLS.initializeMessages(BUNDLE_NAME, TipOfTheDayMessages.class);
     }
 
-    public static boolean supportsAutoLaunch() {
-        String launchPath = System.getenv(DBeaverLauncher.PROP_LAUNCHER);
-        return launchPath != null && !launchPath.trim().isEmpty();
+    private TipOfTheDayMessages() {
     }
 }

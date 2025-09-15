@@ -37,3 +37,14 @@
 .EditorStack, .MPartStack {
     swt-tab-renderer: url('bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverCTabFolderRenderer');
 }
+
+CTabFolder.coloredByConnectionType {
+    swt-tab-renderer: url('bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverCTabFolderRenderer');
+
+    /* Workaround for org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering.TAB_OUTLINE_WIDTH */
+    padding: 0px -1px -1px -1px;
+
+    swt-inner-keyline-color: '#COLOR_WIDGET_BACKGROUND';
+    swt-outer-keyline-color: '#COLOR_WIDGET_BACKGROUND';
+    swt-tab-outline: '#COLOR_WIDGET_BACKGROUND';
+}
