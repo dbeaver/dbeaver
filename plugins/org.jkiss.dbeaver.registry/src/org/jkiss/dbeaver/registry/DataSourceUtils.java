@@ -70,7 +70,7 @@ public class DataSourceUtils {
     private static final String PREFIX_HANDLER = "handler.";
     private static final String PREFIX_PROP = "prop.";
     private static final String PREFIX_AUTH_PROP = "authProp.";
-    private static final String PREFIX_AVANCED_PROP = "advProp.";
+    private static final String PREFIX_PREF_PROP = "pref.";
 
     private static final Log log = Log.getLog(DataSourceUtils.class);
 
@@ -207,10 +207,12 @@ public class DataSourceUtils {
                         Map<String, String> handlerPopMap = handlerProps.computeIfAbsent(handlerId, k -> new HashMap<>());
                         handlerPopMap.put(paramName, paramValue);
                         handled = true;
-                    } else if (paramName.length() > PREFIX_AVANCED_PROP.length() && paramName.startsWith(PREFIX_AVANCED_PROP)) {
-                        paramName = paramName.substring(PREFIX_AVANCED_PROP.length());
-                        DBWorkbench.getPlatform().getPreferenceStore().setValue(paramName, paramValue);
-                        handled = true;
+                    } else if (paramName.startsWith(PREFIX_PREF_PROP)) {
+                        String suffix = paramName.substring(PREFIX_PREF_PROP.length());
+                        if (!suffix.isEmpty()) {
+                            DBWorkbench.getPlatform().getPreferenceStore().setValue(suffix, paramValue);
+                            handled = true;
+                        }
                     } else if (parameterHandler != null) {
                         handled = parameterHandler.setParameter(paramName, paramValue);
                     }
