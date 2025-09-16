@@ -57,6 +57,13 @@ public abstract class CompletionProposalBase {
     public abstract int getProposalScore();
 
     /**
+     * The sorter score of the completion proposal for specific type.
+     * This is used to sort the proposals in the UI.
+     * Higher scores indicate higher priority in sorting.
+     */
+    public abstract int getProposalTypeSorterScore();
+
+    /**
      * Returns the image associated with the object of this proposal.
      * This is typically used to display an icon in the UI alongside the proposal.
      *

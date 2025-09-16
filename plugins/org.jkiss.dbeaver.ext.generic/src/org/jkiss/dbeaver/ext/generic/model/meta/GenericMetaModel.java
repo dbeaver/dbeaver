@@ -1077,7 +1077,7 @@ public class GenericMetaModel {
     }
 
     @NotNull
-    public GenericTrigger createTableTriggerImpl(
+    public GenericTrigger<?> createTableTriggerImpl(
         @NotNull JDBCSession session,
         @NotNull GenericStructContainer genericStructContainer,
         @NotNull GenericTableBase genericTableBase,
