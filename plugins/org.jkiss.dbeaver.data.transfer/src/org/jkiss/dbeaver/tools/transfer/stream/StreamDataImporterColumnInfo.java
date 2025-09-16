@@ -71,11 +71,32 @@ public class StreamDataImporterColumnInfo extends AbstractAttribute implements D
         }
     }
 
-    public void updateType(@NotNull DBPDataKind kind, @NotNull String name) {
-        if (getDataKind().getCommonality() < kind.getCommonality()) {
-            setDataKind(kind);
-            setTypeName(name);
+    public void updateType(@NotNull DBPDataKind newKind, @NotNull String newName) {
+        if (newKind == getDataKind() && newName.equals(getTypeName())) {
+            return;
         }
+
+        final DBPDataKind curKind = getDataKind();
+        final int curC = curKind.getCommonality();
+        final int newC = newKind.getCommonality();
+
+        if (newC > curC || (newC == curC && isWiderNumeric(newKind, newName, getTypeName()))) {
+            setDataKind(newKind);
+            setTypeName(newName);
+        }
+    }
+
+    private static boolean isWiderNumeric(@NotNull DBPDataKind kind, @NotNull String newName, @NotNull String curName) {
+        return kind == DBPDataKind.NUMERIC && numericRank(newName) > numericRank(curName);
+    }
+
+    private static int numericRank(@NotNull String typeName) {
+        return switch (typeName) {
+            case "INTEGER" -> 1;
+            case "BIGINT" -> 2;
+            case "REAL" -> 3;
+            default -> 0;
+        };
     }
 
     @NotNull

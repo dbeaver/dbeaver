@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericSynonym;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -78,8 +80,8 @@ public class CubridSynonymManager extends SQLObjectEditor<GenericSynonym, Generi
         StringBuilder query = new StringBuilder();
         CubridSynonym synonym = (CubridSynonym) command.getObject();
         query.append(isCreate ? "CREATE SYNONYM " : "ALTER SYNONYM ");
-        query.append(synonym.getOwner()).append(".").append(synonym.getName());
-        query.append(" FOR ").append(synonym.getTargetObject());
+        query.append(synonym.getFullyQualifiedName(DBPEvaluationContext.DDL));
+        query.append(" FOR ").append(DBUtils.getQuotedIdentifier(synonym.getDataSource(), CommonUtils.notEmpty(synonym.getTargetObject())));
         if ((!synonym.isPersisted() && synonym.getDescription() != null) || command.hasProperty("description")) {
             query.append(" COMMENT ").append(SQLUtils.quoteString(synonym, CommonUtils.notEmpty(synonym.getDescription())));
         }
@@ -119,7 +121,7 @@ public class CubridSynonymManager extends SQLObjectEditor<GenericSynonym, Generi
         CubridSynonym synonym = (CubridSynonym) command.getObject();
         actions.add(new SQLDatabasePersistAction(
             "Drop Synonym",
-            "DROP SYNONYM " + synonym.getOwner() + "." + synonym.getName()
+            "DROP SYNONYM " + synonym.getFullyQualifiedName(DBPEvaluationContext.DDL)
         ));
     }
 
@@ -132,9 +134,11 @@ public class CubridSynonymManager extends SQLObjectEditor<GenericSynonym, Generi
         @NotNull Map<String, Object> options
     ) {
         CubridSynonym synonym = (CubridSynonym) command.getObject();
+        String schemaName = DBUtils.getQuotedIdentifier(synonym.getOwner()) + ".";
         actions.add(new SQLDatabasePersistAction(
             "Rename Synonym",
-            "RENAME SYNONYM " + synonym.getOwner() + "." + command.getOldName() + " TO " + synonym.getOwner() + "." + command.getNewName()
+            "RENAME SYNONYM " + schemaName + DBUtils.getQuotedIdentifier(synonym.getDataSource(), command.getOldName())
+            + " TO " + schemaName + DBUtils.getQuotedIdentifier(synonym.getDataSource(), command.getNewName())
         ));
     }
 
@@ -154,7 +158,7 @@ public class CubridSynonymManager extends SQLObjectEditor<GenericSynonym, Generi
     public boolean canCreateObject(@NotNull Object container) {
         CubridUser user = (CubridUser) container;
         CubridDataSource dataSource = (CubridDataSource) user.getDataSource();
-        return dataSource.isShard();
+        return !dataSource.isShard();
     }
 
     @Override
