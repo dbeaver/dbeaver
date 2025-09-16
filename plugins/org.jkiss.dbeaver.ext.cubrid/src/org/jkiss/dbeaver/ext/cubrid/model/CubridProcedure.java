@@ -133,7 +133,8 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
     public String getObjectDefinitionText(@NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options) throws DBException {
         if (source == null) {
             if (!persisted) {
-                this.source = "CREATE OR REPLACE " + getProcedureType().name() + " " + getName() + "()";
+                this.source = "CREATE OR REPLACE " + getProcedureType().name() + " ";
+                this.source += getFullyQualifiedName(DBPEvaluationContext.DDL) + "()";
                 this.source += (getProcedureType() == DBSProcedureType.FUNCTION) ? " RETURN int" : "";
                 this.source += "\nAS LANGUAGE JAVA NAME";
             } else {
@@ -161,7 +162,7 @@ public class CubridProcedure extends GenericProcedure implements DBSObjectWithSc
     @NotNull
     @Override
     public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
-        return getName();
+        return DBUtils.getFullQualifiedName(getDataSource(), this);
     }
 
     @Override

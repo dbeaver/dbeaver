@@ -684,7 +684,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                             final DBDAttributeBinding attr = getAttributeFromGrid(colElement, gridRow);
                             final ResultSetRow row = getResultRowFromGrid(colElement, gridRow);
                             if (attr == null || row == null ||
-                                controller.getAttributeReadOnlyStatus(attr, true, true) != null
+                                controller.getAttributeReadOnlyStatus(attr, true, false) != null
                             ) {
                                 continue;
                             }
@@ -3086,13 +3086,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 final String typeName = attributeBinding.getFullTypeName();
                 final String description = attributeBinding.getDescription();
                 StringBuilder tip = new StringBuilder();
-                tip.append("Column: ");
+                tip.append(SpreadsheetMessages.tooltip_column).append(": ");
                 tip.append(name).append(" ").append(typeName);
                 if (attributeBinding.isRequired()) {
                     tip.append(" NOT NULL");
                 }
                 if (!CommonUtils.isEmpty(description)) {
-                    tip.append("\nDescription: ").append(description);
+                    tip.append("\n").append(SpreadsheetMessages.tooltip_description).append(": ").append(description);
                 }
                 // Add hints
                 ResultSetHintContext hintContext = controller.getModel().getHintContext();

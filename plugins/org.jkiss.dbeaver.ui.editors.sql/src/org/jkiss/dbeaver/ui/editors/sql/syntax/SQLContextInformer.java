@@ -112,8 +112,10 @@ public class SQLContextInformer
         return !CommonUtils.isEmpty(objectReferences);
     }
 
-    public void searchInformation(IRegion region)
-    {
+    public void searchInformation(@Nullable IRegion region) {
+        this.objectReferences = Collections.emptyList();
+        this.keywords = new String[0];
+
         ITextViewer textViewer = editor.getTextViewer();
         final DBCExecutionContext executionContext = editor.getExecutionContext();
         if (region == null || textViewer == null || executionContext == null) {

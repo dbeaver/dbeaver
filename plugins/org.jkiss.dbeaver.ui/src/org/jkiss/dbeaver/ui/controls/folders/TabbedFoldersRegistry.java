@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,10 +119,10 @@ class TabbedFoldersRegistry {
             Path configFile = DBWorkbench.getPlatform().getLocalConfigurationFile(COLUMNS_CONFIG_FILE);
             try (OutputStream out = Files.newOutputStream(configFile)) {
                 XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
-                xml.setButify(true);
-                try (final XMLBuilder.Element e = xml.startElement("folders")) {
+                xml.setBeautify(true);
+                try (var ignored = xml.startElement("folders")) {
                     for (Map.Entry<String, TabbedFolderState> entry : savedStates.entrySet()) {
-                        try (final XMLBuilder.Element e2 = xml.startElement("folder")) {
+                        try (var ignored2 = xml.startElement("folder")) {
                             xml.addAttribute("id", entry.getKey());
                             for (Map.Entry<String, TabbedFolderState.TabState> tab : entry.getValue().getTabStates().entrySet()) {
                                 try (final XMLBuilder.Element e3 = xml.startElement("tab")) {

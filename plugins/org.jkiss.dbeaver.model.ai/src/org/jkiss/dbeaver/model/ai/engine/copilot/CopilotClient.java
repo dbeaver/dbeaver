@@ -137,6 +137,7 @@ public class CopilotClient implements AutoCloseable {
     /**
      * Request session token
      */
+    @NotNull
     public CopilotSessionToken requestSessionToken(
         DBRProgressMonitor monitor,
         String accessToken
@@ -243,7 +244,7 @@ public class CopilotClient implements AutoCloseable {
             } catch (Exception ex) {
                 DBWorkbench.getPlatformUI().showError(
                     "Error reading model list",
-                    "Failed to read the model list",
+                    "Failed to read Copilot model list",
                     ex
                 );
             }

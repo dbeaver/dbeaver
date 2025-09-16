@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
+import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
 import java.util.List;
@@ -61,8 +62,8 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
     private ScrolledFormText scrolledFormText;
     private int tipIndex;
 
-    public ShowTipOfTheDayDialog(@NotNull Shell parentShell, List<String> tips) {
-        super(parentShell, "Tip of the day");
+    public ShowTipOfTheDayDialog(@NotNull Shell parentShell, @NotNull List<String> tips) {
+        super(parentShell, TipOfTheDayMessages.tip_of_the_day_title);
         this.tips = List.copyOf(tips);
         setModeless(true);
         setBlockOnOpen(false);
@@ -70,12 +71,12 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
 
     public static boolean isShowOnStartup() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        return store.getBoolean(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP);
+        return CommonUtils.toBoolean(store.getString(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP), true);
     }
 
     public static void setShowOnStartup(boolean showOnStartup) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.setValue(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, showOnStartup);
+        store.setValue(UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, String.valueOf(showOnStartup));
     }
 
     @Override
@@ -97,7 +98,7 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
 
     @Override
     protected Composite createDialogArea(Composite parent) {
-        getShell().setText("Tip of the day");
+        getShell().setText(TipOfTheDayMessages.tip_of_the_day_title);
 
         tipIndex = new Random(System.currentTimeMillis()).nextInt(tips.size());
 
@@ -156,7 +157,7 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
         showTip();
 
         if (displayShowOnStartup) {
-            Button showTipButton = toolkit.createButton(form.getBody(), "Show tips on startup", SWT.CHECK);
+            Button showTipButton = toolkit.createButton(form.getBody(), TipOfTheDayMessages.show_tips_on_startup, SWT.CHECK);
 
             showTipButton.setSelection(isShowOnStartup());
             showTipButton.addSelectionListener(new SelectionAdapter() {

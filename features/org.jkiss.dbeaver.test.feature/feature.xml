@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.test.feature"
         label="DBeaver test plugins"
-        version="25.2.0.qualifier"
+        version="25.2.1.qualifier"
         provider-name="DBeaver Corp"
         plugin="org.jkiss.dbeaver.headless.application">
 

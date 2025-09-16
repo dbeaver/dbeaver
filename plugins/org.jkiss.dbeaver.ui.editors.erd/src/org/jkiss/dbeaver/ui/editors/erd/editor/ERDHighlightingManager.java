@@ -130,7 +130,7 @@ public class ERDHighlightingManager {
 
     @Nullable
     public ListNode<ERDHighlightingHandle> highlightRelatedAttributes(
-        @NotNull AttributePart attributePart, 
+        @NotNull AttributePart attributePart,
         @NotNull Color color
     ) {
         if (!(attributePart.getParent() instanceof EntityPart entityPart)) {
@@ -149,24 +149,21 @@ public class ERDHighlightingManager {
                 highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
             }
         }
-        if (highlightings == null) {
-            for (Object connection : entityPart.getSourceConnections()) {
-                if (connection instanceof AssociationPart associationPart
-                    && (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
-                        associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute()))) {
-                    highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
-                }
+        for (Object connection : entityPart.getSourceConnections()) {
+            if (connection instanceof AssociationPart associationPart
+                && (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
+                associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute()))) {
+                highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
             }
         }
-        if (highlightings == null) {
-            for (Object connection : entityPart.getTargetConnections()) {
-                if (connection instanceof AssociationPart associationPart
-                    && (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
-                        associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute()))) {
-                    highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
-                }
+        for (Object connection : entityPart.getTargetConnections()) {
+            if (connection instanceof AssociationPart associationPart
+                && (associationPart.getAssociation().getSourceAttributes().contains(attributePart.getAttribute()) ||
+                associationPart.getAssociation().getTargetAttributes().contains(attributePart.getAttribute()))) {
+                highlightings = ListNode.join(highlightings, highlightRelatedAttributes(associationPart, color));
             }
         }
+
         return highlightings;
     }
 
