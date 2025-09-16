@@ -85,6 +85,25 @@
         </definition>
     </extension>
 
+    <extension point="org.eclipse.ui.activities">
+        <activity id="dbeaver.ai.activity.policy" name="AI Activity (Policy)">
+            <enabledWhen>
+                <reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy"/>
+            </enabledWhen>
+        </activity>
+        <activity id="dbeaver.ai.activity" name="AI Activity">
+            <enabledWhen>
+                <and>
+                    <reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.user"/>
+                    <reference definitionId="org.jkiss.dbeaver.core.ai.completion.enabled.by.policy"/>
+                </and>
+            </enabledWhen>
+        </activity>
+
+        <activityPatternBinding activityId="dbeaver.ai.activity.policy" pattern="org.jkiss.dbeaver.ui.ai.*"/>
+        <activityPatternBinding activityId="dbeaver.ai.activity.policy" pattern="org.jkiss.dbeaver.preferences.ai"/>
+    </extension>
+
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.ui.ai.showCompletion" icon="platform:/plugin/org.jkiss.dbeaver.model.ai/icons/ai.svg"/>
     </extension>
