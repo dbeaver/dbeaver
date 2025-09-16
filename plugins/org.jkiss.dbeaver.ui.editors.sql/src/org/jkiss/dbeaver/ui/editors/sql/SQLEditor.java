@@ -425,11 +425,11 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public boolean setDataSourceContainer(@Nullable DBPDataSourceContainer container) {
-        if (!datasourceChanged && curDataSource != null) {
-            datasourceChanged = true;
-        }
         if (container == dataSourceContainer) {
             return false;
+        }
+        if (!datasourceChanged && curDataSource != null) {
+            datasourceChanged = true;
         }
 
         // Release ds container
@@ -1146,7 +1146,7 @@ public class SQLEditor extends SQLEditorBase implements
         UIExecutionQueue.queueExec(this::onDataSourceChange);
 
         Consumer<String> fontUpdater = s -> {
-            final Font font = BaseThemeSettings.instance.baseFont;
+            final Font font = BaseThemeSettings.instance.partTitleFont;
             if (resultTabs != null) {
                 resultTabs.setFont(font);
             }
@@ -1157,7 +1157,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         };
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.Eclipse.PART_TITLE_FONT,
             fontUpdater,
             parent
         );
@@ -1418,7 +1418,7 @@ public class SQLEditor extends SQLEditorBase implements
             });
         }
         resultTabs.setSimple(true);
-        resultTabs.setFont(JFaceResources.getFont(UIFonts.DBEAVER_FONTS_MAIN_FONT));
+        resultTabs.setFont(JFaceResources.getFont(UIFonts.Eclipse.PART_TITLE_FONT));
 
         resultTabs.addMouseListener(new MouseAdapter() {
             @Override
@@ -2512,7 +2512,7 @@ public class SQLEditor extends SQLEditorBase implements
         StringBuilder tip = new StringBuilder();
         tip
             .append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_path, scriptPath))
-            .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_connecton, dataSourceContainer.getName()))
+            .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_connection, dataSourceContainer.getName()))
             .append("\n").append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_type, dataSourceContainer.getDriver().getFullName()))
             .append("\n")
             .append(NLS.bind(SQLEditorMessages.sql_editor_title_tooltip_url, dataSourceContainer.getConnectionConfiguration().getUrl()));
@@ -3471,6 +3471,14 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             );
         }
+    }
+
+    public boolean hasOnlyEmptyResultViews() {
+        return this.queryProcessors.isEmpty() || (
+            this.queryProcessors.stream().allMatch(qp -> qp.resultContainers.isEmpty() || (
+                qp.resultContainers.stream().allMatch(rc -> !rc.viewer.hasData())
+            ))
+        );
     }
 
     private boolean isContextChanged(DBPEvent event) {
@@ -5066,7 +5074,7 @@ public class SQLEditor extends SQLEditorBase implements
             public String getEmptyDataDescription() {
                 String execQuery = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_EXECUTE_STATEMENT, getSite(), true);
                 String execScript = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_EXECUTE_SCRIPT, getSite(), true);
-                return NLS.bind(ResultSetMessages.sql_editor_resultset_filter_panel_control_execute_to_see_reslut, execQuery, execScript);
+                return NLS.bind(ResultSetMessages.sql_editor_resultset_filter_panel_control_execute_to_see_result, execQuery, execScript);
             }
         };
     }

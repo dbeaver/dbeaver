@@ -18,6 +18,15 @@
                     customURL="true" turnOffPreparedStatements="true"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.postgresql.serverType">
+        <serverType id="greengage"
+                    name="Greengage"
+                    class="org.jkiss.dbeaver.ext.greenplum.model.PostgreServerGreengage"
+                    logo="icons/greengage_logo.svg"
+                    customURL="true"
+                    turnOffPreparedStatements="true"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
                 class="org.jkiss.dbeaver.ext.greenplum.GreenplumDataSourceProvider"
@@ -121,6 +130,50 @@
                     <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgis" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="cloudberry"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                    <property name="prepareThreshold" value="0"/>
+                </driver>
+            </drivers>
+        </datasource>
+        <datasource
+                class="org.jkiss.dbeaver.ext.greenplum.GreengageDataSourceProvider"
+                description="%datasource.greengage.description"
+                id="greengage"
+                parent="greenplum"
+                label="Greengage"
+                dialect="greenplum"
+                inheritClients="true"
+                inheritProviderProperties="true">
+
+            <drivers managable="true">
+                <driver
+                        id="greengage-jdbc"
+                        label="Greengage"
+                        icon="icons/greengage_icon.svg"
+                        iconBig="icons/greengage_icon_big.svg"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="5432"
+                        webURL="https://greengagedb.org/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
+                        databaseDocumentationSuffixURL="Database-driver-Greengage"
+                        description="%driver.greengage.description"
+                        categories="sql,analytic">
+                    <replace provider="postgresql" driver="postgres-greengage-jdbc"/>
+
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]"
+                          bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.5.0]" ignore-dependencies="true"
+                          optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.5.0]"
+                          ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-geometry:RELEASE[2.5.0]"
+                          ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
+                    <file type="license" path="licenses/external/pg.txt"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="greengage"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                     <property name="prepareThreshold" value="0"/>

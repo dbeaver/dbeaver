@@ -419,7 +419,7 @@ public class DiagramLoader extends ERDPersistedState {
         // Save as XML
         StringWriter out = new StringWriter(1000);
         XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING, !compact);
-        xml.setButify(!compact);
+        xml.setBeautify(!compact);
         if (verbose) {
             xml.addContent(
                 """

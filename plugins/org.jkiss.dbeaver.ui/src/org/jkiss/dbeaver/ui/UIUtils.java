@@ -1270,7 +1270,9 @@ public class UIUtils {
         @Nullable SelectionListener selectionListener
     ) {
         Button button = new Button(parent, SWT.PUSH);
-        button.setText(label);
+        if (label != null) {
+            button.setText(label);
+        }
         button.setFont(JFaceResources.getDialogFont());
         if (icon != null) {
             button.setImage(DBeaverIcons.getImage(icon));
@@ -2359,7 +2361,7 @@ public class UIUtils {
 
     public static void installAndUpdateMainFont(@NotNull Control control) {
         BaseThemeSettings.instance.addPropertyListener(
-            UIFonts.DBEAVER_FONTS_MAIN_FONT,
+            UIFonts.DBeaver.MAIN_FONT,
             s -> applyMainFont(control),
             control
         );
@@ -2390,7 +2392,7 @@ public class UIUtils {
     }
 
     private static boolean mainFontIsDefault() {
-        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBEAVER_FONTS_MAIN_FONT);
+        final FontData[] mainFontData = JFaceResources.getFontRegistry().getFontData(UIFonts.DBeaver.MAIN_FONT);
         final FontData[] defaultFontData = JFaceResources.getFontRegistry().getFontData(JFaceResources.DEFAULT_FONT);
         return Arrays.equals(mainFontData, defaultFontData);
     }

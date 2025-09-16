@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
@@ -32,8 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.List;
 import java.util.concurrent.Flow;
 
-public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
-    extends BaseCompletionEngine {
+public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
@@ -48,10 +48,18 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
         }
     };
 
-    protected final PROPS properties;
+    public OpenAICompletionEngine() throws DBException {
+        super();
+    }
 
-    public OpenAICompletionEngine(PROPS properties) {
-        this.properties = properties;
+    public OpenAICompletionEngine(PROPS properties) throws DBException {
+        super(properties);
+    }
+
+    @NotNull
+    @Override
+    protected String getEngineId() {
+        return OpenAIConstants.OPENAI_ENGINE;
     }
 
     @NotNull
@@ -61,7 +69,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
             .stream()
             .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
                 model.id(),
-                new AIModel(model.id(), null, OpenAIModels.getModelFeatures(model.id()))
+                new AIModel(model.id(), null, OpenAIModels.detectModelFeatures(model.id()))
             ))
             .toList();
     }
@@ -82,7 +90,7 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
 
     @NotNull
     @Override
-    public Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
+    public AIStreamPublisher requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
@@ -178,8 +186,11 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties>
         if (token == null || token.isEmpty()) {
             throw new DBException("OpenAI API token is not set");
         }
-
-        return OpenAIClient.createClient(token);
+        String baseUrl = properties.getBaseUrl();
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            baseUrl = OpenAIClient.OPENAI_ENDPOINT;
+        }
+        return OpenAIClient.createClient(baseUrl, token);
     }
 
     @Nullable

@@ -71,7 +71,7 @@ public class ChatCompletionRequest {
      * The maximum number of tokens allowed for the generated answer. By default, the number of tokens the model can return will
      * be (4096 - prompt tokens).
      */
-    @SerializedName("max_tokens")
+    @SerializedName("max_completion_tokens")
     private Integer maxTokens;
 
     /**
