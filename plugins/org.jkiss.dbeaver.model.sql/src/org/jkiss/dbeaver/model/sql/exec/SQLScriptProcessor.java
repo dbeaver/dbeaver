@@ -243,7 +243,8 @@ public class SQLScriptProcessor {
             DBCStatementType.SCRIPT,
             sqlQuery,
             0,
-            0);
+            maxRows
+        );
         DBExecUtils.setStatementFetchSize(statement, 0, maxRows, fetchSize);
 
         // Execute statement

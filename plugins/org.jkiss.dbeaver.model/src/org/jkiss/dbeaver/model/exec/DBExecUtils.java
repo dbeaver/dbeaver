@@ -268,16 +268,6 @@ public class DBExecUtils {
             try {
                 dbStat.setResultsFetchSize(
                     firstRow < 0 || maxRows <= 0 ? fetchSize : (int) (firstRow + maxRows));
-                if (maxRows > 0) {
-                    dbStat.setLimit(firstRow, maxRows);
-                }
-            } catch (Exception e) {
-                log.warn(e);
-            }
-        }
-        if (maxRows > 0) {
-            try {
-                dbStat.setLimit(firstRow, maxRows);
             } catch (Exception e) {
                 log.warn(e);
             }

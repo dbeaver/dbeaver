@@ -29,7 +29,7 @@ public interface ApplicationInstanceController {
 
     @NotNull
     @RequestMapping(value = "handleCommandLine")
-    CliProcessResult handleCommandLine(@RequestParameter("args") @NotNull String[] args);
+    CLIProcessResult handleCommandLine(@RequestParameter("args") @NotNull String[] args);
 
     @RequestMapping(value = "ping", timeout = 5)
     long ping(@RequestParameter("payload") long payload);
