@@ -151,25 +151,25 @@ public class DBIcon implements DBPImage {
     public static final DBIcon OVER_REFERENCE = new DBIcon("over_reference", "over/reference_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_FOLDER = new DBIcon("over_folder", "over/folder_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    public static final DBIcon DATABASE_DEFAULT = new DBIcon("database_icon_default", "connection/database_icon.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon DATABASE_BIG_DEFAULT = new DBIcon("database_icon_big_default", "connection/database_icon_big.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DATABASE_DEFAULT = new DBIcon("database_icon_default", "connection/database_icon.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DATABASE_BIG_DEFAULT = new DBIcon("database_icon_big_default", "connection/database_icon_big.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon APACHE = new DBIcon("apache", "misc/apache.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon JAR = new DBIcon("jar", "misc/jar.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LIBRARY = new DBIcon("library", "misc/library.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    public static final DBIcon STATUS_ERROR = new DBIcon("status_error", "status/error.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon STATUS_WARNING = new DBIcon("status_warning", "status/warning.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon STATUS_QUESTION = new DBIcon("status_question", "status/question.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon STATUS_INFO = new DBIcon("status_info", "status/info.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon STATUS_ERROR = new DBIcon("status_error", "status/error.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon STATUS_WARNING = new DBIcon("status_warning", "status/warning.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon STATUS_QUESTION = new DBIcon("status_question", "status/question.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon STATUS_INFO = new DBIcon("status_info", "status/info.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon SMALL_ERROR = new DBIcon("small_error", "status/error_small.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SMALL_WARNING = new DBIcon("small_warning", "status/warning_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SMALL_WARNING = new DBIcon("small_warning", "status/warning_small.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SMALL_QUESTION = new DBIcon("small_question", "status/question_small.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SMALL_INFO = new DBIcon("small_info", "status/info_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SMALL_INFO = new DBIcon("small_info", "status/info_small.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    public static final DBIcon TINY_ERROR = new DBIcon("tiny_error", "status/error_tiny.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TINY_WARNING = new DBIcon("tiny_warning", "status/warning_tiny.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TINY_ERROR = new DBIcon("tiny_error", "status/error_tiny.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TINY_WARNING = new DBIcon("tiny_warning", "status/warning_tiny.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_TEXT = new DBIcon("sql_text", "sql/sql_text.svg");
 
     private static final boolean VALIDATE_ICON_FILE = false;
