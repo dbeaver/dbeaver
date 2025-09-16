@@ -48,6 +48,7 @@ public class ResultSetHintContext implements DBDValueHintContext {
     private final Supplier<DBSEntity> entitySupplier;
     private final Map<String, Object> contextAttributes = new HashMap<>();
 
+    private final Object hintProvidersLock = new Object();
     private final Map<DBDValueHintProvider, HintProviderInfo> hintProviders = new IdentityHashMap<>();
     private ValueHintContextConfiguration contextConfiguration;
 
@@ -126,15 +127,25 @@ public class ResultSetHintContext implements DBDValueHintContext {
         return contextConfiguration;
     }
 
-    public Set<DBDValueHintProvider> getApplicableHintProviders() {
-        return hintProviders.keySet();
+    public List<ValueHintProviderDescriptor> filterApplicableHintProviderDescriptors(List<ValueHintProviderDescriptor> descriptors) {
+        List<ValueHintProviderDescriptor> result = new ArrayList<>(descriptors.size());
+        synchronized (this.hintProvidersLock) {
+            for (ValueHintProviderDescriptor desc : descriptors) {
+                if (this.hintProviders.containsKey(desc.getInstance())) {
+                    result.add(desc);
+                }
+            }
+        }
+        return result;
     }
 
     public List<DBDCellHintProvider> getCellHintProviders(DBDAttributeBinding attr) {
         List<DBDCellHintProvider> result = new ArrayList<>();
-        for (HintProviderInfo pi : hintProviders.values()) {
-            if (pi.enabled && pi.provider instanceof DBDCellHintProvider chp && pi.attributes.contains(attr)) {
-                result.add(chp);
+        synchronized (this.hintProvidersLock) {
+            for (HintProviderInfo pi : this.hintProviders.values()) {
+                if (pi.enabled && pi.provider instanceof DBDCellHintProvider chp && pi.attributes.contains(attr)) {
+                    result.add(chp);
+                }
             }
         }
         return result;
@@ -142,9 +153,11 @@ public class ResultSetHintContext implements DBDValueHintContext {
 
     public List<DBDAttributeHintProvider> getColumnHintProviders(DBDAttributeBinding attr) {
         List<DBDAttributeHintProvider> result = new ArrayList<>();
-        for (HintProviderInfo pi : hintProviders.values()) {
-            if (pi.enabled && pi.provider instanceof DBDAttributeHintProvider ahp && pi.attributes.contains(attr)) {
-                result.add(ahp);
+        synchronized (this.hintProvidersLock) {
+            for (HintProviderInfo pi : this.hintProviders.values()) {
+                if (pi.enabled && pi.provider instanceof DBDAttributeHintProvider ahp && pi.attributes.contains(attr)) {
+                    result.add(ahp);
+                }
             }
         }
         return result;
@@ -152,7 +165,9 @@ public class ResultSetHintContext implements DBDValueHintContext {
 
     void resetCache() {
         this.contextAttributes.clear();
-        this.hintProviders.clear();
+        synchronized (this.hintProviders) {
+            this.hintProviders.clear();
+        }
     }
 
     void initProviders(DBDAttributeBinding[] attributes) {
@@ -193,14 +208,17 @@ public class ResultSetHintContext implements DBDValueHintContext {
         @NotNull Collection<? extends DBDValueRow> rows,
         boolean cleanupCache
     ) throws DBException {
-        for (HintProviderInfo pi : hintProviders.values()) {
-            if (pi.enabled && pi.provider instanceof DBDCellHintProvider chp) {
-                chp.cacheRequiredData(
-                    monitor,
-                    this,
-                    !CommonUtils.isEmpty(attributes) ? attributes : pi.attributes,
-                    rows,
-                    cleanupCache);
+        synchronized (this.hintProvidersLock) {
+            for (HintProviderInfo pi : this.hintProviders.values()) {
+                if (pi.enabled && pi.provider instanceof DBDCellHintProvider chp) {
+                    chp.cacheRequiredData(
+                        monitor,
+                        this,
+                        !CommonUtils.isEmpty(attributes) ? attributes : pi.attributes,
+                        rows,
+                        cleanupCache
+                    );
+                }
             }
         }
     }
