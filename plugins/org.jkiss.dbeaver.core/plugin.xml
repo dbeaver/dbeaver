@@ -119,7 +119,7 @@
 
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.core.new.connection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database_connect.svg"/>
-        <image commandId="org.jkiss.dbeaver.core.new.connection.from.url" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/connection/database_icon.png"/>
+        <image commandId="org.jkiss.dbeaver.core.new.connection.from.url" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/connection/database_icon.svg"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark.svg"/>
 
         <image commandId="org.jkiss.dbeaver.core.connect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.svg"/>
