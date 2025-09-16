@@ -68,6 +68,9 @@ public class OpenAIClient implements Closeable {
         @NotNull String baseUrl,
         @NotNull List<HttpRequestFilter> requestFilters
     ) {
+        if (!baseUrl.endsWith("/")) {
+            baseUrl += "/";
+        }
         this.baseUrl = baseUrl;
         this.requestFilters = requestFilters;
     }
