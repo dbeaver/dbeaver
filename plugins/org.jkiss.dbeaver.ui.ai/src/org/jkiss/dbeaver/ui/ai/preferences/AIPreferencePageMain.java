@@ -198,6 +198,9 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
         if (activeEngineConfiguratorPage == null) {
             IObjectPropertyConfigurator<AIEngineDescriptor, AIEngineProperties> engineConfigurator
                 = createEngineConfigurator();
+            if (engineConfigurator == null) {
+                log.error("Engine configurator not found for " + completionEngine.getId());
+            }
             activeEngineConfiguratorPage = new EngineConfiguratorPage(engineConfigurator);
             activeEngineConfiguratorPage.createControl(engineGroup, completionEngine);
             engineConfiguratorMapping.put(id, activeEngineConfiguratorPage);
