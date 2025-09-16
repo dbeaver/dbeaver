@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCObjectSupplier;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -41,6 +42,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
         this.original = original;
     }
 
+    @NotNull
     public DatabaseMetaData getOriginal() throws SQLException {
         if (original == null) {
             throw new SQLException("Database metadata not supported by driver");
@@ -48,12 +50,28 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
         return original;
     }
 
-    private JDBCResultSet makeResultSet(java.sql.ResultSet resultSet, String functionName, Object... args) throws SQLException {
+    @NotNull
+    private JDBCResultSet makeResultSet(
+        @NotNull JDBCObjectSupplier<ResultSet> resultSet,
+        @NotNull String functionName,
+        Object... args
+    ) throws SQLException {
         String description = functionName;
         if (args.length > 0) {
             description += " " + Arrays.toString(args);
         }
-        return JDBCResultSetImpl.makeResultSet(connection, null, resultSet, description, false);
+
+        // Make fake statement
+        JDBCFakeStatementImpl fakeStatement = new JDBCFakeStatementImpl(
+            connection,
+            "-- " + description, // Set description as commented SQL
+            false);
+        fakeStatement.beforeExecute();
+        fakeStatement.afterExecute();
+
+        ResultSet originalRS = resultSet.get();
+        // We need to create a fake statement for such a result sets
+        return JDBCResultSetImpl.makeResultSet(connection, fakeStatement, originalRS, false);
     }
 
     @Override
@@ -84,7 +102,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getSuperTypes(String catalog, String schemaPattern, String typeNamePattern) throws SQLException {
         return makeResultSet(
-            getOriginal().getSuperTypes(catalog, schemaPattern, typeNamePattern),
+            () -> getOriginal().getSuperTypes(catalog, schemaPattern, typeNamePattern),
             "Load super types", catalog, schemaPattern, typeNamePattern
         );
     }
@@ -92,7 +110,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
         return makeResultSet(
-            getOriginal().getSuperTables(catalog, schemaPattern, tableNamePattern),
+            () -> getOriginal().getSuperTables(catalog, schemaPattern, tableNamePattern),
             "Load super tables", catalog, schemaPattern, tableNamePattern
         );
     }
@@ -100,7 +118,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getAttributes(String catalog, String schemaPattern, String typeNamePattern, String attributeNamePattern) throws SQLException {
         return makeResultSet(
-            getOriginal().getAttributes(catalog, schemaPattern, typeNamePattern, attributeNamePattern),
+            () -> getOriginal().getAttributes(catalog, schemaPattern, typeNamePattern, attributeNamePattern),
             "Load UDT attributes", catalog, schemaPattern, typeNamePattern, attributeNamePattern
         );
     }
@@ -158,7 +176,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
         return makeResultSet(
-            getOriginal().getSchemas(catalog, schemaPattern),
+            () -> getOriginal().getSchemas(catalog, schemaPattern),
             "Load schemas", catalog, schemaPattern
         );
     }
@@ -176,7 +194,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getClientInfoProperties() throws SQLException {
         return makeResultSet(
-            getOriginal().getClientInfoProperties(),
+            () -> getOriginal().getClientInfoProperties(),
             "Load client info"
         );
     }
@@ -184,7 +202,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getFunctions(String catalog, String schemaPattern, String functionNamePattern) throws SQLException {
         return makeResultSet(
-            getOriginal().getFunctions(catalog, schemaPattern, functionNamePattern),
+            () -> getOriginal().getFunctions(catalog, schemaPattern, functionNamePattern),
             "Load functions", catalog, schemaPattern, functionNamePattern
         );
     }
@@ -192,7 +210,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getFunctionColumns(String catalog, String schemaPattern, String functionNamePattern, String columnNamePattern) throws SQLException {
         return makeResultSet(
-            getOriginal().getFunctionColumns(catalog, schemaPattern, functionNamePattern, columnNamePattern),
+            () -> getOriginal().getFunctionColumns(catalog, schemaPattern, functionNamePattern, columnNamePattern),
             "Load function columns", catalog, schemaPattern, functionNamePattern, columnNamePattern
         );
     }
@@ -200,7 +218,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
         return makeResultSet(
-            getOriginal().getPseudoColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern),
+            () -> getOriginal().getPseudoColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern),
             "Load pseudo columns", catalog, schemaPattern, tableNamePattern, columnNamePattern
         );
     }
@@ -819,7 +837,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern) throws SQLException {
         return makeResultSet(
-            getOriginal().getProcedures(catalog, schemaPattern, procedureNamePattern),
+            () -> getOriginal().getProcedures(catalog, schemaPattern, procedureNamePattern),
             "Load procedures", catalog, schemaPattern, procedureNamePattern
         );
     }
@@ -830,7 +848,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
         String columnNamePattern
     ) throws SQLException {
         return makeResultSet(
-            getOriginal().getProcedureColumns(catalog, schemaPattern, procedureNamePattern, columnNamePattern),
+            () -> getOriginal().getProcedureColumns(catalog, schemaPattern, procedureNamePattern, columnNamePattern),
             "Load procedure columns", catalog, schemaPattern, procedureNamePattern, columnNamePattern
         );
     }
@@ -838,7 +856,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
         return makeResultSet(
-            getOriginal().getTables(catalog, schemaPattern, tableNamePattern, types),
+            () -> getOriginal().getTables(catalog, schemaPattern, tableNamePattern, types),
             "Load tables", catalog, schemaPattern, tableNamePattern, types
         );
     }
@@ -846,7 +864,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getSchemas() throws SQLException {
         return makeResultSet(
-            getOriginal().getSchemas(),
+            () -> getOriginal().getSchemas(),
             "Load schemas"
         );
     }
@@ -854,7 +872,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getCatalogs() throws SQLException {
         return makeResultSet(
-            getOriginal().getCatalogs(),
+            () -> getOriginal().getCatalogs(),
             "Load catalogs"
         );
     }
@@ -862,7 +880,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getTableTypes() throws SQLException {
         return makeResultSet(
-            getOriginal().getTableTypes(),
+            () -> getOriginal().getTableTypes(),
             "Load table types"
         );
     }
@@ -870,7 +888,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
         return makeResultSet(
-            getOriginal().getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern),
+            () -> getOriginal().getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern),
             "Load columns", catalog, schemaPattern, tableNamePattern, columnNamePattern
         );
     }
@@ -878,7 +896,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getColumnPrivileges(String catalog, String schema, String table, String columnNamePattern) throws SQLException {
         return makeResultSet(
-            getOriginal().getColumnPrivileges(catalog, schema, table, columnNamePattern),
+            () -> getOriginal().getColumnPrivileges(catalog, schema, table, columnNamePattern),
             "Load column privileges", catalog, schema, table, columnNamePattern
         );
     }
@@ -886,7 +904,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getTablePrivileges(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
         return makeResultSet(
-            getOriginal().getTablePrivileges(catalog, schemaPattern, tableNamePattern),
+            () -> getOriginal().getTablePrivileges(catalog, schemaPattern, tableNamePattern),
             "Load table privileges", catalog, schemaPattern, tableNamePattern
         );
     }
@@ -894,7 +912,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getBestRowIdentifier(String catalog, String schema, String table, int scope, boolean nullable) throws SQLException {
         return makeResultSet(
-            getOriginal().getBestRowIdentifier(catalog, schema, table, scope, nullable),
+            () -> getOriginal().getBestRowIdentifier(catalog, schema, table, scope, nullable),
             "Find best row identifier", catalog, schema, table
         );
     }
@@ -902,7 +920,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getVersionColumns(String catalog, String schema, String table) throws SQLException {
         return makeResultSet(
-            getOriginal().getVersionColumns(catalog, schema, table),
+            () -> getOriginal().getVersionColumns(catalog, schema, table),
             "Find version columns", catalog, schema, table
         );
     }
@@ -910,7 +928,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getPrimaryKeys(String catalog, String schema, String table) throws SQLException {
         return makeResultSet(
-            getOriginal().getPrimaryKeys(catalog, schema, table),
+            () -> getOriginal().getPrimaryKeys(catalog, schema, table),
             "Load primary keys", catalog, schema, table
         );
     }
@@ -918,7 +936,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getImportedKeys(String catalog, String schema, String table) throws SQLException {
         return makeResultSet(
-            getOriginal().getImportedKeys(catalog, schema, table),
+            () -> getOriginal().getImportedKeys(catalog, schema, table),
             "Load imported keys", catalog, schema, table
         );
     }
@@ -926,7 +944,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getExportedKeys(String catalog, String schema, String table) throws SQLException {
         return makeResultSet(
-            getOriginal().getExportedKeys(catalog, schema, table),
+            () -> getOriginal().getExportedKeys(catalog, schema, table),
             "Load exported keys", catalog, schema, table
         );
     }
@@ -937,7 +955,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
         String foreignCatalog, String foreignSchema, String foreignTable
     ) throws SQLException {
         return makeResultSet(
-            getOriginal().getCrossReference(parentCatalog, parentSchema, parentTable, foreignCatalog, foreignSchema, foreignTable),
+            () -> getOriginal().getCrossReference(parentCatalog, parentSchema, parentTable, foreignCatalog, foreignSchema, foreignTable),
             "Load cross reference", parentCatalog, parentSchema, parentTable, foreignCatalog, foreignSchema, foreignTable
         );
     }
@@ -945,7 +963,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getTypeInfo() throws SQLException {
         return makeResultSet(
-            getOriginal().getTypeInfo(),
+            () -> getOriginal().getTypeInfo(),
             "Load type info"
         );
     }
@@ -953,7 +971,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getIndexInfo(String catalog, String schema, String table, boolean unique, boolean approximate) throws SQLException {
         return makeResultSet(
-            getOriginal().getIndexInfo(catalog, schema, table, unique, approximate),
+            () -> getOriginal().getIndexInfo(catalog, schema, table, unique, approximate),
             "Load indexes", catalog, schema, table
         );
     }
@@ -1021,7 +1039,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData {
     @Override
     public JDBCResultSet getUDTs(String catalog, String schemaPattern, String typeNamePattern, int[] types) throws SQLException {
         return makeResultSet(
-            getOriginal().getUDTs(catalog, schemaPattern, typeNamePattern, types),
+            () -> getOriginal().getUDTs(catalog, schemaPattern, typeNamePattern, types),
             "Load UDTs", catalog, schemaPattern, typeNamePattern
         );
     }

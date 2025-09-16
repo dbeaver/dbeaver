@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class TableTriggerCache extends JDBCObjectWithParentCache<GenericStructCo
 
     @Nullable
     @Override
-    protected GenericTrigger fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+    protected GenericTrigger<?> fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer genericStructContainer, @NotNull GenericTableBase genericTableBase, String triggerName, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
         return genericStructContainer.getDataSource().getMetaModel().createTableTriggerImpl(session, genericStructContainer, genericTableBase, triggerName, resultSet);
     }
 }
