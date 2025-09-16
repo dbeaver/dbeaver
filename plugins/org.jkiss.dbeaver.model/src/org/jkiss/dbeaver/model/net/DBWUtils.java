@@ -174,7 +174,7 @@ public class DBWUtils {
                         urlConnectivityParams = new ConnectivityParameters(
                             url.getHost(),
                             url.getPort() != -1 ? Integer.toString(url.getPort()) : null,
-                            url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath(),
+                            url.getPath() != null && url.getPath().startsWith("/") ? url.getPath().substring(1) : url.getPath(),
                             url.getUserInfo(),
                             null
                         );
