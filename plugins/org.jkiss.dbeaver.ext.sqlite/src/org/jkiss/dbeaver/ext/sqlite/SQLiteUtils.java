@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.sqlite;
 
 import org.jkiss.api.CompositeObjectId;
-import org.jkiss.api.DriverReference;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
