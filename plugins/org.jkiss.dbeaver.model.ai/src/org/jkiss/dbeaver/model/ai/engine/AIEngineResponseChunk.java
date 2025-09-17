@@ -17,14 +17,46 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 
-public record AIEngineResponseChunk(
-    @NotNull List<String> choices
-) {
+// FIXME: create several subclasses for different types of chunks
+public final class AIEngineResponseChunk {
+    @NotNull
+    private final List<String> choices;
+    @Nullable
+    private final AIFunctionCall functionCall;
+
+    public AIEngineResponseChunk(
+        @NotNull List<String> choices
+    ) {
+        this.choices = choices;
+        this.functionCall = null;
+    }
+
+    public AIEngineResponseChunk(@NotNull AIFunctionCall functionCall) {
+        this.choices = Collections.emptyList();
+        this.functionCall = functionCall;
+    }
+
+    @NotNull
+    public List<String> getChoices() {
+        return choices;
+    }
+
+    @Nullable
+    public AIFunctionCall getFunctionCall() {
+        return functionCall;
+    }
+
     @Override
     public String toString() {
+        if (functionCall != null) {
+            return functionCall.toString();
+        }
         return choices.toString();
     }
+
 }

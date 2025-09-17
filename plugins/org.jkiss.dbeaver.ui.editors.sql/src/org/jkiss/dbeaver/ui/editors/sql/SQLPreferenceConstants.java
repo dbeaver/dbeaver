@@ -149,6 +149,7 @@ public class SQLPreferenceConstants {
     public static final String AUTOCOMPLETION_MODE                     = SQLModelPreferences.AUTOCOMPLETION_MODE;
     public static final String ADVANCED_HIGHLIGHTING_ENABLE            = SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE;
     public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS     = SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS;
+    public static final String VALIDATE_FUNCTIONS                      = SQLModelPreferences.VALIDATE_FUNCTIONS;
     public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";
     public static final String AUTO_ACTIVATION_DELAY                   = "SQLEditor.ContentAssistant.auto.activation.delay";
     public static final String PROPOSAL_INSERT_CASE                    = "SQLEditor.ContentAssistant.insert.case";

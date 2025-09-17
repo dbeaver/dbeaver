@@ -121,6 +121,7 @@ public class RequestResult {
             monitor,
             request.getContext().getExecutionContext(),
             true,
+            true,
             request.getContext().getSyntaxManager(),
             request.getContext().getDataSource().getSQLDialect()
         );

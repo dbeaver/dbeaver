@@ -244,6 +244,10 @@ public class EditorUtils {
     }
 
     public static DBPDataSourceContainer getInputDataSource(IEditorInput editorInput) {
+        return getInputDataSource(editorInput, true);
+    }
+
+    public static DBPDataSourceContainer getInputDataSource(IEditorInput editorInput, boolean forceRegistryLoad) {
         if (editorInput instanceof IDatabaseEditorInput dei) {
             final DBSObject object = dei.getDatabaseObject();
             if (object != null && object.getDataSource() != null) {
@@ -258,7 +262,7 @@ public class EditorUtils {
         } else {
             IFile file = getFileFromInput(editorInput);
             if (file != null) {
-                return getFileDataSource(file);
+                return getFileDataSource(file, forceRegistryLoad);
             } else {
                 File localFile = getLocalFileFromInput(editorInput);
                 if (localFile != null) {
@@ -274,7 +278,9 @@ public class EditorUtils {
                         return null;
                     }
                     DBPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(project);
-                    return projectMeta == null ? null : projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
+                    return projectMeta == null || (!forceRegistryLoad && !projectMeta.isRegistryLoaded()) ?
+                        null :
+                        projectMeta.getDataSourceRegistry().getDataSource(dataSourceId);
 
                 } else {
                     return null;
@@ -322,13 +328,18 @@ public class EditorUtils {
 
     @Nullable
     public static DBPDataSourceContainer getFileDataSource(IFile file) {
+        return getFileDataSource(file, true);
+    }
+
+    @Nullable
+    public static DBPDataSourceContainer getFileDataSource(IFile file, boolean forceRegistryLoad) {
         if (!file.exists()) {
             return null;
         }
         RCPProject projectMeta = DBPPlatformDesktop.getInstance().getWorkspace().getProject(file.getProject());
         if (projectMeta != null) {
             Object dataSourceId = EditorUtils.getResourceProperty(projectMeta, file, PROP_CONTEXT_DEFAULT_DATASOURCE);
-            if (dataSourceId != null) {
+            if (dataSourceId != null && (forceRegistryLoad || projectMeta.isRegistryLoaded())) {
                 DBPDataSourceContainer dataSource = projectMeta.getDataSourceRegistry().getDataSource(dataSourceId.toString());
                 if (dataSource == null) {
                     log.debug("Datasource " + dataSourceId + " not found in project " + projectMeta.getName() + " (" + file.getFullPath().toString() + ")");

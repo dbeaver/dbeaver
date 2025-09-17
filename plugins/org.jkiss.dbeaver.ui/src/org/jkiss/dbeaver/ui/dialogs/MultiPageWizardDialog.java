@@ -30,7 +30,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -39,7 +39,9 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -50,6 +52,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * MultiPageWizardDialog
@@ -121,7 +124,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @NotNull
-    protected EnumSet<PageCompletionMark> getShownCompletionMarks() {
+    protected Set<PageCompletionMark> getShownCompletionMarks() {
         return EnumSet.of(PageCompletionMark.ERROR);
     }
 
@@ -471,21 +474,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     private void updatePageCompleteMark(TreeItem parent) {
-        final EnumSet<PageCompletionMark> shownCompletionMarks = getShownCompletionMarks();
+        final Set<PageCompletionMark> shownCompletionMarks = getShownCompletionMarks();
         final IWizardPage currentPage = getCurrentPage();
         for (TreeItem item : parent == null ? pagesTree.getItems() : parent.getItems()) {
-            Object page = item.getData();
-            if (page instanceof IWizardPageNavigable pageNavigable && !pageNavigable.isPageNavigable()) {
+            if (!(item.getData() instanceof IDialogPage page)) {
                 continue;
             }
-            if (page == currentPage) {
-                // Don't show any completion marks for current page
-                item.setImage((Image) null);
-            } else if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
-                item.setImage(shownCompletionMarks.contains(PageCompletionMark.ERROR) ? DBeaverIcons.getImage(DBIcon.SMALL_ERROR) : null);
-            } else {
-                item.setImage(shownCompletionMarks.contains(PageCompletionMark.COMPLETE) ? DBeaverIcons.getImage(UIIcon.OK_MARK) : null);
-            }
+            DBPImage itemImage = computePageIcon(page, currentPage, shownCompletionMarks::contains);
+            item.setImage(itemImage == null ? null : DBeaverIcons.getImage(itemImage));
+            item.setForeground(computePageColor(page));
             updatePageCompleteMark(item);
         }
     }
@@ -498,12 +495,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             new TreeItem(pagesTree, SWT.NONE) :
             new TreeItem(parentItem, SWT.NONE);
         item.setText(CommonUtils.toString(page.getTitle(), page.getClass().getSimpleName()));
-        if (page instanceof IWizardPageNavigable && !((IWizardPageNavigable) page).isPageNavigable()) {
-            int nnColor = UIStyles.isDarkTheme() ?
-                SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_DARK_SHADOW;
-            item.setForeground(getShell().getDisplay().getSystemColor(nnColor));
-        }
-
+        item.setForeground(computePageColor(page));
         item.setData(page);
 
         // Ad sub pages
@@ -518,6 +510,35 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         }
 
         return item;
+    }
+
+    @Nullable
+    private static DBPImage computePageIcon(
+        @NotNull IDialogPage page,
+        @NotNull IWizardPage currentPage,
+        @NotNull Predicate<PageCompletionMark> canShowMark
+    ) {
+        DBPImage itemImage;
+        if (page == currentPage) {
+            itemImage = canShowMark.test(PageCompletionMark.COMPLETE) ? UIIcon.RS_FORWARD : null;
+        } else if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
+            itemImage = canShowMark.test(PageCompletionMark.ERROR) ? DBIcon.SMALL_ERROR : null;
+        } else {
+            itemImage = canShowMark.test(PageCompletionMark.COMPLETE) ? UIIcon.OK_MARK : null;
+        }
+        if (itemImage == null && canShowMark.test(PageCompletionMark.COMPLETE)) {
+            itemImage = UIIcon.DOTS_BUTTON;
+        }
+        return itemImage;
+    }
+
+    @Nullable
+    private Color computePageColor(@NotNull IDialogPage page) {
+        if (page instanceof IWizardPageNavigable pageNavigable && !pageNavigable.isPageNavigable()) {
+            Display display = getShell().getDisplay();
+            return display.getSystemColor(UIStyles.isDarkTheme() ? SWT.COLOR_WIDGET_NORMAL_SHADOW : SWT.COLOR_WIDGET_DARK_SHADOW);
+        }
+        return null;
     }
 
     protected void updatePageCompletion() {

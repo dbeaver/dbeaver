@@ -141,16 +141,16 @@ class ViewerColumnRegistry {
                 }
                 try (OutputStream out = Files.newOutputStream(configFile)) {
                     XMLBuilder xml = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
-                    xml.setButify(true);
-                    try (final XMLBuilder.Element e = xml.startElement("items")) {
+                    xml.setBeautify(true);
+                    try (var ignored = xml.startElement("items")) {
                         for (Map.Entry<String, List<ColumnState>> entry : columnsConfig.entrySet()) {
-                            try (final XMLBuilder.Element e2 = xml.startElement("item")) {
+                            try (var ignored2 = xml.startElement("item")) {
                                 xml.addAttribute("id", entry.getKey());
                                 for (ColumnState column : entry.getValue()) {
                                     if (column.width == 0) {
                                         continue;
                                     }
-                                    try (final XMLBuilder.Element e3 = xml.startElement("column")) {
+                                    try (var ignored3 = xml.startElement("column")) {
                                         xml.addAttribute("name", column.name);
                                         xml.addAttribute("visible", column.visible);
                                         xml.addAttribute("order", column.order);

@@ -3,17 +3,17 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="databricks" class="org.jkiss.dbeaver.ext.databricks.model.DatabricksMetaModel" driverClass="com.simba.spark.jdbc.Driver,com.databricks.client.jdbc.Driver" dialect="spark"/>
+        <meta id="databricks" class="org.jkiss.dbeaver.ext.databricks.model.DatabricksMetaModel" driverClass="com.databricks.client.jdbc.Driver,com.simba.spark.jdbc.Driver" dialect="spark"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
         <datasource
                 class="org.jkiss.dbeaver.ext.databricks.DatabricksDataSourceProvider"
-                description="Azure Databricks Connector"
+                description="Databricks Connector"
                 id="databricks"
                 parent="generic"
-                label="Azure Databricks"
+                label="Databricks"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon.png"
                 dialect="generic">
             <drivers managable="true">
@@ -26,7 +26,7 @@
                         class="com.simba.spark.jdbc.Driver"
                         webURL="https://databricks.com/"
                         description="Azure Databricks driver"
-                        supportedConfigurationTypes="URL"
+                        supportedConfigurationTypes="MANUAL,URL"
                         categories="sql,analytic,cloud"
                         singleConnection="true">
 
@@ -39,17 +39,19 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
                 <driver
-                        id="databricks-native"
-                        label="Azure Databricks"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon_big.png"
-                        class="com.databricks.client.jdbc.Driver"
-                        webURL="https://docs.databricks.com/integrations/jdbc-odbc-bi.html"
-                        databaseDocumentationSuffixURL="Database-driver-Azure-Databricks"
-                        description="Azure Databricks driver"
-                        supportedConfigurationTypes="URL"
-                        categories="sql,analytic,cloud"
-                        singleConnection="true">
+                    id="databricks-native"
+                    label="Databricks"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon.png"
+                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon_big.png"
+                    class="com.databricks.client.jdbc.Driver"
+                    sampleURL="jdbc:databricks://{host}[:{port}][/{database}]"
+                    webURL="https://docs.databricks.com/integrations/jdbc-odbc-bi.html"
+                    databaseDocumentationSuffixURL="Database-driver-Azure-Databricks"
+                    description="Databricks driver"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    categories="sql,analytic,cloud"
+                    singleConnection="true">
+
                     <replace provider="generic" driver="azure_databricks"/>
                     <replace provider="databricks" driver="databricks"/>
 
@@ -61,6 +63,30 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
 
+                <driver
+                    id="databricks-native"
+                    label="Databricks OSS"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon.png"
+                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.generic/icons/databricks_icon_big.png"
+                    class="com.databricks.client.jdbc.Driver"
+                    sampleURL="jdbc:databricks://{host}[:{port}][/{database}]"
+                    webURL="https://docs.databricks.com/aws/en/integrations/jdbc-oss.html"
+                    databaseDocumentationSuffixURL="Database-driver-Azure-Databricks"
+                    description="Databricks OSS JDBC Driver"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    categories="sql,analytic,cloud"
+                    singleConnection="true">
+
+                    <replace provider="generic" driver="azure_databricks"/>
+                    <replace provider="databricks" driver="databricks"/>
+
+                    <file type="jar" path="maven:/com.databricks:databricks-jdbc:1.0.9-oss" bundle="!drivers.databricks_native"/>
+                    <file type="jar" path="drivers/databricks_native" bundle="drivers.databricks_native"/>
+
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-multi-insert" value="true"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                </driver>
             </drivers>
         </datasource>
     </extension>

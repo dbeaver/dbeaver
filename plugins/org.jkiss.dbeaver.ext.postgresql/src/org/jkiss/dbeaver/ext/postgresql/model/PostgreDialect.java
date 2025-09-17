@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreBinaryFormatter;
 import org.jkiss.dbeaver.ext.postgresql.sql.PostgreEscapeStringRule;
@@ -626,6 +625,11 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         "tsvector_update_trigger_column"
     };
 
+    public static String[] POSTGRE_FUNCTIONS_BUILTIN = new String[] {
+        "count"
+    };
+
+
     public static String[] POSTGRE_FUNCTIONS_XML = new String[]{
         "xmlcomment",
         "xmlconcat",
@@ -890,6 +894,7 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         addExtraFunctions(POSTGRE_FUNCTIONS_TRIGGER);
         addExtraFunctions(POSTGRE_FUNCTIONS_WINDOW);
         addExtraFunctions(POSTGRE_FUNCTIONS_XML);
+        addExtraFunctions(POSTGRE_FUNCTIONS_BUILTIN);
 
         removeSQLKeyword("LENGTH");
         removeSQLKeyword("JSON");
@@ -1008,13 +1013,13 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @NotNull
     @Override
     public String escapeScriptValue(DBSTypedObject attribute, @NotNull Object value, @NotNull String strValue) {
-        if (PostgreUtils.isPGObject(value)
+        boolean isPgObject = serverExtension != null && serverExtension.isPGObject(value);
+        if (isPgObject
             || PostgreConstants.TYPE_BIT.equals(attribute.getTypeName())
             || PostgreConstants.TYPE_INTERVAL.equals(attribute.getTypeName())
             || attribute.getTypeID() == Types.OTHER
             || attribute.getTypeID() == Types.ARRAY
-            || attribute.getTypeID() == Types.STRUCT)
-        {
+            || attribute.getTypeID() == Types.STRUCT) {
             // TODO: we need to add value handlers for all PG data types.
             // For now we use workaround: represent objects as strings
             return '\'' + escapeString(strValue) + '\'';

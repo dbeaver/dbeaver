@@ -25,12 +25,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.CompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionHelper;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 public class SQLQueryCompletionProposal extends CompletionProposalBase {
@@ -108,8 +108,19 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase {
         return this.displayString; // because actual replacement string includes extra whitespaces
     }
 
+    @Override
     public int getProposalScore() {
         return proposalScore;
+    }
+
+    @Override
+    public int getProposalTypeSorterScore() {
+        return this.itemKind.sortOrder;
+    }
+
+    @Override
+    public DBPImage getObjectImage() {
+        return image;
     }
 
     @NotNull
@@ -119,6 +130,11 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase {
 
     public String getDisplayString() {
         return CommonUtils.isNotEmpty(this.displayString) ? this.displayString : this.replacementString.replaceAll("[\r\n]", "");
+    }
+
+    @Override
+    public DBPKeywordType getProposalType() {
+        return null;
     }
 
     public String getAdditionalProposalInfo() {
@@ -135,7 +151,10 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase {
                 // preload object info, like at SQLCompletionAnalyzer.makeProposalsFromObject(..)
                 // but maybe instead put it to SuggestionInformationControl.createTreeControl(..),
                 //                where the DBNDatabaseNode is required but missing if not cached
-                DBWorkbench.getPlatform().getNavigatorModel().getNodeByObject(monitor, this.object, true);
+                DBNModel navModel = this.object.getDataSource().getContainer().getProject().getNavigatorModel();
+                if (navModel != null) {
+                    navModel.getNodeByObject(monitor, this.object, true);
+                }
                 this.cachedProposalInfo = this.object;
             } else if (this.itemKind == SQLQueryCompletionItemKind.RESERVED) {
                 Object info = SQLCompletionHelper.readAdditionalProposalInfo(

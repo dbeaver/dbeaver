@@ -17,7 +17,10 @@
 
 package org.jkiss.dbeaver.ext.sqlite;
 
+import org.jkiss.api.CompositeObjectId;
 import org.jkiss.api.DriverReference;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -42,7 +45,7 @@ import java.util.Map;
  */
 public class SQLiteUtils {
 
-    public static final DriverReference DRIVER_REFERENCE = new DriverReference("sqlite", "sqlite_jdbc");
+    public static final CompositeObjectId DRIVER_REFERENCE = new CompositeObjectId("sqlite", "sqlite_jdbc");
     private static final Log log = Log.getLog(SQLiteUtils.class);
 
 

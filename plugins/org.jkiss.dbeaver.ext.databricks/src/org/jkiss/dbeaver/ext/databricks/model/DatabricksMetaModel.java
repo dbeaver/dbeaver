@@ -28,7 +28,10 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -116,45 +119,50 @@ public class DatabricksMetaModel extends GenericMetaModel implements DBCQueryTra
         @Nullable GenericTableBase object,
         @Nullable String objectName
     ) throws SQLException {
-        boolean catalogChanged = false;
-        DBSCatalog originalDefaultCatalog = null;
-        final DBCExecutionContextDefaults contextDefaults = session.getExecutionContext().getContextDefaults();
+        DBSCatalog originalCatalog = null;
         try {
-            // First we need to get views list, because for some reason they are in the tables list with the TABLE type.
-            // But this query we can use only in the default catalog
+            var contextDefaults = session.getExecutionContext().getContextDefaults();
             if (contextDefaults != null) {
-                originalDefaultCatalog = contextDefaults.getDefaultCatalog();
-                if (originalDefaultCatalog != owner.getCatalog()) {
+                originalCatalog = contextDefaults.getDefaultCatalog();
+                if (contextDefaults.getDefaultCatalog() == null) {
                     contextDefaults.setDefaultCatalog(session.getProgressMonitor(), owner.getCatalog(), null);
-                    catalogChanged = true;
                 }
             }
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW VIEWS IN " + DBUtils.getQuotedIdentifier(owner))) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        String namespace = JDBCUtils.safeGetString(dbResult, "namespace");
-                        if (CommonUtils.isEmpty(namespace)) {
-                            // Probably temporary view
-                            continue;
-                        }
-                        String viewName = JDBCUtils.safeGetString(dbResult, "viewName");
-                        if (CommonUtils.isNotEmpty(viewName)) {
-                            tempViewsList.add(new ViewInfo(owner, viewName));
+        } catch (DBCException e) {
+            log.debug("Can't read current views list", e);
+        }
+
+        try {
+            try (JDBCStatement statement = session.createStatement()) {
+                statement.execute("USE CATALOG " + DBUtils.getQuotedIdentifier(owner.getCatalog()));
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW VIEWS IN " + DBUtils.getQuotedIdentifier(owner))) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.next()) {
+                            String namespace = JDBCUtils.safeGetString(dbResult, "namespace");
+                            if (CommonUtils.isEmpty(namespace)) {
+                                // Probably temporary view
+                                continue;
+                            }
+                            String viewName = JDBCUtils.safeGetString(dbResult, "viewName");
+                            if (CommonUtils.isNotEmpty(viewName)) {
+                                tempViewsList.add(new ViewInfo(owner, viewName));
+                            }
                         }
                     }
                 }
             }
-        } catch (SQLException | DBCException e) {
+        } catch (SQLException e) {
             log.debug("Can't read current views list", e);
         } finally {
-            if (catalogChanged && originalDefaultCatalog != null) {
-                try {
-                    contextDefaults.setDefaultCatalog(session.getProgressMonitor(), originalDefaultCatalog, null);
-                } catch (DBCException e) {
-                    log.debug("Can't set original default catalog", e);
+            if (originalCatalog != null && originalCatalog != owner.getCatalog()) {
+                try (JDBCStatement statement = session.createStatement()) {
+                    statement.execute("USE CATALOG " + DBUtils.getQuotedIdentifier(originalCatalog));
+                } catch (SQLException e) {
+                    log.debug("Can't restore original catalog", e);
                 }
             }
         }
+
         return super.prepareTableLoadStatement(session, owner, object, objectName);
     }
 

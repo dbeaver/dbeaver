@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
@@ -97,31 +98,20 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
         return visitor.visitColumnSpec(this, arg);
     }
 
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return null;
-    }
-
     /**
      * Propagate semantics context and establish relations through the query model
      */
-    public void propagateContext(
-        @NotNull SQLQueryDataContext dataContext,
-        @Nullable SQLQueryDataContext tableContext,
+    public void resolveRelations(
+        @NotNull SQLQueryRowsSourceContext rowsContext,
+        @Nullable SQLQueryRowsDataContext tableDataContext,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        if (this.defaultValueExpression != null && tableContext != null) {
-            this.defaultValueExpression.propagateContext(tableContext, statistics);
+        if (this.defaultValueExpression != null && tableDataContext != null) {
+            this.defaultValueExpression.resolveRowSources(tableDataContext.getRowsSources(), statistics);
+            this.defaultValueExpression.resolveValueRelations(tableDataContext, statistics);
         }
         for (SQLQueryColumnConstraintSpec constraintSpec : this.constraints) {
-            constraintSpec.propagateContext(dataContext, tableContext, statistics);
+            constraintSpec.resolveRelations(rowsContext, tableDataContext, statistics);
         }
     }
 
@@ -139,8 +129,9 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
 
         LinkedList<SQLQueryColumnConstraintSpec> constraints = new LinkedList<>();
         for (STMTreeNode subnode : node.findChildrenOfName(STMKnownRuleNames.columnConstraintDefinition)) {
-            SQLQueryQualifiedName constraintName = Optional.ofNullable(subnode.findFirstChildOfName(STMKnownRuleNames.constraintNameDefinition))
-                .map(n -> n.findFirstChildOfName(STMKnownRuleNames.constraintName))
+            SQLQueryComplexName constraintName = Optional.ofNullable(
+                subnode.findFirstChildOfName(STMKnownRuleNames.constraintNameDefinition)
+            ).map(n -> n.findFirstChildOfName(STMKnownRuleNames.constraintName))
                 .map(recognizer::collectQualifiedName)
                 .orElse(null);
 
