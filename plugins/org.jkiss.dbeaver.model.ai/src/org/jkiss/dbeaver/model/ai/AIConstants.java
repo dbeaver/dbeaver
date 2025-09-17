@@ -38,5 +38,6 @@ public class AIConstants {
     public static final String AI_CONFIRM_DML = "ai.confirmation.dml";
     public static final String AI_CONFIRM_DDL = "ai.confirmation.ddl";
     public static final String AI_JOIN_RULE = "ai.joinRule";
+    public static final int DEFAULT_CONTEXT_WINDOW_SIZE = 16384;
 }
 

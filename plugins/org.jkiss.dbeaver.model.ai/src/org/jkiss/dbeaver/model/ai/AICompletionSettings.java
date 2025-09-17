@@ -22,14 +22,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
 /**
- * DataSource AI settings.
- * These settings are stored for each connection separately.
+ * AI completion settings.
+ * Datasource-specific settings. Used in prompt generators to generate context info message.
  */
 public class AICompletionSettings extends AIContextSettings {
 
@@ -89,16 +88,6 @@ public class AICompletionSettings extends AIContextSettings {
             AIDatabaseScope.CURRENT_SCHEMA);
         String csString = preferenceStore.getString(getParameterName(AI_META_CUSTOM));
         settings.objects = CommonUtils.isEmpty(csString) ? new String[0] : csString.split(",");
-    }
-
-    public void saveSettingsToPreferenceStore(DBPPreferenceStore preferenceStore) {
-        preferenceStore.setValue(getParameterName(AI_META_TRANSFER_CONFIRMED), settings.confirmed);
-        preferenceStore.setValue(getParameterName(AI_META_SCOPE), settings.scope.name());
-        if (ArrayUtils.isEmpty(settings.objects)) {
-            preferenceStore.setToDefault(getParameterName(AI_META_CUSTOM));
-        } else {
-            preferenceStore.setValue(getParameterName(AI_META_CUSTOM), String.join(",", settings.objects));
-        }
     }
 
     @NotNull
