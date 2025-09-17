@@ -24,6 +24,7 @@ import org.eclipse.ui.internal.texteditor.spelling.NoCompletionsProposal;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class SQLEditorQuickAssistProcessor implements IQuickAssistProcessor {
+    private static final Log log = Log.getLog(SQLEditorQuickAssistProcessor.class);
 
     @NotNull
     private static final ICompletionProposal[] noSuggestionsProposal =  new ICompletionProposal[] {
@@ -68,7 +70,7 @@ public class SQLEditorQuickAssistProcessor implements IQuickAssistProcessor {
             try {
                 processors.add(new QuickFixHandler(d, d.createInstance()));
             } catch (DBException e) {
-                throw new RuntimeException(e);
+                log.error("Can't load quick fix handler '" + d.getId() + "'", e);
             }
         }
     }

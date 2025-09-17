@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -52,6 +53,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
     private static final String PART_SKIP_KEY = DBeaverCTabFolderRenderer.class.getName() + ".skipPart";
 
     private static final FieldReflection<CTabRendering, Color> selectedTabHighlightColorField;
+    private static final FieldReflection<CTabRendering, Color[]> selectedTabFillColorsField;
     private static final FieldReflection<CTabRendering, Color> hotUnselectedTabsColorBackgroundField;
     private static final FieldReflection<CTabItem, Integer> closeImageStateField;
     private static final FieldReflection<CTabItem, Rectangle> closeRectField;
@@ -61,6 +63,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
     static {
         selectedTabHighlightColorField = FieldReflection.of(CTabRendering.class, "selectedTabHighlightColor");
+        selectedTabFillColorsField = FieldReflection.of(CTabRendering.class, "selectedTabFillColors");
         hotUnselectedTabsColorBackgroundField = FieldReflection.of(CTabRendering.class, "hotUnselectedTabsColorBackground");
         closeImageStateField = FieldReflection.of(CTabItem.class, "closeImageState");
         closeRectField = FieldReflection.of(CTabItem.class, "closeRect");
@@ -81,6 +84,7 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
             if (color != null) {
                 var oldHotUnselectedTabsColorBackground = hotUnselectedTabsColorBackgroundField.get(this);
                 var oldSelectedTabHighlightColor = selectedTabHighlightColorField.get(this);
+                var oldSelectedTabFillColors = selectedTabFillColorsField.get(this);
                 var oldCloseRect = closeRectField.get(item);
                 var oldCloseImageState = closeImageStateField.get(item);
 
@@ -91,14 +95,23 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
                 // Replaces unselected and selected tab colors
                 boolean paintingHotTab = (state & SWT.HOT) != 0;
+                boolean isDarkTheme = UIStyles.isDarkTheme();
+
+                Color fillColor = oldSelectedTabFillColors != null && oldSelectedTabFillColors.length == 1
+                    ? oldSelectedTabFillColors[0]
+                    : parent.getSelectionBackground();
+                Color selectedColor = UIStyles.mix(isDarkTheme ? UIStyles.lighten(color, 0.2f) : color, fillColor, 0.2f);
+
                 hotUnselectedTabsColorBackgroundField.set(this, paintingHotTab ? UIStyles.lighten(color, 0.1f) : color);
-                selectedTabHighlightColorField.set(this, color);
+                selectedTabFillColorsField.set(this, new Color[]{selectedColor});
+                selectedTabHighlightColorField.set(this, selectedColor);
 
                 super.draw(part, state | SWT.HOT, bounds, gc);
 
                 // Restore whatever we have changed back to original values
                 closeRectField.set(item, oldCloseRect);
                 selectedTabHighlightColorField.set(this, oldSelectedTabHighlightColor);
+                selectedTabFillColorsField.set(this, oldSelectedTabFillColors);
                 hotUnselectedTabsColorBackgroundField.set(this, oldHotUnselectedTabsColorBackground);
 
                 return;
@@ -138,11 +151,15 @@ public final class DBeaverCTabFolderRenderer extends CTabRendering implements IC
 
     @Nullable
     private static Color getConnectionColor(@NotNull CTabItem item) {
-        if (!(item.getData(AbstractPartRenderer.OWNING_ME) instanceof MPart part)) {
-            return null;
+        if (item.getData(AbstractPartRenderer.OWNING_ME) instanceof MPart part) {
+            return getConnectionColor(part);
         }
-
-        return getConnectionColor(part);
+        for (Control control = item.getParent(); control != null; control = control.getParent()) {
+            if (control.getData(AbstractPartRenderer.OWNING_ME) instanceof MPart part) {
+                return getConnectionColor(part);
+            }
+        }
+        return null;
     }
 
     @Nullable

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,32 +29,56 @@ import java.sql.*;
 public class JDBCFactoryDefault implements JDBCFactory {
 
     @Override
-    public JDBCDatabaseMetaData createMetaData(@NotNull JDBCSession session, @NotNull DatabaseMetaData original) throws SQLException {
-        return new JDBCDatabaseMetaDataImpl(session, original);
+    public JDBCDatabaseMetaData createMetaData(
+        @NotNull JDBCSession session,
+        @NotNull JDBCObjectSupplier<DatabaseMetaData> metadata
+    ) throws SQLException {
+        return new JDBCDatabaseMetaDataImpl(session, metadata.get());
     }
 
     @Override
-    public JDBCStatement createStatement(@NotNull JDBCSession session, @NotNull Statement original, boolean disableLogging) throws SQLException {
-        return new JDBCStatementImpl<>(session, original, disableLogging);
+    public JDBCStatement createStatement(
+        @NotNull JDBCSession session,
+        @NotNull JDBCObjectSupplier<Statement> stmtSupplier,
+        boolean disableLogging
+    ) throws SQLException {
+        return new JDBCStatementImpl<>(session, stmtSupplier, null, disableLogging);
     }
 
     @Override
-    public JDBCPreparedStatement createPreparedStatement(@NotNull JDBCSession session, @NotNull PreparedStatement original, @Nullable String sql, boolean disableLogging) throws SQLException {
-        return new JDBCPreparedStatementImpl(session, original, sql, disableLogging);
+    public JDBCPreparedStatement createPreparedStatement(
+        @NotNull JDBCSession session,
+        @NotNull JDBCObjectSupplier<PreparedStatement> stmtSupplier,
+        @Nullable String sql,
+        boolean disableLogging
+    ) throws SQLException {
+        return new JDBCPreparedStatementImpl<>(session, stmtSupplier, sql, disableLogging);
     }
 
     @Override
-    public JDBCCallableStatement createCallableStatement(@NotNull JDBCSession session, @NotNull CallableStatement original, @Nullable String sql, boolean disableLogging) throws SQLException {
-        return new JDBCCallableStatementImpl(session, original, sql, disableLogging);
+    public JDBCCallableStatement createCallableStatement(
+        @NotNull JDBCSession session,
+        @NotNull JDBCObjectSupplier<CallableStatement> stmtSupplier,
+        @Nullable String sql,
+        boolean disableLogging
+    ) throws SQLException {
+        return new JDBCCallableStatementImpl(session, stmtSupplier, sql, disableLogging);
     }
 
     @Override
-    public JDBCResultSet createResultSet(@NotNull JDBCSession session, @Nullable JDBCStatement statement, @NotNull ResultSet original, String description, boolean disableLogging) throws SQLException {
-        return new JDBCResultSetImpl(session, statement, original, description, disableLogging);
+    public JDBCResultSet createResultSet(
+        @NotNull JDBCSession session,
+        @Nullable JDBCStatement statement,
+        @NotNull ResultSet original,
+        boolean disableLogging
+    ) throws SQLException {
+        return new JDBCResultSetImpl(session, statement, original, disableLogging);
     }
 
     @Override
-    public JDBCResultSetMetaData createResultSetMetaData(@NotNull JDBCResultSet resultSet) throws SQLException {
+    public JDBCResultSetMetaData createResultSetMetaData(
+        @NotNull JDBCResultSet resultSet
+    ) throws SQLException {
         return new JDBCResultSetMetaDataImpl(resultSet);
     }
 }
