@@ -361,7 +361,7 @@ public class ResultSetViewer extends Viewer
                 this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
                 Composite trControl = new ConComposite(panelFolder, SWT.NONE);
                 trControl.setLayout(new FillLayout());
-                trControl.addPaintListener(e -> {
+                trControl.addPaintListener(e -> { //fills normal background
                     e.gc.setBackground(panelFolder.getBackground());
                     e.gc.fillRectangle(trControl.getClientArea());
                 });
