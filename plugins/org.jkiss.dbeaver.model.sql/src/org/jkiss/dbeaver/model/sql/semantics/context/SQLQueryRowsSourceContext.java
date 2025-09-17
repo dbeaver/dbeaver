@@ -231,13 +231,15 @@ public class SQLQueryRowsSourceContext {
      */
     @NotNull
     public SQLQueryRowsSourceContext combine(@NotNull SQLQueryRowsSourceContext other) {
-        return this.setRowsSources(
+        SQLQueryRowsSourceContext result = this.setRowsSources(
             this.rowsSources.combine(other.rowsSources),
             this.sourcesByLoweredAlias.combine(other.sourcesByLoweredAlias),
             this.dynamicTableSources.combine(other.dynamicTableSources),
             SQLQueryRowsSourceContext.this.hasUnresolvedSource || other.hasUnresolvedSource,
             null
         );
+        other.registerConsumingContext(result);
+        return result;
     }
 
     /**
