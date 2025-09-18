@@ -21,6 +21,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 
 import java.io.IOException;
@@ -37,6 +38,7 @@ import java.util.Locale;
 
 public class TaskUtils {
     public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmm[Z]", Locale.ENGLISH);
+    public static final DateTimeFormatter DISPLAY_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private static final Log log = Log.getLog(TaskUtils.class);
     static final String RUN_LOG_PREFIX = "run_";
@@ -77,6 +79,19 @@ public class TaskUtils {
 
     public static String buildRunLogFileName(String runId) {
         return RUN_LOG_PREFIX + runId + "." + RUN_LOG_EXT;
+    }
+
+    @NotNull
+    public static String formatDisplayDateTime(@Nullable ZonedDateTime zonedDateTime) {
+        if (zonedDateTime == null) {
+            return "N/A";
+        }
+        return DISPLAY_DATE_TIME_FORMATTER.format(toSystemZonedDateTime(zonedDateTime));
+    }
+
+    @NotNull
+    private static ZonedDateTime toSystemZonedDateTime(@NotNull ZonedDateTime zonedDateTime) {
+        return zonedDateTime.withZoneSameInstant(ZoneId.systemDefault());
     }
 
     /**

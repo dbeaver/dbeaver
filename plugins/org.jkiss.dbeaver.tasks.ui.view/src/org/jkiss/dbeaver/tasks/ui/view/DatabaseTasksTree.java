@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.registry.task.TaskImpl;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
+import org.jkiss.dbeaver.registry.task.TaskUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIViewMessages;
 import org.jkiss.dbeaver.ui.*;
@@ -53,7 +54,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.text.Collator;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,11 +69,9 @@ public class DatabaseTasksTree {
     private boolean groupByType = false;
     private boolean groupByCategory = false;
 
-    private final DateTimeFormatter dateTimeFormatter;
     private final Color colorError, colorErrorForeground;
 
     public DatabaseTasksTree(Composite composite, boolean selector) {
-        dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         colorError = BaseThemeSettings.instance.colorError;
         colorErrorForeground = UIStyles.getContrastColor(colorError);
         
@@ -137,7 +135,7 @@ public class DatabaseTasksTree {
             @Override
             protected String getCellText(Object element) {
                 if (element instanceof DBTTask task) {
-                    return dateTimeFormatter.format(task.getCreateTime());
+                    return TaskUtils.formatDisplayDateTime(task.getCreateTime());
                 } else {
                     return null;
                 }
@@ -151,7 +149,7 @@ public class DatabaseTasksTree {
                     if (lastRun == null) {
                         return "N/A";
                     } else {
-                        return dateTimeFormatter.format(lastRun.getStartTime());
+                        return TaskUtils.formatDisplayDateTime(lastRun.getStartTime());
                     }
                 }
                 return null;
@@ -246,10 +244,6 @@ public class DatabaseTasksTree {
 
     public TreeViewer getViewer() {
         return taskViewer;
-    }
-
-    DateTimeFormatter getDateTimeFormatter() {
-        return dateTimeFormatter;
     }
 
     Color getColorError() {
