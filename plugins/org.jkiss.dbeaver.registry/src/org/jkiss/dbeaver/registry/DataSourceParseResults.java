@@ -25,6 +25,8 @@ import java.util.Set;
 public class DataSourceParseResults {
     public final Set<DBPDataSourceContainer> updatedDataSources = new LinkedHashSet<>();
     public final Set<DBPDataSourceContainer> addedDataSources = new LinkedHashSet<>();
+    public final Set<DBPDataSourceContainer> removedDataSources = new LinkedHashSet<>();
     public final Set<DBPDataSourceFolder> addedFolders = new LinkedHashSet<>();
     public final Set<DBPDataSourceFolder> updatedFolders = new LinkedHashSet<>();
+    public final Set<DBPDataSourceFolder> removedFolders = new LinkedHashSet<>();
 }

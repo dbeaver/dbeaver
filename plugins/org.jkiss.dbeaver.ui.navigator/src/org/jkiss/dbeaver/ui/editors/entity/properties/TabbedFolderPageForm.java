@@ -20,24 +20,25 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.widgets.CompositeFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.forms.widgets.ColumnLayout;
+import org.eclipse.ui.forms.widgets.ColumnLayoutData;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -59,10 +60,10 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * TabbedFolderPageProperties
  */
@@ -167,8 +168,8 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         if (curPropertySource != null && curPropertySource.getEditableValue() instanceof DBSObject) {
             curPropertySource = null;
         }
-		super.dispose();
-	}
+        super.dispose();
+    }
 
     private void refreshProperties(){
         refreshProperties(null);
@@ -196,143 +197,38 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 UIUtils.disposeChildControls(propertiesGroup);
                 formEditor.clearEditors();
             }
+
             // Prepare property lists
-            List<DBPPropertyDescriptor> primaryProps = new ArrayList<>();
-            List<DBPPropertyDescriptor> secondaryProps = new ArrayList<>();
-            List<DBPPropertyDescriptor> specificProps = new ArrayList<>();
+            ColumnLayout layout = new ColumnLayout();
+            layout.minNumColumns = 1;
+            layout.maxNumColumns = 3;
+            layout.horizontalSpacing = 10;
+            propertiesGroup.setLayout(layout);
+            propertiesGroup.addControlListener(ControlListener.controlResizedAdapter(e -> layoutPropertyColumns(propertiesGroup)));
 
-            if (formEditor.isEditableObject()) {
-                for (DBPPropertyDescriptor prop : allProps) {
-                    if (prop.getId().equals(DBConstants.PROP_ID_NAME) ||
-                        prop.getId().equals(DBConstants.PROP_ID_DESCRIPTION) ||
-                        prop.isEditable(curPropertySource.getEditableValue())) {
-                        primaryProps.add(prop);
-                    } else {
-                        if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isSpecific()) {
-                            specificProps.add(prop);
-                        } else {
-                            secondaryProps.add(prop);
-                        }
-                    }
-                }
-                if (primaryProps.isEmpty()) {
-                    primaryProps.addAll(secondaryProps);
-                    secondaryProps.clear();
-                }
-            } else {
-                primaryProps.addAll(allProps);
-            }
-
-            // Create edit panels
-            boolean hasEditButtons = false;//isEditableObject();
-            boolean hasSecondaryProps = !secondaryProps.isEmpty();
-            boolean hasSpecificProps = !specificProps.isEmpty();
-            int colCount = 1;
-            if (hasEditButtons) colCount++;
-            if (hasSecondaryProps) colCount++;
-            if (hasSpecificProps) colCount++;
-            GridLayout propsLayout = new GridLayout(colCount, true);
-            propertiesGroup.setLayout(propsLayout);
-
-            Control parent = propertiesGroup;
-            int editorWidth = parent.getSize().x;
-            while (editorWidth == 0 && parent != null) {
-                editorWidth = parent.getSize().x;
-                parent = parent.getParent();
-            }
-
-            Composite primaryGroup = new ConComposite(propertiesGroup, SWT.NONE);
-            GridLayout primaryLayout = new GridLayout(2, false);
-            primaryGroup.setLayout(primaryLayout);
-
-            editorWidth -= (2 * primaryLayout.marginWidth) + ((colCount - 1) * primaryLayout.horizontalSpacing); // Minus margins and borders
-            int minGroupWidth = UIUtils.getFontHeight(propertiesGroup) * 30;
-            int maxGroupWidth = (editorWidth * (100 / colCount)) / 100; // Edit panel width max = 35%
-            int buttonPanelWidth = (editorWidth / 10); // Edit panel width max = 10%
-            if (maxGroupWidth < minGroupWidth) {
-                // Narrow screen. Use auto-layout
-                minGroupWidth = maxGroupWidth;
-                buttonPanelWidth = 0;
-            }
-
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.widthHint = maxGroupWidth;
-            //gd.horizontalIndent = editorWidth / 10;
-            primaryGroup.setLayoutData(gd);
-
-            Composite secondaryGroup = null;
-            if (hasSecondaryProps) {
-                secondaryGroup = new ConComposite(propertiesGroup, SWT.NONE);
-                secondaryGroup.setLayout(new GridLayout(2, false));
-                gd = new GridData(GridData.FILL_BOTH);
-                gd.widthHint = maxGroupWidth;
-                secondaryGroup.setLayoutData(gd);
-            }
-
-            Composite specificGroup = null;
-            if (hasSpecificProps) {
-                specificGroup = new ConComposite(propertiesGroup, SWT.NONE);
-                specificGroup.setLayout(new GridLayout(2, false));
-                gd = new GridData(GridData.FILL_BOTH);
-                gd.widthHint = maxGroupWidth;
-                specificGroup.setLayoutData(gd);
-            }
-
-            if (hasEditButtons) {
-                Composite buttonsGroup = new Composite(propertiesGroup, SWT.NONE);
-                gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-                gd.widthHint = buttonPanelWidth;
-                buttonsGroup.setLayoutData(gd);
-                RowLayout rowLayout = new RowLayout(SWT.VERTICAL);
-                rowLayout.pack = true;
-                rowLayout.fill = true;
-                buttonsGroup.setLayout(rowLayout);
-                saveButton = UIUtils.createPushButton(buttonsGroup, "Save", DBeaverIcons.getImage(UIIcon.SAVE), new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        ActionUtils.runCommand(IWorkbenchCommandConstants.FILE_SAVE, part.getSite());
-                    }
-                });
-                scriptButton = UIUtils.createPushButton(buttonsGroup, "View script", DBeaverIcons.getImage(DBIcon.TREE_SCRIPT), new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        showAlterScript();
-                    }
-                });
-                revertButton = UIUtils.createPushButton(buttonsGroup, "Revert", DBeaverIcons.getImage(UIIcon.REVERT), new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        ActionUtils.runCommand(IWorkbenchCommandConstants.FILE_REVERT, part.getSite());
-                    }
-                });
-                saveButton.setEnabled(false);
-                scriptButton.setEnabled(false);
-                revertButton.setEnabled(false);
-            }
-
-            if (editorWidth > 1000) {
-                Composite panelTail = UIUtils.createPlaceholder(propertiesGroup, 1);
-                panelTail.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                propsLayout.numColumns++;
-            }
+            List<DBPPropertyDescriptor> sortedProps = new ArrayList<>(allProps);
+            sortedProps.sort(Comparator
+                .comparingInt((DBPPropertyDescriptor prop) -> getPropertyCategory(prop, curPropertySource)));
 
             // Create edit forms
-            for (DBPPropertyDescriptor primaryProp : primaryProps) {
-                formEditor.createPropertyEditor(primaryGroup, primaryProp);
-            }
-            if (secondaryGroup != null) {
-                for (DBPPropertyDescriptor secondaryProp : secondaryProps) {
-                    formEditor.createPropertyEditor(secondaryGroup, secondaryProp);
+            for (DBPPropertyDescriptor prop : sortedProps) {
+                var placeholder = CompositeFactory.newComposite(SWT.NONE)
+                    .layoutData(new ColumnLayoutData())
+                    .layout(GridLayoutFactory.fillDefaults().numColumns(2).create())
+                    .create(propertiesGroup);
+
+                formEditor.createPropertyEditor(placeholder, prop);
+
+                if (placeholder.getChildren().length == 0) {
+                    placeholder.dispose();
                 }
             }
-            if (specificGroup != null) {
-                for (DBPPropertyDescriptor specProps : specificProps) {
-                    formEditor.createPropertyEditor(specificGroup, specProps);
-                }
-            }
+
             if (!firstInit) {
                 propertiesGroup.layout(true, true);
             }
+
+            UIUtils.asyncExec(() -> layoutPropertyColumns(propertiesGroup));
         }
         for (Control x : propertiesGroup.getChildren()) {
             CSSUtils.markConnectionTypeColor(x);
@@ -340,6 +236,66 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
         UIUtils.installAndUpdateMainFont(propertiesGroup);
         refreshPropertyValues(allProps, firstInit, afterRefresh);
+    }
+
+    private static int getPropertyCategory(@NotNull DBPPropertyDescriptor property, @NotNull DBPPropertySource source) {
+        if (property.getId().equals(DBConstants.PROP_ID_NAME) || property.getId().equals(DBConstants.PROP_ID_DESCRIPTION)) {
+            return 1;
+        } else if (property.isEditable(source.getEditableValue())) {
+            return 10;
+        } else if (!(property instanceof ObjectPropertyDescriptor opd) || !opd.isSpecific()) {
+            return 100;
+        } else {
+            return 1000;
+        }
+    }
+
+    private static void layoutPropertyColumns(@NotNull Composite composite) {
+        Collection<List<Composite>> columns = Stream.of(composite.getChildren())
+            .map(Composite.class::cast)
+            .collect(Collectors.groupingBy(child -> child.getLocation().x))
+            .values();
+
+        boolean layout = false;
+        for (List<Composite> column : columns) {
+            int widthHint = computePropertyColumnWidth(column);
+            if (widthHint > 0) {
+                layout |= layoutPropertyColumn(column, widthHint);
+            }
+        }
+
+        if (layout) {
+            composite.layout(true, true);
+        }
+    }
+
+    private static int computePropertyColumnWidth(@NotNull List<Composite> rows) {
+        int widthHint = 0;
+        for (Composite row : rows) {
+            Control key = row.getChildren()[0];
+            Rectangle bounds = key.getBounds();
+            widthHint = Math.max(widthHint, key.computeSize(bounds.width, bounds.height).x);
+        }
+        return widthHint;
+    }
+
+    private static boolean layoutPropertyColumn(@NotNull Collection<Composite> rows, int widthHint) {
+        boolean layout = false;
+        for (Composite row : rows) {
+            Control key = row.getChildren()[0];
+            GridData gd;
+            if (key.getLayoutData() instanceof GridData data) {
+                gd = data;
+            } else {
+                gd = new GridData();
+                key.setLayoutData(gd);
+            }
+            if (gd.widthHint != widthHint) {
+                gd.widthHint = widthHint;
+                layout = true;
+            }
+        }
+        return layout;
     }
 
     private void showAlterScript() {

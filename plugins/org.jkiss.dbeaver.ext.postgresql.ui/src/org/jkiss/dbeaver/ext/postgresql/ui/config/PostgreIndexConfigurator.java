@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -50,7 +51,7 @@ public class PostgreIndexConfigurator implements DBEObjectConfigurator<PostgreIn
                 EditIndexPage editPage = new EditIndexPage(
                     "Edit index",
                     index,
-                    Collections.singletonList(DBSIndexType.OTHER));
+                    Arrays.asList(DBSIndexType.OTHER, DBSIndexType.HASHED));
                 if (!editPage.edit()) {
                     return null;
                 }

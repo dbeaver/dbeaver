@@ -435,8 +435,14 @@ public abstract class AbstractDescriptor {
         return (Class<T>) objectClass;
     }
 
-    protected static Expression getEnablementExpression(IConfigurationElement config) {
-        IConfigurationElement[] elements = config.getChildren("enabledWhen");
+    @Nullable
+    protected static Expression getEnablementExpression(@NotNull IConfigurationElement config) {
+        return getEnablementExpression(config, "enabledWhen");
+    }
+
+    @Nullable
+    protected static Expression getEnablementExpression(@NotNull IConfigurationElement config, @NotNull String expressionElementName) {
+        IConfigurationElement[] elements = config.getChildren(expressionElementName);
         if (elements.length > 0) {
             try {
                 IConfigurationElement[] enablement = elements[0].getChildren();
