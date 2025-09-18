@@ -5,8 +5,8 @@ instructions.configure=\
   addRepository(type:1,location:https${#58}//dbeaver.io/update/git/latest/,name:DBeaver Git integration,enabled:true);\
   addRepository(type:0,location:https${#58}//dbeaver.io/update/debug/latest/,name:DBeaver Debug extension,enabled:true);\
   addRepository(type:1,location:https${#58}//dbeaver.io/update/debug/latest/,name:DBeaver Debug extension,enabled:true);\
-  addRepository(type:0,location:https${#58}//download.eclipse.org/releases/2024-06/,name:Eclipse 2024-06,enabled:true);\
-  addRepository(type:1,location:https${#58}//download.eclipse.org/releases/2024-06/,name:Eclipse 2024-06,enabled:true);\
+  addRepository(type:0,location:https${#58}//download.eclipse.org/releases/2025-09/,name:Eclipse 2025-09,enabled:true);\
+  addRepository(type:1,location:https${#58}//download.eclipse.org/releases/2025-09/,name:Eclipse 2025-09,enabled:true);\
   addRepository(type:0,location:https${#58}//dbeaver.io/update/ce/latest/,name:DBeaver CE update site,enabled:true);\
   addRepository(type:1,location:https${#58}//dbeaver.io/update/ce/latest/,name:DBeaver CE update site,enabled:true);\
   addRepository(type:0,location:https${#58}//devstyle.codetogether.io/,name:Darkest Dark Theme,enabled:true);\
