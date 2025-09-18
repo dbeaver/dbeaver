@@ -33,8 +33,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 public class DatabricksDataSource extends GenericDataSource {
@@ -59,7 +57,7 @@ public class DatabricksDataSource extends GenericDataSource {
         return url;
     }
 
-    private boolean isLegacyDriver() {
+    public boolean isLegacyDriver() {
         return CommonUtils.equalObjects(DatabricksConstants.DRIVER_CLASS_LEGACY, getContainer().getDriver().getDriverClassName());
     }
 

@@ -140,7 +140,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                 getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_DESCRIPTION, propName, false, locale);
         this.propHint = CommonUtils.isEmpty(propInfo.hint()) ?
             null :
-            getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, propName, false, locale);
+            getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_HINT, null, false, locale);
     }
 
     @Override
@@ -162,6 +162,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
     public boolean isExpensive()
     {
         return propInfo.expensive();
+    }
+
+    public boolean isInfo() {
+        return propInfo.info();
     }
 
     public boolean isNumeric() {
@@ -323,6 +327,8 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                 return this.isPassword();
             case DBConstants.PROP_FEATURE_NON_SECURED:
                 return this.isNonSecuredProperty();
+            case DBConstants.PROP_FEATURE_INFO:
+                return this.isInfo();
         }
 
         return ArrayUtils.contains(propInfo.features(), feature);

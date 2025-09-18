@@ -217,6 +217,12 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
         }
 
         @Override
+        public IInformationControlCreator getInformationPresenterControlCreator() {
+            // Fix problem annotation tooltip disappear on mouse move/hover
+            return LinkListInformationControl::new;
+        }
+
+        @Override
         public void setInformation(String information) {
             //replaced by IInformationControlExtension2#setInput(java.lang.Object)
         }

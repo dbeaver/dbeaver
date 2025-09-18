@@ -23,12 +23,15 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -38,9 +41,7 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Flow;
 import java.util.concurrent.Future;
-import java.util.concurrent.SubmissionPublisher;
 
 public class CopilotClient implements AutoCloseable {
     private static final String DATA_EVENT = "data: ";
@@ -147,7 +148,7 @@ public class CopilotClient implements AutoCloseable {
             .header("authorization", "token " + accessToken)
             .header("editor-version", EDITOR_VERSION)
             .header("editor-plugin-version", EDITOR_PLUGIN_VERSION)
-            .header("user-agent", USER_AGENT)
+            .header(HttpConstants.HEADER_USER_AGENT, USER_AGENT)
             .GET()
             .timeout(TIMEOUT)
             .build();
@@ -185,10 +186,11 @@ public class CopilotClient implements AutoCloseable {
         }
     }
 
-    public Flow.Publisher<CopilotChatChunk> createChatCompletionStream(
+    public void createChatCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        String token,
-        @NotNull CopilotChatRequest chatRequest
+        @NotNull String token,
+        @NotNull CopilotChatRequest chatRequest,
+        @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(CHAT_REQUEST_URL))
@@ -199,8 +201,6 @@ public class CopilotClient implements AutoCloseable {
             .timeout(TIMEOUT)
             .build();
 
-        SubmissionPublisher<CopilotChatChunk> publisher = new SubmissionPublisher<>();
-
         client.sendAsync(
             request,
             line -> {
@@ -208,22 +208,24 @@ public class CopilotClient implements AutoCloseable {
 
                     String data = line.substring(6).trim();
                     if (DONE_EVENT.equals(data)) {
-                        publisher.close();
+                        listener.close();
                     } else {
                         try {
                             CopilotChatChunk chunk = GSON.fromJson(data, CopilotChatChunk.class);
-                            publisher.submit(chunk);
+                            List<String> choices = chunk.choices().stream()
+                                .takeWhile(it -> it.delta().content() != null)
+                                .map(it -> it.delta().content())
+                                .toList();
+                            listener.nextChunk(new AIEngineResponseChunk(choices));
                         } catch (Exception e) {
-                            publisher.closeExceptionally(e);
+                            listener.error(e);
                         }
                     }
                 }
             },
-            publisher::closeExceptionally,
-            publisher::close
+            listener::error,
+            listener::close
         );
-
-        return publisher;
     }
 
     /**

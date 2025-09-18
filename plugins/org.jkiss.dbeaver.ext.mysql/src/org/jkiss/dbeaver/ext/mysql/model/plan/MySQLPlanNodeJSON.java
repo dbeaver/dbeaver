@@ -132,6 +132,9 @@ public class MySQLPlanNodeJSON extends MySQLPlanNode implements DBPPropertySourc
             readCost = nodeProps.get("query_cost");
         }
         if (readCost == null) {
+            readCost = nodeProps.get("cost");
+        }
+        if (readCost == null) {
             if (nested != null) {
                 long totalCost = 0;
                 for (MySQLPlanNodeJSON child : nested) {

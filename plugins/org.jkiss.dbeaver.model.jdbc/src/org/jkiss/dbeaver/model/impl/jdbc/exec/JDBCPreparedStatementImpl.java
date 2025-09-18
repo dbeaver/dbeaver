@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCObjectSupplier;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -46,7 +47,7 @@ import java.util.Map;
  * Manageable prepared statement.
  * Stores information about execution in query manager and operated progress monitor.
  */
-public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStatement> implements JDBCPreparedStatement {
+public class JDBCPreparedStatementImpl<STATEMENT extends PreparedStatement> extends JDBCStatementImpl<STATEMENT> implements JDBCPreparedStatement {
 
     private static final Log log = Log.getLog(JDBCPreparedStatementImpl.class);
 
@@ -56,14 +57,16 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
 
     protected static class ContentParameter {
         String displayString;
-        ContentParameter(JDBCSession session, Object value) {
-            if (value instanceof RowId) {
-                displayString = SQLUtils.quoteString(session.getDataSource(), new String(((RowId) value).getBytes()));
-            } else if (value instanceof byte[]) {
-                byte[] bytes = (byte[])value;
-                displayString = DBValueFormatting.formatBinaryString(session.getDataSource(), bytes, DBDDisplayFormat.NATIVE, true);
+        ContentParameter(@NotNull JDBCSession session, Object value) {
+            if (value instanceof RowId rowId) {
+                displayString = SQLUtils.quoteString(session.getDataSource(), new String(rowId.getBytes()));
+            } else if (value instanceof byte[] bytes) {
+                displayString = DBValueFormatting.formatBinaryString(
+                    session.getDataSource(), bytes, DBDDisplayFormat.NATIVE, true);
             } else {
-                displayString = "DATA(" + (value == null ? DBConstants.NULL_VALUE_LABEL : value.getClass().getSimpleName()) + ")";
+                displayString = "DATA(" + (value == null ?
+                    DBConstants.NULL_VALUE_LABEL :
+                    value.getClass().getSimpleName()) + ")";
             }
         }
 
@@ -75,18 +78,11 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
 
     JDBCPreparedStatementImpl(
         @NotNull JDBCSession connection,
-        @NotNull PreparedStatement original,
-        String query,
-        boolean disableLogging)
-    {
-        super(connection, original, disableLogging);
-        setQueryString(query);
-    }
-
-    @Override
-    public PreparedStatement getOriginal()
-    {
-        return original;
+        @NotNull JDBCObjectSupplier<STATEMENT> stmtSupplier,
+        @Nullable String query,
+        boolean disableLogging
+    ) throws SQLException {
+        super(connection, stmtSupplier, query, disableLogging);
     }
 
     @Override

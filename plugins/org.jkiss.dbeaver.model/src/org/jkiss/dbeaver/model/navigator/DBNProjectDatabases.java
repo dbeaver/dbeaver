@@ -218,8 +218,8 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
             }
         }
 
-        for (DBPDataSourceRegistry registy : registryToRefresh) {
-            registy.flushConfig();
+        for (DBPDataSourceRegistry registry : registryToRefresh) {
+            registry.flushConfig();
         }
 
         refreshChildren();
