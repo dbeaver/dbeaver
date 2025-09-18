@@ -166,7 +166,7 @@ public class DBIcon implements DBPImage {
     public static final DBIcon SMALL_ERROR = new DBIcon("small_error", "status/error_small.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SMALL_WARNING = new DBIcon("small_warning", "status/warning_small.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SMALL_QUESTION = new DBIcon("small_question", "status/question_small.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon SMALL_INFO = new DBIcon("small_info", "status/info_small.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SMALL_INFO = new DBIcon("small_info", "status/info_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon TINY_ERROR = new DBIcon("tiny_error", "status/error_tiny.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TINY_WARNING = new DBIcon("tiny_warning", "status/warning_tiny.svg"); //$NON-NLS-1$ //$NON-NLS-2$
