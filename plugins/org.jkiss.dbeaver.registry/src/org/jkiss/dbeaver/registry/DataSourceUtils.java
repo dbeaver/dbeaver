@@ -70,7 +70,7 @@ public class DataSourceUtils {
     private static final String PREFIX_HANDLER = "handler.";
     private static final String PREFIX_PROP = "prop.";
     private static final String PREFIX_AUTH_PROP = "authProp.";
-    private static final String PREFIX_PREF_PROP = "pref.";
+    private static final String PREFIX_ADVANCED_PROP = "advProp.";
 
     private static final Log log = Log.getLog(DataSourceUtils.class);
 
@@ -97,6 +97,7 @@ public class DataSourceUtils {
         Map<String, String> conProperties = new HashMap<>();
         Map<String, Map<String, String>> handlerProps = new HashMap<>();
         Map<String, String> authProperties = new HashMap<>();
+        Map<String, String> advancedProperties = new HashMap<>();
         DBPDataSourceFolder folder = null;
         String dsId = null, dsName = null;
 
@@ -207,10 +208,10 @@ public class DataSourceUtils {
                         Map<String, String> handlerPopMap = handlerProps.computeIfAbsent(handlerId, k -> new HashMap<>());
                         handlerPopMap.put(paramName, paramValue);
                         handled = true;
-                    } else if (paramName.startsWith(PREFIX_PREF_PROP)) {
-                        String suffix = paramName.substring(PREFIX_PREF_PROP.length());
+                    } else if (paramName.startsWith(PREFIX_ADVANCED_PROP)) {
+                        String suffix = paramName.substring(PREFIX_ADVANCED_PROP.length());
                         if (!suffix.isEmpty()) {
-                            DBWorkbench.getPlatform().getPreferenceStore().setValue(suffix, paramValue);
+                            advancedProperties.put(paramName, paramValue);
                             handled = true;
                         }
                     } else if (parameterHandler != null) {
@@ -337,6 +338,7 @@ public class DataSourceUtils {
         connConfig.setUserName(user);
         connConfig.setUserPassword(password);
         connConfig.setProperties(conProperties);
+        connConfig.setProviderProperties(advancedProperties);
         if (!CommonUtils.isEmpty(authProperties)) {
             connConfig.setAuthProperties(authProperties);
         }
