@@ -147,7 +147,7 @@ public class ResultSetMessages extends NLS {
     public static String sql_editor_resultset_filter_panel_label;
     public static String sql_editor_resultset_filter_panel_btn_open_console;
     public static String sql_editor_resultset_filter_panel_control_no_data;
-    public static String sql_editor_resultset_filter_panel_control_execute_to_see_reslut;
+    public static String sql_editor_resultset_filter_panel_control_execute_to_see_result;
     public static String sql_editor_resultset_filter_panel_show_sql_label;
 
     public static String actions_name_color_by;
@@ -198,7 +198,6 @@ public class ResultSetMessages extends NLS {
 
 
     public static String dialog_value_view_job_selector_name;
-    public static String dialog_value_view_label_dictionary;
 
     public static String dialog_filter_value_edit_title;
     public static String dialog_filter_value_edit_label_choose_values;

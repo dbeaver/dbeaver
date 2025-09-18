@@ -25,6 +25,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class AILegacyTranslator {
+    private static final Log log = Log.getLog(AILegacyTranslator.class);
 
     public void performAiTranslation(ExecutionEvent event) {
         // CE legacy popup
@@ -172,16 +174,20 @@ public class AILegacyTranslator {
 
                 AIPromptAbstract sysPromptBuilder = AIPromptGenerateSql.create(dbContext::getDataSource);
                 AIMessage userMessage = AIMessage.userMessage(userInput);
-                String result = aiAssistant.generateText(
+                AIAssistantResponse result = aiAssistant.generateText(
                     monitor,
                     dbContext,
                     sysPromptBuilder,
                     List.of(userMessage)
                 );
 
-                String finalText = AITextUtils.extractGeneratedSqlQuery(monitor, dbContext, userMessage, result);
+                if (result.isText()) {
+                    String finalText = AITextUtils.extractGeneratedSqlQuery(monitor, dbContext, userMessage, result.getText());
 
-                sql.set(finalText);
+                    sql.set(finalText);
+                } else {
+                    log.debug("Error generating SQL: " + result);
+                }
             } catch (Exception e) {
                 throw new InvocationTargetException(e);
             }
