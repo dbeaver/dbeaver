@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
@@ -34,6 +35,10 @@ public class AIMessage {
     private final String displayMessage;
     @NotNull
     private final LocalDateTime time;
+    @Nullable
+    private final AIFunctionCall functionCall;
+    @Nullable
+    private final AIFunctionResult functionResult;
 
     /**
      * Creates AI message
@@ -48,6 +53,23 @@ public class AIMessage {
         this.content = content;
         this.displayMessage = displayMessage;
         this.time = time;
+        this.functionCall = null;
+        this.functionResult = null;
+    }
+
+    /**
+     * Creates AI message
+     */
+    private AIMessage(
+        @NotNull AIFunctionCall functionCall,
+        @NotNull AIFunctionResult result
+    ) {
+        this.role = AIMessageType.FUNCTION;
+        this.content = functionCall.toString();
+        this.time = LocalDateTime.now();
+        this.functionCall = functionCall;
+        this.functionResult = result;
+        this.displayMessage = CommonUtils.toString(result.getValue());
     }
 
     @NotNull
@@ -63,6 +85,11 @@ public class AIMessage {
     @NotNull
     public static AIMessage assistantMessage(@NotNull String message) {
         return new AIMessage(AIMessageType.ASSISTANT, message);
+    }
+
+    @NotNull
+    public static AIMessage functionCall(@NotNull AIFunctionCall functionCall, @NotNull AIFunctionResult result) {
+        return new AIMessage(functionCall, result);
     }
 
     @NotNull
@@ -109,6 +136,16 @@ public class AIMessage {
     @NotNull
     public LocalDateTime getTime() {
         return time;
+    }
+
+    @Nullable
+    public AIFunctionCall getFunctionCall() {
+        return functionCall;
+    }
+
+    @Nullable
+    public AIFunctionResult getFunctionResult() {
+        return functionResult;
     }
 
     public AIMessage withContent(String newContent) {

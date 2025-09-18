@@ -14,33 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.engine;
+
+import org.jkiss.code.NotNull;
 
 /**
- * Type of the message
+ * Subscriber which listens for response stream
  */
-public enum AIMessageType {
-    // System messages like context description
-    SYSTEM(false),
-    // User prompts
-    USER(false),
-    // Response from AI
-    ASSISTANT(false),
-    FUNCTION(true),
-    // Error messages
-    ERROR(true);
+public interface AIEngineResponseConsumer {
 
-    private final boolean isLocal;
+    void nextChunk(@NotNull AIEngineResponseChunk chunk);
 
-    AIMessageType(boolean isLocal) {
-        this.isLocal = isLocal;
-    }
+    void error(@NotNull Throwable throwable);
 
-    /**
-     * Local messages are never sent to AI engine, they exist only on dbeaver side.
-     */
-    public boolean isLocal() {
-        return isLocal;
-    }
-
+    void close();
 }

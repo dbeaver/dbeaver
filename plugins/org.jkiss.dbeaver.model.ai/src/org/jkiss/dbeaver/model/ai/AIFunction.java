@@ -16,31 +16,23 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+
+import java.util.Map;
+
 /**
- * Type of the message
+ * AI function.
  */
-public enum AIMessageType {
-    // System messages like context description
-    SYSTEM(false),
-    // User prompts
-    USER(false),
-    // Response from AI
-    ASSISTANT(false),
-    FUNCTION(true),
-    // Error messages
-    ERROR(true);
-
-    private final boolean isLocal;
-
-    AIMessageType(boolean isLocal) {
-        this.isLocal = isLocal;
-    }
+public interface AIFunction {
 
     /**
-     * Local messages are never sent to AI engine, they exist only on dbeaver side.
+     * Calls function
      */
-    public boolean isLocal() {
-        return isLocal;
-    }
+    @NotNull
+    AIFunctionResult callFunction(
+        @NotNull AIFunctionContext context,
+        @NotNull Map<String, Object> parameters
+    ) throws DBException;
 
 }

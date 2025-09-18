@@ -16,12 +16,11 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-import org.jkiss.code.NotNull;
+import java.util.List;
+import java.util.Map;
 
-public record Model(
-    @NotNull String id,
-    @NotNull String object,
-    long created,
-    @NotNull String ownedBy
-) {
+public class OAIResponsesResponse extends OAIResponsesBase {
+
+    public List<OAIMessage> output;
+    public Map<String, Object> usage;
 }

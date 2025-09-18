@@ -14,33 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-/**
- * Type of the message
- */
-public enum AIMessageType {
-    // System messages like context description
-    SYSTEM(false),
-    // User prompts
-    USER(false),
-    // Response from AI
-    ASSISTANT(false),
-    FUNCTION(true),
-    // Error messages
-    ERROR(true);
+import com.google.gson.annotations.SerializedName;
 
-    private final boolean isLocal;
+public class OAIResponsesStreamOptions {
 
-    AIMessageType(boolean isLocal) {
-        this.isLocal = isLocal;
-    }
+    @SerializedName("include_obfuscation")
+    public String includeObfuscation;
 
-    /**
-     * Local messages are never sent to AI engine, they exist only on dbeaver side.
-     */
-    public boolean isLocal() {
-        return isLocal;
-    }
 
 }

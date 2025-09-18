@@ -590,6 +590,15 @@ public class GeneralUtils {
         }
     }
 
+    public static <T extends Throwable> T findNestedException(@NotNull Throwable ex, @NotNull Class<T> theClass) {
+        for (Throwable e = ex; e != null; e = e.getCause()) {
+            if (theClass.isInstance(e)) {
+                return theClass.cast(e);
+            }
+        }
+        return null;
+    }
+
     public static IStatus makeExceptionStatus(Throwable ex) {
         return makeExceptionStatus(IStatus.ERROR, ex);
     }

@@ -14,33 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-/**
- * Type of the message
- */
-public enum AIMessageType {
-    // System messages like context description
-    SYSTEM(false),
-    // User prompts
-    USER(false),
-    // Response from AI
-    ASSISTANT(false),
-    FUNCTION(true),
-    // Error messages
-    ERROR(true);
+import org.jkiss.code.NotNull;
 
-    private final boolean isLocal;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-    AIMessageType(boolean isLocal) {
-        this.isLocal = isLocal;
-    }
+public class OAIToolParameters {
 
-    /**
-     * Local messages are never sent to AI engine, they exist only on dbeaver side.
-     */
-    public boolean isLocal() {
-        return isLocal;
-    }
+    public static final String TYPE_OBJECT = "object";
+
+    public String type;
+    @NotNull
+    public Map<String, OAIToolParameter> properties = new LinkedHashMap<>();
+    public String[] required;
+    public boolean additionalProperties;
 
 }
