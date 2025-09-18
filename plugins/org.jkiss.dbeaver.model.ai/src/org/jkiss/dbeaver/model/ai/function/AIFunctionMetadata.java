@@ -14,14 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.dto;
+package org.jkiss.dbeaver.model.ai.function;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIFunction;
+import org.jkiss.dbeaver.model.ai.AIFunctionContext;
+import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 
-import java.util.List;
+import java.util.Map;
 
-public record ModelList(
-    @NotNull String object,
-    @NotNull List<Model> data
-) {
+/**
+ * Metadata function.
+ */
+public class AIFunctionMetadata implements AIFunction {
+
+    @NotNull
+    @Override
+    public AIFunctionResult callFunction(
+        @NotNull AIFunctionContext context,
+        @NotNull Map<String, Object> parameters
+    ) throws DBException {
+        return new AIFunctionResult(AIFunctionResult.FunctionType.INFORMATION, "N/A");
+    }
 }
