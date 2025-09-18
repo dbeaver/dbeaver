@@ -16,22 +16,13 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-/**
- * see {@link ChatMessage} documentation.
- */
-public enum ChatMessageRole {
-    SYSTEM("system"),
-    USER("user"),
-    ASSISTANT("assistant"),
-    FUNCTION("function");
+import java.util.Map;
 
-    private final String value;
+public class OAIResponsesPrompt {
 
-    ChatMessageRole(final String value) {
-        this.value = value;
-    }
+    public String id;
+    public Map<String, String> variables;
+    public String version;
 
-    public String value() {
-        return value;
-    }
+
 }

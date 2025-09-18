@@ -57,7 +57,7 @@ public class DatabricksDataSource extends GenericDataSource {
         return url;
     }
 
-    private boolean isLegacyDriver() {
+    public boolean isLegacyDriver() {
         return CommonUtils.equalObjects(DatabricksConstants.DRIVER_CLASS_LEGACY, getContainer().getDriver().getDriverClassName());
     }
 

@@ -16,12 +16,9 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-import org.jkiss.code.NotNull;
+public class OAIResponsesText {
 
-import java.util.List;
+    public OAIResponsesTextFormat format;
+    public String verbosity;
 
-public record ModelList(
-    @NotNull String object,
-    @NotNull List<Model> data
-) {
 }

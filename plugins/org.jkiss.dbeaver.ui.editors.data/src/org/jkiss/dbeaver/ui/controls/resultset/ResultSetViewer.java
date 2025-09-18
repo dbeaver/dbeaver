@@ -1767,7 +1767,7 @@ public class ResultSetViewer extends Viewer
                             false);
                         UIUtils.syncExec(() -> redrawData(true, true));
                     } catch (DBException e) {
-                        log.debug("Error refreshing hint cache");
+                        log.debug("Error refreshing hint cache", e);
                     }
                     return Status.OK_STATUS;
                 }
@@ -5245,7 +5245,7 @@ public class ResultSetViewer extends Viewer
                             }
                         }
                         showErrorPresentation(sqlText, errorMessage, error);
-                        log.error(errorMessage, error);
+                        //log.error(errorMessage, error);
                     }
                 } else {
                     if (!metadataChanged) {

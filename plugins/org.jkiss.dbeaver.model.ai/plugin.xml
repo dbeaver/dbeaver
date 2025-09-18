@@ -4,19 +4,22 @@
 <plugin>
     <extension-point id="com.dbeaver.ai.engine" name="AI integrations" schema="schema/com.dbeaver.ai.engine.exsd"/>
     <extension-point id="com.dbeaver.ai.assistant" name="AI assistants" schema="schema/com.dbeaver.ai.assistant.exsd"/>
-    <extension-point id="com.dbeaver.ai.prompt" name="AI promt generators" schema="schema/com.dbeaver.ai.prompt.exsd"/>
+    <extension-point id="com.dbeaver.ai.prompt" name="AI prompt generators" schema="schema/com.dbeaver.ai.prompt.exsd"/>
+    <extension-point id="com.dbeaver.ai.function" name="AI functions" schema="schema/com.dbeaver.ai.function.exsd"/>
 
     <extension point="com.dbeaver.ai.engine">
         <completionEngine id="openai"
-                          label="OpenAI"
-                          class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine"
-                          properties="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties"
-                          default="true"
-                          fallbacks="openai-pro"/>
+            label="OpenAI"
+            class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine"
+            properties="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties"
+            default="true"
+            supportsFunctions="true"
+            fallbacks="openai-pro"/>
         <completionEngine id="copilot"
-                          label="Github Copilot"
-                          class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine"
-                          properties="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties"/>
+            label="Github Copilot"
+            class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine"
+            properties="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties"
+            supportsFunctions="true"/>
     </extension>
 
     <extension point="com.dbeaver.ai.assistant">
