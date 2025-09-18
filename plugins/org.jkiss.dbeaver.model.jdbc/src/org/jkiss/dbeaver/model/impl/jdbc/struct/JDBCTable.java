@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -917,12 +917,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     @Override
     public DBSDictionaryAccessor getDictionaryAccessor(
         @NotNull DBRProgressMonitor monitor,
-        List<DBDAttributeValue> preceedingKeys,
         @NotNull DBSEntityAttribute keyColumn,
+        @Nullable List<DBDAttributeValue> restColumns,
         boolean sortAsc,
         boolean sortByDesc
     ) throws DBException {
-        return new DictionaryAccessor(monitor, preceedingKeys, keyColumn, sortAsc, sortByDesc);
+        return new DictionaryAccessor(monitor, keyColumn, restColumns, sortAsc, sortByDesc);
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -1040,7 +1040,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
     
     protected class DictionaryAccessor implements DBSDictionaryAccessor {
-        private final List<AttrInfo<DBDAttributeValue>> preceedingKeysInfo;
+        private final List<AttrInfo<DBDAttributeValue>> restAttrsInfo;
         private final DBSEntityAttribute keyColumn;
         private final boolean sortAsc;
         private final boolean sortByDesc;
@@ -1056,8 +1056,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         public DictionaryAccessor(
             @NotNull DBRProgressMonitor monitor,
-            @Nullable List<DBDAttributeValue> preceedingKeys,
             @NotNull DBSEntityAttribute keyColumn,
+            @Nullable List<DBDAttributeValue> restAttrs,
             boolean sortAsc,
             boolean sortByDesc
         ) throws DBException {
@@ -1073,21 +1073,19 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             this.session = DBUtils.openUtilSession(monitor, JDBCTable.this, "Load attribute values count");
             
             {
-                int capacity = preceedingKeys == null ? 0 : preceedingKeys.size() + 1;
-                List<DBDAttributeConstraint> constraints = new ArrayList<>(capacity);
-                List<AttrInfo<DBDAttributeValue>> preceedingKeysInfo = new ArrayList<>(capacity);
-                if (preceedingKeys != null) {
-                    for (DBDAttributeValue key : preceedingKeys) {
+                List<DBDAttributeConstraint> constraints = new ArrayList<>();
+                List<AttrInfo<DBDAttributeValue>> restKeysInfo = new ArrayList<>();
+                if (restAttrs != null) {
+                    for (DBDAttributeValue key : restAttrs) {
                         DBDAttributeConstraint constraint = new DBDAttributeConstraint(key.getAttribute(), constraints.size());
                         constraint.setValue(key.getValue());
                         constraint.setOperator(DBCLogicalOperator.EQUALS);
                         constraints.add(constraint);
-                        
-                        DBDValueHandler precValueHandler = DBUtils.findValueHandler(session, key.getAttribute());
-                        preceedingKeysInfo.add(new AttrInfo<>(key, precValueHandler));
+
+                        restKeysInfo.add(new AttrInfo<>(key, DBUtils.findValueHandler(session, key.getAttribute())));
                     }
                 }
-                this.preceedingKeysInfo = preceedingKeysInfo;
+                this.restAttrsInfo = List.copyOf(restKeysInfo);
                 this.filter = new DBDDataFilter(constraints);
             }
             
@@ -1106,10 +1104,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             return isKeyComparable;
         }
 
-        private int bindPrecedingKeys(@NotNull DBCStatement dbStat) throws DBCException {
+        private int bindAttributes(@NotNull DBCStatement dbStat) throws DBCException {
             int paramPos = 0;
-            if (!preceedingKeysInfo.isEmpty()) {
-                for (var k : preceedingKeysInfo) {
+            if (!restAttrsInfo.isEmpty()) {
+                for (var k : restAttrsInfo) {
                     k.handler.bindValueObject(session, dbStat, k.attr.getAttribute(), paramPos++, k.attr.getValue());
                 }
             }
@@ -1127,7 +1125,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             constraints.add(constraint);
             StringBuilder query = prepareQueryString(filter);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), 0, 1)) {
-                int paramPos = bindPrecedingKeys(dbStat);
+                int paramPos = bindAttributes(dbStat);
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos, keyValue);
                 return readValues(dbStat);
             }
@@ -1139,7 +1137,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             StringBuilder query = prepareQueryString(filter);
             appendSortingClause(query, false);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, pageSize)) {
-                bindPrecedingKeys(dbStat);
+                bindAttributes(dbStat);
                 return readValues(dbStat);
             }
         }
@@ -1161,7 +1159,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             StringBuilder query = prepareQueryString(filter);
             appendSortingClause(query, isPreceeding);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, maxResults)) {
-                int paramPos = bindPrecedingKeys(dbStat);
+                int paramPos = bindAttributes(dbStat);
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos, value);
                 return readValues(dbStat);
             }
@@ -1180,7 +1178,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             appendByPatternCondition(query, filter, pattern, caseInsensitive, byDesc);
             appendSortingClause(query, false);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, maxResults)) {
-                int paramPos = bindPrecedingKeys(dbStat);
+                int paramPos = bindAttributes(dbStat);
                 bindPattern(dbStat, pattern, byDesc, paramPos);
                 return readValues(dbStat);
             }
@@ -1203,7 +1201,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             appendByPatternCondition(query, filter, pattern, caseInsensitive, byDesc);
             appendSortingClause(query, isPreceeding);
             try (DBCStatement dbStat = DBUtils.makeStatement(null, session, DBCStatementType.QUERY, query.toString(), offset, maxResults)) {
-                int paramPos = bindPrecedingKeys(dbStat);
+                int paramPos = bindAttributes(dbStat);
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, value);
                 bindPattern(dbStat, pattern, byDesc, paramPos);
                 return readValues(dbStat);

@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClient;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAICompletionEngine;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
@@ -182,7 +182,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         properties.setToken(token);
         properties.setBaseUrl(baseUrl);
 
-        try (OpenAICompletionEngine<OpenAIProperties> engine = new OpenAICompletionEngine<>(properties)) {
+        try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
             return engine.getModels(monitor);
         }
     }

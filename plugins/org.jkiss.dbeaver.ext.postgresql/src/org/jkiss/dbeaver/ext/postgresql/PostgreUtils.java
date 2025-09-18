@@ -123,6 +123,7 @@ public class PostgreUtils {
 
     @Nullable
     public static Object extractPGObjectValue(@Nullable Object pgObject, @Nullable DBPDataSource dataSource) {
+
         if (pgObject == null) {
             return null;
         }
