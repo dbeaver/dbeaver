@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.exec.jdbc;
 
-import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
-
-import java.util.concurrent.Flow;
+import java.sql.SQLException;
 
 /**
- * AI stream publisher.
- * Basically just a classic publisher.
+ * JDBC object supplier
  */
-public interface AIStreamPublisher extends Flow.Publisher<AIEngineResponseChunk> {
+public interface JDBCObjectSupplier<OBJECT> {
 
+    OBJECT get() throws SQLException;
 
 }

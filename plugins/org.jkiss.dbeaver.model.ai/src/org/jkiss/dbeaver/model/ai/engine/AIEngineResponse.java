@@ -18,18 +18,89 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
 
 import java.util.List;
 
 /**
  * Completion request
  */
-public record AIEngineResponse(
-    @NotNull List<String> variants
-) {
+public class AIEngineResponse {
+    @NotNull
+    private final AIMessageType type;
+    @Nullable
+    private final List<String> variants;
+    @Nullable
+    private final AIFunctionCall functionCall;
+
+    private int inputTokensConsumed;
+    private int outputTokensConsumed;
+    private int processingTime;
+
+    /**
+     * Constructs response with text message
+     */
+    public AIEngineResponse(
+        @NotNull AIMessageType type,
+        @NotNull List<String> variants
+    ) {
+        this.type = type;
+        this.variants = variants;
+        this.functionCall = null;
+    }
+
+    /**
+     * Constructs response with function call
+     */
+    public AIEngineResponse(@NotNull AIFunctionCall functionCall) {
+        this.type = AIMessageType.FUNCTION;
+        this.variants = null;
+        this.functionCall = functionCall;
+    }
+
+    @NotNull
+    public AIMessageType getType() {
+        return type;
+    }
+
+    @Nullable
+    public List<String> getVariants() {
+        return variants;
+    }
+
+    @Nullable
+    public AIFunctionCall getFunctionCall() {
+        return functionCall;
+    }
+
+    public int getInputTokensConsumed() {
+        return inputTokensConsumed;
+    }
+
+    public void setInputTokensConsumed(int inputTokensConsumed) {
+        this.inputTokensConsumed = inputTokensConsumed;
+    }
+
+    public int getOutputTokensConsumed() {
+        return outputTokensConsumed;
+    }
+
+    public void setOutputTokensConsumed(int outputTokensConsumed) {
+        this.outputTokensConsumed = outputTokensConsumed;
+    }
+
+    public int getProcessingTime() {
+        return processingTime;
+    }
+
+    public void setProcessingTime(int processingTime) {
+        this.processingTime = processingTime;
+    }
+
     @Override
     public String toString() {
-        return "AI response " + variants;
+        return "AI response (" + type + ") " + (variants != null ? variants : functionCall);
     }
 
 }

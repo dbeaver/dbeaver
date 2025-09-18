@@ -60,8 +60,8 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.ReaderWriterLock.ExceptableFunction;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
  * ReferenceValueEditor
@@ -702,25 +702,22 @@ public class ReferenceValueEditor {
             DBSEntityAssociation association,
             DBSEntityAttribute refColumn
         ) throws DBException {
-            List<DBDAttributeValue> precedingKeys = null;
-            List<? extends DBSEntityAttributeRef> allColumns = CommonUtils.safeList(refConstraint.getAttributeReferences(
-                monitor));
-            if (allColumns.size() > 1 && allColumns.get(0) != fkColumn) {
-                // Our column is not a first on in foreign key.
-                // So, fill uo preceding keys
+            List<? extends DBSEntityAttributeRef> allColumns = CommonUtils.safeList(refConstraint.getAttributeReferences(monitor));
+            List<DBDAttributeValue> restColumns = null;
+            if (allColumns.size() > 1) {
                 List<DBDAttributeBinding> rowAttributes = attributeController.getRowController().getRowAttributes();
-                precedingKeys = new ArrayList<>();
+                restColumns = new ArrayList<>();
                 for (DBSEntityAttributeRef precColumn : allColumns) {
                     if (precColumn == fkColumn) {
-                        // Enough
-                        break;
+                        // Ignore the current column
+                        continue;
                     }
                     DBSEntityAttribute precAttribute = precColumn.getAttribute();
                     if (precAttribute != null) {
                         DBDAttributeBinding rowAttr = DBUtils.findBinding(rowAttributes, precAttribute);
                         if (rowAttr != null) {
                             Object precValue = attributeController.getRowController().getAttributeValue(rowAttr);
-                            precedingKeys.add(new DBDAttributeValue(precAttribute, precValue));
+                            restColumns.add(new DBDAttributeValue(precAttribute, precValue));
                         }
                     }
                 }
@@ -730,7 +727,11 @@ public class ReferenceValueEditor {
             final DBSDictionary enumConstraint = refConstraint == null ? null : (DBSDictionary) refConstraint.getParentObject();
             if (fkAttribute != null && enumConstraint != null) {
                 try (DBSDictionaryAccessor accessor = enumConstraint.getDictionaryAccessor(
-                    monitor, precedingKeys, refColumn, sortAsc, !sortByValue
+                    monitor,
+                    refColumn,
+                    restColumns,
+                    sortAsc,
+                    !sortByValue
                 )) {
                     List<DBDLabelValuePair> enumValues = action.apply(accessor);
                     if (monitor.isCanceled()) {

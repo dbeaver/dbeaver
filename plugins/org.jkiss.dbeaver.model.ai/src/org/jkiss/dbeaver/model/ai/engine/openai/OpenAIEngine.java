@@ -21,19 +21,18 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
-import org.jkiss.dbeaver.model.ai.AIStreamPublisher;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionChunk;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionRequest;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatCompletionResult;
-import org.jkiss.dbeaver.model.ai.engine.openai.dto.ChatMessage;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Flow;
 
-public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
+public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
     private final DisposableLazyValue<OpenAIClient, DBException> openAiService = new DisposableLazyValue<>() {
         @NotNull
@@ -48,11 +47,11 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         }
     };
 
-    public OpenAICompletionEngine() throws DBException {
+    public OpenAIEngine() throws DBException {
         super();
     }
 
-    public OpenAICompletionEngine(PROPS properties) throws DBException {
+    public OpenAIEngine(PROPS properties) throws DBException {
         super(properties);
     }
 
@@ -80,57 +79,33 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        ChatCompletionResult completionResult = complete(monitor, request.messages());
-        List<String> choices = completionResult.getChoices().stream()
-            .map(it -> it.getMessage().getContent())
-            .toList();
+        OAIResponsesResponse completionResult = complete(monitor, request);
+        List<OAIMessage> messages = completionResult.output;
+        if (messages.isEmpty()) {
+            return new AIEngineResponse(AIMessageType.ASSISTANT, List.of(AIMessages.ai_empty_engine_response));
+        }
+        OAIMessage message = messages.getFirst();
+        if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
+            AIFunctionCall fc = OpenAIClient.createFunctionCall(message);
+            return new AIEngineResponse(fc);
+        } else {
+            List<String> choices = messages.stream()
+                .map(OAIMessage::getFullText)
+                .toList();
 
-        return new AIEngineResponse(choices);
+            return new AIEngineResponse(AIMessageType.ASSISTANT, choices);
+        }
     }
 
-    @NotNull
     @Override
-    public AIStreamPublisher requestCompletionStream(
+    public void requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIEngineRequest request
+        @NotNull AIEngineRequest request,
+        @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
-        ChatCompletionRequest ccr = new ChatCompletionRequest();
-        ccr.setMessages(fromMessages(request.messages()));
-        ccr.setTemperature(temperature());
-        ccr.setFrequencyPenalty(0.0);
-        ccr.setPresencePenalty(0.0);
-        ccr.setN(1);
-        ccr.setModel(model());
-        ccr.setStream(true);
-        Flow.Publisher<ChatCompletionChunk> publisher = openAiService.getInstance().createChatCompletionStream(monitor, ccr);
-
-        return subscriber -> publisher.subscribe(new Flow.Subscriber<>() {
-            @Override
-            public void onSubscribe(Flow.Subscription subscription) {
-                subscriber.onSubscribe(subscription);
-            }
-
-            @Override
-            public void onNext(ChatCompletionChunk item) {
-                List<String> choices = item.getChoices().stream()
-                    .filter(it -> it.getMessage() != null)
-                    .takeWhile(it -> it.getMessage().getContent() != null)
-                    .map(it -> it.getMessage().getContent())
-                    .toList();
-
-                subscriber.onNext(new AIEngineResponseChunk(choices));
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                subscriber.onError(throwable);
-            }
-
-            @Override
-            public void onComplete() {
-                subscriber.onComplete();
-            }
-        });
+        OAIResponsesRequest oaiRequest = createOpenAiRequest(request);
+        oaiRequest.stream = true;
+        openAiService.getInstance().createChatCompletionStream(monitor, oaiRequest, listener);
     }
 
     @Override
@@ -149,35 +124,52 @@ public class OpenAICompletionEngine<PROPS extends OpenAIBaseProperties> extends 
     }
 
     @NotNull
-    protected ChatCompletionResult complete(
+    protected OAIResponsesResponse complete(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull List<AIMessage> messages
+        @NotNull AIEngineRequest request
     ) throws DBException {
-        ChatCompletionRequest completionRequest = new ChatCompletionRequest();
-        completionRequest.setMessages(fromMessages(messages));
-        completionRequest.setTemperature(temperature());
-        completionRequest.setFrequencyPenalty(0.0);
-        completionRequest.setPresencePenalty(0.0);
-        completionRequest.setN(1);
-        completionRequest.setModel(model());
+        OAIResponsesRequest oaiRequest = createOpenAiRequest(request);
 
-        return openAiService.getInstance().createChatCompletion(monitor, completionRequest);
+        return openAiService.getInstance().createChatCompletion(monitor, oaiRequest);
     }
 
     @NotNull
-    private static List<ChatMessage> fromMessages(@NotNull List<AIMessage> messages) {
-        return messages.stream()
-            .map(m -> new ChatMessage(mapRole(m.getRole()), m.getContent()))
-            .toList();
+    private OAIResponsesRequest createOpenAiRequest(@NotNull AIEngineRequest request) throws DBException {
+        OAIResponsesRequest oaiRequest = new OAIResponsesRequest();
+        List<AIMessage> messages = request.getMessages();
+        oaiRequest.input = fromMessages(messages);
+        oaiRequest.temperature = temperature();
+        oaiRequest.store = false;
+        oaiRequest.model = model();
+
+        if (!CommonUtils.isEmpty(request.getFunctions())) {
+            List<OAITool> tools = new ArrayList<>();
+            for (AIFunctionDescriptor fd : request.getFunctions()) {
+                OAITool tool = new OAITool();
+                tool.type = OAITool.TYPE_FUNCTION;
+                tool.name = fd.getName();
+                tool.description = fd.getDescription();
+                tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
+                for (AIFunctionDescriptor.Parameter param : fd.getParameters()) {
+                    OAIToolParameter tp = new OAIToolParameter();
+                    tp.type = param.getType();
+                    tp.description = param.getDescription();
+                    tp.enumItems = param.getValidValues();
+                    tool.parameters.properties.put(param.getName(), tp);
+                }
+                tools.add(tool);
+            }
+            oaiRequest.tools = tools;
+        }
+
+        return oaiRequest;
     }
 
-    private static String mapRole(AIMessageType role) {
-        return switch (role) {
-            case SYSTEM -> "system";
-            case USER -> "user";
-            case ASSISTANT -> "assistant";
-            default -> null;
-        };
+    @NotNull
+    private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
+        return messages.stream()
+            .map(OAIMessage::new)
+            .toList();
     }
 
     @NotNull

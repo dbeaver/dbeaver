@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.sql.pragma;
+package org.jkiss.dbeaver.tools.transfer.ui;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -45,13 +45,19 @@ import java.util.StringJoiner;
 public class SQLPragmaExport implements SQLPragmaHandler {
     private static final Log log = Log.getLog(SQLPragmaExport.class);
 
+    public static final String PARAMETER_TYPE = "type";
+
     private static final String PRODUCER_NODE_ID = "database_producer";
     private static final String CONSUMER_NODE_ID = "stream_consumer";
     private static final String PROCESSOR_ID_PREFIX = CONSUMER_NODE_ID + ":stream.";
 
     @Override
-    public int processPragma(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataContainer container, @NotNull Map<String, Object> parameters) throws DBException {
-        final String type = JSONUtils.getString(parameters, "type");
+    public int processPragma(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSDataContainer container,
+        @NotNull Map<String, Object> parameters
+    ) throws DBException {
+        final String type = JSONUtils.getString(parameters, PARAMETER_TYPE);
 
         if (CommonUtils.isEmpty(type)) {
             throw new DBException("`type` attribute is mandatory");
@@ -107,13 +113,17 @@ public class SQLPragmaExport implements SQLPragmaHandler {
     }
 
     @NotNull
-    private static Map<String, Object> createConsumerSettings(@NotNull Map<String, Object> parameters) {
+    private static Map<String, Object> createConsumerSettings(
+        @NotNull Map<String, Object> parameters) {
         // TODO: Do we need to sanitize input data here?
         return JSONUtils.getObject(parameters, "consumer");
     }
 
     @NotNull
-    private static Map<String, Object> createProcessorSettings(@NotNull DataTransferProcessorDescriptor processor, @NotNull Map<String, Object> parameters) {
+    private static Map<String, Object> createProcessorSettings(
+        @NotNull DataTransferProcessorDescriptor processor,
+        @NotNull Map<String, Object> parameters
+    ) {
         final Map<String, Object> properties = new HashMap<>();
         final StringJoiner names = new StringJoiner(",");
 
