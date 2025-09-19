@@ -83,13 +83,14 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         return container.getSchema();
     }
 
+    @NotNull
     @Override
     public GenericStructContainer getObject() {
         return this;
     }
 
     @Override
-    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+    public List<GenericProcedure> getProcedures(@NotNull DBRProgressMonitor monitor)
     throws DBException {
         return procedures;
     }

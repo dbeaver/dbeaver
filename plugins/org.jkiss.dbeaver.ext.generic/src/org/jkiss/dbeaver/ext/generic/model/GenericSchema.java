@@ -58,6 +58,7 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema, 
         return this;
     }
 
+    @NotNull
     @Override
     public GenericSchema getObject() {
         return this;
