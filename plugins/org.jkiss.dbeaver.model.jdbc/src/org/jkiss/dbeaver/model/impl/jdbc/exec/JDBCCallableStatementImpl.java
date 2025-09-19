@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCObjectSupplier;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -53,21 +54,21 @@ import java.util.regex.Pattern;
  * Manageable base statement.
  * Stores information about execution in query manager and operated progress monitor.
  */
-public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl implements JDBCCallableStatement {
+public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl<CallableStatement> implements JDBCCallableStatement {
 
     private static final Log log = Log.getLog(JDBCCallableStatementImpl.class);
     private static final Pattern EXEC_PATTERN = Pattern.compile("[\\w_\\.]+\\s+([^(]+)\\s*\\(");
 
     private DBSProcedure procedure;
-    private JDBCResultSetCallable procResults;
+    private final JDBCResultSetCallable procResults;
 
     public JDBCCallableStatementImpl(
         @NotNull JDBCSession connection,
-        @NotNull CallableStatement original,
+        @NotNull JDBCObjectSupplier<CallableStatement> stmtSupplier,
         @Nullable String query,
-        boolean disableLogging)
-    {
-        super(connection, original, query, disableLogging);
+        boolean disableLogging
+    ) throws SQLException {
+        super(connection, stmtSupplier, query, disableLogging);
 
         procResults = new JDBCResultSetCallable(getConnection(), this);
 
@@ -80,7 +81,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
 
         // Bind procedure parameters
         try {
-            ParameterMetaData paramsMeta = original.getParameterMetaData();
+            ParameterMetaData paramsMeta = getOriginal().getParameterMetaData();
             if (paramsMeta != null) {
                 int paramsCount = bindProcedureFromJDBC(paramsMeta);
                 if (procedure != null && paramsCount == 0 && hasOutputParameters()) {
@@ -106,7 +107,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         ParameterMetaData paramsMeta = null;
 
         try {
-            paramsMeta = original.getParameterMetaData();
+            paramsMeta = getOriginal().getParameterMetaData();
         } catch (Throwable e) {
             log.debug("Error extracting parameters meta data", e);
         }
@@ -206,12 +207,6 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             return ((DBSProcedureContainer) container).getProcedure(session.getProgressMonitor(), DBObjectNameCaseTransformer.transformName(session.getDataSource(), names[names.length - 1]));
         }
         return null;
-    }
-
-    @Override
-    public CallableStatement getOriginal()
-    {
-        return (CallableStatement)original;
     }
 
     @Override

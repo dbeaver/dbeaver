@@ -31,6 +31,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
@@ -40,6 +42,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -57,6 +60,7 @@ import java.util.List;
  * EditDriverDialog
  */
 public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener {
+    private static final Log log = Log.getLog(DriverManagerDialog.class);
 
     private static final String DIALOG_ID = "DBeaver.DriverManagerDialog";//$NON-NLS-1$
     private static final String DEFAULT_DS_PROVIDER = "generic";
@@ -383,14 +387,23 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     }
 
     private void editDriver() {
-        DriverDescriptor driver = selectedDriver;
-        if (driver != null) {
-            //driver.validateFilesPresence(this);
-
-            DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
-            dialog.open();
-            treeControl.refresh(driver);
+        if (selectedDriver == null) {
+            return;
         }
+
+        DriverDescriptor driver = selectedDriver.getProviderDescriptor().getDriver(selectedDriver.getId());
+        if (driver == null) {
+            log.warn("Driver not found for ID '" + selectedDriver.getId()
+                + "' in provider '" + selectedDriver.getProviderDescriptor().getId() + "'");
+            return;
+        }
+
+        DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
+        dialog.open();
+        if (selectedDriver != driver) {
+            selectedDriver.applyFrom(driver);
+        }
+        treeControl.refresh(selectedDriver);
     }
 
     private void deleteDriver() {
@@ -407,8 +420,15 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             getShell(),
             UIConnectionMessages.dialog_driver_manager_message_delete_driver_title,
             UIConnectionMessages.dialog_driver_manager_message_delete_driver_text + selectedDriver.getName() + "'?")) {
-            selectedDriver.getProviderDescriptor().removeDriver(selectedDriver);
-            selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
+            selectedDriver.getProviderDescriptor().removeDriver(selectedDriver.getId());
+
+            try {
+                selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Save error", "Error saving drivers", e);
+                return;
+            }
+
             treeControl.refresh();
         }
     }
@@ -447,9 +467,14 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             }
         };
         if (dialog.open() == IDialogConstants.OK_ID) {
-            for (DriverDescriptor dd : drivers) {
-                dd.setDisabled(false);
-                dd.getProviderDescriptor().getRegistry().saveDrivers();
+            try {
+                for (DriverDescriptor dd : drivers) {
+                    dd.setDisabled(false);
+                    dd.getProviderDescriptor().getRegistry().saveDrivers();
+                }
+            } catch (DBException e) {
+                DBWorkbench.getPlatformUI().showError("Save error", "Error saving drivers", e);
+                return false;
             }
             return true;
         }

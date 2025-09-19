@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cubrid.CubridConstants;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericView;
-import org.jkiss.dbeaver.ext.generic.model.TableCache;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -67,6 +58,12 @@ public class CubridUser extends GenericSchema
     }
 
     @NotNull
+    @Override
+    public CubridDataSource getDataSource() {
+        return (CubridDataSource) super.getDataSource();
+    }
+
+    @NotNull
     @Property(viewable = true, order = 1)
     public String getName() {
         return name;
@@ -80,12 +77,12 @@ public class CubridUser extends GenericSchema
 
     @NotNull
     public boolean supportsSystemTable() {
-        return name.equals("DBA");
+        return getDataSource().isDBAGroup();
     }
 
     @NotNull
     public boolean supportsSystemView() {
-        return name.equals("DBA");
+        return getDataSource().isDBAGroup();
     }
 
     @NotNull
@@ -95,12 +92,12 @@ public class CubridUser extends GenericSchema
 
     @NotNull
     public boolean supportsSynonym() {
-        return ((CubridDataSource) this.getDataSource()).getSupportMultiSchema();
+        return getDataSource().getSupportMultiSchema();
     }
 
     @NotNull
     public boolean supportsTrigger() {
-        return CubridConstants.DBA.equals(getDataSource().getContainer().getConnectionConfiguration().getUserName());
+        return getDataSource().isDBAGroup();
     }
 
     @NotNull
@@ -197,6 +194,7 @@ public class CubridUser extends GenericSchema
             boolean autoIncrement = false;
             String tableName = table.isSystem() ? table.getName() : ((CubridDataSource) getDataSource()).getMetaModel().getTableOrViewName(table);
             String sql = "show columns from " + DBUtils.getQuotedIdentifier(getDataSource(), tableName) + " where Field = ?";
+            sql = ((CubridDataSource) owner.getDataSource()).wrapShardQuery(sql);
             try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                 dbStat.setString(1, columnName);
                 try (JDBCResultSet result = dbStat.executeQuery()) {

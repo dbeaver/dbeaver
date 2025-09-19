@@ -19,23 +19,17 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.registry.AISettingsEventListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.concurrent.Flow;
+import java.util.List;
 
 /**
  * Completion engine
  */
-public interface AIEngine extends AISettingsEventListener {
+public interface AIEngine extends AutoCloseable {
 
-    /**
-     * Returns the context size for the completion engine.
-     *
-     * @param monitor progress monitor
-     * @return the context window size
-     */
-    int getMaxContextSize(@NotNull DBRProgressMonitor monitor) throws DBException;
+    @NotNull
+    List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Requests completions from the completion engine.
@@ -55,24 +49,20 @@ public interface AIEngine extends AISettingsEventListener {
     /**
      * Requests a stream of completion chunks from the completion engine.
      *
-     * @param monitor the progress monitor
-     * @param request the completion request
-     * @return the stream of completion chunks
+     * @param monitor  the progress monitor
+     * @param request  the completion request
+     * @param listener
      * @throws TooManyRequestsException if the request limit is exceeded and the request can be retried
-     * @throws DBException if an error occurs
+     * @throws DBException              if an error occurs
      */
-    @NotNull
-    Flow.Publisher<AIEngineResponseChunk> requestCompletionStream(
+    void requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIEngineRequest request
+        @NotNull AIEngineRequest request,
+        @NotNull AIEngineResponseConsumer listener
     ) throws DBException;
 
-    /**
-     * Checks if the completion engine has a valid configuration.
-     *
-     * @return true if the completion engine has a valid configuration
-     */
-    boolean hasValidConfiguration() throws DBException;
+    int getContextWindowSize(DBRProgressMonitor monitor) throws DBException;
 
-    boolean isLoggingEnabled() throws DBException;
+    @Override
+    void close() throws DBException;
 }

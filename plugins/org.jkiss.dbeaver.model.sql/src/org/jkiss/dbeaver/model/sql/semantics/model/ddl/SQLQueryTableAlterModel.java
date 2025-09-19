@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.model.sql.semantics.model.ddl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.*;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
@@ -46,9 +46,6 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
     @NotNull
     private final List<SQLQueryTableAlterActionSpec> alterActions;
 
-    @Nullable
-    private SQLQueryDataContext dataContext = null;
-
     public SQLQueryTableAlterModel(
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQueryRowsTableDataModel targetTable,
@@ -72,16 +69,25 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
     }
 
     @Override
-    protected void applyContext(@NotNull SQLQueryDataContext dataContext, @NotNull SQLQueryRecognitionContext statistics) {
-        this.dataContext = dataContext;
-
-        if (targetTable != null) {
-            SQLQueryDataContext tableContext = this.targetTable.propagateContext(dataContext, statistics);
-            for (SQLQueryTableAlterActionSpec alterAction : this.alterActions) {
-                alterAction.propagateContext(dataContext, this.targetTable.getTable() == null ? null : tableContext, statistics);
-            }
+    public void resolveObjectAndRowsReferences(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        if (this.targetTable != null) {
+            this.targetTable.resolveObjectAndRowsReferences(context, statistics);
         } else {
             statistics.appendWarning(this.getSyntaxNode(), "Missing table name");
+        }
+    }
+
+    @Override
+    public void resolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        if (this.targetTable != null) {
+            this.targetTable.resolveValueRelations(context, statistics);
+            for (SQLQueryTableAlterActionSpec alterAction : this.alterActions) {
+                alterAction.resolveRelations(
+                    this.targetTable.getRowsDataContext().getRowsSources(),
+                    this.targetTable.getTable() == null ? null : this.targetTable.getRowsDataContext(),
+                    statistics
+                );
+            }
         }
     }
 
@@ -90,19 +96,8 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
         return visitor.visitAlterTable(this, arg);
     }
 
-    @Nullable
-    @Override
-    public SQLQueryDataContext getGivenDataContext() {
-        return this.dataContext;
-    }
-
-    @Nullable
-    @Override
-    public SQLQueryDataContext getResultDataContext() {
-        return this.dataContext;
-    }
-
-    public static SQLQueryTableAlterModel recognize(SQLQueryModelRecognizer recognizer, STMTreeNode node) {
+    @NotNull
+    public static SQLQueryTableAlterModel recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
         SQLQueryRowsTableDataModel targetTable = recognizer.collectTableReference(node, true);
 
         LinkedList<SQLQueryTableAlterActionSpec> alterActions = new LinkedList<>();
@@ -115,7 +110,7 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
                 SQLQueryColumnSpec columnSpec = null;
                 SQLQuerySymbolEntry columnName = null;
                 SQLQueryTableConstraintSpec tableConstraintSpec = null;
-                SQLQueryQualifiedName tableConstraintName = null;
+                SQLQueryComplexName tableConstraintName = null;
 
                 if (actionKind != null) {
                     switch (actionKind) {

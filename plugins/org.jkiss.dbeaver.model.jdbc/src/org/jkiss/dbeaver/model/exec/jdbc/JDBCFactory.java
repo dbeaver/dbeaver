@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,20 +26,37 @@ import java.sql.*;
  */
 public interface JDBCFactory {
 
-    JDBCDatabaseMetaData createMetaData(@NotNull JDBCSession session, @NotNull DatabaseMetaData original)
-        throws SQLException;
+    JDBCDatabaseMetaData createMetaData(
+        @NotNull JDBCSession session,
+        @NotNull JDBCObjectSupplier<DatabaseMetaData> original
+    ) throws SQLException;
 
-    JDBCStatement createStatement(@NotNull JDBCSession session, @NotNull Statement original, boolean disableLogging)
-        throws SQLException;
+    JDBCStatement createStatement(
+        @NotNull JDBCSession session,
+        @NotNull JDBCObjectSupplier<Statement> original,
+        boolean disableLogging
+    ) throws SQLException;
 
-    JDBCPreparedStatement createPreparedStatement(@NotNull JDBCSession session, @NotNull PreparedStatement original, @Nullable String sql, boolean disableLogging)
-        throws SQLException;
+    JDBCPreparedStatement createPreparedStatement(
+        @NotNull JDBCSession session,
+        @NotNull JDBCObjectSupplier<PreparedStatement> original,
+        @Nullable String sql,
+        boolean disableLogging
+    ) throws SQLException;
 
-    JDBCCallableStatement createCallableStatement(@NotNull JDBCSession session, @NotNull CallableStatement original, @Nullable String sql, boolean disableLogging)
-        throws SQLException;
+    JDBCCallableStatement createCallableStatement(
+        @NotNull JDBCSession session,
+        @NotNull JDBCObjectSupplier<CallableStatement> original,
+        @Nullable String sql,
+        boolean disableLogging
+    ) throws SQLException;
 
-    JDBCResultSet createResultSet(@NotNull JDBCSession session, @Nullable JDBCStatement statement, @NotNull ResultSet original, String description, boolean disableLogging)
-        throws SQLException;
+    JDBCResultSet createResultSet(
+        @NotNull JDBCSession session,
+        @Nullable JDBCStatement statement,
+        @NotNull ResultSet original,
+        boolean disableLogging
+    ) throws SQLException;
 
     JDBCResultSetMetaData createResultSetMetaData(@NotNull JDBCResultSet resultSet)
         throws SQLException;

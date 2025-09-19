@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
@@ -69,11 +70,14 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
     private final List<DBPDataSourceConfigurationStorage> storages = new ArrayList<>();
     private final Map<String, T> dataSources = new LinkedHashMap<>();
-    private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
     private final List<DataSourceFolder> dataSourceFolders = new ArrayList<>();
     private final List<DBSObjectFilter> savedFilters = new ArrayList<>();
     private final List<DBWNetworkProfile> networkProfiles = new ArrayList<>();
     private final Map<String, DBAAuthProfile> authProfiles = new LinkedHashMap<>();
+
+    private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
+    private final List<DBPEvent> dataSourceEvents = new ArrayList<>();
+    private final EventProcessJob eventsJob = new EventProcessJob();
     private volatile boolean saveInProgress = false;
 
     private final DBVModel.ModelChangeListener modelChangeListener = new DBVModel.ModelChangeListener();
@@ -93,7 +97,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         this.project = project;
         this.configurationManager = configurationManager;
         this.preferenceStore = preferenceStore;
-        boolean isLoaded = loadDataSources(true);
+        boolean isLoaded = loadDataSources(true) != null;
         if (!isMultiUser() && isLoaded) {
             DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
             addDataSourceListener(modelChangeListener);
@@ -722,26 +726,15 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     public void notifyDataSourceListeners(@NotNull final DBPEvent event) {
-        final List<DBPEventListener> listeners;
         synchronized (dataSourceListeners) {
-            if (dataSourceListeners.isEmpty()) {
-                return;
-            }
-            listeners = new ArrayList<>(dataSourceListeners);
+            dataSourceEvents.add(event);
         }
-        new Job("Notify datasource events") {
-            {
-                setSystem(true);
-            }
-
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                for (DBPEventListener listener : listeners) {
-                    listener.handleDataSourceEvent(event);
-                }
-                return Status.OK_STATUS;
-            }
-        }.schedule();
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            // In headless mode we process events immediately
+            eventsJob.run(new NullProgressMonitor());
+        } else {
+            eventsJob.schedule(20);
+        }
     }
 
     @Nullable
@@ -784,7 +777,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return result;
     }
 
-    private boolean loadDataSources(boolean refresh) {
+    private DataSourceParseResults loadDataSources(boolean refresh) {
        return loadDataSources(
             configurationManager.getConfigurationStorages(),
             configurationManager,
@@ -794,17 +787,15 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public boolean loadDataSources(
+    public DataSourceParseResults loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
         @Nullable Collection<String> dataSourceIds,
         boolean refresh,
         boolean purgeUntouched
     ) {
-        // need this to show is the data source was updated
-        boolean configChanged = false;
         if (!project.isOpen() || project.isInMemory()) {
-            return false;
+            return null;
         }
         // Clear filters before reload
         savedFilters.clear();
@@ -814,10 +805,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         // Modern way - search json configs in metadata folder
         for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
             if (loadDataSources(cfgStorage, manager, dataSourceIds, parseResults)) {
-                configChanged = true;
             } else {
                 if (lastError != null) {
-                    return false;
+                    return null;
                 }
             }
         }
@@ -836,27 +826,25 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             }
 
             if (purgeUntouched) {
-                List<DataSourceDescriptor> removedDataSource = new ArrayList<>();
                 for (DataSourceDescriptor ds : dataSources.values()) {
                     if (!parseResults.addedDataSources.contains(ds) && !parseResults.updatedDataSources.contains(ds) &&
                         !ds.isProvided() && !ds.isExternallyProvided() && !ds.isDetached())
                     {
-                        removedDataSource.add(ds);
+                        parseResults.removedDataSources.add(ds);
                     }
                 }
-                for (DataSourceDescriptor ds : removedDataSource) {
+                for (DBPDataSourceContainer ds : parseResults.removedDataSources) {
                     this.dataSources.remove(ds.getId());
                     this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, ds);
                     ds.dispose();
                 }
 
-                List<DataSourceFolder> removedFolder = new ArrayList<>();
                 for (DataSourceFolder folder : dataSourceFolders) {
                     if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)) {
-                        removedFolder.add(folder);
+                        parseResults.removedFolders.add(folder);
                     }
                 }
-                for (DataSourceFolder folder : removedFolder) {
+                for (DBPDataSourceFolder folder : parseResults.removedFolders) {
                     if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)
                         && !DataSourceUtils.isFolderHasTemporaryDataSources(folder)
                     ) {
@@ -869,7 +857,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
         updateProjectNature();
 
-        return configChanged;
+        return parseResults;
     }
 
     protected boolean loadDataSources(
@@ -1063,6 +1051,36 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     ) {
         return new DataSourceDescriptor(this, dbpDataSourceConfigurationStorage, origin, id, originalDriver,
             substitutedDriver, dbpConnectionConfiguration);
+    }
+
+    private class EventProcessJob extends Job {
+
+        public EventProcessJob() {
+            super("Notify datasource events");
+            setSystem(true);
+        }
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor) {
+            final DBPEventListener[] listeners;
+            final DBPEvent[] events;
+            synchronized (dataSourceListeners) {
+                events = dataSourceEvents.toArray(new DBPEvent[0]);
+                dataSourceEvents.clear();
+
+                if (dataSourceListeners.isEmpty()) {
+                    return Status.OK_STATUS;
+                }
+                listeners = dataSourceListeners.toArray(new DBPEventListener[0]);
+            }
+
+            for (DBPEvent event : events) {
+                for (DBPEventListener listener : listeners) {
+                    listener.handleDataSourceEvent(event);
+                }
+            }
+            return Status.OK_STATUS;
+        }
     }
 
     private class DisconnectTask implements DBRRunnableWithProgress {

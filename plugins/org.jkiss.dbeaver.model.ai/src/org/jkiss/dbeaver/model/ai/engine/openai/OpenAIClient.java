@@ -16,40 +16,49 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.theokanning.openai.completion.chat.ChatCompletionChunk;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatCompletionResult;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
+import org.jkiss.dbeaver.model.ai.engine.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.engine.TooManyRequestsException;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
 
+import java.io.Closeable;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Flow;
-import java.util.concurrent.SubmissionPublisher;
+import java.util.Map;
+import java.util.function.Consumer;
 
-public class OpenAIClient {
+public class OpenAIClient implements Closeable {
     private static final Log log = Log.getLog(OpenAIClient.class);
 
+    public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
+
     private static final String DATA_EVENT = "data: ";
-    private static final String DONE_EVENT = "[DONE]";
+    private static final String EVENT_EVENT = "event: ";
+
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-        .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    private static final Gson GSON = JSONUtils.GSON;
+    public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
+    public static final String EVENT_TYPE_ITEM_DONE = "response.output_item.done";
+    public static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
+    public static final String EVENT_TYPE_TEXT_DELTA = "response.output_text.delta";
 
     private final String baseUrl;
     private final List<HttpRequestFilter> requestFilters;
@@ -59,102 +68,211 @@ public class OpenAIClient {
         @NotNull String baseUrl,
         @NotNull List<HttpRequestFilter> requestFilters
     ) {
+        if (!baseUrl.endsWith("/")) {
+            baseUrl += "/";
+        }
         this.baseUrl = baseUrl;
         this.requestFilters = requestFilters;
     }
 
     @NotNull
-    public ChatCompletionResult createChatCompletion(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull ChatCompletionRequest completionRequest
-    ) throws DBException {
+    static AIFunctionCall createFunctionCall(OAIMessage message) throws DBException {
+        String argumentsStr = message.arguments;
+        Map<String, Object> arguments;
+        try {
+            arguments = JSONUtils.GSON.fromJson(argumentsStr, JSONUtils.MAP_TYPE_TOKEN);
+        } catch (JsonSyntaxException e) {
+            throw new DBException("Error parsing function call arguments", e);
+        }
+        AIFunctionCall fc = new AIFunctionCall(message.name, arguments);
+        return fc;
+    }
+
+    @NotNull
+    public HttpClient getHttpClient() {
+        return client.getHttpClient();
+    }
+
+    public static OpenAIClient createClient(String baseUrl, String token) {
+        return new OpenAIClient(
+            baseUrl,
+            List.of(new OpenAIRequestFilter(token))
+        );
+    }
+
+    @NotNull
+    public List<OAIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, "chat/completions"))
-            .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
+            .uri(AIHttpUtils.resolve(baseUrl, "models"))
+            .GET()
             .timeout(TIMEOUT)
             .build();
 
         HttpRequest modifiedRequest = applyFilters(request);
         HttpResponse<String> response = client.send(monitor, modifiedRequest);
         if (response.statusCode() == 200) {
-            return deserializeValue(response.body(), ChatCompletionResult.class);
-        } else if (response.statusCode() == 429) {
-            throw new TooManyRequestsException("Too many requests: " + response.body());
+            return GSON.fromJson(response.body(), OAIModelList.class).data();
         } else {
-            throw new DBException("Request failed: " + response.statusCode() + ", body=" + response.body());
+            throw new DBException("Models read failed: " + response.statusCode() + ", body=" + response.body());
         }
     }
 
-    @NotNull
-    public Flow.Publisher<ChatCompletionChunk> createChatCompletionStream(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull ChatCompletionRequest completionRequest
-    ) throws DBException {
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, "chat/completions"))
+    private HttpRequest createCompletionRequest(@NotNull OAIResponsesRequest completionRequest) throws DBException {
+        return HttpRequest.newBuilder()
+            .uri(AIHttpUtils.resolve(baseUrl, getResponsesEndpoint()))
+            .header(HttpConstants.HEADER_USER_AGENT, GeneralUtils.getProductTitle())
             .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
             .timeout(TIMEOUT)
             .build();
+    }
+
+    @NotNull
+    protected String getResponsesEndpoint() {
+        return "responses";
+    }
+
+    @NotNull
+    public OAIResponsesResponse createChatCompletion(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OAIResponsesRequest completionRequest
+    ) throws DBException {
+        HttpRequest request = createCompletionRequest(completionRequest);
+
+        HttpRequest modifiedRequest = applyFilters(request);
+        HttpResponse<String> response = client.send(monitor, modifiedRequest);
+        String body = response.body();
+        if (response.statusCode() == 200) {
+            return GSON.fromJson(body, OAIResponsesResponse.class);
+        } else if (response.statusCode() == 429) {
+            throw new TooManyRequestsException("Too many requests: " + body);
+        } else {
+            throw new DBException("OpenAI request failed: " + response.statusCode() + ", body=" + body);
+        }
+    }
+
+    public void createChatCompletionStream(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OAIResponsesRequest completionRequest,
+        @NotNull AIEngineResponseConsumer listener
+    ) throws DBException {
+        HttpRequest request = createCompletionRequest(completionRequest);
 
         HttpRequest modifiedRequest = applyFilters(request);
 
-        SubmissionPublisher<ChatCompletionChunk> publisher = new SubmissionPublisher<>();
-
+        Consumer<String> stringConsumer = new StreamConsumer(listener);
         client.sendAsync(
             modifiedRequest,
-            event -> {
-                if (event.startsWith(DATA_EVENT)) {
-                    String data = event.substring(6).trim();
-                    if (DONE_EVENT.equals(data)) {
-                        publisher.close();
-                    } else {
-                        try {
-                            ChatCompletionChunk chunk = MAPPER.readValue(data, ChatCompletionChunk.class);
-                            publisher.submit(chunk);
-                        } catch (Exception e) {
-                            publisher.closeExceptionally(e);
-                        }
-                    }
-                }
-            },
-            publisher::closeExceptionally,
-            publisher::close
+            stringConsumer,
+            listener::error,
+            listener::close
         );
-
-        return publisher;
     }
 
+    @Override
     public void close() {
         client.close();
     }
 
-    private HttpRequest applyFilters(HttpRequest request) throws DBException {
+    public HttpRequest applyFilters(@NotNull HttpRequest request) throws DBException {
+        return applyFilters(request, true);
+    }
+
+    public HttpRequest applyFilters(@NotNull HttpRequest request, boolean setContentType) throws DBException {
         for (HttpRequestFilter filter : requestFilters) {
-            request = filter.filter(request);
+            request = filter.filter(request, setContentType);
         }
         return request;
     }
 
-    @Nullable
+    @NotNull
     private static String serializeValue(@Nullable Object value) throws DBException {
         try {
-            return MAPPER.writeValueAsString(value);
+            return GSON.toJson(value);
         } catch (Exception e) {
             throw new DBException("Error serializing value", e);
         }
     }
 
-    @NotNull
-    private static <T> T deserializeValue(@NotNull String value, @NotNull Class<T> type) throws DBException {
-        try {
-            return MAPPER.readValue(value, type);
-        } catch (Exception e) {
-            throw new DBException("Error deserializing value", e);
-        }
-    }
-
     public interface HttpRequestFilter {
         @NotNull
-        HttpRequest filter(@NotNull HttpRequest request) throws DBException;
+        HttpRequest filter(@NotNull HttpRequest request, boolean setContentType) throws DBException;
+    }
+
+    private static class StreamConsumer implements Consumer<String> {
+        private final AIEngineResponseConsumer listener;
+        private boolean functionCall;
+
+        public StreamConsumer(AIEngineResponseConsumer listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public void accept(String event) {
+            if (CommonUtils.isEmpty(event)) {
+                return;
+            }
+            if (event.startsWith(DATA_EVENT)) {
+                String data = event.substring(DATA_EVENT.length()).trim();
+                try {
+                    OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
+                    if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
+                        listener.close();
+                    } else {
+
+                        if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {
+                            if (EVENT_TYPE_ITEM_DONE.equals(chunk.type)) {
+                                if (chunk.item != null) {
+                                    listener.nextChunk(new AIEngineResponseChunk(
+                                        createFunctionCall(chunk.item)));
+                                }
+                                functionCall = false;
+                            } else {
+                                functionCall = true;
+                            }
+                            return;
+                        }
+                        if (functionCall) {
+                            // do nothing
+                        } else {
+                            List<String> choices = new ArrayList<>();
+                            if (OpenAIClient.EVENT_TYPE_TEXT_DELTA.equals(chunk.type)) {
+                                choices.add(chunk.delta);
+                            } else if (chunk.response != null) {
+                                for (OAIMessage msg : chunk.response.output) {
+                                    for (OAIMessageContent content : msg.content) {
+                                        if (!CommonUtils.isEmpty(content.text)) {
+                                            choices.add(content.text);
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (!choices.isEmpty()) {
+                                listener.nextChunk(new AIEngineResponseChunk(choices));
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    listener.error(e);
+                }
+            } else if (event.startsWith(EVENT_EVENT)) {
+                String eventType = event.substring(EVENT_EVENT.length()).trim();
+                if (!CommonUtils.isEmpty(eventType)) {
+                    switch (eventType) {
+                        case "response.created":
+                        case "response.in_progress":
+                        case "response.output_item.added":
+                        case EVENT_TYPE_TEXT_DELTA:
+                        case "response.output_text.done":
+                        case "response.content_part.done":
+                        case "response.output_item.done":
+                        case EVENT_TYPE_RESPONSE_COMPLETED:
+                            break;
+                    }
+                }
+            } else {
+                log.debug("Unknown OpenAI event: " + event);
+            }
+        }
     }
 }

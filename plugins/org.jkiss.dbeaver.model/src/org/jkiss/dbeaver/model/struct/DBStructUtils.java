@@ -530,7 +530,7 @@ public final class DBStructUtils {
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSObject dbsObject
     ) throws DBException {
-        var result = new HashSet<DBSObject>();
+        var result = new LinkedHashSet<DBSObject>();
         if (dbsObject instanceof DBSEntity mainEntity) {
             result.add(mainEntity);
             try {
@@ -563,7 +563,7 @@ public final class DBStructUtils {
         return result.stream().toList();
     }
 
-    public static boolean isSchemasSupported(DBPDataSourceContainer dataSourceContainer) {
+    public static boolean isSchemasSupported(@NotNull DBPDataSourceContainer dataSourceContainer) {
         DBCExecutionContext defaultContext = DBUtils.getDefaultContext(dataSourceContainer, false);
         if (defaultContext != null) {
             DBCExecutionContextDefaults<?,?> contextDefaults = defaultContext.getContextDefaults();

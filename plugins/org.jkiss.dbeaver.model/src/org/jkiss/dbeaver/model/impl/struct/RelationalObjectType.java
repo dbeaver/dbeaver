@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ public class RelationalObjectType extends AbstractObjectType {
 
     public static final DBSObjectType TYPE_TABLE = new RelationalObjectType("Table", "Table", DBIcon.TREE_TABLE, DBSTable.class);
     public static final DBSObjectType TYPE_SCHEMA = new RelationalObjectType("Schema", "Schema", DBIcon.TREE_SCHEMA, DBSSchema.class);
+    public static final DBSObjectType TYPE_CATALOG = new RelationalObjectType("Catalog", "Catalog", DBIcon.TREE_DATABASE, DBSCatalog.class);
     public static final DBSObjectType TYPE_VIEW = new RelationalObjectType("View", "View", DBIcon.TREE_VIEW, DBSView.class);
     public static final DBSObjectType TYPE_TABLE_COLUMN = new RelationalObjectType("Table column", "Table column", DBIcon.TREE_COLUMN, DBSTableColumn.class);
     public static final DBSObjectType TYPE_VIEW_COLUMN = new RelationalObjectType("View column", "View column", DBIcon.TREE_COLUMN, DBSTableColumn.class);

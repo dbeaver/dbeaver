@@ -33,6 +33,8 @@ import java.util.Map;
 public class WSEventController {
     private static final Log log = Log.getLog(WSEventController.class);
 
+    public static final Object JOB_EVENT_HANDLER_FAMILY = new Object();
+
     private final Map<String, List<WSEventHandler>> eventHandlersByType = new HashMap<>();
     protected final List<WSEvent> eventsPool = new ArrayList<>();
     private boolean forceSkipEvents = false;
@@ -93,24 +95,32 @@ public class WSEventController {
                 events = List.copyOf(eventsPool);
                 eventsPool.clear();
             }
-            if (events.isEmpty()) {
-                schedule(CHECK_PERIOD);
-                return Status.OK_STATUS;
+
+            if (monitor.isCanceled() || Thread.currentThread().isInterrupted()) {
+                return Status.CANCEL_STATUS;
             }
+
             for (WSEvent event : events) {
                 eventHandlersByType.getOrDefault(event.getTopicId(), List.of()).forEach(handler -> {
                     try {
                         handler.handleEvent(event);
                     } catch (Exception e) {
-                        log.error(
-                            "Error on event handle " + event.getTopicId(),
-                            e
-                        );
+                        log.error("Error on event handle " + event.getTopicId(), e);
                     }
                 });
             }
+
+            if (monitor.isCanceled() || Thread.currentThread().isInterrupted()) {
+                return Status.CANCEL_STATUS;
+            }
+
             schedule(CHECK_PERIOD);
             return Status.OK_STATUS;
+        }
+
+        @Override
+        public boolean belongsTo(Object family) {
+            return JOB_EVENT_HANDLER_FAMILY.equals(family);
         }
     }
 }

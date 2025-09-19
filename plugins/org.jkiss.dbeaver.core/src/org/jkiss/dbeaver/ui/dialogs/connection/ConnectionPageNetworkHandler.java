@@ -145,7 +145,9 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
     public void refreshConfiguration(@Nullable DBWNetworkProfile profile) {
         loadConfiguration(profile);
 
-        configurator.loadSettings(handlerConfiguration);
+        if (handlerConfiguration != null) {
+            configurator.loadSettings(handlerConfiguration);
+        }
         configuratorPlaceholder.setRedraw(false);
 
         if (configuratorEnableState != null) {
@@ -160,7 +162,10 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
                 configuratorEnableState = ControlEnableState.disable(configuratorPlaceholder);
             }
 
-            profileProvidedHint.setText(NLS.bind("Using configuration from profile ''<a href=\"#\">{0}</a>''", profile.getProfileName()));
+            profileProvidedHint.setText(NLS.bind(
+                "Using configuration from profile ''<a href=\"#\">{0}</a>''",
+                profile.getProfileName()
+            ));
             UIUtils.setControlVisible(profileProvidedHint.getParent(), true);
         } else {
              UIUtils.setControlVisible(profileProvidedHint.getParent(), false);

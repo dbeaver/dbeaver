@@ -37,6 +37,7 @@ import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.SaveableHelper;
+import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchImages;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.dialogs.WorkbenchWizardElement;
@@ -54,19 +55,24 @@ import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
+import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.IInstanceController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -81,8 +87,8 @@ import java.awt.*;
 import java.awt.desktop.SystemEventListener;
 import java.awt.desktop.SystemSleepEvent;
 import java.awt.desktop.SystemSleepListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -97,6 +103,11 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     protected static final String WORKBENCH_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
     protected static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
     private static final String EDITORS_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Editors";
+
+    @Deprecated(since = "25.1.5")
+    private static final String PROP_PERSPECTIVE_VERSION = "dbeaver.perspectiveVersion"; //$NON-NLS-1$
+    @Deprecated(since = "25.1.5")
+    private static final String PROP_WORKBENCH_VERSION = "dbeaver.workbenchVersion"; //$NON-NLS-1$
 
     private static final String[] EXCLUDE_PREF_PAGES = {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Globalization",
@@ -127,7 +138,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     private static final String[] UI_PREF_PAGES = {
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Views",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Keys",
-            WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.browser.preferencePage",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.search.preferences.SearchPreferencePage",
             WORKBENCH_PREF_PAGE_ID + "/org.eclipse.text.quicksearch.PreferencesPage",
             WORKBENCH_PREF_PAGE_ID + "/" + EDITORS_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.FileEditors" //"File Associations"
@@ -150,35 +160,34 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
 
     private static final Set<String> fontPrefIdsToHide = Set.of(
-        ApplicationWorkbenchWindowAdvisor.TEXT_EDITOR_BLOCK_SELECTION_FONT,
-        ApplicationWorkbenchWindowAdvisor.TEXT_FONT,
-        ApplicationWorkbenchWindowAdvisor.CONSOLE_FONT,
-        ApplicationWorkbenchWindowAdvisor.DETAIL_PANE_TEXT_FONT,
-        ApplicationWorkbenchWindowAdvisor.MEMORY_VIEW_TABLE_FONT,
-        ApplicationWorkbenchWindowAdvisor.COMPARE_TEXT_FONT,
-        ApplicationWorkbenchWindowAdvisor.DIALOG_FONT,
-        ApplicationWorkbenchWindowAdvisor.VARIABLE_TEXT_FONT,
-        ApplicationWorkbenchWindowAdvisor.PART_TITLE_FONT,
-        ApplicationWorkbenchWindowAdvisor.TREE_AND_TABLE_FONT_FOR_VIEWS
+        UIFonts.Eclipse.TEXT_EDITOR_BLOCK_SELECTION_FONT,
+        UIFonts.Eclipse.TEXT_FONT,
+        UIFonts.Eclipse.CONSOLE_FONT,
+        UIFonts.Eclipse.DETAIL_PANE_TEXT_FONT,
+        UIFonts.Eclipse.MEMORY_VIEW_TABLE_FONT,
+        UIFonts.Eclipse.COMPARE_TEXT_FONT,
+        UIFonts.Eclipse.DIALOG_FONT,
+        UIFonts.Eclipse.VARIABLE_TEXT_FONT,
+        UIFonts.Eclipse.PART_TITLE_FONT,
+        UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS
     );
     
     private static final Map<String, List<String>> fontOverrides = Map.of(
-        UIFonts.DBEAVER_FONTS_MONOSPACE, List.of(
-            ApplicationWorkbenchWindowAdvisor.TEXT_EDITOR_BLOCK_SELECTION_FONT,
-            ApplicationWorkbenchWindowAdvisor.TEXT_FONT,
-            ApplicationWorkbenchWindowAdvisor.CONSOLE_FONT,
-            ApplicationWorkbenchWindowAdvisor.DETAIL_PANE_TEXT_FONT,
-            ApplicationWorkbenchWindowAdvisor.MEMORY_VIEW_TABLE_FONT,
-            ApplicationWorkbenchWindowAdvisor.COMPARE_TEXT_FONT
+        UIFonts.DBeaver.MONOSPACE_FONT, List.of(
+            UIFonts.Eclipse.TEXT_EDITOR_BLOCK_SELECTION_FONT,
+            UIFonts.Eclipse.TEXT_FONT,
+            UIFonts.Eclipse.CONSOLE_FONT,
+            UIFonts.Eclipse.DETAIL_PANE_TEXT_FONT,
+            UIFonts.Eclipse.MEMORY_VIEW_TABLE_FONT,
+            UIFonts.Eclipse.COMPARE_TEXT_FONT
         ),
-        UIFonts.DBEAVER_FONTS_MAIN_FONT, List.of(
-            ApplicationWorkbenchWindowAdvisor.DIALOG_FONT,
-            ApplicationWorkbenchWindowAdvisor.VARIABLE_TEXT_FONT,
-            ApplicationWorkbenchWindowAdvisor.PART_TITLE_FONT,
-            ApplicationWorkbenchWindowAdvisor.TREE_AND_TABLE_FONT_FOR_VIEWS
+        UIFonts.DBeaver.MAIN_FONT, List.of(
+            UIFonts.Eclipse.DIALOG_FONT,
+            UIFonts.Eclipse.VARIABLE_TEXT_FONT,
+            UIFonts.Eclipse.PART_TITLE_FONT,
+            UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS
         )
     );
-    private static boolean isForcedRestart = false;
 
     //processor must be created before we start event loop
     protected final DBPApplication application;
@@ -266,6 +275,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         filterPreferencePages();
         filterWizards();
         patchJFaceIcons();
+        resetPerspectiveIfNeeded();
 
         if (AWTUtils.isDesktopSupported()) {
             // System events
@@ -399,7 +409,9 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     }
 
     private boolean saveAndCleanup() {
-        if (getWorkbenchConfigurer().emergencyClosing() || isIsForcedRestart()) {
+        if (getWorkbenchConfigurer().emergencyClosing() ||
+            (DBWorkbench.getPlatform().getApplication() instanceof DBPApplicationDesktop ad && ad.isForcedRestart())
+        ) {
             return true;
         }
         try {
@@ -509,12 +521,41 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
         super.eventLoopIdle(display);
     }
 
-    public static boolean isIsForcedRestart() {
-        return isForcedRestart;
-    }
+    private void resetPerspectiveIfNeeded() {
+        IWorkbenchWindow window = Workbench.getInstance().getActiveWorkbenchWindow();
+        if (window == null) {
+            return;
+        }
 
-    public static void setIsForcedRestart(boolean isForcedRestart) {
-        ApplicationWorkbenchAdvisor.isForcedRestart = isForcedRestart;
+        IWorkbenchPage page = window.getActivePage();
+        if (page == null) {
+            return;
+        }
+
+        IPerspectiveDescriptor perspective = page.getPerspective();
+        if (perspective != null && !perspective.getId().equals(DBeaverPerspective.PERSPECTIVE_ID)) {
+            return;
+        }
+
+        if (!WorkbenchPatcher.needsPerspectiveReset(Workbench.getInstance())) {
+            return;
+        }
+
+        log.debug("Resetting perspective due to missing view definitions in the workbench file");
+        UIExecutionQueue.queueExec(page::resetPerspective);
+
+        DBeaverNotifications.showNotification(
+            DBeaverNotifications.NT_PERSPECTIVE_RESET,
+            CoreApplicationMessages.notification_perspective_reset_title,
+            CoreApplicationMessages.notification_perspective_reset_message,
+            null,
+            null
+        );
+
+        // Remove legacy properties
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        store.setToDefault(PROP_PERSPECTIVE_VERSION);
+        store.setToDefault(PROP_WORKBENCH_VERSION);
     }
 
     /**

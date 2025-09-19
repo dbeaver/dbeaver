@@ -105,6 +105,8 @@
                           description="Automatically inserts table aliases"/>
                 <property id="SQLEditor.ContentAssistant.proposals.long.name" label="%SQLEditor.ContentAssistant.proposals.long.name"
                           defaultValue="false" type="boolean" scopes="global,user"/>
+                <property id="SQLEditor.ContentAssistant.experimental.mode" label="%SQLEditor.ContentAssistant.experimental.mode"
+                          validValues="NEW,DEFAULT" defaultValue="NEW" type="string" scopes="global,user"/>
             </propertyGroup>
         </propertyGroup>
     </extension>

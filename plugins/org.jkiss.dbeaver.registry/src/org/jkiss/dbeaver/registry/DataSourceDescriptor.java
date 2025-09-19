@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.net.*;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
-import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.rm.RMProjectType;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
@@ -1326,14 +1325,8 @@ public class DataSourceDescriptor
         }
     }
 
-    private void handleConnectError(@NotNull Throwable e) {
-        if (!DBWorkbench.getPlatform().getApplication().isMultiuser() && !DBWorkbench.isDistributed()) {
-            // save connect error only for web or distributed product
-            return;
-        }
-        if (e instanceof DBCException connectException && connectException.getDataSource() != null) {
-            QMUtils.getDefaultHandler().handleConnectError(connectException.getDataSource(), e);
-        }
+    protected void handleConnectError(@NotNull Throwable e) {
+
     }
 
 
@@ -1961,10 +1954,16 @@ public class DataSourceDescriptor
         if (!(obj instanceof DataSourceDescriptor source)) {
             return false;
         }
-        return
-            CommonUtils.equalOrEmptyStrings(this.name, source.name) &&
-                CommonUtils.equalOrEmptyStrings(this.description, source.description) &&
-                equalConfiguration(source);
+        return isLooselyEqualTo(source) && equalConfiguration(source) && equalInternalConfiguration(source);
+    }
+
+    public boolean isLooselyEqualTo(DataSourceDescriptor source) {
+        return CommonUtils.equalOrEmptyStrings(this.name, source.name) &&
+            CommonUtils.equalOrEmptyStrings(this.description, source.description);
+    }
+
+    public boolean equalInternalConfiguration(DataSourceDescriptor source) {
+        return CommonUtils.equalObjects(this.extensions, source.extensions);
     }
 
     public boolean equalConfiguration(DataSourceDescriptor source) {
@@ -1984,7 +1983,6 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
                 CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
                 CommonUtils.equalObjects(this.folder, source.folder) &&
-                CommonUtils.equalObjects(this.extensions, source.extensions) &&
                 CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
                 CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
     }

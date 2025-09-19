@@ -156,7 +156,9 @@ public class SQLEditorContributor extends TextEditorActionContributor
                 editMenu.add(contentAssistTip);
                 editMenu.add(contentAssistInformation);
                 editMenu.add(contentFormatProposal);
-                editMenu.add(ActionUtils.makeCommandContribution(window, SQLEditorCommands.CMD_AI_SUGGESTION));
+                if (ActionUtils.findCommand(SQLEditorCommands.CMD_AI_SUGGESTION) != null) {
+                    editMenu.add(ActionUtils.makeCommandContribution(window, SQLEditorCommands.CMD_AI_SUGGESTION));
+                }
             }
             IMenuManager navMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE);
             if (navMenu != null) {

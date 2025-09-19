@@ -20,19 +20,26 @@ import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.e4.ui.css.swt.internal.theme.BootstrapTheme3x;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.css.swt.theme.IThemeManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
+
+import java.util.Collection;
 
 /**
  * UI Utils
@@ -157,4 +164,180 @@ public class UIStyles {
     public static Color getInvertedColor(Color color) {
         return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
     }
+
+    @NotNull
+    public static Color mix(@NotNull Color color1, @NotNull Color color2, float weight) {
+        // https://github.com/JFormDesigner/FlatLaf/blob/34b19f00e4488292f5dd7869205d41982bed317a/flatlaf-core/src/main/java/com/formdev/flatlaf/util/ColorFunctions.java#L133C1-L156C3
+        if (weight >= 1) {
+            return color1;
+        }
+        if (weight <= 0) {
+            return color2;
+        }
+        if (color1.equals(color2)) {
+            return color1;
+        }
+
+        int r1 = color1.getRed();
+        int g1 = color1.getGreen();
+        int b1 = color1.getBlue();
+        int a1 = color1.getAlpha();
+
+        int r2 = color2.getRed();
+        int g2 = color2.getGreen();
+        int b2 = color2.getBlue();
+        int a2 = color2.getAlpha();
+
+        return new Color(
+            Math.round(r2 + ((r1 - r2) * weight)),
+            Math.round(g2 + ((g1 - g2) * weight)),
+            Math.round(b2 + ((b1 - b2) * weight)),
+            Math.round(a2 + ((a1 - a2) * weight))
+        );
+    }
+
+    @NotNull
+    public static Color lighten(@NotNull Color color, float amount) {
+        // https://github.com/JFormDesigner/FlatLaf/blob/34b19f00e4488292f5dd7869205d41982bed317a/flatlaf-core/src/main/java/com/formdev/flatlaf/util/ColorFunctions.java#L38
+        var hsl = toHSL(color);
+        var l = hsl[2] + amount;
+        return toRGB(hsl[0], hsl[1], l, color.getAlpha() / 255f);
+    }
+
+    @NotNull
+    public static Color darken(@NotNull Color color, float amount) {
+        // https://github.com/JFormDesigner/FlatLaf/blob/34b19f00e4488292f5dd7869205d41982bed317a/flatlaf-core/src/main/java/com/formdev/flatlaf/util/ColorFunctions.java#L52
+        var hsl = toHSL(color);
+        var l = hsl[2] - amount;
+        return toRGB(hsl[0], hsl[1], l, color.getAlpha() / 255f);
+    }
+
+    /**
+     * Convert an RGB Color to HSL values.
+     * <br>
+     * Hue is specified as degrees in the range 0 - 360.
+     * Saturation and Luminance are specified as percentages in the range 0 - 1.
+     *
+     * @param color the RGB color
+     * @return an array containing HSL values: [Hue, Saturation, Luminance]
+     */
+    @NotNull
+    public static float[] toHSL(@NotNull Color color) {
+        // https://github.com/JFormDesigner/FlatLaf/blob/34b19f00e4488292f5dd7869205d41982bed317a/flatlaf-core/src/main/java/com/formdev/flatlaf/util/HSLColor.java#L260
+        float r = color.getRed() / 255f;
+        float g = color.getGreen() / 255f;
+        float b = color.getBlue() / 255f;
+        float min = Math.min(r, Math.min(g, b));
+        float max = Math.max(r, Math.max(g, b));
+
+        float h = 0;
+        if (max == min) {
+            h = 0;
+        } else if (max == r) {
+            h = ((60 * (g - b) / (max - min)) + 360) % 360;
+        } else if (max == g) {
+            h = (60 * (b - r) / (max - min)) + 120;
+        } else if (max == b) {
+            h = (60 * (r - g) / (max - min)) + 240;
+        }
+
+        float l = (max + min) / 2;
+
+        float s;
+        if (max == min) {
+            s = 0;
+        } else if (l <= .5f) {
+            s = (max - min) / (max + min);
+        } else {
+            s = (max - min) / (2 - max - min);
+        }
+
+        return new float[] {h, s, l};
+    }
+
+    /**
+     * Convert HSL values to an RGB Color.
+     *
+     * @param h hue is specified as degrees in the range 0 - 360.
+     * @param s saturation is specified as a percentage in the range 1 - 100.
+     * @param l luminance is specified as a percentage in the range 1 - 100.
+     * @return the RGB color
+     */
+    @NotNull
+    public static Color toRGB(float h, float s, float l, float alpha) {
+        // https://github.com/JFormDesigner/FlatLaf/blob/34b19f00e4488292f5dd7869205d41982bed317a/flatlaf-core/src/main/java/com/formdev/flatlaf/util/HSLColor.java#L362
+        h = h % 360f / 360f;
+        s = Math.clamp(s, 0f, 1f);
+        l = Math.clamp(l, 0f, 1f);
+        alpha = Math.clamp(alpha, 0f, 1f);
+
+        float q;
+        if (l < 0.5) {
+            q = l * (1 + s);
+        } else {
+            q = (l + s) - (s * l);
+        }
+
+        float p = 2 * l - q;
+        float r = Math.max(0, hueToRGB(p, q, h + (1f / 3f)));
+        float g = Math.max(0, hueToRGB(p, q, h));
+        float b = Math.max(0, hueToRGB(p, q, h - (1f / 3f)));
+
+        r = Math.min(r, 1f);
+        g = Math.min(g, 1f);
+        b = Math.min(b, 1f);
+
+        return new Color(
+            (int) (r * 255),
+            (int) (g * 255),
+            (int) (b * 255),
+            (int) (alpha * 255)
+        );
+    }
+
+    private static float hueToRGB(float p, float q, float h) {
+        // https://github.com/JFormDesigner/FlatLaf/blob/34b19f00e4488292f5dd7869205d41982bed317a/flatlaf-core/src/main/java/com/formdev/flatlaf/util/HSLColor.java#L409
+        if (h < 0) {
+            h += 1;
+        }
+        if (h > 1) {
+            h -= 1;
+        }
+        if (6 * h < 1) {
+            return p + ((q - p) * 6 * h);
+        }
+        if (2 * h < 1) {
+            return q;
+        }
+        if (3 * h < 2) {
+            return p + (q - p) * 6 * (2f / 3f - h);
+        }
+        return p;
+    }
+
+    /**
+     * Fixes toolbars foreground colors on macOS to ensure proper text visibility
+     */
+    public static void fixToolBarForeground(@NotNull Collection<ToolBarManager> toolbarManagers) {
+        if (!RuntimeUtils.isMacOS()) {
+            return;
+        }
+        for (ToolBarManager toolbarManager : toolbarManagers) {
+            ToolBar toolbar = toolbarManager.getControl();
+            if (toolbar != null && !toolbar.isDisposed()) {
+                fixToolBarForeground(toolbar);
+            }
+        }
+    }
+
+    public static void fixToolBarForeground(@NotNull ToolBar toolBar) {
+        if (!toolBar.isDisposed()) {
+            Color textColor = getDefaultTextForeground();
+            toolBar.setForeground(textColor);
+            for (ToolItem item : toolBar.getItems()) {
+                item.setForeground(textColor);
+            }
+        }
+    }
+
 }
