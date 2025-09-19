@@ -418,7 +418,7 @@
                     icon="icons/yellowbrick_icon.png"
                     iconBig="icons/yellowbrick_icon_big.png"
                     class="org.postgresql.Driver"
-                    sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                    sampleURL="jdbc:jb://{host}[:{port}]/[{database}]"
                     useURL="true"
                     defaultPort="5432"
                     webURL="https://yellowbrick.com/"
@@ -427,9 +427,8 @@
                     supportedConfigurationTypes="MANUAL,URL"
                     categories="sql"
                     dialect="postgresql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/io.yellowbrick:yellowbrick-jdbc:0.9.3"/>
                     <file type="license" path="licenses/external/pg.txt"/>
-                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="yellowbrick"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
