@@ -144,6 +144,7 @@ public class DBConstants {
     public static final String PROP_FEATURE_LINK_POSSIBLE = "linkPossible";
     public static final String PROP_FEATURE_HREF = "href";
     public static final String PROP_FEATURE_VIEWABLE = "viewable";
+    public static final String PROP_FEATURE_INFO = "info";
 
     public static final String PRODUCT_FEATURE_DISTRIBUTED = "distributed";
 
@@ -168,5 +169,4 @@ public class DBConstants {
     public static final String PROP_ORIGINAL_FILE_PATH = "originalFilePath";
 
     public static final String CERTIFICATE_STORAGE_FOLDER = "security";
-    public static final String LM_STAGE_MODE = "lm.stage.mode";
 }

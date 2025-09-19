@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.navigator.NavigatorResources;
  * DBNDiagramFolder
  */
 public class DBNDiagramFolder extends DBNResource {
-    private static final DBIcon FOLDER_ICON = new DBIcon("platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd_folder.png");
+    private static final DBIcon FOLDER_ICON = new DBIcon("platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd_folder.svg");
 
     private DBPImage image;
 
