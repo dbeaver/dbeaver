@@ -468,7 +468,7 @@ class DataFilterRegistry {
             @NotNull SAXReader reader,
             @Nullable String namespaceURI,
             @NotNull String localName,
-            @NotNull Attributes atts
+            @NotNull Attributes attributes
         ) throws XMLException {
             switch (localName) {
                 case "flatten-attribute-bindings": {
@@ -478,21 +478,21 @@ class DataFilterRegistry {
                 }
                 case "attribute": {
                     if (attrsInfo != null) {
-                        String attrEntryId = atts.getValue("attrEntryId");
-                        String parentAttrEntryId = atts.getValue("parentAttrEntryId");
+                        String attrEntryId = attributes.getValue("attrEntryId");
+                        String parentAttrEntryId = attributes.getValue("parentAttrEntryId");
 
                         RestoredAttribute parent = CommonUtils.isEmpty(parentAttrEntryId) ? null : attrsInfo.get(parentAttrEntryId);
                         
-                        attrsInfo.put(attrEntryId, new RestoredAttribute(parent, atts));
+                        attrsInfo.put(attrEntryId, new RestoredAttribute(parent, attributes));
                     }
                     break;
                 }
                 case "filter": {
                     curSavedDataFilter = new SavedDataFilter();
-                    curSavedDataFilter.anyConstraint = CommonUtils.toBoolean(atts.getValue("anyConstraint"));
-                    curSavedDataFilter.where = atts.getValue("where");
-                    curSavedDataFilter.order = atts.getValue("order");
-                    String objectId = atts.getValue("objectId");
+                    curSavedDataFilter.anyConstraint = CommonUtils.toBoolean(attributes.getValue("anyConstraint"));
+                    curSavedDataFilter.where = attributes.getValue("where");
+                    curSavedDataFilter.order = attributes.getValue("order");
+                    String objectId = attributes.getValue("objectId");
                     savedFilters.put(objectId, curSavedDataFilter);
                     attrsInfo = null;
                     break;
@@ -500,7 +500,7 @@ class DataFilterRegistry {
                 case "constraint": {
                     if (curSavedDataFilter != null) {
                         curSavedConstraint = null;
-                        String attrEntryId = atts.getValue("attrEntryId");
+                        String attrEntryId = attributes.getValue("attrEntryId");
                         if (CommonUtils.isNotEmpty(attrEntryId) && attrsInfo != null) {
                             DBSAttributeBase attr = attrsInfo.get(attrEntryId);
                             if (attr != null) {
@@ -510,15 +510,15 @@ class DataFilterRegistry {
                         if (curSavedConstraint == null) {
                             curSavedConstraint = new DBDAttributeConstraintBase();
                         }
-                        String name = atts.getValue("name");
-                        curSavedConstraint.setVisualPosition(CommonUtils.toInt(atts.getValue("pos")));
-                        if (atts.getValue("order") != null) {
-                            curSavedConstraint.setOrderPosition(CommonUtils.toInt(atts.getValue("order")));
-                            curSavedConstraint.setOrderDescending(CommonUtils.toBoolean(atts.getValue("orderDesc")));
+                        String name = attributes.getValue("name");
+                        curSavedConstraint.setVisualPosition(CommonUtils.toInt(attributes.getValue("pos")));
+                        if (attributes.getValue("order") != null) {
+                            curSavedConstraint.setOrderPosition(CommonUtils.toInt(attributes.getValue("order")));
+                            curSavedConstraint.setOrderDescending(CommonUtils.toBoolean(attributes.getValue("orderDesc")));
                         }
-                        curSavedConstraint.setCriteria(atts.getValue("criteria"));
-                        curSavedConstraint.setVisible(CommonUtils.getBoolean(atts.getValue("visible"), true));
-                        String operName = atts.getValue("operator");
+                        curSavedConstraint.setCriteria(attributes.getValue("criteria"));
+                        curSavedConstraint.setVisible(CommonUtils.getBoolean(attributes.getValue("visible"), true));
+                        String operName = attributes.getValue("operator");
                         if (!CommonUtils.isEmpty(operName)) {
                             try {
                                 curSavedConstraint.setOperator(DBCLogicalOperator.valueOf(operName));
@@ -526,7 +526,7 @@ class DataFilterRegistry {
                                 log.error(e);
                             }
                         }
-                        curSavedConstraint.setEntityAlias(atts.getValue("entity"));
+                        curSavedConstraint.setEntityAlias(attributes.getValue("entity"));
                         curSavedDataFilter.constraints.put(name, curSavedConstraint);
                     }
                     break;
@@ -539,7 +539,7 @@ class DataFilterRegistry {
                 }
                 case "option": {
                     if (curSavedConstraint != null) {
-                        curOptionName = CommonUtils.toString(atts.getValue("name"));
+                        curOptionName = CommonUtils.toString(attributes.getValue("name"));
                     }
                     break;
                 }
@@ -569,7 +569,7 @@ class DataFilterRegistry {
         }
 
         @Override
-        public void saxText(@Nullable SAXReader reader, @NotNull String data) throws XMLException {
+        public void saxText(@NotNull SAXReader reader, @NotNull String data) throws XMLException {
             if (isInValue) {
                 curSavedConstraint.setValue(GeneralUtils.deserializeObject(data));
             } else if (curOptionName != null) {
