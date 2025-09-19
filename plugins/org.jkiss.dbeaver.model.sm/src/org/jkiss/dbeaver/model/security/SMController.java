@@ -239,7 +239,7 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
         @Nullable String settingId
     ) throws DBException;
 
-    void addObjectSettings(
+    void setObjectSettings(
         @NotNull String objectId,
         @NotNull SMObjectType objectType,
         @NotNull Map<String, Object> settings
