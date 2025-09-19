@@ -36,6 +36,7 @@ public class OracleMessages extends NLS {
     public static String edit_oracle_dependencies_dependency_description;
     public static String edit_oracle_dependencies_dependent_name;
     public static String edit_oracle_dependencies_dependent_description;
+    public static String edit_oracle_user_disabled_fields_info_label;
     public static String oracle_password_will_expire_warn_name;
     public static String oracle_password_will_expire_warn_description;
     public static String oracle_server_session_manager_details_name;

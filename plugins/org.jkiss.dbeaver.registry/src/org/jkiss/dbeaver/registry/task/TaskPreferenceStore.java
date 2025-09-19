@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@
  */
 package org.jkiss.dbeaver.registry.task;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.preferences.AbstractPreferenceStore;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceMap;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -32,39 +33,31 @@ import java.util.Map;
  * Wrapper over simple properties
  */
 public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPPreferenceMap {
-    private DBPPreferenceStore parentStore;
+    private final DBPPreferenceStore parentStore;
     private final DBTTask task;
-    private Map<String, Object> properties;
+    private final Map<String, Object> properties;
     private boolean dirty = false;
 
-    public TaskPreferenceStore(DBTTask task) {
+    public TaskPreferenceStore(@NotNull DBTTask task) {
         this.parentStore = DBWorkbench.getPlatform().getPreferenceStore();
         this.task = task;
         this.properties = new LinkedHashMap<>(task.getProperties());
     }
 
-    public TaskPreferenceStore(Map<String, Object> properties) {
+    public TaskPreferenceStore(@NotNull Map<String, Object> properties) {
         this.parentStore = DBWorkbench.getPlatform().getPreferenceStore();
         this.task = null;
         this.properties = properties;
     }
 
+    @Nullable
     public DBPPreferenceStore getParentStore() {
         return parentStore;
     }
 
+    @NotNull
     public Map<String, Object> getProperties() {
         return properties;
-    }
-
-    @Override
-    public void addPropertyChangeListener(DBPPreferenceListener listener) {
-        addListenerObject(listener);
-    }
-
-    @Override
-    public void removePropertyChangeListener(DBPPreferenceListener listener) {
-        removeListenerObject(listener);
     }
 
     @Override
@@ -75,65 +68,66 @@ public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPP
     }
 
     @Override
-    public boolean contains(String name) {
+    public boolean contains(@NotNull String name) {
         return properties.containsKey(name);
     }
 
     @Override
-    public boolean getBoolean(String name) {
+    public boolean getBoolean(@NotNull String name) {
         return CommonUtils.toBoolean(getValue(name));
     }
 
     @Override
-    public boolean getDefaultBoolean(String name) {
+    public boolean getDefaultBoolean(@NotNull String name) {
         return CommonUtils.toBoolean(getValue(name));
     }
 
     @Override
-    public double getDouble(String name) {
+    public double getDouble(@NotNull String name) {
         return CommonUtils.toDouble(getValue(name));
     }
 
     @Override
-    public double getDefaultDouble(String name) {
+    public double getDefaultDouble(@NotNull String name) {
         return CommonUtils.toDouble(getValue(name));
     }
 
     @Override
-    public float getFloat(String name) {
+    public float getFloat(@NotNull String name) {
         return (float) CommonUtils.toDouble(getValue(name));
     }
 
     @Override
-    public float getDefaultFloat(String name) {
+    public float getDefaultFloat(@NotNull String name) {
         return getFloat(name);
     }
 
     @Override
-    public int getInt(String name) {
+    public int getInt(@NotNull String name) {
         return CommonUtils.toInt(getValue(name));
     }
 
     @Override
-    public int getDefaultInt(String name) {
+    public int getDefaultInt(@NotNull String name) {
         return getInt(name);
     }
 
     @Override
-    public long getLong(String name) {
+    public long getLong(@NotNull String name) {
         return CommonUtils.toLong(getValue(name));
     }
 
     @Override
-    public long getDefaultLong(String name) {
+    public long getDefaultLong(@NotNull String name) {
         return getLong(name);
     }
 
     @Override
-    public String getString(String name) {
+    public String getString(@NotNull String name) {
         return CommonUtils.toString(getValue(name));
     }
 
+    @Nullable
     public Object getValue(String name) {
         Object value = properties.get(name);
         if (value == null) {
@@ -143,12 +137,12 @@ public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPP
     }
 
     @Override
-    public String getDefaultString(String name) {
+    public String getDefaultString(@NotNull String name) {
         return getString(name);
     }
 
     @Override
-    public boolean isDefault(String name) {
+    public boolean isDefault(@NotNull String name) {
         return false;
     }
 
@@ -162,37 +156,37 @@ public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPP
     }
 
     @Override
-    public void setDefault(String name, double value) {
+    public void setDefault(@NotNull String name, double value) {
         // no defaults
     }
 
     @Override
-    public void setDefault(String name, float value) {
+    public void setDefault(@NotNull String name, float value) {
         // no defaults
     }
 
     @Override
-    public void setDefault(String name, int value) {
+    public void setDefault(@NotNull String name, int value) {
         // no defaults
     }
 
     @Override
-    public void setDefault(String name, long value) {
+    public void setDefault(@NotNull String name, long value) {
         // no defaults
     }
 
     @Override
-    public void setDefault(String name, String value) {
+    public void setDefault(@NotNull String name, @Nullable String value) {
         // no defaults
     }
 
     @Override
-    public void setDefault(String name, boolean value) {
+    public void setDefault(@NotNull String name, boolean value) {
         // no defaults
     }
 
     @Override
-    public void setToDefault(String name) {
+    public void setToDefault(@NotNull String name) {
         Object oldValue = properties.get(name);
         properties.remove(name);
         dirty = true;
@@ -200,7 +194,7 @@ public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPP
     }
 
     @Override
-    public void setValue(String name, double value) {
+    public void setValue(@NotNull String name, double value) {
         double oldValue = getDouble(name);
         if (oldValue != value || !isSet(name)) {
             properties.put(name, value);
@@ -210,7 +204,7 @@ public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPP
     }
 
     @Override
-    public void setValue(String name, float value) {
+    public void setValue(@NotNull String name, float value) {
         float oldValue = getFloat(name);
         if (oldValue != value || !isSet(name)) {
             properties.put(name, value);
@@ -220,7 +214,7 @@ public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPP
     }
 
     @Override
-    public void setValue(String name, int value) {
+    public void setValue(@NotNull String name, int value) {
         int oldValue = getInt(name);
         if (oldValue != value || !isSet(name)) {
             properties.put(name, value);
@@ -230,7 +224,7 @@ public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPP
     }
 
     @Override
-    public void setValue(String name, long value) {
+    public void setValue(@NotNull String name, long value) {
         long oldValue = getLong(name);
         if (oldValue != value || !isSet(name)) {
             properties.put(name, value);
@@ -240,7 +234,7 @@ public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPP
     }
 
     @Override
-    public void setValue(String name, String value) {
+    public void setValue(@NotNull String name, @Nullable String value) {
         String oldValue = getString(name);
         if (oldValue == null || !oldValue.equals(value) || !isSet(name)) {
             properties.put(name, value);
@@ -250,7 +244,7 @@ public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPP
     }
 
     @Override
-    public void setValue(String name, boolean value) {
+    public void setValue(@NotNull String name, boolean value) {
         boolean oldValue = getBoolean(name);
         if (oldValue != value || !isSet(name)) {
             properties.put(name, String.valueOf(value));
@@ -271,6 +265,7 @@ public class TaskPreferenceStore extends AbstractPreferenceStore implements DBPP
                 CommonUtils.equalObjects(properties, copy.properties);
     }
 
+    @Nullable
     @Override
     public <T> T getObject(String name) {
         return (T) properties.get(name);

@@ -144,7 +144,7 @@ public abstract class ObjectAttributeDescriptor {
         return isLazy;
     }
 
-    public boolean isLazy(Object object, boolean checkParent)
+    public boolean isLazy(@NotNull Object object, boolean checkParent)
     {
         if (object instanceof DBSObject dbso && !dbso.isPersisted()) {
             return false;
