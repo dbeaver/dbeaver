@@ -709,7 +709,7 @@ public class DBeaverLauncher {
             return new CommandLineExecuteResult(cliMode);
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
-        log("CLI detected server port: " + workspacePath);
+        log("CLI detected server port: " + serverPort);
         if (serverPort == null) {
             return new CommandLineExecuteResult(cliMode);
         }
