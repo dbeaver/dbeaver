@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -27,7 +29,6 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.InputStream;
@@ -177,21 +178,21 @@ class ViewerColumnRegistry {
         }
 
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
+        public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) {
             switch (localName) {
                 case "items":
                     break;
                 case "item":
                     curColumnState = new ArrayList<>();
-                    columnsConfig.put(atts.getValue("id"), curColumnState);
+                    columnsConfig.put(attributes.getValue("id"), curColumnState);
                     break;
                 case "column":
                     if (curColumnState != null) {
                         ColumnState col = new ColumnState();
-                        col.name = atts.getValue("name");
-                        col.visible = CommonUtils.getBoolean(atts.getValue("visible"), true);
-                        col.order = CommonUtils.toInt(atts.getValue("order"), 0);
-                        col.width = CommonUtils.toInt(atts.getValue("width"), 0);
+                        col.name = attributes.getValue("name");
+                        col.visible = CommonUtils.getBoolean(attributes.getValue("visible"), true);
+                        col.order = CommonUtils.toInt(attributes.getValue("order"), 0);
+                        col.width = CommonUtils.toInt(attributes.getValue("width"), 0);
                         if (col.width > 0) {
                             curColumnState.add(col);
                         }

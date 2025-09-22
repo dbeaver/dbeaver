@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.preferences;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
@@ -39,125 +40,125 @@ public abstract class AbstractUserPreferenceStore extends AbstractPreferenceStor
     }
 
     @Override
-    public String getString(String name) {
+    public String getString(@NotNull String name) {
         Object value = userPreferences.get(name);
         return value == null ? getDefaultString(name) : value.toString();
     }
 
     @Override
-    public boolean contains(String name) {
+    public boolean contains(@NotNull String name) {
         return userPreferences.containsKey(name) || parentStore.contains(name);
     }
 
     @Override
-    public boolean getBoolean(String name) {
+    public boolean getBoolean(@NotNull String name) {
         return toBoolean(getString(name));
     }
 
     @Override
-    public double getDouble(String name) {
+    public double getDouble(@NotNull String name) {
         return toDouble(getString(name));
     }
 
     @Override
-    public float getFloat(String name) {
+    public float getFloat(@NotNull String name) {
         return toFloat(getString(name));
     }
 
     @Override
-    public int getInt(String name) {
+    public int getInt(@NotNull String name) {
         return toInt(getString(name));
     }
 
     @Override
-    public long getLong(String name) {
+    public long getLong(@NotNull String name) {
         return toLong(getString(name));
     }
 
 
     @Override
-    public boolean getDefaultBoolean(String name) {
+    public boolean getDefaultBoolean(@NotNull String name) {
         return toBoolean(getDefaultString(name));
     }
 
     @Override
-    public double getDefaultDouble(String name) {
+    public double getDefaultDouble(@NotNull String name) {
         return toDouble(getDefaultString(name));
     }
 
     @Override
-    public float getDefaultFloat(String name) {
+    public float getDefaultFloat(@NotNull String name) {
         return toFloat(getDefaultString(name));
     }
 
     @Override
-    public int getDefaultInt(String name) {
+    public int getDefaultInt(@NotNull String name) {
         return toInt(getDefaultString(name));
     }
 
     @Override
-    public long getDefaultLong(String name) {
+    public long getDefaultLong(@NotNull String name) {
         return toLong(getDefaultString(name));
     }
 
 
     @Override
-    public void setDefault(String name, double value) {
+    public void setDefault(@NotNull String name, double value) {
         setDefault(name, String.valueOf(value));
     }
 
     @Override
-    public void setDefault(String name, float value) {
+    public void setDefault(@NotNull String name, float value) {
         setDefault(name, String.valueOf(value));
     }
 
     @Override
-    public void setDefault(String name, int value) {
+    public void setDefault(@NotNull String name, int value) {
         setDefault(name, String.valueOf(value));
     }
 
     @Override
-    public void setDefault(String name, long value) {
+    public void setDefault(@NotNull String name, long value) {
         setDefault(name, String.valueOf(value));
     }
 
     @Override
-    public void setDefault(String name, String defaultObject) {
+    public void setDefault(@NotNull String name, @Nullable String defaultObject) {
         this.parentStore.setDefault(name, defaultObject);
     }
 
     @Override
-    public void setDefault(String name, boolean value) {
+    public void setDefault(@NotNull String name, boolean value) {
         setDefault(name, String.valueOf(value));
     }
 
     @Override
-    public void setValue(String name, double value) {
+    public void setValue(@NotNull String name, double value) {
         setUserPreference(name, value);
     }
 
     @Override
-    public void setValue(String name, float value) {
+    public void setValue(@NotNull String name, float value) {
         setUserPreference(name, value);
     }
 
     @Override
-    public void setValue(String name, int value) {
+    public void setValue(@NotNull String name, int value) {
         setUserPreference(name, value);
     }
 
     @Override
-    public void setValue(String name, long value) {
+    public void setValue(@NotNull String name, long value) {
         setUserPreference(name, value);
     }
 
     @Override
-    public void setValue(String name, String value) {
+    public void setValue(@NotNull String name, @Nullable String value) {
         setUserPreference(name, value);
     }
 
     @Override
-    public void setValue(String name, boolean value) {
+    public void setValue(@NotNull String name, boolean value) {
         setUserPreference(name, value);
     }
 

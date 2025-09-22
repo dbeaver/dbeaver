@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,30 +35,34 @@ import java.util.Locale;
 /**
  * Index cache implementation
  */
-class ConstraintKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericUniqueKey, GenericTableConstraintColumn> {
+public class ConstraintKeysCache
+    extends JDBCCompositeCache<GenericStructContainer, GenericTableBase, GenericUniqueKey, GenericTableConstraintColumn> {
 
     private final GenericMetaObject pkObject;
 
-    ConstraintKeysCache(TableCache tableCache)
-    {
+    ConstraintKeysCache(TableCache tableCache) {
         super(
             tableCache,
             GenericTableBase.class,
             GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_PRIMARY_KEY, JDBCConstants.TABLE_NAME),
-            GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_PRIMARY_KEY, JDBCConstants.PK_NAME));
+            GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_PRIMARY_KEY, JDBCConstants.PK_NAME)
+        );
         pkObject = tableCache.getDataSource().getMetaObject(GenericConstants.OBJECT_PRIMARY_KEY);
     }
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTableBase forParent)
-        throws SQLException
-    {
+    protected JDBCStatement prepareObjectsStatement(
+        JDBCSession session,
+        GenericStructContainer owner,
+        GenericTableBase forParent
+    ) throws SQLException {
         try {
             return owner.getDataSource().getMetaModel().prepareUniqueConstraintsLoadStatement(
                 session,
                 owner,
-                forParent);
+                forParent
+            );
         } catch (SQLException e) {
             throw e;
         } catch (Exception e) {
@@ -77,30 +81,35 @@ class ConstraintKeysCache extends JDBCCompositeCache<GenericStructContainer, Gen
 
     @Nullable
     @Override
-    protected GenericUniqueKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTableBase parent, String pkName, JDBCResultSet dbResult)
-        throws SQLException, DBException
-    {
+    protected GenericUniqueKey fetchObject(
+        JDBCSession session,
+        GenericStructContainer owner,
+        GenericTableBase parent,
+        String pkName,
+        JDBCResultSet dbResult
+    ) throws SQLException, DBException {
         return owner.getDataSource().getMetaModel().createConstraintImpl(
             parent,
             pkName,
             owner.getDataSource().getMetaModel().getUniqueConstraintType(dbResult),
             dbResult,
-            true);
+            true
+        );
     }
 
     @Nullable
     @Override
     protected GenericTableConstraintColumn[] fetchObjectRow(
         JDBCSession session,
-        GenericTableBase parent, GenericUniqueKey object, JDBCResultSet dbResult)
-        throws SQLException, DBException
-    {
+        GenericTableBase parent,
+        GenericUniqueKey object,
+        JDBCResultSet dbResult
+    ) throws SQLException, DBException {
         return parent.getDataSource().getMetaModel().createConstraintColumnsImpl(session, parent, object, pkObject, dbResult);
     }
 
     @Override
-    protected void cacheChildren(DBRProgressMonitor monitor, GenericUniqueKey primaryKey, List<GenericTableConstraintColumn> rows)
-    {
+    protected void cacheChildren(DBRProgressMonitor monitor, GenericUniqueKey primaryKey, List<GenericTableConstraintColumn> rows) {
         primaryKey.setAttributeReferences(rows);
     }
 
