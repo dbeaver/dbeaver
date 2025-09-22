@@ -74,7 +74,7 @@ public class DataSourcePreferenceStore extends SimplePreferenceStore implements 
     }
 
     @Override
-    public void firePropertyChangeEvent(String name, Object oldValue, Object newValue) {
+    public void firePropertyChangeEvent(@NotNull String name, @Nullable Object oldValue, @Nullable Object newValue) {
         super.firePropertyChangeEvent(name, oldValue, newValue);
 
         // Forward event to global DS prefs store
