@@ -701,10 +701,12 @@ public class DBeaverLauncher {
             return new CommandLineExecuteResult(cliMode);
         }
         Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
+        System.out.println("CLI detected workspace: " + workspacePath);
         if (Files.notExists(workspacePath)) {
             return new CommandLineExecuteResult(cliMode);
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
+        System.out.println("CLI detected server port: " + workspacePath);
         if (serverPort == null) {
             return new CommandLineExecuteResult(cliMode);
         }
