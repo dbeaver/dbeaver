@@ -53,16 +53,16 @@ public class OpenAIClient implements Closeable {
     private static final String DATA_EVENT = "data: ";
     private static final String EVENT_EVENT = "event: ";
 
-    private static final Duration TIMEOUT = Duration.ofSeconds(30);
-    private static final Gson GSON = JSONUtils.GSON;
+    protected static final Duration TIMEOUT = Duration.ofSeconds(30);
+    protected static final Gson GSON = JSONUtils.GSON;
     public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
     public static final String EVENT_TYPE_ITEM_DONE = "response.output_item.done";
     public static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
     public static final String EVENT_TYPE_TEXT_DELTA = "response.output_text.delta";
 
-    private final String baseUrl;
-    private final List<HttpRequestFilter> requestFilters;
-    private final MonitoredHttpClient client = new MonitoredHttpClient(HttpClient.newBuilder().build());
+    protected final String baseUrl;
+    protected final List<HttpRequestFilter> requestFilters;
+    protected final MonitoredHttpClient client = new MonitoredHttpClient(HttpClient.newBuilder().build());
 
     public OpenAIClient(
         @NotNull String baseUrl,
@@ -166,35 +166,6 @@ public class OpenAIClient implements Closeable {
             listener::error,
             listener::close
         );
-    }
-
-    public List<float[]> embedTexts(
-        DBRProgressMonitor monitor,
-        List<String> texts,
-        String model,
-        int dimension
-    ) throws DBException {
-        CreateEmbeddings createEmbeddingsDto = new CreateEmbeddings(
-            texts,
-            model,
-            dimension,
-            CreateEmbeddings.Encoding.FLOAT
-        );
-
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(baseUrl, "embeddings"))
-            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(createEmbeddingsDto)))
-            .timeout(TIMEOUT)
-            .build();
-
-        HttpResponse<String> response = client.send(monitor, applyFilters(request));
-        if (response.statusCode() == 200) {
-            return GSON.fromJson(response.body(), EmbeddingObjectList.class).data().stream()
-                .map(EmbeddingObject::embedding)
-                .toList();
-        } else {
-            throw new DBException("Request failed: " + response.statusCode() + ", body=" + response.body());
-        }
     }
 
     @Override
