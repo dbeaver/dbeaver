@@ -110,6 +110,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
     private static final String STARTUP_ACTIONS_FILE = "dbeaver-startup-actions.properties";
     private static final String RESET_USER_PREFERENCES = "reset_user_preferences";
     private static final String RESET_WORKSPACE_CONFIGURATION = "reset_workspace_configuration";
+    private static final String DEFAULT_PROJECT_NAME = "General";
 
     private final Path FILE_WITH_WORKSPACES;
     private final String WORKSPACE_DIR_CURRENT;
@@ -175,6 +176,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return DBeaverActivator.getInstance().getPreferences();
     }
 
+    @NotNull
     @Override
     public Object start(IApplicationContext context) {
         instance = this;
@@ -741,12 +743,13 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         return null;
     }
 
+    @Nullable
     @Override
     public String getDefaultProjectName() {
-        return "General";
+        return DEFAULT_PROJECT_NAME;
     }
 
-    private int showMessageBox(String title, String message, int style) {
+    private int showMessageBox(@NotNull String title, String message, int style) {
         // Can't lock specified path
         Shell shell = new Shell(getDisplay(), SWT.ON_TOP);
         shell.setText(GeneralUtils.getProductTitle());
