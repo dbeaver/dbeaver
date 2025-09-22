@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,9 +44,9 @@ public class DBXTreeFolder extends DBXTreeNode {
     private String type;
     private String label;
     private String description;
-    private String optionalItem;
+    private final String optionalItem;
 
-    private boolean isOptional;
+    private final boolean isOptional;
     private boolean isAdminFolder;
 
     private IConfigurationElement injectedConfig;
@@ -55,9 +55,9 @@ public class DBXTreeFolder extends DBXTreeNode {
     private ItemType[] itemTypes = null;
 
     public static class ItemType {
-        private String className;
-        private String itemType;
-        private DBPImage itemIcon;
+        private final String className;
+        private final String itemType;
+        private final DBPImage itemIcon;
 
         private ItemType(String className, String itemType, DBPImage itemIcon) {
             this.className = className;
@@ -144,15 +144,17 @@ public class DBXTreeFolder extends DBXTreeNode {
         if (CommonUtils.isNotEmpty(id)) {
             return id;
         }
-        String childId = getChildren()
-            .stream()
-            .filter(child -> child instanceof DBXTreeItem)
-            .map(child -> (DBXTreeItem) child)
-            .map(DBXTreeItem::getPath)
-            .filter(CommonUtils::isNotEmpty)
-            .collect(Collectors.joining("_"));
-        if (CommonUtils.isNotEmpty(childId)) {
-            return childId;
+        if (getChildren() != null) {
+            String childId = getChildren()
+                .stream()
+                .filter(child -> child instanceof DBXTreeItem)
+                .map(child -> (DBXTreeItem) child)
+                .map(DBXTreeItem::getPath)
+                .filter(CommonUtils::isNotEmpty)
+                .collect(Collectors.joining("_"));
+            if (CommonUtils.isNotEmpty(childId)) {
+                return childId;
+            }
         }
         log.warn("Type will be used as id: " + type);
         return type;
@@ -179,7 +181,9 @@ public class DBXTreeFolder extends DBXTreeNode {
             if (injectedConfig != null) {
                 injectedLabel = injectedConfig.getAttribute("changeFolderLabel", locale);
             }
-            return CommonUtils.isNotEmpty(injectedLabel) ? injectedLabel : getConfig().getAttribute("label", locale);
+            IConfigurationElement config = getConfig();
+            return CommonUtils.isNotEmpty(injectedLabel) ? injectedLabel :
+                (config == null ? getType() : config.getAttribute("label", locale));
         }
     }
 
@@ -199,7 +203,7 @@ public class DBXTreeFolder extends DBXTreeNode {
 
     @NotNull
     @Override
-    public List<DBXTreeNode> getChildren(DBNNode context) {
+    public List<DBXTreeNode> getChildren(@Nullable DBNNode context) {
         List<DBXTreeNode> children = super.getChildren(context);
         if (!CommonUtils.isEmpty(contributedCategories) && context instanceof DBNDatabaseNode) {
             // Add contributed editors
@@ -229,17 +233,20 @@ public class DBXTreeFolder extends DBXTreeNode {
         return children;
     }
 
-    public DBXTreeItem getChildByPath(String path) {
-        for (DBXTreeNode node : getChildren()) {
-            if (node instanceof DBXTreeItem && path.equals(((DBXTreeItem) node).getPath())) {
-                return (DBXTreeItem) node;
+    @Nullable
+    public DBXTreeItem getChildByPath(@NotNull String path) {
+        if (getChildren() != null) {
+            for (DBXTreeNode node : getChildren()) {
+                if (node instanceof DBXTreeItem treeItem && path.equals(treeItem.getPath())) {
+                    return treeItem;
+                }
             }
         }
         return null;
     }
 
     @Override
-    protected boolean isVisible(DBNNode context) {
+    protected boolean isVisible(@Nullable DBNNode context) {
         if (!super.isVisible(context)) {
             return false;
         }

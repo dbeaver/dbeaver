@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.sql.registry;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -123,28 +125,25 @@ public class SQLQueryParameterRegistry {
 
     private class ParametersParser implements SAXListener {
         private String curParameterName, curParameterValue;
-        private StringBuilder legacyParameterValue = new StringBuilder();
+        private final StringBuilder legacyParameterValue = new StringBuilder();
 
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
-            throws XMLException {
+        public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) {
             if (localName.equals(TAG_PARAMETER)) {
-                curParameterName = atts.getValue("name");
-                curParameterValue = atts.getValue("value");
+                curParameterName = attributes.getValue("name");
+                curParameterValue = attributes.getValue("value");
             }
         }
 
         @Override
-        public void saxText(SAXReader reader, String data)
-            throws XMLException {
+        public void saxText(@NotNull SAXReader reader, @NotNull String data) {
             if (curParameterName != null) {
                 legacyParameterValue.append(data);
             }
         }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName)
-            throws XMLException {
+        public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) {
             if (localName.equals(TAG_PARAMETER) && curParameterName != null) {
                 if (curParameterValue == null) {
                     String legacyValue = legacyParameterValue.toString().trim();
