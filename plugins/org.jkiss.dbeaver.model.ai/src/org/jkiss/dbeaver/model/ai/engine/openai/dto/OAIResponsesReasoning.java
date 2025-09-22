@@ -18,37 +18,12 @@ package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
 import com.google.gson.annotations.SerializedName;
 
-/**
- * The OpenAI resources used by a request
- */
-public class Usage {
-    /**
-     * The number of prompt tokens used.
-     */
-    @SerializedName("prompt_tokens")
-    private long promptTokens;
+public class OAIResponsesReasoning {
 
-    /**
-     * The number of completion tokens used.
-     */
-    @SerializedName("completion_tokens")
-    private long completionTokens;
+    public String effort;
+    @SerializedName("generate_summary")
+    public String generateSummary;
+    public String summary;
 
-    /**
-     * The number of total tokens used
-     */
-    @SerializedName("total_tokens")
-    private long totalTokens;
 
-    public long getPromptTokens() {
-        return promptTokens;
-    }
-
-    public long getCompletionTokens() {
-        return completionTokens;
-    }
-
-    public long getTotalTokens() {
-        return totalTokens;
-    }
 }
