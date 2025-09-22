@@ -605,6 +605,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             super(tableCache, SQLServerTableBase.class, "table_name", "name");
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema schema, SQLServerTableBase forParent) throws SQLException {
 

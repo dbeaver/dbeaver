@@ -74,6 +74,7 @@ public interface DBPApplication {
      * Application information details.
      * Like license info or some custom produce info
      */
+    @Nullable
     String getInfoDetails(DBRProgressMonitor monitor);
 
     /**

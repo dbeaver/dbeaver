@@ -45,7 +45,7 @@ import java.util.*;
  * Each row object refers to some other DB objects.
  * Each composite object belongs to some parent object (table usually) and it's name is unique within it's parent.
  * Each row object name is unique within main object.
- *
+ * <p>
  * Examples: table index, constraint.
  */
 public abstract class JDBCCompositeCache<
@@ -190,11 +190,7 @@ public abstract class JDBCCompositeCache<
         super.cacheObject(object);
         synchronized (objectCache) {
             PARENT parent = getParent(object);
-            List<OBJECT> objects = objectCache.get(parent);
-            if (objects == null) {
-                objects = new ArrayList<>();
-                objectCache.put(parent, objects);
-            }
+            List<OBJECT> objects = objectCache.computeIfAbsent(parent, k -> new ArrayList<>());
             objects.add(object);
         }
     }
@@ -217,28 +213,17 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public void clearObjectCache(@NotNull PARENT forParent)
-    {
-        if (forParent == null) {
-            super.clearCache();
-            objectCache.clear();
-        } else {
-            List<OBJECT> removedObjects = objectCache.remove(forParent);
-            if (removedObjects != null) {
-                for (OBJECT obj : removedObjects) {
-                    super.removeObject(obj, false);
-                }
+    public void clearObjectCache(@NotNull PARENT forParent) {
+        List<OBJECT> removedObjects = objectCache.remove(forParent);
+        if (removedObjects != null) {
+            for (OBJECT obj : removedObjects) {
+                super.removeObject(obj, false);
             }
         }
     }
 
-    public void setObjectCache(PARENT forParent, List<OBJECT> objects)
-    {
-    }
-
     @Override
-    public void clearCache()
-    {
+    public void clearCache() {
         synchronized (objectCache) {
             this.objectCache.clear();
         }
@@ -252,11 +237,7 @@ public abstract class JDBCCompositeCache<
             objectCache.clear();
             for (OBJECT object : objects) {
                 PARENT parent = getParent(object);
-                List<OBJECT> parentObjects = objectCache.get(parent);
-                if (parentObjects == null) {
-                    parentObjects = new ArrayList<>();
-                    objectCache.put(parent, parentObjects);
-                }
+                List<OBJECT> parentObjects = objectCache.computeIfAbsent(parent, k -> new ArrayList<>());
                 parentObjects.add(object);
             }
         }
@@ -304,91 +285,83 @@ public abstract class JDBCCompositeCache<
         monitor.beginTask("Load composite cache", 1);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load composite objects")) {
 
-            JDBCStatement dbStat = prepareObjectsStatement(session, owner, forParent);
-            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-            try {
+            try (JDBCStatement dbStat = prepareObjectsStatement(session, owner, forParent)) {
+                dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 dbStat.executeStatement();
                 JDBCResultSet dbResult = dbStat.getResultSet();
-                if (dbResult != null) try {
-                    while (dbResult.next()) {
-                        if (monitor.isCanceled()) {
-                            return;
-                        }
-                        String parentName = forParent != null ?
-                            forParent.getName() :
-                            (parentColumnName instanceof Number ?
-                                JDBCUtils.safeGetString(dbResult, ((Number)parentColumnName).intValue()) :
-                                JDBCUtils.safeGetStringTrimmed(dbResult, parentColumnName.toString()));
-                        String objectName = objectColumnName instanceof Number ?
-                            JDBCUtils.safeGetString(dbResult, ((Number)objectColumnName).intValue()) :
-                            JDBCUtils.safeGetStringTrimmed(dbResult, objectColumnName.toString());
+                if (dbResult != null)
+                    try {
+                        while (dbResult.next()) {
+                            if (monitor.isCanceled()) {
+                                return;
+                            }
+                            String parentName = forParent != null ?
+                                forParent.getName() :
+                                (parentColumnName instanceof Number ?
+                                    JDBCUtils.safeGetString(dbResult, ((Number) parentColumnName).intValue()) :
+                                    JDBCUtils.safeGetStringTrimmed(dbResult, parentColumnName.toString()));
+                            String objectName = objectColumnName instanceof Number ?
+                                JDBCUtils.safeGetString(dbResult, ((Number) objectColumnName).intValue()) :
+                                JDBCUtils.safeGetStringTrimmed(dbResult, objectColumnName.toString());
 
-                        if (CommonUtils.isEmpty(objectName)) {
-                            // Use default name
-                            objectName = getDefaultObjectName(dbResult, parentName);
-                        }
+                            if (CommonUtils.isEmpty(objectName)) {
+                                // Use default name
+                                objectName = getDefaultObjectName(dbResult, parentName);
+                            }
 
-                        if (forParent == null && CommonUtils.isEmpty(parentName)) {
-                            // No parent - can't evaluate it
-                            log.debug("Empty parent name in " + this);
-                            continue;
-                        }
+                            if (forParent == null && CommonUtils.isEmpty(parentName)) {
+                                // No parent - can't evaluate it
+                                log.debug("Empty parent name in " + this);
+                                continue;
+                            }
 
-                        PARENT parent = forParent;
-                        if (parent == null) {
-                            parent = parentCache.getObject(monitor, owner, parentName, parentType);
+                            PARENT parent = forParent;
                             if (parent == null) {
-                                log.debug("Object '" + objectName + "' owner '" + parentName + "' not found");
-                                continue;
+                                parent = parentCache.getObject(monitor, owner, parentName, parentType);
+                                if (parent == null) {
+                                    log.debug("Object '" + objectName + "' owner '" + parentName + "' not found");
+                                    continue;
+                                }
                             }
-                        }
-                        synchronized (objectCache) {
-                            if (objectCache.containsKey(parent)) {
-                                // Already cached
-                                continue;
+                            synchronized (objectCache) {
+                                if (objectCache.containsKey(parent)) {
+                                    // Already cached
+                                    continue;
+                                }
                             }
-                        }
-                        // Add to map
-                        Map<String, ObjectInfo> objectMap = parentObjectMap.get(parent);
-                        if (objectMap == null) {
-                            objectMap = new TreeMap<>();
-                            parentObjectMap.put(parent, objectMap);
-                        }
+                            // Add to map
+                            Map<String, ObjectInfo> objectMap = parentObjectMap.computeIfAbsent(parent, k -> new TreeMap<>());
 
-                        ObjectInfo objectInfo = objectMap.get(objectName);
-                        if (objectInfo == null) {
-                            OBJECT object = fetchObject(session, owner, parent, objectName, dbResult);
-                            if (object == null || !isValidObject(monitor, owner, object)) {
-                                // Can't fetch object
+                            ObjectInfo objectInfo = objectMap.get(objectName);
+                            if (objectInfo == null) {
+                                OBJECT object = fetchObject(session, owner, parent, objectName, dbResult);
+                                if (object == null || !isValidObject(monitor, owner, object)) {
+                                    // Can't fetch object
+                                    continue;
+                                }
+                                objectName = object.getName();
+                                objectInfo = new ObjectInfo(object);
+                                objectMap.put(objectName, objectInfo);
+                            }
+                            ROW_REF[] rowRef = fetchObjectRow(session, parent, objectInfo.object, dbResult);
+                            if (rowRef == null || rowRef.length == 0) {
+                                if (!isEmptyObjectRowsAllowed()) {
+                                    // At least one of rows is broken.
+                                    // So entire object is broken, let's just skip it.
+                                    objectInfo.broken = true;
+                                    //log.debug("Object '" + objectName + "' metadata corrupted - NULL child returned");
+                                }
                                 continue;
                             }
-                            objectName = object.getName();
-                            objectInfo = new ObjectInfo(object);
-                            objectMap.put(objectName, objectInfo);
-                        }
-                        ROW_REF[] rowRef = fetchObjectRow(session, parent, objectInfo.object, dbResult);
-                        if (rowRef == null || rowRef.length == 0) {
-                            if (!isEmptyObjectRowsAllowed()) {
-                                // At least one of rows is broken.
-                                // So entire object is broken, let's just skip it.
-                                objectInfo.broken = true;
-                                //log.debug("Object '" + objectName + "' metadata corrupted - NULL child returned");
-                            }
-                            continue;
-                        }
-                        for (ROW_REF row : rowRef) {
-                            if (row != null) {
-                                objectInfo.rows.add(row);
+                            for (ROW_REF row : rowRef) {
+                                if (row != null) {
+                                    objectInfo.rows.add(row);
+                                }
                             }
                         }
+                    } finally {
+                        dbResult.close();
                     }
-                }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
             }
         } catch (SQLException ex) {
             if (JDBCUtils.isFeatureNotSupportedError(dataSource, ex)) {
@@ -462,7 +435,7 @@ public abstract class JDBCCompositeCache<
             for (Map.Entry<PARENT, Map<String, ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
                 for (ObjectInfo objectInfo : colEntry.getValue().values()) {
                     // Sort rows using order comparator
-                    if (objectInfo.rows.size() > 1 && objectInfo.rows.get(0) instanceof DBPObjectWithOrdinalPosition) {
+                    if (objectInfo.rows.size() > 1 && objectInfo.rows.getFirst() instanceof DBPObjectWithOrdinalPosition) {
                         objectInfo.rows.sort((Comparator<? super ROW_REF>) DBUtils.orderComparator());
                     }
 
