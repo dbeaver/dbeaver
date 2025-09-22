@@ -1724,7 +1724,7 @@ public class UIUtils {
     }
 
     public static Point drawMessageOverControl(Control control, GC gc, String message, int offset) {
-        Rectangle bounds = control.getBounds();
+        Rectangle bounds = getControlPaintBounds(control);
         Point textSize = gc.textExtent(message);
 
         if (textSize.x > bounds.width) {
@@ -1747,6 +1747,26 @@ public class UIUtils {
         }
 
         return textSize;
+    }
+
+    @NotNull
+    private static Rectangle getControlPaintBounds(@NotNull Control control) {
+        Rectangle bounds;
+        if (control instanceof Scrollable scrollable) {
+            bounds = scrollable.getClientArea();
+        } else {
+            bounds = control.getBounds();
+        }
+        if (control instanceof Tree tree) {
+            int height = tree.getHeaderHeight();
+            bounds.y += height;
+            bounds.height -= height;
+        } else if (control instanceof Table table) {
+            int height = table.getHeaderHeight();
+            bounds.y += height;
+            bounds.height -= height;
+        }
+        return bounds;
     }
 
     public static SharedTextColors getSharedTextColors() {
