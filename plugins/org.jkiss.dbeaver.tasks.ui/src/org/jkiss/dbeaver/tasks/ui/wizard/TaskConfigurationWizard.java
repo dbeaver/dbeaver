@@ -455,10 +455,10 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 DurationPickerDialog dialog = new DurationPickerDialog(
                     getShell(),
                     "Specify custom duration",
-                    Duration.ofSeconds(task.getMaxExecutionTime())
+                    task.getMaxExecutionTime()
                 );
                 if (dialog.open() == IDialogConstants.OK_ID) {
-                    task.setMaxExecutionTime(Math.toIntExact(dialog.getDuration().toSeconds()));
+                    task.setMaxExecutionTime(dialog.getDuration());
                 }
             }
         }
@@ -476,13 +476,12 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 if (!(getCurrentTask() instanceof TaskImpl task)) {
                     return;
                 }
-                task.setMaxExecutionTime(Math.toIntExact(duration.toSeconds()));
+                task.setMaxExecutionTime(duration);
             }
 
             @Override
             public boolean isChecked() {
-                return getCurrentTask() instanceof TaskImpl task
-                    && Duration.ofSeconds(task.getMaxExecutionTime()).equals(duration);
+                return getCurrentTask() instanceof TaskImpl task && task.getMaxExecutionTime().equals(duration);
             }
         }
 
@@ -496,7 +495,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 if (!(getCurrentTask() instanceof TaskImpl task)) {
                     return;
                 }
-                task.setMaxExecutionTime(0);
+                task.setMaxExecutionTime(Duration.ZERO);
             }
         }
 
@@ -511,8 +510,8 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 m.add(new PresetTimeoutAction(i, presets.get(i)));
             }
 
-            if (getCurrentTask() instanceof TaskImpl task && task.getMaxExecutionTime() != 0) {
-                Duration duration = Duration.ofSeconds(task.getMaxExecutionTime());
+            if (getCurrentTask() instanceof TaskImpl task && task.getMaxExecutionTime().isPositive()) {
+                Duration duration = task.getMaxExecutionTime();
                 if (!presets.contains(duration)) {
                     m.add(new PresetTimeoutAction(presets.size(), duration));
                 }

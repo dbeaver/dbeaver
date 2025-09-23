@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -430,7 +431,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                         taskFolder,
                         state
                     );
-                    taskConfig.setMaxExecutionTime(maxExecutionTime);
+                    taskConfig.setMaxExecutionTime(Duration.ofSeconds(maxExecutionTime));
                     if (taskFolder != null) {
                         taskFolder.addTaskToFolder(taskConfig);
                         if (!tasksFolders.contains(taskFolder)) {
@@ -563,8 +564,8 @@ public class TaskManagerImpl implements DBTTaskManager {
             JSONUtils.field(jsonWriter, TaskConstants.TAG_CREATE_TIME, systemDateFormat.format(task.getCreateTime()));
             JSONUtils.field(jsonWriter, TaskConstants.TAG_UPDATE_TIME, systemDateFormat.format(task.getUpdateTime()));
             JSONUtils.serializeProperties(jsonWriter, TaskConstants.TAG_STATE, task.getProperties(), true);
-            if (task.getMaxExecutionTime() > 0) {
-                JSONUtils.field(jsonWriter, TaskConstants.TAG_MAX_EXEC_TIME, task.getMaxExecutionTime());
+            if (task.getMaxExecutionTime().isPositive()) {
+                JSONUtils.field(jsonWriter, TaskConstants.TAG_MAX_EXEC_TIME, task.getMaxExecutionTime().toSeconds());
             }
             jsonWriter.endObject();
         }
@@ -586,7 +587,7 @@ public class TaskManagerImpl implements DBTTaskManager {
                 if (taskJob.isFinished() || taskJob.isCanceled()) {
                     continue;
                 }
-                taskJob.cancelByTimeReached();
+                taskJob.checkCanceledByTimeout();
             }
             schedule(TASK_SLEEP_TIME);
             return Status.OK_STATUS;
