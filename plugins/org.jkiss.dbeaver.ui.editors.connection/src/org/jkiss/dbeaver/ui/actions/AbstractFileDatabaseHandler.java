@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
@@ -87,6 +88,11 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
 
         UIUtils.runWithMonitor(monitor -> {
             if (dsContainer.isConnected() || dsContainer.connect(monitor, true, true)) {
+                if (dsContainer.getRegistry() instanceof DataSourceRegistry<?> registry) {
+                    // Ensure the node is created
+                    registry.flushDataSourceEvents();
+                }
+
                 DBPDataSource dataSource = dsContainer.getDataSource();
                 DBNDatabaseNode openNode = DBNUtils.getDefaultDatabaseNodeToOpen(monitor, dataSource);
 
