@@ -14,33 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-public class ChatFunctionCall {
+package org.jkiss.dbeaver.model.exec;
 
-    /**
-     * The name of the function being called
-     */
-    private String name;
+/**
+ * Exception which provides a message for users.
+ * It is not actually an error but a way to signal user to change input or
+ * a configuration.
+ * Used in places such as SQL editor.
+ * UI should show just an informational panel instead of error dialog/panel.
+ */
+public class DBCMessageException extends DBCException {
 
-    /**
-     * The arguments of the call produced by the model, represented as a JsonNode for easy manipulation.
-     */
-    private Object arguments;
-
-    public String getName() {
-        return name;
+    public DBCMessageException(String message) {
+        super(message);
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Object getArguments() {
-        return arguments;
-    }
-
-    public void setArguments(Object arguments) {
-        this.arguments = arguments;
-    }
 }

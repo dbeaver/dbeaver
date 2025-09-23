@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.runtime.properties;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -89,7 +90,8 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 
     @Override
     @SuppressWarnings("unchecked")
-    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object editableValue, ObjectPropertyDescriptor prop, Object newValue)
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull Object editableValue, @NotNull ObjectPropertyDescriptor prop, @Nullable
+    Object newValue)
         throws IllegalArgumentException
     {
         if (prop.getValueTransformer() != null) {
@@ -206,13 +208,13 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     }
 
     @Override
-    public boolean isPropertyResettable(Object object, ObjectPropertyDescriptor prop)
+    public boolean isPropertyResettable(@NotNull Object object, @NotNull ObjectPropertyDescriptor prop)
     {
         return (lastCommand != null && lastCommand.property == prop && lastCommand.getObject() == object);
     }
 
     @Override
-    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor prop)
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, @NotNull Object object, @NotNull ObjectPropertyDescriptor prop)
     {
 //        final DBECommandComposite compositeCommand = (DBECommandComposite)getCommandContext().getUserParams().get(obj);
 //        if (compositeCommand != null) {

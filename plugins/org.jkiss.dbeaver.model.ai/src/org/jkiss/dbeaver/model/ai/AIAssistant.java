@@ -39,7 +39,7 @@ public interface AIAssistant {
      * @return generated text
      */
     @NotNull
-    String generateText(
+    AIAssistantResponse generateText(
         @NotNull DBRProgressMonitor monitor,
         @Nullable AIDatabaseContext context,
         @NotNull AIPromptGenerator systemGenerator,

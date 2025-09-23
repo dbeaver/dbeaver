@@ -88,12 +88,12 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     private DataSourceProviderRegistry() {
         globalDataSourcePreferenceStore = new SimplePreferenceStore() {
             @Override
-            public void addPropertyChangeListener(DBPPreferenceListener listener) {
+            public void addPropertyChangeListener(@NotNull DBPPreferenceListener listener) {
                 super.addPropertyChangeListener(listener);
             }
 
             @Override
-            public void removePropertyChangeListener(DBPPreferenceListener listener) {
+            public void removePropertyChangeListener(@NotNull DBPPreferenceListener listener) {
                 super.removePropertyChangeListener(listener);
             }
 
@@ -606,12 +606,14 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Configuration storages
 
+    @NotNull
     public List<DataSourceConfigurationStorageDescriptor> getDataSourceConfigurationStorages() {
         return dataSourceConfigurationStorageDescriptors;
     }
 
+    @Nullable
     @Override
-    public DBPDataSourceOriginProvider getDataSourceOriginProvider(String id) {
+    public DBPDataSourceOriginProvider getDataSourceOriginProvider(@NotNull String id) {
         DataSourceOriginProviderDescriptor descriptor = dataSourceOrigins.get(id);
         if (descriptor == null) {
             return null;
@@ -634,14 +636,17 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     //////////////////////////////////////////////
     // Auth models
 
+    @Nullable
     public DataSourceAuthModelDescriptor getAuthModel(String id) {
         return authModels.get(id);
     }
 
+    @NotNull
     public List<DataSourceAuthModelDescriptor> getAllAuthModels() {
         return new ArrayList<>(authModels.values());
     }
 
+    @NotNull
     @Override
     public List<? extends DBPAuthModelDescriptor> getApplicableAuthModels(DBPDriver driver) {
         List<DataSourceAuthModelDescriptor> models = new ArrayList<>();
@@ -673,24 +678,24 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
      * @return URL or null if specified resource not found
      */
     @Nullable
-    public URL findResourceURL(String resourcePath) {
+    public URL findResourceURL(@NotNull String resourcePath) {
         ExternalResourceDescriptor descriptor = resourceContributions.get(resourcePath);
         return descriptor == null ? null : descriptor.getURL();
     }
 
-    public void addDataSourceRegistryListener(DBPRegistryListener listener) {
+    public void addDataSourceRegistryListener(@NotNull DBPRegistryListener listener) {
         synchronized (registryListeners) {
             registryListeners.add(listener);
         }
     }
 
-    public void removeDataSourceRegistryListener(DBPRegistryListener listener) {
+    public void removeDataSourceRegistryListener(@NotNull DBPRegistryListener listener) {
         synchronized (registryListeners) {
             registryListeners.remove(listener);
         }
     }
 
-    void fireRegistryChange(DataSourceRegistry<?> registry, boolean load) {
+    void fireRegistryChange(@NotNull DataSourceRegistry<?> registry, boolean load) {
 
         forEachRegistryListener(l -> {
             if (load) {
@@ -705,7 +710,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         forEachRegistryListener(DBPRegistryListener::handleRegistryReload);
     }
 
-    private void forEachRegistryListener(Consumer<DBPRegistryListener> consumer) {
+    private void forEachRegistryListener(@NotNull Consumer<DBPRegistryListener> consumer) {
         List<DBPRegistryListener> lCopy;
         synchronized (registryListeners) {
             lCopy = new ArrayList<>(registryListeners);
@@ -717,10 +722,10 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
 
     class ConnectionTypeParser implements SAXListener {
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
+        public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes)
             throws XMLException {
             if (localName.equals(RegistryConstants.TAG_TYPE)) {
-                String typeId = atts.getValue(RegistryConstants.ATTR_ID);
+                String typeId = attributes.getValue(RegistryConstants.ATTR_ID);
                 DBPConnectionType origType = null;
                 for (DBPConnectionType ct : DBPConnectionType.SYSTEM_TYPES) {
                     if (ct.getId().equals(typeId)) {
@@ -730,32 +735,32 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
                 }
                 DBPConnectionType connectionType = new DBPConnectionType(
                     typeId,
-                    atts.getValue(RegistryConstants.ATTR_NAME),
-                    atts.getValue(RegistryConstants.ATTR_COLOR),
-                    atts.getValue(RegistryConstants.ATTR_DESCRIPTION),
-                    CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT), origType != null && origType.isAutocommit()),
-                    CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE), origType != null && origType.isConfirmExecute()),
-                    CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_DATA_CHANGE), origType != null && origType.isConfirmDataChange()),
+                    attributes.getValue(RegistryConstants.ATTR_NAME),
+                    attributes.getValue(RegistryConstants.ATTR_COLOR),
+                    attributes.getValue(RegistryConstants.ATTR_DESCRIPTION),
+                    CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_AUTOCOMMIT), origType != null && origType.isAutocommit()),
+                    CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE), origType != null && origType.isConfirmExecute()),
+                    CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_CONFIRM_DATA_CHANGE), origType != null && origType.isConfirmDataChange()),
                     CommonUtils.getBoolean(
-                        atts.getValue(RegistryConstants.ATTR_SMART_COMMIT),
+                        attributes.getValue(RegistryConstants.ATTR_SMART_COMMIT),
                         origType != null && origType.isSmartCommit()),
                     CommonUtils.getBoolean(
-                        atts.getValue(RegistryConstants.ATTR_SMART_COMMIT_RECOVER),
+                        attributes.getValue(RegistryConstants.ATTR_SMART_COMMIT_RECOVER),
                         origType != null && origType.isSmartCommitRecover()),
                     CommonUtils.getBoolean(
-                        atts.getValue(RegistryConstants.ATTR_AUTO_CLOSE_TRANSACTIONS),
+                        attributes.getValue(RegistryConstants.ATTR_AUTO_CLOSE_TRANSACTIONS),
                         origType != null && origType.isAutoCloseTransactions()),
                     CommonUtils.toInt(
-                        atts.getValue(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD),
+                        attributes.getValue(RegistryConstants.ATTR_CLOSE_TRANSACTIONS_PERIOD),
                         origType != null ? origType.getCloseIdleTransactionPeriod() : DBPConnectionType.DEFAULT_TYPE.getCloseIdleTransactionPeriod()),
                     CommonUtils.getBoolean(
-                        atts.getValue(RegistryConstants.ATTR_AUTO_CLOSE_CONNECTIONS),
+                        attributes.getValue(RegistryConstants.ATTR_AUTO_CLOSE_CONNECTIONS),
                         origType != null && origType.isAutoCloseConnections()),
                     CommonUtils.toInt(
-                        atts.getValue(RegistryConstants.ATTR_CLOSE_CONNECTIONS_PERIOD),
+                        attributes.getValue(RegistryConstants.ATTR_CLOSE_CONNECTIONS_PERIOD),
                         origType != null ? origType.getCloseIdleConnectionPeriod() : DBPConnectionType.DEFAULT_TYPE.getCloseIdleConnectionPeriod())
                     );
-                String modifyPermissionList = atts.getValue("modifyPermission");
+                String modifyPermissionList = attributes.getValue("modifyPermission");
                 if (!CommonUtils.isEmpty(modifyPermissionList)) {
                     List<DBPDataSourcePermission> permList = new ArrayList<>();
                     for (String permItem : modifyPermissionList.split(",")) {
@@ -768,11 +773,11 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
 
         @Override
-        public void saxText(SAXReader reader, String data) {
+        public void saxText(@NotNull SAXReader reader, @NotNull String data) {
         }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
+        public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) {
         }
     }
 

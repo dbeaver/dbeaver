@@ -14,17 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai;
+package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
+public class OAIResponsesText {
 
-import java.util.concurrent.Flow;
-
-/**
- * AI stream publisher.
- * Basically just a classic publisher.
- */
-public interface AIStreamPublisher extends Flow.Publisher<AIEngineResponseChunk> {
-
+    public OAIResponsesTextFormat format;
+    public String verbosity;
 
 }
