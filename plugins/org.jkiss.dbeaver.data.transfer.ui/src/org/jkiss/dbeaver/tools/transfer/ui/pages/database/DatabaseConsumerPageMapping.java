@@ -450,7 +450,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 @Override
                 public void update(ViewerCell cell) {
                     DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
-                    cell.setText(DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI));
+                    if (!(cell.getElement() instanceof DatabaseMappingAttribute)) {
+                        cell.setText(DBUtils.getObjectFullName(mapping.getSource(), DBPEvaluationContext.UI));
+                    } else {
+                        cell.setText(mapping.getSource().getName());
+                    }
                     if (mapping.getIcon() != null) {
                         cell.setImage(DBeaverIcons.getImage(mapping.getIcon()));
                     }
@@ -822,6 +826,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 comboFd.right = isContainer
                     ? new FormAttachment(browseButton, 0)
                     : new FormAttachment(100, 0);
+                comboFd.width = 200;
                 combo.setLayoutData(comboFd);
 
                 combo.addSelectionListener(new SelectionAdapter() {
@@ -888,8 +893,17 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             @Override
             protected void doSetValue(Object value) {
-                if (combo != null && !combo.isDisposed()) {
-                    combo.setText(CommonUtils.toString(value));
+                if (combo == null || combo.isDisposed()) {
+                    return;
+                }
+                if (value == null) {
+                    combo.setText("");
+                } else {
+                    if (value instanceof DBPNamedObject dbpNamedObject) {
+                        combo.setText(dbpNamedObject.getName());
+                    } else {
+                        combo.setText(CommonUtils.toString(value));
+                    }
                 }
             }
         };

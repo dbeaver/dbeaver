@@ -399,7 +399,7 @@ public abstract class GenericTableBase extends JDBCTable<GenericDataSource, Gene
 
     private List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException {
-        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity() || monitor == null) {
+        if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity() || monitor == null || monitor.isForceCacheUsage()) {
             return new ArrayList<>();
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {

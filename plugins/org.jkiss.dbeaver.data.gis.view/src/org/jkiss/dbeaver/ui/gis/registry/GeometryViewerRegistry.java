@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,7 +135,7 @@ public class GeometryViewerRegistry {
                 private String lastVisibility;
 
                 @Override
-                public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes attributes) {
+                public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) {
                     buffer.setLength(0);
                     switch (localName) {
                         case KEY_NON_VISIBLE_PREDEFINED_TILES:
@@ -154,7 +154,7 @@ public class GeometryViewerRegistry {
                 }
 
                 @Override
-                public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
+                public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) {
                     switch (localName) {
                         case KEY_NON_VISIBLE_PREDEFINED_TILES:
                             if (CommonUtils.isNotEmpty(lastId)) {
@@ -180,7 +180,7 @@ public class GeometryViewerRegistry {
                 }
 
                 @Override
-                public void saxText(SAXReader reader, String data) {
+                public void saxText(@NotNull SAXReader reader, @NotNull String data) {
                     buffer.append(data);
                 }
 
@@ -270,9 +270,9 @@ public class GeometryViewerRegistry {
     private void flushConfig() {
         try (StringWriter out = new StringWriter()) {
             XMLBuilder xmlBuilder = new XMLBuilder(out, GeneralUtils.UTF8_ENCODING);
-            xmlBuilder.setButify(true);
-            try (XMLBuilder.Element ignored = xmlBuilder.startElement(KEY_ROOT)) {
-                try (XMLBuilder.Element ignored1 = xmlBuilder.startElement("userDefinedTilesDefinitions")) {
+            xmlBuilder.setBeautify(true);
+            try (var ignored = xmlBuilder.startElement(KEY_ROOT)) {
+                try (var ignored1 = xmlBuilder.startElement("userDefinedTilesDefinitions")) {
                     for (LeafletTilesDescriptor descriptor : userDefinedTiles) {
                         try (XMLBuilder.Element ignored2 = xmlBuilder.startElement(KEY_USER_DEFINED_TILES)) {
                             xmlBuilder.addAttribute(KEY_ID, descriptor.getId());

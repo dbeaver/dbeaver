@@ -51,8 +51,8 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     private final SQLCompletionRequest request;
     private final SQLQueryCompletionContext queryCompletionContext;
     private final SQLTableAliasInsertMode aliasMode;
+    private final SQLDialect dialect;
     private final String structSeparator;
-    private final Set<String> localKnownColumnNames;
 
     private final DBRProgressMonitor monitor;
     private final DBSObjectContainer activeContext;
@@ -65,12 +65,8 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
         this.request = request;
         this.queryCompletionContext = queryCompletionContext;
         this.aliasMode = SQLTableAliasInsertMode.fromPreferences(request.getContext().getSyntaxManager().getPreferenceStore());
-        this.structSeparator = Character.toString(request.getContext().getDataSource().getSQLDialect().getStructSeparator());
-        this.localKnownColumnNames = queryCompletionContext.getDataContext() == null
-            ? Collections.emptySet()
-            : queryCompletionContext.getDataContext().getColumnsList().stream()
-                .map(c -> c.symbol.getName())
-                .collect(Collectors.toSet());
+        this.dialect = request.getContext().getDataSource().getSQLDialect();
+        this.structSeparator = Character.toString(dialect.getStructSeparator());
         this.monitor = monitor;
         this.activeContext = request.getContext().getExecutionContext() == null
             ? null
@@ -99,7 +95,10 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     public String visitColumnName(@NotNull SQLColumnNameCompletionItem columnName) {
         String preparedColumnName = this.convertCaseIfNeeded(columnName.columnInfo.symbol.getName());
         String prefix;
-        if (columnName.sourceInfo != null && this.queryCompletionContext.getInspectionResult().expectingColumnReference() && columnName.absolute) {
+        if (columnName.sourceInfo != null && columnName.absolute &&
+            this.queryCompletionContext.getInspectionResult().expectingColumnReference() &&
+            this.dialect.supportsQualifiedColumnNames()
+        ) {
             boolean forceQualifiedName = this.request.getContext().isForceQualifiedColumnNames()
                 || this.queryCompletionContext.isColumnNameConflicting(columnName.columnInfo.symbol.getName());
 
@@ -122,23 +121,21 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     @NotNull
     @Override
     public String visitTableName(@NotNull SQLTableNameCompletionItem tableName) {
-        String suffix;
-
+        String suffix = "";
         if (this.queryCompletionContext.getInspectionResult().expectingTableSourceIntroduction() &&
             this.aliasMode != SQLTableAliasInsertMode.NONE) {
             // It is table name completion after FROM. Auto-generate table alias
-            SQLDialect sqlDialect = SQLUtils.getDialectFromObject(tableName.object);
-            String alias = SQLUtils.generateEntityAlias(tableName.object,
-                s -> sqlDialect.getKeywordType(s) != null ||
-                    this.queryCompletionContext.getAliasesInUse().contains(s.toLowerCase()) ||
-                    (this.queryCompletionContext.getDataContext() != null
-                        && this.queryCompletionContext.getDataContext().resolveSource(monitor, List.of(s)) != null)
-            );
-            suffix = this.prepareAliasPrefix() + this.convertCaseIfNeeded(alias);
-        } else {
-            suffix = "";
+            if (dialect.supportsAliasInSelect()) {
+                String alias = SQLUtils.generateEntityAlias(
+                    tableName.object,
+                    s -> dialect.getKeywordType(s) != null ||
+                        this.queryCompletionContext.getAliasesInUse().contains(s.toLowerCase()) ||
+                        (this.queryCompletionContext.getDataContext() != null
+                            && this.queryCompletionContext.getDataContext().resolveSource(monitor, List.of(s)) != null)
+                );
+                suffix = this.prepareAliasPrefix() + this.convertCaseIfNeeded(alias);
+            }
         }
-
         return this.prepareObjectName(tableName) + suffix;
     }
 

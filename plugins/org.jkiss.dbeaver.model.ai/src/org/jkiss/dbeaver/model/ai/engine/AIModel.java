@@ -24,6 +24,11 @@ import java.util.Set;
 public record AIModel(
     @NotNull String name,
     @Nullable Integer contextWindowSize,
-    @NotNull Set<AIModelFeature> features
+    @NotNull Set<AIModelFeature> features,
+    double defaultTemperature
 ) {
+
+    public AIModel(@NotNull String name, @Nullable Integer contextWindowSize, @NotNull Set<AIModelFeature> features) {
+        this(name, contextWindowSize, features, 0.0);
+    }
 }
