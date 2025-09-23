@@ -53,9 +53,9 @@ public class ConstraintKeysCache
     @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(
-        JDBCSession session,
-        GenericStructContainer owner,
-        GenericTableBase forParent
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase forParent
     ) throws SQLException {
         try {
             return owner.getDataSource().getMetaModel().prepareUniqueConstraintsLoadStatement(
@@ -82,11 +82,11 @@ public class ConstraintKeysCache
     @Nullable
     @Override
     protected GenericUniqueKey fetchObject(
-        JDBCSession session,
-        GenericStructContainer owner,
-        GenericTableBase parent,
-        String pkName,
-        JDBCResultSet dbResult
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @NotNull GenericTableBase parent,
+        @NotNull String pkName,
+        @NotNull JDBCResultSet dbResult
     ) throws SQLException, DBException {
         return owner.getDataSource().getMetaModel().createConstraintImpl(
             parent,
@@ -100,16 +100,16 @@ public class ConstraintKeysCache
     @Nullable
     @Override
     protected GenericTableConstraintColumn[] fetchObjectRow(
-        JDBCSession session,
-        GenericTableBase parent,
-        GenericUniqueKey object,
-        JDBCResultSet dbResult
+        @NotNull JDBCSession session,
+        @NotNull GenericTableBase parent,
+        @NotNull GenericUniqueKey object,
+        @NotNull JDBCResultSet dbResult
     ) throws SQLException, DBException {
         return parent.getDataSource().getMetaModel().createConstraintColumnsImpl(session, parent, object, pkObject, dbResult);
     }
 
     @Override
-    protected void cacheChildren(DBRProgressMonitor monitor, GenericUniqueKey primaryKey, List<GenericTableConstraintColumn> rows) {
+    protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull GenericUniqueKey primaryKey, @NotNull List<GenericTableConstraintColumn> rows) {
         primaryKey.setAttributeReferences(rows);
     }
 

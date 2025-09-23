@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class DPIProcessControllerImpl implements DPIProcessController {
 
     private static final Log log = Log.getLog(DPIProcessControllerImpl.class);
 
-    public static final int PROCESS_PAWN_TIMEOUT = 100000;
+    public static final int PROCESS_SPAWN_TIMEOUT = 100000;
     private DPIController dpiRestClient;
     private int dpiServerPort;
     private final Process process;
@@ -76,10 +76,10 @@ public class DPIProcessControllerImpl implements DPIProcessController {
                     break;
                 }
             }
-            if (System.currentTimeMillis() - startTime > PROCESS_PAWN_TIMEOUT) {
+            if (System.currentTimeMillis() - startTime > PROCESS_SPAWN_TIMEOUT) {
                 // Timeout
                 terminateChildProcess();
-                throw new IOException("Error starting child DPI process. Timeout (" + PROCESS_PAWN_TIMEOUT + ") exceeded.");
+                throw new IOException("Error starting child DPI process. Timeout (" + PROCESS_SPAWN_TIMEOUT + ") exceeded.");
             }
             RuntimeUtils.pause(50);
         }
