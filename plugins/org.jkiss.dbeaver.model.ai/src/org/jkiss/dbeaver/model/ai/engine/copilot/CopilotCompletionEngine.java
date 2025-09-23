@@ -99,7 +99,7 @@ public class CopilotCompletionEngine extends BaseCompletionEngine<CopilotPropert
 
     @NotNull
     @Override
-    public void doRequestCompletionStream(
+    public void requestCompletionStream(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request,
         @NotNull AIEngineResponseConsumer listener
