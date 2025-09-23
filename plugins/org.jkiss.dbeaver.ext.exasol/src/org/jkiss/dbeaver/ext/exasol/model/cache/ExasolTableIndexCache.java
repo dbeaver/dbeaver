@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.exasol.model.cache;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolSysTablePrefix;
 import org.jkiss.dbeaver.ext.exasol.model.*;
@@ -45,14 +46,14 @@ public class ExasolTableIndexCache extends JDBCCompositeCache<ExasolSchema, Exas
 		super(parentCache, ExasolTable.class, "INDEX_TABLE", "REMARKS");
 	}
 
-
 	@NotNull
     @Override
-	protected JDBCStatement prepareObjectsStatement(JDBCSession session, ExasolSchema schema, ExasolTable table)
-			throws SQLException {
-	String tablePrefix = schema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
-		
-	
+	protected JDBCStatement prepareObjectsStatement(
+		@NotNull JDBCSession session,
+		@NotNull ExasolSchema schema,
+		@Nullable ExasolTable table
+	) throws SQLException {
+		String tablePrefix = schema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
 		StringBuilder sql = new StringBuilder(
 				String.format(
 							QUERYINDEX, 
@@ -78,31 +79,39 @@ public class ExasolTableIndexCache extends JDBCCompositeCache<ExasolSchema, Exas
 
 
 	@Override
-	protected ExasolTableIndex fetchObject(JDBCSession session, ExasolSchema schema, ExasolTable table,
-			String indexName, JDBCResultSet dbResult) throws SQLException, DBException {
+	protected ExasolTableIndex fetchObject(
+		@NotNull JDBCSession session,
+		@NotNull ExasolSchema schema,
+		@NotNull ExasolTable table,
+		@NotNull String indexName,
+		@NotNull JDBCResultSet dbResult
+	) {
 		return new ExasolTableIndex(session.getProgressMonitor(), table, indexName, dbResult);
 	}
 
 
 	@Override
-	protected ExasolTableIndexColumn[] fetchObjectRow(JDBCSession session, ExasolTable parent,
-			ExasolTableIndex forObject, JDBCResultSet resultSet) throws SQLException, DBException {
-		
+	protected ExasolTableIndexColumn[] fetchObjectRow(
+		@NotNull JDBCSession session,
+		@NotNull ExasolTable parent,
+		@NotNull ExasolTableIndex forObject,
+		@NotNull JDBCResultSet resultSet
+	) throws DBException {
 		//ToDo: fix regex
 		Matcher m = indexCols.matcher(JDBCUtils.safeGetString(resultSet, "REMARKS"));
 		
 		
 		String[] colString;
-		ArrayList<ExasolTableIndexColumn> indexCols = new ArrayList<ExasolTableIndexColumn>(); 
+		ArrayList<ExasolTableIndexColumn> indexCols = new ArrayList<>();
 		
-		if (m.find())
-		{
+		if (m.find()) {
 			colString = m.group(1).split(",");
 			for (int i = 0; i < colString.length; i++) {
-				ExasolTableColumn tableColumn = colString[i] == null ? null : parent.getAttribute(session.getProgressMonitor(), colString[i]); 
+				ExasolTableColumn tableColumn = colString[i] == null ? null
+					: parent.getAttribute(session.getProgressMonitor(), colString[i]);
 				indexCols.add(
-						new ExasolTableIndexColumn(forObject, tableColumn, i+1)
-						);
+					new ExasolTableIndexColumn(forObject, tableColumn, i + 1)
+				);
 				
 			}
 		}
@@ -114,12 +123,9 @@ public class ExasolTableIndexCache extends JDBCCompositeCache<ExasolSchema, Exas
 		
 	}
 
-
 	@Override
-	protected void cacheChildren(DBRProgressMonitor monitor, ExasolTableIndex index,List<ExasolTableIndexColumn> cols) {
+	protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull ExasolTableIndex index, @NotNull List<ExasolTableIndexColumn> cols) {
 		index.setColumns(cols);
-		
 	}
-
 
 }

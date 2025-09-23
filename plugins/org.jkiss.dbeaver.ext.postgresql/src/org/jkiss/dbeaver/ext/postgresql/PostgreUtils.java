@@ -76,15 +76,15 @@ public class PostgreUtils {
 
     private static final Pattern ROLE_TYPE_PATTERN = Pattern.compile("^\\w+\\s+");
 
-    public static String getObjectComment(DBRProgressMonitor monitor, GenericStructContainer container, String schema, String object)
-            throws DBException {
+    public static String getObjectComment(DBRProgressMonitor monitor, GenericStructContainer container, String schema, String object) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load PostgreSQL description")) {
             return JDBCUtils.queryString(
                     session,
-                    "select description from pg_catalog.pg_description\n" +
-                            "join pg_catalog.pg_class on pg_description.objoid = pg_class.oid\n" +
-                            "join pg_catalog.pg_namespace on pg_class.relnamespace = pg_namespace.oid\n" +
-                            "where pg_class.relname = ? and pg_namespace.nspname=?", object, schema);
+                """
+                    select description from pg_catalog.pg_description
+                    join pg_catalog.pg_class on pg_description.objoid = pg_class.oid
+                    join pg_catalog.pg_namespace on pg_class.relnamespace = pg_namespace.oid
+                    where pg_class.relname = ? and pg_namespace.nspname=?""", object, schema);
         } catch (Exception e) {
             log.debug(e);
             return null;
@@ -92,27 +92,19 @@ public class PostgreUtils {
     }
 
     public static String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
-        switch (dataKind) {
-            case BOOLEAN:
-                return "bool";
-            case NUMERIC:
-                return "int";
-            case STRING:
-                return "varchar";
-            case DATETIME:
-                return "timestamp";
-            case BINARY:
-                return "bytea";
-            case CONTENT:
-                return "bytea";
-            case ROWID:
-                return "oid";
-            default:
-                return "varchar";
-        }
+        return switch (dataKind) {
+            case BOOLEAN -> "bool";
+            case NUMERIC -> "int";
+            case STRING -> "varchar";
+            case DATETIME -> "timestamp";
+            case BINARY -> "bytea";
+            case CONTENT -> "bytea";
+            case ROWID -> "oid";
+            default -> "varchar";
+        };
     }
 
-    public static <T extends PostgreAttribute> T getAttributeByNum(Collection<T> attrs, int attNum) {
+    public static <T extends PostgreAttribute<?>> T getAttributeByNum(Collection<T> attrs, int attNum) {
         for (T attr : attrs) {
             if (attr.getOrdinalPosition() == attNum) {
                 return attr;
@@ -122,8 +114,7 @@ public class PostgreUtils {
     }
 
     @Nullable
-    public static Object extractPGObjectValue(@Nullable Object pgObject, @Nullable DBPDataSource dataSource) {
-
+    public static Object extractPGObjectValue(@Nullable Object pgObject, @NotNull DBPDataSource dataSource) {
         if (pgObject == null) {
             return null;
         }
@@ -169,8 +160,7 @@ public class PostgreUtils {
         if (pgVector == null) {
             return null;
         }
-        if (pgVector instanceof String) {
-            final String vector = (String) pgVector;
+        if (pgVector instanceof String vector) {
             if (vector.isEmpty()) {
                 return null;
             }
@@ -182,8 +172,7 @@ public class PostgreUtils {
             return ids;
         } else if (pgVector instanceof long[]) {
             return (long[]) pgVector;
-        } else if (pgVector instanceof Long[]) {
-            Long[] objVector = (Long[]) pgVector;
+        } else if (pgVector instanceof Long[] objVector) {
             long[] result = new long[objVector.length];
             for (int i = 0; i < objVector.length; i++) {
                 result[i] = objVector[i];
@@ -418,10 +407,10 @@ public class PostgreUtils {
     }
 
     public static PostgreDataType findDataType(DBCSession session, PostgreDataSource dataSource, DBSTypedObject type) throws DBCException {
-        if (type instanceof PostgreDataType) {
-            return (PostgreDataType) type;
-        } else if (type instanceof PostgreAttribute) {
-            return ((PostgreAttribute) type).getDataType();
+        if (type instanceof PostgreDataType dt) {
+            return dt;
+        } else if (type instanceof PostgreAttribute<?> attr) {
+            return attr.getDataType();
         } else {
             DBRProgressMonitor monitor = session.getProgressMonitor();
             if (type instanceof JDBCColumnMetaData) {
@@ -805,7 +794,7 @@ public class PostgreUtils {
                 if (divPos < 0) {
                     opt.append(option);
                 } else {
-                    opt.append(option.substring(0, divPos)).append(" '").append(option.substring(divPos + 1)).append("'");
+                    opt.append(option, 0, divPos).append(" '").append(option.substring(divPos + 1)).append("'");
                 }
             }
         }
@@ -813,18 +802,14 @@ public class PostgreUtils {
         return opt.toString();
     }
 
-    public static String getObjectTypeName(PostgrePrivilegeOwner object) {
-        if (object instanceof PostgreSequence) {
-            return "SEQUENCE";
-        } else if (object instanceof PostgreProcedure) {
-            return ((PostgreProcedure) object).getProcedureTypeName();
-        } else if (object instanceof PostgreSchema) {
-            return "SCHEMA";
-        } else if (object instanceof PostgreDatabase) {
-            return "DATABASE";
-        } else {
-            return "TABLE";
-        }
+    public static String getObjectTypeName(@NotNull PostgrePrivilegeOwner object) {
+        return switch (object) {
+            case PostgreSequence ignored -> "SEQUENCE";
+            case PostgreProcedure postgreProcedure -> postgreProcedure.getProcedureTypeName();
+            case PostgreSchema ignored2 -> "SCHEMA";
+            case PostgreDatabase ignored3 -> "DATABASE";
+            default -> "TABLE";
+        };
     }
 
     public static String getObjectUniqueName(PostgrePrivilegeOwner object, Map<String, Object> options) {

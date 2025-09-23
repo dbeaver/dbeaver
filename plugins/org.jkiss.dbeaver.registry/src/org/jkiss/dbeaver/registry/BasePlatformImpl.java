@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,12 +59,13 @@ import java.util.Map;
 
 /**
  * BaseWorkspaceImpl.
- *
- * Base implementation of DBeaver platform
+ * Base implementation of DBeaver platform for all products
  */
 public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationConfigurator {
 
     private static final Log log = Log.getLog(BasePlatformImpl.class);
+
+    public static final String DBEAVER_DATA_DIR = "DBeaverData";
 
     private static final String APP_CONFIG_FILE = "dbeaver.ini";
     private static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
@@ -87,12 +88,12 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     protected void initialize() {
         log.debug("Initialize base platform...");
 
-        DBPPreferenceStore prefsStore = getPreferenceStore();
+        DBPPreferenceStore prefStore = getPreferenceStore();
         // Global pref events forwarder
-        prefsStore.addPropertyChangeListener(event -> {
+        prefStore.addPropertyChangeListener(event -> {
             // Forward event to all data source preferences
             for (DBPDataSourceContainer ds : DataSourceRegistry.getAllDataSources()) {
-                ((AbstractPreferenceStore)ds.getPreferenceStore()).firePropertyChangeEvent(prefsStore, event.getProperty(), event.getOldValue(), event.getNewValue());
+                ((AbstractPreferenceStore)ds.getPreferenceStore()).firePropertyChangeEvent(prefStore, event.getProperty(), event.getOldValue(), event.getNewValue());
             }
         });
 
@@ -174,6 +175,9 @@ public abstract class BasePlatformImpl implements DBPPlatform, DBPApplicationCon
     public SQLDialectMetadataRegistry getSQLDialectRegistry() {
         if (sqlDialectRegistry == null) {
             sqlDialectRegistry = RuntimeUtils.getBundleService(SQLDialectMetadataRegistry.class, true);
+            if (sqlDialectRegistry == null) {
+                throw new IllegalStateException("Cannot determine SQL dialect registry for " + getClass());
+            }
         }
         return sqlDialectRegistry;
     }
