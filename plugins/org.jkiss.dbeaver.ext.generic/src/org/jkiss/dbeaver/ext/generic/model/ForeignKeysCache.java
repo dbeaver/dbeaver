@@ -73,18 +73,19 @@ public class ForeignKeysCache
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTableBase forParent) throws SQLException {
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable
+    GenericTableBase forParent) throws SQLException {
         return owner.getDataSource().getMetaModel().prepareForeignKeysLoadStatement(session, owner, forParent);
     }
 
     @Nullable
     @Override
     protected GenericTableForeignKey fetchObject(
-        JDBCSession session,
-        GenericStructContainer owner,
-        GenericTableBase parent,
-        String fkName,
-        JDBCResultSet dbResult
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @NotNull GenericTableBase parent,
+        @NotNull String fkName,
+        @NotNull JDBCResultSet dbResult
     ) throws SQLException, DBException {
         DBSCatalog parentCatalog = DBUtils.getParentOfType(DBSCatalog.class, owner);
         String pkTableCatalog = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_CAT);
@@ -223,8 +224,8 @@ public class ForeignKeysCache
     @Nullable
     @Override
     protected GenericTableForeignKeyColumnTable[] fetchObjectRow(
-        JDBCSession session,
-        GenericTableBase parent, GenericTableForeignKey foreignKey, JDBCResultSet dbResult
+        @NotNull JDBCSession session,
+        @NotNull GenericTableBase parent, @NotNull GenericTableForeignKey foreignKey, @NotNull JDBCResultSet dbResult
     ) throws SQLException, DBException {
         boolean trimNames = parent.getDataSource().getMetaModel().isTrimObjectNames();
         String pkColumnName = trimNames ?
@@ -269,9 +270,9 @@ public class ForeignKeysCache
 
     @Override
     protected void cacheChildren(
-        DBRProgressMonitor monitor,
-        GenericTableForeignKey foreignKey,
-        List<GenericTableForeignKeyColumnTable> rows
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericTableForeignKey foreignKey,
+        @NotNull List<GenericTableForeignKeyColumnTable> rows
     ) {
         foreignKey.setColumns(monitor, rows);
         fkIndex = 1;
