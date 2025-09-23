@@ -782,7 +782,7 @@
                     id="tdengine"
                     label="TDengine"
                     class="com.taosdata.jdbc.ws.WebSocketDriver"
-                    sampleURL="jdbc:TAOS-WS://{host}:{port}/[{db}]?varcharAsString=true&conmode=1"
+                    sampleURL="jdbc:TAOS-WS://{host}:{port}/[{db}]"
                     defaultPort="6041"
                     description="TDengine driver"
                     supportedConfigurationTypes="MANUAL"
