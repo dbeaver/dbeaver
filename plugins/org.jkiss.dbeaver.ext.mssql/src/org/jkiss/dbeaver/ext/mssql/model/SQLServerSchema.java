@@ -507,7 +507,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema owner, SQLServerTableBase forTable)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, SQLServerTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -534,7 +534,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @Nullable
         @Override
-        protected SQLServerTableIndex fetchObject(JDBCSession session, SQLServerSchema owner, SQLServerTableBase parent, String indexName, JDBCResultSet dbResult)
+        protected SQLServerTableIndex fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @NotNull SQLServerTableBase parent, @NotNull
+        String indexName, @NotNull
+        JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             int indexTypeNum = JDBCUtils.safeGetInt(dbResult, "type");
@@ -571,10 +573,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         @Nullable
         @Override
         protected SQLServerTableIndexColumn[] fetchObjectRow(
-            JDBCSession session,
-            SQLServerTableBase parent,
-            SQLServerTableIndex object,
-            JDBCResultSet dbResult)
+            @NotNull JDBCSession session,
+            @NotNull SQLServerTableBase parent,
+            @NotNull SQLServerTableIndex object,
+            @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             long indexColumnId = JDBCUtils.safeGetInt(dbResult, "index_column_id");
@@ -590,7 +592,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, SQLServerTableIndex index, List<SQLServerTableIndexColumn> rows)
+        protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerTableIndex index, @NotNull List<SQLServerTableIndexColumn> rows)
         {
             index.setColumns(rows);
         }
@@ -607,7 +609,8 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema schema, SQLServerTableBase forParent) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, @Nullable
+        SQLServerTableBase forParent) throws SQLException {
 
             StringBuilder sql = new StringBuilder(500);
             sql.append(
@@ -629,7 +632,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
 
         @Override
-        protected SQLServerTableUniqueKey fetchObject(JDBCSession session, SQLServerSchema schema, SQLServerTableBase table, String childName, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerTableUniqueKey fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema schema, @NotNull
+        SQLServerTableBase table, @NotNull String childName, @NotNull
+        JDBCResultSet resultSet) throws SQLException, DBException {
             String name = JDBCUtils.safeGetString(resultSet, "name");
             String type = JDBCUtils.safeGetString(resultSet, "type");
             long indexId = JDBCUtils.safeGetLong(resultSet, "unique_index_id");
@@ -644,12 +649,14 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
 
         @Override
-        protected SQLServerTableIndexColumn[] fetchObjectRow(JDBCSession session, SQLServerTableBase table, SQLServerTableUniqueKey forObject, JDBCResultSet resultSet) throws SQLException, DBException {
+        protected SQLServerTableIndexColumn[] fetchObjectRow(@NotNull JDBCSession session, @NotNull SQLServerTableBase table, @NotNull
+        SQLServerTableUniqueKey forObject, @NotNull
+        JDBCResultSet resultSet) throws SQLException, DBException {
             return new SQLServerTableIndexColumn[0];//forObject.getIndex().getAttributeReferences(session.getProgressMonitor()).toArray(new SQLServerTableIndexColumn[0]);
         }
 
         @Override
-        protected void cacheChildren(DBRProgressMonitor monitor, SQLServerTableUniqueKey object, List<SQLServerTableIndexColumn> children) {
+        protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerTableUniqueKey object, @NotNull List<SQLServerTableIndexColumn> children) {
 
         }
     }
@@ -661,7 +668,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         }
 
         @Override
-        protected void loadObjects(DBRProgressMonitor monitor, SQLServerSchema schema, SQLServerTableBase forParent)
+        protected void loadObjects(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerSchema schema, @Nullable SQLServerTableBase forParent)
             throws DBException
         {
             // Cache schema indexes if no table specified
@@ -673,7 +680,8 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, SQLServerSchema owner, SQLServerTableBase forTable)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable
+        SQLServerTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -702,7 +710,9 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @Nullable
         @Override
-        protected SQLServerTableForeignKey fetchObject(JDBCSession session, SQLServerSchema owner, SQLServerTableBase parent, String indexName, JDBCResultSet dbResult)
+        protected SQLServerTableForeignKey fetchObject(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @NotNull
+        SQLServerTableBase parent, @NotNull String indexName, @NotNull
+        JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             long refSchemaId = JDBCUtils.safeGetLong(dbResult, "referenced_schema_id");
@@ -741,10 +751,10 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         @Nullable
         @Override
         protected SQLServerTableForeignKeyColumn[] fetchObjectRow(
-            JDBCSession session,
-            SQLServerTableBase parent,
-            SQLServerTableForeignKey object,
-            JDBCResultSet dbResult)
+            @NotNull JDBCSession session,
+            @NotNull SQLServerTableBase parent,
+            @NotNull SQLServerTableForeignKey object,
+            @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -766,7 +776,7 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
 
         @Override
         @SuppressWarnings("unchecked")
-        protected void cacheChildren(DBRProgressMonitor monitor, SQLServerTableForeignKey foreignKey, List<SQLServerTableForeignKeyColumn> rows)
+        protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerTableForeignKey foreignKey, @NotNull List<SQLServerTableForeignKeyColumn> rows)
         {
             foreignKey.setAttributeReferences(rows);
         }

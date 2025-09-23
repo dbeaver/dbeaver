@@ -56,7 +56,8 @@ public class IndexCache extends JDBCCompositeCache<GenericStructContainer, Gener
 
     @NotNull
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTableBase forParent)
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable
+    GenericTableBase forParent)
         throws SQLException
     {
         try {
@@ -80,7 +81,9 @@ public class IndexCache extends JDBCCompositeCache<GenericStructContainer, Gener
 
     @Nullable
     @Override
-    protected GenericTableIndex fetchObject(JDBCSession session, GenericStructContainer owner, GenericTableBase parent, String indexName, JDBCResultSet dbResult)
+    protected GenericTableIndex fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericTableBase parent, @NotNull
+    String indexName, @NotNull
+    JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         boolean isNonUnique = GenericUtils.safeGetBoolean(indexObject, dbResult, JDBCConstants.NON_UNIQUE);
@@ -127,8 +130,8 @@ public class IndexCache extends JDBCCompositeCache<GenericStructContainer, Gener
     @Nullable
     @Override
     protected GenericTableIndexColumn[] fetchObjectRow(
-        JDBCSession session,
-        GenericTableBase parent, GenericTableIndex object, JDBCResultSet dbResult)
+        @NotNull JDBCSession session,
+        @NotNull GenericTableBase parent, @NotNull GenericTableIndex object, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         int ordinalPosition = GenericUtils.safeGetInt(indexObject, dbResult, JDBCConstants.ORDINAL_POSITION);
@@ -156,7 +159,7 @@ public class IndexCache extends JDBCCompositeCache<GenericStructContainer, Gener
     }
 
     @Override
-    protected void cacheChildren(DBRProgressMonitor monitor, GenericTableIndex index, List<GenericTableIndexColumn> rows)
+    protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableIndex index, @NotNull List<GenericTableIndexColumn> rows)
     {
         index.setColumns(rows);
     }
