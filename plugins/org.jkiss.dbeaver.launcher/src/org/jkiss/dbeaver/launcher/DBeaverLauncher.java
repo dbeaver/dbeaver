@@ -610,9 +610,6 @@ public class DBeaverLauncher {
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
         try {
-            if (log == null) {
-                openLogFile();
-            }
             CommandLineExecuteResult commandLineExecuteResult = processCommandLineAsClient(passThruArgs, dbeaverDataDir);
             if (commandLineExecuteResult.shutdown()) {
                 System.setProperty(PROP_EXITCODE, Integer.toString(commandLineExecuteResult.exitCode()));
@@ -704,12 +701,10 @@ public class DBeaverLauncher {
             return new CommandLineExecuteResult(cliMode);
         }
         Path workspacePath = detectDefaultWorkspaceLocation(args, dbeaverDataDir);
-        log("CLI detected workspace: " + workspacePath);
         if (Files.notExists(workspacePath)) {
             return new CommandLineExecuteResult(cliMode);
         }
         Integer serverPort = readDBeaverServerPort(workspacePath);
-        log("CLI detected server port: " + serverPort);
         if (serverPort == null) {
             return new CommandLineExecuteResult(cliMode);
         }
@@ -781,7 +776,6 @@ public class DBeaverLauncher {
             }
             return new CommandLineExecuteResult(shutdownApplication || cliMode, exitCode);
         } catch (Exception e) {
-            log("Error during calling DBeaver server: " + e.getMessage());
             if (e.getMessage() != null) {
                 System.out.println("Error during calling DBeaver server: " + e.getMessage());
             }
