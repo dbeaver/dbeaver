@@ -249,6 +249,7 @@ public class DriverEditHelpers {
             ? (DBException) cause
             : error;
     }
+
     static class BadDriverConfigDialog extends StandardErrorDialog {
 
         private final DBPDataSource dataSource;
