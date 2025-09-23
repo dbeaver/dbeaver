@@ -160,11 +160,13 @@ public class GaussDBPackage implements PostgreObject, PostgreScriptObject, DBPSy
         this.sourceDefinition = source;
     }
 
+    @NotNull
     @Override
     public GaussDBDataSource getDataSource() {
         return (GaussDBDataSource) schema.getDataSource();
     }
 
+    @NotNull
     @Override
     public GaussDBDatabase getDatabase() {
         return (GaussDBDatabase) schema.getDatabase();
