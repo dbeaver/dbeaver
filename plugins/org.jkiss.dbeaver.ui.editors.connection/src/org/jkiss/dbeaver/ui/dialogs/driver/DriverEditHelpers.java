@@ -243,10 +243,9 @@ public class DriverEditHelpers {
 
     @NotNull
     private static DBException defineException(@NotNull DBException error) {
-        Throwable cause = error.getCause();
         return error instanceof DBCConnectException
-            && cause instanceof DBException
-            ? (DBException) cause
+            && error.getCause() instanceof DBException cause
+            ? cause
             : error;
     }
 
