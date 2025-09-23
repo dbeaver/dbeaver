@@ -781,6 +781,7 @@ public class DBeaverLauncher {
             }
             return new CommandLineExecuteResult(shutdownApplication || cliMode, exitCode);
         } catch (Exception e) {
+            log("Error during calling DBeaver server: " + e.getMessage());
             if (e.getMessage() != null) {
                 System.out.println("Error during calling DBeaver server: " + e.getMessage());
             }
