@@ -138,7 +138,7 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
     @Override
     protected void createBottomLeftArea(Composite pane) {
         // Task management controls
-        getWizard().createTaskSaveButtons(pane, true, 1);
+        getWizard().createTaskSaveButtons(pane, 1);
     }
 
     @Override
