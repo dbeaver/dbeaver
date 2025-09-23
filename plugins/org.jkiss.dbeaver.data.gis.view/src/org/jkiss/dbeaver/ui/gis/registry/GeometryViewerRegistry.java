@@ -135,7 +135,7 @@ public class GeometryViewerRegistry {
                 private String lastVisibility;
 
                 @Override
-                public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes attributes) {
+                public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) {
                     buffer.setLength(0);
                     switch (localName) {
                         case KEY_NON_VISIBLE_PREDEFINED_TILES:
@@ -154,7 +154,7 @@ public class GeometryViewerRegistry {
                 }
 
                 @Override
-                public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
+                public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) {
                     switch (localName) {
                         case KEY_NON_VISIBLE_PREDEFINED_TILES:
                             if (CommonUtils.isNotEmpty(lastId)) {
@@ -180,7 +180,7 @@ public class GeometryViewerRegistry {
                 }
 
                 @Override
-                public void saxText(SAXReader reader, String data) {
+                public void saxText(@NotNull SAXReader reader, @NotNull String data) {
                     buffer.append(data);
                 }
 
