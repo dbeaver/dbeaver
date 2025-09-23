@@ -22,6 +22,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -49,6 +50,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.tasks.ui.registry.TaskUIRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
@@ -406,8 +408,10 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 taskViewButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
 
-            layout.numColumns++;
-            createTimeoutConfigurationButton(panel);
+            if (currentTask instanceof TaskImpl task) {
+                layout.numColumns++;
+                createTimeoutConfigurationButton(panel, task);
+            }
         }
     }
 
@@ -441,7 +445,39 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         promptTaskVariablesCheckbox.notifyListeners(SWT.Selection, new Event());
     }
 
-    private void createTimeoutConfigurationButton(@NotNull Composite parent) {
+    private void createTimeoutConfigurationButton(@NotNull Composite parent, @NotNull TaskImpl task) {
+        MenuManager manager = new MenuManager();
+
+        Button button = UIUtils.createDialogButton(
+            parent,
+            null,
+            SelectionListener.widgetSelectedAdapter(e -> {
+                Button button1 = (Button) e.widget;
+                Point location = button1.toDisplay(0, 0);
+                location.y += button1.getSize().y;
+
+                Menu menu = manager.createContextMenu(button1);
+                menu.setLocation(location);
+                menu.setVisible(true);
+            })
+        );
+        button.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        button.addDisposeListener(e -> manager.dispose());
+
+        Runnable updateButtonVisuals = () -> {
+            Duration maxExecutionTime = task.getMaxExecutionTime();
+            if (maxExecutionTime.isPositive()) {
+                button.setImage(DBeaverIcons.getImage(UIIcon.CLOCK_STOP));
+                button.setToolTipText(NLS.bind(
+                    TaskUIMessages.task_config_wizard_max_execution_time_set,
+                    RuntimeUtils.formatDuration(maxExecutionTime)
+                ));
+            } else {
+                button.setImage(DBeaverIcons.getImage(UIIcon.CLOCK_START));
+                button.setToolTipText(TaskUIMessages.task_config_wizard_max_execution_time_unset);
+            }
+        };
+
         class CustomTimeoutAction extends Action {
             public CustomTimeoutAction() {
                 super("Customize ...", AS_PUSH_BUTTON);
@@ -449,9 +485,6 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
             @Override
             public void run() {
-                if (!(getCurrentTask() instanceof TaskImpl task)) {
-                    return;
-                }
                 DurationPickerDialog dialog = new DurationPickerDialog(
                     getShell(),
                     "Specify custom duration",
@@ -459,6 +492,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 );
                 if (dialog.open() == IDialogConstants.OK_ID) {
                     task.setMaxExecutionTime(dialog.getDuration());
+                    updateButtonVisuals.run();
                 }
             }
         }
@@ -473,15 +507,13 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
             @Override
             public void run() {
-                if (!(getCurrentTask() instanceof TaskImpl task)) {
-                    return;
-                }
                 task.setMaxExecutionTime(duration);
+                updateButtonVisuals.run();
             }
 
             @Override
             public boolean isChecked() {
-                return getCurrentTask() instanceof TaskImpl task && task.getMaxExecutionTime().equals(duration);
+                return task.getMaxExecutionTime().equals(duration);
             }
         }
 
@@ -492,14 +524,11 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
             @Override
             public void run() {
-                if (!(getCurrentTask() instanceof TaskImpl task)) {
-                    return;
-                }
                 task.setMaxExecutionTime(Duration.ZERO);
+                updateButtonVisuals.run();
             }
         }
 
-        MenuManager manager = new MenuManager();
         manager.setRemoveAllWhenShown(true);
         manager.addMenuListener(m -> {
             m.add(new CustomTimeoutAction());
@@ -510,7 +539,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 m.add(new PresetTimeoutAction(i, presets.get(i)));
             }
 
-            if (getCurrentTask() instanceof TaskImpl task && task.getMaxExecutionTime().isPositive()) {
+            if (task.getMaxExecutionTime().isPositive()) {
                 Duration duration = task.getMaxExecutionTime();
                 if (!presets.contains(duration)) {
                     m.add(new PresetTimeoutAction(presets.size(), duration));
@@ -521,23 +550,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
             }
         });
 
-        Button executionTimeoutButton = UIUtils.createDialogButton(
-            parent,
-            null,
-            "Execution timeout",
-            UIIcon.CLOCK_START,
-            SelectionListener.widgetSelectedAdapter(e -> {
-                Button button = (Button) e.widget;
-                Point location = button.toDisplay(0, 0);
-                location.y += button.getSize().y;
-
-                Menu menu = manager.createContextMenu(button);
-                menu.setLocation(location);
-                menu.setVisible(true);
-            })
-        );
-        executionTimeoutButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        executionTimeoutButton.addDisposeListener(e -> manager.dispose());
+        updateButtonVisuals.run();
     }
 
     private void configureVariables() {
