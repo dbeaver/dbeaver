@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.model.app.DBPApplicationController;
 import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
-import org.jkiss.dbeaver.model.cli.CliProcessResult;
+import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
@@ -186,7 +186,7 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         String defaultHomePath = getDefaultInstanceLocation();
         if (DBeaverCommandLine.getInstance()
             .handleCommandLineAsClient(commandLine, defaultHomePath)
-            .getPostAction() == CliProcessResult.PostAction.SHUTDOWN
+            .getPostAction() == CLIProcessResult.PostAction.SHUTDOWN
         ) {
             if (!Log.isQuietMode()) {
                 System.err.println("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
@@ -237,8 +237,8 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // Custom parameters
         try {
             headlessMode = true;
-            CliProcessResult cliProcessResult = DBeaverCommandLine.getInstance().handleCustomParameters(commandLine);
-            if (cliProcessResult.getPostAction() == CliProcessResult.PostAction.SHUTDOWN) {
+            CLIProcessResult cliProcessResult = DBeaverCommandLine.getInstance().handleCustomParameters(commandLine, null);
+            if (cliProcessResult.getPostAction() == CLIProcessResult.PostAction.SHUTDOWN) {
                 return IApplication.EXIT_OK;
             }
         } finally {

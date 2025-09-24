@@ -50,8 +50,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * CustomFormEditor
@@ -320,14 +320,7 @@ public class CustomFormEditor {
             UIUtils.createControlLabel(
                 parent,
                 propertyDisplayName);
-            Composite linkPH = new Composite(parent, SWT.NONE);
-            {
-                linkPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            }
-            GridLayout layout = new GridLayout(1, false);
-            layout.marginHeight = 1;
-            linkPH.setLayout(layout);
-            Link link = new Link(linkPH, SWT.NONE);
+            Link link = new Link(parent, SWT.NONE);
             link.setText(getLinkTitle(value));
             link.setData(value);
             link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> openObjectLink(link.getData())));
