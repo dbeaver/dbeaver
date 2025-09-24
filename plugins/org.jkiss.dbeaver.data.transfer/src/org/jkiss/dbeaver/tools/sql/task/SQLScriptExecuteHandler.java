@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 
@@ -173,7 +174,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         @NotNull DBPProject project,
         @NotNull String filePath
     ) throws DBException, IOException {
-        java.nio.file.Path nioPath = DBFUtils.resolvePathFromString(monitor, project, filePath);
+        Path nioPath = DBFUtils.resolvePathFromString(monitor, project, filePath);
         if (!IOUtils.isLocalPath(nioPath)) {
             // Remote file
             return Files.readString(nioPath);
