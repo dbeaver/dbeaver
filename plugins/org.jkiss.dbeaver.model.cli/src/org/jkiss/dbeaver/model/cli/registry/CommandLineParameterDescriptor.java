@@ -27,6 +27,7 @@ public class CommandLineParameterDescriptor {
     private final String longName;
     private final String description;
     private final boolean hasArg;
+    private final boolean hasOptionalArg;
     private final boolean exitAfterExecute;
     private final boolean exclusiveMode;
     private final boolean forceNewInstance;
@@ -38,6 +39,7 @@ public class CommandLineParameterDescriptor {
         this.longName = config.getAttribute("longName");
         this.description = config.getAttribute("description");
         this.hasArg = CommonUtils.toBoolean(config.getAttribute("hasArg"));
+        this.hasOptionalArg = CommonUtils.toBoolean(config.getAttribute("hasOptionalArg"));
         this.exitAfterExecute = CommonUtils.toBoolean(config.getAttribute("exitAfterExecute"));
         this.exclusiveMode = CommonUtils.toBoolean(config.getAttribute("exclusiveMode"));
         this.forceNewInstance = CommonUtils.toBoolean(config.getAttribute("forceNewInstance"));
@@ -71,6 +73,10 @@ public class CommandLineParameterDescriptor {
         return hasArg;
     }
 
+    public boolean canBeWithArg() {
+        return hasArg() || hasOptionalArg();
+    }
+
     public String getLongName() {
         return longName;
     }
@@ -85,6 +91,10 @@ public class CommandLineParameterDescriptor {
      */
     public boolean isContextInitializer() {
         return contextInitializer;
+    }
+
+    public boolean hasOptionalArg() {
+        return hasOptionalArg;
     }
 }
 

@@ -184,8 +184,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
             return true;
         }
         if (searchByName) {
-            if (attr instanceof DBDAttributeBinding) {
-                DBDAttributeBinding cmpAttr = (DBDAttributeBinding) attr;
+            if (attr instanceof DBDAttributeBinding cmpAttr) {
                 if (getLevel() != cmpAttr.getLevel() || getOrdinalPosition() != cmpAttr.getOrdinalPosition()) {
                     return false;
                 }
@@ -197,10 +196,20 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
                 }
                 return true;
             } else if (attr != null) {
-                return SQLUtils.compareAliases(attr.getName(), this.getName());
+                return matchesAttributes(attr);
             }
         }
         return false;
+    }
+
+    private boolean matchesAttributes(@NotNull DBSAttributeBase attr) {
+        if (attr instanceof DBSObject attrObj && this.getEntityAttribute() != null) {
+            return attrObj.getParentObject() == this.getEntityAttribute().getParentObject() && SQLUtils.compareAliases(
+                attr.getName(),
+                this.getName()
+            );
+        }
+        return SQLUtils.compareAliases(attr.getName(), this.getName());
     }
 
     @Nullable
