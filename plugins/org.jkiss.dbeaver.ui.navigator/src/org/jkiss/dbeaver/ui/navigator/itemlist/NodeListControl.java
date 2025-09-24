@@ -416,9 +416,9 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode>
         @Override
         public void setPropertyValue(
             @Nullable DBRProgressMonitor monitor,
-            Object editableValue,
-            ObjectPropertyDescriptor prop,
-            Object newValue
+            @NotNull Object editableValue,
+            @NotNull ObjectPropertyDescriptor prop,
+            @Nullable Object newValue
         ) throws IllegalArgumentException {
             super.setPropertyValue(monitor, editableValue, prop, newValue);
             resetLazyPropertyCache(getCurrentListObject(), prop.getId());

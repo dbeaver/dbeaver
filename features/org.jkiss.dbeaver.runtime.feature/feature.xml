@@ -44,6 +44,7 @@
     <plugin id="org.jkiss.dbeaver.model.sql" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model.sql.jdbc" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.model.lsm" version="0.0.0" />
+    <plugin id="org.jkiss.dbeaver.model.ai" version="0.0.0" />
 
     <plugin id="org.jkiss.dbeaver.registry" version="0.0.0" />
     <plugin id="org.jkiss.dbeaver.net.ssh" version="0.0.0" />
