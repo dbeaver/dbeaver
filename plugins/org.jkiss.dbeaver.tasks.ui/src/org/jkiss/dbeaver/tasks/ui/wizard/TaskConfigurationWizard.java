@@ -75,6 +75,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     private DBTTask currentTask;
     private IStructuredSelection currentSelection;
     private Button saveAsTaskButton;
+    private Button timeoutConfigurationButton;
 
     private Map<String, Object> variables;
     private boolean promptVariables;
@@ -408,10 +409,8 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 taskViewButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
 
-            if (currentTask instanceof TaskImpl task) {
-                layout.numColumns++;
-                createTimeoutConfigurationButton(panel, task);
-            }
+            layout.numColumns++;
+            timeoutConfigurationButton = createTimeoutConfigurationButton(panel);
         }
     }
 
@@ -445,7 +444,8 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         promptTaskVariablesCheckbox.notifyListeners(SWT.Selection, new Event());
     }
 
-    private void createTimeoutConfigurationButton(@NotNull Composite parent, @NotNull TaskImpl task) {
+    @NotNull
+    private Button createTimeoutConfigurationButton(@NotNull Composite parent) {
         MenuManager manager = new MenuManager();
 
         Button button = UIUtils.createDialogButton(
@@ -465,12 +465,11 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         button.addDisposeListener(e -> manager.dispose());
 
         Runnable updateButtonVisuals = () -> {
-            Duration maxExecutionTime = task.getMaxExecutionTime();
-            if (maxExecutionTime.isPositive()) {
+            if (getCurrentTask() instanceof TaskImpl task && task.getMaxExecutionTime().isPositive()) {
                 button.setImage(DBeaverIcons.getImage(UIIcon.CLOCK_STOP));
                 button.setToolTipText(NLS.bind(
                     TaskUIMessages.task_config_wizard_max_execution_time_set,
-                    RuntimeUtils.formatDuration(maxExecutionTime)
+                    RuntimeUtils.formatDuration(task.getMaxExecutionTime())
                 ));
             } else {
                 button.setImage(DBeaverIcons.getImage(UIIcon.CLOCK_START));
@@ -485,6 +484,9 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
             @Override
             public void run() {
+                if (!(getCurrentTask() instanceof TaskImpl task)) {
+                    return;
+                }
                 DurationPickerDialog dialog = new DurationPickerDialog(
                     getShell(),
                     "Specify custom duration",
@@ -507,13 +509,16 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
             @Override
             public void run() {
+                if (!(getCurrentTask() instanceof TaskImpl task)) {
+                    return;
+                }
                 task.setMaxExecutionTime(duration);
                 updateButtonVisuals.run();
             }
 
             @Override
             public boolean isChecked() {
-                return task.getMaxExecutionTime().equals(duration);
+                return getCurrentTask() instanceof TaskImpl task && task.getMaxExecutionTime().equals(duration);
             }
         }
 
@@ -524,6 +529,9 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
 
             @Override
             public void run() {
+                if (!(getCurrentTask() instanceof TaskImpl task)) {
+                    return;
+                }
                 task.setMaxExecutionTime(Duration.ZERO);
                 updateButtonVisuals.run();
             }
@@ -539,7 +547,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
                 m.add(new PresetTimeoutAction(i, presets.get(i)));
             }
 
-            if (task.getMaxExecutionTime().isPositive()) {
+            if (getCurrentTask() instanceof TaskImpl task && task.getMaxExecutionTime().isPositive()) {
                 Duration duration = task.getMaxExecutionTime();
                 if (!presets.contains(duration)) {
                     m.add(new PresetTimeoutAction(presets.size(), duration));
@@ -551,6 +559,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         });
 
         updateButtonVisuals.run();
+        return button;
     }
 
     private void configureVariables() {
@@ -585,18 +594,24 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
         taskContext = DBTaskUtils.extractContext(executionContext);
     }
 
-    void updateSaveTaskButton(boolean enable) {
+    void enableTaskButtons(boolean enable) {
         if (saveAsTaskButton != null) {
             saveAsTaskButton.setEnabled(enable);
         }
+        if (timeoutConfigurationButton != null) {
+            timeoutConfigurationButton.setEnabled(enable);
+        }
         if (enable) {
-            updateSaveTaskButtons();
+            updateTaskButtons();
         }
     }
 
-    public void updateSaveTaskButtons() {
+    public void updateTaskButtons() {
         if (saveAsTaskButton != null) {
             saveAsTaskButton.setEnabled(canFinish() && getTaskType() != null);
+        }
+        if (timeoutConfigurationButton != null) {
+            timeoutConfigurationButton.setEnabled(getCurrentTask() != null);
         }
     }
 
