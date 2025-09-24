@@ -240,6 +240,7 @@ public class DataSourceUtils {
             if (!CommonUtils.isEmpty(password)) connConfig.setUserPassword(password);
             if (!CommonUtils.isEmpty(conProperties)) connConfig.setProperties(conProperties);
             if (!CommonUtils.isEmpty(authProperties)) connConfig.setAuthProperties(authProperties);
+            if (!CommonUtils.isEmpty(advancedProperties)) connConfig.setProviderProperties(advancedProperties);
             if (!CommonUtils.isEmpty(authModelId)) connConfig.setAuthModelId(authModelId);
 
             return dataSource;
