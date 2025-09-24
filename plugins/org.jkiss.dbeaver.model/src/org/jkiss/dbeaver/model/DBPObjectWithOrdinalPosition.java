@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Object with ordered position.
  */
@@ -24,7 +26,7 @@ public interface DBPObjectWithOrdinalPosition extends Comparable<DBPObjectWithOr
     int getOrdinalPosition();
 
     @Override
-    default int compareTo(DBPObjectWithOrdinalPosition o) {
+    default int compareTo(@NotNull DBPObjectWithOrdinalPosition o) {
         return Integer.compare(getOrdinalPosition(), o.getOrdinalPosition());
     }
 }
