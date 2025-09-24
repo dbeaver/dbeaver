@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -278,12 +280,12 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
         }
 
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) {
+        public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) {
             switch (localName) {
                 case RegistryConstants.TAG_PROVIDER: {
                     curProvider = null;
                     curDriver = null;
-                    String idAttr = atts.getValue(RegistryConstants.ATTR_ID);
+                    String idAttr = attributes.getValue(RegistryConstants.ATTR_ID);
                     if (CommonUtils.isEmpty(idAttr)) {
                         log.warn("No id for driver provider");
                         return;
@@ -298,9 +300,9 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 }
                 case RegistryConstants.TAG_DRIVER: {
                     curDriver = null;
-                    String idAttr = atts.getValue(RegistryConstants.ATTR_ID);
+                    String idAttr = attributes.getValue(RegistryConstants.ATTR_ID);
                     if (curProvider == null) {
-                        String providerId = atts.getValue(RegistryConstants.ATTR_PROVIDER);
+                        String providerId = attributes.getValue(RegistryConstants.ATTR_PROVIDER);
                         if (!CommonUtils.isEmpty(providerId)) {
                             curProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
                             if (curProvider == null && !isDetachedProcess) {
@@ -323,41 +325,41 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     }
 
                     if (providedDrivers || curProvider.isDriversManagable()) {
-                        String category = atts.getValue(RegistryConstants.ATTR_CATEGORY);
+                        String category = attributes.getValue(RegistryConstants.ATTR_CATEGORY);
                         if (!CommonUtils.isEmpty(category)) {
                             curDriver.setCategory(category);
                         }
                         if (providedDrivers || curDriver.isCustom()) {
-                            curDriver.setName(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_NAME), curDriver.getName()));
+                            curDriver.setName(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_NAME), curDriver.getName()));
                         }
-                        curDriver.setDescription(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DESCRIPTION), curDriver.getDescription()));
-                        curDriver.setDriverClassName(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_CLASS), curDriver.getDriverClassName()));
-                        curDriver.setSampleURL(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_URL), curDriver.getSampleURL()));
-                        curDriver.setDriverDefaultPort(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_PORT), curDriver.getDefaultPort()));
-                        curDriver.setDriverDefaultDatabase(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DEFAULT_DATABASE), curDriver.getDefaultDatabase()));
-                        curDriver.setDriverDefaultServer(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DEFAULT_SERVER), curDriver.getDefaultServer()));
-                        curDriver.setDriverDefaultUser(CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_DEFAULT_USER), curDriver.getDefaultUser()));
-                        curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), curDriver.isEmbedded()));
-                        curDriver.setPropagateDriverProperties(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_PROPAGATE_DRIVER_PROPERTIES), curDriver.isPropagateDriverProperties()));
-                        curDriver.setAnonymousAccess(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ANONYMOUS), curDriver.isAnonymousAccess()));
-                        curDriver.setAllowsEmptyPassword(CommonUtils.getBoolean(atts.getValue("allowsEmptyPassword"), curDriver.isAllowsEmptyPassword()));
-                        curDriver.setInstantiable(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_INSTANTIABLE), curDriver.isInstantiable()));
-                        curDriver.setThreadSafeDriver(CommonUtils.getBoolean(atts.getValue("threadSafe"), curDriver.isThreadSafeDriver()));
+                        curDriver.setDescription(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_DESCRIPTION), curDriver.getDescription()));
+                        curDriver.setDriverClassName(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_CLASS), curDriver.getDriverClassName()));
+                        curDriver.setSampleURL(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_URL), curDriver.getSampleURL()));
+                        curDriver.setDriverDefaultPort(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_PORT), curDriver.getDefaultPort()));
+                        curDriver.setDriverDefaultDatabase(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_DEFAULT_DATABASE), curDriver.getDefaultDatabase()));
+                        curDriver.setDriverDefaultServer(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_DEFAULT_SERVER), curDriver.getDefaultServer()));
+                        curDriver.setDriverDefaultUser(CommonUtils.toString(attributes.getValue(RegistryConstants.ATTR_DEFAULT_USER), curDriver.getDefaultUser()));
+                        curDriver.setEmbedded(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_EMBEDDED), curDriver.isEmbedded()));
+                        curDriver.setPropagateDriverProperties(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_PROPAGATE_DRIVER_PROPERTIES), curDriver.isPropagateDriverProperties()));
+                        curDriver.setAnonymousAccess(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_ANONYMOUS), curDriver.isAnonymousAccess()));
+                        curDriver.setAllowsEmptyPassword(CommonUtils.getBoolean(attributes.getValue("allowsEmptyPassword"), curDriver.isAllowsEmptyPassword()));
+                        curDriver.setInstantiable(CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_INSTANTIABLE), curDriver.isInstantiable()));
+                        curDriver.setThreadSafeDriver(CommonUtils.getBoolean(attributes.getValue("threadSafe"), curDriver.isThreadSafeDriver()));
                     }
-                    if (atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER) != null) {
+                    if (attributes.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER) != null) {
                         curDriver.setCustomDriverLoader((
-                            CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false)));
+                            CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false)));
                     }
-                    if (atts.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE) != null) {
+                    if (attributes.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE) != null) {
                         curDriver.setUseURL((
-                            CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE), true)));
+                            CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE), true)));
                     }
-                    if (atts.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE) != null) {
+                    if (attributes.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE) != null) {
                         curDriver.setSupportsDistributedMode((
-                            CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true)));
+                            CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true)));
                     }
                     curDriver.setModified(true);
-                    String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
+                    String disabledAttr = attributes.getValue(RegistryConstants.ATTR_DISABLED);
                     if (CommonUtils.getBoolean(disabledAttr)) {
                         curDriver.setDisabled(true);
                     }
@@ -366,13 +368,13 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 case RegistryConstants.TAG_LIBRARY: {
                     if (curDriver == null) {
                         if (!isDetachedProcess) {
-                            log.warn("Library outside of driver (" + atts.getValue(RegistryConstants.ATTR_PATH) + ")");
+                            log.warn("Library outside of driver (" + attributes.getValue(RegistryConstants.ATTR_PATH) + ")");
                         }
                         return;
                     }
                     isLibraryUpgraded = false;
 
-                    String loaderId = atts.getValue("loader");
+                    String loaderId = attributes.getValue("loader");
                     curDriverLoader = loaderId == null ? null : curDriver.preCreateDriverLoader(loaderId);
                     if (curDriverLoader == null) {
                         if (loaderId != null) {
@@ -392,18 +394,18 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     }
 
                     DBPDriverLibrary.FileType type;
-                    String typeStr = atts.getValue(RegistryConstants.ATTR_TYPE);
+                    String typeStr = attributes.getValue(RegistryConstants.ATTR_TYPE);
                     if (CommonUtils.isEmpty(typeStr)) {
                         type = DBPDriverLibrary.FileType.jar;
                     } else {
                         type = CommonUtils.valueOf(DBPDriverLibrary.FileType.class, typeStr, DBPDriverLibrary.FileType.jar);
                     }
-                    String path = normalizeLibraryPath(atts.getValue(RegistryConstants.ATTR_PATH));
+                    String path = normalizeLibraryPath(attributes.getValue(RegistryConstants.ATTR_PATH));
                     if (!CommonUtils.isEmpty(path)) {
                         path = replacePathVariables(path);
                     }
-                    boolean custom = CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM), true);
-                    String version = atts.getValue(RegistryConstants.ATTR_VERSION);
+                    boolean custom = CommonUtils.getBoolean(attributes.getValue(RegistryConstants.ATTR_CUSTOM), true);
+                    String version = attributes.getValue(RegistryConstants.ATTR_VERSION);
                     DBPDriverLibrary lib = curDriver.getDriverLibrary(path);
                     if (!isDistributed && !providedDrivers && !custom && lib == null) {
                         // Perhaps this library isn't included in driver bundle
@@ -416,12 +418,12 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                         curDriver.disabledAllDefaultLibraries();
                     }
                     if (lib instanceof DriverLibraryMavenArtifact mvnLibrary) {
-                        mvnLibrary.setIgnoreDependencies(CommonUtils.toBoolean(atts.getValue("ignore-dependencies")));
-                        mvnLibrary.setLoadOptionalDependencies(CommonUtils.toBoolean(atts.getValue("load-optional-dependencies")));
-                        mvnLibrary.setForcedVersion(CommonUtils.toBoolean(atts.getValue("forced-version")));
+                        mvnLibrary.setIgnoreDependencies(CommonUtils.toBoolean(attributes.getValue("ignore-dependencies")));
+                        mvnLibrary.setLoadOptionalDependencies(CommonUtils.toBoolean(attributes.getValue("load-optional-dependencies")));
+                        mvnLibrary.setForcedVersion(CommonUtils.toBoolean(attributes.getValue("forced-version")));
                     }
 
-                    String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
+                    String disabledAttr = attributes.getValue(RegistryConstants.ATTR_DISABLED);
                     if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
                         lib.setDisabled(true);
                     } else if (lib == null) {
@@ -448,18 +450,18 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 }
                 case RegistryConstants.TAG_FILE: {
                     if (curDriver != null && curLibrary != null && curDriverLoader != null && !isLibraryUpgraded) {
-                        String path = atts.getValue(RegistryConstants.ATTR_PATH);
+                        String path = attributes.getValue(RegistryConstants.ATTR_PATH);
                         if (path != null) {
                             path = replacePathVariables(path);
                             if (CommonUtils.isEmpty(path)) {
                                 log.warn("Empty path for library file");
                             } else {
                                 DriverFileInfo info = new DriverFileInfo(
-                                        atts.getValue(RegistryConstants.ATTR_ID),
-                                        atts.getValue(RegistryConstants.ATTR_VERSION),
+                                        attributes.getValue(RegistryConstants.ATTR_ID),
+                                        attributes.getValue(RegistryConstants.ATTR_VERSION),
                                         curLibrary.getType(),
                                         Path.of(path), path);
-                                String crcString = atts.getValue("crc");
+                                String crcString = attributes.getValue("crc");
                                 if (!CommonUtils.isEmpty(crcString)) {
                                     long crc = Long.parseLong(crcString, 16);
                                     if (crc != 0) {
@@ -476,20 +478,20 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                     if (curDriver != null) {
                         curDriver.addNativeClientLocation(
                             new LocalNativeClientLocation(
-                                atts.getValue(RegistryConstants.ATTR_ID),
-                                atts.getValue(RegistryConstants.ATTR_PATH)));
+                                attributes.getValue(RegistryConstants.ATTR_ID),
+                                attributes.getValue(RegistryConstants.ATTR_PATH)));
                     }
                     break;
                 case RegistryConstants.TAG_PARAMETER: {
                     if (curDriver != null) {
-                        final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
-                        final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
+                        final String paramName = attributes.getValue(RegistryConstants.ATTR_NAME);
+                        final String paramValue = attributes.getValue(RegistryConstants.ATTR_VALUE);
                         if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
                             curDriver.setDriverParameter(paramName, paramValue, false);
                         }
                         // Read extra icon parameter for custom drivers
                         if (curDriver.isCustom()) {
-                            final String iconParam = atts.getValue(RegistryConstants.ATTR_ICON);
+                            final String iconParam = attributes.getValue(RegistryConstants.ATTR_ICON);
                             if (!CommonUtils.isEmpty(iconParam)) {
                                 DBPImage icon = curDriver.iconToImage(iconParam);
                                 curDriver.setIconPlain(icon);
@@ -501,8 +503,8 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
                 }
                 case RegistryConstants.TAG_PROPERTY: {
                     if (curDriver != null) {
-                        final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
-                        final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
+                        final String paramName = attributes.getValue(RegistryConstants.ATTR_NAME);
+                        final String paramValue = attributes.getValue(RegistryConstants.ATTR_VALUE);
                         if (!CommonUtils.isEmpty(paramName)) {
                             curDriver.setConnectionProperty(paramName, paramValue);
                         }
@@ -525,11 +527,11 @@ public class DriverDescriptorSerializerLegacy extends DriverDescriptorSerializer
         }
 
         @Override
-        public void saxText(SAXReader reader, String data) {
+        public void saxText(@NotNull SAXReader reader, @NotNull String data) {
         }
 
         @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
+        public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) {
             if (localName.equals(RegistryConstants.TAG_LIBRARY)) {
                 curLibrary = null;
             }

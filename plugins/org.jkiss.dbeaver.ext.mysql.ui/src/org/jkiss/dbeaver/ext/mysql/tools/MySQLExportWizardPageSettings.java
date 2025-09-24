@@ -35,6 +35,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
 
     private Combo methodCombo;
     private Button noCreateStatementsCheck;
+    private Button compressedCheck;
     private Button addDropStatementsCheck;
     private Button disableKeysCheck;
     private Button extendedInsertsCheck;
@@ -76,6 +77,8 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         Group settingsGroup = UIUtils.createControlGroup(composite, MySQLUIMessages.tools_db_export_wizard_page_settings_group_settings, 3, GridData.FILL_HORIZONTAL, 0);
         noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_no_create, wizard.getSettings().isNoCreateStatements());
         noCreateStatementsCheck.addSelectionListener(changeListener);
+        compressedCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_compressed, wizard.getSettings().isCompressed());
+        compressedCheck.addSelectionListener(changeListener);
         addDropStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_add_drop, wizard.getSettings().isAddDropStatements());
         addDropStatementsCheck.addSelectionListener(changeListener);
         disableKeysCheck = UIUtils.createCheckbox(settingsGroup, MySQLUIMessages.tools_db_export_wizard_page_settings_checkbox_disable_keys, wizard.getSettings().isDisableKeys());
@@ -125,6 +128,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
             default -> settings.setMethod(MySQLExportSettings.DumpMethod.NORMAL);
         }
         settings.setNoCreateStatements(noCreateStatementsCheck.getSelection());
+        settings.setCompressed(compressedCheck.getSelection());
         settings.setAddDropStatements(addDropStatementsCheck.getSelection());
         settings.setDisableKeys(disableKeysCheck.getSelection());
         settings.setExtendedInserts(extendedInsertsCheck.getSelection());
