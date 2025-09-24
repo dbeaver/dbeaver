@@ -16,22 +16,11 @@
  */
 package org.jkiss.dbeaver.model.cli;
 
-import org.jkiss.dbeaver.DBException;
+public interface CLIConstants {
+    short EXIT_CODE_CONTINUE = -1;
+    short EXIT_CODE_OK = 0;
+    short EXIT_CODE_ERROR = 1;
+    short EXIT_CODE_ILLEGAL_ARGUMENTS = 2;
 
-public class CliException extends DBException {
-    private final short exitCode;
-
-    public CliException(String message, short exitCode) {
-        super(message);
-        this.exitCode = exitCode;
-    }
-
-    public CliException(String message, Throwable cause, short exitCode) {
-        super(message, cause);
-        this.exitCode = exitCode;
-    }
-
-    public short getExitCode() {
-        return exitCode;
-    }
+    String PARAM_PROJECT = "project";
 }

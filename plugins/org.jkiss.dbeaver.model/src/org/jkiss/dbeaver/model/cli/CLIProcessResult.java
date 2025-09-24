@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.model.cli;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-public class CliProcessResult {
+public class CLIProcessResult {
     public enum PostAction {
-        START_INSTANCE(CliConstants.EXIT_CODE_CONTINUE),
-        SHUTDOWN(CliConstants.EXIT_CODE_OK),
-        ERROR(CliConstants.EXIT_CODE_ERROR),
-        UNKNOWN_COMMAND(CliConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
+        START_INSTANCE(CLIConstants.EXIT_CODE_CONTINUE),
+        SHUTDOWN(CLIConstants.EXIT_CODE_OK),
+        ERROR(CLIConstants.EXIT_CODE_ERROR),
+        UNKNOWN_COMMAND(CLIConstants.EXIT_CODE_ILLEGAL_ARGUMENTS);
         private final short defaultExitCode;
 
         PostAction(short exitCode) {
@@ -38,19 +38,19 @@ public class CliProcessResult {
     @Nullable
     private final String output;
 
-    public CliProcessResult(@NotNull PostAction postAction) {
+    public CLIProcessResult(@NotNull PostAction postAction) {
         this(postAction, null, postAction.defaultExitCode);
     }
 
-    public CliProcessResult(@NotNull PostAction postAction, short exitCode) {
+    public CLIProcessResult(@NotNull PostAction postAction, short exitCode) {
         this(postAction, null, exitCode);
     }
 
-    public CliProcessResult(@NotNull PostAction postAction, @Nullable String output) {
+    public CLIProcessResult(@NotNull PostAction postAction, @Nullable String output) {
         this(postAction, output, postAction.defaultExitCode);
     }
 
-    public CliProcessResult(@NotNull PostAction postAction, @Nullable String output, short exitCode) {
+    public CLIProcessResult(@NotNull PostAction postAction, @Nullable String output, short exitCode) {
         this.postAction = postAction;
         this.output = output;
         this.exitCode = exitCode;
