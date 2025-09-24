@@ -538,16 +538,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 TimezoneRegistry.setDefaultZone(ZoneId.of(legacyTimezoneOverridden), false);
             }
 
-            if (isReadDatabaseList(conConfig) || !CommonUtils.isEmpty(conConfig.getBootstrap().getDefaultCatalogName())) {
+            String activeDbName = getDbName(instance, conConfig);
+            if (shouldConnectWithNewConfig(conConfig, activeDbName)) {
                 // If database was changed then use new name for connection
-                String databaseName;
-                if (instance != null) {
-                    databaseName = instance.getName();
-                } else {
-                    databaseName = PostgreUtils.getDatabaseNameFromConfiguration(conConfig);
-                }
                 DBPConnectionConfiguration newConfig = new DBPConnectionConfiguration(conConfig);
-                newConfig.setDatabaseName(databaseName);
+                newConfig.setDatabaseName(activeDbName);
                 String newURL = newConfig.getUrl();
                 if (newConfig.getConfigurationType() == DBPDriverConfigurationType.MANUAL) {
                     // Generate URL with new database name
@@ -557,7 +552,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     }
                 } else {
                     // Patch connection URL with new database name
-                    newURL = PostgreUtils.updateDatabaseNameInURL(newConfig.getUrl(), databaseName);
+                    newURL = PostgreUtils.updateDatabaseNameInURL(newConfig.getUrl(), activeDbName);
                 }
                 newConfig.setUrl(newURL);
                 pgConnection = super.openConnection(monitor, context, newConfig, purpose);
@@ -603,6 +598,19 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
 
         return pgConnection;
+    }
+
+    @Nullable
+    private String getDbName(@Nullable JDBCRemoteInstance instance, @NotNull DBPConnectionConfiguration conConfig) {
+        return instance != null
+            ? instance.getName()
+            : PostgreUtils.getDatabaseNameFromConfiguration(conConfig);
+    }
+
+    private boolean shouldConnectWithNewConfig(@NotNull DBPConnectionConfiguration conConfig, @NotNull String dbName) {
+        return isReadDatabaseList(conConfig)
+            || !CommonUtils.isEmpty(conConfig.getBootstrap().getDefaultCatalogName())
+            || !CommonUtils.equalObjects(dbName, PostgreUtils.getDatabaseNameFromConfiguration(conConfig));
     }
 
     @Override
