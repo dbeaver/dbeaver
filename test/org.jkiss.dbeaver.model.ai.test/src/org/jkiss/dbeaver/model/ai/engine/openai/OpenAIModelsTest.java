@@ -21,39 +21,38 @@ import org.junit.Test;
 
 import static org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 public class OpenAIModelsTest extends DBeaverUnitTest {
 
     @Test
-    public void effectiveModelNameNullShouldReturnDefaultModelName() throws Exception {
+    public void effectiveModelNameNullShouldReturnDefaultModelName() {
         //when
         var result = OpenAIModels.getEffectiveModelName(null);
         //then
-        assertEquals(DEFAULT_MODEL,result);
+        assertEquals(DEFAULT_MODEL, result);
     }
 
     @Test
-    public void effectiveModelNameKnownUppercaseShouldReturnKnownModelLowercase() throws Exception {
+    public void effectiveModelNameKnownUppercaseShouldReturnKnownModelLowercase() {
         //given
         var expectedModelName = KNOWN_MODELS.keySet().stream().findFirst().orElseThrow();
         var inputModelName = expectedModelName.toUpperCase();
         //when
-        var result = OpenAIModels.getEffectiveModelName(inputModelName);
+        var result = getEffectiveModelName(inputModelName);
         //then
-        assertEquals(expectedModelName,result);
+        assertEquals(expectedModelName, result);
     }
 
     @Test
-    public void effectiveModelNameUnknownUppercaseShouldReturnKnownModelUppercase() throws Exception {
+    public void effectiveModelNameUnknownUppercaseShouldReturnKnownModelUppercase() {
         //given
         var inputModelName = "some-UNKNOWN-MODEL";
         assumeFalse(KNOWN_MODELS.containsKey(inputModelName.toLowerCase()));
         //when
-        var result = OpenAIModels.getEffectiveModelName(inputModelName);
+        var result = getEffectiveModelName(inputModelName);
         //then
-        assertEquals(inputModelName,result);
+        assertEquals(inputModelName, result);
     }
 
 
