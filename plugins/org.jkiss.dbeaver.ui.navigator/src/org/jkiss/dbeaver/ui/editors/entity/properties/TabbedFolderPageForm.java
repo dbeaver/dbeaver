@@ -23,6 +23,7 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.widgets.CompositeFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -51,7 +52,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.ICustomActionsProvider;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomFormEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
@@ -101,12 +105,12 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     @Override
-    public void createControl(Composite parent)
-    {
-//        ScrolledComposite scrolled = new ScrolledComposite(parent, SWT.V_SCROLL);
-//        scrolled.setLayout(new GridLayout(1, false));
+    public void createControl(Composite parent) {
+        ScrolledComposite propertiesGroupHost = UIUtils.createScrolledComposite(parent, SWT.V_SCROLL);
+        CSSUtils.markConnectionTypeColor(propertiesGroupHost);
 
-        propertiesGroup = new ConComposite(parent, SWT.NONE);
+        propertiesGroup = new Composite(propertiesGroupHost, SWT.NONE);
+        UIUtils.configureScrolledComposite(propertiesGroupHost, propertiesGroup);
 
         curPropertySource = input.getPropertySource();
 
