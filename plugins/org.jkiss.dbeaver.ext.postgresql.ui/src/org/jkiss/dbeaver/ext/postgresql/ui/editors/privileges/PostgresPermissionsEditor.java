@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -523,7 +523,7 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
     private void addText(Composite parent) {
         selectedObjectNames = new Text(
             parent,
-            SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL
+            SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL
         );
         selectedObjectNames.setLayoutData(new GridData(GridData.FILL_BOTH));
     }

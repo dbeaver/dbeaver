@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.css;
 
 import org.eclipse.e4.ui.css.core.engine.CSSEngine;
+import org.eclipse.e4.ui.css.swt.dom.CompositeElement;
 import org.eclipse.e4.ui.css.swt.helpers.SWTElementHelpers;
 import org.eclipse.e4.ui.css.swt.properties.css2.CSSPropertyBackgroundSWTHandler;
 import org.eclipse.swt.SWT;
@@ -42,9 +43,9 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
         String pseudo,
         CSSEngine engine
     ) throws Exception {
-        super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
-
         Widget widget = SWTElementHelpers.getWidget(element);
+
+        super.applyCSSPropertyBackgroundColor(element, value, pseudo, engine);
 
         if (widget instanceof ToolBar toolBar) {
             // FIXME: it is a hack to set toolbar foreground explicitly.
@@ -56,7 +57,8 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
         if (widget instanceof Control ctrl &&
             !UIUtils.isInDialog(ctrl) &&
             !isExcludedFromStyling(ctrl) &&
-            isOverridesBackground(ctrl)
+            isOverridesBackground(ctrl) &&
+            !CompositeElement.hasBackgroundOverriddenByCSS(ctrl)
         ) {
             Color newColor = CSSUtils.getCurrentEditorConnectionColor(widget);
             //if (newColor != null) {
