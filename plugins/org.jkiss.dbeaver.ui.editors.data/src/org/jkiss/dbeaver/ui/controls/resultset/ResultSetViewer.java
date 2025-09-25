@@ -359,7 +359,7 @@ public class ResultSetViewer extends Viewer
                 });
 
                 this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
-                Composite trControl = new Composite(panelFolder, SWT.NONE);
+                Composite trControl = new ConComposite(panelFolder, SWT.NONE);
                 trControl.setLayout(new FillLayout());
                 ToolBar panelToolbarControl = this.panelToolBar.createControl(trControl);
                 this.panelFolder.setTopRight(trControl, SWT.RIGHT | SWT.WRAP);
