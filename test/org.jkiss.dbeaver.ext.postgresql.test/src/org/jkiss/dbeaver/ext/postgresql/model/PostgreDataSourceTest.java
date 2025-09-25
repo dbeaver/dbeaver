@@ -40,9 +40,9 @@ import static org.mockito.Mockito.*;
 
 public class PostgreDataSourceTest extends DBeaverUnitTest {
 
-    public final String serverVersion = "PG Test";
+    private static final String serverVersion = "PG Test";
 
-    private final String activeDatabaseName = "active-db";
+    private static final String activeDatabaseName = "active-db";
 
     @Mock
     private DBRProgressMonitor monitor;
@@ -59,7 +59,7 @@ public class PostgreDataSourceTest extends DBeaverUnitTest {
     private PostgreDataSource dataSource;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         //driver config
         var mockDriverSubstitution = mock(DBPDriverSubstitution.class);
         var mockDriverSubstitutionDescriptor = mock(DBPDriverSubstitutionDescriptor.class);
