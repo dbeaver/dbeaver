@@ -28,7 +28,7 @@ public class OpenAIModelsTest extends DBeaverUnitTest {
     @Test
     public void effectiveModelNameNullShouldReturnDefaultModelName() {
         //when
-        var result = OpenAIModels.getEffectiveModelName(null);
+        var result = getEffectiveModelName(null);
         //then
         assertEquals(DEFAULT_MODEL, result);
     }
