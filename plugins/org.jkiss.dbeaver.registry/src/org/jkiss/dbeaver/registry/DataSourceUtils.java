@@ -211,7 +211,7 @@ public class DataSourceUtils {
                     } else if (paramName.startsWith(PREFIX_ADVANCED_PROP)) {
                         String suffix = paramName.substring(PREFIX_ADVANCED_PROP.length());
                         if (!suffix.isEmpty()) {
-                            advancedProperties.put(paramName, paramValue);
+                            advancedProperties.put(suffix, paramValue);
                             handled = true;
                         }
                     } else if (parameterHandler != null) {
