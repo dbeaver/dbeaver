@@ -440,7 +440,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
     @Override
     public void initDefaultSSLConfig(DBPConnectionConfiguration connectionInfo, Map<String, String> props) {
-        //super.initDefaultSSLConfig(connectionInfo, props);
+        // Do not populate default PG properties like "ssl"
     }
 
     @Override
