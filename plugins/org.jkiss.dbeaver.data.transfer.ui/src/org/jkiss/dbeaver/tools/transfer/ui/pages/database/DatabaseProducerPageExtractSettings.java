@@ -21,7 +21,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -56,7 +55,6 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
     private Combo rowsExtractType;
     private Label segmentSizeLabel;
     private Text segmentSizeText;
-    private Button logExtractQueriesCheck;
 
     public DatabaseProducerPageExtractSettings() {
         super(DTUIMessages.database_producer_page_extract_settings_name_and_title);
@@ -245,17 +243,6 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
                 ));
                 ((GridData) segmentSizeText.getLayoutData()).widthHint = UIUtils.getFontHeight(segmentSizeText) * 10;
             }
-
-            logExtractQueriesCheck = UIUtils.createCheckbox(
-                generalSettings,
-                DTMessages.data_transfer_wizard_output_log_select_queries_check,
-                DTMessages.data_transfer_wizard_output_log_select_queries_check_tip,
-                settings.isEnableQmLogging(),
-                4
-            );
-            logExtractQueriesCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                settings.setEnableQmLogging(logExtractQueriesCheck.getSelection());
-            }));
         }
 
         if(getWizard().getCurrentTask() != null){
@@ -288,7 +275,6 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
         threadsNumText.setText(String.valueOf(getWizard().getSettings().getMaxJobCount()));
         newConnectionCheckbox.setSelection(settings.isOpenNewConnections());
         rowCountCheckbox.setSelection(settings.isQueryRowCount());
-        logExtractQueriesCheck.setSelection(settings.isEnableQmLogging());
 
         if (segmentSizeText != null) {
             segmentSizeText.setText(String.valueOf(settings.getSegmentSize()));
