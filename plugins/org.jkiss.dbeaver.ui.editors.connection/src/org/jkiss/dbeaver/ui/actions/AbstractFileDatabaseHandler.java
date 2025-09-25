@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.file.IFileTypeHandler;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -96,11 +97,18 @@ public abstract class AbstractFileDatabaseHandler implements IFileTypeHandler {
                 DBPDataSource dataSource = dsContainer.getDataSource();
                 DBNDatabaseNode openNode = DBNUtils.getDefaultDatabaseNodeToOpen(monitor, dataSource);
 
+                // Try multiple times with a small delay in case the node is still not available
+                for (int i = 0; i < 10 && openNode == null; i++) {
+                    RuntimeUtils.pause(100);
+                    openNode = DBNUtils.getDefaultDatabaseNodeToOpen(monitor, dataSource);
+                }
+
                 if (openNode == null) {
                     throw new DBException("Cannot determine target node for " + dsContainer.getName());
                 } else {
+                    DBNDatabaseNode openNode1 = openNode;
                     UIUtils.syncExec(() -> NavigatorHandlerObjectOpen.openEntityEditor(
-                        openNode,
+                        openNode1,
                         null,
                         null,
                         null,
