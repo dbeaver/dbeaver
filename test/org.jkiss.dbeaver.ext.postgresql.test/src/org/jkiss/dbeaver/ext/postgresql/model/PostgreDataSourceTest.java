@@ -87,7 +87,7 @@ public class PostgreDataSourceTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void testDataSource() throws Exception {
+    public void shouldUseInstanceDbInUrlWhenActiveDbEqualsInstanceDb() throws Exception {
         //given
         when(instance.getName()).thenReturn(activeDatabaseName);
         var expectedUrl = "jdbc:postgresql://{host}/" + activeDatabaseName;
@@ -98,7 +98,7 @@ public class PostgreDataSourceTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void currentDBDifferentFromActiveDBShouldCallDifferentURL() throws SQLException {
+    public void shouldUseInstanceDbInUrlWhenActiveDbDiffersFromActiveDb() throws SQLException {
         //given
         String otherDbName = "other-db";
         when(instance.getName()).thenReturn(otherDbName);
