@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -53,7 +52,7 @@ public class BigQueryDataSource extends GenericDataSource {
             DBPDriver driver = getContainer().getDriver();
             return driver.getDataSourceProvider().getConnectionURL(driver, connectionInfo);
         }
-        return connectionURL;
+        return connectionURL + ";EnableSession=1;";
     }
 
     @NotNull
