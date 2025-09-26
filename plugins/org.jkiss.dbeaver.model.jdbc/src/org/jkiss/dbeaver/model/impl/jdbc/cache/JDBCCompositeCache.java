@@ -79,27 +79,39 @@ public abstract class JDBCCompositeCache<
     }
 
     @NotNull
-    abstract protected JDBCStatement prepareObjectsStatement(JDBCSession session, OWNER owner, PARENT forParent)
-        throws SQLException;
+    abstract protected JDBCStatement prepareObjectsStatement(
+        @NotNull JDBCSession session,
+        @NotNull OWNER owner,
+        @Nullable PARENT forParent
+    ) throws SQLException;
 
     @Nullable
-    abstract protected OBJECT fetchObject(JDBCSession session, OWNER owner, PARENT parent, String childName, JDBCResultSet resultSet)
-        throws SQLException, DBException;
+    abstract protected OBJECT fetchObject(
+        @NotNull JDBCSession session,
+        @NotNull OWNER owner,
+        @NotNull PARENT parent,
+        @NotNull String childName,
+        @NotNull JDBCResultSet resultSet
+    ) throws SQLException, DBException;
 
     @Nullable
-    abstract protected ROW_REF[] fetchObjectRow(JDBCSession session, PARENT parent, OBJECT forObject, JDBCResultSet resultSet)
-        throws SQLException, DBException;
+    abstract protected ROW_REF[] fetchObjectRow(
+        @NotNull JDBCSession session,
+        @NotNull PARENT parent,
+        @NotNull OBJECT forObject,
+        @NotNull JDBCResultSet resultSet
+    ) throws SQLException, DBException;
 
-    protected PARENT getParent(OBJECT object)
+    protected PARENT getParent(@NotNull OBJECT object)
     {
         return (PARENT) object.getParentObject();
     }
 
-    abstract protected void cacheChildren(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> children);
+    abstract protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull OBJECT object, @NotNull List<ROW_REF> children);
 
     // Second cache function. Needed for complex entities which refers to each other (foreign keys)
     // First cache must cache all unique constraint, second must cache foreign keys references which refers unique keys
-    protected void cacheChildren2(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> children) {
+    protected void cacheChildren2(@NotNull DBRProgressMonitor monitor, @NotNull OBJECT object, @NotNull List<ROW_REF> children) {
 
     }
 
@@ -255,7 +267,7 @@ public abstract class JDBCCompositeCache<
         }
     }
 
-    protected void loadObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+    protected void loadObjects(@NotNull DBRProgressMonitor monitor, @NotNull OWNER owner, @Nullable PARENT forParent)
         throws DBException
     {
         if (DBWorkbench.getPlatform().isUnitTestMode()) {
