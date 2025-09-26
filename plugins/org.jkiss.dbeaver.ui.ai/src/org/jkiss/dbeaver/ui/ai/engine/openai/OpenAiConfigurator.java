@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.ai.engine.openai;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -23,10 +25,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -37,9 +36,12 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.dialogs.connection.AIConnectionTestDialog;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
@@ -48,6 +50,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Locale;
+
+import static org.jkiss.dbeaver.ui.UIUtils.getShell;
 
 public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
     implements IObjectPropertyConfigurator<ENGINE, PROPERTIES> {
@@ -63,6 +67,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     @Nullable
     protected Text tokenText;
     private Text temperatureText;
+    private ModelSelectorField.ModelListProvider modelListProvider;
     private ModelSelectorField modelSelectorField;
     private ContextWindowSizeField contextWindowSizeField;
     private Button logQueryCheck;
@@ -79,10 +84,12 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createConnectionParameters(composite);
 
+        createModelListProvider();
         createModelParameters(composite);
         createBaseUrlParameter(composite);
 
         createAdditionalSettings(composite);
+        createTestConnectionButton(composite);
     }
 
     @Override
@@ -139,12 +146,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withModelListSupplier(
-                (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
-                    .filter(it -> it.features().contains(AIModelFeature.CHAT))
-                    .map(AIModel::name)
-                    .toList()
-            )
+            .withModelListSupplier(modelListProvider)
             .withSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 OpenAIModels.getModelByName(modelSelectorField.getSelectedModel())
                     .ifPresentOrElse(
@@ -200,6 +202,49 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         tokenText.addModifyListener((e -> token = tokenText.getText()));
         tokenText.setMessage("API access token");
         createURLInfoLink(parent);
+    }
+
+    private void createModelListProvider() {
+        modelListProvider =
+            (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
+                .filter(it -> it.features().contains(AIModelFeature.CHAT))
+                .map(AIModel::name)
+                .toList();
+    }
+
+    private void createTestConnectionButton(@NotNull Composite parent) {
+        GridData gd = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+        gd.horizontalSpan = 2;
+
+        UIUtils.createPushButton(
+            parent,
+            "Test connection...",
+            null,
+            null,
+            SelectionListener.widgetSelectedAdapter(e ->
+                new AbstractJob("Getting model list") {
+                    @Override
+                    protected IStatus run(DBRProgressMonitor monitor) {
+                        {
+                            try {
+                                modelListProvider.getModels(monitor, true);
+                                UIUtils.asyncExec(() -> {
+                                    Shell shell = parent.getShell();
+                                    new AIConnectionTestDialog(shell).open();
+                                });
+
+                                return Status.OK_STATUS;
+                            } catch (DBException exception) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    "Error connecting to OpenAI",
+                                    null,
+                                    exception
+                                );
+                                return Status.CANCEL_STATUS;
+                            }
+                        }
+                    }
+                }.schedule())).setLayoutData(gd);
     }
 
     protected void createBaseUrlParameter(@NotNull Composite parent) {
