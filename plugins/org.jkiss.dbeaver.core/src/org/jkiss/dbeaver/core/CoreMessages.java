@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.core;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class CoreMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
@@ -459,7 +459,6 @@ public class CoreMessages extends NLS {
     public static String pref_page_database_general_checkbox_add_special_DDL_info_tip;
     // EntityEditor
     public static String pref_page_ui_general_show_full_name_in_editor;
-    public static String pref_page_ui_general_show_table_grid;
     public static String pref_page_ui_general_show_preview_on_save;
     // DatabaseGeneral
     public static String pref_page_ui_general_group_task_bar;

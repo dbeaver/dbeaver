@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public final class MySQLUIMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages"; //$NON-NLS-1$
@@ -106,6 +106,7 @@ public final class MySQLUIMessages extends NLS {
     public static String tools_db_export_wizard_page_settings_checkbox_dump_events;
     public static String tools_db_export_wizard_page_settings_checkbox_ext_inserts;
     public static String tools_db_export_wizard_page_settings_checkbox_no_create;
+    public static String tools_db_export_wizard_page_settings_checkbox_compressed;
     public static String tools_db_export_wizard_page_settings_combo_item_lock_tables;
     public static String tools_db_export_wizard_page_settings_combo_item_normal;
     public static String tools_db_export_wizard_page_settings_combo_item_online_backup;

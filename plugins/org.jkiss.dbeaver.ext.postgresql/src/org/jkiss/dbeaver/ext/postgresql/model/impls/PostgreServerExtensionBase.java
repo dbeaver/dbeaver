@@ -633,6 +633,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsJobs() {
+        return false;
+    }
+
+    @Override
     public boolean isPGObject(@NotNull Object object) {
         String className = object.getClass().getName();
         return PostgreConstants.PG_OBJECT_CLASS.equals(className);

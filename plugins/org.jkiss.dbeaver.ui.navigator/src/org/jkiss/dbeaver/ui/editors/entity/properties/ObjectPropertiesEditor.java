@@ -34,6 +34,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.internal.PartSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -149,15 +150,15 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         try {
             TabbedFolderInfo[] folders = collectFolders(this);
             if (folders.length == 0) {
-                createPropertiesPanel(container);
+                propsPlaceholder = createPropertiesPanel(container);
+                propsPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
             } else {
                 Composite foldersParent = container;
                 if (hasPropertiesEditor() && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.ENTITY_EDITOR_DETACH_INFO)) {
                     sashForm = UIUtils.createPartDivider(getSite().getPart(), container, SWT.VERTICAL);
                     sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
+                    propsPlaceholder = createPropertiesPanel(sashForm);
                     foldersParent = sashForm;
-
-                    createPropertiesPanel(sashForm);
                 }
                 createFoldersPanel(foldersParent, folders);
             }
@@ -183,10 +184,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
     }
 
-    private void createPropertiesPanel(Composite container) {
-        // Main panel
-        propsPlaceholder = new ConComposite(container);
-        propsPlaceholder.setLayout(new FillLayout());
+    @NotNull
+    private Composite createPropertiesPanel(@NotNull Composite parent) {
+        Composite composite = new ConComposite(parent);
+        composite.setLayout(new FillLayout());
+        return composite;
     }
 
     private Composite createFoldersPanel(Composite parent, TabbedFolderInfo[] folders) {

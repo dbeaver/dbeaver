@@ -96,9 +96,10 @@ public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
                     true);
 
                 UIUtils.drawMessageOverControl(viewPlaceholder, e, ResultSetMessages.value_viewer_select_view_message, 0);
-                UIUtils.drawMessageOverControl(viewPlaceholder, e, NLS.bind(ResultSetMessages.value_viewer_hide_panel_message, hidePanelCmd), 20);
+                UIUtils.drawMessageOverControl(viewPlaceholder, e, NLS.bind(ResultSetMessages.value_viewer_hide_panel_message, hidePanelCmd), 30);
             }
         });
+        CSSUtils.setExcludeFromStyling(viewPlaceholder);
 
         viewPlaceholder.addDisposeListener(e -> disposeValueEditor());
         viewPlaceholder.addTraverseListener(this::handleTraverseEvent);

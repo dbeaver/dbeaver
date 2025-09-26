@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,6 +68,7 @@ public class DPIApplication extends BaseApplicationImpl implements DBPApplicatio
         return true;
     }
 
+    @NotNull
     @Override
     public Object start(IApplicationContext context) {
         initializeApplicationServices();
@@ -166,6 +167,7 @@ public class DPIApplication extends BaseApplicationImpl implements DBPApplicatio
         return environmentVariablesAccessible;
     }
 
+    @Nullable
     @Override
     public String getDefaultProjectName() {
         return "default";
@@ -192,11 +194,6 @@ public class DPIApplication extends BaseApplicationImpl implements DBPApplicatio
 
     public void addDriverLibsLocation(@NotNull String driverId, @NotNull String[] driverLibsLocation) {
         this.driverLibsLocation.put(driverId, driverLibsLocation);
-    }
-
-    @Override
-    public long getLastUserActivityTime() {
-        return -1;
     }
 
     @NotNull

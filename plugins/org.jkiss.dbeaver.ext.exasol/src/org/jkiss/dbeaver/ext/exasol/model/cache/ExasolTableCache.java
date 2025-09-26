@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2016-2016 Karl Griesser (fullref@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +28,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCStatementImpl;
 
 import java.sql.SQLException;
 
@@ -64,9 +62,9 @@ public final class ExasolTableCache
 	@NotNull
     @Override
 	protected JDBCStatement prepareObjectsStatement(
-			@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema)
-			throws SQLException
-	{
+		@NotNull JDBCSession session,
+		@NotNull ExasolSchema exasolSchema
+	) throws SQLException {
 		String sql = String.format(SQL_TABLES, exasolSchema.getName());
 		
 		JDBCStatement dbstat = session.createStatement();
@@ -80,9 +78,10 @@ public final class ExasolTableCache
 	@SuppressWarnings("rawtypes")
 	@Override
 	protected JDBCStatement prepareChildrenStatement(
-			@NotNull JDBCSession session, @NotNull ExasolSchema exasolSchema,
-			@Nullable ExasolTable exasolTable) throws SQLException
-	{
+		@NotNull JDBCSession session,
+		@NotNull ExasolSchema exasolSchema,
+		@Nullable ExasolTable exasolTable
+	) throws SQLException {
 		
 		String tablePrefix = exasolSchema.getDataSource().getTablePrefix(ExasolSysTablePrefix.ALL);
 		String sql;
@@ -93,26 +92,28 @@ public final class ExasolTableCache
 			sql = String.format(SQL_COLS_ALL,tablePrefix, ExasolUtils.quoteString(exasolSchema.getName()));
 
 		JDBCStatement dbstat = session.createStatement();
-		
-		((JDBCStatementImpl) dbstat).setQueryString(sql);
+		dbstat.setQueryString(sql);
 
 		return dbstat;
 	}
 
 	@Override
-	protected ExasolTableColumn fetchChild(@NotNull JDBCSession session,
-                                           @NotNull ExasolSchema owner, @NotNull ExasolTable parent,
-                                           @NotNull JDBCResultSet dbResult) throws SQLException, DBException
-	{
+	protected ExasolTableColumn fetchChild(
+		@NotNull JDBCSession session,
+		@NotNull ExasolSchema owner,
+		@NotNull ExasolTable parent,
+		@NotNull JDBCResultSet dbResult
+	) throws DBException {
 		return new ExasolTableColumn(session.getProgressMonitor(), parent,
 				dbResult);
 	}
 
 	@Override
-	protected ExasolTable fetchObject(@NotNull JDBCSession session,
-			@NotNull ExasolSchema owner, @NotNull JDBCResultSet resultSet)
-			throws SQLException, DBException
-	{
+	protected ExasolTable fetchObject(
+		@NotNull JDBCSession session,
+		@NotNull ExasolSchema owner,
+		@NotNull JDBCResultSet resultSet
+	) throws DBException {
 		return new ExasolTable(session.getProgressMonitor(), owner, resultSet);
 	}
 

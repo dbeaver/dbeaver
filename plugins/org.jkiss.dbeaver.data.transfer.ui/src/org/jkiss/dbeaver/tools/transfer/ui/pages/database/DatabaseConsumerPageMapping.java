@@ -266,7 +266,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             mappingRules = UIUtils.createDialogButton(
                 buttonsPanel,
                 DTMessages.data_transfer_db_consumer_mapping_rules_button,
-                null,
+                UIIcon.CONFIGURATION,
                 DTMessages.data_transfer_db_consumer_mapping_rules_button_tip,
                 new SelectionAdapter() {
                     @Override
@@ -893,8 +893,17 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             @Override
             protected void doSetValue(Object value) {
-                if (combo != null && !combo.isDisposed()) {
-                    combo.setText(CommonUtils.toString(value));
+                if (combo == null || combo.isDisposed()) {
+                    return;
+                }
+                if (value == null) {
+                    combo.setText("");
+                } else {
+                    if (value instanceof DBPNamedObject dbpNamedObject) {
+                        combo.setText(dbpNamedObject.getName());
+                    } else {
+                        combo.setText(CommonUtils.toString(value));
+                    }
                 }
             }
         };
