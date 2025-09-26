@@ -805,8 +805,7 @@ public class PostgreSchema implements
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
-            throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 """
                     SELECT p.oid AS proc_oid,p.proname AS proc_name,a.*
@@ -819,9 +818,11 @@ public class PostgreSchema implements
         }
 
         @Override
-        protected PostgreAggregate fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
+        protected PostgreAggregate fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull PostgreSchema owner,
+            @NotNull JDBCResultSet dbResult
+        ) throws SQLException, DBException {
             return new PostgreAggregate(session.getProgressMonitor(), owner, dbResult);
         }
     }
@@ -835,7 +836,12 @@ public class PostgreSchema implements
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @Nullable PostgreTableBase object, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(
+            @NotNull JDBCSession session,
+            @NotNull PostgreTableContainer container,
+            @Nullable PostgreTableBase object,
+            @Nullable String objectName
+        ) throws SQLException {
             StringBuilder sql = new StringBuilder();
             PostgreDataSource dataSource = getDataSource();
             sql.append("SELECT c.oid,c.*,d.description");
@@ -854,9 +860,11 @@ public class PostgreSchema implements
         }
 
         @Override
-        protected PostgreTableBase fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
+        protected PostgreTableBase fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull PostgreTableContainer container,
+            @NotNull JDBCResultSet dbResult
+        ) throws SQLException, DBException {
             final String kindString = getDataSource().getServerType().supportsPartitions()
                                       && CommonUtils.equalObjects(JDBCUtils.safeGetString(dbResult, "relkind"), PostgreClass.RelKind.r.getCode())
                                       && isPartitionTableRow(dbResult)
@@ -871,8 +879,11 @@ public class PostgreSchema implements
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @Nullable PostgreTableBase forTable)
-            throws SQLException {
+        protected JDBCStatement prepareChildrenStatement(
+            @NotNull JDBCSession session,
+            @NotNull PostgreTableContainer container,
+            @Nullable PostgreTableBase forTable
+        ) throws SQLException {
             boolean supportsSequences = container.getDataSource().getServerType().supportsSequences();
 
             JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -927,8 +938,11 @@ public class PostgreSchema implements
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @Nullable
-        PostgreTableBase forParent) throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull PostgreTableContainer container,
+            @Nullable PostgreTableBase forParent
+        ) throws SQLException {
             StringBuilder sql = new StringBuilder(
                 "SELECT c.oid,c.*,t.relname as tabrelname,rt.relnamespace as refnamespace,d.description" +
                     (!getDataSource().getServerType().supportsPGConstraintExpressionColumn() ? ", null as consrc_copy" :
@@ -955,9 +969,13 @@ public class PostgreSchema implements
 
         @Nullable
         @Override
-        protected PostgreTableConstraintBase<?> fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @NotNull
-        PostgreTableBase table, @NotNull String childName, @NotNull
-        JDBCResultSet resultSet) throws SQLException, DBException {
+        protected PostgreTableConstraintBase<?> fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull PostgreTableContainer container,
+            @NotNull PostgreTableBase table,
+            @NotNull String childName,
+            @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             String name = JDBCUtils.safeGetString(resultSet, "conname");
             String type = JDBCUtils.safeGetString(resultSet, "contype");
             if (type == null) {
@@ -1067,7 +1085,11 @@ public class PostgreSchema implements
         }
 
         @Override
-        protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull PostgreTableConstraintBase<?> object, @NotNull List<PostgreTableConstraintColumn> children) {
+        protected void cacheChildren(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull PostgreTableConstraintBase<?> object,
+            @NotNull List<PostgreTableConstraintColumn> children
+        ) {
             object.cacheAttributes(monitor, children, false);
         }
 
@@ -1087,9 +1109,11 @@ public class PostgreSchema implements
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @Nullable
-        PostgreTableBase forTable)
-            throws SQLException {
+        protected JDBCStatement prepareObjectsStatement(
+            @NotNull JDBCSession session,
+            @NotNull PostgreTableContainer container,
+            @Nullable PostgreTableBase forTable
+        ) throws SQLException {
             boolean supportsExprIndex = getDataSource().isServerVersionAtLeast(7, 4);
             StringBuilder sql = new StringBuilder();
             sql.append(
@@ -1104,7 +1128,7 @@ public class PostgreSchema implements
             }
             sql.append(
                 """
-                    FROM pg_catalog.pg_index i
+                    \sFROM pg_catalog.pg_index i
                     INNER JOIN pg_catalog.pg_class c ON c.oid=i.indexrelid
                     INNER JOIN pg_catalog.pg_class tc ON tc.oid=i.indrelid
                     LEFT OUTER JOIN pg_catalog.pg_description dsc ON i.indexrelid=dsc.objoid
@@ -1128,10 +1152,13 @@ public class PostgreSchema implements
 
         @Nullable
         @Override
-        protected PostgreIndex fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableContainer container, @NotNull PostgreTableBase parent, @NotNull
-        String indexName, @NotNull
-        JDBCResultSet dbResult)
-            throws SQLException, DBException {
+        protected PostgreIndex fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull PostgreTableContainer container,
+            @NotNull PostgreTableBase parent,
+            @NotNull String indexName,
+            @NotNull JDBCResultSet dbResult
+        ) throws SQLException, DBException {
             return new PostgreIndex(
                 session.getProgressMonitor(),
                 parent,
@@ -1143,8 +1170,10 @@ public class PostgreSchema implements
         @Override
         protected PostgreIndexColumn[] fetchObjectRow(
             @NotNull JDBCSession session,
-            @NotNull PostgreTableBase parent, @NotNull PostgreIndex object, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException {
+            @NotNull PostgreTableBase parent,
+            @NotNull PostgreIndex object,
+            @NotNull JDBCResultSet dbResult
+        ) throws SQLException, DBException {
             long[] keyNumbers = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "keys"), getDataSource());
             if (keyNumbers == null) {
                 return null;
@@ -1206,7 +1235,12 @@ public class PostgreSchema implements
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @Nullable PostgreProcedure object, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(
+            @NotNull JDBCSession session,
+            @NotNull PostgreSchema owner,
+            @Nullable PostgreProcedure object,
+            @Nullable String objectName
+        ) throws SQLException {
             PostgreServerExtension serverType = owner.getDataSource().getServerType();
             String oidColumn = serverType.getProceduresOidColumn(); // Hack for Redshift SP support
             String nameColumn = "proname";
