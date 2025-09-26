@@ -28,6 +28,8 @@ import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ModelPreferences.OrderingPolicy;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -103,7 +105,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
             store.contains(ResultSetPreferences.KEEP_STATEMENT_OPEN) ||
             store.contains(ResultSetPreferences.RESULT_SET_ORDERING_STRATEGY) ||
-            store.contains(ResultSetPreferences.RESULT_SET_ORDERING_POLICY) ||
+            store.contains(ModelPreferences.RESULT_SET_ORDERING_POLICY) ||
             store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
             store.contains(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) ||
             store.contains(ResultSetPreferences.RESULT_SET_CONFIRM_BEFORE_SAVE) ||
@@ -165,8 +167,13 @@ public class PrefPageResultSetMain extends TargetPrefPage
                 ResultSetMessages.pref_page_database_resultsets_label_order_policy_tip,
                 SWT.DROP_DOWN | SWT.READ_ONLY
             );
-            for (ResultSetUtils.OrderingPolicy policy : ResultSetUtils.OrderingPolicy.values()) {
-                orderingPolicyCombo.add(policy.getText());
+            for (OrderingPolicy policy : OrderingPolicy.values()) {
+                String text = switch (policy) {
+                    case DEFAULT -> ResultSetMessages.pref_page_database_resultsets_label_order_policy_default;
+                    case PRIMARY_KEY_ASC -> ResultSetMessages.pref_page_database_resultsets_label_order_policy_primary_key_asc;
+                    case PRIMARY_KEY_DESC -> ResultSetMessages.pref_page_database_resultsets_label_order_policy_primary_key_desc;
+                };
+                orderingPolicyCombo.add(text);
             }
 
             queryCancelTimeout = UIUtils.createLabelText(queriesGroup, ResultSetMessages.pref_page_database_general_label_result_set_cancel_timeout + UIMessages.label_ms, "0");
@@ -282,9 +289,9 @@ public class PrefPageResultSetMain extends TargetPrefPage
                 ResultSetUtils.OrderingStrategy.SMART
             ).ordinal());
             orderingPolicyCombo.select(CommonUtils.valueOf(
-                ResultSetUtils.OrderingPolicy.class,
-                store.getString(ResultSetPreferences.RESULT_SET_ORDERING_POLICY),
-                ResultSetUtils.OrderingPolicy.DEFAULT
+                OrderingPolicy.class,
+                store.getString(ModelPreferences.RESULT_SET_ORDERING_POLICY),
+                OrderingPolicy.DEFAULT
             ).ordinal());
             queryCancelTimeout.setText(store.getString(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT));
             filterForceSubselect.setSelection(store.getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));
@@ -326,8 +333,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
                 ResultSetUtils.OrderingStrategy.values()[orderingStrategyCombo.getSelectionIndex()].toString()
             );
             store.setValue(
-                ResultSetPreferences.RESULT_SET_ORDERING_POLICY,
-                ResultSetUtils.OrderingPolicy.values()[orderingPolicyCombo.getSelectionIndex()].toString()
+                ModelPreferences.RESULT_SET_ORDERING_POLICY,
+                OrderingPolicy.values()[orderingPolicyCombo.getSelectionIndex()].toString()
             );
             store.setValue(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getText());
             store.setValue(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT, filterForceSubselect.getSelection());
@@ -364,7 +371,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
         store.setToDefault(ResultSetPreferences.RESULT_SET_AUTOMATIC_ROW_COUNT);
         store.setToDefault(ResultSetPreferences.RESULT_SET_ORDERING_STRATEGY);
-        store.setToDefault(ResultSetPreferences.RESULT_SET_ORDERING_POLICY);
+        store.setToDefault(ModelPreferences.RESULT_SET_ORDERING_POLICY);
         store.setToDefault(ResultSetPreferences.RESULT_SET_CANCEL_TIMEOUT);
         store.setToDefault(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT);
 
