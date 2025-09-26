@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
@@ -217,23 +218,34 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
 
         UIUtils.createPushButton(
             parent,
-            "Test connection...",
+            AIUIMessages.gpt_preference_page_ai_connection_test_label,
             null,
             null,
             SelectionListener.widgetSelectedAdapter(e ->
             {
+                DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
                 try {
+                    String selectedModel = modelSelectorField.getSelectedModel();
+                    if (CommonUtils.isEmpty(selectedModel)) {
+                        platformUI.showMessageBox(AIUIMessages.gpt_preference_page_ai_connection_test_connection_warning_title,
+                            AIUIMessages.gpt_preference_page_ai_connection_test_model_not_chosen, true);
+                        return;
+                    }
                     Collection<String> knownModels = modelListProvider.getModels(new VoidProgressMonitor(), true);
-                    if (knownModels.contains(modelSelectorField.getSelectedModel())) {
-                        DBWorkbench.getPlatformUI().showMessageBox("Connection succeeded", "all set", false);
+                    if (knownModels.contains(selectedModel)) {
+                        platformUI
+                            .showMessageBox(AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_title,
+                                NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_message, selectedModel),
+                                false);
                     } else {
-                        DBWorkbench.getPlatformUI().showWarningMessageBox("Connection succeded",
-                            "Succeded but model " + modelSelectorField.getSelectedModel() + " not found");
+                        platformUI
+                            .showWarningMessageBox(AIUIMessages.gpt_preference_page_ai_connection_test_connection_warning_title,
+                                NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_warning_message, selectedModel));
                     }
                 } catch (DBException exception) {
-                    DBWorkbench.getPlatformUI().showError(
-                        "Error connecting to OpenAI",
-                        null,
+                    platformUI.showError(
+                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
+                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message,
                         exception
                     );
                 }
