@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,21 +128,14 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         return implClass.matchesType(type);
     }
 
-    public <T> T getAdapter(DBCResultSet resultSet, Class<T> type) {
-        for (ObjectType ot : adaptsTypes) {
-            T adapter = DBUtils.getAdapter(type, resultSet.getSession().getDataSource());
-            if (adapter != null) {
-                return adapter;
-            }
-        }
-        return null;
-    }
-
     private boolean adaptsType(DBCResultSet resultSet) {
         for (ObjectType ot : adaptsTypes) {
-            Object adapter = DBUtils.getAdapter(ot.getObjectClass(), resultSet.getSession().getDataSource());
-            if (adapter != null) {
-                return true;
+            Class<?> objectClass = ot.getObjectClass();
+            if (objectClass != null) {
+                Object adapter = DBUtils.getAdapter(objectClass, resultSet.getSession().getDataSource());
+                if (adapter != null) {
+                    return true;
+                }
             }
         }
         return false;

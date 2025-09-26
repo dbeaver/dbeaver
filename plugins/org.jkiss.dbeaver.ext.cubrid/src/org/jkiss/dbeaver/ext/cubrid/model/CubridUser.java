@@ -224,11 +224,11 @@ public class CubridUser extends GenericSchema
         @Nullable
         @Override
         protected CubridTableIndex fetchObject(
-                @NotNull JDBCSession session,
-                @NotNull GenericStructContainer owner,
-                @Nullable CubridTable parent,
-                @Nullable String indexName,
-                @NotNull JDBCResultSet dbResult)
+            @NotNull JDBCSession session,
+            @NotNull GenericStructContainer owner,
+            @NotNull CubridTable parent,
+            @NotNull String indexName,
+            @NotNull JDBCResultSet dbResult)
                 throws SQLException, DBException {
             boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
             String indexQualifier = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_QUALIFIER);
@@ -286,9 +286,9 @@ public class CubridUser extends GenericSchema
 
         @Override
         protected void cacheChildren(
-                @NotNull DBRProgressMonitor monitor,
-                @Nullable CubridTableIndex object,
-                @Nullable List<GenericTableIndexColumn> children) {
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull CubridTableIndex object,
+            @NotNull List<GenericTableIndexColumn> children) {
             object.setColumns(children);
         }
     }

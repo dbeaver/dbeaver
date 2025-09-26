@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
 import org.jkiss.dbeaver.model.runtime.BaseProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -44,8 +45,8 @@ class DBeaverSettingsImporter {
 
     private static final String[] COPY_PLUGINS = {
         "org.eclipse.compare",
-        "org.eclipse.core.resources",
-        "org.eclipse.core.runtime",
+        DesktopApplicationImpl.CORE_RESOURCES_PLUGIN_ID,
+        DesktopApplicationImpl.CORE_RUNTIME_PLUGIN_ID,
         "org.eclipse.e4.ui.workbench.swt",
         "org.eclipse.equinox.p2.ui",
         "org.eclipse.equinox.security.ui",
