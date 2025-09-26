@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.ai.engine.openai;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -25,7 +23,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -36,22 +37,20 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ai.dialogs.connection.AIConnectionTestDialog;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-
-import static org.jkiss.dbeaver.ui.UIUtils.getShell;
 
 public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
     implements IObjectPropertyConfigurator<ENGINE, PROPERTIES> {
@@ -222,30 +221,25 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             null,
             null,
             SelectionListener.widgetSelectedAdapter(e ->
-                new AbstractJob("Getting model list") {
-                    @Override
-                    protected IStatus run(DBRProgressMonitor monitor) {
-                        {
-                            try {
-                                modelListProvider.getModels(monitor, true);
-                                UIUtils.asyncExec(() -> {
-                                    Shell shell = parent.getShell();
-                                    new AIConnectionTestDialog(shell).open();
-                                });
-
-                                return Status.OK_STATUS;
-                            } catch (DBException exception) {
-                                DBWorkbench.getPlatformUI().showError(
-                                    "Error connecting to OpenAI",
-                                    null,
-                                    exception
-                                );
-                                return Status.CANCEL_STATUS;
-                            }
-                        }
+            {
+                try {
+                    Collection<String> knownModels = modelListProvider.getModels(new VoidProgressMonitor(), true);
+                    if (knownModels.contains(modelSelectorField.getSelectedModel())) {
+                        DBWorkbench.getPlatformUI().showMessageBox("Connection succeeded", "all set", false);
+                    } else {
+                        DBWorkbench.getPlatformUI().showWarningMessageBox("Connection succeded",
+                            "Succeded but model " + modelSelectorField.getSelectedModel() + " not found");
                     }
-                }.schedule())).setLayoutData(gd);
+                } catch (DBException exception) {
+                    DBWorkbench.getPlatformUI().showError(
+                        "Error connecting to OpenAI",
+                        null,
+                        exception
+                    );
+                }
+            })).setLayoutData(gd);
     }
+
 
     protected void createBaseUrlParameter(@NotNull Composite parent) {
         baseUrlText = UIUtils.createLabelText(
