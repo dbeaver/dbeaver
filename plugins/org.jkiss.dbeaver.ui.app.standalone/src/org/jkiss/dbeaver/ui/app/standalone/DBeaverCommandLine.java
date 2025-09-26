@@ -20,7 +20,7 @@ import org.apache.commons.cli.CommandLine;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.ApplicationCommandLine;
-import org.jkiss.dbeaver.model.cli.CliProcessResult;
+import org.jkiss.dbeaver.model.cli.CLIProcessResult;
 import org.jkiss.dbeaver.model.cli.registry.CommandLineParameterDescriptor;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
 import org.jkiss.dbeaver.ui.app.standalone.rpc.DBeaverInstanceServer;
@@ -60,14 +60,20 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
     private static DBeaverCommandLine INSTANCE = null;
 
     static {
-         ALL_OPTIONS.addOption(PARAM_CONFIG, "variablesFile", true, "Uses a specified configuration file for variable resolving")
+        ALL_OPTIONS.addOption(PARAM_CONFIG, "variablesFile", true, "Uses a specified configuration file for variable resolving")
             .addOption(PARAM_FILE, "file", true, "Open a file")
             .addOption(PARAM_STOP, "quit", false, "Stop DBeaver running instance")
             .addOption(PARAM_CONNECT, "connect", true, "Connects to a specified database")
+            .addOption("p", "project", true, "Specify used project")
             .addOption(PARAM_DISCONNECT_ALL, "disconnectAll", false, "Disconnect from all databases")
             .addOption(PARAM_CLOSE_TABS, "closeTabs", false, "Close all open editors")
             .addOption(PARAM_REUSE_WORKSPACE, PARAM_REUSE_WORKSPACE, false, "Force workspace reuse (do not show warnings)")
-            .addOption(PARAM_NEW_INSTANCE, PARAM_NEW_INSTANCE, false, "Force creating new application instance (do not try to activate already running)")
+            .addOption(
+                PARAM_NEW_INSTANCE,
+                PARAM_NEW_INSTANCE,
+                false,
+                "Force creating new application instance (do not try to activate already running)"
+            )
             .addOption(PARAM_BRING_TO_FRONT, PARAM_BRING_TO_FRONT, false, "Bring DBeaver window on top of other applications")
             .addOption(PARAM_QUIET, PARAM_QUIET, false, "Run quietly (do not print logs)")
             // Eclipse options
@@ -92,15 +98,15 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
     }
 
     /**
-     * @return {@link CliProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
+     * @return {@link CLIProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
      */
-    public CliProcessResult executeCommandLineCommands(
+    public CLIProcessResult executeCommandLineCommands(
         @Nullable CommandLine commandLine,
         @Nullable IInstanceController controller,
         boolean uiActivated
     ) throws Exception {
-        CliProcessResult result = super.executeCommandLineCommands(commandLine, controller, uiActivated);
-        if (result.getPostAction() != CliProcessResult.PostAction.UNKNOWN_COMMAND) {
+        CLIProcessResult result = super.executeCommandLineCommands(commandLine, controller, uiActivated);
+        if (result.getPostAction() != CLIProcessResult.PostAction.UNKNOWN_COMMAND) {
             return result;
         }
         //must be checked in super method
@@ -109,7 +115,7 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
 
         if (commandLine.hasOption(PARAM_NEW_INSTANCE)) {
             // Do not try to execute commands in running instance
-            return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
+            return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
         }
 
         if (commandLine.hasOption(PARAM_REUSE_WORKSPACE)) {
@@ -128,14 +134,14 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
                     SystemVariablesResolver.setConfiguration(properties);
                 } catch (Exception e) {
                     log.error("Error parsing command line ", e);
-                    return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
+                    return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
                 }
             }
         }
 
         if (controller == null) {
             log.debug("Can't process commands because no running instance is present");
-            return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
+            return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
         }
 
         boolean exitAfterExecute = false;
@@ -143,7 +149,7 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
             // These command can't be executed locally
             if (commandLine.hasOption(PARAM_STOP)) {
                 controller.quit();
-                return new CliProcessResult(CliProcessResult.PostAction.SHUTDOWN);
+                return new CLIProcessResult(CLIProcessResult.PostAction.SHUTDOWN);
             }
         }
 
@@ -187,17 +193,17 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
             exitAfterExecute = true;
         }
 
-        var postAction = exitAfterExecute ? CliProcessResult.PostAction.SHUTDOWN : CliProcessResult.PostAction.START_INSTANCE;
-        return new CliProcessResult(postAction);
+        var postAction = exitAfterExecute ? CLIProcessResult.PostAction.SHUTDOWN : CLIProcessResult.PostAction.START_INSTANCE;
+        return new CLIProcessResult(postAction);
     }
 
     /**
-     * @return {@link CliProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
+     * @return {@link CLIProcessResult.PostAction#SHUTDOWN} if called should exit after CLI processing
      */
     //TODO: we should never call this method?
-    public CliProcessResult handleCommandLineAsClient(CommandLine commandLine, String instanceLoc) {
+    public CLIProcessResult handleCommandLineAsClient(CommandLine commandLine, String instanceLoc) {
         if (commandLine == null || (ArrayUtils.isEmpty(commandLine.getArgs()) && ArrayUtils.isEmpty(commandLine.getOptions()))) {
-            return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
+            return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
         }
 
         // Reuse workspace if custom parameters are specified
@@ -216,6 +222,6 @@ public class DBeaverCommandLine extends ApplicationCommandLine<IInstanceControll
         } catch (Throwable e) {
             log.error("Error while calling remote server", e);
         }
-        return new CliProcessResult(CliProcessResult.PostAction.START_INSTANCE);
+        return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public class DataSourceBindingDescriptor extends AbstractContextDescriptor {
                     return CommonUtils.toBoolean(
                         expression.evaluate(makeContext(driver, context)));
                 } catch (Exception e) {
-                    log.debug("Error evaluating expression '" + expression + "'", e);
+                    log.debug("Error evaluating binding expression '" + expression + "'", e);
                     return false;
                 }
             }
