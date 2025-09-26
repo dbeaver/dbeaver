@@ -50,6 +50,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ModelPreferences.OrderingPolicy;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
@@ -89,7 +90,6 @@ import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.VerticalButton;
 import org.jkiss.dbeaver.ui.controls.VerticalFolder;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingPolicy;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils.OrderingStrategy;
 import org.jkiss.dbeaver.ui.controls.resultset.actions.*;
 import org.jkiss.dbeaver.ui.controls.resultset.colors.CustomizeColorsAction;
@@ -4048,7 +4048,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void applyDefaultOrdering() {
-        OrderingPolicy policy = OrderingPolicy.get(this);
+        OrderingPolicy policy = ResultSetUtils.getOrderingPolicy(this);
         DBDRowIdentifier rowIdentifier = model.getDefaultRowIdentifier();
 
         if (policy != OrderingPolicy.DEFAULT && rowIdentifier != null && !rowIdentifier.isIncomplete()) {

@@ -159,6 +159,12 @@ public final class ModelPreferences
         }
     }
 
+    public enum OrderingPolicy {
+        DEFAULT,
+        PRIMARY_KEY_ASC,
+        PRIMARY_KEY_DESC
+    }
+
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
     public static final String CLIENT_TIMEZONE = "java.client.timezone";
     public static final String CLIENT_BROWSER = "swt.client.browser";
@@ -225,6 +231,7 @@ public final class ModelPreferences
     public static final String RESULT_SET_MAX_ROWS_USE_SQL = "resultset.maxrows.sql"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_PRESENTATION = "resultset.binary.representation"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_STRING_MAX_LEN = "resultset.binary.stringMaxLength"; //$NON-NLS-1$
+    public static final String RESULT_SET_ORDERING_POLICY = "resultset.order.policy"; //$NON-NLS-1$
     // This will ignore label in result set metadata and will use names always (some buggy drivers return description or other crap in labels - #1952)
     public static final String RESULT_SET_IGNORE_COLUMN_LABEL = "resultset.column.label.ignore"; //$NON-NLS-1$
 
@@ -360,6 +367,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_STRING_MAX_LEN, 32);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_USE_FETCH_SIZE, false);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_IGNORE_COLUMN_LABEL, false);
+        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_ORDERING_POLICY, OrderingPolicy.DEFAULT);
 
         // QM
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);

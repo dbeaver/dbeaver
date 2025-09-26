@@ -27,6 +27,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ModelPreferences.OrderingPolicy;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -173,30 +175,13 @@ public class ResultSetUtils
         return rows < 0 ? "0" : String.valueOf(rows);
     }
 
-    public enum OrderingPolicy {
-        DEFAULT(ResultSetMessages.pref_page_database_resultsets_label_order_policy_default),
-        PRIMARY_KEY_ASC(ResultSetMessages.pref_page_database_resultsets_label_order_policy_primary_key_asc),
-        PRIMARY_KEY_DESC(ResultSetMessages.pref_page_database_resultsets_label_order_policy_primary_key_desc);
-
-        private final String text;
-
-        OrderingPolicy(String text) {
-            this.text = text;
-        }
-
-        @NotNull
-        public static OrderingPolicy get(@NotNull IResultSetController controller) {
-            return CommonUtils.valueOf(
-                OrderingPolicy.class,
-                controller.getPreferenceStore().getString(ResultSetPreferences.RESULT_SET_ORDERING_POLICY),
-                DEFAULT
-            );
-        }
-
-        @NotNull
-        public String getText() {
-            return text;
-        }
+    @NotNull
+    public static OrderingPolicy getOrderingPolicy(@NotNull IResultSetController controller) {
+        return CommonUtils.valueOf(
+            OrderingPolicy.class,
+            controller.getPreferenceStore().getString(ModelPreferences.RESULT_SET_ORDERING_POLICY),
+            OrderingPolicy.DEFAULT
+        );
     }
 
     public enum OrderingStrategy {
