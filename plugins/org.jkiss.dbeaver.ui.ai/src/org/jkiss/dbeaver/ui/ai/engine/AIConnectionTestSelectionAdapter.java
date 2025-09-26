@@ -31,7 +31,7 @@ import java.util.Collection;
 
 public class AIConnectionTestSelectionAdapter extends SelectionAdapter {
 
-    private final DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
+    private DBPPlatformUI platformUI;
     private final ModelSelectorField modelSelectorField;
     private final ModelSelectorField.ModelListProvider modelListProvider;
 
@@ -43,6 +43,7 @@ public class AIConnectionTestSelectionAdapter extends SelectionAdapter {
 
     @Override
     public void widgetSelected(SelectionEvent e) {
+        platformUI = DBWorkbench.getPlatformUI();
         String selectedModel = modelSelectorField.getSelectedModel();
         if (CommonUtils.isEmpty(selectedModel)) {
             platformUI.showMessageBox(AIUIMessages.gpt_preference_page_ai_connection_test_connection_warning_title,
