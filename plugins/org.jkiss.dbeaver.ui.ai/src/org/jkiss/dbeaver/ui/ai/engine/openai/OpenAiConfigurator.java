@@ -38,18 +38,15 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.engine.AIConnectionTestSelectionAdapter;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -213,43 +210,16 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     private void createTestConnectionButton(@NotNull Composite parent) {
-        GridData gd = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
-        gd.horizontalSpan = 2;
-
-        UIUtils.createPushButton(
+        Button testConnectionButton = UIUtils.createPushButton(
             parent,
             AIUIMessages.gpt_preference_page_ai_connection_test_label,
             null,
             null,
-            SelectionListener.widgetSelectedAdapter(e ->
-            {
-                DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
-                try {
-                    String selectedModel = modelSelectorField.getSelectedModel();
-                    if (CommonUtils.isEmpty(selectedModel)) {
-                        platformUI.showMessageBox(AIUIMessages.gpt_preference_page_ai_connection_test_connection_warning_title,
-                            AIUIMessages.gpt_preference_page_ai_connection_test_model_not_chosen, true);
-                        return;
-                    }
-                    Collection<String> knownModels = modelListProvider.getModels(new VoidProgressMonitor(), true);
-                    if (knownModels.contains(selectedModel)) {
-                        platformUI
-                            .showMessageBox(AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_title,
-                                NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_success_message, selectedModel),
-                                false);
-                    } else {
-                        platformUI
-                            .showWarningMessageBox(AIUIMessages.gpt_preference_page_ai_connection_test_connection_warning_title,
-                                NLS.bind(AIUIMessages.gpt_preference_page_ai_connection_test_connection_warning_message, selectedModel));
-                    }
-                } catch (DBException exception) {
-                    platformUI.showError(
-                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_title,
-                        AIUIMessages.gpt_preference_page_ai_connection_test_connection_error_message,
-                        exception
-                    );
-                }
-            })).setLayoutData(gd);
+            new AIConnectionTestSelectionAdapter(modelSelectorField, modelListProvider));
+
+        GridData gd = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+        gd.horizontalSpan = 2;
+        testConnectionButton.setLayoutData(gd);
     }
 
 
