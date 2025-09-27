@@ -18,15 +18,44 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.registry.AIFunctionDescriptor;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public record AIEngineRequest(
-    @NotNull List<AIMessage> messages
-) {
+/**
+ * Request to AI engine
+ */
+public final class AIEngineRequest {
+    @NotNull
+    private final List<AIMessage> messages;
+    private final List<AIFunctionDescriptor> functions = new ArrayList<>();
 
-    @Override
-    public String toString() {
-        return "AI request " + messages;
+    public AIEngineRequest(
+        @NotNull List<AIMessage> messages
+    ) {
+        this.messages = messages;
     }
+
+    public AIEngineRequest(
+        @NotNull AIMessage message
+    ) {
+        this.messages = List.of(message);
+    }
+
+    @NotNull
+    public List<AIMessage> getMessages() {
+        return messages;
+    }
+
+    @NotNull
+    public List<AIFunctionDescriptor> getFunctions() {
+        return functions;
+    }
+
+    public void setFunctions(@NotNull List<AIFunctionDescriptor> functions) {
+        this.functions.clear();
+        this.functions.addAll(functions);
+    }
+
 }

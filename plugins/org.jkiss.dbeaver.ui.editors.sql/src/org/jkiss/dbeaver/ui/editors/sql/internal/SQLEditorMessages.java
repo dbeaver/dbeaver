@@ -381,7 +381,7 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_data_receiver_result_name_tooltip_connection;
     public static String sql_editor_data_receiver_result_name_tooltip_time;
     public static String sql_editor_data_receiver_result_name_tooltip_query;
-    public static String sql_editor_title_tooltip_connecton;
+    public static String sql_editor_title_tooltip_connection;
     public static String sql_editor_title_tooltip_type;
     public static String sql_editor_title_tooltip_url;
     public static String sql_editor_title_tooltip_database;

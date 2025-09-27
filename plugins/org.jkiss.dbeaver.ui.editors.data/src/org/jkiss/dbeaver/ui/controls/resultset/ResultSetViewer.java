@@ -302,6 +302,7 @@ public class ResultSetViewer extends Viewer
                 (decoratorFeatures & IResultSetDecorator.FEATURE_COMPACT_FILTERS) != 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = ((GridLayout) mainPanel.getLayout()).numColumns;
+            gd.verticalIndent = 3;
             this.filtersPanel.setLayoutData(gd);
         }
 
@@ -359,9 +360,13 @@ public class ResultSetViewer extends Viewer
                 });
 
                 this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
-                Composite trControl = new ConComposite(panelFolder, SWT.NONE);
+                Composite trControl = new Composite(panelFolder, SWT.NONE);
                 trControl.setLayout(new FillLayout());
+                CSSUtils.setExcludeFromStyling(trControl);
                 ToolBar panelToolbarControl = this.panelToolBar.createControl(trControl);
+
+                UIUtils.mimicControlBackground(trControl, panelFolder);
+                this.panelToolBar.createControl(trControl);
                 this.panelFolder.setTopRight(trControl, SWT.RIGHT | SWT.WRAP);
                 this.panelFolder.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -1484,8 +1489,14 @@ public class ResultSetViewer extends Viewer
 //            items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
 //        }
         items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_MAXIMIZE));
-//        items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
         items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ACTIVATE_PANELS));
+
+        if ((getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0) {
+            items.add(new Separator());
+            items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
+            items.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
+        }
+
         return items;
     }
 
@@ -1767,7 +1778,7 @@ public class ResultSetViewer extends Viewer
                             false);
                         UIUtils.syncExec(() -> redrawData(true, true));
                     } catch (DBException e) {
-                        log.debug("Error refreshing hint cache");
+                        log.debug("Error refreshing hint cache", e);
                     }
                     return Status.OK_STATUS;
                 }
@@ -2941,6 +2952,17 @@ public class ResultSetViewer extends Viewer
         manager.add(new GroupMarker(MENU_GROUP_EDIT));
 
         DBPDataSource dataSource = getDataSource();
+        if ((getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0) {
+            MenuManager panelsMenu = new MenuManager(
+                ResultSetMessages.controls_resultset_viewer_action_panels,
+                DBeaverIcons.getImageDescriptor(UIIcon.PANEL_CUSTOMIZE),
+                "result_panels"); //$NON-NLS-1$
+            manager.add(panelsMenu);
+            for (IContributionItem item : fillPanelsMenu()) {
+                panelsMenu.add(item);
+            }
+        }
+
         if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
             MenuManager viewMenu = new MenuManager(
                 ResultSetMessages.controls_resultset_viewer_action_view_format,
@@ -3091,9 +3113,9 @@ public class ResultSetViewer extends Viewer
 
     private void fillAttributeHintsMenu(IMenuManager menuManager, DBDAttributeBinding attr, ResultSetRow row) {
         // Collect all potentially applicable hints
-        Set<DBDValueHintProvider> applicableHintProviders = getModel().getHintContext().getApplicableHintProviders();
-        List<ValueHintProviderDescriptor> applicableHints = ValueHintRegistry.getInstance().getHintDescriptors()
-            .stream().filter(hd -> applicableHintProviders.contains(hd.getInstance())).toList();
+        List<ValueHintProviderDescriptor> applicableHints = getModel().getHintContext().filterApplicableHintProviderDescriptors(
+            ValueHintRegistry.getInstance().getHintDescriptors()
+        );
 
         Object cellValue = getModel().getCellValue(attr, row);
         Map<DBDValueHint, UIPropertyConfiguratorDescriptor> configurators = new LinkedHashMap<>();
@@ -3250,23 +3272,8 @@ public class ResultSetViewer extends Viewer
         if (activePresentationDescriptor != null && activePresentationDescriptor.supportsRecordMode()) {
             layoutMenu.add(new ToggleModeAction(this));
         }
-        if ((getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0) {
-            layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_PANELS));
-            layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_ACTIVATE_PANELS));
-            layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_TOGGLE_LAYOUT));
-        }
         if ((getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_PRESENTATIONS) != 0) {
             layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_SWITCH_PRESENTATION));
-        }
-        if ((getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0) {
-            MenuManager panelsMenu = new MenuManager(
-                ResultSetMessages.controls_resultset_viewer_action_panels,
-                DBeaverIcons.getImageDescriptor(UIIcon.PANEL_CUSTOMIZE),
-                "result_panels"); //$NON-NLS-1$
-            layoutMenu.add(panelsMenu);
-            for (IContributionItem item : fillPanelsMenu()) {
-                panelsMenu.add(item);
-            }
         }
         if ((getDecorator().getDecoratorFeatures() & IResultSetDecorator.FEATURE_PRESENTATIONS) != 0) {
             layoutMenu.add(new Separator());
@@ -5245,7 +5252,7 @@ public class ResultSetViewer extends Viewer
                             }
                         }
                         showErrorPresentation(sqlText, errorMessage, error);
-                        log.error(errorMessage, error);
+                        //log.error(errorMessage, error);
                     }
                 } else {
                     if (!metadataChanged) {

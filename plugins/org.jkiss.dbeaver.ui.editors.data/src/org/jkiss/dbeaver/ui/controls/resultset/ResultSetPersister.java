@@ -106,7 +106,7 @@ class ResultSetPersister {
     private final List<ResultSetRow> deletedRows = new ArrayList<>();
     private final List<ResultSetRow> addedRows = new ArrayList<>();
     private final List<ResultSetRow> changedRows = new ArrayList<>();
-    private final Map<ResultSetRow, DBDRowIdentifier> rowIdentifiers = new LinkedHashMap<>();
+    private final Map<ResultSetRow, Map<DBDRowIdentifier, List<DBDAttributeBinding>>> rowIdentifiers = new LinkedHashMap<>();
     private final List<DataStatementInfo> insertStatements = new ArrayList<>();
     private final List<DataStatementInfo> deleteStatements = new ArrayList<>();
     private final List<DataStatementInfo> updateStatements = new ArrayList<>();
@@ -270,11 +270,20 @@ class ResultSetPersister {
 
         // Prepare rows
         for (ResultSetRow row : changedRows) {
-            if (row.changes == null || row.changes.isEmpty()) {
+            Map<DBDAttributeBinding, Object> changes = collectUpdateChanges(row);
+            if (changes == null) {
                 continue;
             }
-            DBDAttributeBinding changedAttr = row.changes.keySet().iterator().next();
-            rowIdentifiers.put(row, changedAttr.getRowIdentifier());
+            Map<DBDRowIdentifier, List<DBDAttributeBinding>> identifierGroups = new LinkedHashMap<>();
+            for (DBDAttributeBinding changedAttr : changes.keySet()) {
+                DBDRowIdentifier rowIdentifier = changedAttr.getRowIdentifier();
+                if (rowIdentifier != null) {
+                    identifierGroups.computeIfAbsent(rowIdentifier, k -> new ArrayList<>()).add(changedAttr);
+                }
+            }
+            if (!identifierGroups.isEmpty()) {
+                rowIdentifiers.put(row, identifierGroups);
+            }
         }
     }
 
@@ -392,61 +401,43 @@ class ResultSetPersister {
         }
     }
 
-    private void prepareUpdateStatements(@NotNull DBRProgressMonitor monitor)
-        throws DBException {
-        // Make statements
-        for (ResultSetRow row : this.rowIdentifiers.keySet()) {
+    private void prepareUpdateStatements(@NotNull DBRProgressMonitor monitor) throws DBException {
+        for (var rowEntry : rowIdentifiers.entrySet()) {
+            ResultSetRow row = rowEntry.getKey();
             Map<DBDAttributeBinding, Object> changes = collectUpdateChanges(row);
-            if (changes == null) {
-                continue;
-            }
 
-            DBDRowIdentifier rowIdentifier = this.rowIdentifiers.get(row);
-            DBSEntity table;
-            if (rowIdentifier != null) {
-                table = rowIdentifier.getEntity();
-            } else {
-                DBSDataContainer dataContainer = viewer.getDataContainer();
-                if (dataContainer instanceof DBSEntity) {
-                    table = (DBSEntity) dataContainer;
-                } else {
-                    throw new DBCException("Can't determine target entity");
-                }
-            }
-            {
+            for (var identifierEntry : rowEntry.getValue().entrySet()) {
+                DBDRowIdentifier rowIdentifier = identifierEntry.getKey();
+                List<DBDAttributeBinding> changedAttrsForTable = identifierEntry.getValue();
+
+                DBSEntity table = rowIdentifier.getEntity();
                 DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, row, table);
-                // Updated columns
-                for (DBDAttributeBinding changedAttr : changes.keySet()) {
+
+                for (DBDAttributeBinding changedAttr : changedAttrsForTable) {
                     if (!isVirtualColumn(changedAttr)) {
-                        statement.updateAttributes.add(
-                            new DBDAttributeValue(
-                                changedAttr,
-                                model.getCellValue(changedAttr, row)));
+                        statement.updateAttributes.add(new DBDAttributeValue(changedAttr, model.getCellValue(changedAttr, row)));
                     }
                 }
-                if (rowIdentifier != null) {
-                    // Key columns
-                    List<DBDAttributeBinding> idColumns = rowIdentifier.getAttributes();
-                    for (DBDAttributeBinding metaColumn : idColumns) {
-                        Object keyValue = model.getCellValue(metaColumn, row);
-                        // Try to find old key oldValue
-                        if (changes.containsKey(metaColumn)) {
-                            keyValue = changes.get(metaColumn);
-                            if (keyValue instanceof DBDContent) {
-                                if (keyValue instanceof DBDValueCloneable vc) {
-                                    keyValue = vc.cloneValue(monitor);
-                                    if (keyValue instanceof DBDContent copiedContext) {
-                                        clonedValues.add(copiedContext);
-                                        copiedContext.resetContents();
-                                    }
-                                } else {
-                                    throw new DBCException("Column '" + metaColumn.getFullyQualifiedName(DBPEvaluationContext.UI) +
-                                       "' can't be used as a key. Value clone is not supported.");
+
+                List<DBDAttributeBinding> idColumns = rowIdentifier.getAttributes();
+                for (DBDAttributeBinding metaColumn : idColumns) {
+                    Object keyValue = model.getCellValue(metaColumn, row);
+                    if (changes != null && changes.containsKey(metaColumn)) {
+                        keyValue = changes.get(metaColumn);
+                        if (keyValue instanceof DBDContent) {
+                            if (keyValue instanceof DBDValueCloneable vc) {
+                                keyValue = vc.cloneValue(monitor);
+                                if (keyValue instanceof DBDContent copiedContext) {
+                                    clonedValues.add(copiedContext);
+                                    copiedContext.resetContents();
                                 }
+                            } else {
+                                throw new DBCException("Column '" + metaColumn.getFullyQualifiedName(DBPEvaluationContext.UI)
+                                    + "' can't be used as a key. Value clone is not supported.");
                             }
                         }
-                        statement.keyAttributes.add(new DBDAttributeValue(metaColumn, keyValue));
                     }
+                    statement.keyAttributes.add(new DBDAttributeValue(metaColumn, keyValue));
                 }
                 updateStatements.add(statement);
             }

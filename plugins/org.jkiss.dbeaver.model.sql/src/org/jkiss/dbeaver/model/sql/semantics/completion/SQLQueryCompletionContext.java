@@ -796,6 +796,9 @@ public abstract class SQLQueryCompletionContext {
                 @NotNull List<SQLQueryCompletionSet> results
             ) {
                 SQLQueryCompletionContext completionContext = this;
+                if (!origin.isChained() && !origin.isApplicable(syntaxInspectionResult)) {
+                    return;
+                }
                 origin.apply(new SQLQuerySymbolOrigin.Visitor() {
                     @Override
                     public void visitDbObjectFromDbObject(SQLQuerySymbolOrigin.DbObjectFromDbObject origin) {
@@ -842,18 +845,24 @@ public abstract class SQLQueryCompletionContext {
                                     prepareProceduresCompletions(monitor, request, contextInfo.getKnownSources(), List.of(c), filterOrNull);
                                 }
                             }
-                            case OBJECT -> {
+                            case OBJECT, TABLE -> {
                                 if (origin.getObject() instanceof DBSObjectContainer objectContainer) {
+                                    List<DBSObjectContainer> contexts = List.of(objectContainer);
+                                    DBSObjectType objectTypesToPropose = switch (origin.getFilterMode()) {
+                                        case TABLE -> RelationalObjectType.TYPE_TABLE;
+                                        default -> RelationalObjectType.TYPE_UNKNOWN;
+                                    };
                                     prepareObjectCompletions(
                                         monitor,
                                         request,
                                         deepestContext.getKnownSources(),
-                                        List.of(objectContainer),
+                                        contexts,
                                         prefix,
-                                        Set.of(RelationalObjectType.TYPE_UNKNOWN),
+                                        Set.of(objectTypesToPropose),
                                         filterOrNull,
                                         results
                                     );
+                                    prepareContextSchemasAndCatalogs(monitor, contexts, prefix, filterOrNull, results);
                                 }
                             }
                             default -> throw new UnsupportedOperationException("Unexpected filter mode: " + origin.getFilterMode());
@@ -1848,10 +1857,15 @@ public abstract class SQLQueryCompletionContext {
         }
 
         public boolean hasRelatedAssociationsWithTable(@NotNull DBSEntity table) {
-            EntityAssociationsInfo tableAssociations = this.findAssociationsInfo(this.associationPresenceResolutionMonitor, table);
-            return this.getAssociatedEntitiesOfColumnsList(this.associationPresenceResolutionMonitor).contains(table)
-                || this.extractRealAttributes(this.relatedContext.getColumnsList()).stream()
-                .anyMatch(tableAssociations.allAssociatedAttributes::contains);
+            if (this.getAssociatedEntitiesOfColumnsList(this.associationPresenceResolutionMonitor).contains(table)) {
+                return true;
+            }
+            Set<DBSEntityAttribute> realAttrs = this.extractRealAttributes(this.relatedContext.getColumnsList());
+            if (!realAttrs.isEmpty()) {
+                EntityAssociationsInfo tableAssociations = this.findAssociationsInfo(this.associationPresenceResolutionMonitor, table);
+                return realAttrs.stream().anyMatch(tableAssociations.allAssociatedAttributes::contains);
+            }
+            return false;
         }
 
         public boolean hasRelatedAssociationsWithTable(@NotNull SQLQueryRowsSourceModel source) {
@@ -1926,10 +1940,11 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         private EntityAssociationsInfo prepareAllAssociations(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity) {
             try {
-                Map<DBSEntityAttribute, EntityAssociationTargetsInfo> associatedAttributes = Stream.concat(
-                        Optional.ofNullable(entity.getAssociations(monitor)).stream().flatMap(Collection::stream),
-                        Optional.ofNullable(entity.getReferences(monitor)).stream().flatMap(Collection::stream)
-                    ).filter(c -> c instanceof DBSTableForeignKey)
+                Map<DBSEntityAttribute, EntityAssociationTargetsInfo> associatedAttributes =
+                    Optional.ofNullable(entity.getAssociations(monitor))
+                    .stream()
+                    .flatMap(Collection::stream) // don't remove flatMap here, it exposes elements of the Optional collection!
+                    .filter(c -> c instanceof DBSTableForeignKey fk)
                     .map(c -> {
                         try {
                             return ((DBSTableForeignKey) c).getAttributeReferences(monitor);

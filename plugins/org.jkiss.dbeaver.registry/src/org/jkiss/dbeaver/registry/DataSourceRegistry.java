@@ -97,7 +97,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         this.project = project;
         this.configurationManager = configurationManager;
         this.preferenceStore = preferenceStore;
-        boolean isLoaded = loadDataSources(true);
+        boolean isLoaded = loadDataSources(true) != null;
         if (!isMultiUser() && isLoaded) {
             DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
             addDataSourceListener(modelChangeListener);
@@ -737,6 +737,29 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
     }
 
+    /**
+     * Flushes all pending data source events. This is a blocking operation.
+     */
+    public void flushDataSourceEvents() {
+        final DBPEventListener[] listeners;
+        final DBPEvent[] events;
+        synchronized (dataSourceListeners) {
+            events = dataSourceEvents.toArray(new DBPEvent[0]);
+            dataSourceEvents.clear();
+
+            if (dataSourceListeners.isEmpty()) {
+                return;
+            }
+            listeners = dataSourceListeners.toArray(new DBPEventListener[0]);
+        }
+
+        for (DBPEvent event : events) {
+            for (DBPEventListener listener : listeners) {
+                listener.handleDataSourceEvent(event);
+            }
+        }
+    }
+
     @Nullable
     @Override
     public DBACredentialsProvider getAuthCredentialsProvider() {
@@ -777,7 +800,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         return result;
     }
 
-    private boolean loadDataSources(boolean refresh) {
+    private DataSourceParseResults loadDataSources(boolean refresh) {
        return loadDataSources(
             configurationManager.getConfigurationStorages(),
             configurationManager,
@@ -787,17 +810,15 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     @Override
-    public boolean loadDataSources(
+    public DataSourceParseResults loadDataSources(
         @NotNull List<DBPDataSourceConfigurationStorage> storages,
         @NotNull DataSourceConfigurationManager manager,
         @Nullable Collection<String> dataSourceIds,
         boolean refresh,
         boolean purgeUntouched
     ) {
-        // need this to show is the data source was updated
-        boolean configChanged = false;
         if (!project.isOpen() || project.isInMemory()) {
-            return false;
+            return null;
         }
         // Clear filters before reload
         savedFilters.clear();
@@ -807,10 +828,9 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         // Modern way - search json configs in metadata folder
         for (DBPDataSourceConfigurationStorage cfgStorage : storages) {
             if (loadDataSources(cfgStorage, manager, dataSourceIds, parseResults)) {
-                configChanged = true;
             } else {
                 if (lastError != null) {
-                    return false;
+                    return null;
                 }
             }
         }
@@ -829,27 +849,25 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             }
 
             if (purgeUntouched) {
-                List<DataSourceDescriptor> removedDataSource = new ArrayList<>();
                 for (DataSourceDescriptor ds : dataSources.values()) {
                     if (!parseResults.addedDataSources.contains(ds) && !parseResults.updatedDataSources.contains(ds) &&
                         !ds.isProvided() && !ds.isExternallyProvided() && !ds.isDetached())
                     {
-                        removedDataSource.add(ds);
+                        parseResults.removedDataSources.add(ds);
                     }
                 }
-                for (DataSourceDescriptor ds : removedDataSource) {
+                for (DBPDataSourceContainer ds : parseResults.removedDataSources) {
                     this.dataSources.remove(ds.getId());
                     this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, ds);
                     ds.dispose();
                 }
 
-                List<DataSourceFolder> removedFolder = new ArrayList<>();
                 for (DataSourceFolder folder : dataSourceFolders) {
                     if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)) {
-                        removedFolder.add(folder);
+                        parseResults.removedFolders.add(folder);
                     }
                 }
-                for (DataSourceFolder folder : removedFolder) {
+                for (DBPDataSourceFolder folder : parseResults.removedFolders) {
                     if (!parseResults.addedFolders.contains(folder) && !parseResults.updatedFolders.contains(folder)
                         && !DataSourceUtils.isFolderHasTemporaryDataSources(folder)
                     ) {
@@ -862,7 +880,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
         updateProjectNature();
 
-        return configChanged;
+        return parseResults;
     }
 
     protected boolean loadDataSources(
@@ -1067,23 +1085,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
-            final DBPEventListener[] listeners;
-            final DBPEvent[] events;
-            synchronized (dataSourceListeners) {
-                events = dataSourceEvents.toArray(new DBPEvent[0]);
-                dataSourceEvents.clear();
-
-                if (dataSourceListeners.isEmpty()) {
-                    return Status.OK_STATUS;
-                }
-                listeners = dataSourceListeners.toArray(new DBPEventListener[0]);
-            }
-
-            for (DBPEvent event : events) {
-                for (DBPEventListener listener : listeners) {
-                    listener.handleDataSourceEvent(event);
-                }
-            }
+            flushDataSourceEvents();
             return Status.OK_STATUS;
         }
     }
