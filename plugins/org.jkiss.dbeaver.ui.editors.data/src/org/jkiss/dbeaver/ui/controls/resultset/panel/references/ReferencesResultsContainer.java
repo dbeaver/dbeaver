@@ -64,7 +64,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
     private final IResultSetController parentController;
     private final Composite mainComposite;
     private final CSmartCombo<ReferenceKey> fkCombo;
-    private ResultSetViewer dataViewer;
+    private final ResultSetViewer dataViewer;
 
     private DBSDataContainer parentDataContainer;
 
@@ -86,11 +86,12 @@ class ReferencesResultsContainer implements IResultSetContainer {
     ReferencesResultsContainer(Composite parent, IResultSetController parentController) {
         this.parentController = parentController;
 
-        this.mainComposite = UIUtils.createComposite(parent, 1);
+        this.mainComposite = UIUtils.createPlaceholder(parent, 1);
 
         Composite keySelectorPanel = UIUtils.createComposite(this.mainComposite, 3);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.verticalIndent = 5;
+        gd.verticalIndent = 3;
+        gd.horizontalIndent = 3;
         keySelectorPanel.setLayoutData(gd);
         //UIUtils.createControlLabel(keySelectorPanel, ResultSetMessages.refs_label);
         fkCombo = new CSmartCombo<>(keySelectorPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new RefKeyLabelProvider());
@@ -108,12 +109,14 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 // Save active keys in virtual entity props
                 {
                     DBVEntity vEntityOwner = DBVUtils.getVirtualEntity(parentDataContainer, true);
-                    List<Map<String, Object>> activeAssociations = new ArrayList<>();
-                    activeAssociations.add(activeReferenceKey.createMemo());
-                    Object curActiveAssociations = vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
-                    if (!CommonUtils.equalObjects(curActiveAssociations, activeAssociations)) {
-                        vEntityOwner.setProperty(V_PROP_ACTIVE_ASSOCIATIONS, activeAssociations);
-                        vEntityOwner.persistConfiguration();
+                    if (vEntityOwner != null) {
+                        List<Map<String, Object>> activeAssociations = new ArrayList<>();
+                        activeAssociations.add(activeReferenceKey.createMemo());
+                        Object curActiveAssociations = vEntityOwner.getProperty(V_PROP_ACTIVE_ASSOCIATIONS);
+                        if (!CommonUtils.equalObjects(curActiveAssociations, activeAssociations)) {
+                            vEntityOwner.setProperty(V_PROP_ACTIVE_ASSOCIATIONS, activeAssociations);
+                            vEntityOwner.persistConfiguration();
+                        }
                     }
                 }
 
@@ -140,12 +143,11 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 }
             });
 
-//        final Label separator = new Label(keySelectorPanel, SWT.SEPARATOR | SWT.HORIZONTAL);
-//        separator.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false, 3, 1));
-
         {
             Composite viewerContainer = new Composite(mainComposite, SWT.NONE);
-            viewerContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.verticalIndent = 3;
+            viewerContainer.setLayoutData(gd);
             viewerContainer.setLayout(new FillLayout());
             this.dataViewer = new ResultSetViewer(viewerContainer, parentController.getSite(), this);
         }
@@ -153,10 +155,6 @@ class ReferencesResultsContainer implements IResultSetContainer {
 
     public ReferenceKey getActiveReferenceKey() {
         return activeReferenceKey;
-    }
-
-    public IResultSetPresentation getOwnerPresentation() {
-        return parentController.getActivePresentation();
     }
 
     @Nullable
@@ -285,10 +283,9 @@ class ReferencesResultsContainer implements IResultSetContainer {
                             // Foreign keys
                             Collection<? extends DBSEntityAssociation> associations = DBVUtils.getAllAssociations(monitor, entity);
                             for (DBSEntityAssociation association: associations) {
-                                if (!(association instanceof DBSEntityReferrer)) {
+                                if (!(association instanceof DBSEntityReferrer entityReferrer)) {
                                     continue;
                                 }
-                                DBSEntityReferrer entityReferrer = (DBSEntityReferrer) association;
                                 List<? extends DBSEntityAttributeRef> attributeRefs = entityReferrer.getAttributeReferences(monitor);
                                 if (attributeRefs == null) {
                                     continue;
@@ -344,7 +341,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
                                     }
                                 }
                                 if (activeReferenceKey == null) {
-                                    activeReferenceKey = referenceKeys.get(0);
+                                    activeReferenceKey = referenceKeys.getFirst();
                                 }
                             }
                         }
@@ -390,10 +387,6 @@ class ReferencesResultsContainer implements IResultSetContainer {
             return;
         }
         new AbstractJob("Read references") {
-            {
-                //setUser(true);
-                //setSystem(false);
-            }
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
@@ -462,9 +455,9 @@ class ReferencesResultsContainer implements IResultSetContainer {
                     }
                 }
             }
-            if (targetEntity instanceof DBVEntity) {
+            if (targetEntity instanceof DBVEntity entity) {
                 try {
-                    DBSEntity realEntity = ((DBVEntity) targetEntity).getRealEntity(monitor);
+                    DBSEntity realEntity = entity.getRealEntity(monitor);
                     if (realEntity != null) {
                         targetEntity = realEntity;
                     }
