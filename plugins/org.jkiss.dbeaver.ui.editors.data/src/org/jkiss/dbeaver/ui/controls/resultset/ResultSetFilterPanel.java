@@ -129,7 +129,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         CSSUtils.markConnectionTypeColor(this);
 
         GridLayout gl = new GridLayout(compactMode ? 2 : 4, false);
-        gl.marginHeight = 0;
+        gl.marginHeight = 3;
         gl.marginWidth = 3;
         this.setLayout(gl);
 

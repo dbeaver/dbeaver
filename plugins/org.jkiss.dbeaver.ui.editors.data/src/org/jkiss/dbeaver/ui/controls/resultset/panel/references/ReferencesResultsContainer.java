@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -94,7 +92,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 5;
         keySelectorPanel.setLayoutData(gd);
-        UIUtils.createControlLabel(keySelectorPanel, ResultSetMessages.refs_label);
+        //UIUtils.createControlLabel(keySelectorPanel, ResultSetMessages.refs_label);
         fkCombo = new CSmartCombo<>(keySelectorPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new RefKeyLabelProvider());
         fkCombo.addItem(null);
         fkCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -122,9 +120,8 @@ class ReferencesResultsContainer implements IResultSetContainer {
             }
         });
 
-        final ToolBar toolbar = new ToolBar(keySelectorPanel, SWT.HORIZONTAL | SWT.FLAT | SWT.RIGHT);
-        UIUtils.createToolItem(
-            toolbar,
+        UIUtils.createPushButton(
+            keySelectorPanel,
             ResultSetMessages.refs_open_target,
             ResultSetMessages.refs_open_target_tip,
             DBIcon.TREE_TABLE,
@@ -143,8 +140,8 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 }
             });
 
-        final Label separator = new Label(keySelectorPanel, SWT.SEPARATOR | SWT.HORIZONTAL);
-        separator.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false, 3, 1));
+//        final Label separator = new Label(keySelectorPanel, SWT.SEPARATOR | SWT.HORIZONTAL);
+//        separator.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false, 3, 1));
 
         {
             Composite viewerContainer = new Composite(mainComposite, SWT.NONE);

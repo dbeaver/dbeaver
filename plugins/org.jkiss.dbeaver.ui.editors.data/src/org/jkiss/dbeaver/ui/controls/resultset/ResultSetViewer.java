@@ -172,7 +172,6 @@ public class ResultSetViewer extends Viewer
 
     private final VerticalFolder panelSwitchFolder;
     private CTabFolder panelFolder;
-    private ToolBarManager panelToolBar;
 
     private final VerticalFolder presentationSwitchFolder;
     private final Composite presentationPanel;
@@ -275,6 +274,7 @@ public class ResultSetViewer extends Viewer
 
         this.mainPanel = new ConComposite(parent);
         this.mainPanel.setGridLayout(supportsPanels ? 3 : 2);
+        ((GridLayout)this.mainPanel.getLayout()).verticalSpacing = 0;
 
         this.autoRefreshControl = new AutoRefreshControl(
             this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
@@ -302,7 +302,6 @@ public class ResultSetViewer extends Viewer
                 (decoratorFeatures & IResultSetDecorator.FEATURE_COMPACT_FILTERS) != 0);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = ((GridLayout) mainPanel.getLayout()).numColumns;
-            gd.verticalIndent = 3;
             this.filtersPanel.setLayoutData(gd);
         }
 
@@ -359,15 +358,6 @@ public class ResultSetViewer extends Viewer
                     }
                 });
 
-                this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
-                Composite trControl = new Composite(panelFolder, SWT.NONE);
-                trControl.setLayout(new FillLayout());
-                CSSUtils.setExcludeFromStyling(trControl);
-                ToolBar panelToolbarControl = this.panelToolBar.createControl(trControl);
-
-                UIUtils.mimicControlBackground(trControl, panelFolder);
-                this.panelToolBar.createControl(trControl);
-                this.panelFolder.setTopRight(trControl, SWT.RIGHT | SWT.WRAP);
                 this.panelFolder.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -1284,7 +1274,24 @@ public class ResultSetViewer extends Viewer
         // Create control and tab item
         panelFolder.setRedraw(false);
         try {
-            Control panelControl = panel.createContents(activePresentation, panelFolder);
+            Composite panelComposite = UIUtils.createComposite(panelFolder, 1);
+            ((GridLayout)panelComposite.getLayout()).verticalSpacing = 0;
+
+            // Toolbar
+            Composite trControl = new ConComposite(panelComposite, SWT.NONE);
+            GridLayout layout = new GridLayout(2, false);
+            layout.marginWidth = 0;
+            layout.marginHeight = 0;
+            layout.verticalSpacing = 0;
+            trControl.setLayout(layout);
+            trControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            // Content placeholder
+            Composite panelPH = new Composite(panelComposite, SWT.NONE);
+            panelPH.setLayoutData(new GridData(GridData.FILL_BOTH));
+            panelPH.setLayout(new FillLayout());
+
+            panel.createContents(activePresentation, panelPH);
 
             boolean firstPanel = panelFolder.getItemCount() == 0;
             CTabItem panelTab = new CTabItem(panelFolder, SWT.CLOSE);
@@ -1292,7 +1299,7 @@ public class ResultSetViewer extends Viewer
             panelTab.setText(panelDescriptor.getLabel());
             panelTab.setImage(DBeaverIcons.getImage(panelDescriptor.getIcon()));
             panelTab.setToolTipText(panelDescriptor.getDescription());
-            panelTab.setControl(panelControl);
+            panelTab.setControl(panelComposite);
             UIUtils.disposeControlOnItemDispose(panelTab);
 
             if (setActive || firstPanel) {
@@ -1300,6 +1307,19 @@ public class ResultSetViewer extends Viewer
             }
             if (showPanels) {
                 panel.setFocus();
+            }
+
+            {
+                ToolBarManager panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
+                panel.contributeActions(panelToolBar);
+                ToolBar toolBar = panelToolBar.createControl(trControl);
+                toolBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            }
+            {
+                ToolBarManager panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
+                addDefaultPanelActions(panelToolBar);
+                ToolBar toolBar = panelToolBar.createControl(trControl);
+                toolBar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
         } finally {
             panelFolder.setRedraw(true);
@@ -1326,7 +1346,7 @@ public class ResultSetViewer extends Viewer
             }
         }
         if (settings.enabledPanelIds.isEmpty() && !availablePanels.isEmpty()) {
-            settings.enabledPanelIds.add(availablePanels.get(0).getId());
+            settings.enabledPanelIds.add(availablePanels.getFirst().getId());
         }
         if (!settings.enabledPanelIds.contains(settings.activePanelId)) {
             settings.activePanelId = null;
@@ -1505,7 +1525,7 @@ public class ResultSetViewer extends Viewer
         return items;
     }
 
-    private void addDefaultPanelActions() {
+    private void addDefaultPanelActions(ToolBarManager panelToolBar) {
         panelToolBar.add(new Action(ResultSetMessages.result_set_view_menu_text, WorkbenchImages.getImageDescriptor(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU)) {
             @Override
             public void run() {
@@ -1668,9 +1688,6 @@ public class ResultSetViewer extends Viewer
         try {
             for (ToolBarManager tb : toolbarList) {
                 UIUtils.updateContributionItems(tb);
-            }
-            if (panelToolBar != null) {
-                UIUtils.updateContributionItems(panelToolBar);
             }
             if (statusBar != null) statusBar.layout(true, true);
         } finally {
@@ -3900,6 +3917,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void updatePanelActions() {
+/*
         ToolBar toolBar = panelToolBar.getControl();
         toolBar.setRedraw(false);
         IResultSetPanel visiblePanel = getVisiblePanel();
@@ -3915,6 +3933,7 @@ public class ResultSetViewer extends Viewer
             this.panelFolder.setTabHeight(toolBarSize.y);
         }
         toolBar.setRedraw(true);
+*/
     }
 
     @Override
