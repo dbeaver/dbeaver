@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -57,7 +58,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * RSV value view panel
  */
-public class ValueViewerPanel implements IResultSetPanel, DBPAdaptable {
+public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable {
 
     private static final Log log = Log.getLog(ValueViewerPanel.class);
 
