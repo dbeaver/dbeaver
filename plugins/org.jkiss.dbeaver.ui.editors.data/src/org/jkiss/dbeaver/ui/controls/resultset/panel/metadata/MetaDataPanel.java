@@ -211,7 +211,7 @@ public class MetaDataPanel extends ResultSetPanelBase {
                 ResultSetMessages.generate_ddl_by_result_set_name,
                 DBIcon.SQL_TEXT,
                 ResultSetMessages.generate_ddl_by_result_set_tip,
-                false
+                true
             )
         );
     }

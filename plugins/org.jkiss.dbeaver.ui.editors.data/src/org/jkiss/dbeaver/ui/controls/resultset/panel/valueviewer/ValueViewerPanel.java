@@ -387,7 +387,14 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         }
         if (valueEditor != null && !valueEditor.isReadOnly()) {
             contributionManager.add(
-                ActionUtils.makeCommandContribution(presentation.getController().getSite(), ValueViewCommandHandler.CMD_SAVE_VALUE));
+                ActionUtils.makeCommandContribution(
+                    presentation.getController().getSite(),
+                    ValueViewCommandHandler.CMD_SAVE_VALUE,
+                    ResultSetMessages.controls_resultset_edit_save,
+                    null,
+                    null,
+                    true
+                ));
 
             contributionManager.add(
                 new Action(ResultSetMessages.value_viewer_auto_apply_action_text, Action.AS_CHECK_BOX) {
