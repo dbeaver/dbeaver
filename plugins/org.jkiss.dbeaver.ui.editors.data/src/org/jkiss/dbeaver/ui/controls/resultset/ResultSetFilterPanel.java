@@ -91,6 +91,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private static final int MIN_FILTER_TEXT_HEIGHT = 20;
     private static final int MAX_HISTORY_PANEL_HEIGHT = 200;
 
+    @NotNull
     private final ResultSetViewer viewer;
     private final boolean compactMode;
 
@@ -120,7 +121,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private Menu historyMenu;
     private boolean filterExpanded = false;
 
-    ResultSetFilterPanel(ResultSetViewer rsv, Composite parent, boolean compactMode) {
+    ResultSetFilterPanel(@NotNull ResultSetViewer rsv, @NotNull Composite parent, boolean compactMode) {
         super(parent, SWT.NONE);
         this.viewer = rsv;
         this.compactMode = compactMode;
@@ -593,7 +594,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
             }
 
-            return null;
+            throw new PartInitException("Cannot create filter panel because SQL service is not available");
         } catch (DBException e) {
             throw new PartInitException("Error creating SQL panel", e);
         }
@@ -608,9 +609,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             editorName = "Query";
         }
         UIServiceSQL serviceSQL = DBWorkbench.getService(UIServiceSQL.class);
-        if (serviceSQL != null) {
+        if (serviceSQL != null && dataContainer != null && dataContainer.getDataSource() != null) {
             serviceSQL.openSQLConsole(
-                dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer(),
+                dataContainer.getDataSource().getContainer(),
                 null, // This is workaround to open new SQL Editor with this dataContainer schema/catalog, not default
                 dataContainer,
                 editorName,
@@ -717,6 +718,16 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         @NotNull
         @Override
         public Control getOriginWidget() {
+            // This is a kind of hack.
+            // Because filters text is activated after some panels it is not initialized
+            // when active object panel styles are applying. So it background is always system default on init stage.
+            // So we take filters text background from the main ResultSetViewer
+            IResultSetContainer parentContainer = viewer.getContainer().getParentContainer();
+            if (parentContainer != null && parentContainer.getResultSetController() instanceof ResultSetViewer rsv
+                && rsv.getFiltersPanel() != null
+            ) {
+                return rsv.getFiltersPanel().filtersText;
+            }
             return filtersText;
         }
 

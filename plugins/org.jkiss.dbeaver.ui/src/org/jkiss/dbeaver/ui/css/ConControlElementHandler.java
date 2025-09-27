@@ -71,8 +71,9 @@ public class ConControlElementHandler extends CSSPropertyBackgroundSWTHandler {
         }
 
         if (widget instanceof ICSSBackgroundMimicControl textWidget) {
+            Color background = textWidget.getOriginWidget().getBackground();
             textWidget.setBackground(
-                textWidget.getOriginWidget().getBackground());
+                background);
             return;
         }
 
