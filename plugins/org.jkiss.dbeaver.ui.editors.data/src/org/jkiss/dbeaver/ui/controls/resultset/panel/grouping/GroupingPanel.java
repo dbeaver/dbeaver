@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.IMenuCreator;
-import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -174,7 +171,9 @@ public class GroupingPanel extends ResultSetPanelBase {
 
     private void fillToolBar(IContributionManager contributionManager)
     {
-        contributionManager.add(new DefaultSortingAction());
+        ActionContributionItem sortAction = new ActionContributionItem(new DefaultSortingAction());
+        sortAction.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        contributionManager.add(sortAction);
         contributionManager.add(new DuplicatesOnlyAction());
         contributionManager.add(new ToolbarSeparatorContribution(true));
         contributionManager.add(new EditColumnsAction(getGroupingResultsContainer()));
@@ -269,8 +268,9 @@ public class GroupingPanel extends ResultSetPanelBase {
     class DefaultSortingAction extends Action {
 
         DefaultSortingAction() {
-            super(ResultSetMessages.controls_resultset_grouping_default_sorting, Action.AS_DROP_DOWN_MENU);
+            super(ResultSetMessages.dialog_toolbar_sort, Action.AS_DROP_DOWN_MENU);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SORT_CONFIG));
+            setToolTipText(ResultSetMessages.controls_resultset_grouping_default_sorting);
         }
 
         @Override
@@ -292,8 +292,8 @@ public class GroupingPanel extends ResultSetPanelBase {
             super(descending == null ?
                 ResultSetMessages.grouping_panel_sorting_action_unsorted :
                 (descending ? ResultSetMessages.grouping_panel_sorting_action_decending : ResultSetMessages.grouping_panel_sorting_action_ascending),
-                Action.AS_CHECK_BOX);
-            setImageDescriptor(DBeaverIcons.getImageDescriptor(descending == null ? UIIcon.SORT_UNKNOWN : (descending ? UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE)));
+                Action.AS_RADIO_BUTTON);
+            //setImageDescriptor(DBeaverIcons.getImageDescriptor(descending == null ? UIIcon.SORT_UNKNOWN : (descending ? UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE)));
             this.descending = descending;
         }
 

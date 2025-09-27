@@ -3931,7 +3931,7 @@ public class ResultSetViewer extends Viewer
             if (visiblePanel != null) {
                 visiblePanel.contributeActions(actionToolBar);
             }
-            actionToolBar.update(false);
+            actionToolBar.update(true);
         } finally {
             toolBar.setRedraw(true);
         }
