@@ -18,14 +18,17 @@ package org.jkiss.dbeaver.model.sql.semantics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
+import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -57,6 +60,22 @@ public abstract class SQLQuerySymbolOrigin {
 
     public abstract void apply(Visitor visitor);
 
+    public boolean isApplicable(@NotNull LSMInspections.SyntaxInspectionResult syntaxInspectionResult) {
+        return true;
+    }
+
+    /**
+     * Purpose of the objects produced by the origin in the corresponding lexical context
+     */
+    public enum DbObjectFilterMode {
+        DEFAULT,
+        ROWSET,
+        VALUE,
+        FUNCTION,
+        TABLE,
+        OBJECT
+    }
+
     /**
      * DB object is a scope for its child name
      */
@@ -68,13 +87,21 @@ public abstract class SQLQuerySymbolOrigin {
         @NotNull
         private final Set<DBSObjectType> objectTypes;
 
-        public DbObjectFromDbObject(@NotNull DBSObject object, @NotNull DBSObjectType memberType) {
-            this(object, Set.of(memberType));
-        }
+        @NotNull
+        private final SQLQueryRowsSourceContext rowsContext;
 
-        public DbObjectFromDbObject(@NotNull DBSObject object, @NotNull Set<DBSObjectType> objectTypes) {
+        @NotNull
+        private final DbObjectFilterMode  filterMode;
+
+        public DbObjectFromDbObject(
+            @NotNull DBSObject object,
+            @NotNull SQLQueryRowsSourceContext rowsContext,
+            @NotNull DbObjectFilterMode filterMode
+        ) {
             this.object = object;
-            this.objectTypes = objectTypes;
+            this.objectTypes = Collections.emptySet();
+            this.rowsContext = rowsContext;
+            this.filterMode = filterMode;
         }
 
         @NotNull
@@ -85,6 +112,16 @@ public abstract class SQLQuerySymbolOrigin {
         @NotNull
         public Set<DBSObjectType> getMemberTypes() {
             return this.objectTypes;
+        }
+
+        @NotNull
+        public SQLQueryRowsSourceContext getRowsContext() {
+            return this.rowsContext;
+        }
+
+        @NotNull
+        public DbObjectFilterMode getFilterMode() {
+            return this.filterMode;
         }
 
         @Override
@@ -207,7 +244,13 @@ public abstract class SQLQuerySymbolOrigin {
             return false;
         }
 
-        public @NotNull SQLQueryRowsSourceContext getRowsSourceContext() {
+        @Override
+        public boolean isApplicable(@NotNull LSMInspections.SyntaxInspectionResult syntaxInspectionResult) {
+            return syntaxInspectionResult.expectingTableReference();
+        }
+
+        @NotNull
+        public SQLQueryRowsSourceContext getRowsSourceContext() {
             return this.rowsSourceContext;
         }
 
@@ -230,6 +273,11 @@ public abstract class SQLQuerySymbolOrigin {
             return false;
         }
 
+        @Override
+        public boolean isApplicable(@NotNull LSMInspections.SyntaxInspectionResult syntaxInspectionResult) {
+            return syntaxInspectionResult.expectingColumnReference();
+        }
+
         @NotNull
         public SQLQueryRowsDataContext getRowsDataContext() {
             return this.rowsDataContext;
@@ -248,6 +296,11 @@ public abstract class SQLQuerySymbolOrigin {
 
         public ColumnNameFromRowsData(@NotNull SQLQueryRowsDataContext dataContext) {
             super(dataContext);
+        }
+
+        @Override
+        public boolean isApplicable(@NotNull LSMInspections.SyntaxInspectionResult syntaxInspectionResult) {
+            return syntaxInspectionResult.expectingColumnName();
         }
 
         @Override
@@ -282,6 +335,11 @@ public abstract class SQLQuerySymbolOrigin {
             return true;
         }
 
+        @Override
+        public boolean isApplicable(@NotNull LSMInspections.SyntaxInspectionResult syntaxInspectionResult) {
+            return true;
+        }
+
         @NotNull
         public STMTreeNode getPlaceholder() {
             return this.placeholder;
@@ -305,6 +363,11 @@ public abstract class SQLQuerySymbolOrigin {
 
         public SyntaxBasedFromRowsData(@NotNull SQLQueryRowsDataContext dataContext) {
             super(dataContext);
+        }
+
+        @Override
+        public boolean isApplicable(@NotNull LSMInspections.SyntaxInspectionResult syntaxInspectionResult) {
+            return true;
         }
 
         @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.rcp;
 
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -28,15 +29,38 @@ import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
  */
 public abstract class DesktopApplicationImpl extends BaseApplicationImpl implements DBPApplicationDesktop {
 
+    public static final String WORKSPACE_PLUGINS_FOLDER = ".plugins";
+    public static final String CORE_RUNTIME_PLUGIN_ID = "org.eclipse.core.runtime";
+    public static final String CORE_RESOURCES_PLUGIN_ID = "org.eclipse.core.resources";
+    public static final String CORE_FILESYSTEM_PLUGIN_ID = "org.eclipse.core.filesystem";
+
+    private boolean isForcedRestart = false;
+
     @NotNull
     @Override
-    public DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform, @NotNull IWorkspace eclipseWorkspace) {
-        return new DesktopWorkspaceImpl(platform, eclipseWorkspace);
+    public DBPWorkspaceDesktop createWorkspace(@NotNull DBPPlatform platform) {
+        return new DesktopWorkspaceImpl(platform, loadEclipseWorkspace());
+    }
+
+    @NotNull
+    protected IWorkspace loadEclipseWorkspace() {
+        return ResourcesPlugin.getWorkspace();
     }
 
     @Override
     public boolean isEnvironmentVariablesAccessible() {
         return true;
     }
+
+    // Dirty fix of pro#6833
+    // We should keep this flag somewhere in basic UI plugin
+    public boolean isForcedRestart() {
+        return isForcedRestart;
+    }
+
+    public void setIsForcedRestart(boolean isForcedRestart) {
+        this.isForcedRestart = isForcedRestart;
+    }
+
 
 }

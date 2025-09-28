@@ -22,9 +22,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.Strictness;
 import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
@@ -48,6 +52,7 @@ public abstract class AIContextSettings {
         public String[] objects;
     }
 
+    @Nullable
     public abstract DBPDataSourceContainer getDataSourceContainer();
 
     public abstract void saveSettings() throws DBException;
@@ -60,6 +65,7 @@ public abstract class AIContextSettings {
         this.settings.confirmed = metaTransferConfirmed;
     }
 
+    @Nullable
     public AIDatabaseScope getScope() {
         return settings.scope;
     }
@@ -68,6 +74,7 @@ public abstract class AIContextSettings {
         this.settings.scope = scope;
     }
 
+    @Nullable
     public String[] getCustomObjectIds() {
         return settings.objects;
     }
@@ -78,14 +85,18 @@ public abstract class AIContextSettings {
 
     public void loadSettingsFromMap(Map<String, Object> dsConfig) {
         settings = GSON.fromJson(GSON.toJsonTree(dsConfig), PersistentSettings.class);
+        if (settings.objects != null) {
+            settings.objects = Arrays.stream(settings.objects)
+                .filter(o -> !CommonUtils.isEmpty(o)).toArray(String[]::new);
+        }
     }
 
     public void loadSettingsFromString(String dsConfig) {
-        loadSettingsFromMap(GSON.fromJson(dsConfig, Map.class));
+        loadSettingsFromMap(GSON.fromJson(dsConfig, JSONUtils.MAP_TYPE_TOKEN));
     }
 
     public Map<String, Object> saveSettingsToMap() {
-        return GSON.fromJson(GSON.toJson(settings), Map.class);
+        return GSON.fromJson(GSON.toJson(settings), JSONUtils.MAP_TYPE_TOKEN);
     }
 
     public String saveSettingsToString() {

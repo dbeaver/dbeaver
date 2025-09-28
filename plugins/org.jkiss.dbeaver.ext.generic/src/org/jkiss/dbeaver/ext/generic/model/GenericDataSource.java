@@ -331,6 +331,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return schemas;
     }
 
+    @NotNull
     @Override
     public GenericStructContainer getObject() {
         return this;
@@ -346,119 +347,126 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return null;
     }
 
+    @NotNull
     @Override
     public TableCache getTableCache() {
         return structureContainer.getTableCache();
     }
 
+    @NotNull
     @Override
     public IndexCache getIndexCache() {
         return structureContainer.getIndexCache();
     }
 
+    @NotNull
     @Override
     public ConstraintKeysCache getConstraintKeysCache() {
         return structureContainer.getConstraintKeysCache();
     }
 
+    @NotNull
     @Override
     public ForeignKeysCache getForeignKeysCache() {
         return structureContainer.getForeignKeysCache();
     }
 
+    @NotNull
     @Override
     public TableTriggerCache getTableTriggerCache() {
         return structureContainer.getTableTriggerCache();
     }
 
+    @NotNull
     @Override
     public GenericObjectContainer.GenericSequenceCache getSequenceCache() {
         return structureContainer.getSequenceCache();
     }
 
+    @NotNull
     @Override
     public GenericObjectContainer.GenericSynonymCache getSynonymCache() {
         return structureContainer.getSynonymCache();
     }
 
     @Override
-    public List<? extends GenericView> getViews(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericView> getViews(@NotNull DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getViews(monitor);
     }
 
     @Override
-    public List<? extends GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericTable> getPhysicalTables(@NotNull DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getPhysicalTables(monitor);
     }
 
     @Override
-    public List<? extends GenericTableBase> getTables(DBRProgressMonitor monitor)
+    public List<? extends GenericTableBase> getTables(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         return structureContainer == null ? null : structureContainer.getTables(monitor);
     }
 
     @Override
-    public GenericTableBase getTable(DBRProgressMonitor monitor, String name)
+    public GenericTableBase getTable(@NotNull DBRProgressMonitor monitor, @NotNull String name)
         throws DBException {
         return structureContainer == null ? null : structureContainer.getTable(monitor, name);
     }
 
     @Override
-    public Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
+    public Collection<GenericPackage> getPackages(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         return structureContainer == null ? null : structureContainer.getPackages(monitor);
     }
 
     @Override
-    public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<GenericTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         return structureContainer == null ? null : structureContainer.getIndexes(monitor);
     }
 
     @Override
-    public Collection<? extends GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+    public Collection<? extends GenericProcedure> getProcedures(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         return structureContainer == null ? null : structureContainer.getProcedures(monitor);
     }
 
     @Override
-    public Collection<? extends GenericProcedure> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericProcedure> getProceduresOnly(@NotNull DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getProceduresOnly(monitor);
     }
 
     @Override
-    public GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+    public GenericProcedure getProcedure(@NotNull DBRProgressMonitor monitor, @NotNull String uniqueName) throws DBException {
         return structureContainer == null ? null : structureContainer.getProcedure(monitor, uniqueName);
     }
 
     @Override
-    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
+    public Collection<GenericProcedure> getProcedures(@NotNull DBRProgressMonitor monitor, @NotNull String name)
         throws DBException {
         return structureContainer == null ? null : structureContainer.getProcedures(monitor, name);
     }
 
     @Override
-    public Collection<? extends GenericProcedure> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericProcedure> getFunctionsOnly(@NotNull DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getFunctionsOnly(monitor);
     }
 
     @Override
-    public Collection<? extends GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericSequence> getSequences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getSequences(monitor);
     }
 
     @Override
-    public Collection<? extends GenericSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericSynonym> getSynonyms(@NotNull DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getSynonyms(monitor);
     }
 
     @Override
-    public Collection<? extends GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericTrigger<?>> getTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getTriggers(monitor);
     }
 
     @Override
-    public Collection<? extends GenericTrigger> getTableTriggers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericTrigger<?>> getTableTriggers(@NotNull DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getTableTriggers(monitor);
     }
 
@@ -815,7 +823,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return dataTypeCache;
     }
 
-    public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSDataType> getDataTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return dataTypeCache.getAllObjects(monitor, this);
     }
 

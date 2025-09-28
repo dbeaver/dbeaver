@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.internal;
 
-import org.jkiss.dbeaver.utils.NLS;
+import org.eclipse.osgi.util.NLS;
 
 public class UIConnectionMessages extends NLS {
 
@@ -168,6 +168,9 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_download_network_unavailable_msg;
     public static String dialog_driver_download_network_unavailable_cert_msg;
     public static String dialog_driver_download_network_unavailable_cert_msg_advanced;
+    public static String dialog_driver_download_version_change_label;
+    public static String dialog_driver_download_current_version_label;
+
     // Driver edit
 	public static String dialog_edit_driver_setting;
     public static String dialog_edit_driver_type_label;

@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -54,7 +53,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
     @NotNull
     @Override
     public String getName() {
-        return ((ERDObject) getModel()).getName();
+        return ((ERDObject<?>) getModel()).getName();
     }
 
     @NotNull
@@ -84,7 +83,8 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 
     @Nullable
     public DBECommandContext getCommandContext() {
-        return getEditor().getCommandContext();
+        ERDEditorPart editor = getEditor();
+        return editor == null ? null : editor.getCommandContext();
     }
 
     protected boolean isLayoutEnabled() {
@@ -147,12 +147,12 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
                 break;
             case ERDObject.PROP_SIZE: {
                 IFigure figure = getFigure();
-                if (this instanceof NodePart) {
+                if (this instanceof NodePart nodePart) {
                     Rectangle curBounds = figure.getBounds().getCopy();
                     Dimension newSize = figure.getPreferredSize();
                     curBounds.width = newSize.width;
                     curBounds.height = newSize.height;
-                    ((NodePart) this).modifyBounds(curBounds);
+                    nodePart.modifyBounds(curBounds);
                 } else {
                     figure.setSize(figure.getPreferredSize());
                 }
@@ -187,7 +187,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
         Object newValue = evt.getNewValue();
         Object oldValue = evt.getOldValue();
 
-        if (!((oldValue != null) ^ (newValue != null))) {
+        if ((oldValue != null) == (newValue != null)) {
             throw new IllegalStateException("Exactly one of old or new values must be non-null for PROP_INPUT event");
         }
 
@@ -221,8 +221,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 
             List<?> childrenParts = getChildren();
             for (Object next : childrenParts) {
-                if (next instanceof PropertyAwarePart) {
-                    PropertyAwarePart pap = (PropertyAwarePart)next;
+                if (next instanceof PropertyAwarePart pap) {
                     List<?> childrenConnections = pap.getTargetConnections();
                     ConnectionEditPart childConnectionPartToRemove;
                     for (Object childrenConnection : childrenConnections) {
@@ -260,7 +259,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
         Object newValue = evt.getNewValue();
         Object oldValue = evt.getOldValue();
 
-        if (!((oldValue != null) ^ (newValue != null))) {
+        if ((oldValue != null) == (newValue != null)) {
             throw new IllegalStateException("Exactly one of old or new values must be non-null for PROP_INPUT event");
         }
 
@@ -292,8 +291,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
             }
             List<?> childrenParts = getChildren();
             for (Object next : childrenParts) {
-                if (next instanceof PropertyAwarePart) {
-                    PropertyAwarePart pap = (PropertyAwarePart)next;
+                if (next instanceof PropertyAwarePart pap) {
                     List<?> childrenConnections = pap.getSourceConnections();
                     ConnectionEditPart childConnectionPartToRemove;
                     for (Object childrenConnection : childrenConnections) {
@@ -341,8 +339,8 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
             List<?> children = getChildren();
 
             EditPart partToRemove = null;
-            for (Iterator<?> iter = children.iterator(); iter.hasNext(); ) {
-                EditPart part = (EditPart) iter.next();
+            for (Object child : children) {
+                EditPart part = (EditPart) child;
                 if (part.getModel() == oldValue) {
                     partToRemove = part;
                     break;
@@ -377,7 +375,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
     }
 
     @Override
-    public Object getAdapter(Class key) {
+    public <T> T getAdapter(Class<T> key) {
         if (key == IPropertySource.class) {
             Object model = getModel();
             if (model instanceof ERDObject) {
@@ -388,12 +386,12 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
                         if (commandContext != null) {
                             PropertySourceEditable pse = new PropertySourceEditable(commandContext, object, object);
                             pse.collectProperties();
-                            return new PropertySourceDelegate(pse);
+                            return key.cast(new PropertySourceDelegate(pse));
                         }
                     }
                     PropertyCollector propertyCollector = new PropertyCollector(object, false);
                     propertyCollector.collectProperties();
-                    return new PropertySourceDelegate(propertyCollector);
+                    return key.cast(new PropertySourceDelegate(propertyCollector));
                 }
             }
             return null;

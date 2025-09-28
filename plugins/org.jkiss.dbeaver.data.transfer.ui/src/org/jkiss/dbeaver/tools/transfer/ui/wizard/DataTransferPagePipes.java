@@ -236,10 +236,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
     public void activatePage() {
         inputsTable.setInput(getWizard().getSettings().getSourceObjects());
         if (!activated) {
-            UIUtils.asyncExec(() -> {
-                loadNodeSettings();
-                setSelectedSettings(true);
-            });
+            UIUtils.asyncExec(this::loadNodeSettings);
         }
         if (activated && getWizard().getSettings().isPipeChangeRestricted()) {
             // Second activation - we need to disable any selectors
@@ -263,7 +260,9 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         TransferTarget currentTarget = null;
         if (consumer != null || producer != null) {
             for (TransferTarget target : targets) {
-                if ((target.node == consumer || target.node == producer) && target.processor == processor) {
+                if ((target.node == consumer || target.node == producer) &&
+                    (target.processor == null || target.processor == processor)
+                ) {
                     currentTarget = target;
                     break;
                 }

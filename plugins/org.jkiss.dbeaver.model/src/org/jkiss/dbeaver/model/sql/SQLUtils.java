@@ -214,12 +214,19 @@ public final class SQLUtils {
 
         for (int i = 0; i < like.length(); i++) {
             char c = like.charAt(i);
-            if (c == '*') result.append(".*");
-            else if (c == '?' || c == '_') result.append(".");
-            else if (c == '%') result.append(".*");
-            else if (Character.isLetterOrDigit(c)) result.append(c);
-            else if (c == '(' || c == ')' || c == '[' || c == ']') result.append('\\').append(c);
-            else if (c == '\\') {
+            if (c == '*') {
+                result.append(".*");
+            } else if (c == '?' || c == '_') {
+                result.append(".");
+            } else if (c == '%') {
+                result.append(".*");
+            } else if (Character.isLetterOrDigit(c)) {
+                result.append(c);
+            } else if (c == '(' || c == ')' || c == '[' || c == ']') {
+                result.append('\\').append(c);
+            } else if (c == '+' || c == '^' || c == '$' || c == '.' || c == '|' || c == '{' || c == '}') {
+                result.append('\\').append(c);
+            } else if (c == '\\') {
                 if (i < like.length() - 1) {
                     char nc = like.charAt(i + 1);
                     if (nc == '_' || nc == '*' || nc == '?' || nc == '.' || nc == '%') {
@@ -229,8 +236,7 @@ public final class SQLUtils {
                         result.append("\\");
                     }
                 }
-            }
-            else {
+            } else {
                 result.append(c);
             }
         }
@@ -731,11 +737,12 @@ public final class SQLUtils {
             }
             prevChar = c;
         }
-        String alias;
+        String alias = "t";
         if (!CommonUtils.isEmpty(buf)) {
-            alias = buf.toString().toLowerCase(Locale.ENGLISH);
-        } else {
-            alias = "t";
+            String generatedAlias = buf.toString();
+            if (dialect.getReservedWords().stream().noneMatch(kw -> kw.equalsIgnoreCase(generatedAlias))) {
+                alias = generatedAlias.toLowerCase(Locale.ENGLISH);
+            }
         }
 
         String result = alias;

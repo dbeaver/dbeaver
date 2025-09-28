@@ -129,6 +129,7 @@ public abstract class BaseWorkspaceImpl implements DBPWorkspace {
         DBVModel.checkGlobalCacheIsEmpty();
     }
 
+    @Nullable
     @Override
     public DBPImage getResourceIcon(DBPAdaptable resourceAdapter) {
         return null;
