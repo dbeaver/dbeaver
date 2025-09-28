@@ -273,7 +273,7 @@ public class ResultSetViewer extends Viewer
 
         this.mainPanel = new ConComposite(parent);
         this.mainPanel.setGridLayout(supportsPanels ? 3 : 2);
-        ((GridLayout)this.mainPanel.getLayout()).verticalSpacing = 0;
+        ((GridLayout) this.mainPanel.getLayout()).verticalSpacing = 0;
 
         this.autoRefreshControl = new AutoRefreshControl(
             this.mainPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
@@ -1203,22 +1203,6 @@ public class ResultSetViewer extends Viewer
         return panelInfo == null ? null : panelInfo.panel;
     }
 
-/*
-    String getActivePanelId() {
-        return getPresentationSettings().activePanelId;
-    }
-
-    void closeActivePanel() {
-        CTabItem activePanelItem = panelFolder.getSelection();
-        if (activePanelItem != null) {
-            activePanelItem.dispose();
-        }
-        if (panelFolder.getItemCount() <= 0) {
-            showPanels(false, true, true);
-        }
-    }
-*/
-
     @Nullable
     ResultSetFilterPanel getFiltersPanel() {
         return filtersPanel;
@@ -1278,14 +1262,14 @@ public class ResultSetViewer extends Viewer
         panelFolder.setRedraw(false);
         try {
             Composite panelComposite = UIUtils.createComposite(panelFolder, 1);
-            ((GridLayout)panelComposite.getLayout()).verticalSpacing = 0;
+            ((GridLayout) panelComposite.getLayout()).verticalSpacing = 0;
 
             // Toolbar
-            Composite trControl = new ConComposite(panelComposite, SWT.NONE);
             GridLayout layout = new GridLayout(2, false);
             layout.marginWidth = 0;
             layout.marginHeight = 0;
             layout.verticalSpacing = 0;
+            Composite trControl = new ConComposite(panelComposite, SWT.NONE);
             trControl.setLayout(layout);
             trControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (panel.needsSeparator()) {
@@ -1532,7 +1516,9 @@ public class ResultSetViewer extends Viewer
     }
 
     private void addDefaultPanelActions(ToolBarManager panelToolBar) {
-        panelToolBar.add(new Action(ResultSetMessages.result_set_view_menu_text, WorkbenchImages.getImageDescriptor(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU)) {
+        panelToolBar.add(new Action(
+            ResultSetMessages.result_set_view_menu_text,
+            WorkbenchImages.getImageDescriptor(IWorkbenchGraphicConstants.IMG_LCL_VIEW_MENU)) {
             @Override
             public void run() {
                 ToolBar tb = panelToolBar.getControl();
@@ -1690,14 +1676,20 @@ public class ResultSetViewer extends Viewer
         if (statusBar == null || statusBar.isDisposed()) {
             return;
         }
-        if (statusBar != null) statusBar.setRedraw(false);
+        if (statusBar != null) {
+            statusBar.setRedraw(false);
+        }
         try {
             for (ToolBarManager tb : toolbarList) {
                 UIUtils.updateContributionItems(tb);
             }
-            if (statusBar != null) statusBar.layout(true, true);
+            if (statusBar != null) {
+                statusBar.layout(true, true);
+            }
         } finally {
-            if (statusBar != null) statusBar.setRedraw(true);
+            if (statusBar != null) {
+                statusBar.setRedraw(true);
+            }
         }
     }
 
@@ -2743,7 +2735,7 @@ public class ResultSetViewer extends Viewer
         MenuManager columnMenu = new MenuManager();
         ResultSetRow currentRow = getCurrentRow();
 
-        fillOrderingsMenu(columnMenu, curAttribute, currentRow);
+        fillOrderingsMenu(columnMenu, curAttribute);
         fillFiltersMenu(columnMenu, curAttribute, currentRow);
 
         final Menu contextMenu = columnMenu.createContextMenu(getActivePresentation().getControl());
@@ -2935,7 +2927,7 @@ public class ResultSetViewer extends Viewer
                         DBeaverIcons.getImageDescriptor(UIIcon.SORT),
                         MENU_ID_ORDER); //$NON-NLS-1$
                     orderMenu.setRemoveAllWhenShown(true);
-                    orderMenu.addMenuListener(manager1 -> fillOrderingsMenu(manager1, attr, row));
+                    orderMenu.addMenuListener(manager1 -> fillOrderingsMenu(manager1, attr));
                     manager.add(orderMenu);
                 }
                 {
@@ -3010,7 +3002,7 @@ public class ResultSetViewer extends Viewer
                 null,
                 MENU_ID_VIRTUAL_MODEL); //$NON-NLS-1$
             viewMenu.setRemoveAllWhenShown(true);
-            viewMenu.addMenuListener(manager1 -> fillVirtualModelMenu(manager1, attr, row, valueController));
+            viewMenu.addMenuListener(manager1 -> fillVirtualModelMenu(manager1, attr));
             manager.add(viewMenu);
         }
 
@@ -3231,9 +3223,7 @@ public class ResultSetViewer extends Viewer
 
     private void fillVirtualModelMenu(
         @NotNull IMenuManager vmMenu,
-        @Nullable DBDAttributeBinding attr,
-        @Nullable ResultSetRow row,
-        ResultSetValueController valueController
+        @Nullable DBDAttributeBinding attr
     ) {
         final DBPDataSource dataSource = getDataSource();
         if (dataSource == null) {
@@ -3604,7 +3594,11 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fillFiltersMenu(@NotNull IMenuManager filtersMenu, @Nullable DBDAttributeBinding attribute, @Nullable ResultSetRow row) {
+    private void fillFiltersMenu(
+        @NotNull IMenuManager filtersMenu,
+        @Nullable DBDAttributeBinding attribute,
+        @Nullable ResultSetRow row
+    ) {
         if (attribute != null && supportsDataFilter()) {
             {
                 filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_MENU_DISTINCT));
@@ -3671,8 +3665,7 @@ public class ResultSetViewer extends Viewer
 
     private void fillOrderingsMenu(
         @NotNull IMenuManager filtersMenu,
-        @Nullable DBDAttributeBinding attribute,
-        @Nullable ResultSetRow row
+        @Nullable DBDAttributeBinding attribute
     ) {
         if (attribute != null) {
             filtersMenu.add(new Separator());
@@ -3818,7 +3811,11 @@ public class ResultSetViewer extends Viewer
         navigateEntity(monitor, newWindow, targetEntity, constraints);
     }
 
-    private void createFilterConstraint(@NotNull List<? extends DBDValueRow> rows, DBDAttributeBinding attrBinding, DBDAttributeConstraint constraint) {
+    private void createFilterConstraint(
+        @NotNull List<? extends DBDValueRow> rows,
+        @NotNull DBDAttributeBinding attrBinding,
+        @NotNull DBDAttributeConstraint constraint
+    ) {
         if (rows.size() == 1) {
             Object keyValue = model.getCellValue(new ResultSetCellLocation(attrBinding, (ResultSetRow) rows.getFirst()));
             constraint.setOperator(DBCLogicalOperator.EQUALS);
