@@ -101,7 +101,7 @@ public class GroupingPanel extends ResultSetPanelBase {
 
                 @Override
                 public void handleResultSetSelectionChange(SelectionChangedEvent event) {
-                    updateControls();
+                    //updateControls();
                 }
             };
             groupingViewer.addListener(groupingResultsListener);
