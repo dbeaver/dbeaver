@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ContributionItem;
-import org.eclipse.jface.action.GroupMarker;
-import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.osgi.util.NLS;
@@ -63,7 +60,6 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
     private static final Log log = Log.getLog(ValueViewerPanel.class);
 
     public static final String PANEL_ID = "value-view";
-    public static final String SETTINGS_SECTION = "panel-" + PANEL_ID;
 
     private static final String VALUE_VIEW_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.panel.valueView";
 
@@ -386,34 +382,9 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
             }
         }
         if (valueEditor != null && !valueEditor.isReadOnly()) {
-            contributionManager.add(
-                ActionUtils.makeCommandContribution(
-                    presentation.getController().getSite(),
-                    ValueViewCommandHandler.CMD_SAVE_VALUE,
-                    ResultSetMessages.controls_resultset_edit_save,
-                    null,
-                    null,
-                    true
-                ));
-
-            contributionManager.add(
-                new Action(ResultSetMessages.value_viewer_auto_apply_action_text, Action.AS_CHECK_BOX) {
-                    {
-                        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.AUTO_SAVE));
-                    }
-
-                    @Override
-                    public boolean isChecked() {
-                        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
-                    }
-
-                    @Override
-                    public void run() {
-                        boolean newValue = !isChecked();
-                        DBWorkbench.getPlatform().getPreferenceStore().setValue(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
-                        presentation.getController().updatePanelActions();
-                    }
-                });
+            ActionContributionItem item = new ActionContributionItem(new SaveValueAction());
+            item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+            contributionManager.add(item);
         }
     }
 
@@ -431,5 +402,48 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         return null;
     }
 
+
+    class SaveValueAction extends Action {
+        SaveValueAction() {
+            super(ResultSetMessages.controls_resultset_edit_save, Action.AS_DROP_DOWN_MENU);
+            setActionDefinitionId(ValueViewCommandHandler.CMD_SAVE_VALUE);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SAVE));
+            setMenuCreator(new MenuCreator(widget -> {
+                MenuManager menuManager = new MenuManager();
+                menuManager.add(ActionUtils.makeCommandContribution(
+                    presentation.getController().getSite(),
+                    ValueViewCommandHandler.CMD_SAVE_VALUE));
+
+                menuManager.add(
+                    new Action(ResultSetMessages.value_viewer_auto_apply_action_text, Action.AS_CHECK_BOX) {
+                        {
+                            //setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.AUTO_SAVE));
+                        }
+
+                        @Override
+                        public boolean isChecked() {
+                            return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
+                        }
+
+                        @Override
+                        public void run() {
+                            boolean newValue = !isChecked();
+                            DBWorkbench.getPlatform().getPreferenceStore().setValue(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
+                            presentation.getController().updatePanelActions();
+                        }
+                    });
+
+                return menuManager;
+            }));
+        }
+
+        @Override
+        public void run() {
+            ActionUtils.runCommand(
+                ValueViewCommandHandler.CMD_SAVE_VALUE,
+                presentation.getController().getSite());
+        }
+
+    }
 
 }

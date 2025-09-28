@@ -57,8 +57,8 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * Action utils
@@ -157,8 +157,9 @@ public class ActionUtils {
         @Nullable DBPImage image,
         @Nullable String toolTip,
         boolean showText,
-        @Nullable Map<String, Object> parameters) {
-        final CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
+        @Nullable Map<String, Object> parameters
+    ) {
+        CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
             serviceLocator,
             null,
             commandId,
