@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.layout.FillLayoutFactory;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.osgi.util.NLS;
@@ -81,7 +82,9 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         this.presentation = presentation;
 
         viewPlaceholder = new Composite(parent, SWT.NONE);
-        viewPlaceholder.setLayout(new FillLayout());
+        viewPlaceholder.setLayout(FillLayoutFactory.fillDefaults().margins(2, 2).create());
+        //new CompositeBorderPainter(this.viewPlaceholder);
+
         viewPlaceholder.addPaintListener(e -> {
             if (previewController == null && viewPlaceholder.getChildren().length == 0) {
                 e.gc.setForeground(UIStyles.getDefaultTextForeground());
@@ -155,6 +158,11 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
     @Override
     public void contributeActions(IContributionManager manager) {
         fillToolBar(manager);
+    }
+
+    @Override
+    public boolean needsSeparator() {
+        return true;
     }
 
     private void refreshValue(boolean force) {

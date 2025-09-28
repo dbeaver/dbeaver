@@ -1288,6 +1288,9 @@ public class ResultSetViewer extends Viewer
             layout.verticalSpacing = 0;
             trControl.setLayout(layout);
             trControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            if (panel.needsSeparator()) {
+                new Label(panelComposite, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            }
 
             // Content placeholder
             Composite panelPH = new Composite(panelComposite, SWT.NONE);

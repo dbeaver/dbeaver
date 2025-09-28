@@ -22,6 +22,11 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
 
 public abstract class ResultSetPanelBase implements IResultSetPanel {
 
+    @Override
+    public boolean needsSeparator() {
+        return false;
+    }
+
     protected void createActionsToolbar(@NotNull Composite parent) {
 
     }
