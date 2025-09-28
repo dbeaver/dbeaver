@@ -206,9 +206,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         executePanel.setEnabled(true);
                         executePanel.redraw();
                     }
-//                    if (filtersClearButton != null) {
-//                        filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
-//                    }
                     filtersProposalAdapter.refresh();
                 }
             });
@@ -284,7 +281,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             ToolItem filtersCustomButton = new ToolItem(filterToolbar, SWT.NO_FOCUS | SWT.DROP_DOWN);
             filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
-            filtersCustomButton.setToolTipText(ActionUtils.findCommandDescription(ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS, viewer.getSite(), false));
+            filtersCustomButton.setToolTipText(ActionUtils.findCommandDescription(
+                ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS,
+                viewer.getSite(),
+                false
+            ));
             filtersCustomButton.setEnabled(true);
             filtersCustomButton.addSelectionListener(new CustomFilterListener(compactMode));
 
@@ -950,7 +951,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             Point parentRect = getDisplay().map(filtersText, null, new Point(0, 0));
             Rectangle displayRect = getMonitor().getClientArea();
             final Point filterTextSize = filtersText.getSize();
-            int width = filterTextSize.x + historyPanel.getSize().x;// + refreshPanel.getSize().x;
+            int width = filterTextSize.x + historyPanel.getSize().x;
             if (filterExpandPanel != null) {
                 width += filterExpandPanel.getSize().x;
             }
@@ -1372,6 +1373,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     private class CustomFilterListener extends AbstractDropDownListener {
         private final boolean showHistoryItems;
+
         public CustomFilterListener(boolean showHistoryItems) {
             this.showHistoryItems = showHistoryItems;
         }

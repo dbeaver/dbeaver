@@ -282,7 +282,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
                             }
                             // Foreign keys
                             Collection<? extends DBSEntityAssociation> associations = DBVUtils.getAllAssociations(monitor, entity);
-                            for (DBSEntityAssociation association: associations) {
+                            for (DBSEntityAssociation association : associations) {
                                 if (!(association instanceof DBSEntityReferrer entityReferrer)) {
                                     continue;
                                 }

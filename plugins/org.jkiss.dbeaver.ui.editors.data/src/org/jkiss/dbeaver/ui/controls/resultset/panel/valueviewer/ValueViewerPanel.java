@@ -430,13 +430,15 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
 
                         @Override
                         public boolean isChecked() {
-                            return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
+                            return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(
+                                ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE);
                         }
 
                         @Override
                         public void run() {
                             boolean newValue = !isChecked();
-                            DBWorkbench.getPlatform().getPreferenceStore().setValue(ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
+                            DBWorkbench.getPlatform().getPreferenceStore().setValue(
+                                ResultSetPreferences.RS_EDIT_AUTO_UPDATE_VALUE, newValue);
                             presentation.getController().updatePanelActions();
                         }
                     });

@@ -412,8 +412,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
 
         @Override
-        public void runWithEvent(Event event)
-        {
+        public void runWithEvent(Event event) {
             if (event.widget instanceof ToolItem toolItem) {
                 Menu menu = createMenu(toolItem);
                 Rectangle bounds = toolItem.getBounds();

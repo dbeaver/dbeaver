@@ -356,24 +356,24 @@ public class ContentValueManager extends BaseValueManager {
     @Override
     public IValueEditor createEditor(@NotNull final IValueController controller) throws DBException {
         switch (controller.getEditType()) {
-        case INLINE:
-            // Open inline/panel editor
-            Object value = controller.getValue();
-            if (controller.getValueType().getDataKind() == DBPDataKind.STRING) {
-                return new StringInlineEditor(controller);
-            } else if (value instanceof DBDContentCached &&
-                    ContentUtils.isTextValue(((DBDContentCached) value).getCachedValue()))
-            {
-                return new ContentInlineEditor(controller);
-            } else {
+            case INLINE:
+                // Open inline/panel editor
+                Object value = controller.getValue();
+                if (controller.getValueType().getDataKind() == DBPDataKind.STRING) {
+                    return new StringInlineEditor(controller);
+                } else if (value instanceof DBDContentCached &&
+                        ContentUtils.isTextValue(((DBDContentCached) value).getCachedValue()))
+                {
+                    return new ContentInlineEditor(controller);
+                } else {
+                    return null;
+                }
+            case EDITOR:
+                return openContentEditor(controller);
+            case PANEL:
+                return new ContentPanelEditor(controller);
+            default:
                 return null;
-            }
-        case EDITOR:
-            return openContentEditor(controller);
-        case PANEL:
-            return new ContentPanelEditor(controller);
-        default:
-            return null;
         }
     }
 

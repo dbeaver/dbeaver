@@ -169,8 +169,7 @@ public class GroupingPanel extends ResultSetPanelBase {
         fillToolBar(manager);
     }
 
-    private void fillToolBar(IContributionManager contributionManager)
-    {
+    private void fillToolBar(IContributionManager contributionManager) {
         ActionContributionItem sortAction = new ActionContributionItem(new DefaultSortingAction());
         sortAction.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         contributionManager.add(sortAction);
@@ -291,9 +290,10 @@ public class GroupingPanel extends ResultSetPanelBase {
         ChangeSortingAction(Boolean descending) {
             super(descending == null ?
                 ResultSetMessages.grouping_panel_sorting_action_unsorted :
-                (descending ? ResultSetMessages.grouping_panel_sorting_action_decending : ResultSetMessages.grouping_panel_sorting_action_ascending),
+                (descending ?
+                    ResultSetMessages.grouping_panel_sorting_action_decending :
+                    ResultSetMessages.grouping_panel_sorting_action_ascending),
                 Action.AS_RADIO_BUTTON);
-            //setImageDescriptor(DBeaverIcons.getImageDescriptor(descending == null ? UIIcon.SORT_UNKNOWN : (descending ? UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE)));
             this.descending = descending;
         }
 
