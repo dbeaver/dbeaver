@@ -1944,7 +1944,7 @@ public class ResultSetViewer extends Viewer
             resultSetSize.addModifyListener(e -> {
                 DBSDataContainer dataContainer = getDataContainer();
                 int fetchSize = CommonUtils.toInt(resultSetSize.getText());
-                if (fetchSize > 0 && fetchSize < ResultSetPreferences.MIN_SEGMENT_SIZE) {
+                if (fetchSize <= 0) {
                     fetchSize = ResultSetPreferences.MIN_SEGMENT_SIZE;
                 }
                 if (dataContainer != null && dataContainer.getDataSource() != null) {
@@ -3666,7 +3666,11 @@ public class ResultSetViewer extends Viewer
         filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetHandlerMain.CMD_FILTER_EDIT_SETTINGS));
     }
 
-    private void fillOrderingsMenu(@NotNull IMenuManager filtersMenu, @Nullable DBDAttributeBinding attribute, @Nullable ResultSetRow row) {
+    private void fillOrderingsMenu(
+        @NotNull IMenuManager filtersMenu,
+        @Nullable DBDAttributeBinding attribute,
+        @Nullable ResultSetRow row
+    ) {
         if (attribute != null) {
             filtersMenu.add(new Separator());
             filtersMenu.add(new OrderByAttributeAction(this, attribute, ColumnOrder.ASC));
@@ -4347,7 +4351,7 @@ public class ResultSetViewer extends Viewer
         } else {
             size = getPreferenceStore().getInt(ModelPreferences.RESULT_SET_MAX_ROWS);
         }
-        if (size > 0 && size < ResultSetPreferences.MIN_SEGMENT_SIZE) {
+        if (size <= 0) {
             size = ResultSetPreferences.MIN_SEGMENT_SIZE;
         }
         return size;
@@ -4450,7 +4454,7 @@ public class ResultSetViewer extends Viewer
                             schedule(50);
                         } else {
                             if (!dataPumpJobQueue.isEmpty()) {
-                                ResultSetJobAbstract curJob = dataPumpJobQueue.get(0);
+                                ResultSetJobAbstract curJob = dataPumpJobQueue.getFirst();
                                 dataPumpJobQueue.remove(curJob);
                                 curJob.schedule();
                             }
